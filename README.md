@@ -3,8 +3,8 @@
     <img src='resources/images/onesaitPlatform-CreatingNewBusiness.png'/>
   </a>
 </p>
-
-## Versions
+ 
+## Versions 
 The platform has 3 distributions, that combined, they cover transformation and creation of new digital business needs
 <p align="center">
     <img src='resources/images/onesaitPlatform-VersionsDescription.png'/>
@@ -57,4 +57,6 @@ As we are working on a open source model, you can contribute with us. To contrib
 onesait Platform is Open Source software released under the [Apache Software License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 See [`LICENSE`](LICENSE) and [`copyright.txt`](copyright.txt) for details.
+
+
 
