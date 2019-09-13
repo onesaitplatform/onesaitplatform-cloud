@@ -3,7 +3,7 @@
     <img src='resources/images/onesaitPlatform-CreatingNewBusiness.png'/>
   </a>
 </p>
-
+ 
 ## Versions
 The platform has 3 distributions, that combined, they cover transformation and creation of new digital business needs
 <p align="center">
