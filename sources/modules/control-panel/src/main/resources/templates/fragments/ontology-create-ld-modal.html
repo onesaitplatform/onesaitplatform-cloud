@@ -1,0 +1,129 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Modal Authorizations-->
+<div id="linked-data-modal" class="modal fade" role="dialog">
+	<div class="modal-dialog modal-lg">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"></button>
+				<h4 class="modal-title" th:text="#{ontology.ld.title}">Linked Properties</h4>
+			</div>
+			<div class="modal-body">
+				<!-- LINK PROPERTIES -->
+				<div class="row">
+					<div class="col-md-4 col-sm-6 col-xs-12">
+						<!-- SELECTION -->
+						<div class="form-group">
+							<label class="control-label" th:text="#{ontology.ld.selfproperty}">Self property</label>
+							<select id="self-property" class="form-control selectpicker"
+								data-live-search="true" data-width="100%" onchange="OntologyCreateController.enableComboOntologies()">
+								<option value="" th:text="#{ontology.ld.property.select}">
+									Select property...</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label class="control-label" th:text="#{ontology.ld.targetontology}">Target ontology</label>
+							<select id="target-ontology" class="form-control selectpicker"
+								data-live-search="true" disabled="true" data-width="100%" onchange="OntologyCreateController.getTargetOntologyProperties()">
+								<option value="" th:text="#{database.ontologies}">
+									Select Ontology...</option>
+								<option th:each="ontology :${ontologies}" th:if="${ontology.active}"
+									th:value="${ontology.identification}"
+									th:text="${ontology.identification}"></option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label class="control-label"
+								th:text="#{ontology.ld.targetproperty}">Target property</label>
+							<select id="target-property" class="form-control selectpicker"
+								data-live-search="true" data-width="100%">
+								<option value="" th:text="#{ontology.ld.property.select}">
+									Select Property...</option>
+
+							</select>
+						</div>
+						<div class="form-group">
+							<label class="control-label"
+								th:text="#{ontology.ld.validate}">Validate property</label>
+							<select id="validate-property" class="form-control selectpicker"
+								data-live-search="true" data-width="100%">
+								<option value="false">false</option>
+								<option value="true">true</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<button type="button"
+								class="btn btn-sm btn-default green-haze uppercase sbold btn-outline"
+								onclick="OntologyCreateController.insertRelation()"
+								th:text="#{ontology.ld.add}">Add relation</button>
+						</div>
+					</div>
+					<div class="col-md-8 col-sm-6 col-xs-12">
+						<!-- REFERENCES -->
+						<div class="form-group">
+							<label class="control-label"
+								th:text="#{ontology.ld.references} + ':'">References</label>
+							<div id="alert-authorizations" class="alert alert-info">
+								<i class="fa fa-info-circle"></i> <span
+									th:text="#{ontology.ld.tooltip}"> </span>
+							</div>
+							<div id="references" class="margin-bottom-20 hide">
+								<table class="table" id="ontology_references"
+									data-loaded="false">
+									<thead>
+										<tr class="cabecera-tabla" role="row">
+											<th class="titulo-columnas" th:text="#{ontology.ld.selfproperty}">Self property</th>
+											<th class="titulo-columnas"
+												th:text="#{ontology.ld.targetontology}">Ontology</th>
+											<th class="titulo-columnas text-center"
+												th:text="#{ontology.ld.targetproperty}">Target property</th>
+											<th class="titulo-columnas text-center"
+												th:text="#{gen.options}">Options</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr class="reference-model">
+											<td><input type="text" name="srcAtt[]"
+												readonly="readonly" class="form-control" /></td>
+											<td><input width="110px"  type="text" name="dstOntology[]"
+												readonly="readonly" class="form-control" /></td>
+											<td><input type="text" name="dstAtt[]"
+												readonly="readonly" class="form-control" /></td>
+											<td class="no-wrap text-center">
+												<button type="button"
+													class="btn btn-sm btn-default uppercase sbold red-sunglo btn-outline btn-mountable-authorization-remove"
+													onclick="OntologyCreateController.deleteRelation(this)">
+													<i class="fa fa-trash"></i>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+
+	</div>
+</div>

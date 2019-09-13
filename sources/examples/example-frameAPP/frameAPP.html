@@ -1,0 +1,592 @@
+<!DOCTYPE HTML>
+<html>
+<!-- 
+  Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+  2013-2019 SPAIN
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. 
+-->
+
+<head>
+    <title>FRAME APP</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+        .btn {
+            width: 160px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-4">
+                <div class="card border-0">
+
+                    <div class="card-body">
+                        <h3 class="card-title">FRAME APP</h3>
+                        <div class="form-group">
+                            <label for="urlDashboard" style="margin-left:20px">Dashboard url</label>
+                            <input class="form-control form-control-sm" id="urlDashboard" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label for="token" style="margin-left:20px">OAuth2 Token</label>
+                            <input class="form-control form-control-sm" id="token" type="text">
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary btn-sm " id="openDashboardButton"
+                                onclick="openDashboard()">OPEN
+                                DASHBOARD</button>
+                            <button class="btn btn-success btn-sm" onclick="sendMessageSaveDashboard()">SAVE
+                                DASHBOARD</button>
+                        </div>
+
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+
+                            <div class="btn-group" role="group">
+                                <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    NEW GADGET
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithAxes('bar')">BAR</a>
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithAxes('line')">LINE</a>
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithAxes('pie')">PIE</a>
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithAxes('radar')">RADAR</a>
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithAxes('mixed')">MIXED</a>
+                                    <a class="dropdown-item"
+                                        onclick="sendMessageCreateWithColums('wordcloud')">WORDCLOUD</a>
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithColums('table')">TABLE</a>
+
+                                </div>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button id="btnGroupDrop2" type="button" class="btn btn-secondary dropdown-toggle"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    UPDATE GADGET
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithAxes()">BAR</a>
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithAxes()">LINE</a>
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithAxes()">PIE</a>
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithAxes()">RADAR</a>
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithAxes()">MIXED</a>
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithColums()">WORDCLOUD</a>
+                                    <a class="dropdown-item" onclick="sendupdateMessageWithColums()">TABLE</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                            <div class="btn-group" role="group">
+                                <button id="btnGroupDrop3" type="button" class="btn btn-secondary dropdown-toggle"
+                                    style="width: auto;" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                    CREATE GADGET WITH FILTER
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="btnGroupDrop2">
+                                    <a class="dropdown-item" onclick="sendMessageCreateWithAxesAndFilter('bar')">numeric
+                                        filter</a>
+                                    <a class="dropdown-item" onclick="sendMessageFilterMulti('table')">filter multi
+                                        selection</a>
+                                    <a class="dropdown-item"
+                                        onclick="sendMessageCreateWithAxesAndFilterModal('mixed')">show filters on
+                                        modal</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <h6>FOR UPDATE</h6>
+                        </div>
+                        <div class="form-group">
+                            <label style="margin-left:20px" for="idgadget">idgadget</label>
+                            <input class="form-control form-control-sm" style="margin-left:20px" id="idgadget"
+                                type="text">
+                        </div>
+                        <div class="form-group">
+                            <label style="margin-left:20px" for="typeGadget">typeGadget</label>
+                            <input class="form-control form-control-sm" style="margin-left:20px" id="typeGadget"
+                                type="text">
+                        </div>
+                        <div class="form-group">
+                            <label style="margin-left:20px">DRAG ON GADGET</label>
+                            <button class="btn-sm btn-outline-dark " ondragend="dragEnd(event)"
+                                ondragstart="drag(event)" draggable="true">&nbsp;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-8">
+                <div id="panelOver"
+                    style="height: 500px;width: 100%;    position: absolute; background: #80808030 ;display: none;z-index:99999999;"
+                    ondragover="allowDrop(event)"></div>
+                <iframe id="sonIframe" src="" style="height: 500px;width: 100%;background-color: #abcbea"></iframe>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+    //------Globals vars------
+    var dashboardOpen = false;
+    var urlDefault =
+        '';
+    var tokenDefault =
+        '';
+
+    //------Globals vars------
+
+    /*
+     * this function creates a pie, line, mixed, radar or bars gadget by adding the measure Helsinki.population
+     */
+    function sendMessageCreateWithAxes(type) {
+        console.log('sendMessageCreateWithAxes ', type);
+        var iframeEl = document.getElementById('sonIframe');
+        var token = $('#token').val();
+        var newName = type + new Date().getTime();
+        var message = `{
+    "command": "newGadget",
+    "authorization": "${token}",
+    "information": {
+        "dashboard": "identificationDashboard",
+        "gadgetName": "${newName}",
+        "gadgetType": "${type}",
+        "refresh": 10,
+        "ontology": "HelsinkiPopulation",
+        "setupLayout": {
+            "filtersInModal": false,
+            "hideBadges": false,
+            "hidebuttonclear":false
+            },
+        "axes": {
+            "nameX": "",
+            "nameY": "",
+            "measuresY": [{
+                    "name": "population",
+                    "path": "Helsinki.population",
+					"type":"line"
+                },
+                {
+                    "name": "population_men",
+                    "path": "Helsinki.population_men",
+					"type":"bar"
+                }
+            ],
+            "measuresX": [{
+                "name": "Helsinki.year",
+                "path": "Helsinki.year"
+            }]
+        }
+    }
+}`;
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+
+
+    /*
+     * this function updates a pie, line, mixed, radar or bars gadget by adding a new measure, 
+     * in this case Helsinki.population_women
+     */
+
+    function sendupdateMessageWithAxes() {
+        var iframeEl = document.getElementById('sonIframe');
+        var idGadget = document.getElementById("idgadget").value;
+        var typeGadget = document.getElementById("typeGadget").value;
+        var token = $('#token').val();
+        var message = `{
+	"command": "updateGadget",
+	"authorization": "${token}",
+	"information": {
+		"dashboard": "identificationDashboard",
+		"gadgetId": "${idGadget}",
+		"gadgetName": "${idGadget}",
+		"gadgetType": "${typeGadget}",
+		"refresh": 10,
+		"ontology": "HelsinkiPopulation",
+		"axes": {
+			"nameX": "",
+			"nameY": "",
+			"measuresY": [{
+				"name": "Helsinki.population_women",
+				"path": "Helsinki.population_women"
+			}],
+			"measuresX": [{
+				"name": "Helsinki.year",
+				"path": "Helsinki.year"
+			}]
+		}
+	}
+}`;
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+
+    /*
+     * this function creates a wordcloud or table gadget by adding the measure Helsinki.population
+     */
+    function sendMessageCreateWithColums(type) {
+        console.log('sendMessageCreateWithColums ', type);
+
+        var iframeEl = document.getElementById('sonIframe');
+        var token = $('#token').val();
+        var newName = type + new Date().getTime();
+        var message = `{
+    "command": "newGadget",
+    "authorization": "${token}",
+    "information": {
+        "dashboard": "identificationDashboard",
+        "gadgetName": "${newName}",
+        "gadgetType": "${type}",
+        "refresh": 10,
+        "ontology": "HelsinkiPopulation",
+        "columns": [{
+                    "name": "population",
+                    "path": "Helsinki.population"
+					
+                }
+            ]
+        }
+    
+}`;
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+
+    /*
+     * this function updates a wordcloud or table gadget by adding a new measure, 
+     * in this case Helsinki.population_women
+     */
+    function sendupdateMessageWithColums() {
+        var iframeEl = document.getElementById('sonIframe');
+        var idGadget = document.getElementById("idgadget").value;
+        var typeGadget = document.getElementById("typeGadget").value;
+        var token = $('#token').val();
+        var message = `{
+	"command": "updateGadget",
+	"authorization": "${token}",
+	"information": {
+		"dashboard": "identificationDashboard",
+		"gadgetId": "${idGadget}",
+		"gadgetName": "${idGadget}",
+		"gadgetType": "${typeGadget}",
+		"refresh": 10,
+		"ontology": "HelsinkiPopulation",
+		"columns": [{
+                    "name": "population_women",
+                    "path": "Helsinki.population_women"
+					
+                }
+            ]
+	}
+}`;
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+    /*
+     * this function creates a gadget with two numeric filters, 
+     * we set the variable filtersInModal to false, to see the filters inside the gadget.
+     * we set hideBadges to true to hide the badgets.
+     * we set hidebuttonclear to false so as not to hide the button clean filters.
+     */
+
+
+    function sendMessageCreateWithAxesAndFilter(type) {
+        console.log('sendMessageCreateWithAxesAndFilter ', type);
+
+        var iframeEl = document.getElementById('sonIframe');
+        var token = $('#token').val();
+        var newName = type + new Date().getTime();
+        var message = `{
+    "command": "newGadget",
+    "authorization": "${token}",
+    "information": {
+        "dashboard": "identificationDashboard",
+        "gadgetName": "${newName}",
+        "gadgetType": "${type}",
+        "refresh": 10,
+        "ontology": "HelsinkiPopulation",
+        "setupLayout": {
+            "filtersInModal": false,
+            "hideBadges": true,
+            "hidebuttonclear":false
+            },
+        "filters": [{
+                "id": "yearstart",                
+                "type": "numberfilter",
+                "name": "year limit lower",
+                "initialFilter": false,
+                "op": ">",
+                "value": "2000",
+                "field": "Helsinki.year"},
+                {
+                "id": "yearend",                
+                "type": "numberfilter",
+                "name": "year limit upper",
+                "initialFilter": false,
+                "op": "<",
+                "value": "2005",
+                "field": "Helsinki.year"}],
+        "axes": {
+            "nameX": "",
+            "nameY": "",
+            "measuresY": [{
+                    "name": "population",
+                    "path": "Helsinki.population",
+					"type":"line"
+                },
+                {
+                    "name": "population_men",
+                    "path": "Helsinki.population_men",
+					"type":"bar"
+                }
+            ],
+            "measuresX": [{
+                "name": "Helsinki.year",
+                "path": "Helsinki.year"
+            }]
+        }
+    }
+}`;
+
+
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+    /*
+     * this function creates a gadget with a numerical filter, 
+     * we set the variable filtersInModal to true, to see the filters in a modal window.
+     * we set hideBadges to false so as not to hide the badgets.
+     * we set hidebuttonclear to true for hide the button clean filters.
+     */
+    function sendMessageCreateWithAxesAndFilterModal(type) {
+        console.log('sendMessageCreateWithAxesAndFilter ', type);
+
+        var iframeEl = document.getElementById('sonIframe');
+        var token = $('#token').val();
+        var newName = type + new Date().getTime();
+        var message = `{
+    "command": "newGadget",
+    "authorization": "${token}",
+    "information": {
+        "dashboard": "identificationDashboard",
+        "gadgetName": "${newName}",
+        "gadgetType": "${type}",
+        "refresh": 10,
+        "ontology": "HelsinkiPopulation",
+        "setupLayout": {
+            "filtersInModal": true,
+            "hideBadges": false,
+            "hidebuttonclear":true
+            },
+        "filters": [{
+                "id": "year",                
+                "type": "numberfilter",
+                "name": "year",
+                "initialFilter": false,
+                "op": ">",
+                "value": "2000",
+                "field": "Helsinki.year"}],
+        "axes": {
+            "nameX": "",
+            "nameY": "",
+            "measuresY": [{
+                    "name": "population",
+                    "path": "Helsinki.population",
+					"type":"line"
+                },
+                {
+                    "name": "population_men",
+                    "path": "Helsinki.population_men",
+					"type":"bar"
+                }
+            ],
+            "measuresX": [{
+                "name": "Helsinki.year",
+                "path": "Helsinki.year"
+            }]
+        }
+    }
+}`;
+
+
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+    /*
+     * this function creates a gadget with a multiple selection filter
+     */
+    function sendMessageFilterMulti(type) {
+        console.log('sendMessageCreateWithAxesAndFilter ', type);
+
+        var iframeEl = document.getElementById('sonIframe');
+        var token = $('#token').val();
+        var newName = type + new Date().getTime();
+        var message = `{
+    "command": "newGadget",
+    "authorization": "${token}",
+    "information": {
+        "dashboard": "identificationDashboard",
+        "gadgetName": "${newName}",
+        "gadgetType": "${type}",
+        "refresh": 10,
+        "ontology": "Restaurants",
+        "setupLayout": {
+            "filtersInModal": false,
+            "hideBadges": false,
+            "hidebuttonclear":false
+            },
+        "filters": [{
+                "id":"borough",
+                "type": "multiselectfilter",
+                "field": "Restaurant.borough",
+                "name": "borough",
+                "initialFilter": false,
+                "hide": false,
+                "data": {
+                    "options": [ "Queens" , "Brooklyn","Manhattan" ],
+                    "optionsSelected": [ "Queens" , "Brooklyn","Manhattan" ]
+                    }
+                    }],
+                    "columns": [{
+                    "name": "cuisine",
+                    "path": "Restaurant.cuisine"
+					
+                },{
+                    "name": "name",
+                    "path": "Restaurant.name"					
+                }
+            ]
+    }
+}`;
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+
+    //function that sends the message to save the dashboard changes
+    function sendMessageSaveDashboard() {
+        var iframeEl = document.getElementById('sonIframe');
+        var ide = $('#identificadorDashboard').val();
+        var token = $('#token').val();
+        var message = ' {"command":"saveDashboard", "authorization":"' + token +
+            '", "information":{"dashboard":"' + ide + '"}}';
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+    //function that passes the coordinates x and y returns us the information of the gadget in case there is one in those coordinates
+    function dropOnElement(x, y) {
+        var iframeEl = document.getElementById('sonIframe');
+        var ide = $('#identificadorDashboard').val();
+        var token = $('#token').val();
+        var message = ' {"command":"dropOnElement", "authorization":"' + token +
+            '", "information":{"x":' + x + ',"y":' + y + '}}';
+        iframeEl.contentWindow.postMessage(message, "*");
+    }
+
+
+    //we load the iframe with the url and with parameter the token
+    function openDashboard() {
+        var url = $('#urlDashboard').val();
+        var token = $('#token').val();
+
+        if (typeof url !== 'undefined' && typeof token !== 'undefined' && url.indexOf('dashboards/editfulliframe') !== -
+            1) {
+            window.frames['sonIframe'].src = url + '?oauthtoken=' + token;
+        }
+    }
+
+
+
+    function dragEnd(ev) {
+        var x = ev.clientX - $('#panelOver').offset().left;
+        var y = ev.clientY;
+        var panelHeight = $('#panelOver').height();
+        if (x >= 0 && y >= 0 && y <= panelHeight) {
+            dropOnElement(x, y);
+        }
+        $('#panelOver').hide();
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        $('#panelOver').show();
+    }
+
+
+    /*
+     * Listener iframe son messages
+     */
+    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+    var eventer = window[eventMethod];
+    var messageEvent = eventMethod === "attachEvent" ? "onmessage" : "message";
+
+    eventer(messageEvent, function (e) {
+        var message;
+        var messageString;
+        if (typeof e.data != "undefined") {
+            try {
+                if (typeof e.data !== "object") {
+                    message = JSON.parse(e.data);
+                    messageString = e.data;
+                } else {
+                    message = e.data;
+                    messageString = JSON.stringify(e.data);
+                }
+            } catch (e) {}
+        } else if (typeof e.message != "undefined") {
+            console.log('handlerMessage e.message ', e.message);
+            try {
+                if (typeof e.message !== "object") {
+                    message = JSON.parse(e.message);
+                    messageString = e.message;
+                } else {
+                    message = e.message;
+                    messageString = JSON.stringify(e.message);
+                }
+            } catch (e) {}
+        }
+        //if it´s a dropOnElment message  
+        if (typeof messageString !== 'undefined' && messageString != null && messageString.indexOf(
+                'dropOnElement')) {
+            if (message.dropOnElement === "TRUE") {
+                $('#idgadget').val(message.idGadget);
+                $('#typeGadget').val(message.type);
+            }
+        }
+
+    })
+
+    $(document).ready(function () {
+        if (urlDefault != null) {
+            $('#urlDashboard').val(urlDefault);
+        }
+        if (tokenDefault != null) {
+            $('#token').val(tokenDefault);
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name = "envs">
+        <item name = "DES">Development</item>
+        <item name = "PRO">Production</item>
+        <item name = "ONESAIT">Onesait Platform</item>
+    </string-array>
+    <string-array name = "envs_values">
+        <item name = "DES">s4citiespro.westeurope.cloudapp.azure.com</item>
+        <item name = "PRO">rancher.sofia4cities.com</item>
+        <item name = "ONESAIT">loadbalancerservice-onesait.ocp.52.233.186.149.nip.io</item>
+    </string-array>
+</resources>

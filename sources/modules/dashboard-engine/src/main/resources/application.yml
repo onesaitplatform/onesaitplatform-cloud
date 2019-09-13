@@ -1,0 +1,140 @@
+app:
+  name: dashboardengine
+server:
+  port: 18300
+  contextPath: /dashboardengine
+  
+  
+# all access to actuator endpoints without security
+management.security.enabled: false
+
+spring:
+  application.name: onesaitplatform-dashboard-engine
+  boot.admin: #Spring Boot Admin Config   
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+  datasource:
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+    username: root
+    password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+    driver-class-name: com.mysql.jdbc.Driver
+    # Validate the connection before borrowing it from the pool.
+    test-on-borrow: true
+    validation-query: SELECT 1
+    test-while-idle: true
+    # Number of ms to wait before throwing an exception if no connection is available.
+    max-wait: 10000
+    # Maximum number of active connections that can be allocated from this pool at the same time.
+    max-active: 30
+    initial-size: 10
+    max-idle: 30
+    min-idle: 10
+    removeAbandoned: true
+     
+  jpa:
+    ## Hibernate Properties
+    # The SQL dialect makes Hibernate generate better SQL for the chosen database
+    properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    # Hibernate ddl auto (create, create-drop, validate, update)
+
+    hibernate.ddl-auto: validate
+
+onesaitplatform: #Config Onesait Platform specific
+   authentication:
+      default_password: ENC(CuRLX3QJtxVhyxmPckWXs93L0FR7NnYj)
+      provider: configdb
+      cas:
+        base_url: http://localhost:8080
+        service_id: http://localhost:18000/controlpanel/login/cas
+        key: CAS_PROVIDER_LOCALHOST_18000
+        login_url: http://localhost:8080/cas/login
+        logout_url: http://localhost:8080/cas/logout
+        attributes:
+            mail: mail
+            fullName: commonName
+      saml:
+        admin_user_id: administrator
+        idp_metadata: url.xml
+        entity_id: entityid
+        entity_url: https://localhost:8443/controlpanel
+        jks:
+           uri: saml.jks
+           store_pass: pass
+           key_alias: pass
+           key_pass: keypass
+        context:
+           samlServerPort: 18000
+           samlIncludePort: false
+           samlScheme: http
+           samlServerName: localhost
+   audit.global.notify: true
+   dashboardengine:
+      auth.token.endpoint: http://localhost:18000/controlpanel/api/login/info  
+   database.mongodb:
+      database: onesaitplatform_rtdb
+      authenticationDatabase:  #admin
+      servers: localhost:27017
+      autoConnectRetry: true
+      socketTimeout: 5000
+      maxAutoConnectRetryTime: 5000
+      maxWaitTime: 5000
+      useAuth: false
+      username: #username
+      password: #password
+      readFromSecondaries: false
+      queries.executionTimeout: 5000
+      queries.defaultLimit: 2000
+      queries.maxConcurrentQueries: 3
+      writeConcern: UNACKNOWLEDGED
+      tools.mongoexport.path: mongoexport
+      tools.mongoimport.path: mongoimport
+      tools.mongoshell.path: mongo
+      tools.useSequentialOps: true   
+      quasar.maxHttpConnections: 50
+      quasar.maxHttpConnectionsPerRoute: 50
+      quasar.connectionTimeout.millis: 10000
+      quasar.connector.http.endpoint: http://localhost:18200/query/fs/
+   database.hadoop.enabled: false
+   database.hdfs:
+      url: hdfs://127.0.0.1:8020
+      basePath: /user/hdfs
+   database.hive:
+      url: jdbc:hive2://localhost:10000/default
+      username: cloudera-scm
+      password: 
+      driverClassName: org.apache.hive.jdbc.HiveDriver
+   database.impala:
+      url: jdbc:hive2://localhost:21050/default;auth=noSasl
+   database.kudu:
+      numreplicas: 1
+      address: localhost:7051
+      includeKudutableName: false
+      client:
+        sessionTimeout: 60000
+        flushMode: MANUAL_FLUSH
+        prefix: impala::default.
+        bossThreadPool: 1
+        workerThreadPool: 4
+        operationTimeout: 30000
+        adminOperationTimeout: 30000
+        socketReadTimeout: 10000
+   database.elasticsearch:
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+      
+## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      com.minsait: INFO 
+      org.springframework.boot: INFO      

@@ -1,0 +1,68 @@
+# Step1 - nodejs binaries
+FROM node:8.11.4-alpine AS nodebase
+
+# Step2 - openjdk base image
+FROM maven:3.5.3-jdk-8-alpine
+
+# Metadata
+LABEL module.maintainer="onesaitplatform@indra.es" \
+	  module.name="flowengine"	
+
+#HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
+
+ENV ASPECTJ_VERSION 1.8.9
+
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+	SERVERNAME=localhost \
+    REALTIMEDBSERVERS=realtimedb:27017 \
+    CONFIGDBSERVERS=configdb:3306 \
+    JDBCPROTOCOL="jdbc:mysql:" \
+    DBADDPROPS="" \
+    ELASTICDBHOST=elasticdb \
+    ELASTICDBPORT=9200 \    
+    AUDITGLOBALNOTIFY=false \    
+    QUASARHOST=quasar \
+    QUASARPORT=10800 \
+    HZ_SERVICE_DISCOVERY_STRATEGY=service \
+    HZ_ZOOKEEPER_URL=zookeeper:2181 \
+    REALTIMEDBNAME=onesaitplatform_rtdb \
+    ENABLE_NODERED_LOG=true \
+    NODERED_LOG_PATH=/var/log/platform-logs \
+    NODERED_LOG_RETAIN_DAYS=5
+
+COPY --from=nodebase /usr/local/bin/node /bin
+
+# Download tzdata for Timezone support and aspectj library
+RUN apk add --no-cache tzdata
+
+RUN mkdir -p /opt/nodeRed && \
+	mkdir -p /tmp/logs/flowEngine && \
+    mkdir -p /var/log/platform-logs && \
+	mkdir ./target && \
+    cd /usr/local && \
+    wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
+
+ADD *-exec.jar app.jar
+ADD Flow-Engine-Manager /opt/nodeRed/Flow-Engine-Manager
+
+# create onesait user/group
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 
+
+RUN chown -R onesait:onesait /usr/local && \
+    chown -R onesait:onesait /var/log/platform-logs && \
+    chown -R onesait:onesait ./target && \
+    chown -R onesait:onesait /opt/nodeRed && \
+    chown onesait:onesait app.jar && \
+    chmod -R 777 ./target && \
+    chmod -R 777 /var/log && \
+    chmod -R 777 /usr/local && \
+    chmod -R 777 /opt/nodeRed
+    
+VOLUME ["/tmp", "/var/log/platform-logs"]
+    
+USER onesait
+
+EXPOSE 10000 20100 5050
+
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]

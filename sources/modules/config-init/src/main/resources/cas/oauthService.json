@@ -1,0 +1,69 @@
+{
+  "_id": 21000,
+  "_class": "org.apereo.cas.support.oauth.services.OAuthRegisteredService",
+  "clientSecret": "onesaitplatform",
+  "clientId": "onesaitplatform",
+  "bypassApprovalPrompt": false,
+  "generateRefreshToken": false,
+  "jsonFormat": true,
+  "supportedGrantTypes": [
+    
+  ],
+  "supportedResponseTypes": [
+    
+  ],
+  "serviceId": "onesaitplatform",
+  "name": "oauth",
+  "description": "Oauth 2 Service",
+  "proxyPolicy": {
+    "_class": "org.apereo.cas.services.RefuseRegisteredServiceProxyPolicy"
+  },
+  "evaluationOrder": 0,
+  "usernameAttributeProvider": {
+    "_class": "org.apereo.cas.services.DefaultRegisteredServiceUsernameProvider",
+    "canonicalizationMode": "NONE",
+    "encryptUsername": false
+  },
+  "logoutType": "BACK_CHANNEL",
+  "requiredHandlers": [
+    
+  ],
+  "attributeReleasePolicy": {
+    "_class": "org.apereo.cas.services.ReturnAllAttributeReleasePolicy",
+    "allowedAttributes": [
+      
+    ],
+    "principalAttributesRepository": {
+      "_class": "org.apereo.cas.authentication.principal.DefaultPrincipalAttributesRepository",
+      "expiration": 2,
+      "timeUnit": "HOURS"
+    },
+    "authorizedToReleaseCredentialPassword": false,
+    "authorizedToReleaseProxyGrantingTicket": false,
+    "excludeDefaultAttributes": false
+  },
+  "multifactorPolicy": {
+    "_class": "org.apereo.cas.services.DefaultRegisteredServiceMultifactorPolicy",
+    "multifactorAuthenticationProviders": [
+      
+    ],
+    "failureMode": "CLOSED",
+    "bypassEnabled": false
+  },
+  "accessStrategy": {
+    "_class": "org.apereo.cas.services.DefaultRegisteredServiceAccessStrategy",
+    "enabled": true,
+    "ssoEnabled": true,
+    "requireAllAttributes": true,
+    "requiredAttributes": {
+      
+    },
+    "rejectedAttributes": {
+      
+    },
+    "caseInsensitive": false
+  },
+  "properties": {
+    
+  }
+}

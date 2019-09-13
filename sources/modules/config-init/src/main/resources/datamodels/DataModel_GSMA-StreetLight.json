@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Streetlight Schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "location": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "coordinates": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": [
+                "type",
+                "coordinates"
+            ]
+        },
+        "areaServed": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string"
+        },
+        "refStreetlightGroup": {
+            "type": "string"
+        },
+        "refStreetlightModel": {
+            "type": "string"
+        },
+        "circuit": {
+            "type": "string"
+        },
+        "lanternHeight": {
+            "type": "integer"
+        },
+        "locationCategory": {
+            "type": "string"
+        },
+        "powerState": {
+            "type": "string"
+        },
+        "controllingMethod": {
+            "type": "string"
+        },
+        "dateLastLampChange": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "location",
+        "areaServed",
+        "status",
+        "refStreetlightGroup",
+        "refStreetlightModel",
+        "circuit",
+        "lanternHeight",
+        "locationCategory",
+        "powerState",
+        "controllingMethod",
+        "dateLastLampChange"
+    ]
+}

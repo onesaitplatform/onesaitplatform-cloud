@@ -1,0 +1,580 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"></title>
+		
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+		
+		<!-- Funciones AJAX -->
+		<script th:inline="javascript">
+			//<![CDATA[       
+			function navigateUrl(url,reload){ 
+				if(reload){
+					window.location.reload();
+					window.location.replace(url);
+				}
+				else{
+					window.location.href = url;
+				}
+			}
+
+			var makePublic = function(id){
+				jQuery.post('/controlpanel/notebooks/public', {'id' : id}, function(response){
+					navigateUrl('/controlpanel/notebooks/list');
+				});
+			}
+			
+			var showCreateNotebookDialog = function(){
+				$.confirm({
+					icon: 'fas fa-chart-pie',
+					title: [[#{notebook.newnotebook.popup}]],
+					theme: 'light',
+					columnClass: 'medium',
+					content: "<input class='col-md-12 form-control' type=text id='newNotebook'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					closeIcon: true,
+					buttons: {
+						close: {
+							text: "Cancel",
+							btnClass: 'btn btn-sm btn-outline btn-circle blue',
+							action: function (){} //GENERIC CLOSE.		
+						},
+						Ok: {
+							text: "Ok",
+							btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+							action: function() {
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
+									console.log("notebook empty");
+									return;
+								}
+								var notebookName = $("#newNotebook").val().trim()
+								if(/^[a-zA-Z0-9_ ]+$/.test(notebookName)){
+									createNotebook(notebookName);
+								}
+								else{
+									$("#patternAlert").removeClass("hidden");
+									return false;
+								}
+							}											
+						}						
+					}
+				});
+			}
+
+			var showImportNotebookDialog = function(){
+				$.confirm({
+					icon: 'fas fa-chart-pie',
+					title: [[#{notebook.importnotebook}]],
+					theme: 'light',
+					columnClass: 'medium',
+					content: "<input class='element text form-control' type='text' id='newImportNotebook' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json,.ipynb' id='jsonInputData' onchange='fileImportChange(this.files[0])' />",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					closeIcon: true,
+					buttons: {
+						close: {
+							text: "Cancel",
+							btnClass: 'btn btn-sm btn-outline btn-circle blue',
+							action: function (){} //GENERIC CLOSE.		
+						},
+						Ok: {
+							text: "Ok",
+							btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+							action: function() {
+								if($("#newImportNotebook").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImportNotebook").val()){
+									console.log("notebook name or json file empty");
+									return;
+								}
+								var notebookName = $("#newImportNotebook").val().trim();
+								var notebookExtension = $("#jsonInputData").val().split('.').pop();
+								if(/^[a-zA-Z0-9_ ]+$/.test(notebookName)){
+									importNotebook(notebookName,$("#dataJSONImport").val(), notebookExtension);
+								}
+								else{
+									$("#patternAlert").removeClass("hidden");
+									return false;
+								}
+							}									
+						}
+					}
+				});
+			}
+
+
+			var showCloneNotebookDialog = function(initNotebook){
+				$.confirm({
+					icon: 'fas fa-chart-pie',
+					title: [[#{notebook.newnotebook.popup}]],
+					theme: 'light',
+					columnClass: 'medium',
+					content: "<input class='col-md-12 form-control' type=text id='newNotebook'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					closeIcon: true,
+					buttons: {
+						close: {
+							text: "Cancel",
+							btnClass: 'btn btn-sm btn-outline btn-circle blue',
+							action: function (){} //GENERIC CLOSE.		
+						},
+						Ok: {
+							text: "Ok",
+							btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+							action: function() {
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
+									console.log("notebook empty");
+									return;
+								}
+								
+								var notebookName = $("#newNotebook").val().trim()
+								if(/^[a-zA-Z0-9_ ]+$/.test(notebookName)){
+									cloneNotebook(notebookName,initNotebook);
+								}
+								else{
+									$("#patternAlert").removeClass("hidden");
+									return false;
+								}
+							}										
+						}
+					}
+				});
+			}
+			
+			var showRenameNotebookDialog = function(initNotebook, name){
+				$.confirm({
+					icon: 'fas fa-chart-pie',
+					title: [[#{notebook.newnotebook.popup}]],
+					theme: 'light',
+					columnClass: 'medium',
+					content: "<input class='col-md-12 form-control' type=text id='newNotebook' value='" + name + "'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					closeIcon: true,
+					buttons: {
+						close: {
+							text: "Cancel",
+							btnClass: 'btn btn-sm btn-outline btn-circle blue',
+							action: function (){} //GENERIC CLOSE.		
+						},
+						Ok: {
+							text: "Ok",
+							btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+							action: function() {
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
+									console.log("notebook empty");
+									return false;
+								}
+								var notebookName = $("#newNotebook").val().trim()
+								if(/^[a-zA-Z0-9_ ]+$/.test(notebookName)){
+									renameNotebook(notebookName,initNotebook);
+								}
+								else{
+									$("#patternAlert").removeClass("hidden");
+									return false;
+								}
+							}										
+						}
+					}
+				});
+			}
+
+			function showRemoveNotebookDialog(id,idzep) {
+				$.confirm({
+					icon: 'fas fa-chart-pie',
+					title: [[#{notebook.confirm.delete}]],
+					theme: 'light',
+					columnClass: 'medium',
+					content: "",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					closeIcon: true,
+					buttons: {
+					close: {
+							text: "Cancel",
+							btnClass: 'btn btn-sm btn-outline btn-circle blue',
+							action: function (){} //GENERIC CLOSE.		
+						},
+						"Ok": {
+							text: "Ok",
+							btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+							action: function() {
+								document.forms["command" + id].submit();
+							}
+						}
+					}
+				});
+			}
+			/*Create Notebook */
+			function createNotebook(name){
+				$.post(
+					"/controlpanel/notebooks/createNotebook", 
+					{name : name}
+				).done(function(data){
+					localStorage.setItem("reload","true");//Created notebook, reload forced
+					navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
+				).fail(
+					function(e){
+						if(e.status==409){
+							$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'
+								}
+							)
+						}
+						console.log("Error creating note, message detail, " + " error: " + e.error + ", " + e.responseText);
+					}
+				)
+			}
+			function cloneNotebook(name,initId){
+				$.post(
+					"/controlpanel/notebooks/cloneNotebook", 
+					{
+						name : name,
+						idzep : initId
+					}
+				).done(function(data){
+					localStorage.setItem("reload","true");//Created notebook, reload forced
+					navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
+				).fail(
+					function(e){
+						if(e.status==409){
+							$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'
+								}
+							)
+						}
+						console.log("Error clone note, message detail, " + " error: " + e.error + ", " + e.responseText);
+					}
+				)
+			}
+			
+			function renameNotebook(name,initId){
+				var csrf_value = $("meta[name='_csrf']").attr("content");
+				var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+				
+				$.ajax({
+					type:"POST",
+					headers: {
+						[csrf_header]: csrf_value
+				    },
+					url:"/controlpanel/notebooks/renameNotebook", 
+					data:{
+						name : name,
+						idzep : initId
+					},
+					dataType: "text"
+				}).done(function(data){
+					localStorage.setItem("reload","true");//Created notebook, reload forced
+					navigateUrl("/controlpanel/notebooks/list")}
+				).fail(
+					function(e){
+						if(e.status==409){
+							$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'
+								}
+							)
+						}
+						console.log("Error in rename note, message detail, " + " error: " + e.error + ", " + e.responseText);
+					}
+				)
+			}
+			
+			function importNotebook(name,data,extension){
+				if($("#jsonInputData").val()==="" || $("#newImportNotebook").val()===""){
+					return;//Required params
+				}
+				
+				console.log(name);
+				console.log(extension);
+				
+				var url;
+				
+				if(extension==="ipynb"){ 
+					url = "/controlpanel/notebooks/importNotebookFromJupyter";
+				}
+				else {
+					url = "/controlpanel/notebooks/importNotebook";					
+					//Name inside notebook
+					var jsonData = JSON.parse(data)
+					jsonData.name = name;
+					data = JSON.stringify(jsonData);
+				}
+				
+				$.post(
+						url, 
+						{
+							name: name,
+							data: data
+						}
+					).done(function(data){
+						localStorage.setItem("reload","true");//Created notebook, reload forced
+						navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
+					).fail(
+						function(e){
+							if(e.status==409){
+								$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'
+									}
+								)
+							}
+							else if (e.status==400){
+								$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{notebook.error.invalidformat}]]*/ 'Error'
+									}
+								)
+							}
+							console.log("Error importing note, message detail, " + " error: " + e.error + ", " + e.responseText);
+						}
+					)
+				
+				
+			}
+			function fileImportChange(jsonFile){
+				var reader = new FileReader();
+				reader.readAsText(jsonFile);
+				var nameNotebook;
+				reader.onload = function(data) {
+					if ($("#jsonInputData").val().split('.').pop() === "ipynb"){
+						var filename = $("#jsonInputData").val().replace(/^.*[\\\/]/, '');
+						nameNotebook = filename.substr(0, filename.lastIndexOf('.'));
+					}
+					else {
+						nameNotebook = JSON.parse(data.target.result).name;
+					}
+					
+					$('#newImportNotebook').val(nameNotebook);
+					$("#dataJSONImport").val(data.target.result);
+					
+				};
+			}
+			//]]>
+		</script>	
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/notebooks/list}"> <span th:text="#{notebook.breadcrumb.list}">Notebooks</span></a></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{notebook.template.list}">My Notebooks </span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span class="caption-subject" th:text="#{notebook.template.list}"> My Notebooks </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								<div class="actions margin-right-20 ">
+									<div class="btn-group">												
+										<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-sm btn-outline btn-circle blue" th:text="#{notebook.manageinter}" onclick="navigateUrl('/controlpanel/notebooks/app/#/interpreter')"></button>
+										<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-sm btn-outline btn-circle blue" onclick="navigateUrl('/controlpanel/notebooks/app/#/helium')">Helium</button>
+										<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-sm btn-outline btn-circle blue" th:text="#{notebook.configuration}" onclick="navigateUrl('/controlpanel/notebooks/app/#/configuration')"></button>
+										<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-sm btn-outline btn-circle blue" onclick="navigateUrl('/controlpanel/notebooks/app/#/jobmanager')">Job Manager</button>
+										<button type="button" class="btn  btn-sm btn-outline btn-circle btn-primary" th:text="#{notebook.newnotebook}" onclick="javascript:showCreateNotebookDialog()"></button>
+										<button type="button" class="btn  btn-sm btn-outline btn-circle blue" th:text="#{notebook.importnotebook}" onclick="javascript:showImportNotebookDialog()"></button>
+									</div>										
+								</div>
+							</div>
+							<div th:fragment="domain" id="domain" class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->	
+										<div th:if="${messageAlertType == 'SUCCESS' and message != null}" id="messages" class="alert alert-success alert-dismissable" th:text="${message}">
+										</div>
+										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable" th:text="${message}">
+										</div>
+										<div th:if="${messageAlertType == 'ERROR' and message != null}" id="messages" class="alert alert-danger alert-dismissable" th:text="${message}">
+										</div>
+										<div th:if="${messageAlertType == 'INFO' and message != null}" id="messages" class="alert alert-info alert-dismissable" th:text="${message}">
+										</div>
+									</div>
+									<!-- NOTEBOOK LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="notebooks" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{gen.name}">Identification</th>
+															<th class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
+															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.options}"> Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="notebook : ${lnt}">
+															<td>                                                                                                                                                       
+																<a th:text="${notebook.identification}" th:href="'/controlpanel/notebooks/app/#/notebook/'+@{${notebook.idzep}}"></a>
+															</td>  
+															<td th:text="${notebook.user.userId}"></td>
+															<!-- PUBLIC -->
+															<td class="text-center" th:if="${notebook.public}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success  font-hg"></i></td>
+															<td class="text-center" th:if="${!notebook.public}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>
+															<!-- DATE --> 
+															<td class="text-center" th:if="${notebook.createdAt!=null}" th:text="${#dates.format(notebook.createdAt,'dd/MM/YYYY')}"></td>
+															<td class="text-center" th:if="${notebook.createdAt==null}" th:text="${notebook.createdAt}"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">
+																	<span th:title="#{gen.edit}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/notebooks/app/#/notebook/${notebook.idzep}/|} + '\');'"><i class="la la-pencil font-hg"></i></span>
+																	
+																	<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.rename}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.rename}" th:onclick="'javascript:showRenameNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\',\'' + @{|${notebook.identification}|}+ '\');'"><i class="la la-text-width font-hg"></i></span>
+																	
+																	<span th:title="#{notebook.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.clone}" th:onclick="'javascript:showCloneNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\');'"><i class="la la-clone font-hg"></i></span>
+																	
+																	<a th:title="#{notebook.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.download}" target="_blank" th:href="'/controlpanel/notebooks/exportNotebook/' +  ${notebook.idzep}"><i class="la la-download font-hg"></i></a>
+																	
+																	<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.share}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.share}" th:onclick="'javascript:navigateUrl(\'' + @{|/notebooks/share/${notebook.id}/|}+ '\');'"><i class="la la-chain font-hg"></i></span>
+																	
+																	<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.public}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.public}" th:onclick="'javascript:makePublic(\''+${notebook.id}+'\')'"><i class="la la-user font-hg"></i></span>
+																	
+																	<span th:if="${notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.private}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.private}" th:onclick="'javascript:makePublic(\''+${notebook.id}+'\')'"><i class="la la-user-times font-hg"></i></span>
+																	
+																	<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{gen.deleteBtn}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{gen.deleteBtn}" th:onclick="'javascript:showRemoveNotebookDialog(\'' + ${notebook.identification} + '\',\'' + ${notebook.idzep} + '\');'">
+																		<i class="la la-trash font-hg"></i>
+																		<form th:id="command + ${notebook.identification}" action="list.html" th:action="@{|/notebooks/${notebook.identification}|}" method="post" style="display:none">
+																			<input type="hidden" name="_method" value="DELETE"/>
+																		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+																	</span>
+																	
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>																							
+											</div>
+										</div>											
+									</div>
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->				
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	
+	
+	<script th:inline="javascript">	
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+ 
+	</script>
+	
+	<script type="text/javascript">	
+	var optionName = 'Notebooks';
+	
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+	});
+	
+	//]]>
+	</script>
+	
+</body>
+</html>
+  

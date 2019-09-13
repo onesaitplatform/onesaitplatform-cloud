@@ -1,0 +1,546 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
+
+
+
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/layout.css}" />
+
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PLUGINS STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+
+</head>
+
+<!-- page-sidebar-closed to start page with collapsed menu -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<!-- BEGIN PAGE HEADER-->
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/devices/list}"> <span th:text="#{device.breadcrumb.prev}">devices</span></a></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide ">
+					<span th:text="#{device.template.show}">Manage devices</span>
+				</h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									 <span class="caption-subject"	th:text="#{device.template.list}"> Manage Users</span>
+								</div>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title="">
+									</a> <a href="" class="fullscreen" data-original-title="" title="">
+									</a>
+								</div>
+								<div class="actions margin-right-20">
+									<div class="btn-group">
+										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>
+										<button type="button" class="btn btn-outline btn-circle btn-primary"	onclick="location.href='../devices/create'"><span th:text="#{gen.create}">New</span></button>
+									</div>
+								</div>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->
+									</div>
+									<div  id="searchFilter" class="col-md-12 hide">
+										<!-- SEARCH FORM -->
+										<form id="form_device" action="list.html" th:action="@{/devices/list}" class="" role="form"	method="get">
+											<div id="searchFilter" class="form-body">
+												<div class="row">
+													<div class="col-md-3 col-md-6 col-xs-12">
+														<div class="form-group">
+															<input id="identification"	th:placeholder="#{device.id}" name="identification"	class="form-control" type="text" maxlength="70"	value="" />
+														</div>
+													</div>
+
+													<div class="col-md-3 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<select id="ontologies"
+																class="selectpicker form-control"
+																data-live-search="true" data-size="10" data-width="100%"
+																th:title="#{device.ontologies}" name="ontologies">
+																<option value=""></option>
+																<option th:each="onto:${ontologies}"
+																	th:value="${onto.identification}"
+																	th:text="${onto.identification}"></option>
+															</select>
+														</div>
+													</div>													
+													<div class="col-md-6 col-xs-12">
+														<div class="btn-group margin-bottom-10">
+															<button type="button" id="search_device" name="search_device" th:title="#{gen.search}" class="btn btn-sm btn-outline btn-circle blue" th:text="#{gen.search}">Search</button>
+															<button type="button" id="reset_device" name="reset_device" value="Reset" class="btn  btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
+														</div>														
+													</div>
+												</div>
+											</div>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+
+
+									</div>
+									<!-- USER LIST -->
+									<div class="col-md-12">
+										<div id="contenedor-tabla-outside" class="contiene">
+											<div>
+												<table id="devicesTable" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters"	dt:filterPlaceholder="none"	dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:filterable="true" dt:filterCssClass="input-small"
+																dt:selector="deviceFilter" class="titulo-columnas"> <span
+																th:text="#{device.id}">Identification</span></th>
+															<th class="titulo-columnas"> <span
+																th:text="#{device.description}">Description</span></th>
+															<th dt:filterable="true" dt:filterCssClass="input-small"
+																dt:selector="ontologyFilter" class="titulo-columnas"><span
+																th:text="#{device.ontologies}">Ontologies</span></th>
+															<th class="titulo-columnas">
+																<span th:text="#{device.user}">User</span></th>
+															<th class="titulo-columnas text-center"> <span
+																th:text="#{device.dateCreated}">Created At</span></th>
+															<th class="titulo-columnas" dt:sortable="false"> <span th:text="#{gen.options}">
+																	Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="device : ${devices}" pages:paginate="10">
+															<!-- IDENTIFICATION -->
+															<td class="text-left no-wrap  internalId"
+																th:text="${device.identification}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-left no-wrap "
+																th:text="${device.description}"></td>
+															<!-- ONTOLOGIES-->
+															<td class="text-left" th:text="${device.ontologies}"></td>
+
+															<!-- USER -->
+															<td class="text-left no-wrap "
+																th:text="${device.user}"></td>
+															<!-- DATE CREATED -->
+															<td class="text-center"
+																th:if="${device.dateCreated!=null}">
+																<span th:text="${#dates.format(device.dateCreated,'YYYY/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(device.dateCreated,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center"
+																th:if="${device.dateCreated==null}" th:text="'---'"></td>
+
+															<!-- OPTIONS -->
+															<td class="icon" style="white-space: nowrap">
+																<div class="grupo-iconos">
+																	<!-- VIEW -->
+																	<span th:title="#{gen.view}"
+																		class="btn btn-xs btn-circle btn-outline no-border blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/devices/show/${device.id}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
+
+																	<!-- EDIT -->
+																	<span
+																		class="btn btn-xs btn-circle btn-outline no-border blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><i
+																		class="la la-edit font-hg"></i></span>
+													
+																	<!-- DELETE Not in this UI
+																	<button id="deleteBtn" type="button"
+																		class="btn btn-square btn-danger" name="delete"
+																		value="Remove"
+																		th:onclick="'deleteDeviceConfirmation(\'' + ${device.identification} + '\');'">
+																		<i class="la la-trash"></i> <span
+																			th:text="#{gen.deleteBtn}"> Delete </span>
+																	</button>
+																	-->
+																</div>
+															</td>
+
+														</tr>
+													</tbody>
+												</table>
+
+												<!-- DATATABLE DANDELION CONF. -->
+												<div dt:conf="devices">
+													<div dt:confType="extrahtml" dt:uid="0">
+														<!-- TABLE FILTERS AUX. ROW -->
+														<table id="filteringTable" class="hide">
+															<tr id="filtering" class="hide" role="row">
+																<th id="deviceFilter" class="dtFilter"></th>
+																<th></th>
+																<th id="ontologyFilter" class="dtFilter"></th>
+																<th></th>
+																<th></th>
+																<th></th>
+															</tr>
+														</table>
+													</div>
+												</div>
+
+
+
+												<!-- TABLE TOOLBAR -->
+												<div id="dataTable-vis-toggle"
+													class="btn-group margin-left-10 hide">
+
+													<!-- CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED
+													<button id="clearFilters" th:value="#{gen.resetBtn}" class="btn purple-plum btn-outline sbold" style="padding: 7px 10px;"><i class="fa fa-times"></i></button>  													
+													<button id="BtnToggleSel" class="btn purple-plum btn-outline sbold" style="padding: 7px 10px;"><i class="fa fa-check"></i></button>
+													<button id="BtnRemoveSel" th:value="#{gen.deleteBtn}" class="btn btn-outline sbold red-sunglo" data-elements="" style="padding: 7px 10px;"><i class="fa fa-trash"></i></button>
+													 -->
+													<!-- COLUMNS TOGGLE -->
+													<a href="javascript:;" data-toggle="dropdown"
+														aria-expanded="false" class="btn btn-square btn-sm btn-default"> 
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0"
+															th:text="#{device.id}"> Identification</label> <label
+															class="toggle-vis" data-column="1"
+															th:text="#{device.description}"> Description</label> <label
+															class="toggle-vis" data-column="2"
+															th:text="#{device.ontologies}"> Ontologies</label> <label
+															class="toggle-vis" data-column="3"
+															th:text="#{device.user}"> User</label> <label
+															class="toggle-vis" data-column="4"
+															th:text="#{device.dateCreated}"> Created At</label> <label
+															class="toggle-vis" data-column="5"
+															th:text="#{gen.options}"> Options</label>
+													</div>
+
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- END PORTLET BASIC LIGHT -->
+					</div>
+					<!-- END COL-12 -->
+				</div>
+				<!-- END MAIN ROW -->
+			</div>
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+
+
+
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment"
+		class="page-footer"> </footer>
+
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}" />
+	<script th:src="@{/static/js/layout.js}" />
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
+	<script
+		th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" />
+	<script
+		th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
+
+
+	<script th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM
+	var identification = [[${param.identification}]] || '';	
+	var ontologies = [[${param.ontologies}]] || '';
+
+	
+	//GET SEARCH DATA
+	identification ? $('#identification').val(identification) : identification = '';
+	ontologies ? $('#ontologies').selectpicker('val', ontologies) : ontologies = '';
+	
+
+	console.log('SEARCHING ... [ Identification: ' + identification +  ' ontologies: ' +  ontologies + ']');
+	// OPEN SEARCH FORM IF SEARCH DATA EXISTS.
+	if ((  identification!= '')  || (ontologies != '') ) { $('#search-toggle').trigger('click'); }
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+
+	</script>
+
+	<script type="text/javascript" th:inline="javascript"> 
+	var optionName = 'DEVICES';
+	
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+	
+	
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#devicesTable').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
+			}
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+					
+		// SEARCH FORM RESET
+		$('#reset_device').on('click',function(){
+			$('#form_device')[0].reset();
+			$('#form_device')[0].submit();
+		});
+		
+		// SEARCH FORM
+		$('#search_device').on('click',function(){ $('#form_device')[0].submit(); });
+		
+		// TOGGLE SELECTION DATATABLES
+		$('#BtnToggleSel').on('click', function(){
+			var defaultSelection = $('.dataTable').DataTable().rows().nodes();			
+			
+			$.each(defaultSelection,function(gIdx,gObj){
+				$(gObj).hasClass('success') ? $(gObj).removeClass('success') : $(gObj).addClass('success');
+			});
+			
+			var dtElements = '';
+			var btnObj = $('#BtnRemoveSel');
+								
+
+			// get elements Ids, marked with internalId on success rows
+			$('.dataTable tr.success td.internalId').each(function(i, internalIdObj){						
+				dtElements += $(internalIdObj).text() + ',';
+			});
+			
+			if (dtElements) {
+				btnObj.removeClass('disabled red-sunglo').addClass('purple-plum');
+				btnObj.attr('data-elements',dtElements);
+				console.log('SelectedElements: ' + btnObj.attr('data-elements'));
+			}
+			else {
+				dtElements = '';
+				btnObj.attr('data-elements',dtElements); console.log('SelectedElements: ' + btnObj.attr('data-elements')); 
+				btnObj.removeClass('purple-plum').addClass('disabled red-sunglo');					
+			}			
+		});
+		
+	});
+	
+	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
+	var handleSingleSelection = function(pTableId){
+		$("#"+pTableId).on('click','tr:not(.tr-detail)',function(event){
+			if ($(event.target).is('td')){
+				event.stopPropagation();
+				var eleRow = $(event.target).parent('tr');
+				
+				// SE CUENTAN LAS FILAS QUE NO SEAN CABECERA NI FILTRO.
+				if (!$(eleRow).hasClass('cabecera-tabla') && !$(eleRow).hasClass('filtering')){					
+				
+					// SUCCESS VISUAL SELECTION
+					$(eleRow).hasClass('success') ?  $(eleRow).removeClass('success') : $(eleRow).addClass('success');
+				
+				
+					var dtElements = '';
+					var btnObj = $('#BtnRemoveSel');
+										
+
+					// get elements Ids, marked with internalId on success rows
+					$('#' + pTableId + ' tr.success td.internalId').each(function(i, internalIdObj){						
+						dtElements += $(internalIdObj).text() + ',';
+					});
+					
+					if (dtElements) {
+						btnObj.removeClass('disabled red-sunglo').addClass('purple-plum');
+						btnObj.attr('data-elements',dtElements);
+						console.log('SelectedElements: ' + btnObj.attr('data-elements'));
+					}
+					else {
+						dtElements = '';
+						btnObj.attr('data-elements',dtElements); console.log('SelectedElements: ' + btnObj.attr('data-elements')); 
+						btnObj.removeClass('purple-plum').addClass('disabled red-sunglo');					
+					} 
+				}
+			}
+		});
+	}
+		
+	
+	
+	var  deleteDeviceConfirmation = function (id){
+		console.log('deleteUserConfirmation() -> formId: '+ id);
+		
+		// no Id no fun!
+		if ( !id ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO USER-FORM SELECTED!'}); return false; }
+		
+		// call  Confirm 
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	
+	var showConfirmDeleteDialog = function(id){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = [[#{device.delete.confirm}]];
+		var Title = headerReg.titleConfirm + ':';
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			icon: 'fa fa-warning',
+			title: Title,
+			theme: 'dark',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-sm btn-danger btn-outline',
+					action: function(){ 
+						console.log(id);
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+						$.ajax({
+						    url: '/controlpanel/devices/'+id,
+						    headers: {
+								[csrf_header]: csrf_value
+						    },
+						    type: 'DELETE',						  
+						    success: function(result) {
+						    	
+						    	console.log(result);
+						    	navigateUrl(result);
+						    }
+						});
+					}											
+				},
+				close: {
+					text: Close,
+					btnClass: 'btn btn-sm btn-default btn-outline',
+					action: function (){} //GENERIC CLOSE.		
+				}
+			}
+		});
+	}	
+
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+		//DATATABLE 
+		var oTable = $('#devicesTable').DataTable();
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		// FILTERING COLUMNS INIT
+		$('#filtering').appendTo($('#devicesTable > thead'));
+		$('#filtering').removeClass('hide');
+		
+		// RESET ALL FILTERS BTN
+		$('#clearFilters').on('click', function(){			
+			yadcf.exResetAllFilters(oTable);		
+		});	
+		
+		
+		// ADJUST CSS FOR DATATABLE FILTERS 
+		var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
+		var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
+		filters.addClass('input-small font-sm');
+		filtersResets.addClass('hide');				
+		
+		// INIT row selection
+		handleSingleSelection('devicesTable');
+		
+	});
+	
+	//]]>
+	</script>
+
+</body>
+</html>

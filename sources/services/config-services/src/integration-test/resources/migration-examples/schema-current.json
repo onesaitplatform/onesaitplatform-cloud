@@ -1,0 +1,58 @@
+{
+  "schema" : [ {
+    "class" : "com.minsait.onesait.platform.config.model.Ontology",
+    "fields" : {
+      "allowsCypherFields" : "boolean",
+      "rtdbClean" : "boolean",
+      "dataModel" : "com.minsait.onesait.platform.config.model.DataModel",
+      "active" : "boolean",
+      "description" : "java.lang.String",
+      "metainf" : "java.lang.String",
+      "dataModelVersion" : "java.lang.String",
+      "allowsCreateTopic" : "java.lang.String",
+      "createdAt" : "java.util.Date",
+      "serialVersionUID" : "long",
+      "identification" : "java.lang.String",
+      "rtdbCleanLapse" : "com.minsait.onesait.platform.config.model.Ontology$RtdbCleanLapse",
+      "rtdbToHdb" : "boolean",
+      "jsonSchema" : "java.lang.String",
+      "xmlDiagram" : "java.lang.String",
+      "ontologyClass" : "java.lang.String",
+      "isPublic" : "boolean",
+      "id" : "java.lang.String",
+      "ontologyUserAccesses" : "java.util.Set<com.minsait.onesait.platform.config.model.OntologyUserAccess>",
+      "rtdbDatasource" : "com.minsait.onesait.platform.config.model.Ontology$RtdbDatasource",
+      "user" : "com.minsait.onesait.platform.config.model.User",
+      "updatedAt" : "java.util.Date",
+      "new" : "java.lang.String"
+    }
+  }, {
+    "class" : "com.minsait.onesait.platform.config.model.Api_v2",
+    "fields" : {
+      "ssl_certificate" : "boolean",
+      "endpointExt" : "java.lang.String",
+      "image" : "byte[]",
+      "comments" : "java.util.Set<com.minsait.onesait.platform.config.model.ApiComment>",
+      "description" : "java.lang.String",
+      "cachetimeout" : "java.lang.Integer",
+      "metaInf" : "java.lang.String",
+      "assessment" : "java.lang.Double",
+      "createdAt" : "java.util.Date",
+      "serialVersionUID" : "long",
+      "endpoint" : "java.lang.String",
+      "identification" : "java.lang.String",
+      "userAssessments" : "java.util.Set<com.minsait.onesait.platform.config.model.ApiUserAssessment>",
+      "numversion" : "java.lang.Integer",
+      "isPublic" : "boolean",
+      "state" : "com.minsait.onesait.platform.config.model.Api$ApiStates",
+      "id" : "java.lang.String",
+      "category" : "com.minsait.onesait.platform.config.model.Api$ApiCategories",
+      "user" : "com.minsait.onesait.platform.config.model.User",
+      "imageType" : "java.lang.String",
+      "apilimit" : "java.lang.Integer",
+      "ontology" : "com.minsait.onesait.platform.config.model.Ontology",
+      "apiType" : "java.lang.String",
+      "updatedAt" : "java.util.Date"
+    }
+  } ]
+}

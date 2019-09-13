@@ -1,0 +1,384 @@
+@charset "UTF-8";
+
+.marketasset-page .bordered {
+  border: 1px solid;
+  border-color: #e7ecf1; }
+
+.marketasset-page .marketasset-container {
+  margin-bottom: 30px; }
+
+.marketasset-page .marketasset-title > a {
+  color: #4e5a64;
+  font-weight: 600; }
+  .marketasset-page .marketasset-title > a:hover {
+    color: #3598DC;
+    text-decoration: none; }
+
+.marketasset-content-1 .marketasset-img-thumb {
+  overflow: hidden;
+  position: relative; }
+  .marketasset-content-1 .marketasset-img-thumb img {
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    margin: auto; }
+	
+.marketasset-technologies{
+font-size: 50px;
+border-top: 1px solid;
+border-bottom: 1px solid;
+ border-color: #f0f1f2;
+padding: 15px 0 10px 0;
+margin-bottom: 20px;	
+}
+.marketasset-type{
+font-size: 16px;
+font-family: Poppins;
+font-weight: normal;
+color: #888;
+margin-top: 5px;
+}
+
+.label-marketasset > i:hover {
+	
+	color: #2C3E50;
+	transition: all 0.4s;
+}
+
+.marketasset-content-1 .marketasset-post-content {
+  padding: 20px 30px 30px 30px;
+  background-color: #fff; }
+  .marketasset-content-1 .marketasset-post-content > .marketasset-post-title {
+    margin: 0 0 30px 0; }
+    .marketasset-content-1 .marketasset-post-content > .marketasset-post-title > a {
+      font-size: 20px; }
+  .marketasset-content-1 .marketasset-post-content > .marketasset-post-desc {
+    color: #a0a9b4;
+    font-size: 14px;
+    margin: 15px 0; }
+  .marketasset-content-1 .marketasset-post-content > .marketasset-post-foot > .marketasset-post-meta {
+    display: inline-block;
+    margin-right: 10px; }
+    .marketasset-content-1 .marketasset-post-content > .marketasset-post-foot > .marketasset-post-meta > a {
+      color: #9aa5b2;
+      font-size: 13px;
+      font-weight: 600; }
+      .marketasset-content-1 .marketasset-post-content > .marketasset-post-foot > .marketasset-post-meta > a:hover {
+        color: #3598DC;
+        text-decoration: none; }
+    .marketasset-content-1 .marketasset-post-content > .marketasset-post-foot > .marketasset-post-meta > i {
+      margin-right: 5px; }
+    .marketasset-content-1 .marketasset-post-content > .marketasset-post-foot > .marketasset-post-meta:last-child {
+      margin-right: 0; }
+
+.marketasset-content-1 .marketasset-post-lg > .marketasset-img-thumb {
+  height: 480px; }
+
+.marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-desc {
+  margin-bottom: 30px; }
+
+.marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot {
+  border-top: 1px solid;
+  border-top-color: #f0f1f2;
+  padding-top: 20px;
+  text-align: right; }
+  .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-tags {
+    text-align: left;
+    float: left;
+    padding: 0; }
+    .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-tags > li {
+      list-style: none;
+      display: inline-block;
+      margin-right: 5px; }
+      .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-tags > li > a {
+        background-color: #f4f6f8;
+        color: #a0a9b4;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 7px 10px; }
+        .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-tags > li > a:hover {
+          background-color: #3598DC;
+          color: #fff;
+          text-decoration: none; }
+      .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-tags > li:last-child {
+        margin-right: 0; }
+
+.marketasset-content-1 .marketasset-post-sm > .marketasset-img-thumb {
+  height: 200px; }
+
+.marketasset-content-1 .marketasset-post-sm > .marketasset-post-content > .marketasset-post-title {
+  margin: 0 0 15px 0; }
+
+.marketasset-content-1 .marketasset-post-sm > .marketasset-post-content > .marketasset-post-foot {
+  border: none; }
+
+.marketasset-content-1 .marketasset-quote {
+  background-color: #fff;
+  padding-bottom: 30px; }
+  .marketasset-content-1 .marketasset-quote > .marketasset-quote-label {
+    color: #fff;
+    padding: 30px 40px 80px 40px;
+    font-size: 18px;
+    line-height: 28px; }
+    .marketasset-content-1 .marketasset-quote > .marketasset-quote-label > i {
+      display: block;
+      font-size: 30px;
+      margin-bottom: 15px; }
+  .marketasset-content-1 .marketasset-quote > .marketasset-quote-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50% !important;
+    margin: -55px auto 25px auto;
+    overflow: hidden; }
+    .marketasset-content-1 .marketasset-quote > .marketasset-quote-avatar img {
+      width: 100%; }
+  .marketasset-content-1 .marketasset-quote > .marketasset-quote-author {
+    text-align: center; }
+    .marketasset-content-1 .marketasset-quote > .marketasset-quote-author > .marketasset-quote-title {
+      font-size: 20px;
+      margin: 0 0 15px 0; }
+    .marketasset-content-1 .marketasset-quote > .marketasset-quote-author > .marketasset-quote-desc {
+      font-size: 16px;
+      color: #9aa5b2;
+      margin: 0; }
+
+.marketasset-content-1 .marketasset-video > .marketasset-img-thumb {
+  height: 330px; }
+  .marketasset-content-1 .marketasset-video > .marketasset-img-thumb img {
+    margin: 0; }
+
+.marketasset-content-1 .marketasset-video > .marketasset-video-play i {
+  color: #da555b;
+  background-color: rgba(0, 0, 0, 0.64);
+  font-size: 35px;
+  padding: 27px 20px;
+  position: absolute;
+  z-index: 5;
+  margin: -90px 0 0 20px;
+  border-radius: 50%; }
+
+.marketasset-content-1 .marketasset-video > .marketasset-video-content {
+  text-align: center;
+  padding: 30px; }
+  .marketasset-content-1 .marketasset-video > .marketasset-video-content > .marketasset-video-title {
+    font-size: 20px;
+    margin: 0 0 15px 0; }
+  .marketasset-content-1 .marketasset-video > .marketasset-video-content > .marketasset-video-desc {
+    font-size: 16px;
+    color: #9aa5b2;
+    margin: 0; }
+
+.marketasset-content-1 .marketasset-banner {
+  background-position: center;
+  text-align: center;
+  padding: 100px 0; }
+  .marketasset-content-1 .marketasset-banner > .marketasset-banner-title > a {
+    color: #fff; }
+    .marketasset-content-1 .marketasset-banner > .marketasset-banner-title > a:hover {
+      color: #3598DC; }
+
+.marketasset-content-2 .marketasset-single-content {
+  padding: 40px 30px 15px 30px;
+  background-color: #fff; }
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #4e5a64;
+    margin: 0 0 40px 0;
+    display: inline-block;
+margin-right: 225px;
+line-height: 24px;	}
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-date {
+    float: right;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 0px;
+	position: absolute;
+	right: 40px;
+	top: 24px; }
+    .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-date > i {
+      margin-right: 5px; }
+    .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-date > a {
+      color: #9aa5b2; }
+      .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-date > a:hover {
+        color: #3598DC;
+        text-decoration: none; }
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-img {
+    margin: 0 0 35px 0; }
+    .marketasset-content-2 .marketasset-single-content > .marketasset-single-img > img {
+      width: 100%; }
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-desc > p {
+   margin: 0 0 20px 0;
+    margin-top: 0px;
+font-size: 14px;
+color: #7e8691;
+line-height: 24px; }
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-foot {
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: #f0f1f2;
+    padding: 20px 0 25px 0;
+    margin-bottom: 20px; }
+    .marketasset-content-2 .marketasset-single-content > .marketasset-single-foot > .marketasset-post-tags {
+      text-align: left;
+      padding: 0;
+      margin: 0; }
+      .marketasset-content-2 .marketasset-single-content > .marketasset-single-foot > .marketasset-post-tags > li {
+        list-style: none;
+        display: inline-block;
+        margin-right: 5px; }
+        .marketasset-content-2 .marketasset-single-content > .marketasset-single-foot > .marketasset-post-tags > li > a {
+          background-color: #f4f6f8;
+          color: #a0a9b4;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 7px 10px; }
+          .marketasset-content-2 .marketasset-single-content > .marketasset-single-foot > .marketasset-post-tags > li > a:hover {
+            background-color: #3598DC;
+            color: #fff;
+            text-decoration: none; }
+        .marketasset-content-2 .marketasset-single-content > .marketasset-single-foot > .marketasset-post-tags > li:last-child {
+          margin-right: 0; }
+  .marketasset-content-2 .marketasset-single-content .marketasset-comments {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 400;
+    margin: 10px 10px 3px 0; }
+    .marketasset-content-2 .marketasset-single-content .marketasset-comments .marketasset-comments-title {
+      font-size: 20px; }
+    .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list {
+      margin-bottom: 60px; }
+      .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list .media {
+        margin: 30px 0; }
+        .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list .media .media-body > .media:last-child {
+          margin-bottom: 0; }
+      .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list .media-object {
+        height: 50px;
+        width: 50px;
+        border-radius: 50px !important; }
+      .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list .media-heading > a {
+       color: #4e5257;
+font-weight: 600;
+font-family: "Open sans";
+font-size: 15px; }
+        .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list .media-heading > a:hover {
+          color: #3598DC;
+          text-decoration: none; }
+      .marketasset-content-2 .marketasset-single-content .marketasset-comments .c-comment-list .media-heading > .c-date {
+        font-size: 13px; }
+    .marketasset-content-2 .marketasset-single-content .marketasset-comments i {
+      position: relative;
+      top: 2px; }
+    .marketasset-content-2 .marketasset-single-content .marketasset-comments input:focus,
+    .marketasset-content-2 .marketasset-single-content .marketasset-comments textarea:focus {
+      outline: 0;
+      border: 1px solid #ccc; }
+
+.marketasset-content-2 .marketasset-single-sidebar {
+  padding: 40px 30px;
+  background-color: #fff; }
+  .marketasset-content-2 .marketasset-single-sidebar .marketasset-sidebar-title {
+   font-weight: 600;
+font-size: 13px;
+color: #4e5a64;
+margin-top: 40px;
+margin-bottom: 30px; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-search input {
+    font-size: 14px;
+    color: #a0a9b4; }
+    .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-search input:focus {
+      outline: 0;
+      border: 1px solid #ccc; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-recent > ul {
+    padding: 0; }
+    .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-recent > ul > li {
+      list-style: none;
+      margin-bottom: 10px;
+      position: relative; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-recent > ul > li > a {
+		color: #555b62;
+		font-size: 13px;
+		padding-left: 20px;
+		display: block; }
+        .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-recent > ul > li > a:hover {
+          text-decoration: none;
+          color: #2C4BA7; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-recent > ul > li:before {
+        content: "•";
+        color: #dae0e5;
+        font-size: 30px;
+        position: absolute;
+        margin-top: -9px; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-tags .marketasset-post-tags {
+    text-align: left;
+    padding: 0;
+    margin: 20px 0 0 0; }
+    .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-tags .marketasset-post-tags > li {
+      list-style: none;
+      display: inline-block;
+      margin: 0 5px 20px 0; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-tags .marketasset-post-tags > li > a {
+        background-color: #f4f6f8;
+        color: #a0a9b4;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 7px 10px; }
+        .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-tags .marketasset-post-tags > li > a:hover {
+          background-color: #3598DC;
+          color: #fff;
+          text-decoration: none; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-tags .marketasset-post-tags > li:last-child {
+        margin-right: 0; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-links > ul {
+    padding: 0; }
+    .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-links > ul > li {
+      list-style: none;
+      border-bottom: 1px solid;
+      border-color: #f0f1f2;
+      padding: 10px 0; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-links > ul > li > a {
+     color: #4781b6;
+font-size: 14px;
+font-family: "Open sans";
+letter-spacing: -0.1px; }
+        .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-links > ul > li > a:hover {
+          text-decoration: none;
+          color: #3598DC; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-links > ul > li:first-child {
+        padding-top: 0; }
+      .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-links > ul > li:last-child {
+        border: none; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-ui .ui-margin {
+    margin: 0; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-ui .ui-padding {
+    padding: 0 5px 5px 0; }
+  .marketasset-content-2 .marketasset-single-sidebar > .marketasset-single-sidebar-ui img {
+    width: 100%; }
+
+@media (max-width: 991px) {
+  .marketasset-content-1 .marketasset-post-lg > .marketasset-img-thumb {
+    height: 330px; }
+  .marketasset-content-1 .marketasset-post-sm > .marketasset-img-thumb {
+    height: 170px; }
+  .marketasset-content-1 .marketasset-video > .marketasset-img-thumb {
+    height: 301px; }
+    .marketasset-content-1 .marketasset-video > .marketasset-img-thumb img {
+      height: auto;
+      width: 100%; } }
+
+@media (max-width: 480px) {
+  .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot {
+    text-align: left; }
+    .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-tags {
+      float: none; }
+    .marketasset-content-1 .marketasset-post-lg > .marketasset-post-content > .marketasset-post-foot > .marketasset-post-meta {
+      margin-right: 10px;
+      margin-top: 10px; }
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-title {
+    margin-bottom: 0px; }
+  .marketasset-content-2 .marketasset-single-content > .marketasset-single-head > .marketasset-single-head-date {
+    float: none;
+    margin-bottom: 40px; } }

@@ -1,0 +1,21 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel EmptyBase Schema",
+    "type": "object",
+    "required": [
+        "EmptyBase"
+    ],
+    "properties": {
+        "EmptyBase": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel EmptyBase",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    }
+}

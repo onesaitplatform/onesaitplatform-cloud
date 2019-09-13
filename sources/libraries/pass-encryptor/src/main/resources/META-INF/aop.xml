@@ -1,0 +1,10 @@
+<aspectj>
+	<aspects>
+		<aspect
+			name="com.minsait.onesait.platform.encryptor.aop.EncryptableAspect" />
+		<weaver options="-verbose -Xlint:ignore -XnoInline -Xlint:-cantFindType">
+		
+		</weaver>
+	</aspects>
+
+</aspectj>

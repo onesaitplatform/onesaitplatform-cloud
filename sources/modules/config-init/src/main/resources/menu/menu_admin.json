@@ -1,0 +1,472 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_ADMINISTRATOR",
+	"noSession": "/console/login",
+	"navigation": [
+		{
+			"title": {
+				"EN": "SYSTEM MONITORING",
+				"ES": "MONITORIZACIÓN DEL SISTEMA"
+			},
+			"icon": "flaticon-refresh",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Monitoring UI",
+						"ES": "Consola Monitorización"
+					},
+					"icon": "",
+					"url": "/controlpanel/monitoringui"
+				},
+				{
+					"title": {
+						"EN": "Deployment UI",
+						"ES": "Consola Despliegue"
+					},
+					"icon": "",
+					"url": "https://caas.onesaitplatform.com/login"
+				},
+				{
+					"title": {
+						"EN": "ControlPanel Rest APIs",
+						"ES": "APIs Rest ControlPanel"
+					},
+					"icon": "",
+					"url": "/controlpanel/swagger-ui.html"
+				},
+				{
+					"title": {
+						"EN": "DigitalBroker Rest Gateway",
+						"ES": "DigitalBroker Rest Gateway"
+					},
+					"icon": "",
+					"url": "/iot-broker/swagger-ui.html"
+				},
+				{
+					"title": {
+						"EN": "Stress Tool",
+						"ES": "Herramienta de Carga"
+					},
+					"icon": "",
+					"url": "/controlpanel/scalability/index.html"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "ADMINISTRATION",
+				"ES": "ADMINISTRACIÓN"
+			},
+			"icon": "flaticon-cogwheel-2",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Users Management",
+						"ES": "Gestión de Usuarios"
+					},
+					"icon": "",
+					"url": "/controlpanel/users/list"
+				},
+				{
+					"title": {
+						"EN": "Menu Management",
+						"ES": "Gestión de Menú"
+					},
+					"icon": "",
+					"url": "/controlpanel/consolemenu/list"
+				},
+				{
+					"title": {
+						"EN": "Market Assets Management",
+						"ES": "Gestión de Activos del Market"
+					},
+					"icon": "",
+					"url": "/controlpanel/marketasset/list"
+				},
+				{
+					"title": {
+						"EN": "Configuration Management",
+						"ES": "Gestión de Configuraciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
+				},
+				{
+					"title": {
+						"EN": "Data Models Management",
+						"ES": "Gestión DataModels"
+					},
+					"icon": "",
+					"url": "/controlpanel/datamodels/list"
+				},
+				{
+					"title": {
+						"EN": "Realms Management",
+						"ES": "Gestión de Dominios de Seguridad"
+					},
+					"icon": "",
+					"url": "/controlpanel/apps/list"
+				},
+				{
+					"title": {
+						"EN": "Categories Management",
+						"ES": "Gestión de Categorías"
+					},
+					"icon": "",
+					"url": "/controlpanel/categories/list"
+				},
+				{
+					"title": {
+						"EN": "Import/Export Data",
+						"ES": "Importación/Exportación de Datos"
+					},
+					"icon": "",
+					"url": "/controlpanel/migration/show"
+				},
+				{
+					"title": {
+						"EN": "Query Templates Management",
+						"ES": "Gestión de Plantillas de Consulta"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytemplates/list"
+				},
+				{
+					"title": {
+						"EN": "Themes Management",
+						"ES": "Gestión de temas"
+					},
+					"icon": "",
+					"url": "/controlpanel/themes/list"
+				},
+				{
+					"title": {
+						"EN": "Categorizations Management",
+						"ES": "Gestión de categorizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/categorization/list"
+				},
+				{
+					"title": {
+						"EN": "Cache Management",
+						"ES": "Gestión de caché"
+					},
+					"icon": "",
+					"url": "/controlpanel/caches/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO"
+			},
+			"icon": "flaticon-network",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Projects Management",
+						"ES": "Gestión de Proyectos"
+					},
+					"icon": "",
+					"url": "/controlpanel/projects/list"
+				},
+				{
+					"title": {
+						"EN": "Ontologies Management",
+						"ES": "Gestión de Ontologías"
+					},
+					"icon": "",
+					"url": "/controlpanel/ontologies/list"
+				},
+				{
+					"title": {
+						"EN": "FlowEngine Management",
+						"ES": "Gestión de Motor de Flujos"
+					},
+					"icon": "",
+					"url": "/controlpanel/flows/list"
+				},
+				{
+					"title": {
+						"EN": "Rules Engine Management",
+						"ES": "Gestión de Motor de Reglas"
+					},
+					"icon": "",
+					"url": "/controlpanel/rule-domains/list"
+				},
+				{
+					"title": {
+						"EN": "SQL Streams Management",
+						"ES": "Gestión de Streams SQL"
+					},
+					"icon": "",
+					"url": "/controlpanel/ksql/flow/list"
+				},
+				{
+					"title": {
+						"EN": "APIs Management",
+						"ES": "Gestión de APIs"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/list"
+				},
+				{
+					"title": {
+						"EN": "Notebooks Management",
+						"ES": "Gestión de Notebooks"
+					},
+					"icon": "",
+					"url": "/controlpanel/notebooks/list"
+				},
+				{
+					"title": {
+						"EN": "Models Management",
+						"ES": "Gestión de Modelos"
+					},
+					"icon": "",
+					"url": "/controlpanel/models/list"
+				},
+				{
+					"title": {
+						"EN": "DataFlow Management",
+						"ES": "Gestión de DataFlows"
+					},
+					"icon": "",
+					"url": "/controlpanel/dataflow/list"
+				},
+				{
+					"title": {
+						"EN": "Web Projects Management",
+						"ES": "Gestión Proyectos Web"
+					},
+					"icon": "",
+					"url": "/controlpanel/webprojects/list"
+				},
+				{
+					"title": {
+						"EN": "Binary Files Management",
+						"ES": "Gestión de ficheros binarios"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "JDBC Connections Management",
+						"ES": "Gestión de conexiones JDBC"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
+				},
+				{
+					"title": {
+						"EN": "Video Captures Management",
+						"ES": "Gestión de capturas de vídeo"
+					},
+					"icon": "",
+					"url": "/controlpanel/video-captures/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "VISUALIZATION",
+				"ES": "VISUALIZACIÓN"
+			},
+			"icon": "flaticon-graph",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Dashboards Management",
+						"ES": "Gestión de Dashboards"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				},
+				{
+					"title": {
+						"EN": "Gadgets Management",
+						"ES": "Gestión de Gadgets"
+					},
+					"icon": "",
+					"url": "/controlpanel/gadgets/list"
+				},
+				{
+					"title": {
+						"EN": "DataSources Management",
+						"ES": "Gestión de DataSources"
+					},
+					"icon": "",
+					"url": "/controlpanel/datasources/list"
+				},
+				{
+					"title": {
+						"EN": "Report Management",
+						"ES": "Gestión de Informes"
+					},
+					"icon": "",
+					"url": "/controlpanel/reports/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DIGITAL CLIENTS",
+				"ES": "CLIENTES DIGITALES"
+			},
+			"icon": "flaticon-share",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Digital Clients Definition",
+						"ES": "Definición de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devices/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Clients Management",
+						"ES": "Gestión de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devices/management/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Clients Simulations",
+						"ES": "Simulaciones de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devicesimulation/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Clients Status",
+						"ES": "Estado de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devices/management/show"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DIGITAL TWIN",
+				"ES": "DIGITAL TWIN"
+			},
+			"icon": "flaticon-medical",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Digital Twin Definitions",
+						"ES": "Definiciones de Digital Twin"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwintypes/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Twin Management",
+						"ES": "Gestión Digital Twins"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwindevices/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Twin Status",
+						"ES": "Estado Digital Twins"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwindisplay/show"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "GIS TOOLS",
+				"ES": "HERRAMIENTAS GIS"
+			},
+			"icon": "flaticon-map-location",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "GIS Viewers Management",
+						"ES": "Gestión de Visores GIS"
+					},
+					"icon": "",
+					"url": "/controlpanel/viewers/list"
+				},
+				{
+					"title": {
+						"EN": "GIS Layers Management",
+						"ES": "Gestión de Capas GIS"
+					},
+					"icon": "",
+					"url": "/controlpanel/layers/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Query Tool",
+						"ES": "Herramienta Consultas"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytool/show"
+				},
+				{
+					"title": {
+						"EN": "System Audit",
+						"ES": "Auditoría del Sistema"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "Planned Tasks",
+						"ES": "Tareas Planificadas"
+					},
+					"icon": "",
+					"url": "/controlpanel/planner/list"
+				},
+				{
+					"title": {
+						"EN": "Data Import Tools",
+						"ES": "Herramientas de importación"
+					},
+					"icon": "",
+					"url": "/controlpanel/jsontool/tools"
+				}
+			]
+		}
+	]
+}

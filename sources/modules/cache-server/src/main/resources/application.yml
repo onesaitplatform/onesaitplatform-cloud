@@ -1,0 +1,33 @@
+  ##security.require_ssl: true
+server: ## Config Web Server
+   port: 20001
+   contextPath: /cache-server
+   tomcat:
+      access_log_enabled: true
+      basedir: target/tomcat
+      
+spring:
+   application.name : cache-server
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: changeIt2019!
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+      
+management.security.enabled: false
+endpoints.configprops.enabled: true
+
+security:
+   basic.enabled: false
+#hawtio:
+#   authenticationEnabled: false
+#   hawtio.offline: true
+            
+## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      com.minsait: INFO 
+      org.springframework.boot: INFO

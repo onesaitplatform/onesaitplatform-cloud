@@ -1,0 +1,55 @@
+/* 403, 404 page sofia2 theme */
+
+.page-403{
+
+	font-size: 14px;
+	font-family: "Soho", sans-serif;
+	 color: #505260;
+	background: #000;  /* fallback for old browsers */
+	background-attachment: fixed;
+	
+}
+
+.page-403 .error-403 		{ color: #fff; text-align: center; padding: 40px 20px;}
+.page-403 h1 				{ color: #fff;  font-size: 130px; line-height: 160px; }
+.page-403 h2				{ color: #fff;  font-size: 30px; margin-bottom: 30px; }
+.page-403 p 				{ color: #fff;  font-size: 16px;}
+
+
+.page-404{
+	
+	font-size: 14px;
+	font-family: "Shoho", sans-serif;
+	 color: #505260;
+	background: #000;  /* fallback for old browsers */
+	background-attachment: fixed;
+}
+.page-404 .error-404 		{ color: #fff; text-align: center; padding: 40px 20px;}
+.page-404 h1 				{ color: #fff;  font-size: 130px; line-height: 160px; }
+.page-404 h2				{ color: #fff;  font-size: 30px; margin-bottom: 30px; }
+.page-404 p 				{ color: #fff;  font-size: 16px;}
+
+.legal{	
+	z-index: 12;
+	color: #FFF;
+	margin: 1em auto;
+	position: absolute;
+	bottom:5%;
+	vertical-align: middle;
+	text-align: center;
+	width: 100%;	
+}
+
+
+@media (max-width: 480px) {
+
+  .page-403 .number, .page-403 .details { text-align: center;   margin-left: 0px; }
+  .page-403-full-page .page-403 		{ margin-top: 30px; }
+  .page-403 .error-403 					{ text-align: left; padding-top: 10px; }
+  .page-403 .page-inner img 			{ right: 0; bottom: 0; z-index: -1; position: fixed; }
+  
+  .page-404 .number, .page-404 .details { text-align: center;   margin-left: 0px; }
+  .page-404-full-page .page-404 		{ margin-top: 30px; }
+  .page-404 .error-404 					{ text-align: left; padding-top: 10px; }
+  .page-404 .page-inner img 			{ right: 0; bottom: 0; z-index: -1; position: fixed; }
+}

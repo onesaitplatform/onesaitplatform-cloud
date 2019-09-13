@@ -1,0 +1,360 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Device Schema",
+    "type": "object",
+    "required": [
+        "Device"
+    ],
+    "properties": {
+        "Device": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel Device",
+        "type": "object",
+        "required": [
+            "assetId",
+            "assetType",
+            "assetSource",
+            "type",
+            "timestamp"
+        ],
+        "properties": {
+            "feedId": {
+                "type": "string"
+            },
+            "feedSource": {
+                "type": "string"
+            },
+            "feedGroup": {
+                "type": "string"
+            },
+            "assetId": {
+                "type": "string"
+            },
+            "assetType": {
+                "type": "string"
+            },
+            "assetSource": {
+                "type": "string"
+            },
+            "assetGroup": {
+                "type": "string"
+            },
+            "assetName": {
+                "type": "string"
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "FIXED",
+                    "MOBILE",
+                    "VIRTUAL",
+                    "FORECAST"
+                ]
+            },
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "image": {
+                "type": "object",
+                "required": [
+                    "data",
+                    "media"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "string"
+                    },
+                    "media": {
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "storageArea",
+                            "binaryEncoding",
+                            "mime"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "storageArea": {
+                                "type": "string",
+                                "enum": [
+                                    "SERIALIZED",
+                                    "DATABASE",
+                                    "URL"
+                                ]
+                            },
+                            "binaryEncoding": {
+                                "type": "string",
+                                "enum": [
+                                    "Base64"
+                                ]
+                            },
+                            "mime": {
+                                "type": "string",
+                                "enum": [
+                                    "application/pdf",
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/bmp"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "attribs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "name",
+                        "value"
+                    ],
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "minItems": 0
+            },
+            "geometry": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "$ref": "#/point"
+                    },
+                    {
+                        "$ref": "#/linestring"
+                    },
+                    {
+                        "$ref": "#/polygon"
+                    }
+                ]
+            },
+            "measuresTimestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "measuresTimestampEnd": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "measuresType": {
+                "type": "string",
+                "enum": [
+                    "INSTANT",
+                    "CUMULATIVE",
+                    "PULSE"
+                ]
+            },
+            "measuresPeriod": {
+                "type": "number"
+            },
+            "measuresPeriodUnit": {
+                "type": "string",
+                "enum": [
+                    "m",
+                    "s",
+                    "h",
+                    "d"
+                ]
+            },
+            "measures": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "measure",
+                        "unit",
+                        "method"
+                    ],
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "surName": {
+                            "type": "string"
+                        },
+                        "desc": {
+                            "type": "string"
+                        },
+                        "unit": {
+                            "type": "string"
+                        },
+                        "measure": {
+                            "type": "string"
+                        },
+                        "method": {
+                            "type": "string"
+                        },
+                        "oldMeasure": {
+                            "type": "string"
+                        },
+                        "changeDesc": {
+                            "type": "string"
+                        },
+                        "changeTimestamp": {
+                            "type": "object",
+                            "required": [
+                                "$date"
+                            ],
+                            "properties": {
+                                "$date": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "point": {
+        "type": "object",
+        "required": [
+            "coordinates",
+            "type"
+        ],
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": [
+                    {
+                        "type": "number",
+                        "maximum": 180,
+                        "minimum": -180
+                    },
+                    {
+                        "type": "number",
+                        "maximum": 90,
+                        "minimum": -90
+                    }
+                ],
+                "minItems": 2,
+                "maxItems": 2
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Point"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "linestring": {
+        "type": "object",
+        "required": [
+            "coordinates",
+            "type"
+        ],
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "number",
+                            "maximum": 180,
+                            "minimum": -180
+                        },
+                        {
+                            "type": "number",
+                            "maximum": 90,
+                            "minimum": -90
+                        }
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "minItems": 2
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "LineString"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "polygon": {
+        "type": "object",
+        "required": [
+            "coordinates",
+            "type"
+        ],
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "number",
+                            "maximum": 180,
+                            "minimum": -180
+                        },
+                        {
+                            "type": "number",
+                            "maximum": 90,
+                            "minimum": -90
+                        }
+                    ],
+                    "minItems": 3
+                }
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Polygon"
+                ]
+            }
+        },
+        "additionalProperties": false
+    }
+}

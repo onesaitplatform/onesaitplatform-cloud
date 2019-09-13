@@ -1,0 +1,92 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_USER",
+	"noSession": "/console/login",
+	"navigation": [
+		{
+			"title": {
+				"EN": "SHARE & USE",
+				"ES": "COMPARTE Y USA"
+			},
+			"icon": "flaticon-cart",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Projects",
+						"ES": "Mis Proyectos"
+					},
+					"icon": "",
+					"url": "/controlpanel/projects/list"
+				},
+				{
+					"title": {
+						"EN": "My Ontologies",
+						"ES": "Mis Ontologías"
+					},
+					"icon": "",
+					"url": "/controlpanel/ontologies/list"
+				},
+				{
+					"title": {
+						"EN": "My Market",
+						"ES": "Mi Market"
+					},
+					"icon": "",
+					"url": "/controlpanel/marketasset/list"
+				},
+				{
+					"title": {
+						"EN": "My Dashboards",
+						"ES": "Mis Dashboards"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				},
+				{
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Query Tool",
+						"ES": "Herramienta Consultas"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytool/show"
+				},
+				{
+					"title": {
+						"EN": "My Audit",
+						"ES": "Mi Auditoría"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				}
+			]
+		}
+	]
+}

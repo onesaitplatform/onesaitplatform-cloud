@@ -1,0 +1,15 @@
+{
+		"newdoc": {
+			"properties": {
+				"geometry": {
+					"type": "geo_shape"
+				},
+				"name": {
+					"type": "text"
+				},
+				"job": {
+					"type": "text"
+				}
+			}
+		}
+}

@@ -1,0 +1,108 @@
+security.ignored: /**
+
+management.security.enabled: false
+
+## WEBSERVER CONFIG
+server:
+   port: 19500
+   contextPath: /module-template
+spring:
+  application.name: onesaitplatform-module-template
+
+## CONFIGDB  
+  datasource:
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+    username: root
+    password: changeIt!
+    driver-class-name: com.mysql.jdbc.Driver  
+    test-while-idle: true
+    test-on-borrow: true
+    validation-query: SELECT 1        
+    tomcat:
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 50
+  jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      hibernate.ddl-auto: validate
+      # Hibernate ddl auto (create, create-drop, validate, update
+      properties:
+        hibernate:
+          # temp.use_jdbc_metadata_defaults: false
+          format_sql: false
+          show_sql: false
+          ddl-auto: validate
+                       
+## MONITORING-UI          
+  boot.admin: 
+    url: http://localhost:18100
+    username: operations
+    password: changeIt!
+    client.metadata.user.name: ${spring.boot.admin.username}
+    client.metadata.user.password: ${spring.boot.admin.password} 
+
+spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
+spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
+
+## ONESAIT PLATFORM SPECIFIC CONFIG    
+onesaitplatform:
+
+## ELASTIC SEARCH
+  database.elasticsearch:
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300
+
+## REALTIMEDB - MONGODB      
+  database.mongodb:
+    database: onesaitplatform_rtdb
+    authenticationDatabase:  #admin
+    servers: localhost:27017
+    autoConnectRetry: true
+    socketTimeout: 5000
+    maxAutoConnectRetryTime: 5000
+    maxWaitTime: 5000
+    useAuth: false
+    username: #username
+    password: #password
+    readFromSecondaries: false
+    queries.executionTimeout: 5000
+    queries.defaultLimit: 1000
+    queries.maxConcurrentQueries: 3
+    writeConcern: UNACKNOWLEDGED
+    tools.mongoexport.path: mongoexport
+    tools.mongoimport.path: mongoimport
+    tools.mongoshell.path: mongo
+    tools.useSequentialOps: true
+
+## ROUTER CONFIG  
+  router.avoidsslverification: true
+  router.alternativeURL: http://localhost:20000/router/router/   
+  router:
+    client:
+      rest:
+        connect-timeout: 30000
+        request-timeout: 30000
+        socket-timeout: 60000
+        max-total-connections: 100
+        default-keep-alive-time-millis: 20000
+        close-idle-connection-wait-time-secs: 30
+## SWAGGER CONFIG        
+        enable: true
+        swaggerhost: localhost:19500
+                
+## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      com.minsait: DEBUG 
+      org.springframework.boot: INFO
+#      org.springframework.boot.autoconfigure: DEBUG
+

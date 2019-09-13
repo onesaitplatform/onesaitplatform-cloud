@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "QA_DETAIL_EXTENDED",
+    "type": "object",
+    "required": [
+            "siteCode",
+            "siteName",
+            "process_date",
+            "idAdaptador"
+    ],
+    "properties": {
+            "siteCode": {
+                "type": "integer"
+            },
+            "assetCode": {
+                "type": "integer"
+            },
+            "siteName": {
+                "type": "string"
+            },
+            "assetName": {
+                "type": "string"
+            },
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "process_date": {
+                "type": "string"
+            },
+            "idAdaptador": {
+                "type": "string"
+            },
+            "errorDescription": {
+                "type": "string"
+            },
+            "errorCategory": {
+                "type": "string"
+            },
+            "raw": {
+                "type": "string"
+            }
+    },
+    "description": "A version of QA_DETAIL with assets and sites names",
+    "additionalProperties": true
+}

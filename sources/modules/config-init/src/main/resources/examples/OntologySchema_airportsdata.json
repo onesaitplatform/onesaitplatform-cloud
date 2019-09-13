@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "airportsdata",
+    "type": "object",
+    "required": [
+        "airportsdata"
+    ],
+    "properties": {
+        "airportsdata": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "name",
+            "city",
+            "country",
+            "IATAFAA",
+            "latitude",
+            "longitude",
+            "tz"
+        ],
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "city": {
+                "type": "string"
+            },
+            "country": {
+                "type": "string"
+            },
+            "IATAFAA": {
+                "type": "string"
+            },
+            "latitude": {
+                "type": "string"
+            },
+            "longitude": {
+                "type": "string"
+            },
+            "tz": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology for notebook-dashboard example",
+    "additionalProperties": true
+}

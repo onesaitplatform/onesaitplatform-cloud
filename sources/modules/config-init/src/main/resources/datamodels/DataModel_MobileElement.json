@@ -1,0 +1,77 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel MobileElement Schema",
+    "type": "object",
+    "required": [
+        "MobileElement"
+    ],
+    "properties": {
+        "MobileElement": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel MobileElement",
+        "type": "object",
+        "required": [
+            "timestamp",
+            "assetId",
+            "geometry"
+        ],
+        "properties": {
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "assetId": {
+                "type": "string"
+            },
+            "geometry": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "number",
+                                "maximum": 180,
+                                "minimum": -180
+                            },
+                            {
+                                "type": "number",
+                                "maximum": 90,
+                                "minimum": -90
+                            }
+                        ],
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Point"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "groupId": {
+                "type": "string"
+            }
+        }
+    }
+}

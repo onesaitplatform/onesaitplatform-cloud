@@ -1,0 +1,224 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Copyright Indra Sistemas, S.A. 2013-2018 SPAIN -->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<style type="text/css">
+			.pulsating-circle {
+			  left: 45% !important;
+			  top: -1000% !important;
+			}
+		</style>
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+				
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
+						<li><span th:text="#{rules.domains}">My Domains</span></li>
+					</ul>						
+				</div><!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{rules.domains}">My Domains </span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">					
+						<div class="portlet light">
+							
+							<!-- TITTLE CONTENT -->
+							<div class="portlet-title">
+								<div class="caption">									
+									<span class="caption-subject" th:text="#{rules.domains}"> My Domains </span>									
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>								
+								<div class="actions margin-right-20">
+									<div class="btn-group">										
+									</div>										
+								</div>
+							</div><!-- // TITTLE CONTENT -->
+							
+							<!-- BODY CONTENT -->
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="row">
+																											
+									<!-- DOMAIN LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- Reload button -->
+												<div class="row">
+													<div class="pull-right margin-right-20">
+														<button type="button" id="btn-domains-reload" name="btn-domains-reload" value="Reload" 
+															class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh"></i>&nbsp;</button>	
+													</div>
+												</div><!-- // Reload button -->
+																							
+												<!-- DATATABLE initCompleteCallback (DT function) -->
+												<div dt:conf="domains">
+												  	<div dt:confType="callback" dt:type="init" dt:function="RuleDomain.List.initCompleteCallback"></div>
+												</div><!-- // DATATABLE initCompleteCallback (DT function) -->
+																									
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="domains" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/rule-domains/data}"
+													dt:reloadSelector="#btn-microservice-reload" dt:reloadFunction="RuleDomain.List.reloadMicroserviceTable"
+													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:visible="false" dt:property="id" class="titulo-columnas hide" th:text="#{gen.id}">id</th>
+															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
+															<th dt:property="owner" class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
+															<th class="titulo-columnas text-center" th:text="#{domain.state}" dt:renderFunction="RuleDomain.List.dtRenderState">State</th>
+															<th dt:property="rules" class="titulo-columnas" th:text="#{rules}">Rules</th>
+															<th dt:sortable="false" dt:renderFunction="RuleDomain.List.dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
+														</tr>
+													</thead>
+												</table><!-- // DATATABLE DANDELION CONF. -->
+											</div>
+										</div>											
+									</div>
+								</div><!-- // DOMAIN LIST -->
+							</div><!-- // BODY CONTENT -->
+						</div><!-- // PORTLET BASIC LIGHT -->							
+					</div><!-- // COL-12 -->						
+				</div><!-- // MAIN ROW -->				
+			</div><!-- // CONTENT BODY -->
+		</div><!-- // CONTENT page-content-wrapper -->		
+	</div><!-- // MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	
+	
+
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/blockUI.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/dataTables.buttons.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery-format-datetime/jquery.formatDateTime.js}"/>
+	<script th:src="@{/static/vendor/jquery-filedownload/jquery.fileDownload.js}" th:inline="javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	
+	
+	<script type="text/javascript" th:inline="javascript">	
+	
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+
+	// Datatable ajax loading
+	var ajaxLoading = "@{/img/ajax-loading-flat.gif}";
+	
+	</script>
+	
+	
+	<script th:src="@{/static/js/pages/rules/list.js}" th:inline="javascript"></script>
+
+	<script type="text/javascript" th:inline="javascript">	
+		
+	// dtSettings = undefined
+	function navigateUrl(url){  window.location.href = url;	}
+	var constants ={
+		deleteContent: [[#{microservice.delete.confirm}]],
+		stop: [[#{gen.stop}]],
+		start: [[#{domain.start}]],
+		genDelete: [[#{gen.deleteBtn}]],
+		genView:  [[#{gen.view}]]
+	};
+	
+	$(document).ready(function() {
+		var oTable = $('.datatable');
+
+		//oTable.destroy();
+					
+		$('.datatable').DataTable( {
+	        dom: 'Bfrtip',
+	        buttons: [
+	            {
+	                extend: 'alert',
+	                text: 'My button 1'
+	            },
+	            {
+	                extend: 'alert',
+	                text: 'My button 2'
+	            },
+	            {
+	                extend: 'alert',
+	                text: 'My button 3'
+	            }
+	        ]
+	    } );
+	});
+	
+	</script>
+	
+</body>
+</html> 

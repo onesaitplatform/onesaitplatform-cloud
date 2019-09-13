@@ -1,0 +1,40 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"additionalProperties": true,
+	"type": "object",
+	"tittle": "TwinPropertiesTurbine",
+	"properties": {
+		"type": {
+			"type": "string"
+		},
+		"deviceId": {
+			"type": "string"
+		},
+		"status": {
+			"alternatorTemp": {
+				"type": "double"
+			},
+			"rotorSpeed": {
+				"type": "int"
+			},
+			"maxRotorSpeed": {
+				"type": "int"
+			},
+			"power": {
+				"type": "double"
+			},
+			"windDirection": {
+				"type": "int"
+			},
+			"type": "object",
+			"nacelleTemp": {
+				"type": "double"
+			}
+		},
+		"timestamp": {
+			"format": "date-time",
+			"type": "string"
+		}
+	},
+	"required": ["type", "deviceId", "timestamp"]
+}

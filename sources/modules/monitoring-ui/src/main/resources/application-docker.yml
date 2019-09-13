@@ -1,0 +1,19 @@
+onesaitplatform: #Config onesait Platform specific
+   environment.name: ${ENVIRONMENTNAME}
+   
+spring: ## General Config  
+  datasource: ## JPA Config
+    url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+security:
+  oauth2:
+    client:
+      clientId: ${CLIENTID}
+      clientSecret: ${CLIENTSECRET}
+      accessTokenUri: https://${SERVER_NAME}/oauth-server/oauth/token
+      userAuthorizationUri: https://${SERVER_NAME}/oauth-server/oauth/authorize
+    resource:
+      userInfoUri: https://${SERVER_NAME}/oauth-server/user
+
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 

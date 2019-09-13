@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "AirQuality",
+    "type": "object",
+    "required": [
+        "AirQuality"
+    ],
+    "properties": {
+        "AirQuality": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "location",
+            "measure",
+            "timestamp"
+        ],
+        "properties": {
+            "location": {
+                "type": "string"
+            },
+            "measure": {
+                "type": "number"
+            },
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            }
+        }
+    },
+    "description": "AirQuality",
+    "additionalProperties": true
+}

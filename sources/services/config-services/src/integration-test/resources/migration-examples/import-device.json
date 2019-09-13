@@ -1,0 +1,34 @@
+{
+  "$v": 1,
+  "$d": {
+    "allData": [
+      {
+        "class": "com.minsait.onesait.platform.config.model.Device",
+        "instances": [
+          {
+            "id": "13972902-1d48-4a21-8db0-4178b4ab49fe",
+            "data": {
+              "jsonActions": "[{\"action_power\":{\"shutdown\":0,\"start\":1,\"reboot\":2}},{\"action_light\":{\"on\":1,\"off\":0}}]",
+              "sessionKey": "49ff897b-58d7-468e-9ead-89318ea4f082",
+              "tags": "iot, device, testing, onesait",
+              "connected": false,
+              "createdAt": 1534215765000,
+              "serialVersionUID": 1,
+              "protocol": "MQTT",
+              "identification": "MQTT Example App",
+              "clientPlatform": "MASTER-ClientPlatform-3",
+              "disabled": true,
+              "location": [
+                56.099963,
+                -90.09999
+              ],
+              "id": "13972902-1d48-4a21-8db0-4178b4ab49fe",
+              "status": "OK",
+              "updatedAt": 1534250129000
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

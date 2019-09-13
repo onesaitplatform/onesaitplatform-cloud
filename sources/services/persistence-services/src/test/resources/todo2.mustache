@@ -1,0 +1,14 @@
+{
+  "query" : {
+    "bool" : {
+      "must" : {
+        "query_string" : {
+          "query" : "*:*"
+        }
+      },
+      "filter" : {
+        "term" : { "name" : "skyji" }
+      }
+    }
+  }
+}

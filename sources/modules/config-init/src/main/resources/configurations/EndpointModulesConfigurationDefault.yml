@@ -1,0 +1,39 @@
+#Integration Resources
+onesaitplatform:
+  urls:
+    domain:
+      base: http://localhost:18000/
+    digitalTwinBroker:
+      base: http://localhost:19300/digitaltwinbroker  
+    iotbroker:
+      base: http://localhost:19000/iot-broker
+      advice: http://localhost:19000/iot-broker/advice
+    scriptingEngine:
+      base:
+      advice:
+    controlpanel:
+      base: http://localhost:18000/controlpanel
+    flowEngine:
+      base: http://localhost:20100/flowengine
+      advice: http://localhost:5050/
+    routerStandAlone:
+      base: http://localhost:20000/router
+      advice: http://localhost:20000/router/router/advice/
+      management: http://localhost:20000/router/management/
+      router: http://localhost:20000/router/router/
+      hawtio: http://localhost:20000/hawtio/index.html
+      swaggerUI: http://localhost:20000/router/swagger-ui.html
+    apiManager:
+      base: http://localhost:19100/api-manager/
+      api: http://localhost:19100/api-manager/server/api/
+      swaggerUI: http://localhost:19100/api-manager/swagger-ui.html?url=
+      swaggerUIManagement: http://localhost:19100/api-manager/services/management/api-docs?url=/api-manager/services/management/swagger.json
+      swaggerJson: http://localhost:19100/api-manager/services/management/swagger/
+    monitoringUI:
+      base: http://localhost:18100/monitoring
+      embedded: http://localhost:18100/monitoring/indexNoHeader.html
+    rulesEngine:
+      advice: http://localhost:20200/rules-engine/advice
+      base: http://localhost:20200/rules-engine
+
+

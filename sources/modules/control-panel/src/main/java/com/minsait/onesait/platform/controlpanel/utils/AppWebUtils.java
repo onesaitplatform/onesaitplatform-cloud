@@ -1,0 +1,236 @@
+/**
+ * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+ * 2013-2019 SPAIN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.minsait.onesait.platform.controlpanel.utils;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriUtils;
+import org.springframework.web.util.WebUtils;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
+import com.minsait.onesait.platform.commons.security.PasswordPatternMatcher;
+import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@Slf4j
+public class AppWebUtils {
+
+	@Autowired
+	private MessageSource messageSource;
+
+	@Autowired
+	private SessionRegistry sessionRegistry;
+
+	@Autowired
+	private PasswordPatternMatcher passwordPatternMatcher;
+
+	private static final String MESSAGE_STR = "message";
+	private static final String INFO_MESSAGE_STR = "info";
+	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
+
+	@Autowired
+	private IntegrationResourcesService resourcesService;
+
+	private Tika tika = null;
+
+	@Value("${onesaitplatform.binary-repository.mimeTypesNotAllowed:octet-stream,x-javascript,application/x-msdownload}")
+	private String mimeTypesNotAllowed;
+
+	@PostConstruct
+	public void init() {
+		tika = new Tika();
+	}
+
+	public Authentication getAuthentication() {
+		return SecurityContextHolder.getContext().getAuthentication();
+	}
+
+	public String getUserId() {
+		final Authentication auth = getAuthentication();
+		if (auth == null)
+			return null;
+		return auth.getName();
+	}
+
+	public String getRole() {
+		final Authentication auth = getAuthentication();
+		if (auth == null)
+			return null;
+		return auth.getAuthorities().toArray()[0].toString();
+	}
+
+	public boolean isAdministrator() {
+		return (getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString()));
+	}
+
+	public boolean isAuthenticated() {
+		final Authentication auth = getAuthentication();
+		return (auth != null);
+	}
+
+	public boolean isUser() {
+		return (getRole().equals(Role.Type.ROLE_USER.toString()));
+	}
+
+	public boolean isDataViewer() {
+		return (getRole().equals(Role.Type.ROLE_DATAVIEWER.toString()));
+	}
+
+	public void addRedirectMessage(String messageKey, RedirectAttributes redirect) {
+		final String message = getMessage(messageKey, "Error processing request:" + messageKey);
+		redirect.addFlashAttribute(MESSAGE_STR, message);
+	}
+
+	public void addRedirectInfoMessage(String messageKey, RedirectAttributes redirect) {
+		final String message = getMessage(messageKey, "Info:" + messageKey);
+		redirect.addFlashAttribute(INFO_MESSAGE_STR, message);
+	}
+
+	public void addRedirectMessageWithParam(String messageKey, String param, RedirectAttributes redirect) {
+		final String message = getMessage(messageKey, "Error processing request") + ":" + param;
+		redirect.addFlashAttribute(MESSAGE_STR, message);
+	}
+
+	public void addRedirectException(Exception exception, RedirectAttributes redirect) {
+		redirect.addFlashAttribute(MESSAGE_STR, exception.getMessage());
+
+	}
+
+	public String getMessage(String key, String valueDefault) {
+		try {
+			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
+		} catch (final Exception e) {
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
+			return valueDefault;
+		}
+	}
+
+	public void setSessionAttribute(HttpServletRequest request, String name, Object o) {
+		WebUtils.setSessionAttribute(request, name, o);
+	}
+
+	public String getCurrentUserOauthToken() {
+		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
+		if (request.isPresent())
+			return ((OAuth2AccessToken) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT)).getValue();
+		else
+			throw new GenericRuntimeOPException("No request currently active");
+	}
+
+	private static Optional<HttpServletRequest> getCurrentHttpRequest() {
+		return Optional.ofNullable(RequestContextHolder.getRequestAttributes()).filter(
+				requestAttributes -> ServletRequestAttributes.class.isAssignableFrom(requestAttributes.getClass()))
+				.map(requestAttributes -> ((ServletRequestAttributes) requestAttributes))
+				.map(ServletRequestAttributes::getRequest);
+	}
+
+	public String validateAndReturnJson(String json) {
+		final ObjectMapper objectMapper = new ObjectMapper();
+		String formattedJson = null;
+		try {
+			final JsonNode tree = objectMapper.readValue(json, JsonNode.class);
+			formattedJson = tree.toString();
+		} catch (final Exception e) {
+			log.error("Error reading JSON by:" + e.getMessage(), e);
+		}
+		return formattedJson;
+	}
+
+	public boolean paswordValidation(String data) {
+		return passwordPatternMatcher.isValidPassword(data);
+	}
+
+	public String beautifyJson(String json) throws JsonProcessingException {
+		final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+	}
+
+	public Object getAsObject(String json) throws JsonProcessingException {
+		try {
+			final ObjectMapper mapper = new ObjectMapper();
+			return mapper.readValue(json, Object.class);
+		} catch (final Exception e) {
+			log.error("Impossible to convert to Object, returning the same");
+			return json;
+		}
+
+	}
+
+	public String encodeUrlPathSegment(final String pathSegment, final HttpServletRequest httpServletRequest) {
+		String enc = httpServletRequest.getCharacterEncoding();
+		String pathSegmentEncode = "";
+		if (enc == null) {
+			enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
+		}
+		try {
+			pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
+		} catch (final UnsupportedEncodingException uee) {
+			log.warn("Error encoding path segment " + uee.getMessage());
+		}
+		return pathSegmentEncode;
+	}
+
+	public void deactivateSessions(String userId) {
+		sessionRegistry.getAllSessions(userId, true).forEach(SessionInformation::expireNow);
+	}
+
+	public boolean isFileExtensionForbidden(MultipartFile file) {
+		try {
+
+			final String contentType = tika.detect(file.getInputStream());
+			final String[] arrayMimeTypes = mimeTypesNotAllowed.split(",");
+			final boolean isForbidden = Arrays.stream(arrayMimeTypes).parallel().anyMatch(contentType::contains);
+			if (!isForbidden) {
+				// check additional by extension
+			}
+			return isForbidden;
+
+		} catch (final Exception e) {
+			log.error("Error detecting MIME Type...so file is not allowed");
+			return true;
+		}
+	}
+
+	public Long getMaxFileSizeAllowed() {
+		return (Long) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("max-size");
+	}
+}

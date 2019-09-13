@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">HealthCheckApp</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_username">Username</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">Login failed. Please try again</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="prompt_height">Height (cm)</string>
+    <string name="prompt_weight">Weight (kg)</string>
+    <string name="prompt_sys_pressure">Systolic arterial pressure (mm Hg)</string>
+    <string name="prompt_dia_pressure">Diastolic arterial pressure (mm Hg)</string>
+    <string name="prompt_comments">Comments</string>
+
+    <string name="action_store_form">Store on S4C Platform</string>
+    <string name="action_send_form">Share data with a specialist</string>
+
+    <string name="gpdr_warning">By accepting you will authorize a specialist to view your data with the only purpose of giving you medical feedback. \n\nData access can be revoked at anytime at https://rancher.sofia4cities.com/controlpanel/ or by email at select4citiesminsait@gmail.com </string>
+
+</resources>

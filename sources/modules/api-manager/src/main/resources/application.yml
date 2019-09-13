@@ -1,0 +1,129 @@
+##--spring.config.name=apimanager
+##security.require_ssl: true
+server: ## Config Web Server
+   port: 19100
+   contextPath: /api-manager
+   tomcat:
+      access_log_enabled: true
+      basedir: target/tomcat
+   jetty.max-http-post-size: 20000000      
+
+# all access to actuator endpoints without security
+management.security.enabled: false
+#security.basic.enabled: false
+
+#hawtio.authenticationEnabled: false
+#hawtio.offline: true
+    
+onesaitplatform: #Config onesaitplatform specific
+   audit.global.notify: true
+   authentication:
+      provider: configdb
+   apimanager:
+      cacheable: false
+   binary-repository:
+      type: mongo
+      filepath: /usr/local/files/
+   iotbroker.plugable:
+      gateway:
+         kafka:
+            enable: false
+            host: localhost
+            port: 9092
+            partitions: 1
+            replication: 1
+            prefix: ontology_
+            group: ontologyGroup
+            topic.pattern: ontology.*
+            router.topic: router
+            consumer.consumersCount : 10
+            consumer.seekTo : beginning 
+            consumer.group : kafkaGroup
+            consumer.maxPollRecords : 5000
+   database.elasticsearch:
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300
+   database.mongodb:
+      quasar.maxHttpConnections: 10
+      quasar.maxHttpConnectionsPerRoute: 10
+      quasar.connectionTimeout.millis: 10000
+      quasar.connector.http.endpoint: http://localhost:18200/query/fs/ 
+   router.avoidsslverification: true
+   router.alternativeURL: http://localhost:20000/router/router/ 
+   apimanager.audit.enabled: true
+   metrics.collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+
+    
+spring: ## General Config  
+   application.name: onesaitplatform-api-manager
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: $spring.boot.admin.password} 
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
+      
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect   
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      hibernate.ddl-auto: validate
+      properties.hibernate.enable_lazy_load_no_trans: true
+      show-sql: false
+      properties.hibernate.format_sql: true
+      properties.hibernate.temp.use_jdbc_metadata_defaults: false
+   jmx:
+    enabled: true
+spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
+spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
+
+## CXF      
+cxf:
+  path: /services/management
+  servlet.init: 
+    component-scan: true
+    classes-scan-packages: com.minsait.onesait.onesaitplatform.api.rest
+            
+      
+## OAUTH    
+security:
+  signing-key: s1f41234pwqdqkl4l12ghg9853123sds1f41234pwqdqkl4l12ghg9853123sd
+  jwt:
+    client-id: onesaitplatform
+    client-secret: onesaitplatform
+    grant-type: authorization_code,refresh_token,password
+    scopes: openid
+    
+gravitee:
+  header-value: Gravitee-Server
+    ## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      com.minsait: INFO 
+      org.springframework.boot: INFO
+      org.jeasy.rules: ERROR      
+#      org.springframework.boot.autoconfigure: DEBUG
+

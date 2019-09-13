@@ -1,0 +1,119 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Ticket",
+    "type": "object",
+    "required": [
+        "Ticket"
+    ],
+    "properties": {
+        "Ticket": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info Ticket",
+        "type": "object",
+        "required": [
+            "identification",
+            "status",
+            "email",
+            "name"
+        ],
+        "properties": {
+            "identification": {
+                "type": "string"
+            },
+            "status": {
+                "type": "string"
+            },
+            "email": {
+                "type": "string"
+            },
+            "name": {
+                "type": "string"
+            },
+            "response_via": {
+                "type": "string"
+            },
+            "file": {
+                "type": "object",
+                "required": [
+                    "data",
+                    "media"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "string"
+                    },
+                    "media": {
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "storageArea",
+                            "binaryEncoding",
+                            "mime"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "storageArea": {
+                                "type": "string",
+                                "enum": [
+                                    "SERIALIZED",
+                                    "DATABASE",
+                                    "URL"
+                                ]
+                            },
+                            "binaryEncoding": {
+                                "type": "string",
+                                "enum": [
+                                    "Base64"
+                                ]
+                            },
+                            "mime": {
+                                "type": "string",
+                                "enum": [
+                                    "application/pdf",
+                                    "image/jpeg",
+                                    "image/png"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false
+            },
+            "coordinates": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "object",
+                        "properties": {
+                            "latitude": {
+                                "type": "number"
+                            },
+                            "longitude": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Point"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    },
+    "description": "Ticket ontology",
+    "additionalProperties": true
+}

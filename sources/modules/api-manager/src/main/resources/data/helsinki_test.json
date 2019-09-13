@@ -1,0 +1,217 @@
+{
+   "identification":"HelsinkiPopulationAPI",
+   "version":1,
+   "type":"iot",
+   "category":"EDUCATION",
+   "externalApi":false,
+   "ontologyId":"f8420a03-f733-4dfd-9699-b16ccf1835e0",
+   "endpoint":"https://sofia2.com/sib-api/api/v1/TEST2",
+   "endpointExt":"string",
+   "description":"HelsinkiPopulationAPI",
+   "metainf":"HelsinkiPopulationAPI",
+   "imageType":"string",
+   "userId":"string",
+   "operations":[
+     
+      {
+         "description":"getTotalPopulation",
+         "operation":"GET",
+         "path":"/getTotalPopulation",
+         "queryParams":[
+            {
+               "headerType":"query",
+               "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            }
+            ,
+            {
+               "headerType":"query",
+               "description":"THE SQL",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year,population from HelsinkiPopulation"
+            }
+         ]
+      },
+      {
+         "description":"getWomenPopulation",
+         "operation":"GET",
+         "path":"/getWomenPopulation",
+         "queryParams":[
+            {
+               "headerType":"query",
+              "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            },
+            {
+               "headerType":"query",
+               "description":"THE SQL",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year, population_women from HelsinkiPopulation"
+            }
+            ]
+      },
+      {
+         "description":"getMenPopulation",
+         "operation":"GET",
+         "path":"/getMenPopulation",
+         "queryParams":[
+            {
+               "headerType":"query",
+               "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            },
+            {
+               "headerType":"query",
+               "description":"THE SQL",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year , population_men from HelsinkiPopulation"
+            }
+         ]
+      }
+      ,
+      {
+         "description":"getPopulation",
+         "operation":"GET",
+         "path":"/getPopulation",
+         "queryParams":[
+            {
+               "headerType":"query",
+               "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            },
+            {
+               "headerType":"query",
+                "description":"THE SQL",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year, population , population_women , population_men from HelsinkiPopulation"
+            }
+         ]
+      }  
+       ,
+      {
+         "description":"getPopulationByYear",
+         "operation":"GET",
+         "path":"/getPopulationByYear",
+         "queryParams":[
+            {
+               "headerType":"query",
+              "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            },
+            {
+               "headerType":"query",
+                "description":"THE SQL",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year, population , population_women , population_men from HelsinkiPopulation where year = {$year}"
+            },
+            {
+               "name":"year",
+               "dataType":"number",
+               "description":"The Year By",
+               "headerType":"query"
+            }
+         ]
+      }
+ ,
+       
+      {
+         "description":"POST_DESC",
+         "operation":"POST",
+         "path":"/",
+         "queryParams":[
+            {
+               "headerType":"body",
+               "description":"Population Body",
+               "name":"body",
+               "dataType":"string",
+               "value":""
+            }
+         ]
+      },
+      
+      {
+         "description":"GET_ID",
+         "operation":"GET",
+         "path":"/{id}",
+         "queryParams":[
+            {
+               "headerType":"path",
+               "description":"",
+               "name":"id",
+               "dataType":"string"
+            }
+         ]
+      },
+      {
+         "description":"getPopulationByYear1",
+         "operation":"GET",
+         "path":"/getPopulationByYear1?year={$year}",
+         "queryParams":[
+            {
+               "headerType":"query",
+               "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            },
+            {
+               "headerType":"query",
+               "description":"",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year, population , population_women , population_men from HelsinkiPopulation where year = {$year}"
+            },
+            {
+               "name":"year",
+               "dataType":"number",
+                "description":"The Year By",
+               "headerType":"query"
+            }
+         ]
+      }
+      ,
+      {
+         "description":"getPopulationByYear2",
+         "operation":"GET",
+         "path":"/getPopulationByYear2?year={year}",
+         "queryParams":[
+            {
+               "headerType":"query",
+               "description":"The Query Type",
+               "name":"queryType",
+               "dataType":"string",
+               "value":"SQLLIKE"
+            },
+            {
+               "headerType":"query",
+               "description":"",
+               "name":"query",
+               "dataType":"string",
+               "value":"select year, population , population_women , population_men from HelsinkiPopulation where year = {$year}"
+            },
+            {
+               "name":"year",
+               "dataType":"number",
+                "description":"The Year By",
+               "headerType":"query"
+            }
+         ]
+      }
+      
+   ]
+}

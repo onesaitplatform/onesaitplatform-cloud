@@ -1,0 +1,14 @@
+#MailGun Config for SMTP
+mail:
+  host: in-v3.mailjet.com
+  port: 587
+  username: ENC(GE/rDl92nUzlj+hxW/fxTT21W5k4S6pjTlKKvchb9n9MhJHp5fsBr/YH664ZbNI0)
+  password: ENC(srRKOrzTuNt8o8KQReTzDyUhuz4WrB+E5/t4wERgqiWvrjQBCuDREJ0+FF7rxSad)
+  smtp:
+     auth: true
+     starttls_enable: false
+     starttls_required: false
+     timeout: 5000
+     connectiontimeout: 5000
+     writetimeout: 5000
+     from: online@onesaitplatform.com

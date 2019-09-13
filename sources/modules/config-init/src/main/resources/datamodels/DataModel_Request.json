@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Request Schema",
+    "type": "object",
+    "required": [
+        "Request"
+    ],
+    "properties": {
+        "Request": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel Request",
+        "type": "object",
+        "required": [
+            "timestamp",
+            "assetId",
+            "targetKpInstance",
+            "requestId",
+            "request"
+        ],
+        "properties": {
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "assetId": {
+                "type": "string"
+            },
+            "targetKpInstance": {
+                "type": "string"
+            },
+            "requestId": {
+                "type": "string"
+            },
+            "request": {
+                "type": "string"
+            }
+        }
+    }
+}

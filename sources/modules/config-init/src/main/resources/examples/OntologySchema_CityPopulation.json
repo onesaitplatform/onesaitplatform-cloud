@@ -1,0 +1,60 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "CityPopulation",
+    "type": "object",
+    "required": [
+        "CityPopulation"
+    ],
+    "properties": {
+        "CityPopulation": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "CountryCode",
+            "CountryOrArea",
+            "CityCode",
+            "CityName",
+            "Note",
+            "Latitude",
+            "Longitude",
+            "Year",
+            "Population"
+        ],
+        "properties": {
+            "CountryCode": {
+                "type": "number"
+            },
+            "CountryOrArea": {
+                "type": "string"
+            },
+            "CityCode": {
+                "type": "number"
+            },
+            "CityName": {
+                "type": "string"
+            },
+            "Note": {
+                "type": "number"
+            },
+            "Latitude": {
+                "type": "number"
+            },
+            "Longitude": {
+                "type": "number"
+            },
+            "Year": {
+                "type": "number"
+            },
+            "Population": {
+                "type": "number"
+            }
+        }
+    },
+    "description": "CityPopulation",
+    "additionalProperties": true
+}

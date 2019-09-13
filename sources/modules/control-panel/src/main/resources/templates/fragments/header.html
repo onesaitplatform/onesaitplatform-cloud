@@ -1,0 +1,282 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- BEGIN HEADER -->
+<div th:fragment="headerFragment" id="headerFragment">
+	
+	<!-- MAIN DIALOGS CSS -->	
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/jquery-confirm/jquery-confirm.css}"/>
+	
+	<!-- MAIN SCRIPTS  -->
+	<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-confirm/jquery-confirm.js}"/>
+	<script th:src="@{/static/vendor/bootstrap/bootstrap.js}"/>
+	
+	<!-- HEADER CONTROLLER JS -->
+	<script th:src="@{/static/js/pages/header.js}"/>	
+	 
+	<!-- BEGIN HEADER INNER -->
+	<div class="page-header-inner ">
+		<!-- BEGIN LOGO -->
+		<div class="page-logo">			
+			<div class="menu-toggler sidebar-toggler">
+				<span></span>
+			</div>
+			<a id="imagen" th:href="@{/}"></a>
+			<span class="text-logo-s4c  hide" onclick="location.href='/controlpanel'" th:text="#{name.apptitle}">Onesait Platform</span>
+			<span class="text-logo-panel hide" onclick="location.href='/controlpanel'" th:text="#{name.appsubtitle}">CONTROL PANEL</span>			
+		</div>
+		<!-- END LOGO -->
+		
+		<!-- BEGIN SEARCH FORM DISABLED FOR NOW-->
+		<!-- <form sec:authorize="!hasAuthority('ROLE_PARTNER')" class="search-form search-docs-form " action="javascript:HeaderController.search();" method="get" >
+			<div class="input-group">
+				<input class="form-control"  placeholder="Search" id="search-query" type="text"/>
+				<span class="input-group-btn">
+					<a href="javascript:;" class="btn submit">
+						<i class="flaticon-search-1"></i>
+					</a>
+				</span>
+			</div>
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form> -->
+		<!-- END SEARCH FORM -->
+		
+		<!-- BEGIN RESPONSIVE MENU TOGGLER -->
+		<a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+			<span></span>
+		</a>
+		<!-- END RESPONSIVE MENU TOGGLER -->
+		<!-- BEGIN TOP NAVIGATION MENU -->
+		<div class="top-menu">
+			<ul class="nav navbar-nav pull-right">
+			
+				<!-- BEGIN WIZARD -->						
+				<!-- <li sec:authorize="!hasAuthority('ROLE_PARTNER')" class="dropdown dropdown-wizard-toggler">
+					<a th:href="@{/wizardMaster/principal}" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-original-title="Asistente" style="padding-right:8px !important;">
+						<i class="flaticon-light"></i> <span class="hidden-sm hidden-xs">Wizard</span>
+					</a>
+				</li> -->
+				<!-- END WIZARD -->
+				
+				<!-- BEGIN {REST} -->						
+				<!-- <li sec:authorize="!hasAuthority('ROLE_PARTNER')" class="dropdown dropdown-rest-toggler">
+					<a id="span_hipervinculos" th:href="@{/rest.jsp}" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-original-title="API {REST}" style="padding-right:8px !important;">
+						<i class="icon-frame"></i> <span th:text="#{header_REST}" class="hidden-sm hidden-xs">REST</span>
+					</a>
+				</li> -->
+				<!-- END {REST} -->
+							
+				<!-- BEGIN SEARCH CONFLUENCE -->
+
+				<li class="dropdown dropdown-user-toggler">
+					<a class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{head.search}" style="padding-right:10px !important" onclick="javascript:$('#confluenceSearch').modal('show');"><span><i class="icon-magnifier" ></i></span></a>														
+
+				</li>
+				<!-- END SEARCH CONFLUENCE-->	
+								
+				<!-- BEGIN APIS -->
+				<li class="dropdown dropdown-user-toggler">
+					<a class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-original-title="Apis" style="padding-right:8px !important;" onclick="javascript:$('#modalApis').modal('show');">
+						<span class="" >APIs</span>
+					</a>
+					
+				</li>
+				<!-- END APIS -->
+				
+				<!-- BEGIN USER NO-PARTNER -->						
+				<li sec:authorize="!hasAuthority('ROLE_PARTNER')" class="dropdown dropdown-user-toggler">
+					<a th:href="@{'/users/show/' + ${#authentication.name}}" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" th:attr="data-original-title=#{head.user}" style="padding-right:8px !important;">
+						 <span class="user-rol" th:classappend="${#strings.toLowerCase(#strings.listJoin(#authentication.authorities,' '))}" th:text="${#authentication.name}" > user</span> <!--  <span class="hidden-xs" th:text="${#authentication.authorities}">rol</span>-->
+						<i class="fa fa-angle-down"></i>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-default">
+						<li>
+							<!-- <spring:message code="global_language_switch" arguments="English" var="lang_label" htmlEscape="false" />-->
+							<a th:href="@{'/users/show/' + ${#authentication.name} + '/'}" ><i class="la la-user"></i> <span th:text="#{user.template.view.data}"></span></a>
+						</li>
+						<li>				
+							<a th:href=" @{'/users/update/'+ ${#authentication.name}+'/true'}"><i class="la la-gear"></i> <span th:text="#{user.template.data.update}">Privacy preferences</span></a> 
+						</li>
+						<li>				
+							<a th:href=" @{'/support/create/'}"><i class="la la-life-ring"></i> <span th:text="#{support.title}">Support Request</span></a> 
+						</li>
+						<li class="divider"> </li>
+						<li>				
+							<a href="javascript:;" onclick="document.getElementById('form1').submit();"><i class="icon-share-alt"></i> <span th:text="#{head.logout}">Log Out</span></a> 
+							<form id="form1" action="/controlpanel/logout" method="post">
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+							</form>
+						</li>
+					</ul>
+				</li>
+				<!-- END USER NO-PARTNER -->
+
+				
+				<!-- BEGIN USER PARTNER -->						
+				<li  sec:authorize="hasAuthority('ROLE_PARTNER')" class="dropdown dropdown-user-toggler">
+					<a th:href="@{'/users/show/' + ${#authentication.name}}" class="dropdown-toggle" style="padding-right:8px !important;">
+					 <span th:text="${#authentication.name}"></span>  <span class="hidden-xs" th:text="${#authentication.authorities}">rol</span> 
+					</a>
+				</li>
+				<!-- END USER PARTNER -->
+				
+				<!-- BEGIN LANGUAGE -->
+				<li class="dropdown dropdown-idioma">
+
+					<a href="javascript:;" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{head.lang} + ': ' + ${lang}" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" style="padding-right:8px !important;">								
+						<span th:text="#{head.lang}" class="username username-hide-on-mobile"> Language </span>
+						<i class="fa fa-angle-down"></i>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-default">
+						<li>
+							<spring:message code="global_language_switch" arguments="English" var="lang_label" htmlEscape="false" />
+							<a th:text="#{head.lang.en}" href='?lang=en'><span>EN</span></a>
+						</li>
+						<li>
+							<spring:message code="global_language_switch" arguments="Espanol" var="lang_label" htmlEscape="false" />
+							<a th:text="#{head.lang.es}" href='?lang=es'><span>ES</span></a>
+						</li>									
+					</ul>
+				</li>
+				<!-- END LANGUAGE -->
+				
+				<!-- BEGIN REQUEST -->
+				<li sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" class="dropdown dropdown-user-toggler">
+					<a th:href=" @{'/support/notifications/'}" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{head.request}" style="padding-right:8px !important"><span><i class="icon-bell"></i></span></a>
+				</li>
+				<!-- END REQUEST -->
+
+				<!-- BEGIN COMMUNICATIONS -->			
+				<!-- <li sec:authorize="!hasAuthority('ROLE_PARTNER')" class="dropdown dropdown-rest-toggler"  style="padding-right:8px !important;"> -->
+					<!-- <a id="messages-bell" th:href="@{/comunicaciones/comunicaciones}" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-original-title="Comunicaciones" > -->
+						<!-- <i class="flaticon-bell"></i>  <span class="hidden-sm hidden-xs">Comunicaciones</span> -->
+					<!-- </a> -->
+				<!-- </li> -->
+
+				<!-- END COMMUNICATIONS -->
+				
+				<!-- BEGIN LOG-OUT -->			
+				<li sec:authorize="!hasAuthority('ROLE_PARTNER')" class="dropdown dropdown-rest-toggler hidden" style="padding-right:8px !important;">
+					<a id="close-session" href="login.html" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-original-title="Log out" th:href="@{/logout}">
+						<i class="icon-share-alt"></i> <span class="hidden hidden-sm hidden-xs" th:text="#{head.logout}">Log out</span>
+					</a>
+				</li>
+				<!-- END LOG-OUT -->
+				
+				<!-- BEGIN QUICK SIDEBAR TOGGLER -->						
+				<!-- <li class="dropdown dropdown-quick-sidebar-toggler">
+					<a href="javascript:;" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" data-original-title="Administración">
+						<i class="icon-logout"></i> <span class="hidden-sm hidden-xs" style="position: relative;top: -2px;">Admin.</span>
+					</a>
+				</li> -->
+				<!-- END QUICK SIDEBAR TOGGLER -->						
+			</ul>
+		</div>
+		<!-- END TOP NAVIGATION MENU -->
+	</div>
+	<!-- END HEADER INNER -->
+	
+	
+	<!-- MODAL SEARCH -->
+	<div class="modal fade bs-example-modal-lg"  id="modalDocs" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+		<div class="modal-dialog modal-lg" role="document" style="width:90%">
+			<div class="modal-content" >
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" th:text="#{search_results}">Search results</h4>
+				</div>
+				<div class="modal-body" id="modalDocs-content">
+					<div style="height: 80%;overflow-y: auto;overflow-x: hidden">
+					  <div class="row" style="width: 100%; margin: 0;">
+						<div id="blog-content-title">
+						  <h4><a href="http://about.sofia2.com">Blog</a></h4>
+						</div>
+						<!-- BLOGS RESULT -->
+						<div id="blog-content" class="blog-content"></div>
+					  </div>
+					  <div class="row" style="width: 100%; margin: 0; border-top: 2px solid #e1e4e5;"></div>
+					  <div class="row" style="width: 100%; margin: 0;">
+						<div id="docs-content-title">
+						  <h4><a href="http://sofia2.readthedocs.io">Docs</a></h4>
+						</div>
+						<div id="docs-content" class="docs-content"></div>
+					  </div>
+					</div>
+				</div>
+				<!-- DOCS RESULT -->
+				<div class="modal-body" id="modalDocs-result-show" style="display:none">
+					<div id="result-show-content" style="height: 80%;"></div>
+				</div>
+				
+				<div class="modal-footer">
+					<span class="pull-left" style="padding: 7px;" id="docs-count">0</span>
+					<span class="pull-left" style="margin-left: 5px;padding: 7px;" th:text="#{search_results_founds}"> results founds</span>
+					<button id="btn-search-back" th:text="#{search_button_back}" type="button" class="btn btn-default" style="display:none" onclick="javascript:hideDocPost()">Back</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{search_button_close}">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+			
+	<!-- HEADER DATA TO SEND TO HEADER CONTROLLER  --> 
+	<script type="text/javascript" th:inline="javascript"> 
+	
+	
+		var errores = [[${message}]];
+		var informacion = [[${info}]];		
+		var headerJson = { 
+			"errores": errores,
+			"informacion": informacion,
+			"btnEliminar": [[#{gen.deleteBtn}]],
+			"btnCancelar": [[#{gen.closeBtn}]],
+			"btnClose": [[#{gen.closeBtn}]],
+			"titleConfirm":[[#{gen.confirmTitle}]],
+			"userConfirm":[[#{user.delete.confirm}]],
+			"twitterListeningConfirm": [[#{scheduledsearch.delete.confirm}]],
+			"ontologyConfirm":[[#{ontology.delete.confirm}]],
+			"digitalTwinTypeConfirm":[[#{digitaltwintype.delete.confirm}]],
+			"categoryConfirm":[[#{category.delete.confirm}]],
+			"modelConfirm":[[#{model.delete.confirm}]],
+			"subcategoryConfirm":[[#{subcategory.delete.confirm}]],
+			"virtualDatasourceConfirm":[[#{datasource.delete.confirm}]],
+			"digitalTwinDeviceConfirm":[[#{digitaltwindevice.delete.confirm}]],
+			"viewerConfirm" : [[#{viewer.delete.info}]],
+			"genericConfirm":[[#{dialog.confirm.delete.text}]],
+			"configurationConfirm":[[#{configuration.del.confirm}]],
+			"gadgetDatasourceConfirm":[[#{datasources.del.confirm}]],
+			"gadgetConfirm":[[#{gadget.del.confirm}]],
+			"dashboardConfirm":[[#{dashboards.del.confirm}]],
+			"gadgetTemplateConfirm":[[#{gadgettemplates.del.confirm}]],
+			"scheduledSearchConfirm":[[#{scheduledsearch.del.confirm}]],
+			"deviceConfirm":[[#{device.delete.confirm}]],
+			"deviceSimulationConfirm" : [[#{simulation.delete.confirm}]],
+			"flowDomainConfirm" : [[#{flow.domain.delete.confirm}]],
+			"ksqlFlowConfirm" : [[#{ksql.flow.delete.confirm}]],
+			"ksqlRelationConfirm" : [[#{ksql.relation.delete.confirm}]],
+			"menu": [[${menu}]],
+			"layerConfirm" : [[#{layer.delete.info}]],
+			"queryTemplateConfirm":[[#{templates.del.confirm}]],
+			"csrfToken" : [[${_csrf.token}]],
+			"csrfParameterName" : [[${_csrf.parameterName}]],
+			"csrfHeaderName" : [[${_csrf.headerName}]],
+			
+		};
+
+		// LOAD DATA TO USE IN HEADERCONTROLLER
+		// HEADER CONTROLLER LOAD AND INIT ITSELF
+	</script>
+</div>
+<!-- END HEADER -->

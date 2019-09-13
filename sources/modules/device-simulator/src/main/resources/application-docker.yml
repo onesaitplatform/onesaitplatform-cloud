@@ -1,0 +1,19 @@
+onesaitplatform:       
+   iotbroker:
+      server: http://iotbrokerservice:19000/iotbroker                  
+   router.alternativeURL: http://routerservice:20000/router/router/
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+spring:
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://devicesimulator:${server.port}${server.contextPath}/      
+quartz:
+    datasource:
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+
+              
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 

@@ -1,0 +1,13 @@
+{
+    "dependencies": [ "datatables" ],
+    "assets": [
+        {
+            "version" : "1.10.7",
+            "locations": {
+                "jar": "static/vendor/datatable/features/sorting/natural.js"
+            }
+        }
+    ]
+
+}
+

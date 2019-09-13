@@ -1,0 +1,312 @@
+/**
+ * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+ * 2013-2019 SPAIN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.minsait.onesait.platform.config.services.gis.layer;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.jline.utils.Log;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.config.model.Layer;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.LayerRepository;
+import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.config.services.exceptions.LayerServiceException;
+import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.user.UserService;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
+
+@Service
+public class LayerServiceImpl implements LayerService {
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private LayerRepository layerRepository;
+
+	@Autowired
+	OntologyRepository ontologyRepository;
+
+	@Autowired
+	OntologyService ontologyService;
+	
+	private static final String USER_NOT_AUTHORIZED = "The user is not authorized";
+	private static final String PROPERTIES = "properties";
+	private static final String URL_CONCAT= "{\"url\":\"";
+
+	@Override
+	public List<Layer> findAllLayers(String userId) {
+		List<Layer> layers = null;
+		final User sessionUser = userService.getUser(userId);
+
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			layers = layerRepository.findAll();
+		} else {
+			layers = layerRepository.findByUserOrIsPublicTrue(sessionUser);
+		}
+		return layers;
+	}
+
+	@Override
+	public List<String> getAllIdentificationsByUser(String userId) {
+		List<Layer> layers = null;
+		final User user = userService.getUser(userId);
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+			layers = layerRepository.findAllByOrderByIdentificationAsc();
+		} else {
+			layers = layerRepository.findByUserOrderByIdentificationAsc(user);
+		}
+
+		final List<String> identifications = new ArrayList<>();
+		for (final Layer layer : layers) {
+			identifications.add(layer.getIdentification());
+
+		}
+		return identifications;
+	}
+
+	@Override
+	public Ontology getOntologyByIdentification(String identification, String sessionUserId) {
+		return ontologyRepository.findByIdentification(identification);
+	}
+
+	@Override
+	public void create(Layer layer) {
+		layerRepository.save(layer);
+	}
+
+	@Override
+	public Layer findById(String id, String userId) {
+		User user = userService.getUser(userId);
+		Layer layer = layerRepository.findById(id);
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || layer.getUser().equals(user)
+				|| layer.isPublic()) {
+			return layer;
+		} else {
+			throw new LayerServiceException(USER_NOT_AUTHORIZED);
+		}
+	}
+
+	@Override
+	public void deleteLayer(Layer layer, String userId) {
+		User user = userService.getUser(userId);
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || layer.getUser().equals(user)
+				|| layer.isPublic()) {
+			layerRepository.delete(layer);
+		} else {
+			throw new LayerServiceException(USER_NOT_AUTHORIZED);
+		}
+	}
+
+	@Override
+	public Map<String, String> getOntologyGeometryFields(String identification, String sessionUserId)
+			throws IOException {
+		Map<String, String> fields = new TreeMap<>();
+		final Ontology ontology = getOntologyByIdentification(identification, sessionUserId);
+		if (ontology != null) {
+			final ObjectMapper mapper = new ObjectMapper();
+
+			JsonNode jsonNode = null;
+			try {
+
+				jsonNode = mapper.readTree(ontology.getJsonSchema());
+
+			} catch (final Exception e) {
+				if (ontology.getJsonSchema().contains("'"))
+					jsonNode = mapper.readTree(ontology.getJsonSchema().replaceAll("'", "\""));
+			}
+
+			// Predefine Path to data properties
+			if (!jsonNode.path("datos").path(PROPERTIES).isMissingNode()) {
+
+				jsonNode = jsonNode.path("datos").path(PROPERTIES);
+
+			} 
+			else
+				jsonNode = jsonNode.path(PROPERTIES);
+
+			final Iterator<String> iterator = jsonNode.fieldNames();
+			String property;
+			while (iterator.hasNext()) {
+				Boolean hasCoordinates = false;
+				Boolean hasType = false;
+				property = iterator.next();
+				if (jsonNode.path(property).get("type").asText().equals("object")) {
+
+					JsonNode jsonNodeAux = jsonNode.path(property).path(PROPERTIES);
+
+					if (!jsonNodeAux.path("coordinates").isMissingNode()
+							&& jsonNodeAux.path("coordinates").get("type").asText().equals("array")) {
+						hasCoordinates = true;
+					}
+					if (!jsonNodeAux.path("type").isMissingNode()
+							&& !jsonNodeAux.path("type").path("enum").isMissingNode()
+							&& jsonNodeAux.path("type").get("enum").isArray()) {
+						hasType = true;
+					}
+					if (hasCoordinates && hasType) {
+						fields.put(property, jsonNodeAux.path("type").get("enum").get(0).asText());
+					}
+
+				}
+			}
+		}
+
+		return fields;
+	}
+
+	@Override
+	public Layer getLayerByIdentification(String identification, User user) {
+		List<Layer> layers = layerRepository.findByIdentification(identification);
+		if (!layers.isEmpty() && (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| layers.get(0).getUser().equals(user))) {
+			return layers.get(0);
+		} else if (layers.isEmpty()) {
+			throw new LayerServiceException("Layer " + identification + " doesn't exist.");
+		} else {
+			throw new LayerServiceException(USER_NOT_AUTHORIZED);
+		}
+	}
+
+	@Override
+	public Boolean isLayerInUse(String layerId) {
+		Layer layer = layerRepository.findById(layerId);
+		if (layer.getViewers().isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public Layer findByIdentification(String layerIdentification) {
+		return layerRepository.findByIdentification(layerIdentification).get(0);
+	}
+
+	@Override
+	public Map<String, String> getLayersTypes(String userId) {
+		Map<String, String> map = new HashMap<>();
+		List<Layer> layers = null;
+		final User sessionUser = userService.getUser(userId);
+
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			layers = layerRepository.findAll();
+		} else {
+			layers = layerRepository.findByUserOrIsPublicTrue(sessionUser);
+		}
+
+		for (Layer layer : layers) {
+			if (layer.getOntology() != null && !layer.isHeatMap()) {
+				map.put(layer.getIdentification(), "iot");
+			} else if (layer.getOntology() != null && layer.isHeatMap()) {
+				map.put(layer.getIdentification(), "heat");
+			} else if (layer.getExternalType().equalsIgnoreCase("wms")) {
+				map.put(layer.getIdentification(), "wms");
+			} else if (layer.getExternalType().equalsIgnoreCase("kml")) {
+				map.put(layer.getIdentification(), "kml");
+			} else if (layer.getExternalType().equalsIgnoreCase("svg_image")) {
+				map.put(layer.getIdentification(), "svg_image");
+			}
+		}
+
+		return map;
+	}
+
+	@Override
+	public String getLayerWms(String layerIdentification) {
+		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		return URL_CONCAT + layer.getUrl() + "\",\"layerWms\":\"" + layer.getLayerTypeWms() + "\"}";
+	}
+
+	@Override
+	public String getLayerKml(String layerIdentification) {
+		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		return URL_CONCAT + layer.getUrl() + "\"}";
+	}
+
+	@Override
+	public String getLayerSvgImage(String layerIdentification) {
+		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		return URL_CONCAT + layer.getUrl() + "\",\"west\":\"" + layer.getWest() + "\" ,\"east\":\"" + layer.getEast()
+				+ "\",\"north\":\"" + layer.getNorth() + "\",\"south\":\"" + layer.getSouth() + "\"}";
+	}
+
+	@Override
+	public List<String> getQueryFields(String query, String ontology, String userId) {
+		List<String> fields = new ArrayList<>();
+		CCJSqlParserManager parserManager = new CCJSqlParserManager();
+		Select select;
+		try {
+			select = (Select) parserManager.parse(new StringReader(query));
+
+			PlainSelect plain = (PlainSelect) select.getSelectBody();
+			List<SelectItem> selectItems = plain.getSelectItems();
+
+			for (SelectItem item : selectItems) {
+
+				if (!item.toString().equals("c") && !item.toString().equals("*")) {
+					String[] split = item.toString().split("AS");
+
+					fields.add(split[1].trim());
+				} else {
+					Map<String, String> mapFields = ontologyService.getOntologyFields(ontology, userId);
+
+					for (Map.Entry<String, String> entry : mapFields.entrySet()) {
+						String field = entry.getKey();
+						if (!field.contains(".")) {
+							fields.add(field);
+						} else {
+							String fieldAux = field.split("\\.")[0];
+							if (!fields.contains(fieldAux)) {
+								fields.add(fieldAux);
+							}
+						}
+					}
+				}
+
+			}
+		} catch (JSQLParserException e) {
+			Log.error("Error parsing query of layer. {} - {}", query, e.getMessage());
+		} catch (IOException e) {
+			Log.error("Error getting ontology fields from query of layer. {} - {}", query, e.getMessage());
+		}
+		return fields;
+	}
+
+	@Override
+	public String getQueryParamsAndRefresh(String layerIdentification) {
+		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+
+		return "{\"params\":" + layer.getQueryParams() + ",\"refresh\":" + layer.getRefreshTime() + "}";
+	}
+
+}

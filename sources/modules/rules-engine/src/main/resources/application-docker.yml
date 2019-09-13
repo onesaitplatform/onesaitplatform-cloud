@@ -1,0 +1,21 @@
+spring: ## General Config  
+   datasource: ## JPA Config
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+onesaitplatform:
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
+   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+security:
+  oauth2:
+    client:
+      clientId: onesaitplatform
+      clientSecret: onesaitplatform
+      accessTokenUri: https://${SERVER_NAME}/oauth-server/oauth/token
+      userAuthorizationUri: https://${SERVER_NAME}/oauth-server/oauth/authorize
+      checkTokenEndpointUrl: https://${SERVER_NAME}/oauth-server/oauth/check_token
+      useCurrentUri: true
+    resource:
+      userInfoUri: https://${SERVER_NAME}/oauth-server/user
+
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs

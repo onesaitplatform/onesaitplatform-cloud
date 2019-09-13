@@ -1,0 +1,541 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-colorpicker/css/bootstrap-colorpicker.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css}"/>	
+
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+	<style>
+		.disabledTab {
+		    pointer-events: none;
+		}
+		
+		.colorpicker{
+			z-index: 99999999 !important;
+		}
+	</style>
+	</head>
+
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home </a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/layers/list}"> <span th:text="#{layer.breadcrumb.list}">Layers </span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:if="${layer?.id} == null" th:text="#{layer.breadcrumb.create.iot}">Show Layer</span>
+							<span th:if="${layer?.id} != null" th:text="#{layer.breadcrumb.update.iot}">Update Layer</span>
+						</li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- MAIN ROW -->
+				<div class="row">
+					<form id="delete_layer_form" class="delete-layer hide"  th:action="@{'/layers/'+${layer.id}}"  method="post">
+						<input type="hidden" name="_method" value="DELETE"/>
+						<input id="delete-layerId" type="hidden" name="layerId" th:value="${layer.id}"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+					<form role="form" id="layer_create_form" th:object="${layer}" method="post" class="form">
+					<div class="col-md-12">
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption">
+
+								</div>
+								<div class="tools hidden">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+
+								<!-- CATEGORY TABS SECTIONS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-datos" class="active">
+										<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+											<!-- FORM TITLE -->
+											<span th:if="${layer?.id} == null" class="caption-subject " th:text="#{layer.template.create}"> New layer</span>
+											<span th:if="${layer?.id} != null" class="caption-subject " th:text="#{layer.template.update} + ' ' + ${layer.identification}"> Update Layer </span>
+										</a>
+									</li>
+								</ul>
+
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+									<!-- ONTOLOGY FORM -->
+										<div class="row">
+											<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+												<div class="alert alert-danger display-hide">
+													<button class="close" data-close="alert"></button>
+													<span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+												</div>
+												<div class="alert alert-success display-hide">
+													<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+												</div>
+											</div>
+											<div class="col-md-12">
+											<!-- AUXILIAR FORM TO DELETE CATEGORY -->
+
+													<!-- FORM ACTIONS FOR INSERT-->
+													<input th:if="${layer.id} == null" type="hidden" name="action" th:value="@{/layers/create}"/>
+
+													<!-- FORM ACTIONS FOR UPDATE -->
+													<input th:if="${layer?.id} != null" type="hidden" name="action" th:value="@{'/layers/update/'+${layer.id}}"/>
+													<input th:if="${layer?.id} != null" type="hidden" name="_method" value="PUT"/>
+
+													<div class="form-body">
+														<!-- user, name and email -->
+														<div class="row">
+															<div class="col-md-3 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{gen.identification} + ':'">Identification</label><span class="required"> *</span>
+																	<div class="input-icon ">
+																		<i class="flaticon-network"></i>
+																		<input th:tabindex="1" id="identification" type="text"   th:required="true" th:readonly="*{identification}" maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.identification}"/>
+																	</div>
+																	<span id="identificationerror" class="help-block font-red hide" th:text="#{layer.name.error}"><i class="la la-warning"></i></span>
+																</div>
+															</div>
+															<div class="col-md-3 col-sm-6 col-xs-12">
+																<div class="input-group input-group-sm">
+																	<label th:text="#{database.ontology}" > ONTOLOGIES </label><span class="required"> *</span>
+																	<select class="selectpicker select show-tick form-control" id="ontology" th:field="*{ontology}" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="LayerCreateController.controlOntology()" th:title="#{database.ontologies} +'...'">
+																	  <optgroup th:label="#{database.generic}">
+																		<option th:each="ontology : ${ontologies}" th:id="${ontology.user.userId}" th:data-description="${ontology.description}" data-type="general" th:value="${ontology.identification}" th:text="${ontology.identification}"  ></option>
+																	  </optgroup>											
+																	</select>
+																</div>
+															</div>
+															<div class="col-md-2 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{ontology.public} + ':'">Public</label>
+																	<div class="mt-checkbox-list">
+																		<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{layer.public.help},data-title=#{ontology.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{ontology.public} +'?'">Public?</div>
+																			<input  id="public" class="form-control no-remove"  name="public" type="checkbox"  />
+																			<span></span><!-- necesario por estilos. -->
+																		</label>
+																	</div>
+																</div>
+															</div>
+															<div class="col-md-4 col-sm-12 col-xs-12">
+																<div class="form-group">
+																	<label th:text="#{gen.description}">Comments </label><span class="required"> *</span>
+																	<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
+																</div>
+																<span class="help-block"><i class="la la-warning"></i> <small th:text="#{ontology.description.min}"></small></span>
+															</div>
+														</div>
+														<div class="row portlet light" id="geometryTypes" style="visibility:hidden">
+															<div class="tabbable-line">
+																<div class="tools hide">
+																	<a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+																	<a href="" class="fullscreen" data-original-title="" title=""> </a>
+																</div>
+																<!-- DIGITAL TWIN TABS -->
+																<ul class="nav nav-tabs pull-left">
+																	<li id="tab-geometry" class="active"><a href="#tab_3" data-toggle="tab" aria-expanded="false"><span class="" th:text="#{layer.field.geometry}">Geometry</span></a></li>	
+																	<li id="tab-query" class=""><a href="#tab_6" data-toggle="tab" aria-expanded="true"> <span class="">Query</span></a></li>																
+																	<li id="tab-symbology" class=""><a href="#tab_4" data-toggle="tab" aria-expanded="true"> <span class="" th:text="#{layer.symbology}">Symbology</span></a></li>
+																	<li id="tab-infobox" class=""><a href="#tab_5" data-toggle="tab" aria-expanded="true"> <span class="">Info Box</span></a></li>
+																	
+																</ul>
+															</div>
+															<div class="portlet-body">
+																	<div class="col-md-12 margin-top-10 ">
+																		<div class="tab-content">
+																			<div class="tab-pane active" id="tab_3">	
+																				<div class="col-md-12 field" style="margin-bottom: 15px;">
+																					<div class="col-md-3">
+																						<label th:text="#{layer.geometry.select}" > Select Geometry Field </label><span class="required"> *</span>
+																						<select class="form-control fields" id="fields" th:field="*{geometryField}" onchange="LayerCreateController.changeField()">
+																						</select>
+																					</div>
+																					<div class="col-md-3">
+																						<label th:text="#{layer.geometry.type}" > Geometry Type </label><span class="required"> *</span>
+																						<input type="text" class="form-control" th:field="*{geometryType}" readonly="readonly"/>
+																					</div>
+																					<div class="form-group col-md-4" id="checkHeatMap" style="display:none;">
+																						<label class="" th:text="#{layer.isheatmap} + ':'">is heatMap</label>
+																						<div class="mt-checkbox-list">
+																							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{layer.isheatmap} +'?'">Heat Map?</div>
+																								<input  id="isHeatMap" class="form-control no-remove"  name="heatMap" type="checkbox"  />
+																								<span></span><!-- necesario por estilos. -->
+																							</label>
+																						</div>
+																					</div>
+																				</div>
+																				<div class="col-md-12" id="heatMapDiv" style="display:none;">
+																					
+																					<div class="col-md-6">
+																						<label th:text="#{layer.weight}" > Select Weight property</label>
+																						<select class="form-control fields" id="weightField" th:field="*{weightField}">
+																						</select>
+																					</div>
+																					<div class="col-md-2 form-group">
+																						<label class="">Min: </label>
+																						<input class="form-control from-input" id="min" th:field="*{heatMapMin}"/>
+																					</div>
+																					<div class="col-md-2 form-group">
+																						<label class="" >Max: </label>
+																					    <input class="form-control from-input" id="max" th:field="*{heatMapMax}"/>
+																					</div>
+																					<div class="col-md-2 form-group">
+																						<label class="" th:text="#{layer.radius}" >Radius: </label>
+																					    <input class="form-control from-input" id="radius" th:field="*{heatMapRadius}"/>
+																					</div>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_4">																			
+																				<div class="row">
+																					<div id="withoutFilter">
+																						<div class="col-md-3 form-group">
+																							<div class="input-group colorpicker-component formcolorpicker" id="outerColor">
+																								<label class="" th:text="#{layer.symbology.outside.color} + ':'">Outer line color</label>
+																							    <input type="text" name="outer_line_color" id="outer_line_color" th:field="*{outerColor}" value="#000" class="form-control" />
+																							    <div class="input-group-append" style="display: -webkit-box;">
+																							        <span class="input-group-text input-group-addon"><i style="height: 15px;"></i></span>
+																							    </div>
+																							</div>
+																						</div>
+																						<div class="col-md-3 form-group">
+																							<div class="input-group colorpicker-component formcolorpicker" id="innerColor">
+																								<label class="" th:text="#{layer.symbology.inside.color} + ':'">Inner color</label>
+																							    <input type="text" name="inner_color" id="inner_color" th:field="*{innerColor}" value="#000" class="form-control" />
+																							    <div class="input-group-append" style="display: -webkit-box;">
+																							        <span class="input-group-text input-group-addon"><i style="height: 15px;"></i></span>
+																							    </div>
+																							</div>
+																						</div>
+																						<div class="col-md-3 form-group">
+																							<label class="" th:text="#{layer.symbology.outside.thickness} + ':'">Outer thinckness</label>
+																							<input class="form-control from-input" id="outer_thinckness" th:field="*{outerThin}"/>
+																						</div>
+																						<div class="col-md-3 form-group">
+																							<label class="" th:text="#{layer.symbology.size} + ':'">size</label>
+																						    <input class="form-control from-input" id="size" th:field="*{size}"/>
+																						</div>
+																					</div>
+																					<div class="col-md-12 col-sm-6 col-xs-12" id="filter_div">
+																						<div class="form-group">
+																							<div class="mt-checkbox-list">
+																								<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{layer.simbology.filter} +'?'">filter?</div>
+																									<input  id="filter" class="form-control no-remove"  name="filter" type="checkbox"  />
+																									<span></span><!-- necesario por estilos. -->
+																								</label>
+																							</div>
+																						</div>
+																					</div>
+																					<div id="withFilter" style="display:none">																		
+																						<div class="row">
+																							<div class="pull-right">
+																								<button id="addFilter" type="button" class="btn btn-circle btn-outline blue" name="reset"  th:value="#{layer.add.filter}" ><span th:text="#{layer.add.filter}"> add Filter</span></button>
+																							</div>
+																							<table id="filtersAttribute" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+																								<thead>
+																									<tr class="cabecera-tabla">
+																										<th class="titulo-columnas" th:text="#{layer.filter}">Filtro</th>
+																										<th class="titulo-columnas" th:text="#{layer.simbology.color}">Color</th>
+																										<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+																									</tr>
+																								</thead>
+																								<tbody th:remove="all-but-first">
+																									
+																								</tbody>
+																							</table>
+																						</div>
+																					</div>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_6">																			
+																				<div class="row">
+																					<div class="col-md-3 form-group">
+																						<label class="" th:text="#{layer.query.refresh.time} + ':'">Refresh Time</label>
+																					    <input class="form-control from-input" id="refresh" th:field="*{refreshTime}"/>
+																					</div>
+																					<div class="col-md-6 col-sm-6 col-xs-12">
+																						<div class="form-group">
+																							<label class="" th:text="#{layer.query} + ':'">Query</label>
+																							<div class="mt-checkbox-list">
+																								<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{layer.query.info},data-title=#{layer.query}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{layer.query} +'?'">Query?</div>
+																									<input  id="isQuery" class="form-control no-remove" type="checkbox"/>
+																									<span></span><!-- necesario por estilos. -->
+																								</label>
+																							</div>
+																						</div>
+																					</div>
+																					<div class="col-md-12 col-sm-6 col-xs-12" style="display:none;" id="query_def">
+																						<div class="alert alert-info alert-dismissable">
+																							<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																							<i class="fa fa-info-circle"></i>
+																							<span th:text="#{layer.query.param.info}"> info.</span>
+																						</div>
+																						<div class="form-group">
+																							<label class="">Query</label>
+																							<div class="input-icon ">
+																								<input id="query" type="text" th:field="*{query}" class="form-control"  onblur="LayerCreateController.loadParamsQuery(this.value);" />
+																							</div>
+																						</div>
+																						<div class="group_top_bg margin-top-20" th:text="#{apimanager.customsql.paramsquery}"/>
+																	                     <div style="border:0px">
+																	                           <ul style="display: inline-table;padding:10px 0;">
+																	                               <div id="customsql_noparam_div">
+																	                                   <div>
+																	                                      <label style="margin-left: 20px;" class="description" th:text="#{apimanager.customsql.paramquery.nodefined}"></label>
+																	                                   </div>
+																	                               </div>
+																	                               <div id="customsql_params_div" style="display: none; width: 700px">
+																	                                   <div id="customsql_paramsquery">
+																	                                  </div>
+																	                               </div>
+																	                           </ul>
+																	                     </div>
+																					</div>
+																				</div>
+																			</div>
+																			<div class="tab-pane" id="tab_5">																			
+																				<div class="row">
+																					<div class="pull-right">
+																						<button id="addAttribute" type="button" class="btn btn-circle btn-outline blue" name="reset"  th:value="#{layer.add.attribute}" ><span th:text="#{layer.add.attribute}"> add Attribute</span></button>
+																					</div>
+																					<input type="hidden" value="" id="infoBoxAttributes" name="infoBoxAttributes"/>
+																					<table id="attributes" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+																						<thead>
+																							<tr class="cabecera-tabla">
+																								<th class="titulo-columnas" th:text="#{layer.field}">Field</th>
+																								<th class="titulo-columnas" th:text="#{layer.attribute}">Attribute</th>
+																								<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+																							</tr>
+																						</thead>
+																						<tbody th:remove="all-but-first">
+																							
+																						</tbody>
+																					</table>
+																				</div>
+																			</div>
+																			
+																			
+																		</div>
+																	</div>
+																</div>
+														</div>
+													</div>
+											</div>
+										</div>
+									</div>
+									<!-- FORM BUTTONS -->
+									<div class="form-actions">
+									
+										<div class="pull-left">
+											<!-- CANCEL TO-DO: authentication and control -->
+											<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue " style="border: none !important"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/layers/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+										</div>
+									
+										<div class="pull-right">
+											
+											<!-- RESET -->
+											<button th:if="${layer?.id} == null" id="resetBtn" type="button" class="btn btn-circle btn-outline blue" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+											
+											<span th:if="${layer?.id} != null" class="sep no-border" ></span>
+											
+											<!-- REMOVE -->
+											<button th:if="${layer?.id} != null" id="deleteBtn" type="button" class="btn btn-circle  btn-outline  blue" name="delete"  value="Remove" th:onclick="'LayerCreateController.deleteLayer(\'' + ${layer.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+											
+
+											<span class="sep">&nbsp;</span>
+											
+											<!-- CREATE -->
+											<button th:if="${layer?.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-primary" name="create" ><span th:text="#{gen.createBtn}"> New</span></button>
+
+											<!-- UPDATE -->
+											<button th:if="${layer?.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-primary" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC  -->
+
+					</div><!-- END COL-12 -->
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+				</div><!-- END MAIN ROW -->
+
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-form/jquery.form.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/bootstrap-colorpicker/js/bootstrap-colorpicker.js}" type="text/javascript"></script>
+
+
+	<!-- JSON EDITOR -->
+	<script th:src="@{/static/vendor/json/json2.min.js}"/>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+
+
+	<!-- INPUTMASK -->
+	
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	
+	<!-- TEMPLATE CONTROLLER  -->	
+	<script th:src="@{/static/js/pages/layerCreate.js}"/>
+
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	
+	var layerCreateJson = {
+			"actionMode" : [[${layer?.id}]],
+			"close" : [[#{gen.closeBtn}]],		
+			"language" : currentLanguage,
+			"confirmBtn" : [[#{gen.confirmBtn}]],
+			"removeBtn" : [[#{gen.deleteBtn}]],
+			"newattribute" : [[#{layer.new.attribute}]],
+			"newfilter" : [[#{layer.new.filter}]],
+			"operator" : [[#{layer.simbology.operator}]],
+			"value" : [[#{layer.simbology.value}]],
+			"color" : [[#{layer.simbology.color}]],
+			"field" : [[#{layer.field}]],
+			"attribute" : [[#{layer.attribute}]],
+			"layerselect" : [[#{layer.field.select}]],
+			"infobox" : [[${layer?.infoBox}]],
+			"filters" : [[${layer?.filters}]],
+			"isPublic" :[[${layer?.isPublic}]],
+			"isHeatMap" :[[${layer?.isHeatMap}]],
+			"query" :[[${layer?.query}]],
+			"queryParams" :[[${layer?.queryParams}]],
+			"isFilter" :[[${layer?.isFilter}]],
+			"heatMapMax" :[[${layer?.heatMapMax}]],
+			"heatMapMin" : [[${layer?.heatMapMin}]],
+			"heatMapRadius" :[[${layer?.heatMapRadius}]],
+			"geometryField" :[[${layer?.geometryField}]],
+			"weightField" :[[${layer?.weightField}]],
+			"refreshTime" :[[${layer?.refreshTime}]],
+			"innerColor" :[[${layer?.innerColor}]],
+			"outerColor" :[[${layer?.outerColor}]],
+			"deleteInfo":[[#{layer.delete.info}]],
+			"deleteTitle" :[[#{layer.delete.title}]],
+			"deleteError" : [[#{layer.delete.error}]],
+			"validations" : {
+				"duplicates": [[#{digitaltwintype.valid.duplicates}]],
+				"update" :[[#{digitaltwintype.validation.update}]],
+				"fields" : [[#{digitaltwintype.validation.fields}]],
+				"geometry" : [[#{layer.error.without.geometry}]],
+				"ontology" : [[#{layer.error.ontology.without.geometry}]],
+				"root" : [[#{layer.error.ontology.without.root}]]
+			}
+		};
+	
+	var apiCustomOpsJson = { 
+			"apimanager_customsql_error_name_format" : [[#{apimanager.customsql.error.name.format}]],
+			"apimanager_customsql_error_query_params" : [[#{apimanager.customsql.error.query.params}]],
+			"apimanager_customsql_error_query_ontology" : [[#{apimanager.customsql.error.query.ontology}]],
+			"apimanager_customsql_error_query" : [[#{apimanager.customsql.error.query}]],
+			"apimanager_customsql_error_required" : [[#{apimanager.customsql.error.required}]],
+			"apimanager_customsql_error_operation_exists" : [[#{apimanager.customsql.error.operation.exists}]],
+			"apimanager_customsql_error_fields" : [[#{apimanager.customsql.error.fields}]],
+			"apimanager_customBtn" : [[#{apimanager.GETCUSTOM.button}]],
+			"apimanager_editBtn" : [[#{gen.editBtn}]],
+			"apimanager_deleteBtn" : [[#{gen.deleteBtn}]]
+		};
+	
+	function navigateUrl (url){
+		window.location.href = url; 
+	}
+	
+	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
+	// CREATE WIZARD CONTROLLER LOAD AND INIT ITSELF
+	</script>
+	
+</body>
+</html>

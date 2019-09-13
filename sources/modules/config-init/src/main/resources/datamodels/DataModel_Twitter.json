@@ -1,0 +1,190 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Twitter Schema",
+    "type": "object",
+    "required": [
+        "Tweet"
+    ],
+    "properties": {
+        "Tweet": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel Twitter",
+        "type": "object",
+        "required": [
+            "tweet_id",
+            "tweet_createdat",
+            "tweet_source",
+            "tweet_text",
+            "tweet_user_id",
+            "tweet_user_screenname",
+            "tweet_user_name",
+            "tweet_user_profileimage",
+            "tweet_favoritecount",
+            "tweet_retweetcount"
+        ],
+        "properties": {
+            "timestamp": {
+                "type": "object",
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "geometry": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "$ref": "#/point"
+                    },
+                    {
+                        "$ref": "#/linestring"
+                    },
+                    {
+                        "$ref": "#/polygon"
+                    }
+                ]
+            },
+            "tweet_id": {
+                "type": "string"
+            },
+            "tweet_createdat": {
+                "type": "object",
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "tweet_source": {
+                "type": "string"
+            },
+            "tweet_text": {
+                "type": "string"
+            },
+            "tweet_user_id": {
+                "type": "string"
+            },
+            "tweet_user_screenname": {
+                "type": "string"
+            },
+            "tweet_user_name": {
+                "type": "string"
+            },
+            "tweet_user_profileimage": {
+                "type": "string"
+            },
+            "tweet_favoritecount": {
+                "type": "string"
+            },
+            "tweet_retweetcount": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false
+    },
+    "point": {
+        "type": "object",
+        "required": [
+            "coordinates",
+            "type"
+        ],
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": [
+                    {
+                        "type": "number",
+                        "maximum": 180,
+                        "minimum": -180
+                    },
+                    {
+                        "type": "number",
+                        "maximum": 90,
+                        "minimum": -90
+                    }
+                ],
+                "minItems": 2,
+                "maxItems": 2
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Point"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "linestring": {
+        "type": "object",
+        "required": [
+            "coordinates",
+            "type"
+        ],
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items":  [
+                    {
+                        "type": "number",
+                        "maximum": 180,
+                        "minimum": -180
+                    },
+                    {
+                        "type": "number",
+                        "maximum": 90,
+                        "minimum": -90
+                    }
+                ],
+                "minItems": 2
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "LineString"
+                ]
+            }
+        },
+        "additionalProperties": false
+    },
+    "polygon": {
+        "type": "object",
+        "required": [
+            "coordinates",
+            "type"
+        ],
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items":  [
+                    {
+                        "type": "number",
+                        "maximum": 180,
+                        "minimum": -180
+                    },
+                    {
+                        "type": "number",
+                        "maximum": 90,
+                        "minimum": -90
+                    }
+                ]
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "Polygon"
+                ]
+            }
+        },
+        "additionalProperties": false
+    }
+}

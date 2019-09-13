@@ -1,0 +1,11 @@
+{
+	"title":"Issue Management",
+	"technologies":"HTML",
+	"description":"Web project example for issue management.",
+	"detailedDescription":"This is an example of how you can manage city issues with the platform.",
+	"functionality":"",
+	"webProjectId":"management",
+	"id_endpoint_webproject":"https://www.onesaitplatform.online/web/management/index.html",
+	"description_webproject":"management web"
+}
+

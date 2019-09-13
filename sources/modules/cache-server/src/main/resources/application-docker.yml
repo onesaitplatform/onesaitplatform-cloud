@@ -1,0 +1,11 @@
+onesaitplatform:
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
+   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+
+spring:
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring    
+      client.service-url: http://cacheservice:${server.port}${server.contextPath}/ 
+
+logging:
+   path: /var/log/platform-logs

@@ -1,0 +1,442 @@
+[
+    {
+        "id": "f793a866.5c5ec8",
+        "type": "subflow",
+        "name": "removePreviousHeaders",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "24c35f17.18f28"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 420,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "24c35f17.18f28",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "24c35f17.18f28",
+        "type": "function",
+        "z": "f793a866.5c5ec8",
+        "name": "removePreviousHeaders",
+        "func": "\nmsg.req.headers = {}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 230,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f1bbd78e.439d98",
+        "type": "subflow",
+        "name": "parseAzureResponse",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "d38e9609.0a5678"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 400,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "d38e9609.0a5678",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "d38e9609.0a5678",
+        "type": "function",
+        "z": "f1bbd78e.439d98",
+        "name": "parseAzureResponse",
+        "func": "\nif (msg.statusCode == 401) {\n    msg.payload = {\n         \"statusCode\": 500,\n         \"message\": \"External service 401: Unauthorized. Access token is missing, invalid, audience is incorrect (check external service configuration), or have expired.\"\n    }\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 220,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8f163178.fd577",
+        "type": "subflow",
+        "name": "Azure Translator Token",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "6ee28d01.8aa1f4"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 380,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "6ee28d01.8aa1f4",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "6ee28d01.8aa1f4",
+        "type": "function",
+        "z": "8f163178.fd577",
+        "name": "setAzureTranslatorToken",
+        "func": "\n// ------- Insert Azure Token -------\nvar ACCESS_TOKEN = \"<AZURE_TOKEN>\";\n// ----------------------------------\n\n msg.headers = {};\nif (msg.headers !== undefined) {\n    msg.headers = {};\n}\nmsg.headers[\"Ocp-Apim-Subscription-Key\"] = ACCESS_TOKEN;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 210,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6ce5ef7d.24f9b",
+        "type": "tab",
+        "label": "Azure Cognitive Service Translation",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "3f2cb9a8.2bfe86",
+        "type": "function",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationInfo",
+        "func": "var extractionInfo = {\n    \"info\": \"REST API for text translation\",\n    \"example\":{\n        'to': ['de', 'it'], \n        'texts': [\n            {\"Text\":\"Hello world!\"}\n            ]\n    }\n};\n\nmsg.payload = JSON.stringify(extractionInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 620,
+        "y": 200,
+        "wires": [
+            [
+                "f7510f4d.46d4f",
+                "2b50ed2d.080b92"
+            ]
+        ]
+    },
+    {
+        "id": "f7510f4d.46d4f",
+        "type": "debug",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "headers",
+        "x": 830,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "37b09000.63099",
+        "type": "http request",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationCognitiveService",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "10000",
+        "x": 760,
+        "y": 420,
+        "wires": [
+            [
+                "29ed1f5.9cc52e"
+            ]
+        ]
+    },
+    {
+        "id": "a5928ccb.41457",
+        "type": "debug",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1310,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "767c69c9.45cb18",
+        "type": "function",
+        "z": "6ce5ef7d.24f9b",
+        "name": "generateUrl",
+        "func": "var url_base = \"https://api.cognitive.microsofttranslator.com/translate?api-version=3.0\";\n\ntoParams = \"\";\nvar toLanguages = msg.payload.to;\nif (toLanguages.length > 1) {\n    for (i=0; i < toLanguages.length; i++){\n        toParams += \"&to=\" + toLanguages[i];\n    }\n}\n\nmsg.payload = msg.payload.texts\n\nmsg.url = url_base + toParams;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 630,
+        "y": 340,
+        "wires": [
+            [
+                "62d9407.80825c"
+            ]
+        ]
+    },
+    {
+        "id": "cb357431.ecbc38",
+        "type": "function",
+        "z": "6ce5ef7d.24f9b",
+        "name": "addClientTraceId",
+        "func": "function create_UUID(){\n    var dt = new Date().getTime();\n    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n        var r = (dt + Math.random()*16)%16 | 0;\n        dt = Math.floor(dt/16);\n        return (c=='x' ? r :(r&0x3|0x8)).toString(16);\n    });\n    return uuid;\n}\n\nmsg.headers[\"X-ClientTraceId\"] = create_UUID();\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 300,
+        "wires": [
+            [
+                "767c69c9.45cb18"
+            ]
+        ]
+    },
+    {
+        "id": "2b50ed2d.080b92",
+        "type": "onesaitplatform api rest operation response",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationInfoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 840,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "59c46b73.e94034",
+        "type": "onesaitplatform api rest operation",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationSample",
+        "description": "Translation Information",
+        "url": "/59c46b73e94034/translation/sample",
+        "apiUrl": "/translation/sample",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "3f2cb9a8.2bfe86"
+            ]
+        ]
+    },
+    {
+        "id": "250e1eb0.103532",
+        "type": "onesaitplatform api rest operation response",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 1330,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "b174479b.caa408",
+        "type": "onesaitplatform api rest operation",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translation",
+        "description": "Translation Service",
+        "url": "/b1756484e34468/translation",
+        "apiUrl": "/translation",
+        "method": "post",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 350,
+        "y": 260,
+        "wires": [
+            [
+                "ed3078c3.b639b8"
+            ]
+        ]
+    },
+    {
+        "id": "1f7bff16.e45c61",
+        "type": "function",
+        "z": "6ce5ef7d.24f9b",
+        "name": "translationProcessingInfo",
+        "func": "var processingInfo = {\n    \"info\": \"API REST para la trduccion de texto\",\n    \"options\": [\n        \"/translation\", \"/translation/sample\"\n        ]\n};\n\nmsg.payload = JSON.stringify(processingInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 490,
+        "y": 80,
+        "wires": [
+            [
+                "3f229323.1bd6bc",
+                "bd60f1ac.7aed4"
+            ]
+        ]
+    },
+    {
+        "id": "3f229323.1bd6bc",
+        "type": "debug",
+        "z": "6ce5ef7d.24f9b",
+        "name": "processingDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 890,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "b213fb24.e2fa68",
+        "type": "comment",
+        "z": "6ce5ef7d.24f9b",
+        "name": "Translation",
+        "info": "Translation Azure Services\n\n/translation  para obtener información general de los servicios\n\n\nOpciones:\n    /textToSpeechInfo    info de textToSpeech\n    /textToSpeech        conversión texto a voz\n    \n    ...",
+        "x": 80,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "f3c706fd.f88988",
+        "type": "onesaitplatform api rest operation",
+        "z": "6ce5ef7d.24f9b",
+        "name": "Translation",
+        "description": "Translation Services Information",
+        "url": "/f3c706fdf88988/",
+        "apiUrl": "/",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 290,
+        "y": 80,
+        "wires": [
+            [
+                "1f7bff16.e45c61"
+            ]
+        ]
+    },
+    {
+        "id": "31817a2f.97f546",
+        "type": "onesaitplatform api rest",
+        "z": "6ce5ef7d.24f9b",
+        "name": "Translation",
+        "description": "Translation Services",
+        "public": true,
+        "category": "TOOLS",
+        "authentication": "YWRtaW5pc3RyYXRvcjp6MmtCNmFObTJkOTVuRWNVVTZxS1ppMUFKVGdQaVpKcnZSWTJ1WmNNV3hBPQ==",
+        "x": 80,
+        "y": 80,
+        "wires": [
+            [
+                "f3c706fd.f88988",
+                "59c46b73.e94034",
+                "b174479b.caa408"
+            ]
+        ]
+    },
+    {
+        "id": "bd60f1ac.7aed4",
+        "type": "onesaitplatform api rest operation response",
+        "z": "6ce5ef7d.24f9b",
+        "name": "infoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 700,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "ed3078c3.b639b8",
+        "type": "subflow:8f163178.fd577",
+        "z": "6ce5ef7d.24f9b",
+        "name": "setAzureTranslationToken",
+        "x": 590,
+        "y": 260,
+        "wires": [
+            [
+                "cb357431.ecbc38"
+            ]
+        ]
+    },
+    {
+        "id": "29ed1f5.9cc52e",
+        "type": "subflow:f1bbd78e.439d98",
+        "z": "6ce5ef7d.24f9b",
+        "name": "",
+        "x": 780,
+        "y": 460,
+        "wires": [
+            [
+                "ea7b9127.a05cd"
+            ]
+        ]
+    },
+    {
+        "id": "ea7b9127.a05cd",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "6ce5ef7d.24f9b",
+        "name": "",
+        "x": 1050,
+        "y": 460,
+        "wires": [
+            [
+                "250e1eb0.103532",
+                "a5928ccb.41457"
+            ]
+        ]
+    },
+    {
+        "id": "62d9407.80825c",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "6ce5ef7d.24f9b",
+        "name": "",
+        "x": 710,
+        "y": 380,
+        "wires": [
+            [
+                "37b09000.63099"
+            ]
+        ]
+    }
+]

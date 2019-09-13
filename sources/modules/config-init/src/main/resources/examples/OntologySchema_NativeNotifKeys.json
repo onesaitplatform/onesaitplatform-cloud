@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "NativeNotifKeys",
+    "type": "object",
+    "required": [
+        "NativeNotifKeys"
+    ],
+    "properties": {
+        "NativeNotifKeys": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info NativeNotifKeys",
+        "type": "object",
+        "required": [
+            "app",
+            "deviceToken",
+            "user"
+        ],
+        "properties": {
+            "app": {
+                "type": "string"
+            },
+            "deviceToken": {
+                "type": "string"
+            },
+            "user": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Contains user tokens from end-devices connected to the notification system",
+    "additionalProperties": true
+}

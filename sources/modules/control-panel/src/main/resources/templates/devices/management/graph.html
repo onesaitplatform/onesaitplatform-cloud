@@ -1,0 +1,75 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- BEGIN GRAPH COMPONENT -->
+<div th:fragment="graphDeviceFragment" id="graphDeviceFragment">
+	
+	<!-- GRAPH CSS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/vis/vis.min.css}"/>
+		
+	<!-- GRAPH SCRIPTS  -->	
+	<script type="text/javascript" th:src="@{/static/vendor/vis/vis.min.js}"></script>
+	<!-- <script type="text/javascript" th:src="@{/static/vendor/vis/grafo.js}"></script> -->
+	
+	<!-- GRAPH CONTROLLER JS -->
+	<script th:src="@{/static/js/pages/graphDevice.js}"/>	
+	 
+	<!-- BEGIN GRAPH INNER -->
+					
+		<div class="col-md-12" style="padding-left: 0px; padding-right: 0px">							
+			<div id="graphporlet" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="border-radius: 4px; background-color: #FFFFFF;padding-left: 0px;padding-right: 0px;border: 1px solid #f5f5f5;">
+				<div id="networkVis" class="" style=" padding:10px;" ></div>
+				<div id="infoporlet" class="pull-right bg-white" style="background-color:white;">
+					<table id ="TableInfoNetwork" class="table table-condensed table-hover table-striped table-light"></table>
+				</div>				
+			</div>																	
+		</div>	
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-30 clearfix">
+			<div id="id_panel_botones" class="btn-group  pull-right">
+				
+				<div class="btn-group dropup">
+					<button id="btn-addH" class="btn btn-primary btn-sm button_text"><i class="la la-plus"></i>&nbsp;</button>
+					<button id="btn-remH" class="btn btn-primary btn-sm button_text"><i class="la la-minus"></i>&nbsp;</button>
+					<button id="btn-resH" class="btn btn-primary btn-sm button_text"><i class="la la-refresh"></i>&nbsp;</button>
+					
+				</div>
+				<button id="btn-graphInfo" th:text="#{graph.information}" class="btn btn-primary btn-sm button_text popovers" data-trigger="hover" data-placement="bottom" data-container="body"></button>
+			</div>
+		</div>
+					
+					
+				
+	<!-- END GRAPH INNER -->
+	
+			
+	<!-- GRAPH DATA TO SEND TO GRAPH CONTROLLER  --> 
+	<script type="text/javascript" th:inline="javascript"> 
+				
+		var graphJson = {
+			"propertyCol" 	: [[#{graph.table.properties}]],
+			"valueCol"		: [[#{graph.table.item}]],
+			"tableName"		: [[#{graph.table.value}]],
+			"tableSource"	: [[#{graph.table.source}]],
+			"tableLinkS"	: [[#{graph.table.show}]],
+			"tableLinkC"	: [[#{graph.table.create}]],
+			"tableLinkBtn"	: [[#{graph.table.go}]],
+			"data":[]
+		};
+		// LOAD DATA TO USE IN GRAPHCONTROLLER
+		// GRAPH CONTROLLER LOAD AND INIT ITSELF
+	</script>
+</div>
+<!-- END GRAPH -->

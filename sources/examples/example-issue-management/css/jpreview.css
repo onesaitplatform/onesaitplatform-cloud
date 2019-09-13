@@ -1,0 +1,33 @@
+
+.jpreview-image {
+	width                   : 100px;
+	height                  : 100px;
+	margin: 10px;
+	position                : relative;
+	float                   : left;
+	background-repeat       : no-repeat;
+	background-position     : center center;
+	-webkit-background-size : cover;
+	-moz-background-size    : cover;
+	-o-background-size      : cover;
+	background-size         : cover;
+}
+.jpreview-container::after {
+	content: ".";
+    visibility: hidden;
+    display: block; 
+    clear: both;
+}
+
+.jpreview-image img {
+	max-width: 100%;
+	max-height: 100%
+}
+.jpreview-remove-btn {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	background-color: red;
+	width: 10px;
+	height: 10px;
+}

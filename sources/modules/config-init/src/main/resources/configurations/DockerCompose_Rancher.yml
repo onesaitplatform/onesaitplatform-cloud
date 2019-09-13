@@ -1,0 +1,287 @@
+version: '2'
+services:
+  zookeeper:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/zookeeper-secured:{{IMAGE_TAG}}
+    environment:
+      ZOOKEEPER_CLIENT_PORT: '2182'
+    stdin_open: true
+    network_mode: host
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.dns: 'true'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  schedulerdb:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/schedulerdb:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/schedulerdb:/var/lib/mysql:rw
+    tty: true
+    ports:
+    - 3307:3306/tcp
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.pull_image: always
+  devicesimulator:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/devicesimulator:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - realtimedb:realtimedb
+    - configdb:configdb
+    - schedulerdb:schedulerdb
+    - routerservice:routerservice
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  zeppelin:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/notebook:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/zeppelin/notebook:/zeppelin/notebook:rw
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.pull_image: always
+  configdb:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/configdb:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/configdb:/var/lib/mysql:rw
+    tty: true
+    ports:
+    - 3306:3306/tcp
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.pull_image: always
+  apimanagerservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/apimanager:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - realtimedb:realtimedb
+    - configdb:configdb
+    - schedulerdb:schedulerdb
+    - cacheservice:cacheservice
+    - routerservice:routerservice
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  iotbrokerservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/iotbroker:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+      KAFKAENABLED: 'true'
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - realtimedb:realtimedb
+    - elasticdb:elasticdb
+    - configdb:configdb
+    - kafka:kafka
+    - schedulerdb:schedulerdb
+    - routerservice:routerservice
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  loadbalancerservice:
+    privileged: true
+    image: nginx:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/webprojects:/usr/local/webprojects:rw
+    - /datadrive/onesaitplatform/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - /datadrive/onesaitplatform/nginx/platform.crt:/etc/nginx/ssl/platform.crt:ro
+    - /datadrive/onesaitplatform/nginx/server.key:/etc/nginx/ssl/server.key:ro
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - flowengineservice:flowengineservice
+    - iotbrokerservice:iotbrokerservice
+    - dashboardengineservice:dashboardengineservice
+    - controlpanelservice:controlpanelservice
+    - devicesimulator:devicesimulator
+    ports:
+    - 80:80/tcp
+    - 443:443/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  quasar:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/quasar:{{IMAGE_TAG}}
+    environment:
+      AUTHPARAMS: platformadmin:0pen-platf0rm-2018!@
+      AUTHDB: admin
+    stdin_open: true
+    tty: true
+    links:
+    - realtimedb:realtimedb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  kafka:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/kafka-secured:{{IMAGE_TAG}}
+    hostname: sofia2-benchmarks
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://0.0.0.0:9095,PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      SERVER_NAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    network_mode: host
+    volumes:
+    - /datadrive/onesaitplatform/kafka-logs:/tmp/kafka-logs:rw
+    tty: true
+    links:
+    - zookeeper:zookeeper
+    - controlpanelservice:controlpanelservice
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.dns: 'true'
+      io.rancher.container.pull_image: always
+  monitoringuiservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/monitoringui:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - realtimedb:realtimedb
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.pull_image: always
+  dashboardengineservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/dashboard:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - quasar:quasar
+    - realtimedb:realtimedb
+    - configdb:configdb
+    - routerservice:routerservice
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  flowengineservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/flowengine:{{IMAGE_TAG}}
+    environment:
+      SERVERNAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/flowengine:/tmp:rw
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - quasar:quasar
+    - realtimedb:realtimedb
+    - configdb:configdb
+    - schedulerdb:schedulerdb
+    - routerservice:routerservice
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  routerservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/router:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  cacheservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/cacheserver:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - controlpanelservice:controlpanelservice
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  controlpanelservice:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/controlpanel:{{IMAGE_TAG}}
+    environment:
+      SERVER_NAME: {{DOMAIN_NAME}}
+      KAFKAENABLED: 'true'
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    - /datadrive/onesaitplatform/webprojects:/usr/local/webprojects
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - quasar:quasar
+    - realtimedb:realtimedb
+    - elasticdb:elasticdb
+    - configdb:configdb
+    - schedulerdb:schedulerdb
+    - cacheservice:cacheservice
+    - routerservice:routerservice
+    ports:
+    - 18000:18000/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+  realtimedb:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/realtimedb:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/realtimedb:/data/db:rw
+    tty: true
+    ports:
+    - 27017:27017/tcp
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}
+      io.rancher.container.pull_image: always
+  elasticdb:
+    privileged: true
+    image: moaf-nexus.westeurope.cloudapp.azure.com:443/onesaitplatform/elasticdb:{{IMAGE_TAG}}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/elasticdb:/usr/share/elasticsearch/data:rw
+    tty: true
+    ports:
+    - 9200:9200/tcp
+    - 9300:9300/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={{WORKER2DEPLOY}}

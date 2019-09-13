@@ -1,0 +1,36 @@
+onesaitplatform:
+   database.mongodb:
+      database: ${REALTIMEDBNAME}
+      servers: ${REALTIMEDBSERVERS} 
+      authenticationDatabase: ${REALTIMEDBAUTHDB}               
+      useAuth: ${REALTIMEDBUSEAUTH}
+      username: ${REALTIMEDBUSER}
+      password: ${REALTIMEDBPASS}
+      writeConcern: ${REALTIMEDBWRITECONCERN} 
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/   
+   database.elasticsearch:
+      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+      url: ${ELASTICDBHOST} 
+      port: 9300
+   router.alternativeURL: http://routerservice:20000/router/router/      
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
+   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+        
+spring:
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}            
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://rtdbmaintainerservice:${server.port}${server.contextPath}/ 
+   data.mongodb:
+      host: ${REALTIMEDBSERVERS}
+   elasticsearch.jest:
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}            
+quartz:
+    datasource:
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 

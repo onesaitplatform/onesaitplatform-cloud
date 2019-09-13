@@ -1,0 +1,73 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel DeviceLog Schema",
+    "type": "object",
+    "required": [
+        "DeviceLog"
+    ],
+    "properties": {
+        "DeviceLog": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DeviceLog Alarm",
+        "type": "object",
+        "required": [
+            "status",
+            "level",
+            "message",
+            "device",
+            "timestamp"
+        ],
+        "properties": {
+            "location": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "object",
+                        "properties": {
+                            "latitude": {
+                                "type": "number"
+                            },
+                            "longitude": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Point"
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "type": "string"
+            },
+            "level": {
+                "type": "string"
+            },
+            "message": {
+                "type": "string"
+            },
+            "extraOptions": {
+                "type": "string"
+            },
+            "device": {
+                "type": "string"
+            },
+            "timestamp": {
+                "type": "string",
+                "format": "date-time"
+            }
+        }
+    },
+    "additionalProperties": true
+}

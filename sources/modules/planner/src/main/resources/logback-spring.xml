@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <property scope="context" resource="application.yml" />
+    <property resource="bootstrap.properties" />
+    <!--<property name="LOG_PATH" value="${LOG_PATH:-/var/log/platform-logs}" />-->
+    <property name="LOG_PATH" value="${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}" />
+    <property name="LOG_FILE" value="${LOG_FILE:-${spring.application.name}}" />
+    
+    <!--  
+    <logger name="com.minsait.onesait.platform" level="DEBUG" />
+    -->
+    
+    <appender name="stdoutAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+        <target>System.out</target>
+    </appender>
+    
+    <appender name="stdoutWarnAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+        <target>System.out</target>
+    </appender>
+
+    <appender name="rollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">     
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_PATH}/${LOG_FILE}-%d{yyyy-MM-dd}-${PID}_%i.log
+			</fileNamePattern>
+			<maxFileSize>100MB</maxFileSize>
+			<maxHistory>5</maxHistory>
+			<totalSizeCap>500MB</totalSizeCap>
+		</rollingPolicy>
+        <encoder>
+            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+         
+    <springProfile name="dev,default">
+	    <root level="INFO">
+	        <appender-ref ref="stdoutAppender" />
+	    </root>
+    </springProfile>
+    <springProfile name="production,docker">
+	    <root level="INFO">
+	        <appender-ref ref="rollingFileAppender" />
+	        <appender-ref ref="stdoutWarnAppender" />
+	    </root>
+    </springProfile>     
+    
+</configuration>   
+    

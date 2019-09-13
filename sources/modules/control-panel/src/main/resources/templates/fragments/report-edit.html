@@ -1,0 +1,66 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div th:fragment="reportEditFragment" id="reportEditFragment"> <!-- (report) -->
+	
+	<!-- th:style="${not #lists.isEmpty(report.parameters)} ? style='visibility: hidden; ' : style='visibility: visible; '}"  -->
+	<div th:if="${dataSource != null OR report.dataSourceUrl != null}" id="report-settings" > <!-- style='visibility: hidden;' -->
+	
+		<div class="row">
+			<div class="col-md-12">
+				<div class="tabbable-line">									
+					<ul class="nav nav-tabs pull-left">
+						
+						<li id="tab-datasource" class="active">
+							<a href="#tab_2" data-toggle="tab" aria-expanded="true" > 
+								<span class="caption-subject">Datasource</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="tab-content">
+				<div class="tab-pane active " id="tab_2">
+					<div class="col-md-12 col-sm-6 col-xs-12">
+						<div class="panel panel-info">
+							<div class="panel-body">
+								<div class="form-group">
+								<div class="col-md-4 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{reports.datasource.overwrite}">Datasource</label>
+										<div class="mt-checkbox-list"> 
+											<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{reports.datasource.overwrite.explain},data-title=#{dashboards.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{reports.datasource.overwrite} +'?'">Public?</div>
+												<input id="checkboxDataSource" class="form-control no-remove"  name="checkboxDataSource" type="checkbox" th:checked="*{dataSourceUrl}"   />
+												<span></span>
+											</label>
+										</div>
+									</div>
+								</div>	
+									<input th:if="*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="form-control" th:value="${report.dataSourceUrl}"/>
+									<input th:if="!*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="form-control" th:value="${dataSource}"/>
+									<input th:if="*{dataSourceUrl}" type="hidden" th:field="*{dataSourceUrl}" id="data-source-url"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

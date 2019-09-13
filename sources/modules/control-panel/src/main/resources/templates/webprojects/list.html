@@ -1,0 +1,352 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/webprojects/list}"> <span th:text="#{webproject.breadcrumb.list}"> Web Project List</span></a></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{webproject.template.list}"> Manage web projects </span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div id="listWebProjectPortlet" class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+								
+									<span class="caption-subject " th:text="#{webproject.template.list}"> Manage web projects </span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>								
+								<div class="actions margin-right-20">
+									<div class="btn-group">									
+										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue btn-outline" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../webprojects/create'" ><span th:text="#{gen.create}">New </span></button>									
+									</div>										
+								</div>								
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->																			
+									</div>
+									<div class="col-md-12">
+									<!-- SEARCH FORM -->
+										<form id="form_webproject" class="" role="form" method="get">											
+											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>															
+																<input id="identification" th:placeholder="#{webproject.identification}" name="identification" class="form-control" type="text" maxlength="50" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>
+																<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-xs-12">
+														<div class="btn-group">
+															<button type="button" id="search_webproject" name="search_webproject" th:title="#{gen.search}" class="btn btn-outline btn-circle btn-sm blue"><em th:text="#{gen.search}">Search</em></button>
+															<button type="button" id="reset_webproject" name="reset_webproject" value="Reset" class="btn btn-outline btn-circle btn-sm blue" title="Reset"><i class="fa fa-refresh font-md"></i>&nbsp;</button>
+														</div>
+													</div>
+												</div>
+											</div>												
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
+									</div>
+									<!-- WEB PROJECT LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="webprojects" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{webproject.identification}">Identification</th>
+															<th class="titulo-columnas" ><span th:text="#{webproject.userId}" >Owner</span></th>
+															<th class="titulo-columnas" th:text="#{webproject.description}">Description</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{webproject.url}" >URL</span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{webproject.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}"> Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="webproject : ${webprojects}" pages:paginate="10">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left no-wrap " th:text="${webproject.identification}"></td>
+															<!-- USER -->
+															<td class="text-left " th:text="${webproject.user.userId}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-left text-truncate-sm" th:title="${webproject.description}" th:text="${webproject.description}"></td>
+															<!-- URL -->
+															<td class="text-left text-primary" th:text="${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile}"></td>
+															<!-- DATE -->
+															<td class="text-center" th:if="${webproject.createdAt!=null}"><span th:text="${#dates.format(webproject.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(webproject.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${webproject.createdAt==null}" th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos">
+																	<!-- VIEW -->															
+																	<span  th:title="#{gen.view}" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:window.open(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-eye font-hg"></i></span>
+																																																			
+																	<!-- EDIT -->
+																	<span  th:if="(${#authentication.name} == ${webproject.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/webprojects/update/${webproject.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
+																	
+																	<!-- DOWNLOAD -->
+																	<span  th:if="(${#authentication.name} == ${webproject.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.download}" th:data-original-title="#{gen.download}" th:onclick="'downloadZip(\'' + @{|/webprojects/downloadZip/${webproject.id}/|} + '\');'"><i class="la la-download font-hg"></i></span>																	
+																	
+																	<!-- COPY URL -->
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.copy}" th:data-original-title="#{binaryfiles.copy}" th:onclick="'copyURL(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-link font-hg"></i></span>
+																
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{webproject.identification}"> Identification </label>
+														<label class="toggle-vis" data-column="1" th:text="#{webproject.userId}"> Owner </label>
+														<label class="toggle-vis" data-column="2" th:text="#{webproject.description}"> Description</label>
+														<label class="toggle-vis" data-column="3" th:text="#{webproject.url}"> URL </label>
+														<label class="toggle-vis" data-column="4" th:text="#{webproject.createdAt}"> Created At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}" > Options</label>															
+													</div>
+												</div>												
+											</div>
+										</div>											
+									</div>
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->				
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	
+	<!-- BLOCKUI -->
+	<script th:src="@{/static/vendor/blockUI.js}"/>
+	
+	<script th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM.
+	var search = new Array();
+	var search = [[${param.identification}]] || [];
+	var description = [[${param.description}]] || '';
+	
+	search[0] ? $('#identification').val(search[0]) : search[0] = '';
+	description ? $('#description').val(description) : description = '';
+	console.log('SEARCHING ... [ Identification: ' + search[0] + ' Description: ' + description + ']');
+	if (( search[0] != '') || (description != '')) { $('#search-toggle').trigger('click'); }
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+
+	</script>
+	
+	<script type="text/javascript">	
+	var optionName = 'WEBPROJECTS';
+
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	var copyURL = function(url){
+		var $temp = $("<input />");
+		$("body").append($temp);
+		$temp.val(url).select();
+		document.execCommand("copy");
+		$temp.remove();
+		
+	}		
+	
+	var downloadZip = function(path){
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		App.blockUI({target:"div#listWebprojectPortlet",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Downloading Web Project..."});
+		$.ajax({url: path, headers: {[csrf_header]: csrf_value}, type: 'GET',
+		    success: function(){
+		    	var a = document.createElement('A');
+		    	a.href = path;
+		    	a.download = path;
+		    	document.body.appendChild(a);
+		    	a.click();
+		    	document.body.removeChild(a);
+		    },
+		    error: function(xhr){
+            	$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: xhr.responseText});
+    			return false;
+            },
+			complete: function(){					
+				App.unblockUI("div#listWebprojectPortlet");				
+			}
+		});		
+	}
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
+		// AUTO COMPLETE ON WEBPROJECT IDENTIFICATION/NAME
+		$.ajax({ url: "/controlpanel/webprojects/getNamesForAutocomplete", headers: {[csrf_header]: csrf_value}, type: 'POST', dataType: 'json', contentType: 'text/html', mimeType: 'application/json',
+			success: function (source) {			 
+						var namesArray = new Array();
+						for( var i = 0; i < source.length; i++ ){
+							namesArray[i] = { value: source[i] , data: source[i]};
+						}
+						
+						// INIT AJAX AUTO COMPLETE
+				$('#identification').autocomplete({ 
+					lookup: namesArray,
+					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
+						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
+						return re.test(suggestion.value);
+					}	
+				});
+			}
+		});
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#webprojects').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		// SEARCH FORM RESET
+		$('#reset_webproject').on('click',function(){
+			console.log('reset form...');
+			$('#form_webproject')[0].reset();
+			$('#form_webproject')[0].submit();
+		});
+		
+		// SEARCH FORM
+		$('#search_webproject').on('click',function(){ $('#form_webproject')[0].submit(); });
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		$.each([ 2,6,7 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
+	});
+	
+	//]]>
+	</script>
+	
+</body>
+</html>
+  

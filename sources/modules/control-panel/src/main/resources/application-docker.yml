@@ -1,0 +1,147 @@
+onesaitplatform:
+   authentication:
+      twofa: 
+        enabled: ${TWOFA_ENABLED}
+      provider: ${AUTH_PROVIDER}
+      cas:
+        base_url: ${CAS_BASEURL}
+        service_id: https://${SERVER_NAME}/controlpanel/login/cas
+        login_url: /cas/login
+        logout_url: https://${SERVER_NAME}/cas/logout
+        attributes:
+            mail: ${CAS_ATT_MAIL}
+            fullName: ${CAS_ATT_NAME}
+      saml:
+        admin_user_id: ${AD_ADMIN_USERID}
+        idp_metadata: ${IDP_METADATA}
+        entity_id: ${ENTITY_ID}
+        entity_url: ${ENTITY_URL}
+        jks:
+           uri: ${JKS_URI}
+           store_pass: ${JKS_PASS}
+           key_alias: ${KEY_ALIAS}
+           key_pass: ${KEY_PASS}
+        context:
+           samlServerPort: 80
+           samlIncludePort: false
+           samlScheme: ${SAML_SCHEME}
+           samlServerName: ${SAML_SERVER_NAME}
+   dashboardengine:
+      url: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
+      url.view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
+      url.only.view: https://${SERVER_NAME}/controlpanel/dashboards/view/
+   notebook:
+      url: https://${SERVER_NAME}/controlpanel/notebooks/app/
+   controlpanel:
+      url: https://${SERVER_NAME}/controlpanel
+   database.mongodb:
+      database: ${REALTIMEDBNAME}
+      servers: ${REALTIMEDBSERVERS} 
+      authenticationDatabase: ${REALTIMEDBAUTHDB}               
+      useAuth: ${REALTIMEDBUSEAUTH}
+      username: ${REALTIMEDBUSER}
+      password: ${REALTIMEDBPASS}
+      writeConcern: ${REALTIMEDBWRITECONCERN}    
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
+   database.hadoop.enabled: ${ENABLEHADOOP}
+   database.hdfs:
+      url: ${HDFSURL}
+      basePath: ${HDFSPATH}
+   database.hive:
+      url: ${HIVEURL}
+      username: ${HIVEUSERNAME}
+      password: ${HIVEPASSWORD}
+      driverClassName: ${HIVEDRIVERCLASS}
+   database.impala:
+      url: ${IMPALAURL}
+   database.kudu:
+      numreplicas: ${KUDUNUMREPLICAS}
+      address: ${KUDUURL}
+      includeKudutableName: ${INCLUDEKUDUTABLENAME}
+      client:
+        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
+        flushMode: ${KUDUCLIENTFLUSHMODE}
+        prefix: ${KUDUCLIENTIMPALAPREFIX}
+        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
+        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
+        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
+        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
+        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
+   database.elasticsearch:
+      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+      url: ${ELASTICDBHOST}
+      port: 9300
+   urls:
+    iotbroker: https://${SERVER_NAME}           
+   flowengine:
+    services:
+      request.timeout.ms: 5000
+      baseurl: http://flowengineservice:20100/flowengine/admin   
+      proxyurl: https://${SERVER_NAME}/nodered/
+    port:
+      domain:
+        min: ${FLOW_DOMAIN_MIN_PORT}
+        max: ${FLOW_DOMAIN_MAX_PORT} 
+   dashboard:
+     themeonesait.css: https://${SERVER_NAME}/controlpanel/static/vendor/onesait-ds/lib/theme-onesait/index.css
+     themeonesait.js: https://${SERVER_NAME}/controlpanel/static/vendor/onesait-ds/lib/index.js
+     vue.js: https://${SERVER_NAME}/controlpanel/static/vendor/onesait-ds/lib/vue.min.js
+   webproject:
+      rootfolder.path: /usr/local/webprojects/
+      baseurl: https://${SERVER_NAME}/web/
+   iotbroker.plugable:
+     gateway:
+      kafka:
+        enable: ${KAFKAENABLED}
+        host: ${KAFKAHOST}
+        port: ${KAFKAPORT}  
+        user: admin
+        password: admin-secret 
+        partitions: 10
+        replication: 1
+   analytics.notebook:
+      zeppelinHostname: zeppelin
+   analytics.dataflow:
+      streamsetsHostname: streamsets
+      version: ${STREAMSETS_SDC_VERSION}
+   router.alternativeURL: http://routerservice:20000/router/router/           
+   kafka.burrow.monitoring:
+      host.url : http://kafkamonitoringservice:18400
+   ksql.server.url: ${KSQLSERVER}
+   kafka.ksql.enable: ${KSQLENABLE}
+   audit:
+      global.notify: ${AUDITGLOBALNOTIFY}   
+   user.registry.validation.url: https://${SERVER_NAME}/controlpanel/users/validateNewUser/
+   user.reset.validation.url: http://${SERVER_NAME}/controlpanel/users/validateResetPassword/
+   secure.cookie: true
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
+   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+   metrics.collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
+      
+spring:
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring    
+      client.service-url: http://controlpanelservice:${server.port}${server.contextPath}/ 
+   data.mongodb:
+      host: ${REALTIMEDBSERVERS}
+   elasticsearch.jest:
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+quartz:
+    datasource:
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs
+
+cloud-gateway:
+  url: ${CLOUD_GATEWAY}
+
+captcha:
+  enable: ${CAPTCHA_ON}
+  token: ${CAPTCHA_TOKEN}
+
+csrf:
+  enable: ${CSRF_ON}

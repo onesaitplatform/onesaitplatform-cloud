@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>1.0.0-ce</version>
+		<relativePath>../../..</relativePath>
+	</parent>		
+	<artifactId>onesaitplatform-digital-twin-library</artifactId>
+	<version>0.0.4</version>
+	<packaging>jar</packaging>
+
+	<name>digital-twin-library</name>
+	<description>Core library for Digital Twin Devices</description>
+
+	<properties>
+        <license.dir>${project.parent.basedir}</license.dir>
+	</properties>	
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<version>1.5.10.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>1.5.10.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- JSON -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20180130</version>
+		</dependency>
+		<dependency>
+		<!-- LOMBOK -->
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.20</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
+			<version>3.2.2</version>
+		</dependency>
+		<!-- httpclient -->
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <version>4.5</version>
+		</dependency>
+		
+	</dependencies>
+
+	<profiles>
+	    <profile>
+	      <id>releases</id>
+	      <activation>
+		      <activeByDefault>false</activeByDefault>
+	      </activation>      
+	      <distributionManagement>
+				<repository>
+					<id>releases</id>
+					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+				</repository>	      
+	      </distributionManagement>
+	    </profile>
+	    
+	    <profile>
+	      <id>snapshots</id>
+	      <activation>
+		      <activeByDefault>false</activeByDefault>
+	      </activation>      
+	      <distributionManagement>
+				<repository>
+					<id>snapshots</id>
+					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+				</repository>	      
+	      </distributionManagement>
+	    </profile>	    
+	</profiles>	
+	
+</project>

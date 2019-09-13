@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "ipCamera": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "number"
+        },
+        "result": {
+            "type": "string"
+        },
+        "processingType": {
+            "type": "string"
+        },
+        "extraInfo": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "ipCamera",
+        "timestamp",
+        "result",
+        "processingType",
+        "extraInfo"
+    ],
+    "title": "VideoResults",
+    "description": "Video processing",
+    "additionalProperties": true
+}

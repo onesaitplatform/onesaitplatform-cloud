@@ -1,0 +1,14 @@
+# Gmail Config for SMTP
+spring:
+   mail:
+     host: smtp1.s.ipzmarketing.com 
+     port: 25
+     username: rbamnlxvrmjd
+     password: aMHuwyJPZ_I
+     properties.mail.smtp.auth: true
+     properties.mail.smtp.starttls.enable: false
+     properties.mail.smtp.starttls.required: false
+     properties.mail.smtp.timeout: 5000
+     properties.mail.smtp.connectiontimeout: 5000
+     properties.mail.smtp.writetimeout: 5000
+     properties.mail.smtp.from: support@onesaitplatform.com

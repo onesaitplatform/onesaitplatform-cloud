@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Load Testing Tool</title>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/scalability.css">
+	<link rel="stylesheet" type="text/css" href="js/jquery-confirm/	jquery-confirm.css">
+
+	
+	<!-- WEB FONTs -->
+	<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+	<script>
+	  WebFont.load({
+		google: {"families":["Poppins:300,400,500,600,700","Open Sans:300,400,500,600,700"]},
+		active: function() {
+			sessionStorage.fonts = true;
+		}
+	  });
+	</script>
+	
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Load Testing Tool</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Demo Scalability</a></li>               
+          </ul>         
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+	
+	<div class="container" style="margin-top: 80px;">
+	
+		<!-- accordion. -->
+		<div class="panel-group accordion" id="accordion1">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a id="accordion-data" class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion1" href="#collapse_1" aria-expanded="false"> Scalability Ontology and Device </a>
+					</h4>
+				</div>
+				<div id="collapse_1" class="panel-collapse collapse " aria-expanded="false">
+					<div class="panel-body">
+						<div class="connection block">
+							<div class="block-cell">
+								<label for="token">Token:</label>
+								<input class="form-control token" name="token" value="008215e3580f4876bd7a301abc483664"/>
+							</div>
+							<div class="block-cell">
+								<label for="clientPlatform">Device template:</label>
+								<input class="form-control clientPlatform" name="clientPlatform" value="Thermometer"/>
+							</div>
+							<div class="block-cell">
+								<label for="clientPlatformInstance">Device:</label>
+								<input class="form-control clientPlatformInstance" name="clientPlatformInstance" value="Thermometer-Room-1"/>
+							</div>
+							<div class="block-cell">
+								<label for="ontology">Ontology:</label>
+								<input class="form-control ontology" name="ontology" value="thermometer"/>
+							</div>    		
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a id="accordion-connection" class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion1" href="#collapse_2" aria-expanded="false"> Scalability Connection Data </a>
+					</h4>
+				</div>
+				<div id="collapse_2" class="panel-collapse collapse in" aria-expanded="true">
+					<div class="panel-body">
+						<div class="row">							
+								<div class="col-md-4">
+									<label for="rest-url">Rest URL:</label>
+									<input class="form-control rest-url url" name="rest-url" value="https://rancher.onesaitplatform.com:8080/iotbroker/"/>
+								</div>
+								<div  class="col-md-4">
+									<label for="mqtt-url">MQTT URL:</label>
+									<input class="form-control mqtt-url url" name="mqtt-url" value="tcp://rancher.onesaitplatform.com:1883"/>
+								</div>
+								<div  class="col-md-4">
+									<label for="kafka-url">KAFKA URL:</label>
+									<input class="form-control kafka-url url" name="kafka-url" value="rancher.onesaitplatform.com:9095"/>
+								</div>
+								<div class="clearfix"></div>
+								<div class="col-md-12">
+									<label for="instance">Instance json:</label>
+									<textarea class="form-control instance json" name="instance" rows="3" id="instance">{"temperature":{ "value": 25}}</textarea>								
+								</div>
+								<div  class="col-md-12 text-left" style="margin-top:10px">
+								<button class="btn btn-primary btn-connect btn-connect " onclick="btnConnect()">Store Values</button>
+								</div>							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<div class="alert alert-success alert-dismissable">		  
+		  <strong>SESSION:</strong> <span class="session">disconnected</span>
+		</div>
+		
+		<!-- chart -->
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">Scalability Injection Demo:  Inserts per second vs. Average Response Time </h3>
+			</div>
+			<div class="panel-body">
+				<span><h6 class="text-muted">Values updated every <b>5 seconds</b></h6></span>
+				<div class="row">
+					<div id="chartContainer" class="col-md-12 " style="height: 210px;">
+						<canvas id="line-chart" width="800" height="210"></canvas>				
+					</div>
+				</div>
+				<div class="clearfix"></div>
+			</div>
+		</div>		
+
+		
+		<div class="panel panel-primary" style="margin-bottom: 50px">
+			<div class="panel-heading"> Injectors Table </div>
+			<div class="panel-body"> 
+				<div class="row">			
+					<div class="col-md-12">
+						<div class="form-inline">
+							<div class="btn-group">
+							<button class="btn btn-primary btn-add-injector" onClick="btnAddInjector()">Add Injector</button>
+							<button class="btn btn-primary  btn-add-injector-10" onClick="btnAddInjctor10()">Add 10 Injectors</button>
+							<button class="btn btn-primary  btn-remove-all-injectors" onClick="removeAllInjectors()">Remove All Injectors</button>
+							<button class="btn btn-primary  btn-refresh-status" onClick="btnRefresh()">Refresh Status</button>	
+							</div>
+						
+							<select class="form-control  btn btn-primary combo-protocol">
+								<option value="rest">Rest</option>
+								<option value="mqtt">MQTT</option>
+								<option value="kafka">KAFKA</option>
+							</select>
+							
+							<label for="delay" style="margin-left:10px">Delay:</label>
+							<input id="delay" class="form-control input-small clientPlatformInstance" name="delay" value="100" style="width: 55px;"/>
+						</div>
+					</div>
+					<div class="col-md-12">
+						<div class="injectors inj-table">
+							
+							<div class="separator"></div>
+							<div class="inj-header">
+								<div class="inj-cell-name inj-cell">Injector</div>
+								<div class="inj-cell-protocol inj-cell">Protocol</div>
+								<div class="inj-cell-status inj-cell">Status</div>
+								<div class="inj-cell-sent inj-cell">Sent</div>
+								<div class="inj-cell-ok inj-cell">Correct</div>
+								<div class="inj-cell-error inj-cell">Errors</div>							
+								<div class="inj-cell-timeAlive inj-cell">Time alive (s)</div>
+								<div class="inj-cell-throughputPeriod inj-cell">Inserts per second</div>
+								<div class="inj-cell-averageResponseTime inj-cell">Average Response Time (s)</div>
+							</div>
+							<div class="inj-totals">
+								<div class="inj-cell-total-name inj-cell inj-cell-total">Total:</div>
+								<div class="inj-cell-total-protocol inj-cell inj-cell-total"></div>
+								<div class="inj-cell-total-status inj-cell inj-cell-total"></div>
+								<div class="inj-cell-total-sent inj-cell inj-cell-total"></div>
+								<div class="inj-cell-total-ok inj-cell inj-cell-total"></div>
+								<div class="inj-cell-total-error inj-cell inj-cell-total"></div>								
+								<div class="inj-cell-total-timeAlive inj-cell inj-cell-total"></div>
+								<div class="inj-cell-total-throughputPeriod inj-cell inj-cell-total"></div>
+								<div class="inj-cell-total-averageResponseTime inj-cell inj-cell-total"></div>
+							</div>
+							<div class="separator"></div>
+							
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+	</div>
+	
+	<footer class="navbar-default navbar-bottom">
+	  <div class="container-fluid">
+		<center>
+		<span>onesait Platform Platform &copy; 2019 All rights Reserved. IndraCompany.</span>
+		</center>
+	  </div>
+	</footer>
+	
+
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<script src="js/bootstrap.js"></script>
+	<script src="js/Chart.bundle.js"></script>
+	<script src="js/jquery-confirm/jquery-confirm.js"></script>
+	
+	<script>
+		// total acummulated values.
+		var totalGraph = [];
+		// preformatted graph data from totalGraph.
+		var graphData = {};
+		var count = 1;		
+				
+		// injectors.
+		var injectors = (function() {
+			var number = 0;
+			var injectorList = [];
+			
+			function createInjector(name, protocol) {
+				var injector = {
+					name: name,
+					protocol: protocol,
+					sent: 0,
+					ok: 0,
+					error: 0
+				}
+				return injector;
+			}			
+			function createInjectorStatus(name, status) {
+				var injector = {
+					name: name,
+					protocol: status.protocol,
+					sent: status.sent,
+					ok: status.sent - status.errors,
+					error: status.errors,
+					timeAlive: status.timeAlive,
+					throughputPeriod: status.throughputPeriod,
+					averageResponseTime: 1 / status.throughputPeriod
+				}
+				return injector;
+			}			
+			return {
+				getInjectors: function() {
+					return injectorList;
+				},
+		    	add: function(protocol) {
+		      		number += 1;
+		      		injectorList.push(createInjector(number, protocol));
+		    	},
+		    	remove: function(index) {
+		      		injectorList.splice(index, 1);
+		    	},
+		    	number: function() {
+		      		return number;
+		    	},
+		    	load: function(injectors) {
+		    		var i;
+		    		injectorList = [];
+		    		number = 0;
+		    		for(i = 0; i< injectors.length; i++){
+		    			injectorList.push(createInjectorStatus(injectors[i].id, injectors[i]));
+		    			if (injectors[i].id > number){
+		    				number = injectors[i].id;
+		    			}
+		    		}
+		    	}
+		  	}   
+		})();
+	
+		function btnConnect(){
+		
+			var data = JSON.stringify({
+				token: $(".token").val(),
+				clientPlatform: $(".clientPlatform").val(),
+				clientPlatformInstance: $(".clientPlatformInstance").val(),
+				restURL: $(".rest-url").val(),
+				mqttURL: $(".mqtt-url").val(),
+				kafkaURL: $(".kafka-url").val(),
+				ontology: $(".ontology").val()
+			});
+				
+			$.ajax({
+		        url: 'connection',
+		        type: 'POST',
+		        contentType: 'application/json',
+		        data: data,
+		        dataType: 'json',
+		        success: function (response){
+		        	var text = "token: <span class='label label-sm label-primary'>" + response.token + "</span>, device template: <span class='label label-sm label-primary'>" + response.clientPlatform + "</span>, device: <span class='label label-sm label-primary'>" + response.clientPlatformInstance + "</span>, ontology: <span class='label label-sm label-primary'>" + response.ontology + "</span>";
+	                $('.alert').removeClass('alert-danger').addClass('alert-success');
+					$(".session").empty().append(text);
+					$('#accordion-connection').trigger('click');
+	            },
+	            error: function (xhr, ajaxOptions, thrownError) {
+					$('.alert').removeClass('alert-success').addClass('alert-danger');
+	            	$(".session").text(xhr.status);
+	            }
+		    });
+
+		}
+		
+		function btnStart(injector) {
+			var data = $("textarea#instance").val();
+
+			var id = 'inj-' + injector;
+			var status = $(".injector[id="+id+"]").find(".inj-cell-status");
+			var protocol = $(".injector[id="+id+"]").find(".inj-cell-protocol").text();
+			var ontology = $(".ontology").val();
+			var delay = $('#delay').val();
+			
+			$.ajax({
+		        url: 'startInjector?&injector='+injector+'&protocol='+protocol+'&delay='+delay,
+		        type: 'POST',
+		        contentType: 'application/json',
+		        data: data,
+		        dataType: 'json',
+		        success: function (response){
+		        	status.text("RUNNING");
+					status.css("color", "green");
+	            },
+	            error: function (xhr, ajaxOptions, thrownError) {
+					status.text("ERROR");
+					status.css("color", "red");
+	            }
+		    });			
+		}
+		
+		// find index to remove injector on injector´s array.
+		function findWithAttr(array, attr, value) {
+			for(var i = 0; i < array.length; i += 1) {
+				if(array[i][attr] === value) {
+					return i;
+				}
+			}	
+		return -1;
+		}
+		
+		function btnRemove(injector) {
+			$.ajax({
+		        url: 'stopInjector?injector='+injector,
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function (response){
+		        	injectors.remove(findWithAttr(injectors.getInjectors(), 'name',injector));
+		        	var injectorHtml = $('.injector[id="inj-'+injector+'"]');
+		        	injectorHtml.remove();
+					if (injectors.getInjectors().length == 0){ 
+						// no injectors, remove graphdata.
+						totalGraph = [];
+						console.log('GRAPH DATA REMOVED.' + JSON.stringify(totalGraph));
+						
+					}
+	            },
+	            error: function (xhr, ajaxOptions, thrownError) {
+					alert("Error stoping injector")
+	            }
+		    });	
+		}
+		
+		// remove all injectors.
+		function removeAllInjectors(){
+			
+			var injectorsToRemove = [];
+			// get injectors
+			injectorsToRemove = injectors.getInjectors();
+			console.log('INJECTORS: ' + JSON.stringify(injectorsToRemove));
+			
+			if (injectorsToRemove.length == 0) { return; }
+			
+			$.confirm({			
+			title: 'Remove All Injectors Confirmation:',
+			theme: 'dark',
+			style: 'red',
+			columnClass: 'medium',
+			content: 'Do you want to remove all Injectors?',
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				remove: {
+					text: 'Remove',
+					btnClass: 'btn btn-sm btn-danger',
+					action: function(){ 
+						// iterate and remove each one
+						$.each(injectorsToRemove, function( index, object ) {
+						  console.log("Removing Injector: " + object.name );
+						  if ((object.name !== '')&&(object.name !== 'undefined')){  btnRemove(object.name);  }
+						});
+					}
+				},
+				close: {
+					text: 'Close',
+					btnClass: 'btn btn-sm btn-default ',
+					action: function (){} //GENERIC CLOSE.		
+				}
+			}
+		});
+			
+			
+			
+		}
+		
+				
+		function btnAddInjctor10(){
+			var i;
+			for (i = 0; i < 10; i++) { 
+				btnAddInjector();
+			}
+		}
+		
+		function btnAddInjector(){
+			var protocol = $('.combo-protocol option:selected').val();
+			injectors.add(protocol);
+			var injs = injectors.getInjectors();
+			var parent = createInjector(injectors.number(), injs[injs.length-1].protocol, injs[injs.length-1].sent, injs[injs.length-1].ok, injs[injs.length-1].error);
+			var status = parent.find(".inj-cell-status");
+			status.text("STOPPED");
+			status.css("color", "orange");
+			$(".injectors").append(parent);	
+			btnStart(injectors.number());
+		}
+		
+		function btnRefresh(){
+			var totalObj = {};
+			
+			$.ajax({
+		        url: 'status',
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function (response){
+		        	var i;
+		        	var totals = {
+		        			sent: 0,
+		        			ok: 0,
+		        			errors: 0,
+		        			throughput: 0,
+		        			throughputPeriod: 0,
+		        			number: 0,
+		        			averageResponseTime: 0
+		        	}
+		        	var rest = 0;
+		        	for (i = 0; i < response.length; i++) { 
+		        		var injector = $('.injector[id="inj-'+response[i].id+'"]');
+		        		updateInjector(injector, response[i]);
+		        		totals.sent = totals.sent + response[i].sent;
+		        		totals.errors = totals.errors + response[i].errors;
+		        		totals.ok = totals.ok + (totals.sent - totals.errors);
+		        		if (response[i].throughputPeriod) {
+		        			totals.throughputPeriod = totals.throughputPeriod + response[i].throughputPeriod;
+		        		} else {
+		        			rest++;
+		        		}
+		        		
+		        	}
+		        	totals.number = i - rest;
+		        	totals.averageResponseTime = 1 / (totals.throughputPeriod / totals.number);
+		        	updateTotals(totals);
+					
+					// updating values for graph
+					totalObj = {"throughputPeriod": totals.throughputPeriod, "averageResponseTime": totals.averageResponseTime };
+					if ( totals.throughputPeriod > 0 ){ totalGraph.push(totalObj);  }
+					updateGraph();
+	            },
+	            error: function (xhr, ajaxOptions, thrownError) {
+	            	console.log("Error obtaining status");
+	            }
+		    });
+		}
+		
+		
+		// retrieve data from server, mount labels and series and update the graph.
+		function updateGraph(){
+			var newData = {};
+			var newLabels = '';
+			var eachlabel = '';
+			 
+			if (totalGraph.length === 0){ 
+				myChart.data.labels.length = 1;
+				myChart.data.labels[0] = 0;
+				myChart.data.datasets[0].data.length = 0;
+				myChart.data.datasets[1].data.length = 0;
+				myChart.update();
+				return false;
+			}
+			
+			
+			var throughputPeriodData    = totalGraph.map(e => e.throughputPeriod).join(",").split(",");
+			var averageResponseTimeData = totalGraph.map(e => e.averageResponseTime).join(",").split(",");
+			
+			// check if greater than 25 steps (125segs.)
+			if (throughputPeriodData.length >= 25){
+			
+				lastLabel = myChart.data.labels[myChart.data.labels.length-1]+5;
+				lastThroughput = throughputPeriodData[throughputPeriodData.length-1];
+				lastAverage = averageResponseTimeData[averageResponseTimeData.length-1];
+				
+				myChart.data.labels.shift();
+				myChart.data.labels.push(lastLabel);
+				totalGraph.shift(); 
+				
+				myChart.data.datasets[0].data.shift();
+				myChart.data.datasets[0].data.push(lastThroughput);
+				myChart.data.datasets[1].data.shift();
+				myChart.data.datasets[1].data.push(lastAverage);
+				myChart.update();		
+			} else {
+			
+				// update chart.
+				myChart.data.labels.push(myChart.data.labels[myChart.data.labels.length-1]+5);
+				myChart.data.datasets[0].data.push(throughputPeriodData[throughputPeriodData.length-1]);
+				myChart.data.datasets[1].data.push(averageResponseTimeData[averageResponseTimeData.length-1]);
+				myChart.update();
+			}
+			
+			
+		}
+		
+		function updateInjector(injector, status){
+    		injector.find('.inj-cell-sent').text(status.sent);
+    		injector.find('.inj-cell-error').text(status.errors);
+    		injector.find('.inj-cell-ok').text(status.sent - status.errors);
+    		injector.find('.inj-cell-timeAlive').text(status.timeAlive/1000);
+    		injector.find('.inj-cell-throughputPeriod').text(Math.round(status.throughputPeriod * 100) / 100);
+    		injector.find('.inj-cell-averageResponseTime').text(Math.round((1 / status.throughputPeriod) * 1000000) / 1000000);
+		}
+		
+		function updateTotals(totals){
+			$('.inj-cell-total-protocol').text(totals.number);
+			$('.inj-cell-total-sent').text(totals.sent);
+    		$('.inj-cell-total-error').text(totals.errors);
+    		$('.inj-cell-total-ok').text(totals.sent - totals.errors);
+    		$('.inj-cell-total-throughputPeriod').text(Math.round(totals.throughputPeriod * 100) / 100);
+    		$('.inj-cell-total-averageResponseTime').text(Math.round(totals.averageResponseTime * 1000000) / 1000000);
+		}
+		
+		function createInjector(number, protocol, sent, ok, error, timeAlive, throughputPeriod){
+			var injs = injectors.getInjectors();
+			var parent = $('<div class="injector inj-row" id="inj-'+number+'"></div>');
+			parent.append('<div class="inj-cell-name inj-cell">'+number+'</div>');
+			parent.append('<div class="inj-cell-protocol inj-cell">'+protocol+'</div>');
+			parent.append('<div class="inj-cell-status inj-cell"></div>');
+			parent.append('<div class="inj-cell-sent inj-cell">'+sent+'</div>');
+			parent.append('<div class="inj-cell-ok inj-cell">'+ok+'</div>');
+			parent.append('<div class="inj-cell-error inj-cell">'+error+'</div>');
+			parent.append('<div class="inj-cell-timeAlive inj-cell">'+timeAlive+'</div>');
+			parent.append('<div class="inj-cell-throughputPeriod inj-cell">'+Math.round(throughputPeriod * 100) / 100+'</div>');
+			parent.append('<div class="inj-cell-averageResponseTime inj-cell">'+Math.round((1/throughputPeriod) * 100) / 100+'</div>');
+			parent.append('<button class="inj-cell btn btn-sm btn-sep btn-danger" onClick="btnRemove('+number+')">Remove</button>');			
+			return parent;
+		}
+		
+		function loadInjectors(){
+			$.ajax({
+		        url: 'status',
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function (response){
+		        	var i;
+		        	injectors.load(response);
+		        	var injs = injectors.getInjectors();
+		        	var totals = {
+		        			sent: 0,
+		        			ok: 0,
+		        			errors: 0,
+		        			throughput: 0,
+		        			throughputPeriod: 0,
+		        			number: 0
+		        	}
+		        	var rest = 0;
+		        	for (i = 0; i < injs.length; i++) { 
+		        		totals.sent = totals.sent + injs[i].sent;
+		        		totals.ok = totals.ok + injs[i].ok;
+		        		totals.errors = totals.errors + injs[i].error;
+		        		if (injs[i].throughputPeriod) {
+		        			totals.throughputPeriod = totals.throughputPeriod + injs[i].throughputPeriod;
+		        		} else {
+		        			rest++;
+		        		}
+		        		var parent = createInjector(injs[i].name, injs[i].protocol, injs[i].sent, injs[i].ok, injs[i].error, injs[i].timeAlive/1000, injs[i].throughputPeriod);		        		
+		        		var status = parent.find(".inj-cell-status");
+		    			status.text("RUNNING");
+		    			status.css("color", "green");
+		    			$(".injectors").append(parent);
+		        	}
+		        	totals.number = i - rest;		        	
+		        	totals.averageResponseTime = 1 / (totals.throughputPeriod / totals.number);
+		        	updateTotals(totals);
+	            },
+	            error: function (xhr, ajaxOptions, thrownError) {
+	            	console.log("Error obtaining status");
+	            }
+		    });
+		}
+		
+		function getDataConnection(){
+			$.ajax({
+		        url: 'getDataConnection',
+		        type: 'GET',
+		        dataType: 'json',
+		        success: function (response){
+		        	var text = 'token:' + response.token + ', device template:' + response.clientPlatform + ', device:' + response.clientPlatformInstance;	        	
+	                $(".session").text(text);	                
+	            },
+	            error: function (xhr, ajaxOptions, thrownError) {
+	            	if (xhr.status == 200){
+	            		$(".session").text('Disconnected');
+	            	} else {
+	            		$(".session").text(xhr.status);
+	            	}
+	            	
+	            }
+		    });
+		}
+		
+		
+		// chart 
+		graphData = JSON.parse("{\"labels\":[0],\"datasets\":[{\"data\":[0],\"label\":\"Throughput\",\"yAxisID\": \"y-axis-0\",\"borderColor\":\"#3e95cd\",\"fill\":false},{\"data\":[0],\"label\":\"Average ResponseTime\",\"yAxisID\": \"y-axis-1\",\"borderColor\":\"#8e5ea2\",\"fill\":false}]}");
+				
+		var myChart = new Chart(document.getElementById("line-chart"), {
+			type: 'line',
+			data: graphData,
+		
+			options:{
+				title: {
+				  display: true,
+				  text: 'Injection graph: Inserts per second vs. average Response Time'
+				},
+				responsive:true,
+				maintainAspectRatio: false,
+				tooltips: {
+					mode: 'label'
+				},
+				responsive: true,
+				scales: {
+					 yAxes: [{						
+						position: "left",						
+						id: "y-axis-0",
+						ticks: {
+							beginAtZero: true
+						},
+						scaleLabel: {
+							display: true,
+							labelString: 'Inserts per seconds'
+						}
+					},
+					{						
+						position: "right",					   
+						id: "y-axis-1",
+						ticks: {
+								beginAtZero: true,
+								min: 0,
+								max: 0.5,
+								stepSize: 0.1
+							},
+						scaleLabel: {
+							display: true,
+							labelString: 'Average Response Time'
+						}
+					}]
+				}
+			}
+		});
+
+	
+	$( document ).ready(function() {
+		getDataConnection();
+		loadInjectors();
+	});
+	
+	window.setInterval(function(){
+		btnRefresh();
+	}, 5000);
+		
+	</script>
+</body>
+</html>

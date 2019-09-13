@@ -1,0 +1,27 @@
+onesaitplatform:
+   database.mongodb:
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/     
+   database.elasticsearch:
+      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+      url: ${ELASTICDBHOST} 
+      port: 9300
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$      
+     
+spring:
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://oauthservice:${server.port}${server.contextPath}/ 
+   data.mongodb:
+      host: ${REALTIMEDBSERVERS}
+   elasticsearch.jest:
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}            
+quartz:
+    datasource:
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 

@@ -1,0 +1,2 @@
+onesaitplatform: #Config Sofia2 specific
+   router.avoidsslverification: true

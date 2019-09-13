@@ -1,0 +1,57 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "QA_DETAIL",
+    "type": "object",
+    "properties": {
+        "timestamp": {
+            "type": "object",
+            "required": [
+                "$date"
+            ],
+            "properties": {
+                "$date": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "siteCode": {
+            "type": "integer"
+        },
+        "assetCode": {
+            "type": "integer"
+        },
+        "assetComponent": {
+            "type": "string"
+        },
+        "errorDescription": {
+            "type": "string"
+        },
+        "errorField": {
+            "type": "string"
+        },
+        "timeseries_catId": {
+            "type": "integer"
+        },
+        "value": {
+            "type": "number"
+        },
+        "raw": {
+            "type": "string"
+        },
+        "source": {
+            "type": "string"
+        },
+        "errorCode": {
+            "type": "integer"
+        },
+        "process_date": {
+            "type": "string"
+        },
+        "idAdaptador": {
+            "type": "string"
+        }
+    },
+    "description": "Detail about quality",
+    "additionalProperties": true
+}

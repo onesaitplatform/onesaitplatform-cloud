@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>1.0.0-ce</version>
+		<relativePath>../../..</relativePath>
+	</parent>
+	<artifactId>onesaitplatform-router-crud</artifactId>
+	<packaging>jar</packaging>
+
+	<name>onesaitplatform-router-crud</name>
+	<description>onesaitplatform-router-crud</description>
+
+	<properties>
+		<license.dir>${project.parent.basedir}</license.dir>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-router-services</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-persistence-services</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-audit</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+
+	</dependencies>
+	
+	<build>
+		<plugins>
+		  <!-- skip deployment -->	
+		  <plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-deploy-plugin</artifactId>
+		    <version>2.7</version>
+		    <configuration>
+		        <skip>true</skip>
+		    </configuration>
+		  </plugin>	
+		</plugins>	
+	</build>	
+
+</project>

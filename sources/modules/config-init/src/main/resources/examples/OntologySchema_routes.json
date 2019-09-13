@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "routes",
+    "type": "object",
+    "required": [
+        "routes"
+    ],
+    "properties": {
+        "routes": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "src",
+            "dest"
+        ],
+        "properties": {
+            "src": {
+                "type": "string"
+            },
+            "dest": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology for notebook-dashboard example",
+    "additionalProperties": true
+}

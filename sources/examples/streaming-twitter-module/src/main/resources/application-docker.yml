@@ -1,0 +1,14 @@
+sofia2:
+   database.mongodb:
+      servers: realtimedb:27017            
+
+spring:
+   datasource:  
+      url: jdbc:mysql://configdb:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false            
+quartz:
+    datasource:
+      url: jdbc:mysql://schedulerdb:3306/onesaitplatform_scheduler?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      
+## LOGGING CONF
+logging:
+   path: /var/log/logs-s4c 

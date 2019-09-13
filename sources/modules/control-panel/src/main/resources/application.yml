@@ -1,0 +1,403 @@
+#security.require_ssl: true
+#server.ssl.key-store-type: PKCS12
+#server.ssl.key-store: classpath:localhost.p12
+#server.ssl.key-store-password: localhost
+#server.ssl.key-alias: localhost
+
+server: ## Config Web Server
+   port: 18000
+   contextPath: /controlpanel
+   max-http-header-size: 10000000
+   tomcat:
+      access_log_enabled: true
+      basedir: target/tomcat
+   jetty.max-http-post-size: 20000000
+      
+ldap:
+  url: ldap://localhost:10389/ 
+  base: ou=onesait,ou=system
+  username: uid=admin,ou=system
+  password: secret
+  base-auth: ou=User,ou=onesait,ou=system
+
+# all access to actuator endpoints without security
+management.security.enabled: false
+management.endpoints.enabled: true
+
+onesaitplatform: #Config onesait Platform specific
+   authentication:
+      twofa: 
+        enabled: false
+        purgatory_time_minutes: 5
+      default_password: ENC(CuRLX3QJtxVhyxmPckWXs93L0FR7NnYj)
+      provider: configdb
+      cas:
+        base_url: http://localhost:8080
+        service_id: http://localhost:18000/controlpanel/login/cas
+        key: CAS_PROVIDER_LOCALHOST_18000
+        login_url: http://localhost:8080/cas/login
+        logout_url: http://localhost:8080/cas/logout
+        attributes:
+            mail: mail
+            fullName: commonName
+      saml:
+        admin_user_id: administrator
+        idp_metadata: url.xml
+        entity_id: entityid
+        entity_url: https://localhost:8443/controlpanel
+        jks:
+           uri: saml.jks
+           store_pass: pass
+           key_alias: pass
+           key_pass: keypass
+        context:
+           samlServerPort: 18000
+           samlIncludePort: false
+           samlScheme: http
+           samlServerName: localhost
+    
+    
+   audit:
+      ignore: true
+      global.notify: true
+
+   videobroker:
+    hazelcast.queue: videoQueue
+   
+   rules-engine:
+    hazelcast:
+       topic_domains: topicDomains
+       topic_rules: topicRules
+       topicAsyncComm: topicAsyncComm
+
+
+   dashboard:
+         themeonesait.css: http://localhost:18000/controlpanel/static/vendor/onesait-ds/lib/theme-onesait/index.css
+         themeonesait.js: http://localhost:18000/controlpanel/static/vendor/onesait-ds/lib/index.js
+         vue.js: http://localhost:18000/controlpanel/static/vendor/onesait-ds/lib/vue.min.js
+         export:
+             url: http://dashboardexporterservice:20300
+   dashboardengine:
+         url: http://localhost:8087/controlpanel/dashboards/editfulliframe/
+         url.only.view: http://localhost:8087/controlpanel/dashboards/view/
+         url.view: http://localhost:8087/controlpanel/dashboards/viewiframe/
+   notebook:
+         url: http://localhost:8087/controlpanel/notebooks/app/
+   controlpanel:
+         url: http://localhost:18000/controlpanel
+   ontologies:
+         schema: 
+             ignore-case-properties: false
+   docker:
+         tmp: /tmp/
+         openshift:
+             imagenamespace: onesait
+             module_tag: 1.0.0-rc21
+             infra_tag: 1.0.0-rc21
+             persistence_tag: 1.0.0-rc21
+             persistence_tag_mongodb: 1.0.0-rc21
+             server_name: historiandev-onesaitplatformdev.apps.openp.cwbyminsait.com
+             realtimedbuseauth: true
+             authdb: admin
+             authparams: platformadmin:0pen-platf0rm-2018!@
+             replicas: 0
+             persistent: true
+             templates:
+                origin: https://{{username}}:{{password}}@onesait-git.cwbyminsait.com/onesait-platform/onesait-cloud-platform.git
+                git_path: devops/build-deploy/openshift/onesaitplatform/*
+                tmp_path: /tmp/oc-templates/
+   gitlab:
+         scaffolding.directory: /tmp/scaffolding
+         namespace:
+           id: 120
+           name: onesait Platform
+           path: onesait-platform
+
+   locale.default: en
+   encription.key: sofia2
+   devices:
+      timeout_devices_inseconds:300
+   binary-repository:
+      filepath: /usr/local/files/
+      mimeTypesNotAllowed: octet-stream,x-javascript,application/x-msdownload
+   database.elasticsearch:
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300
+      queries.defaultLimit: 2000
+   database.mongodb:
+      database: onesaitplatform_rtdb
+      authenticationDatabase:  #admin
+      servers: localhost:27017
+      autoConnectRetry: true
+      socketTimeout: 5000
+      maxAutoConnectRetryTime: 5000
+      maxWaitTime: 5000
+      useAuth: false
+      username: #username
+      password: #password
+      readFromSecondaries: false
+      queries.executionTimeout: 5000
+      queries.defaultLimit: 2000
+      queries.maxConcurrentQueries: 3
+      writeConcern: UNACKNOWLEDGED
+      tools.mongoexport.path: mongoexport
+      tools.mongoimport.path: mongoimport
+      tools.mongoshell.path: mongo
+      tools.useSequentialOps: true
+      digitaltwin.database: digital_twin
+   database.hadoop.enabled: false
+   database.hdfs:
+      url: hdfs://127.0.0.1:8020
+      basePath: /user/hdfs
+   database.hive:
+      url: jdbc:hive2://localhost:10000/default
+      username: cloudera-scm
+      password: 
+      driverClassName: org.apache.hive.jdbc.HiveDriver
+   database.impala:
+      url: jdbc:hive2://localhost:21050/default;auth=noSasl
+   database.kudu:
+      numreplicas: 1
+      address: localhost:7051
+      includeKudutableName: false
+      client:
+        sessionTimeout: 60000
+        flushMode: MANUAL_FLUSH
+        prefix: impala::default.
+        bossThreadPool: 1
+        workerThreadPool: 4
+        operationTimeout: 30000
+        adminOperationTimeout: 30000
+        socketReadTimeout: 10000
+   urls:
+    iotbroker: http://localhost:19000
+    iotbroker.services: http://localhost:19000/sib/services
+   paths:
+      ssap: /ssap
+   flowengine:
+      services:
+        request.timeout.ms: 5000
+        baseurl: http://localhost:20100/flowengine/admin
+        proxyurl: http://localhost:5050/
+      port:
+        domain:
+          min: 28000
+          max: 28500
+        service:
+          min: 27000
+          max: 27500
+   controlpanel.avoidsslverification: true
+   webproject:
+      rootfolder.path: /usr/local/webprojects/
+      baseurl: http://localhost:8087/web/
+   iotbroker.plugable:
+     gateway:
+      kafka:
+        enable: true
+        host: localhost
+        port: 9095
+        user: admin
+        password: admin-secret 
+        partitions: 4
+        replication: 1      
+        prefix: ONTOLOGY_
+        group: ontologyGroup
+        topic.pattern: ONTOLOGY.*
+        router.topic: router
+        consumer.consumersCount : 10
+        consumer.group : kafkaGroup
+        consumer.maxPollRecords : 5000 
+        ksql:
+          in.prefix: intopic_
+          out:
+            prefix: KSQLDESTYNY_
+            topic.pattern: KSQLDESTYNY.*
+   kafka.ksql.enable: false
+   analytics.notebook:
+      zeppelinGlobalTimeout: 120000
+      zeppelinProtocol: http
+      zeppelinHostname: localhost
+      zeppelinPort: 8080
+      zeppelinPathname: 
+      shiroAdminUsername: admin
+      shiroAdminPass: password1
+      shiroUsername: user1
+      shiroPass: password2
+      restUsername: userrest
+      restPass: passrest
+      notebookInfoPath: /api/notebook/
+      restTimeout.millis: 10000
+   analytics.dataflow:
+      streamsetsGlobalTimeout: 120000
+      StreamsetsProtocol: http
+      streamsetsHostname: localhost
+      streamsetsPort: 18630
+      streamsetsPathname:
+      adminUsername: admin
+      adminPass: admin
+      username: user1
+      pass: user1
+      guestUsername: guest
+      guestPass: guest
+      version: 3.10.0 # Currently supported: 3.3.0, 3.10.0
+   router.avoidsslverification: true
+   router.alternativeURL: http://localhost:20000/router/router/ 
+   kafka.burrow.monitoring:
+      request.timeout.ms: 5000
+      cluster.name: local
+      host.url: http://localhost:18400
+   ksql.server.url: http://localhost:8088
+   user.registry.validation.url: http://localhost:18000/controlpanel/users/validateNewUser/
+   user.reset.validation.url: http://localhost:18000/controlpanel/users/validateResetPassword/
+   secure.cookie: false
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+   mailService:
+      mailSupport: support@onesaitplatform.com
+   metrics.collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+   
+spring: ## General Config  
+   application.name: onesaitplatform-control-panel
+   thymeleaf: ## Thymeleaf Config
+      cache: false  
+      #encoding: UTF-8
+      #prefix: classpath:/templates/
+      #check-template: true
+      #check-template-location: true
+      #content-type: text/html
+      #enabled: true
+      # excluded-view-names:
+      # mode: HTML5
+      # prefix: /templates/
+      # suffix: .html
+      # template-resolver-order:
+      # view-names:
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
+     
+   jpa:
+      open-in-view: false
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update
+      properties:
+        hibernate:
+          format_sql: false
+          show_sql: false
+          ddl-auto: validate
+         # region.factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
+          #cache:
+          #  use_second_level_cache: true
+          #  use_query_cache: true
+          #  region.factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
+           # hazelcast:
+           #   configuration_file_path: hazelcast.xml
+            #  use_native_client: false
+            #  native_client_address: localhost:5701
+            #  native_client_group: onesaitplatform
+            #  native_client_password: onesaitplatform
+                       
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+   http:
+      multipart:
+         max-file-size: 200Mb
+         max-request-size: 200Mb
+spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
+spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
+
+        
+quartz:      
+   datasource:
+      url: "@onesaitplatform.quartzURL@"
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      initial-size: 3
+      max-active: 10
+      max-idle: 10
+      min-idle: 3
+   jpa:
+      ## Hibernate Properties
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      properties.hibernate.hbm2ddl.auto: update
+      properties.hibernate.hbm2ddl.import_files: /quartz-schema.sql
+   autoStartupSchedulers:
+      #- scriptScheduler
+      #- twitterScheduler  
+           
+      
+## Digital Twin
+digitaltwin:
+   temp.dir: /tmp
+   maven.exec.path: /usr/share/maven/bin/mvn
+   
+build.version: "@project.version@"   
+
+
+#oauth configurations
+security:
+  signing-key: s1f41234pwqdqkl4l12ghg9853123sds1f41234pwqdqkl4l12ghg9853123sd
+  jwt:
+    client-id: onesaitplatform
+    client-secret: onesaitplatform
+    grant-type: authorization_code,refresh_token,password
+    scopes: openid
+    
+## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      com.minsait: INFO
+      org.springframework: INFO
+      #org.springframework.security: DEBUG
+      org.apache.kafka: ERROR
+      org.eclipse.jetty: ERROR
+      com.hazelcast: INFO
+      com.github.dandelion.datatables: ERROR
+
+cloud-gateway:
+  user: operations
+  password: operations
+  url: https://development.onesaitplatform.com
+    
+captcha:
+  enable: false
+  token: 6Lc40JkUAAAAANyTpMrn9JNwKsiNRCY0bZ32cWIh
+  
+csrf:
+  enable: true
+  
+jasypt.encryptor.password: onesait  

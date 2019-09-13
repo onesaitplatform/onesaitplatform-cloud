@@ -1,0 +1,57 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MetricsOperation",
+    "type": "object",
+    "required": [
+        "TimeSerie"
+    ],
+    "properties": {
+        "TimeSerie": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel TimeSerie",
+        "type": "object",
+        "properties": {
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "source": {
+                "type": "string"
+            },
+            "result": {
+                "type": "string"
+            },
+            "user": {
+                "type": "string"
+            },
+            "operationType": {
+                "type": "string"
+            },
+            "value": {
+                "type": "integer"
+            }
+        },
+        "required": [
+            "timestamp",
+            "source",
+            "result",
+            "user",
+            "operationType",
+            "value"
+        ]
+    },
+    "description": "Metrics of operations in the platform",
+    "additionalProperties": true
+}

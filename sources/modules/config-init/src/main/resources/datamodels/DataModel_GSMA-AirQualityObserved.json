@@ -1,0 +1,115 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel AirQualityObserved Schema",
+    "type": "object",
+    "required": [
+        "id",
+        "type",
+        "address",
+        "dateObserved",
+        "location",
+        "source",
+        "precipitation",
+        "relativeHumidity",
+        "temperature",
+        "windDirection",
+        "windSpeed",
+        "measurand",
+        "CO",
+        "NO",
+        "NO2",
+        "NOx",
+        "SO2",
+        "refPointOfInterest"
+    ],
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "address": {
+            "type": "object",
+            "properties": {
+                "addressCountry": {
+                    "type": "string"
+                },
+                "addressLocality": {
+                    "type": "string"
+                },
+                "streetAddress": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "addressCountry",
+                "addressLocality",
+                "streetAddress"
+            ]
+        },
+        "dateObserved": {
+            "type": "string"
+        },
+        "location": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "coordinates": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": [
+                "type",
+                "coordinates"
+            ]
+        },
+        "source": {
+            "type": "string"
+        },
+        "precipitation": {
+            "type": "integer"
+        },
+        "relativeHumidity": {
+            "type": "number"
+        },
+        "temperature": {
+            "type": "number"
+        },
+        "windDirection": {
+            "type": "integer"
+        },
+        "windSpeed": {
+            "type": "number"
+        },
+        "measurand": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "CO": {
+            "type": "integer"
+        },
+        "NO": {
+            "type": "integer"
+        },
+        "NO2": {
+            "type": "integer"
+        },
+        "NOx": {
+            "type": "integer"
+        },
+        "SO2": {
+            "type": "integer"
+        },
+        "refPointOfInterest": {
+            "type": "string"
+        }
+    }
+}

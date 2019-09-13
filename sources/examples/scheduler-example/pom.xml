@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>1.0.0-ce</version>
+		<relativePath>../..</relativePath>
+	</parent>	
+	<artifactId>onesaitplatform-scheduler-example</artifactId>
+	<packaging>jar</packaging>
+
+	<name>onesaitplatform-scheduler-example</name>
+	<description>onesaitplatform Scheduler Example</description>
+		
+	<properties>
+    <license.dir>${project.parent.basedir}</license.dir>
+	</properties>
+
+	<dependencies>	
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-planner</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>	
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+		</dependency>
+		
+		<dependency>
+	    		<groupId>com.github.javafaker</groupId>
+	    		<artifactId>javafaker</artifactId>
+	    		<scope>test</scope>
+		</dependency>		
+        <dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+			
+	</dependencies>	
+
+	<build>
+		<plugins>
+		  <plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+			<executions>
+			  <execution>
+				<goals>
+				  <goal>repackage</goal>
+				</goals>
+				<configuration>
+				  <classifier>exec</classifier>
+				</configuration>
+			  </execution>
+			</executions>
+		  </plugin>
+		</plugins>
+  </build>
+
+</project>

@@ -1,0 +1,28 @@
+{
+    "bundle" : "datatables",
+    "dependencies": [ "jquery" ],
+    "assets": [
+        {
+            "name": "datatables",
+            "version": "1.10.12",
+            "locations": {
+                "jar" : "static/vendor/jquery/jquery.dataTables.min.js"
+            }
+        },
+        {
+            "name": "datatables",
+            "version": "1.10.12",
+            "locations": {
+                "jar" : "static/vendor/datatable/jquery.dataTables.css"
+            }
+        },
+		{
+            "name": "datatables",
+            "version": "1.10.12",
+            "locations": {
+                "jar" : "static/vendor/datatable/datatables.bootstrap.js"
+            }
+        }
+		
+    ]
+}

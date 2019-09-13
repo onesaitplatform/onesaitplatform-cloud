@@ -1,0 +1,63 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Modal Authorizations-->
+<div id="ldap-groups-modal" class="modal fade" role="dialog">
+	<div class="modal-dialog modal-lg">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"></button>
+				<h4 class="modal-title" th:text="#{app.ldap.groups.auth}">LDAP Groups Auth</h4>
+			</div>
+			<div class="modal-body">
+			<!-- AUTHORIZATION ROLE-USER-TYPE -->
+				<div class="form-group">
+					<div id="ldap-groups-authorizations" class="margin-bottom-20">
+						<table class="table" id="ldap_groups_authorizations" data-loaded="false">
+							<thead>
+								<tr class="cabecera-tabla" role="row" >
+									<th class="titulo-columnas" th:text="#{app.ldap.group}">User</th>
+									<th class="titulo-columnas" th:text="#{app.auth.role}">Role</th>
+									<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="ldap-group-authorization-model">
+									<td><input type="text" name="groups[]" readonly="readonly"   class="form-control"/></td>
+									<td>
+										<select class="form-control select-modal-group" data-live-search="true" data-width="100%" >			
+											<option value="" th:text="#{app.roleselect}"> Select Role...</option>									
+											<option th:each="role :${roles}" th:value="${role.id}" th:text="${role.name}" ></option>
+										</select>
+									</td>											
+									<td width="150px" class="no-wrap text-center">											
+										<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="AppCreateController.insertAuthorizationLdapGroups(this)" th:text="#{app.insertauthorization}">Insert Assignment</button>
+									</td>			
+								</tr>
+							</tbody>														
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+
+	</div>
+</div>

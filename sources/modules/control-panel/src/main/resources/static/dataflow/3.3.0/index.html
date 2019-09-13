@@ -1,0 +1,623 @@
+<!--
+
+    Copyright 2017 StreamSets Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!doctype html>
+<html lang="en" ng-app="dataCollectorApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="StreamSets Data Collector">
+  <title ng-bind="common.title">StreamSets | Data Collector</title>
+
+  <script type="text/javascript">
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    var baseHref = document.location.pathname,
+      collectorIndex = baseHref.indexOf('/collector/');
+
+    if(collectorIndex !== -1) {
+      baseHref = baseHref.substr(0, collectorIndex + 1);
+    }
+
+    document.write("<base href='" + escapeHtml(baseHref) + "' />");
+  </script>
+
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- compiled CSS -->
+  <link rel="stylesheet" type="text/css" href="assets/data-collector-ui-3.3.0-2018-09-03-18-51.css" />
+
+  <!-- compiled JavaScript -->
+  <script type="text/javascript" src="bower_components/underscore/underscore.js"></script>
+  <script type="text/javascript" src="bower_components/d3/d3.js"></script>
+  <script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="bower_components/angular/angular.js"></script>
+  <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+  <script type="text/javascript" src="bower_components/angular-route/angular-route.js"></script>
+  <script type="text/javascript" src="bower_components/angular-cookies/angular-cookies.js"></script>
+  <script type="text/javascript" src="bower_components/angular-translate/angular-translate.js"></script>
+  <script type="text/javascript" src="bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.js"></script>
+  <script type="text/javascript" src="bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.js"></script>
+  <script type="text/javascript" src="bower_components/angular-dynamic-locale/src/tmhDynamicLocale.js"></script>
+  <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <script type="text/javascript" src="bower_components/moment/moment.js"></script>
+  <script type="text/javascript" src="bower_components/angular-moment/angular-moment.js"></script>
+  <script type="text/javascript" src="bower_components/nvd3/build/nv.d3.js"></script>
+  <script type="text/javascript" src="bower_components/angular-ui-select/dist/select.js"></script>
+  <script type="text/javascript" src="bower_components/ngstorage/ngStorage.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap-datetimepicker/src/js/datetimepicker.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap-datetimepicker/src/js/datetimepicker.templates.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/lib/codemirror.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/clike/clike.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/python/python.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/ruby/ruby.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/groovy/groovy.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/javascript/javascript.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/properties/properties.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/shell/shell.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/sql/sql.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/mode/xml/xml.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/addon/edit/closebrackets.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/addon/edit/matchbrackets.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/addon/hint/show-hint.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/addon/hint/javascript-hint.js"></script>
+  <script type="text/javascript" src="bower_components/codemirror/addon/hint/sql-hint.js"></script>
+  <script type="text/javascript" src="bower_components/angular-xeditable/dist/js/xeditable.js"></script>
+  <script type="text/javascript" src="app/_declarations.js"></script>
+  <script type="text/javascript" src="app/app.js"></script>
+  <script type="text/javascript" src="app/common/_declarations.js"></script>
+  <script type="text/javascript" src="app/common/apiService.js"></script>
+  <script type="text/javascript" src="app/common/authService.js"></script>
+  <script type="text/javascript" src="app/common/configurationService.js"></script>
+  <script type="text/javascript" src="app/common/contextHelpService.js"></script>
+  <script type="text/javascript" src="app/common/pipelineConstant.js"></script>
+  <script type="text/javascript" src="app/common/pipelineService.js"></script>
+  <script type="text/javascript" src="app/common/previewService.js"></script>
+  <script type="text/javascript" src="app/common/underscoreService.js"></script>
+  <script type="text/javascript" src="app/common/visibilityBroadcaster.js"></script>
+  <script type="text/javascript" src="app/help/about/about.js"></script>
+  <script type="text/javascript" src="app/help/register/register.js"></script>
+  <script type="text/javascript" src="app/help/restapi/_declarations.js"></script>
+  <script type="text/javascript" src="app/help/restapi/restapi.js"></script>
+  <script type="text/javascript" src="app/help/settings/settings.js"></script>
+  <script type="text/javascript" src="app/help/supportBundle/supportBundle.js"></script>
+  <script type="text/javascript" src="app/home/_declarations.js"></script>
+  <script type="text/javascript" src="app/home/alerts/error/errorAlert.js"></script>
+  <script type="text/javascript" src="app/home/alerts/error/errorModal.js"></script>
+  <script type="text/javascript" src="app/home/alerts/info/infoAlert.js"></script>
+  <script type="text/javascript" src="app/home/alerts/success/successAlert.js"></script>
+  <script type="text/javascript" src="app/home/detail/badRecords/badRecords.js"></script>
+  <script type="text/javascript" src="app/home/detail/configuration/configuration.js"></script>
+  <script type="text/javascript" src="app/home/detail/configuration/errorConfiguration.js"></script>
+  <script type="text/javascript" src="app/home/detail/configuration/fieldSelector/fieldSelectorModal.js"></script>
+  <script type="text/javascript" src="app/home/detail/configuration/startEventConfiguration.js"></script>
+  <script type="text/javascript" src="app/home/detail/configuration/statsAggregatorConfiguration.js"></script>
+  <script type="text/javascript" src="app/home/detail/configuration/stopEventConfiguration.js"></script>
+  <script type="text/javascript" src="app/home/detail/dataSummary/dataSummary.js"></script>
+  <script type="text/javascript" src="app/home/detail/detail.js"></script>
+  <script type="text/javascript" src="app/home/detail/history/clearHistory/clearHistory.js"></script>
+  <script type="text/javascript" src="app/home/detail/history/history.js"></script>
+  <script type="text/javascript" src="app/home/detail/history/summary/summaryModal.js"></script>
+  <script type="text/javascript" src="app/home/detail/rawPreview/rawPreview.js"></script>
+  <script type="text/javascript" src="app/home/detail/rules/dataDriftRules/dataDriftRules.js"></script>
+  <script type="text/javascript" src="app/home/detail/rules/dataRules/dataRules.js"></script>
+  <script type="text/javascript" src="app/home/detail/rules/metricAlert/metricAlert.js"></script>
+  <script type="text/javascript" src="app/home/detail/rules/rules.js"></script>
+  <script type="text/javascript" src="app/home/detail/rules/rulesConfiguration/rulesConfiguration.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/aggregationCharts.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/allStageBatchTimer.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/allStageMemoryConsumer.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/batchCountMeter.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/batchTimer.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/customHistogram.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/customMeter.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/customTimer.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/histogram.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/memoryConsumed.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/meter.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/recordCount.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/recordPercentage.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/charts/runnersHistogram.js"></script>
+  <script type="text/javascript" src="app/home/detail/summary/summary.js"></script>
+  <script type="text/javascript" src="app/home/graph/graph.js"></script>
+  <script type="text/javascript" src="app/home/header/addLabel/addLabelConfirmation.js"></script>
+  <script type="text/javascript" src="app/home/header/downloadExecutable/downloadExecutable.js"></script>
+  <script type="text/javascript" src="app/home/header/header.js"></script>
+  <script type="text/javascript" src="app/home/header/start/start.js"></script>
+  <script type="text/javascript" src="app/home/header/stop/stopConfirmation.js"></script>
+  <script type="text/javascript" src="app/home/home.js"></script>
+  <script type="text/javascript" src="app/home/library/commit_history/commitHistory.js"></script>
+  <script type="text/javascript" src="app/home/library/create/create.js"></script>
+  <script type="text/javascript" src="app/home/library/delete/delete.js"></script>
+  <script type="text/javascript" src="app/home/library/download_remote/downloadRemote.js"></script>
+  <script type="text/javascript" src="app/home/library/duplicate/duplicate.js"></script>
+  <script type="text/javascript" src="app/home/library/import/import.js"></script>
+  <script type="text/javascript" src="app/home/library/importFromArchive/importFromArchive.js"></script>
+  <script type="text/javascript" src="app/home/library/library.js"></script>
+  <script type="text/javascript" src="app/home/library/publish/publish.js"></script>
+  <script type="text/javascript" src="app/home/library/revert_changes/revertChanges.js"></script>
+  <script type="text/javascript" src="app/home/library/share/share.js"></script>
+  <script type="text/javascript" src="app/home/packageManager/customRepoUrl/customRepoUrl.js"></script>
+  <script type="text/javascript" src="app/home/packageManager/delete_extras/deleteExtras.js"></script>
+  <script type="text/javascript" src="app/home/packageManager/install/install.js"></script>
+  <script type="text/javascript" src="app/home/packageManager/package_manager.js"></script>
+  <script type="text/javascript" src="app/home/packageManager/uninstall/uninstall.js"></script>
+  <script type="text/javascript" src="app/home/packageManager/upload_extras/uploadExtras.js"></script>
+  <script type="text/javascript" src="app/home/pipelineHome/pipelineHome.js"></script>
+  <script type="text/javascript" src="app/home/preview/common/previewCommon.js"></script>
+  <script type="text/javascript" src="app/home/preview/common/previewCommonTableView.js"></script>
+  <script type="text/javascript" src="app/home/preview/common/previewMultiStage.js"></script>
+  <script type="text/javascript" src="app/home/preview/common/previewMultiStageTableView.js"></script>
+  <script type="text/javascript" src="app/home/preview/configuration/previewConfig.js"></script>
+  <script type="text/javascript" src="app/home/preview/preview.js"></script>
+  <script type="text/javascript" src="app/home/preview/rawPreviewData/rawPreviewData.js"></script>
+  <script type="text/javascript" src="app/home/resetOffset/resetOffset.js"></script>
+  <script type="text/javascript" src="app/home/snapshot/modal/snapshotModal.js"></script>
+  <script type="text/javascript" src="app/home/snapshot/snapshot.js"></script>
+  <script type="text/javascript" src="app/home/stageLibrary/stageLibrary.js"></script>
+  <script type="text/javascript" src="app/home/usersAndGroups/users_and_groups.js"></script>
+  <script type="text/javascript" src="common/_declarations.js"></script>
+  <script type="text/javascript" src="common/administration/applicationToken/applicationToken.js"></script>
+  <script type="text/javascript" src="common/administration/connectionLost/connectionLost.js"></script>
+  <script type="text/javascript" src="common/administration/createDPMUsers/createDPMUsers.js"></script>
+  <script type="text/javascript" src="common/administration/disableDPM/disableDPM.js"></script>
+  <script type="text/javascript" src="common/administration/dpmInfo/dpmInfo.js"></script>
+  <script type="text/javascript" src="common/administration/enableDPM/enableDPM.js"></script>
+  <script type="text/javascript" src="common/administration/jvmMetrics/_declarations.js"></script>
+  <script type="text/javascript" src="common/administration/jvmMetrics/jvmMetrics.js"></script>
+  <script type="text/javascript" src="common/administration/jvmMetrics/settings/settings.js"></script>
+  <script type="text/javascript" src="common/administration/jvmMetrics/threadDump/threadDump.js"></script>
+  <script type="text/javascript" src="common/administration/logs/_declarations.js"></script>
+  <script type="text/javascript" src="common/administration/logs/logConfig/logConfig.js"></script>
+  <script type="text/javascript" src="common/administration/logs/logs.js"></script>
+  <script type="text/javascript" src="common/administration/restart/restart.js"></script>
+  <script type="text/javascript" src="common/administration/sdcConfiguration/_declarations.js"></script>
+  <script type="text/javascript" src="common/administration/sdcConfiguration/sdcConfiguration.js"></script>
+  <script type="text/javascript" src="common/administration/sdcDirectories/sdcDirectories.js"></script>
+  <script type="text/javascript" src="common/administration/shutdown/shutdown.js"></script>
+  <script type="text/javascript" src="common/administration/update_permissions/updatePermissions.js"></script>
+  <script type="text/javascript" src="common/directives/analytics/analytics.js"></script>
+  <script type="text/javascript" src="common/directives/codemirror/_declarations.js"></script>
+  <script type="text/javascript" src="common/directives/codemirror/codemirrorEL.js"></script>
+  <script type="text/javascript" src="common/directives/codemirror/ui-codemirror.js"></script>
+  <script type="text/javascript" src="common/directives/common/_declarations.js"></script>
+  <script type="text/javascript" src="common/directives/common/contenteditable.js"></script>
+  <script type="text/javascript" src="common/directives/common/draggable.js"></script>
+  <script type="text/javascript" src="common/directives/common/droppable.js"></script>
+  <script type="text/javascript" src="common/directives/common/fileread.js"></script>
+  <script type="text/javascript" src="common/directives/common/focusMe.js"></script>
+  <script type="text/javascript" src="common/directives/common/mutation-callback.js"></script>
+  <script type="text/javascript" src="common/directives/common/ng-enter.js"></script>
+  <script type="text/javascript" src="common/directives/common/resize.js"></script>
+  <script type="text/javascript" src="common/directives/common/scrollToBottom.js"></script>
+  <script type="text/javascript" src="common/directives/common/showErrors.js"></script>
+  <script type="text/javascript" src="common/directives/jsonFormatter/json-formatter.js"></script>
+  <script type="text/javascript" src="common/directives/loading/loading.js"></script>
+  <script type="text/javascript" src="common/directives/nvd3/angular-nvd3.js"></script>
+  <script type="text/javascript" src="common/directives/pipelineGraph/pipelineGraph.js"></script>
+  <script type="text/javascript" src="common/directives/recordTree/recordTree.js"></script>
+  <script type="text/javascript" src="common/directives/recursion-helper.js"></script>
+  <script type="text/javascript" src="common/directives/splitter/splitter.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/_declarations.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/modules/swagger-external-references.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/modules/swagger-xml-formatter.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/modules/swagger1-to-swagger2-converter.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/modules/swagger2-json-parser.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/swagger-client.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/swagger-model.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/swagger-modules.js"></script>
+  <script type="text/javascript" src="common/directives/swagger-ui/swagger-ui.js"></script>
+  <script type="text/javascript" src="common/directives/tabs/tabs.js"></script>
+  <script type="text/javascript" src="common/filters/_declarations.js"></script>
+  <script type="text/javascript" src="common/filters/abbreviateNumber.js"></script>
+  <script type="text/javascript" src="common/filters/friendlyFileSize.js"></script>
+  <script type="text/javascript" src="common/filters/objLimitTo.js"></script>
+  <script type="text/javascript" src="common/moment-timezone-with-data.js"></script>
+  <script type="text/javascript" src="templates-app.js"></script>
+  <script type="text/javascript" src="templates-common.js"></script>
+
+</head>
+<body ng-keydown="common.bodyKeyEvent($event)">
+
+<!--
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+              data-target="#sdc-header-navbar-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+
+      <a class="logo" ng-href="{{common.baseHref}}">
+        <img src="assets/logo.png" />
+      </a>
+
+      <img class="pull-left remote-enabled-icon"
+           ng-if="common.remoteServerInfo.registrationStatus && !common.disconnectedMode"
+           src="assets/cloud_done.svg"
+           title="{{('global.menu.dpmEnabled' | translate) + common.dpmBaseURL}}"/>
+
+      <img class="pull-left remote-enabled-icon"
+           ng-if="common.remoteServerInfo.registrationStatus && common.disconnectedMode"
+           src="assets/cloud_disconnected.svg"
+           title="{{('global.menu.dpmDisconnectedMode' | translate) + common.dpmBaseURL}}"/>
+
+      <div class="pull-left" ng-if="common.headerTitle"
+           ng-bind-html="common.headerTitle"></div>
+
+    </div>
+    <div class="collapse navbar-collapse" id="sdc-header-navbar-collapse">
+
+      <ul class="nav navbar-nav navbar-right" ng-cloak>
+
+        <li ng-if="common.isDPMEnabled">
+          <a ng-href="{{common.dpmBaseURL}}"
+             target="_blank"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.dpm' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500"
+             class="dpm-icon"
+             ng-class="{'disconnected-mode': common.disconnectedMode}">
+            <i class="fa fa-cloud fa-lg"></i>
+            <span>SCH</span>
+          </a>
+        </li>
+
+        <li ng-if="!common.isDPMEnabled">
+          <a href="javascript:;" ng-click="common.onDPMButtonClick()"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.dpm' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500"
+             class="dpm-icon">
+            <i class="fa fa-cloud fa-lg"></i>
+            <span>SCH</span>
+          </a>
+        </li>
+
+        <li>
+          <a ng-href="{{common.baseHref}}"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.home' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-home fa-lg"></i>
+            <span class="menu-label">{{'global.menu.home' | translate}}</span>
+          </a>
+        </li>
+
+        <li ng-if="!common.isSlaveNode && isAuthorized([userRoles.admin])">
+          <a href="/collector/packageManager"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.packageManager' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-gift fa-lg"></i>
+          </a>
+        </li>
+
+        <li ng-if="common.isSlaveNode">
+          <a ng-href="{{common.sdcClusterManagerURL}}"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.clusterManager' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-cloud fa-lg dpm-color"></i>
+            <span>SCH</span>
+          </a>
+        </li>
+
+
+        <li class="dropdown pointer notifications-dropdown"
+            ng-if="common.userName && isAuthorized([userRoles.admin, userRoles.creator, userRoles.manager])">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'home.header.notifications' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <span class="menu-label">{{'home.header.notifications' | translate}}</span>
+            <i class="fa fa-bell fa-11x"></i>
+            <span class="badge"
+                  ng-show="common.alertsTotalCount > 0"
+                  ng-bind="common.alertsTotalCount"></span>
+
+          </a>
+          <ul class="dropdown-menu pull-right scrollable-menu" role="menu" aria-labelledby="dropdownMenu1">
+
+            <li role="presentation" class="dropdown-header"
+                translate="home.header.emptyAlerts"
+                ng-if="common.alertsTotalCount == 0">It’s all good! You don’t have any new alerts.</li>
+
+
+            <li role="presentation" class="dropdown-header"
+                ng-repeat-start="(pipelineName, alerts) in common.alertsMap">Pipeline - {{pipelineName}}</li>
+
+            <li role="presentation" ng-repeat="alert in alerts">
+              <a role="menuitem" tabindex="-1" href="#"
+                 ng-click="common.onAlertClick(alert)">
+
+                <span ng-if="alert.gauge.value.exceptionMessage">
+                  <strong>{{alert.ruleDefinition.label}}: </strong> {{alert.gauge.value.exceptionMessage}}
+                </span>
+
+                <span ng-if="!alert.gauge.value.exceptionMessage && alert.ruleDefinition.family !== 'drift'" ng-bind="alert.ruleDefinition.alertText"></span>
+
+                <span ng-if="!alert.gauge.value.exceptionMessage && alert.ruleDefinition.family === 'drift' && alert.gauge.value.alertTexts">
+                  <span class="alert-text" ng-repeat="alertText in alert.gauge.value.alertTexts track by $index">{{alertText}}</span>
+                </span>
+
+                <button type="button" class="close" aria-label="Close"
+                        ng-click="common.deleteTriggeredAlert(alert, $event)">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </a>
+            </li>
+
+            <li ng-repeat-end role="presentation" class="divider" ng-if="!$last"></li>
+          </ul>
+        </li>
+
+
+        <li class="dropdown pointer"
+            ng-if="common.userName && isAuthorized([userRoles.admin, userRoles.creator, userRoles.manager])">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.admin.main' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-cogs fa-lg"></i>
+            <span class="menu-label">{{'global.menu.admin.main' | translate}}</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="collector/configuration">
+                <i class="fa fa-gear"></i>
+                <span translate="global.menu.admin.configuration">Configuration</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="javascript:;"
+                 ng-if="common.userName && isAuthorized([userRoles.admin])"
+                 ng-click="common.showSDCDirectories()">
+                <i class="fa fa-folder"></i>
+                <span translate="sdcDirectories.title">SDC Directories</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin])">
+              <a href="collector/jvmMetrics">
+                <i class="fa fa-dashboard"></i>
+                <span translate="global.menu.admin.jvmMetrics">JVM Metrics</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin, userRoles.creator, userRoles.manager])">
+              <a href="collector/logs">
+                <i class="fa fa-tasks"></i>
+                <span translate="global.menu.admin.logs">Logs</span>
+              </a>
+            </li>
+
+            <li ng-if="isAuthorized([userRoles.admin]) && !common.remoteServerInfo.registrationStatus">
+              <a href="javascript:;" ng-click="common.onEnableDPMClick()">
+                <i class="fa fa-file-text"></i>
+                <span translate="global.menu.admin.enableDPM">Enable Control Hub</span>
+              </a>
+            </li>
+
+            <li ng-if="isAuthorized([userRoles.admin]) && common.remoteServerInfo.registrationStatus">
+              <a href="javascript:;" ng-click="common.onDisableDPMClick()">
+                <i class="fa fa-file-text"></i>
+                <span translate="global.menu.admin.disableDPM">Disable Control Hub</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && !common.isSlaveNode">
+              <a href="javascript:;" ng-click="common.shutdownCollector()">
+                <i class="fa fa-stop"></i>
+                <span translate="global.menu.admin.shutdown">Shutdown</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && !common.isSlaveNode">
+              <a href="javascript:;" ng-click="common.restartCollector()">
+                <i class="glyphicon glyphicon-refresh"></i>
+                <span translate="global.menu.admin.restart">Restart</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && !common.isDPMEnabled && common.authenticationType !== 'none'">
+              <a href="/collector/usersAndGroups">
+                <i class="glyphicon glyphicon-user"></i>
+                <span translate="global.menu.admin.usersAndGroups">Users & Groups</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && common.isDPMEnabled">
+              <a ng-href="{{common.dpmBaseURL}}#/security/users" target="_blank">
+                <i class="glyphicon glyphicon-user"></i>
+                <span translate="global.menu.admin.usersAndGroups">Users & Groups</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && (common.authenticationType !== 'none' || common.isDPMEnabled)">
+              <a href="javascript:;" ng-click="common.updatePermissions()">
+                <i class="fa fa-share-alt"></i>
+                <span translate="home.library.transferPermissions">Transfer Permissions</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="dropdown pointer" ng-if="common.authenticationType != 'none' || common.isDPMEnabled">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.account.title' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+              <i class="fa fa-user fa-lg"></i>
+            <span class="menu-label">{{'global.menu.account.title' | translate}}</span>
+          </a>
+          <ul class="dropdown-menu">
+
+            <li role="presentation" class="dropdown-header" translate="global.menu.account.loggedInUser">Logged In User</li>
+
+            <li class="disabled">
+              <a href="">
+                <span>{{common.userName}}</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="dropdown-header" translate="global.menu.account.assignedRoles">Assigned Roles</li>
+
+            <li class="disabled">
+              <a href="">
+                <span>{{common.userRoles}}</span>
+              </a>
+            </li>
+
+
+            <li role="presentation" class="dropdown-header"
+                ng-if="common.userGroups && common.userGroups.length"
+                translate="global.menu.account.assignedGroups">Assigned Groups</li>
+
+            <li class="disabled" ng-if="common.userGroups && common.userGroups.length">
+              <a href="">
+                <span>{{common.userGroups}}</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="divider"></li>
+
+            <li ng-if="common.authenticationType === 'form' || common.isDPMEnabled">
+              <a href="javascript:;" ng-click="common.logout()">
+                <span class="glyphicon glyphicon-log-out"></span>
+                <span translate="global.menu.account.logout">Logout</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+
+        <li class="dropdown pointer">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.help.main' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500"><i class="fa fa-question-circle fa-15x"></i><span class="menu-label">{{'global.menu.help.main' | translate}}</span></a>
+          <ul class="dropdown-menu">
+
+            <li>
+              <a href="javascript:;" ng-click="common.launchHelpContents()">
+                <span class="fa fa-book"></span>
+                <span translate="global.menu.help.helpContents">Help Contents</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin])">
+              <a href="javascript:;" ng-click="common.showSupportBundle()">
+                <span class="fa fa-ticket"></span>
+                <span translate="global.menu.help.supportBundle">Support Bundle</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="collector/restapi">
+                <span class="fa fa-globe"></span>
+                <span translate="global.menu.help.restFulAPI">RESTful API</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="javascript:;" ng-click="common.showAbout()">
+                <span class="fa fa-info-circle"></span>
+                <span translate="global.menu.help.about">About</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="divider"></li>
+
+            <li>
+              <a href="https://streamsetters-slack.herokuapp.com/" target="_blank">
+                <span class="fa fa-slack"></span>
+                <span translate="global.menu.help.chatOnSlack">Chat on Slack</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="https://groups.google.com/a/streamsets.com/d/forum/sdc-user" target="_blank">
+                <span class="fa fa-users"></span>
+                <span translate="global.menu.help.joinUserGroup">Join our User Group</span>
+              </a>
+            </li>
+
+
+            <li>
+              <a href="https://ask.streamsets.com/questions/" target="_blank">
+                <span class="fa fa-question-circle"></span>
+                <span translate="global.menu.help.askStreamSets">Ask StreamSets</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="divider"></li>
+
+            <li ng-if="common.activationInfo && common.activationInfo.enabled">
+              <a href="javascript:;" ng-click="common.showRegistrationModal()">
+                <span class="fa fa-key"></span>
+                <span translate="global.menu.help.register">Register</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="javascript:;" ng-click="common.showSettings()">
+                <span class="fa fa-gear"></span>
+                <span translate="global.menu.help.settings">Settings</span>
+              </a>
+            </li>
+
+          </ul>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</div>
+
+<ng-include src="'app/help/about/aboutModal.tpl.html'"></ng-include>
+-->
+<div ng-view ng-if="!notAuthorized">
+</div>
+
+<div class="panel panel-default page-panel not-authorized-page"
+     ng-class="{'show': true}"
+     ng-if="notAuthorized">
+  <h4>{{'global.messages.error.notAuthorized' | translate}}</h4>
+</div>
+
+</body>
+</html>

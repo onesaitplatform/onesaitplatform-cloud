@@ -1,0 +1,57 @@
+{
+  "clientPlatform": "Ticketing App",
+  "clientPlatformInstance": "Issue generator",
+  "token": "e7ef0742d09d4de5a3687f0cfdf7f626",
+  "ontology": "Ticket",
+  "fields": {
+    "coordinates.coordinates.latitude": {
+      "function": "RANDOM_NUMBER",
+      "from": "0",
+      "to": "100",
+      "precision": "4"
+    },
+    "coordinates.coordinates.longitude": {
+      "function": "RANDOM_NUMBER",
+      "from": "-50",
+      "to": "0",
+      "precision": "4"
+    },
+    "coordinates.type": {
+      "function": "NULL"
+    },
+    "email": {
+      "function": "RANDOM_STRING",
+      "list": "worker1@indra.es, recepcionist1@indra.es,worker2@indra.es"
+    },
+    "file.data": {
+      "function": "NULL"
+    },
+    "file.media.binaryEncoding": {
+      "function": "NULL"
+    },
+    "file.media.mime": {
+      "function": "NULL"
+    },
+    "file.media.name": {
+      "function": "NULL"
+    },
+    "file.media.storageArea": {
+      "function": "NULL"
+    },
+    "identification": {
+      "function": "RANDOM_STRING",
+      "list": "Street lights, Traffic lights, Roads"
+    },
+    "name": {
+      "function": "NULL"
+    },
+    "response_via": {
+      "function": "FIXED_STRING",
+      "value": "Email"
+    },
+    "status": {
+      "function": "FIXED_STRING",
+      "value": "PENDING"
+    }
+  }
+}

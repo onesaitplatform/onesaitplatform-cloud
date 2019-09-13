@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "AirQuality_gr2",
+    "type": "object",
+    "required": [
+        "AirQuality_gr2"
+    ],
+    "properties": {
+        "AirQuality_gr2": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info AirQuality_gr2",
+        "type": "object",
+        "required": [
+            "location",
+            "measure",
+            "timestamp"
+        ],
+        "properties": {
+            "location": {
+                "type": "string"
+            },
+            "measure": {
+                "type": "number"
+            },
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            }
+        }
+    },
+    "description": "AirQuality_gr2",
+    "additionalProperties": true
+}

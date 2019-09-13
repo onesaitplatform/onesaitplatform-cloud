@@ -1,0 +1,23 @@
+spring:
+  boot.admin: #Spring Boot Admin Config    
+    url: http://monitoringuiservice:18100/monitoring  
+    client.service-url: http://videobrokerservice:${server.port}${server.contextPath}/ 
+  datasource:  
+    url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+
+onesaitplatform:
+  kafka:
+    enable: ${KAFKAENABLED}
+    host: ${KAFKAHOST}
+    port: ${KAFKAPORT}  
+    user: ${KAFKAUSER}
+    password: ${KAFKAPASSWORD}
+    partitions: 10
+    replication: 1
+  audit.global.notify: ${AUDITGLOBALNOTIFY}   
+  hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY} 
+  hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 

@@ -1,0 +1,325 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_DEVELOPER",
+	"noSession": "/console/login",
+	"navigation": [
+		{
+			"title": {
+				"EN": "SHARE & USE",
+				"ES": "COMPARTE Y USA"
+			},
+			"icon": "flaticon-cart",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Market",
+						"ES": "Mi Market"
+					},
+					"icon": "",
+					"url": "/controlpanel/marketasset/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DEVELOPMENT"
+			},
+			"icon": "flaticon-network",
+			"url": "",
+			"submenu": [
+			{
+					"title": {
+						"EN": "My Projects",
+						"ES": "Mis Proyectos"
+					},
+					"icon": "",
+					"url": "/controlpanel/projects/list"
+				},
+				{
+					"title": {
+						"EN": "My Ontologies",
+						"ES": "Mis Ontologías"
+					},
+					"icon": "",
+					"url": "/controlpanel/ontologies/list"
+				},
+				{
+					"title": {
+						"EN": "Data Import Tools",
+						"ES": "Herramientas de importación"
+					},
+					"icon": "",
+					"url": "/controlpanel/jsontool/tools"
+				},
+				{
+					"title": {
+						"EN": "My Digital Flows",
+						"ES": "Mis Flujos Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/flows/list"
+				},
+				{
+					"title": {
+						"EN": "My Business Rules",
+						"ES": "Mis Reglas de Negocio"
+					},
+					"icon": "",
+					"url": "/controlpanel/rule-domains/list"
+				},
+				{
+					"title": {
+						"EN": "My SQL Streams",
+						"ES": "Mis Streams SQL"
+					},
+					"icon": "",
+					"url": "/controlpanel/ksql/flow/list"
+				},
+				{
+					"title": {
+						"EN": "My APIs",
+						"ES": "Mis APIs"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/list"
+				},
+				{
+					"title": {
+						"EN": "My Web Projects",
+						"ES": "Mis Proyectos Web"
+					},
+					"icon": "",
+					"url": "/controlpanel/webprojects/list"
+				},
+				{
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "My Realms",
+						"ES": "Mis Dominios de Seguridad"
+					},
+					"icon": "",
+					"url": "/controlpanel/apps/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "VISUALIZATION",
+				"ES": "VISUALIZACIÓN"
+			},
+			"icon": "flaticon-graph",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Dashboards",
+						"ES": "Mis Dashboards"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				},
+				{
+					"title": {
+						"EN": "My Gadgets",
+						"ES": "Mis Gadgets"
+					},
+					"icon": "",
+					"url": "/controlpanel/gadgets/list"
+				},
+				{
+					"title": {
+						"EN": "My DataSources",
+						"ES": "Mis Fuentes de datos"
+					},
+					"icon": "",
+					"url": "/controlpanel/datasources/list"
+				},{
+					"title": {
+						"EN": "My Reports",
+						"ES": "Mis Informes"
+					},
+					"icon": "",
+					"url": "/controlpanel/reports/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DIGITAL CLIENTS",
+				"ES": "CLIENTES DIGITALES"
+			},
+			"icon": "flaticon-share",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Digital Clients",
+						"ES": "Mis Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devices/list"
+				},
+				{
+					"title": {
+						"EN": "My Digital Clients Instances",
+						"ES": "Instancias de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devices/management/list"
+				},
+				{
+					"title": {
+						"EN": "My Digital Clients Simulations",
+						"ES": "Mis Simulaciones de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devicesimulation/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Clients Visualization",
+						"ES": "Visualización de Clientes Digitales"
+					},
+					"icon": "",
+					"url": "/controlpanel/devices/management/show"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DIGITAL TWIN",
+				"ES": "DIGITAL TWIN"
+			},
+			"icon": "flaticon-medical",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Digital Twin Definitions",
+						"ES": "Mis Definiciones de Digital Twin"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwintypes/list"
+				},
+				{
+					"title": {
+						"EN": "My Digital Twins",
+						"ES": "Mis Digital Twins"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwindevices/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Twin Status",
+						"ES": "Estado de mis Digital Twins"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwindisplay/show"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "GIS TOOLS",
+				"ES": "HERRAMIENTAS GISB"
+			},
+			"icon": "flaticon-map-location",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My GIS Viewers",
+						"ES": "Mis Visores GIS"
+					},
+					"icon": "",
+					"url": "/controlpanel/viewers/list"
+				},
+				{
+					"title": {
+						"EN": "My GIS Layers",
+						"ES": "Mis Capas GIS"
+					},
+					"icon": "",
+					"url": "/controlpanel/layers/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Query Tool",
+						"ES": "Herramienta Consultas"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytool/show"
+				},
+				{
+					"title": {
+						"EN": "My Audit",
+						"ES": "Mi Auditoría"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "My Planned Tasks",
+						"ES": "Mis Tareas Planificadas"
+					},
+					"icon": "",
+					"url": "/controlpanel/planner/list"
+				},
+				{
+					"title": {
+						"EN": "ControlPanel Rest APIs",
+						"ES": "APIs Rest ControlPanel"
+					},
+					"icon": "",
+					"url": "/controlpanel/swagger-ui.html"
+				},
+				{
+					"title": {
+						"EN": "DigitalBroker Rest Gateway",
+						"ES": "DigitalBroker Rest Gateway"
+					},
+					"icon": "",
+					"url": "/iot-broker/swagger-ui.html"
+				},
+				{
+					"title": {
+						"EN": "My Categorizations",
+						"ES": "Mis Categorizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/categorization/list"
+				}
+			]
+		}
+	]
+}

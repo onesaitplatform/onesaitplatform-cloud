@@ -1,0 +1,109 @@
+<!doctype html>
+<html ng-app="dashboardFramework">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard Framework</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+  <style>
+    [ng-cloak] {
+      display: none !important;
+    }
+  </style>
+  <script src="../env/env.js"></script>
+  <script>
+    window.__env = window.__env || {};
+    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+    window.__env.socketEndpointSend = '/dsengine/solver';
+    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+    window.__env.endpointControlPanel = '/controlpanel';
+    window.__env.endpointDashboardEngine = '/dashboardengine';
+    window.__env.dashboardEngineUsername = '';
+    window.__env.dashboardEnginePassword = '';
+    window.__env.dashboardEngineOauthtoken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmluY2lwYWwiOiJhZG1pbmlzdHJhdG9yIiwiY2xpZW50SWQiOiJvbmVzYWl0cGxhdGZvcm0iLCJ1c2VyX25hbWUiOiJhZG1pbmlzdHJhdG9yIiwic2NvcGUiOlsib3BlbmlkIl0sIm5hbWUiOiJhZG1pbmlzdHJhdG9yIiwiZXhwIjoxNTQ2OTkwMjMwLCJncmFudFR5cGUiOiJwYXNzd29yZCIsInBhcmFtZXRlcnMiOnsiZ3JhbnRfdHlwZSI6InBhc3N3b3JkIiwidXNlcm5hbWUiOiJhZG1pbmlzdHJhdG9yIn0sImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU5JU1RSQVRPUiJdLCJqdGkiOiIyYTlkZTIzZC0xNDdlLTRkMGEtYWVkYy0wMmM5MjAzYmE5M2UiLCJjbGllbnRfaWQiOiJvbmVzYWl0cGxhdGZvcm0ifQ.HqqiHP642e8QotsDm37NItQ46KmITSVl19OtYot2JDU';
+    window.__env.dashboardEngineLoginRest = '/loginRest';
+    window.__env.dashboardEngineLoginRestTimeout = 5000;
+    window.__env.enableDebug = false;
+    window.__env.urlParameters = getURLParameters();
+    // <![CDATA[    
+    var eventMethod = window.addEventListener
+          ? "addEventListener"
+          : "attachEvent";
+          var eventer = window[eventMethod];
+          var messageEvent = eventMethod === "attachEvent"
+          ? "onmessage"
+          : "message";
+          eventer(messageEvent, function (e) {
+
+    
+      var message;
+      //IF only close
+      if (typeof e.data != "undefined" && e.data.indexOf('closeGadgetFromIframe') >= 0 ){
+          console.log(angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope());    
+          angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().closeDialog();        
+          return ;
+      } else if (typeof e.message != "undefined" && e.message.indexOf('closeGadgetFromIframe') >=0 ) {
+          angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().closeDialog();        
+          return ;
+      }
+      
+      if (typeof e.data != "undefined" && e.data.indexOf('createGadgetFromIframe') >= 0 ){
+              message=JSON.parse(e.data)    ;
+          } else if (typeof e.message != "undefined" && e.message.indexOf('createGadgetFromIframe') >=0 ) {
+              message=JSON.parse(e.message)    ;
+          }
+          if(message!=null){
+              console.log(message);            
+              angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().addGadgetFromIframe(message.createGadgetFromIframe.data.type,message.createGadgetFromIframe.data.id,message.createGadgetFromIframe.data.identification);          
+          }    
+      }); 
+          // ]]>  
+  </script>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles/vendor.css">
+
+  <link rel="stylesheet" href="gridster.css">
+
+  <link rel="stylesheet" href="styles/app.css">
+</head>
+<body class="layout-column" ng-cloak>
+
+<dashboard editmode="true" iframe="false" selectedpage="0" id="42504450-595e-4360-a91e-b24b14df3af5" public="false" class="flex layout-column"></dashboard>
+
+
+<script src="scripts/vendor.js"></script>
+<!-- angular material css override -->
+<link rel="stylesheet" href="./controlpanel/resources/dashboard/app/resources/angular-override.css"> 
+<!-- Angular Material Fileinput -->
+<link rel="stylesheet" href="./app/resources/lf-ng-md-file-input.min.css">
+<script src="./app/resources/lf-ng-md-file-input.min.js"></script>
+
+<script src="gridster.js"></script>
+
+<script src="scripts/app.js"></script>
+
+<script>
+  
+  function getURLParameters()
+ 	{	    	 
+ 	    var sPageURL = window.location.search.substring(1);	
+ 	    var sURLVariables = sPageURL.split('&');	
+ 	    var urlParametersMap={};
+ 	    for (var i = 0; i < sURLVariables.length; i++)	
+ 	    {
+ 	    	if(sURLVariables[i].length>0){
+ 	       		var sParameterName = sURLVariables[i].split('=');
+ 	       		urlParametersMap[sParameterName[0]] = sParameterName[1];
+ 	    	}
+ 	    } 	   
+ 	    return urlParametersMap;
+ 	    }
+
+     
+</script>
+</body>
+</html>

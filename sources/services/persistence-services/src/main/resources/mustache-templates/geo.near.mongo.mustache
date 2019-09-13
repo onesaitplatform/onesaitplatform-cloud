@@ -1,0 +1,14 @@
+db.{{ontology}}.find(
+   {
+     "{{field}}": {
+       $nearSphere: {
+         $geometry: {
+              "type" : "Point",
+              "coordinates" : [ {{longitude}}, {{latitude}} ]
+           }
+          ,
+           $maxDistance: {{maxDistance}}
+       }
+     }
+   }
+)

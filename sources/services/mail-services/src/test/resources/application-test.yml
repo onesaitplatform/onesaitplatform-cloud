@@ -1,0 +1,17 @@
+spring:
+  mail:
+    default-encoding: UTF-8
+    host: localhost
+    jndi-name:
+    username: username
+    password: secret
+    port: 2525
+    properties:
+      mail:
+        debug: false
+        smtp:
+          debug: false
+          auth: true
+          starttls: true
+    protocol: smtp
+    test-connection: false

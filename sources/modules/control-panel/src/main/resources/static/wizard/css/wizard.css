@@ -1,0 +1,74 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('../fonts/icomoon.eot?xkm313');
+  src:  url('../fonts/icomoon.eot?xkm313#iefix') format('embedded-opentype'),
+    url('../fonts/icomoon.ttf?xkm313') format('truetype'),
+    url('../fonts/icomoon.woff?xkm313') format('woff'),
+    url('../fonts/icomoon.svg?xkm313#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+.fa-hdd:before {
+  content: "\e901";
+  font-family: 'icomoon' !important;
+}
+.fa-docker:before {
+  content: "\e900";
+  font-family: 'icomoon' !important;
+}
+
+
+
+
+/***** Top content *****/
+
+.wizard-main-content {text-align:center}
+.wizard-content {width: 80%;  margin-left: 8%; margin-top: 5%; }
+
+.f1 {
+	padding: 25px; background: #fff;
+	-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
+}
+.f1 h3 { margin-top: 0; margin-bottom: 5px; text-transform: uppercase; }
+
+.f1-steps { overflow: hidden; position: relative; margin-top: 20px; }
+
+.f1-progress { position: absolute; top: 24px; left: 0; width: 100%; height: 1px; background: #ddd; }
+.f1-progress-line { position: absolute; top: 0; left: 0; height: 1px; background: #2e6c99; }
+
+.f1-step { position: relative; float: left; width: 16%; padding: 0 5px; }
+
+.f1-step-icon {
+	display: inline-block; width: 40px; height: 40px; margin-top: 4px; background: #ddd;
+	font-size: 16px; color: #fff; line-height: 40px;
+	-moz-border-radius: 50%; -webkit-border-radius: 50%; border-radius: 50%;
+}
+.f1-step-icon > i {
+	padding-top:35%;
+}
+.f1-step.activated .f1-step-icon {	background: #fff; border: 1px solid #2e6c99; color: #2e6c99; line-height: 38px; } 
+.f1-step.active .f1-step-icon {
+	width: 48px; height: 48px; margin-top: 0; background: #2e6c99; font-size: 22px; line-height: 48px;
+}
+
+.f1-step p { color: #ccc; }
+.f1-step.activated p { color: #2e6c99; }
+.f1-step.active p { color: #2e6c99; }
+
+.f1 fieldset { display: none; text-align: left; }
+
+.f1-buttons { text-align: right; }
+
+.f1 .input-error { border-color: #f35b3f; }
+
+
+
+@media (max-width: 415px) {
+	
+	h1, h2 { font-size: 32px; }
+	
+	.f1 { padding-bottom: 20px; }
+	.f1-buttons button { margin-bottom: 5px; }
+
+}
+

@@ -1,0 +1,521 @@
+[
+    {
+        "id": "f793a866.5c5ec8",
+        "type": "subflow",
+        "name": "removePreviousHeaders",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "24c35f17.18f28"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 420,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "24c35f17.18f28",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "24c35f17.18f28",
+        "type": "function",
+        "z": "f793a866.5c5ec8",
+        "name": "removePreviousHeaders",
+        "func": "\nmsg.req.headers = {}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 230,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f1bbd78e.439d98",
+        "type": "subflow",
+        "name": "parseAzureResponse",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "d38e9609.0a5678"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 400,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "d38e9609.0a5678",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "d38e9609.0a5678",
+        "type": "function",
+        "z": "f1bbd78e.439d98",
+        "name": "parseAzureResponse",
+        "func": "\nif (msg.statusCode == 401) {\n    msg.payload = {\n         \"statusCode\": 500,\n         \"message\": \"External service 401: Unauthorized. Access token is missing, invalid, audience is incorrect (check external service configuration), or have expired.\"\n    }\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 220,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ed6e1a2c.8196e8",
+        "type": "subflow",
+        "name": "Azure SpeechToken",
+        "info": "Flow used to set Azure Cognitive Speech Access Token",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "c79c5ba8.28b0e8"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 360,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "c79c5ba8.28b0e8",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "c79c5ba8.28b0e8",
+        "type": "function",
+        "z": "ed6e1a2c.8196e8",
+        "name": "setAzureSpeechToken",
+        "func": "\n// ------- Insert Azure Token -------\nvar ACCESS_TOKEN = \"<AZURE_TOKEN>\";\n// ----------------------------------\n\nmsg.headers = {};\nif (msg.headers !== undefined) {\n    msg.headers = {};\n}\nmsg.headers[\"Ocp-Apim-Subscription-Key\"] = ACCESS_TOKEN;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 200,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1f949f68.51ff71",
+        "type": "tab",
+        "label": "Azure Cognitive Services Speech",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "f6cc3475.4af6c8",
+        "type": "function",
+        "z": "1f949f68.51ff71",
+        "name": "setParams",
+        "func": "msg.url = \"https://northeurope.api.cognitive.microsoft.com/sts/v1.0/issueToken\";\nmsg.req.params = msg.payload;\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 590,
+        "y": 300,
+        "wires": [
+            [
+                "55238f87.73145",
+                "16e993af.5e579c"
+            ]
+        ]
+    },
+    {
+        "id": "a0036723.061d58",
+        "type": "http request",
+        "z": "1f949f68.51ff71",
+        "name": "issueToken",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "10000",
+        "x": 670,
+        "y": 380,
+        "wires": [
+            [
+                "8ae5c4c5.027c38"
+            ]
+        ]
+    },
+    {
+        "id": "8ae5c4c5.027c38",
+        "type": "function",
+        "z": "1f949f68.51ff71",
+        "name": "setHeaders",
+        "func": "var bearerToken = \"Bearer \" + msg.payload;\nmsg.headers = {};\nmsg.headers[\"Authorization\"] = bearerToken;\nmsg.headers[\"Content-Type\"] = 'application/ssml+xml';\nmsg.headers[\"X-Microsoft-OutputFormat\"] = 'riff-24khz-16bit-mono-pcm';\nmsg.headers[\"User-Agent\"] = 'onesaitplatform-api';\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 710,
+        "y": 420,
+        "wires": [
+            [
+                "eba5cd92.1d9a3"
+            ]
+        ]
+    },
+    {
+        "id": "86cc0a6a.e09fb8",
+        "type": "http request",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeech",
+        "method": "POST",
+        "ret": "bin",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "1200000",
+        "x": 800,
+        "y": 500,
+        "wires": [
+            [
+                "556c174f.f9a9c8",
+                "da7d4677.dee788"
+            ]
+        ]
+    },
+    {
+        "id": "e3f16bdf.cd5518",
+        "type": "function",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeechInfo",
+        "func": "var mainInfo = {\n    \"info\": \"REST API for text conversion to speech\",\n    \"example\":{\n        \"language\": \"en-CA\", \"text\":\"Hello world!\"\n    }\n};\nmsg.payload = JSON.stringify(mainInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 200,
+        "wires": [
+            [
+                "72186c2e.d86604",
+                "c9b6bd4c.21ea9"
+            ]
+        ]
+    },
+    {
+        "id": "72186c2e.d86604",
+        "type": "debug",
+        "z": "1f949f68.51ff71",
+        "name": "analyzeInfoDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 830,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "d8579893.a55778",
+        "type": "function",
+        "z": "1f949f68.51ff71",
+        "name": "speechProcessingInfo",
+        "func": "var processingInfo = {\n    \"info\": \"API REST para el procesamiento de texto\",\n    \"options\": [\n        \"/textToSpeech\", \"/textToSpeech/sample\" \n        ]\n};\n\nmsg.payload = JSON.stringify(processingInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 480,
+        "y": 80,
+        "wires": [
+            [
+                "30ea5136.1af6de",
+                "41fb567f.ed9e48"
+            ]
+        ]
+    },
+    {
+        "id": "30ea5136.1af6de",
+        "type": "debug",
+        "z": "1f949f68.51ff71",
+        "name": "processingDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 890,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "124b2df6.dad4d2",
+        "type": "comment",
+        "z": "1f949f68.51ff71",
+        "name": "Speech",
+        "info": "Speech Azure Services\n\n/speech  para obtener información general de los servicios\n\n\nOpciones:\n    /textToSpeechInfo    info de textToSpeech\n    /textToSpeech        conversión texto a voz\n    \n    ...",
+        "x": 70,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "eba5cd92.1d9a3",
+        "type": "function",
+        "z": "1f949f68.51ff71",
+        "name": "parseParameters",
+        "func": "\nvar voicesOption = {\n    \"ar-EG\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ar-EG, Hoda)\",\n    \"ar-SA\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ar-SA, Naayf)\",\n    \"bg-BG\"\t:\t\"Microsoft Server Speech Text to Speech Voice (bg-BG, Ivan)\",\n    \"ca-ES\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ca-ES, HerenaRUS)\",\n    \"cs-CZ\"\t:\t\"Microsoft Server Speech Text to Speech Voice (cs-CZ, Jakub)\",\n    \"da-DK\"\t:\t\"Microsoft Server Speech Text to Speech Voice (da-DK, HelleRUS)\",\n    \"de-AT\"\t:\t\"Microsoft Server Speech Text to Speech Voice (de-AT, Michael)\",\n    \"de-CH\"\t:\t\"Microsoft Server Speech Text to Speech Voice (de-CH, Karsten)\",\n    \"de-DE\"\t:\t\"Microsoft Server Speech Text to Speech Voice (de-DE, Hedda) \",\n    \"el-GR\"\t:\t\"Microsoft Server Speech Text to Speech Voice (el-GR, Stefanos)\",\n    \"en-AU\"\t:\t\"Microsoft Server Speech Text to Speech Voice (en-AU, Catherine) \",\n    \"en-CA\"\t:\t\"Microsoft Server Speech Text to Speech Voice (en-CA, Linda)\",\n    \"en-GB\"\t:\t\"Microsoft Server Speech Text to Speech Voice (en-GB, Susan, Apollo)\",\n    \"en-IE\"\t:\t\"Microsoft Server Speech Text to Speech Voice (en-IE, Sean)\",\n    \"en-IN\"\t:\t\"Microsoft Server Speech Text to Speech Voice (en-IN, Heera, Apollo)\",\n    \"en-US\"\t:\t\"Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)\",\n    \"es-ES\"\t:\t\"Microsoft Server Speech Text to Speech Voice (es-ES, Laura, Apollo)\",\n    \"es-MX\"\t:\t\"Microsoft Server Speech Text to Speech Voice (es-MX, HildaRUS)\",\n    \"fi-FI\"\t:\t\"Microsoft Server Speech Text to Speech Voice (fi-FI, HeidiRUS)\",\n    \"fr-CA\"\t:\t\"Microsoft Server Speech Text to Speech Voice (fr-CA, Caroline)\",\n    \"fr-CH\"\t:\t\"Microsoft Server Speech Text to Speech Voice (fr-CH, Guillaume)\",\n    \"fr-FR\"\t:\t\"Microsoft Server Speech Text to Speech Voice (fr-FR, Julie, Apollo)\",\n    \"he-IL\"\t:\t\"Microsoft Server Speech Text to Speech Voice (he-IL, Asaf)\",\n    \"hi-IN\"\t:\t\"Microsoft Server Speech Text to Speech Voice (hi-IN, Kalpana, Apollo)\",\n    \"hr-HR\"\t:\t\"Microsoft Server Speech Text to Speech Voice (hr-HR, Matej)\",\n    \"hu-HU\"\t:\t\"Microsoft Server Speech Text to Speech Voice (hu-HU, Szabolcs)\",\n    \"id-ID\"\t:\t\"Microsoft Server Speech Text to Speech Voice (id-ID, Andika)\",\n    \"it-IT\"\t:\t\"Microsoft Server Speech Text to Speech Voice (it-IT, LuciaRUS)\",\n    \"ja-JP\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ja-JP, Ayumi, Apollo)\",\n    \"ko-KR\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ko-KR, HeamiRUS)\",\n    \"ms-MY\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ms-MY, Rizwan)\",\n    \"nb-NO\"\t:\t\"Microsoft Server Speech Text to Speech Voice (nb-NO, HuldaRUS)\",\n    \"nl-NL\"\t:\t\"Microsoft Server Speech Text to Speech Voice (nl-NL, HannaRUS)\",\n    \"pl-PL\"\t:\t\"Microsoft Server Speech Text to Speech Voice (pl-PL, PaulinaRUS)\",\n    \"pt-BR\"\t:\t\"Microsoft Server Speech Text to Speech Voice (pt-BR, HeloisaRUS)\",\n    \"pt-PT\"\t:\t\"Microsoft Server Speech Text to Speech Voice (pt-PT, HeliaRUS)\",\n    \"ro-RO\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ro-RO, Andrei)\",\n    \"ru-RU\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ru-RU, Irina, Apollo)\",\n    \"sk-SK\"\t:\t\"Microsoft Server Speech Text to Speech Voice (sk-SK, Filip)\",\n    \"sl-SI\"\t:\t\"Microsoft Server Speech Text to Speech Voice (sl-SI, Lado)\",\n    \"sv-SE\"\t:\t\"Microsoft Server Speech Text to Speech Voice (sv-SE, HedvigRUS)\",\n    \"ta-IN\"\t:\t\"Microsoft Server Speech Text to Speech Voice (ta-IN, Valluvar)\",\n    \"th-TH\"\t:\t\"Microsoft Server Speech Text to Speech Voice (th-TH, Pattara)\",\n    \"tr-TR\"\t:\t\"Microsoft Server Speech Text to Speech Voice (tr-TR, SedaRUS)\",\n    \"vi-VN\"\t:\t\"Microsoft Server Speech Text to Speech Voice (vi-VN, An)\",\n    \"zh-CN\"\t:\t\"Microsoft Server Speech Text to Speech Voice (zh-CN, Yaoyao, Apollo)\",\n    \"zh-HK\"\t:\t\"Microsoft Server Speech Text to Speech Voice (zh-HK, Tracy, Apollo)\",\n    \"zh-TW\"\t:\t\"Microsoft Server Speech Text to Speech Voice (zh-TW, Yating, Apollo)\",\n}\n\nvar languageCode = msg.req.params[\"language\"];\nvar text = msg.req.params[\"text\"];\nvar voice = voicesOption[languageCode];\n\nvar xmlTemplate = '<speak version=\"1.0\" xml:lang=\"' + languageCode + \n                '\"><voice name=\"' + voice + \n                '\" xml:lang=\"' + languageCode + \n                '\">' + text +'</voice></speak>';\n\nmsg.payload = xmlTemplate;\n\nmsg.url = \"https://northeurope.tts.speech.microsoft.com/cognitiveservices/v1\";\n\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 770,
+        "y": 460,
+        "wires": [
+            [
+                "86cc0a6a.e09fb8",
+                "5932e98e.869bb8"
+            ]
+        ]
+    },
+    {
+        "id": "cbe8e003.173fe",
+        "type": "onesaitplatform api rest operation",
+        "z": "1f949f68.51ff71",
+        "name": "Speech",
+        "description": "Speech Services Information",
+        "url": "/cbe8e003173fe/",
+        "apiUrl": "/",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 280,
+        "y": 80,
+        "wires": [
+            [
+                "d8579893.a55778"
+            ]
+        ]
+    },
+    {
+        "id": "b58445b2.7271a8",
+        "type": "onesaitplatform api rest",
+        "z": "1f949f68.51ff71",
+        "name": "Speech",
+        "description": "Speech Services",
+        "public": true,
+        "category": "TOOLS",
+        "authentication": "YWRtaW5pc3RyYXRvcjp6MmtCNmFObTJkOTVuRWNVVTZxS1ppMUFKVGdQaVpKcnZSWTJ1WmNNV3hBPQ==",
+        "x": 70,
+        "y": 80,
+        "wires": [
+            [
+                "cbe8e003.173fe",
+                "2db80db4.611092",
+                "855fd2c3.1cc04"
+            ]
+        ]
+    },
+    {
+        "id": "41fb567f.ed9e48",
+        "type": "onesaitplatform api rest operation response",
+        "z": "1f949f68.51ff71",
+        "name": "infoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 700,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "2db80db4.611092",
+        "type": "onesaitplatform api rest operation",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeechSample",
+        "description": "Text to Speech Conversion Information",
+        "url": "/2db80db4611092/textToSpeech/sample",
+        "apiUrl": "/textToSpeech/sample",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 380,
+        "y": 200,
+        "wires": [
+            [
+                "e3f16bdf.cd5518"
+            ]
+        ]
+    },
+    {
+        "id": "c9b6bd4c.21ea9",
+        "type": "onesaitplatform api rest operation response",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeechInfoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 830,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "855fd2c3.1cc04",
+        "type": "onesaitplatform api rest operation",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeech",
+        "description": "Text to Speech Conversion Service",
+        "url": "/855fd2c31cc04/textToSpeech",
+        "apiUrl": "/textToSpeech",
+        "method": "post",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 360,
+        "y": 260,
+        "wires": [
+            [
+                "36099106.30c22e"
+            ]
+        ]
+    },
+    {
+        "id": "cbb8cb5.abce238",
+        "type": "onesaitplatform api rest operation response",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeechResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 1420,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "36099106.30c22e",
+        "type": "subflow:ed6e1a2c.8196e8",
+        "z": "1f949f68.51ff71",
+        "name": "setAzureSpeechToken",
+        "x": 580,
+        "y": 260,
+        "wires": [
+            [
+                "f6cc3475.4af6c8"
+            ]
+        ]
+    },
+    {
+        "id": "556c174f.f9a9c8",
+        "type": "debug",
+        "z": "1f949f68.51ff71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1050,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "da7d4677.dee788",
+        "type": "subflow:f1bbd78e.439d98",
+        "z": "1f949f68.51ff71",
+        "name": "",
+        "x": 860,
+        "y": 540,
+        "wires": [
+            [
+                "ef155055.00574"
+            ]
+        ]
+    },
+    {
+        "id": "55238f87.73145",
+        "type": "debug",
+        "z": "1f949f68.51ff71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 910,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "5932e98e.869bb8",
+        "type": "debug",
+        "z": "1f949f68.51ff71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 990,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "16e993af.5e579c",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "1f949f68.51ff71",
+        "name": "",
+        "x": 670,
+        "y": 340,
+        "wires": [
+            [
+                "a0036723.061d58"
+            ]
+        ]
+    },
+    {
+        "id": "ef155055.00574",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "1f949f68.51ff71",
+        "name": "",
+        "x": 1110,
+        "y": 540,
+        "wires": [
+            [
+                "cbb8cb5.abce238",
+                "69c22bc5.f5ee14"
+            ]
+        ]
+    },
+    {
+        "id": "69c22bc5.f5ee14",
+        "type": "debug",
+        "z": "1f949f68.51ff71",
+        "name": "textToSpeechDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1400,
+        "y": 540,
+        "wires": []
+    }
+]

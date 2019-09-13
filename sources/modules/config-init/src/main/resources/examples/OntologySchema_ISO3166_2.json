@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "ISO3166_2",
+    "type": "object",
+    "required": [
+        "ISO3166_2"
+    ],
+    "properties": {
+        "ISO3166_2": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info ISO3166",
+        "type": "object",
+        "required": [
+            "name",
+            "level",
+            "language",
+            "alpha2",
+            "parentAlpha2"
+        ],
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "language": {
+                "type": "string"
+            },
+            "level": {
+                "type": "string"
+            },
+            "alpha2": {
+                "type": "string"
+            },
+            "parentAlpha2": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology defining the standard alpha codes and number for ISO-3166_2",
+    "additionalProperties": true
+}

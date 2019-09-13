@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "ContPerf",
+    "type": "object",
+    "required": [
+        "ContPerf"
+    ],
+    "properties": {
+        "ContPerf": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info ContPerf",
+        "type": "object",
+        "required": [
+            "identification"
+        ],
+        "properties": {
+            "identification": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology created for continuous performance testing",
+    "additionalProperties": true
+}

@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": true,
+    "type": "object",
+    "tittle": "TwinPropertiesSensehat",
+    "properties": {
+        "type": {
+            "type": "string"
+        },
+        "deviceId": {
+            "type": "string"
+        },
+        "status": {
+            "type": "object"
+        },
+        "timestamp": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "type",
+        "deviceId",
+        "timestamp"
+    ],
+    "title": "TwinPropertiesSensehat",
+    "description": "Shadow of the Digital Twin type"
+}

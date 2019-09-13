@@ -1,0 +1,45 @@
+onesaitplatform:     
+   database.elasticsearch:
+      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+      url: ${ELASTICDBHOST}
+      port: 9300            
+   iotbroker.plugable:
+     gateway:
+       moquette:
+         enable: true
+         store: /tmp/moquette_store_bin.mapdb
+       rest:
+         swaggerhost: ${SERVER_NAME}  
+       kafka:
+         enable: ${KAFKAENABLED}
+         host: ${KAFKAHOST}
+         port: ${KAFKAPORT}  
+         user: admin
+         password: admin-secret
+         partitions: 10
+         replication: 1
+   router.alternativeURL: http://routerservice:20000/router/router/
+   audit.global.notify: ${AUDITGLOBALNOTIFY}   
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
+   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+   metrics.collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
+   
+spring:
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring  
+      client.service-url: http://iotbrokerservice:${server.port}${server.contextPath}/   
+   data.mongodb:
+      host: ${REALTIMEDBSERVERS}
+   elasticsearch.jest:
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}                
+quartz:
+    datasource:
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 
+   level:
+      com.minsait: ${OP_LOG_LEVEL}
+      org.springframework.boot: ${OP_LOG_LEVEL}

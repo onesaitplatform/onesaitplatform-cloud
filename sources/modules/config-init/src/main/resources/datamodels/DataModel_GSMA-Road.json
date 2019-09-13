@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel GSMA-Road Schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "alternateName": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "roadClass": {
+            "type": "string"
+        },
+        "length": {
+            "type": "integer"
+        },
+        "refRoadSegment": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "responsible": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "name",
+        "alternateName",
+        "description",
+        "roadClass",
+        "length",
+        "refRoadSegment",
+        "responsible"
+    ]
+}

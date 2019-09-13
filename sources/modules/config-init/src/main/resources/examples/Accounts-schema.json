@@ -1,0 +1,50 @@
+{
+    "required": [
+        "account_number",
+        "balance",
+        "firstname",
+        "lastname",
+        "age",
+        "gender",
+        "address",
+        "employer",
+        "email",
+        "city",
+        "state"
+    ],
+    "properties": {
+        "account_number": {
+            "type": "number"
+        },
+        "balance": {
+            "type": "number"
+        },
+        "firstname": {
+            "type": "string"
+        },
+        "lastname": {
+            "type": "string"
+        },
+        "age": {
+            "type": "number"
+        },
+        "gender": {
+            "type": "string"
+        },
+        "address": {
+            "type": "string"
+        },
+        "employer": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "city": {
+            "type": "string"
+        },
+        "state": {
+            "type": "string"
+        }
+    }
+}

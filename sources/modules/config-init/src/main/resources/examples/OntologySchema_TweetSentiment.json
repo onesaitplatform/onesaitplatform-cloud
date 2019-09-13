@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "TweetSentiment",
+    "type": "object",
+    "required": [
+        "TweetSentiment"
+    ],
+    "properties": {
+        "TweetSentiment": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "tweet",
+            "sentiment"
+        ],
+        "properties": {
+            "tweet": {
+                "type": "string"
+            },
+            "sentiment": {
+                "type": "number"
+            }
+        }
+    },
+    "description": "TweetSentiment",
+    "additionalProperties": true
+}

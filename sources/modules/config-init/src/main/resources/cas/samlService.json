@@ -1,0 +1,47 @@
+{
+	"_id" : 200098991,
+	"_class" : "org.apereo.cas.support.saml.services.SamlRegisteredService",
+	"jsonFormat" : true,
+	"metadataLocation" : "https://${SERVER_NAME}/controlpanel/saml/metadata",
+	"supportedGrantTypes" : [ ],
+	"supportedResponseTypes" : [ ],
+	"serviceId" : "https://${SERVER_NAME}/controlpanel",
+	"name" : "Saml test client",
+	"description" : "SAML 2 Service",
+	"proxyPolicy" : {
+		"_class" : "org.apereo.cas.services.RefuseRegisteredServiceProxyPolicy"
+	},
+	"evaluationOrder" : 0,
+	"usernameAttributeProvider" : {
+		"_class" : "org.apereo.cas.services.DefaultRegisteredServiceUsernameProvider",
+		"canonicalizationMode" : "NONE",
+		"encryptUsername" : false
+	},
+	"logoutType" : "BACK_CHANNEL",
+	"requiredHandlers" : [ ],
+	"attributeReleasePolicy" : {
+		"_class" : "org.apereo.cas.services.ReturnAllAttributeReleasePolicy"
+	},
+	"multifactorPolicy" : {
+		"_class" : "org.apereo.cas.services.DefaultRegisteredServiceMultifactorPolicy",
+		"multifactorAuthenticationProviders" : [ ],
+		"failureMode" : "CLOSED",
+		"bypassEnabled" : false
+	},
+	"accessStrategy" : {
+		"_class" : "org.apereo.cas.services.DefaultRegisteredServiceAccessStrategy",
+		"enabled" : true,
+		"ssoEnabled" : true,
+		"requireAllAttributes" : true,
+		"requiredAttributes" : {
+			
+		},
+		"rejectedAttributes" : {
+			
+		},
+		"caseInsensitive" : false
+	},
+	"properties" : {
+		
+	}
+}

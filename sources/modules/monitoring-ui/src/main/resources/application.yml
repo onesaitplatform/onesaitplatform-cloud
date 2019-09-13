@@ -1,0 +1,94 @@
+##--spring.config.name=controlpanel
+##security.require_ssl: true
+server: ## Config Web Server
+   #ssl:
+   #   key-store-type: JKS
+    #  key-store-password: Changed!
+   #   key-store: classpath:keystore.jks
+    #  key-alias: tomcat
+   session.cookie.name : APPSESSIONID
+   port: 18100
+   contextPath: /monitoring
+   tomcat:
+      access_log_enabled: true
+      basedir: target/tomcat
+     
+onesaitplatform: #Config onesait Platform specific
+   environment.name: local
+   authentication:
+      provider: configdb
+   reminder:
+      periodInMins: 3
+      eachInMs: 300000
+      enabled: false
+      statuses: DOWN,OFFLINE
+
+## Config Reference      
+spring: ## General Config  
+   application.name: onesaitplatform-monitoring-ui
+   boot.admin: #Spring Boot Admin Config    
+      routes.endpoints:env,metrics,trace,dump,jolokia,info,configprops,logfile,refresh,loggers
+      monitor.period:120000
+      monitor.status-lifetime:120000
+      monitor.connect-timeout:30000
+      monitor.read-timeout:30000     
+      notify.mail.enabled:false
+      notify.mail.to:support@onesaitplatform.com
+      notify.mail.from:onesaitplatform@gmail.com      
+      notify.mail.text:"ENV:#{onesaitplatform.environment.name} App:#{application.name} (#{application.id}) is #{to.status}"
+         
+      #Not autoregister as Spring Boot Admin client
+      # username: operations
+      # password: changeIt!
+      # client.metadata.user.name: ${spring.boot.admin.username}
+      # client.metadata.user.password: $spring.boot.admin.password} 
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1   
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
+         
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      hibernate.ddl-auto: validate
+#  mail: ##Mail configuration
+   #  host: smtp.gmail.com
+   #  username: onesaitplatform@gmail.com
+   #  password: 2Octubre2018!
+   #  port: 587
+   #  properties.mail.smtp.auth: true
+   #  properties.mail.smtp.starttls.enable: true
+
+management.security.roles : ROLE_ADMINISTRATOR
+security:
+  basic:
+    enabled: false
+  oauth2:
+    client:
+      clientId: onesaitplatform
+      clientSecret: onesaitplatform
+      accessTokenUri: http://localhost:21000/oauth-server/oauth/token
+      userAuthorizationUri: http://localhost:21000/oauth-server/oauth/authorize
+    resource:
+      userInfoUri: http://localhost:21000/oauth-server/user
+          
+
+## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      com.minsait: INFO 

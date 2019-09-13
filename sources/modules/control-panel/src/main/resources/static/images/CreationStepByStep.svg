@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="234px" height="49px" viewBox="0 0 234 49" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: sketchtool 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>8B249675-F6F0-47B3-BDFC-648497913A83</title>
+    <desc>Created with sketchtool.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Assets_graficos" transform="translate(-1496.000000, -492.000000)">
+            <g id="ilus/-onthology_wizard-/-step_by_step" transform="translate(1498.000000, 484.000000)">
+                <rect id="Rectangle-10" stroke="#2E6C99" stroke-width="2" x="12" y="9" width="34" height="47" rx="4"></rect>
+                <path d="M140.294539,21 L138.533153,22.8165073 L145.859498,30.5595628 L110,30.5595628 L110,32.8929184 L145.859498,32.8929184 L138.533153,40.635974 L140.294539,42.5598145 L149.946342,32.3720851 C150.371264,31.9459184 150.70297,31.8245851 149.946336,31.0804184 L140.294539,21 Z" id="Shape-Copy-3" fill="#2E6C99" fill-rule="nonzero"></path>
+                <circle id="Oval-3" stroke="#2E6C99" stroke-width="2.4" fill="#FFFFFF" cx="12" cy="33" r="12"></circle>
+                <text id="1" font-family="Poppins-SemiBold, Poppins" font-size="13" font-weight="500" fill="#2E6C99">
+                    <tspan x="10" y="38">1</tspan>
+                </text>
+                <text id="{-copy-2" font-family="Helvetica" font-size="45" font-weight="normal" fill="#2E6C99">
+                    <tspan x="173" y="44">{</tspan>
+                </text>
+                <text id="{-copy-3" transform="translate(223.000000, 27.000000) scale(-1, 1) translate(-223.000000, -27.000000) " font-family="Helvetica" font-size="45" font-weight="normal" fill="#2E6C99">
+                    <tspan x="215" y="44">{</tspan>
+                </text>
+                <circle id="Oval-2-Copy-3" fill="#2E6C99" cx="209.5" cy="23.5" r="4.5"></circle>
+                <circle id="Oval-2-Copy-4" fill="#2E6C99" cx="209.5" cy="40.5" r="4.5"></circle>
+                <circle id="Oval-2-Copy-5" fill="#2E6C99" cx="192.5" cy="31.5" r="4.5"></circle>
+                <rect id="Rectangle-8-Copy-2" fill="#2E6C99" transform="translate(201.179326, 27.186578) rotate(-26.000000) translate(-201.179326, -27.186578) " x="193.679326" y="26.1865776" width="15" height="2"></rect>
+                <rect id="Rectangle-8-Copy-3" fill="#2E6C99" transform="translate(201.179326, 36.186578) scale(1, -1) rotate(-26.000000) translate(-201.179326, -36.186578) " x="193.679326" y="35.1865776" width="15" height="2"></rect>
+                <path d="M30,9 L30,56 L78,56 C79.6568542,56 81,54.6568542 81,53 L81,12 C81,10.3431458 79.6568542,9 78,9 L30,9 Z" id="Rectangle-10-Copy" stroke="#2E6C99" stroke-width="2" fill="#FFFFFF"></path>
+                <path d="M65,9 L65,56 L80,56 C81.6568542,56 83,54.6568542 83,53 L83,12 C83,10.3431458 81.6568542,9 80,9 L65,9 Z" id="Rectangle-10-Copy" stroke="#2E6C99" stroke-width="2" fill="#FFFFFF"></path>
+                <circle id="Oval-3-Copy-3" stroke="#2E6C99" stroke-width="2.4" fill="#FFFFFF" cx="82" cy="33" r="12"></circle>
+                <circle id="Oval-3-Copy-2" stroke="#2E6C99" stroke-width="2.4" fill="#FFFFFF" cx="47" cy="33" r="12"></circle>
+                <text id="2" font-family="Poppins-SemiBold, Poppins" font-size="13" font-weight="500" fill="#2E6C99">
+                    <tspan x="44" y="38">2</tspan>
+                </text>
+                <text id="3" font-family="Poppins-SemiBold, Poppins" font-size="13" font-weight="500" fill="#2E6C99">
+                    <tspan x="79" y="38">3</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+</svg>

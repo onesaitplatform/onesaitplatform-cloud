@@ -1,0 +1,2702 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+	    <meta name="description" content="Gadget list template"/>
+		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
+		
+		<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
+		
+		<script>
+		    window.__env = window.__env || {};
+		    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+		    window.__env.socketEndpointSend = '/dsengine/solver';
+		    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+		    window.__env.endpointControlPanel = '/controlpanel';
+		    window.__env.endpointDashboardEngine = '/dashboardengine';
+		    window.__env.dashboardEngineUsername = '';
+			window.__env.dashboardEnginePassword = '';
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
+		    window.__env.dashboardEngineLoginRest = '/loginRest';
+		    window.__env.enableDebug = false;
+		    window.__env.urlParameters = {};		   
+
+		</script>
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+		
+		
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND DATATABLES  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>		
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+	
+		<!-- <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/gadgets.css}"/> -->
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<!-- Dashboard styles -->		
+		<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>	
+		<link rel="stylesheet" href="/controlpanel/static/dashboards/gridster.css"/>
+		<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
+		
+		<style>
+		md-progress-circular { display: hide; visibility: hidden; }
+		.wait-interval{
+			display: none !important;
+    		background-color: #212529 !important;
+		}
+
+		.dropdown-header span{    
+			font-weight: 800;
+    		font-size: initial;
+    	}
+		.content-box-input{
+		-ms-box-sizing:content-box;
+		-moz-box-sizing:content-box;
+		-webkit-box-sizing:content-box; 
+		box-sizing:content-box;
+		}
+		
+		</style>
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed wait-interval">
+
+
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/gadgets/list}"> <span th:text="#{gadgets.my}">My Gadgets</span></a><i class="fa fa-angle-right"></i> </li>
+						<li><span th:text="#{gadgets.create}">Create Gadget</span></li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{gadgets.new}"></span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light" >
+							<div class="portlet-title">
+								<div class="caption">
+								
+									<span th:if="${gadget.id} == null" class="caption-subject" th:text="#{gadgets.new}"> New Gadget </span>
+									<span th:if="${gadget.id} != null" class="caption-subject" th:text="#{gadgets.update}"> Edit Gadget </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+									
+								</div>
+								<div class="pull-right">
+									<!-- CANCEL -->
+									<button th:if="${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
+									<span th:if="${iframe}" class="sep no-border"></span>
+									<!-- CREATE IFRAME-->
+									<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline blue" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+									<!-- UPDATE IFRAME-->
+									<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline blue" name="update"> <span th:text="#{gen.editBtn}"> Edit</span></button>
+								</div>
+								
+								<div th:classappend="${iframe} ? hide : ''"  class="tools">
+									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
+									<a href="" id="toolFullScreen" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+										
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button> 
+											<span id="alert-danger-message" th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+										</div>		
+										
+                                        <div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+										</div>	
+										
+									</div>	
+									<div class="col-md-12 margin-bottom-20">									
+										<form role="form" id="gadget_create_form" th:object="${gadget}" method="post" class="form">
+									  		<!-- FORM ACTIONS FOR INSERT-->
+											<input th:if="${gadget.id} == null" type="hidden" name="action" th:value="@{/gadgets/create}"/>
+											
+											<!-- FORM ACTIONS FOR UPDATE -->											
+											<input th:if="${gadget.id} != null and !${iframe}" type="hidden" name="action" th:value="@{/gadgets/update}"/>
+											<input th:if="${gadget.id} != null and !${iframe}" type="hidden" name="_method" value="PUT"/>								 			
+								 			<input type="hidden" id="config" th:field="*{config}"/>
+								 			<input type="hidden" id="type" th:field="*{type}"/>
+								 			<input type="hidden" id="description" th:field="*{description}"/>
+								 			<input type="hidden" id="public" th:field="*{public}"/>
+								 			<input type="hidden" id="id" th:field="*{id}"/>
+								 			<input type="hidden" id="jsonMeasures" name="jsonMeasures" />
+								 			<input type="hidden" id="datasourcesMeasures" name="datasourcesMeasures" />
+								 										  
+											<div class="form-body">
+									 			<div class="row">
+													<div class="col-md-12"> 
+														<div class=" hidden alert alert-info alert-dismissable">
+															<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+															<i class="fa fa-info-circle"></i> <strong></strong> 
+															<span></span>															
+														</div>
+													</div>												
+													<div class="col-md-6 col-sm-12">
+														<div class="form-group">
+															<i class="fa fa-credit-card"></i>  <label class="control-label"  th:text="#{gadgets.create.name} + ':'">Gadget Name</label>
+															<div class="input-icon ">
+																<i class="fa fa-credit-card"></i>
+																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gen.name}" />
+															</div>
+														</div>
+													</div>	
+											
+														<div class="col-md-6 margin-bottom-20" id="div-datasource">								
+															<div class="form-group">	
+															<span class="help-block hidden-xs" th:text="#{gadgets.select.ontology.datasource}"> Select Ontology or dataSource </span>									
+																<div class="input-group input-group-sm">																	
+																	<span class="input-group-addon" ><i class="flaticon-network"></i>  </span>
+																	<select class="selectpicker  select show-tick form-control" id="datasources" data-live-search="true" data-width="100%" onchange="selectOntologyOrDataSource(this)" th:title="#{database.ontologies} +'...'" disabled="disabled" >
+																	   <option value="none"></option> 
+																	  <optgroup  id="optgroupDatasource" th:label="#{datasources.name}">
+																		<option th:each="datasource:${datasources}" th:id="${datasource.id}" th:data-description="${datasource.identification}" th:text="${datasource.identification}" th:data-subtext="${datasource.query}" data-type="datasource" th:value="${datasource.id}"  ></option>
+																	  </optgroup>																
+																	  <optgroup  id="optgroupOntology" th:label="#{gen.ontology}">																	
+																		<option th:each="ontology : ${ontologies}" th:id="${ontology.user}" th:data-description="${ontology.description}" data-type="ontology" th:value="${ontology.identification}" th:text="${ontology.identification}"  ></option>
+																	  </optgroup>
+																	</select>
+																</div>																										
+															</div>
+														</div>					
+													<div class="clearfix"></div>													
+												</div>
+												<div class="pull-right">
+													<button th:if="${gadget.id} != null and ${dataSourceAccessType} != 'VIEW'" id="e-data-source" type="button" onclick="editDataSource();" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.edit}"> Edit DataSource</span></button>
+													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and !${iframe}" id="e-data-source-view" type="button" th:onclick="'GadgetsCreateController.go(\'' + @{|/datasources/show/${measures[0].datasource.Id}/|} + '\');'" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
+													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and  ${iframe}" id="e-data-source-view"  onclick="showDataSource();" type="button" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
+												</div>
+												
+												
+							
+									
+									
+									
+									
+									
+									
+									<!-- NUEVA ZONA DE CONSULTA ##################################################################### -->
+									<!-- CREACIÓN DE CONSULTA -->
+									<div id="query-panel" class="col-md-12 hide ">									
+										<div class="panel panel-white no-shadow">
+											<div class="panel-heading panel-sofia2">
+												<h3 class="panel-title uppercase font-grey-mint"> <span th:text="#{database.queryonto}">Consultas sobre </span> <span id="query-ontologia" class="bold uppercase">ontología</span></h3>											
+											</div>
+											<div class="panel-body no-space">	
+												<div class="panel-tools">	
+													<!-- OPCIONES DE CONSULTA -->
+													<div class="col-md-7 col-sm-12  margin-top-10 margin-bottom-10 hide">
+														<div class="col-sm-3">												
+															<select class="form-control input-sm" id="targetDatabase" name="targetDatabase" onChange="cambioConsulta();">
+																<option name="rtdb" value="rtdb"> RealTime DB</option>
+															</select>
+														</div>
+														<div class="col-md-3">							
+															<select  class="form-control input-sm" id="typeQuery" name="typeQuery" onChange="cambioConsulta()">
+																<option name="sql" value="sql"> SQL </option>
+																<option name="native" value="native"> NATIVE </option>
+															</select>
+														</div>
+														<div class="col-md-3">							
+															<select  class="form-control input-sm" id="resultFormat" name="typeQuery" disabled="disabled">
+																<option name="json" value="json"> JSON </option>
+															</select>
+														</div>	
+														<div id="div_offset" class="col-md-2" style="margin-top: -3px;">														
+															<input class="form-control" placeholder="Offset" name="offset" id="offset"/>															
+														</div>
+													</div>
+													<!-- TOOLBAR DE CONSULTA -->
+													<div class="col-md-12 col-sm-12  margin-top-10 margin-bottom-10 hide">
+														<div class="btn-group pull-right">
+															<button type="button" class="btn btn-sm btn-outline btn-default" onclick="addSelect()">SELECT</button>
+															<button type="button" class="btn btn-sm btn-outline btn-default" onclick="addCondition()">WHERE</button>
+															<button type="button" class="btn btn-sm btn-outline btn-default" disabled="true">GROUP BY</button>
+															<button type="button" class="btn btn-sm btn-outline btn-default" onclick="addOrderBy()">ORDER</button>
+															<button type="button" class="btn btn-sm btn-outline btn-default" onclick="cambioConsulta()">RESET</button>
+														</div>
+														<div class="clearfix"></div>
+													</div>
+												</div>
+												<div class="clearfix"></div>
+												
+												<!-- MONTAJE DE CONSULTA. -->
+												<div id="crear-query">
+													<div class="col-md-12 no-space">
+													  <div id="create_query">
+															<ul id="tree_menu" style="padding: 16px 0px 12px 12px">
+															  
+																<!-- SELECT PANEL -->
+																<li type="none" class="columnMine" style="max-width: 28%">
+																	<ul id="select_ul" class="list-group ">
+																		<!-- LI principal , agrega elementos, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																		<li class="list-group-item panel-sofia2  uppercase" > SELECT<span onclick="addSelect()" class="btn btn-outline btn-circle btn-sm blue  pull-right tooltips" data-container="body" data-placement="top" data-original-title="Agregar campos al SELECT" style="margin-top: -6px"><i class="fa fa-plus"></i></span></li>																													
+
+																	</ul>
+																</li>
+																<!-- END SELECT PANEL -->
+																<!-- FROM PANEL -->
+																<li type="none" class="columnMine">
+																	<ul id="from_ul" class="list-group ">
+																		<!-- LI principal tiene el from de la query -->
+																		<li class="list-group-item panel-sofia2  uppercase"> FROM </li>																													
+																	</ul>
+																</li>
+																<!-- END FROM PANEL -->
+																<!-- WHERE PANEL -->
+																<li type="none" class="columnMine" style="max-width: 25%;">
+																	<ul id="where_ul" class="list-group ">
+																		<!-- LI principal , agrega elementos de condición al where, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																		<li class="list-group-item panel-sofia2 uppercase"> WHERE<span onclick="addCondition()" class="btn btn-outline btn-circle btn-sm blue  pull-right tooltips" data-container="body" data-placement="top" data-original-title="Agregar campos al WHERE" style="margin-top: -6px"><i class="fa fa-plus"></i></span></li>																													
+																	</ul>
+																</li>
+																<!-- END WHERE PANEL -->
+																
+																<!-- GROUPBY PANEL -->
+																<!--<li type="none" class="columnMine">
+																	<ul id="groupBy_ul" class="list-group">-->
+																		<!-- LI principal , agrega groupby, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																<!--	<li class="list-group-item panel-sofia2 uppercase"> GROUP BY<span class="btn btn-outline btn-circle btn-sm blue pull-right tooltips" data-container="body" data-placement="top" data-original-title="Agregar condiciones al GROUPBY" style="margin-top: -6px"><input type="checkbox" id="groupby_check" style="display:none; margin:0px"/> </span></li>																													
+																	</ul> -->
+																	<!-- ELEMENTOS TEMPORALES DE GROUPBY -->
+																<!--<div id="groupBy_time_ul" class="col-md-12" style="display:none;">
+																		<div><input type="radio" id="groupby_dia"  name="gBy"/><p value="dia" th:text="#{ontologias_formulario_dia}" style="display:inline;  padding-left: 10px">dia</p></div>
+																		<div><input type="radio" id="groupby_horas"  name="gBy"/><p value="horas" th:text="#{ontologias_formulario_horas}" style="display:inline;  padding-left: 10px">horas</p></div>
+																		<div><input type="radio" id="groupby_minutos"  name="gBy"/><p value="minutos" th:text="#{ontologias_formulario_minutos}" style="display:inline;  padding-left: 10px">minutos  </p></div>
+																		<div><input type="radio" id="groupby_segundos"  name="gBy"/><p value="segundos" th:text="#{ontologias_formulario_segundos}" style="display:inline;  padding-left: 10px">segundos </p></div>
+																	</div>															
+																</li> -->
+																<!-- END GROUPBY PANEL -->
+																
+																<!-- ORDERBY PANEL -->
+																<li type="none" class="columnMine" style="min-width: 22%">
+																	<ul id="orderby_ul" class="list-group list-orderby">
+																		<!-- LI principal , agrega orderby, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																		<li class="list-group-item panel-sofia2 uppercase"> ORDER BY<span onclick="addOrderBy()" class="btn btn-outline btn-circle btn-sm blue  pull-right tooltips" data-container="body" data-placement="top" data-original-title="Agregar campo al ORDER BY" style="margin-top: -6px"><i class="fa fa-plus"></i></span></li>																													
+																	</ul>
+																</li>
+																<!-- END ORDERBY PANEL -->
+															</ul>
+														</div>
+													</div>
+														
+													<!-- TO-DO: no se que es -->	
+													<div class="col-sm-12 col-md-12" style="display:none"> 
+													  <!-- TABLA dt:table="true" dt:paginate="false" dt:sort="false" -->
+													  <table id="camposConsultaSuscripcion" >
+														
+														  <tbody th:remove="all-but-first" >
+															<tr pages:paginate="10" class="odd">
+															  <td>
+																  <div id="checks" ></div>    
+															  </td>
+														   </tr>
+														 </tbody>
+													  </table>
+													  <!-- FINAL TABLA -->
+													</div>
+												</div>								
+											<!-- FIN CREACION DE CONSULTA -->											
+											</div>
+											<div class="panel-footer bg-white"> 
+												<div class="row">
+													<div class="col-md-4 col-sm-5 col-xs-12 hide" id="divHistorical">
+														<label class="control-label" th:text="#{querytool.historical.query}" >Historical: </label>
+															<select class=" show-tick form-control" id="historicalQuery" placeholder="" onchange="historicalSelected()">
+															</select>
+													</div>	
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<label class="control-label" th:text="#{querytool.query}">Query: </label>
+														 <textarea  id="querySql" class="element textarea extra-small form-control" style="height: 33px;" ></textarea> <!-- action="changeTextArea()"></textarea>-->
+														
+													</div>											
+													
+												</div>
+												<div class="row">
+													<div class="col-md-2 col-sm-5 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasources.maxvalue} + ':'">Max register</span></label>
+															<div class="input-icon ">
+																<i class="fa fa-list-ol"></i> 
+																<input  id="maxvaluesDataSource" type="number" min="1" max="3000" name="maxvalues" th:required="true" onchange="createQuery()" value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+																
+															</div>
+														</div>
+													</div>													
+												
+													<div class="col-md-2 col-sm-5 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><i class="la la-history"></i> <span th:text="#{datasources.refresh} + ':'">Refresh time</span></label>
+															<div class="input-icon ">
+																<i class="la la-history"></i>																
+																<input  id="refreshDataSource" type="number" min="0" max="99999" name="refresh" value="240" th:value="0" class="form-control" th:placeholder="#{datasources.refresh}"  />
+															</div>
+														</div>
+													</div>	
+													<div class="col-md-8 col-sm-2 col-xs-12">
+														<button type="button" class="btn btn-circle btn-outline blue pull-right" onclick="getQueryExecutedFragment()" id="executeQuery" style="margin-top: 30px;" > <span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
+													</div>
+													<div class="clearfix"></div>
+													<div style="margin-top:20px" class="form-actions">
+														<div class="pull-right">
+															<!-- CREATE DATASOURCE -->
+																<button th:if="${gadget.id} == null" id="createDataSourceButton" type="button" class="btn btn-circle btn-outline blue " style="margin-right: 20px;" name="create" onclick="createDataSource()" ><span th:text="#{gadgets.next}"> Continue</span></button>
+															<!-- UPDATE DATASOURCE -->	
+																<button th:if="${gadget.id} != null" id="createDataSourceButton" type="button" class="btn btn-circle btn-outline blue " style="margin-right: 20px;" name="create" onclick="updateDataSource()" ><span th:text="#{gadgets.next}"> Continue</span></button>
+																
+														</div>
+													</div>											
+												</div>
+											</div>
+										</div>								
+									</div>
+									
+									<!-- RESULTADOS DE CONSULTA -->
+									<div id="result-panel" class="col-md-12 hide">
+									
+										<!-- PANEL DE RESULTADOS -->
+										<div class="panel panel-white no-shadow" style="margin-top: -20px">
+											<div class="panel-heading panel-sofia2">
+												<h3 class="panel-title uppercase font-grey-mint"><span th:text="#{database.results}">Resultados sobre </span> <span id="query-ontologia-result" class="bold uppercase">ontología</span></h3>											
+												<span class="pull-right hide" style="margin-top: -23px;"><button class="btn btn-sm btn-outline btn-circle  btn-table-toggle btn-primary"><span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>
+											</div>
+											<div class="panel-body no-space">
+											<!-- CONTENEDOR DE RESULTADOS , AQUI SE CREAN LOS DIVS PARA LA SALIDA DE LA CONSULTA A HTML,TABLE O JSON. -->
+												
+												<!-- QUERY TOOLBAR 
+												<div class="col-md-12 col-sm-12 panel-tools">
+													<div id="botones_descarga" class="btn-group pull-right">
+														<button type="button" class="btn btn-sm btn-default" id="btnContextToggle" onclick="toggleContext()"><i class="fa fa-eye"></i> Contexto</button>												
+														<button type="button" class="btn btn-sm btn-info" onclick="descargarFichero('CSV')"><i class="fa fa-file-text-o"></i> CSV</button>
+														<button type="button" class="btn btn-sm btn-info" onclick="descargarFichero('XML')"><i class="fa fa-file-code-o"></i> XML</button>
+														<button type="button" class="btn btn-sm btn-info" onclick="descargarFichero('XLS')"><i class="fa fa-file-excel-o"></i> XLS</button>													
+													</div>
+													<div class="clearfix"></div>
+												</div>
+												-->
+												<div class="clearfix"></div>
+												
+												<!-- RESPUESTA DE CONSULTA -->
+												<div class="col-md-12 margin-top-10 margin-bottom-20">
+													<div class="hide" id="Canvasrespuesta">
+														<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
+													</div>
+													<div id="jsoneditor" style="height: 300px;" data-loaded="false"></div>
+													<div class="table-viewer" style="display: none;height: 300px; overflow: auto;" data-loaded="false"></div>
+													<div class="clearfix"></div>
+												</div>
+												<div id="example" class="col-md-12">
+													
+												</div>
+											
+							                    
+							                    <div id="dialog-execution-condition" style="display: none;" class="tabla_description" title="Condicion - WHERE">
+							                            <div>
+							                                <fieldset>
+							                                    <label class="description" for="identificacionPipeline">Campos</label>
+							                                    <select class="element select small form-control" id="form_campos" name="typeCombo" style="width: 250px;"></select>
+							                                </fieldset>  
+							                            </div>
+							                            <div>
+							                                <fieldset>
+							                                    <label class="description" for="descripcionPipeline">Operador</label>
+							                                    <select class="element select small form-control" id="select_operador" name="typeCondicion" style="width: 250px;">
+							                                            <option name="mayor" value="mayor"> > </option>
+							                                            <option name="menor" value="menor"> &#60; </option>
+							                                            <option name="mayor-igual" value="mayor-igual"> >= </option>
+							                                            <option name="menor-igual" value="menor-igual"> &#60;= </option>
+							                                            <option name="igual" value="igual"> = </option>
+							                                            <option name="distinto" value="distinto"> != </option>
+							                                    </select>
+							                                </fieldset>
+							                            </div>
+							                            <div id="cronExpresion">
+							                                <fieldset id="timer_capa"> 
+							                                    <label class="description" for="temporizador">Condicion*</label>
+							                                    <input id="form_condicion" name="condicion" class="element text form-control" type="text" value="" style="width: 250px;" /> 
+							                                                                                    
+							                                </fieldset>
+							                            </div>
+							                        </div>							                    
+							                        <div id="dialog-execution-orderby" style="display: none;" class="tabla_description" title="ORDER BY">
+							                            <div>
+							                                <fieldset>
+							                                    <label class="description" for="form_orderby_campos">Campos</label>
+							                                    <select class="element select small form-control" id="form_orderby_campos" name="typeCombo">
+							                                            
+							                                    </select>
+							                                </fieldset> 
+							                                <fieldset>
+							                                    <label class="description" for="form_orden">Órden</label>
+							                                    <select class="element select small form-control" id="form_orden" name="typeCondicion" style="width: 270px;">
+							                                            <option name="asc" value="ASC"> ASC </option>
+							                                            <option name="desc" value="DESC"> DESC </option>
+							                                    </select>
+							                                </fieldset> 
+							                            </div>
+							                        </div>
+							                    <div id="dialog-confirm-generic" title="Información" style="display: none;">
+							                            <div>Información</div>
+							                    </div>							             	
+											</div>
+										</div>	
+									</div>	
+									
+									<!-- FIN DE NUEVA ZONA DE CONSULTA ############################################################## -->
+
+
+
+									<!-- GADGETS IMAGES -->
+									 <div class="row">
+										<div id="icons" class="col-md-12 margin-top-10"></div>
+									 </div>		
+									 <div class="clearfix"></div>
+												 
+												 <!-- CONFIG GADGET -->
+												 <div id="configContainer" class="hide col-md-12 margin-bottom-20 portlet light no-shadow no-pad">
+													
+													<!-- DYNAMICAL CONFIG -->
+													<div id="configGadget"></div>
+													<div class="pull-left margin-bottom-20">														
+														<button id="addMoreAxes" style="margin-left: 30px;margin-top: 5px;" class="btn blue btn-sm btn-outline btn-circle uppercase" onclick="addAxes(event)"> Add axis</button>
+													</div>
+												 </div>
+												 
+												 <!-- MEASURES -->
+												 <div id="measuresContainer" class="hide col-md-12 margin-bottom-20 portlet light no-shadow no-pad">
+													<h4 style="padding: 16px 0px 8px 16px;"><span th:text="#{gadgets.measures}"></span></h4>
+													<!-- DYNAMICAL MEASURES -->
+													<div id="measures"></div>
+													<div class="pull-left margin-bottom-20">														
+														<button id="addMore" style="display:none;margin-left: 30px;margin-top: 5px;" class="btn blue btn-sm btn-outline btn-circle uppercase" onclick="addFormSttByType(event,true)" th:text="#{gadgets.add.measure}"><i class="fa fa-plus"></i> Add measure</button>
+													</div>
+												 </div>
+												 
+												<!-- VIEWER -->
+												<div id="viewer" class="hide col-md-offset-1 col-md-10 col-xs-12 bg-grey-carrara" style="border: 2px dotted #f5f5f5; padding: 10px 15px 10px 15px">
+													<div id="gapp" ng-app="dashboardFramework">
+														<gadget style="height:300px;width:100%;display:inline-block" class="flex layout-column"></gadget>
+													</div>
+												</div>												
+												<div class="clearfix"></div>
+												
+												<!-- FORM ACTIONS -->
+												<div style="margin-top:20px" class="form-actions">
+													<div class="pull-left">
+														<!-- CANCEL -->														
+														<button th:if="!${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													</div>
+													
+													<div class="pull-right">														
+														<!-- REMOVE -->
+														<button th:if="${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+														
+														<span class="sep"></span>
+														
+														<!-- CREATE FULL SCREEN-->
+															<button th:if="${gadget.identification} == null and !${iframe}" id="createBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+														
+														<!-- CREATE IFRAME-->
+															<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+														
+														<!-- UPDATE FULL SCREEN -->
+															<button th:if="${gadget.id} != null and !${iframe}" id="updateBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
+																
+														
+														<!-- UPDATE IFRAME-->
+														<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
+													</div>
+												</div>
+											</div>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>					
+
+										<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+										<form id="delete_gadget_form" class="delete-gadget hide"  th:action="@{'/gadgets/'+${gadget.id}}"  method="post">
+											<input type="hidden" name="_method" value="DELETE"/>
+											<input type="hidden" name="id" th:value="${gadget.id}"/>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>																	
+									</div>
+								</div>
+							</div>
+						</div>  <!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->				
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	  </div>
+	 
+</body>
+
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+		<!-- FRAGMENT AJAX FOR ONTOLOGY FIELDS -->
+	<div style="display: none">
+	<div th:fragment="fields" id="fields">
+		<script th:inline="javascript">
+		//Map with field,type struct	
+		campos= [[${fields}]];
+		</script>
+			<option th:id="selectFields" th:text="#{querytool.select.fields}"></option>
+			<option th:id="all" th:text="#{querytool.all.fields}"></option>
+			<option th:each="field :${fields}" th:value="${field.key}" th:id="check + ${field.key}" th:text="${field.key}" th:type="${field.value}"/>
+		
+	</div>
+	</div>
+	
+	<!-- JSON OBJECTS MODAL -->
+	<!-- Modal -->
+	<div id="jsonModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title"><span th:text="#{gen.json}">JSON value for </span> <span id="jsonDatatTitle" class="bold"></span> </h4>
+				</div>
+				<div class="modal-body">
+					<pre id="jsonDataView"></pre>
+				</div>
+				<div class="modal-footer">
+				<button type="button" class="btn btn-outline btn-circle btn-primary" data-dismiss="modal"><i class="fa fa-times"></i> <span th:text="#{gen.closeBtn}">Close</span></button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- PLUGINS -->	
+		<!-- PLUGINS -->
+	
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
+	<script th:src="@{/static/vendor/json/jsonToTable.js}"/>	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/muuri/0.5.4/muuri.min.js"></script>
+	
+	<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	
+	<!-- TEMPLATE CONTROLLER  -->	
+	<script th:src="@{/static/js/pages/gadgetsCreate.js}"/>
+	
+		<script th:inline="javascript">
+		// <![CDATA[
+		
+		window.SINGLE_TAB = "  ";
+		window.ImgCollapsed = [[@{/resources/images/Collapsed.gif}]];   
+		window.ImgExpanded = [[@{/resources/images/Expanded.gif}]];   
+		window.QuoteKeys = true;
+		window._dateObj = new Date();
+		window._regexpObj = new RegExp();
+		
+		var gadgetQueryToolJson = { 
+				
+		"tools_select_ontology" :[[#{herramientas_seleccione_ontologia}]],
+		"tools_select_type_query" :[[#{herramientas_seleccione_tipoquery}]],
+		"queries_error_groupbyform" :[[#{consultas_formulario_error_groupby}]],
+		"query": [[${QUERY}]]
+				};
+		
+		
+		// ]]>
+		
+		</script>
+			
+	
+	<script type="text/javascript" src="/controlpanel/static/js/pages/gadgetsDynamicDataSource.js"/>
+	<!-- jsonGadgets.js contains the structure of the gadgets that can be selected -->
+	<script type="text/javascript" src="/controlpanel/static/js/pages/jsonGadgets.js"/>
+	
+	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
+	<script src="/controlpanel/static/dashboards/gridster.js"></script>
+	
+	<!-- Angular Material Fileinput -->
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
+	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
+	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>
+	<script
+		th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
+		type="text/javascript"></script>
+	<script
+		th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}"
+		type="text/javascript"></script>
+		<script th:if="${lang} == 'es'"
+		th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
+		type="text/javascript"></script>
+		
+	<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/bootstrap-colorpicker/css/bootstrap-colorpicker.css" />	
+	<!--<script src="/controlpanel/static/vendor/bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script> 	-->
+	<script src="/controlpanel/static/vendor/bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script>
+	<script type="text/javascript" src="/controlpanel/static/vendor/bootstrap-select/bootstrap-select.min.js"/>
+	<script th:inline="javascript">
+	
+	// <![CDATA[
+		
+		//we define the events of the # createBtn, # updateBtn buttons
+		//we save the values of the form  and do the submit
+	
+	function createGadgetFull() {	 
+		generateMeasuresArray()
+		$("#jsonMeasures").val(JSON.stringify(measures));
+		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
+		$("#type").val(gtype);
+		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
+		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		$("#gadget_create_form").get(0).submit();   	 
+     };
+	
+	
+	
+	//Show the panels to choose what type of gadget we want to create
+	function showGadgetSelect(){
+		$("#icons").empty();	
+		if (!$('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } ;
+		$("#measuresContainer").show();
+		if(($("#datasources").val())!="none"){			
+			if(gadgetCreateJson.iframe && gadgetCreateJson.type!=null){
+				showConfigAndMeasures(gadgetCreateJson.type);
+			}else{
+				$.each(gadget, function() {
+						var Type = this.type;
+						var Icon = this.icon;						
+						var html_markup = '';
+						html_markup = '<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">' +
+						'	<div class="portlet light bordered" id="' + Type + '" style="padding: 8px 16px 16px 16px;" >' +
+						'		<div class="portlet-title">' +
+						'			<div class="caption">' +						
+						'				<span class="caption-subject" onclick="showConfigAndMeasures(\'' + Type + '\')" >'+Type+'</span>' +						
+						'			</div>' +
+						'			<div class="mt-element-overlay">' +		
+						'						<div class="mt-overlay-1" style="height: 10% !important">' +
+						'							<img src="'+ Icon +'">' +
+						'							<div class="mt-overlay">' +
+						'								<ul class="mt-info">' +
+						'									<li>' +
+						'										<a class="btn default btn-outline" onclick="showConfigAndMeasures(\'' + Type + '\')" >' +
+						'											<i class="flaticon-add font-lg bold"></i> ADD GADGET' +
+						'										</a>' +
+						'									</li>' +
+						'								</ul>' +
+						'							</div>' +				
+						'				</div>' +
+						'			</div>' +
+						'		</div>' +				
+						'	</div>' +
+						'</div>';
+						$("#icons").append(html_markup);
+					})
+				}
+		  }		
+	}
+	
+	
+	
+	var stt;
+	
+	//this function adds an axis in the div configGadget
+	function addAxes(e){
+		if(e){
+			e.preventDefault();	
+		}
+		var i = parseInt($(".gcserie .axis_id").last().val().slice(1))+1;
+		var gchtml = '';
+		gchtml += '<div class="gcserie col-md-12">';
+		gchtml += '<div class="col-md-11">';
+		gchtml += '<div class="form-group col-md-1">';
+		gchtml += '<label class="control-label">ID</label>';
+		gchtml += '<input disabled="disabled" class="form-control axis_id content-box-input" data-live-search="true" data-width="100%" id="axis_id_' + i + '" value="#' + i + '"/>';
+		gchtml	+= '</div>'
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">Position</label>';
+		gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="position_' + i + '"><option value="right">right</option><option selected="selected" value="left">left</option></select>';
+		gchtml	+= '</div>'
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">Type</label>';
+		gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="type_' + i + '"><option selected="selected" value="linear">linear</option><option value="logarithmic">logarithmic</option></select>';
+		gchtml	+= '</div>'
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">Axis Label</label>';
+		gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="label_' + i + '"/>';
+		gchtml	+= '</div>'
+		gchtml += '<div class="form-group col-md-1">';
+		gchtml += '<label class="control-label">Stacked</label>';
+		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true"  data-width="100%" id="stacked_' + i + '"/>';
+		gchtml	+= '</div>';		
+		gchtml += '<div class="form-group col-md-1">';
+		gchtml += '<label class="control-label">Sort</label>';
+		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" checked="" data-width="100%" id="sort_' + i + '"/>';
+		gchtml	+= '</div>'
+		
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">Min</label>';
+		gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="0" id="min_' + i + '"/>';
+		gchtml	+= '</div>'
+	    gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">Max</label>';
+		gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="1000" id="max_' + i + '"/>';
+		gchtml	+= '</div>'
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">MaxTicks</label>';
+		gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="10" id="nticks_' + i + '"/>';
+		gchtml	+= '</div>'
+		gchtml	+= '</div>'
+		gchtml += '<div class="col-md-1">';
+		if($(".gcserie").length > 0){
+			gchtml += '<button style="margin-top:36px;" onclick="removeAxes(' + $(".gcserie").length + ')" class="btn red-mint btn-sm btn-outline uppercase"><i class="la la-trash"></i></button>';
+		}
+		gchtml	+= '</div>'
+		gchtml	+= '</div>'
+		$("#configGadget").append(gchtml);
+		$(".yaxisselector").append('<option value="' + "#" + i + '">' + "#" + i + "</option>");
+	}
+
+	//this function adds a new measure depending on the structure of the gadget that is saved in the file jsonGadgets.js
+	function addFormSttByType(e,loadOptions){		
+		if(e){
+			e.preventDefault();	
+		}
+		
+		var measure = "";
+		var division;
+		switch (stt.attributes.length ){
+			case 1: division='col-md-5';break;
+			case 2: division='col-md-4';break;
+			case 3: case 4: case 5: division='col-md-4';break;
+			default: division='col-md-1';break;
+		}		
+		var mhtml = '<div class="panel panel-default">';
+		if($(".gserie").length > 0 && (stt.series.maxseries > (1 + $(".gserie").length) || stt.series.maxseries == -1)){
+			
+			mhtml += '<button type="button" data-property="" class="btn btn-circle btn-outline blue no-border btn-xs btn-mountable-remove pull-right measure-delete-btn" onclick="removeMeasure(this)" title="Delete" alt="Delete"><i class="la la-trash font-hg"></i></button>';
+		}
+		
+		mhtml+= '<div class="panel-body"><div class="gserie col-md-12">';
+		for(var i = 0; i < stt.attributes.length; i++){
+			var atr = stt.attributes[i];
+			mhtml += '<div class="form-group ' + division + '">';
+			mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
+			mhtml += '<select id="s_' + $(".gserie").length + '_' + i + '" ' + (atr.multi?'multiple=multiple':'') + ' onchange="refreshGadget()" class="measureSelect form-control content-box-input ' + atr.types.join(" ") + '" data-live-search="true" data-width="100%">';
+				if(loadOptions){
+					for(var o = 0 ; o < gfields.length;o++){
+						mhtml += '<option value="' + gfields[o].field + '">' + gfields[o].field + '</option>'
+					}
+				}
+			mhtml += '</select>';			
+			mhtml += '</div>';
+		}	
+		if(gtype!=="pie"){
+			mhtml += '<div class="form-group ' + division + '">';		
+			mhtml += '<label class="control-label"> Name </label>';
+			mhtml += '<input onchange="refreshGadget()" id="n_' + $(".gserie").length + '" class="form-control measure-name content-box-input" data-live-search="true" data-width="100%"/>';
+			mhtml += '</div>';
+		}
+		if(gtype!=="table"){
+			mhtml+= '<div class="clearfix"></div>';
+		}
+		var countCols = 0;
+		for(var i = 0; i < stt.series.options.length; i++){
+			var atr = stt.series.options[i];
+			if(countCols>10){
+				mhtml+= '<div class="clearfix"></div>';
+				countCols=0;
+			}
+			switch(atr.type){
+				case "color":
+					mhtml += '<div class="form-group col-md-3" style="padding-right: 0px;">';
+					mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
+					mhtml += '<div class=" input-group  colorpicker-component">';					
+					mhtml += '<input onchange="refreshGadget()" class="gsoption form-control " style="height:48px;" type="text" value="rgba(0,108,168,0.62)"/>';
+					mhtml += ' <span class="input-group-addon"><i></i></span>';
+					mhtml	+= '</div>'
+					countCols+=3;
+					break;
+				case "select":
+					mhtml += '<div class="form-group col-md-2">';
+					mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
+					mhtml += '<select onchange="refreshGadget()" style="min-width: 66px" class="gsoption form-control content-box-input + ' + atr.class + '">';
+					mhtml += eval(atr.ref).map(function(e){ return '<option value="' + e + '">' + e + '</option>"'})
+					mhtml += '</select>';
+					countCols+=2;
+					break;
+				case "boolean":
+					mhtml += '<div class="form-group col-md-2">';
+					mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
+					mhtml += '<input onchange="refreshGadget()" class="gsoption form-control" type="checkbox"/>';
+					countCols+=2;
+					break;
+				case "transform":
+					mhtml += '<div class="form-group col-md-2">';
+					mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
+					mhtml += '<input onchange="refreshGadget()" class="gsoption form-control" data-live-search="true" data-width="100%"/>';
+					countCols+=2;
+					break;
+				case "position":
+					mhtml += '<div class="form-group col-md-2">';
+					mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
+					var pos = lastPosition();					
+					mhtml += '<input onchange="refreshGadget()" type="number"  min="0" class="gsoption form-control opt-position content-box-input" style="min-width: 56px;" data-live-search="true" value="'+pos+'" data-width="100%"/>';
+					countCols+=2;
+					break;	
+				
+			}
+			mhtml	+= '</div>'
+		}
+		
+		
+		
+		mhtml += '</div></div></div>';		
+		$("#measures").append(mhtml);
+		
+		if(stt.series.maxseries != -1 && stt.series.maxseries >= $(".gserie").length){
+			$("#addMore").hide();
+		}
+		else{
+			$("#addMore").show();
+		}
+		if(loadOptions){
+			console.log('loading color-pickers...');
+			$('.colorpicker-component').colorpicker({	
+				container: true,
+				  colorSelectors: {				
+                'amarillo': '#FFEA7F',
+                'amarilloH': '#FFF8D2',
+                'naranja': '#F7AC6F',
+                'naranjah': '#FCE2CC',
+                'rojo': '#E88AA2',
+                'rojoh': '#F7D6DF',
+				'beige':'#FDE3D4',  
+				'beigeh':'#FEF6F0',
+                'verde': '#79C6B4',
+                'verdeh': '#CFEBE5',
+                'azul': '#639FCB',
+				'azulh': '#C8DEED',
+				'morado': '#7874B4',
+				'moradoh': '#CFCEE5'
+				}				
+			});
+			refreshGadget();
+		}
+	}
+	
+	//function to check if a number that comes from string is not infinite
+	function isNormalInteger(str) {
+	    var n = Math.floor(Number(str));
+	    return n !== Infinity && String(n) === str && n >= 0;
+	}
+	
+	
+	//update the array measures by going through the measurement structure, looking for the .gseries classes	
+	function generateMeasuresArray(){	
+		
+		measures = [];		
+		for(var s =0 ;s < $(".gserie").length; s++){
+			var selects = $($(".gserie").get(s)).find(".measureSelect");			
+			var config = {fields:[],name:"",config:{}};
+			for(var sel = 0;sel < selects.length;sel++){
+				var fieldAux = $("#s_" + s + "_" + sel).val();
+				
+					if(typeof fieldAux !== "object"){
+						var pathFields = fieldAux.split(".");
+						var realField = pathFields[0];
+						for(var i=1;i<pathFields.length;i++){
+							if(isNormalInteger(pathFields[i])){
+								pathFields[i] = "[" + pathFields[i] + "]"
+								realField += pathFields[i];
+							}
+							else{
+								realField += "." + pathFields[i];
+							}
+						}
+						config.fields.push(realField);
+					}
+					else{
+						if(fieldAux!=null){
+							for(var fi = 0; fi < fieldAux.length; fi++){
+								var pathFields = fieldAux[fi].split(".");
+								var realField = pathFields[0];
+								for(var i=1;i<pathFields.length;i++){
+									if(isNormalInteger(pathFields[i])){
+										pathFields[i] = "[" + pathFields[i] + "]"
+										realField += pathFields[i];
+									}
+									else{
+										realField += "." + pathFields[i];
+									}
+								}
+								config.fields.push(realField);
+							}
+						}					
+				}
+			}
+			var gsoptions = $($(".gserie").get(s)).find(".gsoption");
+			for(var i =0; i < gsoptions.length; i++){
+				var v = gsoptions[i].value;
+				if(gsoptions[i].type === "checkbox"){
+					v = gsoptions[i].checked;
+				}
+				
+				stt.series.options[i].jsonFields.map(function(opt){config.config[opt]=v});
+			}
+			config.name = $("#n_" + s).val();			
+			measures.push({config:JSON.stringify(config)});
+		}
+	}
+	
+	//This function collects the values of the array measures, 
+	//treats them and passes them to the scope of the gadgets so that the refresh is made and the changes made in the gadget are seen	
+	function refreshGadget(){
+		console.log('refreshGadget()...');
+		generateMeasuresArray();
+		if(measures.length > 0){			
+	        var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();
+	        if(gtype === "map"){	        
+	        	if(!scope.$$childHead.vm.config.config && !$("#config").val()){
+	        		scope.$$childHead.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:gtype};
+	        	}
+	        	else{
+	        		var lat;
+	        		var lng;
+	        		var zoom;	        		
+	        		if(typeof scope.$$childHead.vm.config.config != "undefined") {
+	        			lat = scope.$$childHead.vm.config.config.center.lat;
+	        			lng = scope.$$childHead.vm.config.config.center.lng;
+	        			zoom = scope.$$childHead.vm.config.config.center.zoom;
+	        		}else{
+	        			jsonConfig = JSON.parse($("#config").val());	        		
+	        			lat = jsonConfig.center.lat;
+	        			lng = jsonConfig.center.lng;
+	        			zoom = jsonConfig.center.zoom;	        			
+	        		}	        		
+	        		var gconfig = {center:{
+				    				lat:lat,
+				    				lng:lng,
+				    				zoom:zoom
+				    			},
+				    			markersFilter:$("#markersFilter").val(),
+				    			jsonMarkers:$("#jsonMarkers").val()
+				    			};
+	        		scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
+	        	}
+	        }
+			else if(gtype == "pie"){
+
+				if ($('#legend').is(':checked')){
+					 $('#position').prop('disabled', false);
+				} else {   $('#position').prop('disabled', 'disabled'); }
+				
+				var gconfig = {
+					legend: {
+						display: $("#legend").is(':checked'), 
+						fullWidth: false,
+						position: $('#position').val(),      
+						labels: {
+						  padding: 10, 
+						  fontSize: 11,
+						  usePointStyle: false,
+						  boxWidth:1
+						}
+					  },
+					elements: {
+						arc: {
+							borderWidth: 1,
+							borderColor: '#fff'
+						}
+					},
+					maintainAspectRatio: false, 
+					responsive: true, 
+					responsiveAnimationDuration:500,
+					circumference:  $('#circumference').val(),
+					rotation:$('#circumference').val(),
+					charType: $('#charType').val()
+				};
+				
+				// updating values to refresh gadget
+				scope.$$childHead.vm.config = {config:gconfig,type:gtype};
+			}
+	        else{
+				if(gtype == "bar" || gtype == "line" || gtype == "mixed"){
+					var hideLabel = $("#hidelabel").val();
+					var xAxisLabel = $("#labelx").val();				
+					var sort = $("#sort").is(':checked');	
+
+				if ($('#legend').is(':checked')){
+					 $('#position').prop('disabled', false);
+				} else {   $('#position').prop('disabled', 'disabled'); }
+				
+				var gconfig = {
+						legend: {
+							display: $("#legend").is(':checked'), 
+							fullWidth: false,
+							position: $('#position').val(),      
+							labels: {
+							  padding: 10, 
+							  fontSize: 11,
+							  usePointStyle: false,
+							  boxWidth:2
+							}
+						},
+						scales:{
+							yAxes :[],
+							xAxes :[{stacked:false,
+									 sort:sort,
+									 ticks: {
+										callback: function(dataLabel, index) {									
+											if(typeof hideLabel ==="undefined"){return index % 1 === 0 ? dataLabel : '';}
+											else{
+												return index % hideLabel === 0 ? dataLabel : '';
+											}
+										},
+										fontFamily: 'Soho'
+									},
+									scaleLabel: {
+						        		display: true,
+						        		labelString: xAxisLabel,
+										fontFamily: 'Soho',
+										padding: 4
+						      		},
+						      		hideLabel:hideLabel,
+						      		gridLines:{						      			
+											display: true,
+											borderDash: [2, 4],
+											color: "#CCC",
+											zeroLineBorderDash: [2,4],
+											zeroLineColor: 'transparent'
+						      		}
+						      		}]
+						}
+					};
+					
+					for(var gc = 0; gc < $(".gcserie").length ; gc++){
+						var gcserie = $($(".gcserie").get(gc));
+						var id = gcserie.find("#axis_id_" + gc).val();
+						var position = gcserie.find("#position_" + gc).val();
+						var type = gcserie.find("#type_" + gc).val();
+						var label = gcserie.find("#label_" + gc).val();
+						var stacked = gcserie.find("#stacked_" + gc).is(':checked')					
+						var min = gcserie.find("#min_" + gc).val();
+						var max = gcserie.find("#max_" + gc).val();
+						var nticks = gcserie.find("#nticks_" + gc).val() || 10;
+						var ax = {
+							id: id,
+							display: true,
+							type: type,
+							position: position,
+							scaleLabel: {
+								labelString: label,
+								display: true,
+								fontFamily: 'Soho',
+								padding: 4
+							},
+							stacked:stacked,
+							sort:sort,
+							ticks: {
+			                    suggestedMin: min,
+			                    suggestedMax: max,
+								maxTicksLimit: nticks
+			                },
+				      		gridLines:{				      			
+									display: false
+				      		}
+						}
+						gconfig.scales.yAxes.push(ax);
+						if(stacked){							
+							 gconfig.scales.xAxes=[{
+								stacked:true,
+								sort:sort,
+								 ticks: {
+								 callback: function(dataLabel, index) {									
+										if(typeof hideLabel ==="undefined"){return index % 1 === 0 ? dataLabel : '';}
+										else{
+											return index % hideLabel === 0 ? dataLabel : '';
+										}
+									}
+								},scaleLabel: {
+									display: true,
+									labelString: xAxisLabel
+								  },hideLabel:hideLabel,
+									gridLines:{											      			
+											display: false															
+									}}];
+						}
+					}
+					scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
+				}else if(gtype == "table"){
+					var gconfig = {tablePagination :{      
+						      limit: $('#limit').val(),
+						      page: 1,
+						      limitOptions : [5, 10, 20, 50 ,100],
+						      style:{
+						    	  backGroundTHead:$('#backGroundTHead').val(),
+						    	  backGroundTFooter:$('#backGroundTFooter').val(),
+						    	  trHeightHead:$('#trHeightHead').val(),
+						    	  trHeightBody:$('#trHeightBody').val(),
+						    	  trHeightFooter:$('#trHeightFooter').val(),
+						    	  textColorTHead:$('#textColorTHead').val(),
+						    	  textColorBody:$('#textColorBody').val(),
+						    	  textColorFooter:$('#textColorFooter').val()						      
+						      },
+						      options : {
+						        rowSelection: $("#rowSelection").is(':checked'),
+						        multiSelect: false,
+						        autoSelect: false,
+						        decapitate: $("#decapitate").is(':checked'),
+						        largeEditDialog: false,
+						        boundaryLinks:  $('#boundaryLinks').is(':checked'),
+						        limitSelect: $('#limitSelect').is(':checked'),
+						        pageSelect: $('#pageSelect').is(':checked')
+						      }
+						    }};
+					scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
+				}
+				else{					
+					scope.$$childHead.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:gtype};	
+				}
+	        }
+	        if(gtype == "table"){			
+				scope.$$childHead.vm.measures = orderTable(measures);
+			}else{
+				scope.$$childHead.vm.measures = measures;
+			}	        
+			scope.$$childHead.vm.ds = $("#datasources").val();
+			scope.$$childHead.reloadContent();
+		}
+	}
+	
+	//It eliminates the measurement that corresponds to the button pressed and updates the ids in the gseries,
+	//to then go through these ids with a for loop and there are no gaps.
+	function removeMeasure(e){
+		e.parentElement.remove();		
+		updateIds();
+		$("#addMore").show();
+		
+	}
+	
+	//update the ids in the gseries, then go through these ids with a for loop and there are no gaps.
+	function updateIds(){		
+		var selects=$(".gserie");
+		for(var s =0 ;s < selects.length; s++){
+			var selected = $($(".gserie").get(s)).find(".measureSelect");	
+			for(var sel = 0;sel < selected.length;sel++){			
+				selected[sel].setAttribute("id","s_" + s + "_" + sel);				
+			}
+			$($(".gserie").get(s)).find(".measure-name")[0].setAttribute("id","n_"+s)
+		}
+		refreshGadget();
+	}
+	
+	//we use this function in the table gadget to give us the following position that corresponds to create a new measure
+	function lastPosition(){
+		var results = $(".opt-position");
+		var values = [];		
+		var max = -1;
+		for(var i = 0; i<results.length;i++ ){
+			max= Math.max(max, Number(results[i].value));
+		}
+		
+		return max+1;
+	}
+	
+	//this function eliminates the values of a graph axis
+	function removeAxes(index){
+		$(".gcserie")[index].remove();
+		$(".yaxisselector").each(function(){this.remove(index)});
+		refreshGadget();
+	}
+	
+	//this function sorts the measurements in a table by its position,
+	//so that the columns are seen in an orderly way in the table gadget
+	function orderTable(measures){		
+		var neworder = measures.sort(function (a,b){
+			var a = Number(JSON.parse(a.config).config.position);			
+			var b = Number(JSON.parse(b.config).config.position);		
+			return a-b;
+		});
+		return neworder;
+		
+	}
+	
+	//we use this function to recover the fields that come in a json to load the combos, with these fields of the ontology
+	function iterate(obj, stack, fields) {
+    	for (var property in obj) {
+           if (obj.hasOwnProperty(property)) {
+               if (typeof obj[property] == "object") {
+                   iterate(obj[property], stack + (stack==""?'':'.') + property, fields);
+        } else {
+                   fields.push({field:stack + (stack==""?'':'.') + property, type:typeof obj[property]});
+               }
+           }
+      	}    
+      	return fields;
+   	}
+	
+	var measures=[];
+	var gtype = "";
+	var gfields = [];
+	var dataSourceCreated;
+	var dataSourceForEdit;
+	
+	
+	//this function hides the datasources combo and generates the measures depending on
+	//the structure for each type of gadget in the jsonGadgets.js file.
+	//Create the structure of html fields specific to each gadget, 
+	//for example for the table gadget, the color of the header, the foot, ...
+	//Load the combos with the values with the name of the ontology fields, and also create the configuration fields.
+	
+	function showConfigAndMeasures(type){
+		
+		$("#div-datasource").hide()
+        $("#datasources").selectpicker('refresh');
+        
+        if(gadgetCreateJson.iframe){
+        	$("#createIframeBtn").show();
+        }else{       
+        	$("#createBtn").show();
+        }
+        
+		$.get("/controlpanel/datasources/getSampleDatasource/" + $("#datasources").val(), function (jsonString){
+			$("#icons").hide();
+			
+			gfields = iterate(jsonString[0],"", []);
+			
+			gtype = type;
+			$("#configGadget").empty();
+			
+			if(gtype=="line" || gtype=="bar" ){
+				showConfigLineBar(gtype,gfields);				
+			}else if(gtype=="table" ){
+				showConfigTable(gtype,gfields);				
+			}else if(gtype=="map" ){
+				showConfigMap(gtype,gfields);
+			}else if(gtype=="mixed" ){
+				showConfigMixed(gtype,gfields);
+			}else if(gtype=="pie"   ){ showConfigPie(gtype,gfields); }
+			if ( $('#measuresContainer').hasClass('hide') === true ){
+				$('#measuresContainer').removeClass('hide'); $('#viewer').removeClass('hide'); 
+			}
+		    stt = gadget.filter(function(g){return g.type == type})[0];
+		    if(measures.length == 0){
+		    	$("#measures").empty().append(addFormSttByType());
+		    }
+		    else{
+		    	$("#measures").empty();
+		    	for(var i=0;i<measures.length;i++){
+					$("#measures").append(addFormSttByType());
+		    	}
+		    }
+		    
+			for (var i in gfields){
+		    	$('.' + gfields[i].type).append('<option value="' + gfields[i].field + '">' + gfields[i].field + '</option>');
+		    }
+			for(var i=0;i<measures.length;i++){
+				var config;
+				if(typeof measures[i].config !== "object"){
+					config = JSON.parse(measures[i].config);
+				}
+				else{
+					config = measures[i].config;
+				}
+				var fields = config.fields;
+				for(var f=0;f<fields.length;f++){
+					
+					var fieldAux = fields[f].replace("[",".").replace("]","");
+					if($("#s_" + i + "_" + f).attr("multiple")){
+						var values=fields.slice(f);
+						$("#s_" + i + "_" + f).val(values);
+						break;
+					}
+					else{
+						$("#s_" + i + "_" + f).val(fieldAux);
+					}
+				}
+				var gsoptions = $($(".gserie").get(i)).find(".gsoption");
+				for(var gc =0; gc < gsoptions.length; gc++){
+					//property not found
+					if(!config.config || !(stt.series.options[gc].jsonFields[0] in config.config)){
+						continue;
+					}
+					$(gsoptions[gc]).val(config.config[stt.series.options[gc].jsonFields[0]]);
+					if(gsoptions[gc].type === "checkbox"){
+						gsoptions[gc].checked = gsoptions[gc].value === "true";
+						gsoptions[gc].value = "on"
+					}
+				}
+				$("#n_" + i).val(config.name);
+			}		
+			refreshGadget();
+			$('.colorpicker-component').colorpicker({	
+				container: true,
+				  colorSelectors: {				
+                'amarillo': '#FFEA7F',
+                'amarilloH': '#FFF8D2',
+                'naranja': '#F7AC6F',
+                'naranjah': '#FCE2CC',
+                'rojo': '#E88AA2',
+                'rojoh': '#F7D6DF',
+				'beige':'#FDE3D4',  
+				'beigeh':'#FEF6F0',
+                'verde': '#79C6B4',
+                'verdeh': '#CFEBE5',
+                'azul': '#639FCB',
+				'azulh': '#C8DEED',
+				'morado': '#7874B4',
+				'moradoh': '#CFCEE5'
+				}				
+			});
+		});		
+	}
+	
+	
+	
+	
+	//Show especific measures and config for gadget Line or Bar 
+	function showConfigLineBar(gtype,gfields){
+		
+		if ( $('#configContainer').hasClass('hide') === true ){ 
+			$('#configContainer').removeClass('hide');
+		}
+		var jsonConfig;
+		if(!$("#config").val() || $("#config").val() === "{}"){
+			jsonConfig = {
+				legend: {
+					display: true,                 
+					position: 'top',      
+					labels: {
+					  padding: 10, 
+					  fontSize: 11,
+					  usePointStyle: false,
+					  boxWidth:2
+					}
+				},
+				scales:{
+					yAxes:[]
+				}				
+			};
+		}
+		else{
+			jsonConfig = JSON.parse($("#config").val());
+		}
+		
+		// SPECIFIC LINE FIELDS VALUES
+		if ( jsonConfig.hasOwnProperty('legend')) { var legend = jsonConfig.legend.display || ''; } else { var legend = false; } 			
+		var position = ['top','right','bottom','left'];
+		
+		
+		
+		// SPECIFIC HTML GADGET CONFIGURATION FIELDS 
+		var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">Chart Legend</h4>';
+		gchtml += '<div class="row">';
+			
+			// legend display
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Legend Display</label>';
+			 if(legend) legend = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
+			gchtml += '</div>';
+			
+			
+			// legend position
+			gchtml += '<div class="form-group col-md-3">';
+			gchtml += '<label class="control-label">Legend Position</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="position">';
+			if ($("#config").val()){  
+				if ( jsonConfig.hasOwnProperty('legend')) { var editPosition = jsonConfig.legend.position;  }				
+			} else { var editPosition = ''; }
+			
+			for(var j=0; j<position.length; j++){
+				if ( position[j] === editPosition ){ selPosition = 'selected="selected"'; } else { selPosition = ''; }
+				gchtml += '<option '+ selPosition +' value="'+position[j]+'">'+position[j]+'</option>';
+			}
+			gchtml +='</select>';
+			gchtml += '</div>';		
+		
+		gchtml += '</div>';
+		
+		gchtml += '<div class="row">';
+		
+		gchtml += '<h4 style="padding: 16px 0px 8px 16px;">Gadget Axis config:</h4>';
+		gchtml += '<div class="col-md-12">';
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">Axis Label</label>';
+		gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="labelx"/>';
+		gchtml += '</div>';
+		
+		gchtml += '<div class="form-group col-md-2">';
+		gchtml += '<label class="control-label">ticks every</label>';
+		gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" min="1" value="1" id="hidelabel"/>';
+		gchtml += '</div>';
+		
+		gchtml += '<div class="form-group col-md-1">';		
+		gchtml += '<label class="control-label">Sort</label>';		
+		var sort = "";		
+		try{
+			if( jsonConfig.scales.xAxes[0].sort){ sort = "checked";}
+		}catch(err){}
+		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+sort+' id="sort"/>';
+		gchtml += '</div>';
+		
+				
+		gchtml += '</div>';
+		gchtml += '</div>';
+		
+		gchtml += '<div class="row">';
+		gchtml += '<h4>Y Axis config:</h4>';
+
+		for(var index=0; index<jsonConfig.scales.yAxes.length;index++){
+			
+			var axis = jsonConfig.scales.yAxes[index];
+			var i =  parseInt(axis.id.slice(1));
+			
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="col-md-11">';
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">ID</label>';
+			gchtml += '<input disabled="disabled" class="form-control axis_id content-box-input" data-live-search="true" data-width="100%" id="axis_id_' + i + '" value="#' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Position</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="position_' + i + '"><option selected="selected" value="left">left</option><option value="right">right</option></select>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Type</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="type_' + i + '"><option selected="selected" value="linear">linear</option><option value="logarithmic">logarithmic</option></select>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Axis Label</label>';
+			gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="label_' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">Stacked</label>';
+			var checked = "";
+			if(axis.stacked){ checked = "checked";}
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+checked+' id="stacked_' + i + '"/>';
+			gchtml	+= '</div>'
+			
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Min</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="0" id="min_' + i + '"/>';
+			gchtml	+= '</div>'
+		    gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Max</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="1000" id="max_' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Max ticks</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="10" id="nticks_' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml	+= '</div>'
+			gchtml += '<div class="col-md-1">';
+			if($(".gcserie").length > 0){
+				gchtml += '<button style="margin-top:36px;" onclick="removeAxes(' + $(".gcserie").length + ')" class="btn red-mint btn-sm btn-outline uppercase"><i class="la la-trash"></i></button>';
+			}
+			gchtml	+= '</div>';
+			gchtml	+= '</div>';
+			
+			gchtml	+= '</div>';
+			$("#configGadget").append(gchtml);
+			gchtml = '';
+			$("#position_" + i).val(axis.position);
+			$("#type_" + i).val(axis.type);
+			
+			try{
+				$("#label_" + i).val(axis.scaleLabel.labelString);
+			}catch(err){				
+			}
+			try{	
+				$("#min_" + i).val(axis.ticks.suggestedMin);
+			}catch(err){				
+			}
+			try{	
+				$("#max_" + i).val(axis.ticks.suggestedMax);
+			}catch(err){				
+			}
+			try{
+				$("#labelx").val(jsonConfig.scales.xAxes[0].scaleLabel.labelString);
+			}catch(err){				
+			}
+			try{
+				$("#hidelabel").val(jsonConfig.scales.xAxes[0].hideLabel);
+			}catch(err){}
+			
+			
+		}
+		if(!jsonConfig.scales.yAxes.length){
+			var i = 0;
+			var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">Chart Legend</h4>';
+			gchtml += '<div class="row">';
+			
+			// legend display
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Legend Display</label>';
+			 if(legend) legend = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
+			gchtml += '</div>';
+			
+			
+			// legend position
+			gchtml += '<div class="form-group col-md-3">';
+			gchtml += '<label class="control-label">Legend Position</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="position">';
+			if ($("#config").val()){  editPosition = jsonConfig.legend.position;  } else { editPosition = ''; }
+			for(var j=0; j<position.length; j++){
+				if ( position[j] === editPosition ){ selPosition = 'selected="selected"'; } else { selPosition = ''; }
+				gchtml += '<option '+ selPosition +' value="'+position[j]+'">'+position[j]+'</option>';
+			}
+			gchtml +='</select>';
+			gchtml += '</div>';		
+		
+			gchtml += '</div>';
+			
+			gchtml += '<h4> X Axis config:</h4>';
+			gchtml += '<div class="col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Axis Label</label>';
+			gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="labelx"/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">ticks every</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" min="1" value="1" id="hidelabel"/>';
+			gchtml	+= '</div>'			
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">Sort</label>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" checked="" data-width="100%" id="sort"/>';
+			gchtml	+= '</div>'
+			gchtml	+= '</div>'
+			gchtml += '<h4>Y Axis config:</h4>';
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="col-md-11">';
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">ID</label>';
+			gchtml += '<input disabled="disabled" class="form-control axis_id content-box-input" data-live-search="true" data-width="100%" id="axis_id_' + i + '" value="#' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Position</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="position_' + i + '"><option selected="selected" value="left">left</option><option value="right">right</option></select>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Type</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="type_' + i + '"><option selected="selected" value="linear">linear</option><option value="logarithmic">logarithmic</option></select>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Axis Label</label>';
+			gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="label_' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">Stacked</label>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="stacked_' + i + '"/>';
+			gchtml	+= '</div>'			
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Min</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="0" id="min_' + i + '"/>';
+			gchtml	+= '</div>'
+		    gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Max</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="1000" id="max_' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Max ticks</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="10" id="nticks_' + i + '"/>';
+			gchtml	+= '</div>'
+			gchtml	+= '</div>'
+			gchtml	+= '</div>'
+			
+			
+			$("#configGadget").html(gchtml);
+		}
+		
+	}
+	
+	
+	//Show especific measures and config for gadget Line or Bar
+	function showConfigMixed(gtype,gfields){
+		
+		if ( $('#configContainer').hasClass('hide') === true ){ 
+			$('#configContainer').removeClass('hide');
+		}
+		var jsonConfig;
+		if(!$("#config").val() || $("#config").val() === "{}"){
+			jsonConfig = {scales:{yAxes:[],xAxes:[]}};
+		}
+		else{
+			jsonConfig = JSON.parse($("#config").val());
+		}
+		
+			var gchtml = '<h4> X Axis config:</h4>';
+			gchtml += '<div class="col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Axis Label</label>';
+			gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="labelx"/>';
+			gchtml	+= '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">ticks every</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" min="1" value="1" id="hidelabel"/>';
+			gchtml	+= '</div>';
+			
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">Sort</label>';
+			var sort = "";
+			try{
+				if( jsonConfig.scales.xAxes[0].sort){ sort = "checked";}
+			}catch(err){}
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+sort+' id="sort"/>';
+			gchtml	+= '</div>'
+			gchtml	+= '</div>';
+			$("#configGadget").append(gchtml);
+			gchtml = '<h4><i class="fa fa-wrench"></i> Y Axis config:</h4>';
+			for(var index=0; index<jsonConfig.scales.yAxes.length;index++){
+			
+				var axis = jsonConfig.scales.yAxes[index];
+				var i =  parseInt(axis.id.slice(1));
+				
+				gchtml += '<div class="gcserie col-md-12">';
+				gchtml += '<div class="col-md-11">';
+				gchtml += '<div class="form-group col-md-1">';
+				gchtml += '<label class="control-label">ID</label>';
+				gchtml += '<input disabled="disabled" class="form-control axis_id content-box-input" data-live-search="true" data-width="100%" id="axis_id_' + i + '" value="#' + i + '"/>';
+				gchtml	+= '</div>'
+				gchtml += '<div class="form-group col-md-2">';
+				gchtml += '<label class="control-label">Position</label>';
+				gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="position_' + i + '"><option selected="selected" value="left">left</option><option value="right">right</option></select>';
+				gchtml	+= '</div>'
+				gchtml += '<div class="form-group col-md-2">';
+				gchtml += '<label class="control-label">Type</label>';
+				gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="type_' + i + '"><option selected="selected" value="linear">linear</option><option value="logarithmic">logarithmic</option></select>';
+				gchtml	+= '</div>'
+				gchtml += '<div class="form-group col-md-2">';
+				gchtml += '<label class="control-label">Axis Label</label>';
+				gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="label_' + i + '"/>';
+				gchtml	+= '</div>'
+				gchtml += '<div class="form-group col-md-1">';
+				gchtml += '<label class="control-label">Stacked</label>';
+				var checked = "";
+				if(axis.stacked){ checked = "checked";}
+				gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+checked+' id="stacked_' + i + '"/>';
+				gchtml	+= '</div>';			
+				gchtml += '<div class="form-group col-md-2">';
+				gchtml += '<label class="control-label">Min</label>';
+				gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="0" id="min_' + i + '"/>';
+				gchtml	+= '</div>';
+			    gchtml += '<div class="form-group col-md-2">';
+				gchtml += '<label class="control-label">Max</label>';
+				gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="1000" id="max_' + i + '"/>';
+				gchtml	+= '</div>';
+				gchtml	+= '</div>';
+				gchtml += '<div class="col-md-1">';
+				if($(".gcserie").length > 0){
+					gchtml += '<button style="margin-top:26px;" onclick="removeAxes(' + $(".gcserie").length + ')" class="btn red-mint btn-sm btn-outline uppercase"><i class="la la-trash"></i> REMOVE </button>';
+				}
+				gchtml	+= '</div>';
+				gchtml	+= '</div>'
+				$("#configGadget").append(gchtml);
+				gchtml = '';
+				$("#position_" + i).val(axis.position);
+				$("#type_" + i).val(axis.type);
+				try{
+					$("#label_" + i).val(axis.scaleLabel.labelString);
+				}catch(err){}
+			}
+			try{
+				
+				$("#min_" + i).val(axis.ticks.suggestedMin);
+			}catch(err){}
+			try{
+				$("#max_" + i).val(axis.ticks.suggestedMax);
+			}catch(err){}
+			try{
+				$("#labelx").val(jsonConfig.scales.xAxes[0].scaleLabel.labelString);
+			}catch(err){}
+			try{
+				$("#hidelabel").val(jsonConfig.scales.xAxes[0].hideLabel);
+			}catch(err){}
+		if(!jsonConfig.scales.yAxes.length){
+			var i = 0;			
+			var gchtml = '<h4> X Axis config:</h4>';
+			gchtml += '<div class="col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Axis Label</label>';
+			gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="labelx"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">ticks every</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" min="1" value="1" id="hidelabel"/>';
+			gchtml	+= '</div>';			
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">Sort</label>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" checked="" data-width="100%" id="sort"/>';
+			gchtml	+= '</div>'
+			gchtml	+= '</div>';
+			gchtml += '<h4><i class="fa fa-wrench"></i> Y Axis config:</h4>';
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="col-md-11">';
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">ID</label>';
+			gchtml += '<input disabled="disabled" class="form-control axis_id content-box-input" data-live-search="true" data-width="100%" id="axis_id_' + i + '" value="#' + i + '"/>';
+			gchtml	+= '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Position</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="position_' + i + '"><option selected="selected" value="left">left</option><option value="right">right</option></select>';
+			gchtml	+= '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Type</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="type_' + i + '"><option selected="selected" value="linear">linear</option><option value="logarithmic">logarithmic</option></select>';
+			gchtml	+= '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Axis Label</label>';
+			gchtml += '<input onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="label_' + i + '"/>';
+			gchtml	+= '</div>';
+			gchtml += '<div class="form-group col-md-1">';
+			gchtml += '<label class="control-label">Stacked</label>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="stacked_' + i + '"/>';
+			gchtml	+= '</div>';		
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Min</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="0" id="min_' + i + '"/>';
+			gchtml	+= '</div>';
+		    gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Max</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number"  class="form-control content-box-input" data-live-search="true" data-width="100%" value="1000" id="max_' + i + '"/>';
+			gchtml	+= '</div>';
+			gchtml	+= '</div>';
+			gchtml	+= '</div>';
+			$("#configGadget").html(gchtml);
+		}
+		
+	}
+	
+	// SHOW SPECIFIC MEASURES AND CONFIG FOR PIE/DOUGHNUT GADGET
+	function showConfigPie(gtype,gfields){
+		
+		console.log('showConfigPie() ...');
+		if ( $('#configContainer').hasClass('hide') === true ){ 
+			$('#configContainer').removeClass('hide');
+		}
+		var jsonConfig;
+		// IF NO-CONFIG
+		if(!$("#config").val() || $("#config").val() === "{}"){
+		
+			// json config for pie/doughnut
+			jsonConfig = {
+				legend: {
+					display: true,                 
+					position: 'top',      
+					labels: {
+					  padding: 10, 
+					  fontSize: 11,
+					  usePointStyle: false,
+					  boxWidth:1
+					}
+				},
+				elements: {
+					arc: {
+						borderWidth: 1,
+						borderColor: '#fff'
+					}
+				},            
+				circumference:  Math.PI,
+				rotation: Math.PI,
+				chartType: 'pie'				
+            };
+
+		
+		}
+		// CONFIG UPDATE
+		else {
+			jsonConfig = JSON.parse($("#config").val());
+		}
+		
+		// SPECIFIC PIE FIELDS VALUES			
+		var legend = jsonConfig.legend.display;
+		var chartType = ['pie','doughnut'];
+		var circumference = jsonConfig.circumference;
+		var rotation = jsonConfig.rotation;
+		var position = ['top','right','bottom','left'];
+		
+		
+		
+		// SPECIFIC HTML GADGET CONFIGURATION FIELDS 
+		var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">'+gadgetCreateJson.table_config+'</h4>';
+		gchtml += '<div class="row">';
+			
+			// chartType
+			gchtml += '<div class="form-group col-md-3">';
+			gchtml += '<label class="control-label">Chart type</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="charType">';
+			if ($("#config").val()){  editChartType = jsonConfig.charType;  } else { editChartType = ''; }
+			for(var i=0; i<chartType.length; i++){
+				if ( chartType[i] === editChartType ){ selCharType = 'selected="selected"'; } else { selCharType = ''; }
+				gchtml += '<option '+ selCharType +' value="'+chartType[i]+'">'+chartType[i]+'</option>';
+			}
+			gchtml +='</select>';
+			gchtml += '</div>';
+			
+			// legend display
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">Legend Display</label>';
+			 if(legend) legend = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
+			gchtml += '</div>';
+			
+			
+			// legend position
+			gchtml += '<div class="form-group col-md-3">';
+			gchtml += '<label class="control-label">Legend Position</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="position">';
+			if ($("#config").val()){  editPosition = jsonConfig.legend.position;  } else { editPosition = ''; }
+			for(var j=0; j<position.length; j++){
+				if ( position[j] === editPosition ){ selPosition = 'selected="selected"'; } else { selPosition = ''; }
+				gchtml += '<option '+ selPosition +' value="'+position[j]+'">'+position[j]+'</option>';
+			}
+			gchtml +='</select>';
+			gchtml += '</div>';		
+			
+				
+			// semi or complete circunference
+			gchtml += '<div class="form-group col-md-4">';
+			gchtml += '<label class="control-label">Circunference:</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="circumference">';
+			if ($("#config").val()){  editCircunference = jsonConfig.circumference;  } else { editCircunference = ''; }
+			console.log('circumference value: ' + editCircunference + ' and PI: ' + Math.PI);
+				if (editCircunference == Math.PI ) {selSemi = 'selected="selected"'; selCircum = ''; } else { selSemi = ''; selCircum = 'selected="selected"'; } 				
+				gchtml += '<option '+ selSemi +' value="'+Math.PI+'">Semi-Circunference</option>';
+				gchtml += '<option '+ selCircum +' value="'+2*Math.PI+'">Circunference</option>';			
+			gchtml +='</select>';
+			gchtml += '</div>';		
+		
+		gchtml += '</div>';
+		$("#configGadget").append(gchtml);
+		$("#addMoreAxes").hide();		
+	
+	}
+	
+	
+	//Show especific measures and config for gadget Table
+	function showConfigTable(gtype,gfields){
+		
+		if ( $('#configContainer').hasClass('hide') === true ){ 
+			$('#configContainer').removeClass('hide');
+		}
+		var jsonConfig;
+		if(!$("#config").val() || $("#config").val() === "{}"){
+			
+			jsonConfig = {tablePagination :{      
+				      limit: 5,
+				      page: 1,
+				      order:'',
+				      limitOptions : [5, 10, 20, 50 ,100],
+				      style:{
+				    	  backGroundTHead: "#FFFFFF",
+				    	  backGroundTFooter: "#FFFFFF",
+				    	  trHeightHead: "40",
+				          trHeightBody: "40",
+				          trHeightFooter: "40",
+				          textColorTHead: "#060e14",
+				    	  textColorBody:"#555",
+				    	  textColorFooter:"#555"
+				      },
+				      options : {
+				        rowSelection: false,
+				        multiSelect: false,
+				        autoSelect: true,
+				        decapitate: false,
+				        largeEditDialog: false,
+				        boundaryLinks: true,
+				        limitSelect: true,
+				        pageSelect: true
+				      }
+				    }};
+		}
+		else{
+			jsonConfig = JSON.parse($("#config").val());
+		}
+		
+			 var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">'+gadgetCreateJson.table_config+'</h4>';			
+			 var limit = jsonConfig.tablePagination.limit;
+		     var page = jsonConfig.tablePagination.page;
+		     var limitOptions = [5, 10, 20, 50 ,100];
+		     var rowSelection =jsonConfig.tablePagination.options.rowSelection;
+		  
+		     var decapitate= jsonConfig.tablePagination.options.decapitate;
+		     //these properties are commented for future improvements
+		     //  var multiSelect= jsonConfig.tablePagination.options.multiSelect;
+			 //  var autoSelect= jsonConfig.tablePagination.options.autoSelect;
+		     //  var largeEditDialog= jsonConfig.tablePagination.options.largeEditDialog;
+		     var boundaryLinks= jsonConfig.tablePagination.options.boundaryLinks;
+		     var limitSelect= jsonConfig.tablePagination.options.limitSelect;
+		     var pageSelect= jsonConfig.tablePagination.options.pageSelect;
+		     
+		     var backGroundTHead= jsonConfig.tablePagination.style.backGroundTHead;
+		     var backGroundTFooter= jsonConfig.tablePagination.style.backGroundTFooter;
+		     var trHeightHead= jsonConfig.tablePagination.style.trHeightHead;
+		     var trHeightBody= jsonConfig.tablePagination.style.trHeightBody;
+		     var trHeightFooter= jsonConfig.tablePagination.style.trHeightFooter;
+		     var textColorTHead= jsonConfig.tablePagination.style.textColorTHead;
+		     var textColorBody= jsonConfig.tablePagination.style.textColorBody;
+		     var textColorFooter= jsonConfig.tablePagination.style.textColorFooter;
+		     
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.hide_header+'</label>';
+			 if(decapitate) decapitate = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="decapitate" ' + decapitate + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.selectable_rows+'</label>';
+			 if(rowSelection) rowSelection = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="rowSelection" ' + rowSelection + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.boundaryLinks+'</label>';
+			if(boundaryLinks) boundaryLinks = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="boundaryLinks" ' + boundaryLinks + '/>';
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.limitSelect+'</label>';
+			if(limitSelect) limitSelect = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="limitSelect" ' + limitSelect + '/>';
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.page_select+'</label>';
+			if(pageSelect) pageSelect = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="pageSelect" ' + pageSelect + '/>';
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.pagination_limit+'</label>';
+			gchtml += '<select onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="limit">';
+			for(var i=0; i<limitOptions.length; i++){
+				gchtml += '<option selected="selected" value="'+limitOptions[i]+'">'+limitOptions[i]+'</option>';
+			} 
+			gchtml +='</select>';			
+			gchtml	+= '</div>';
+			gchtml += '</div>'
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="form-group col-md-3">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.head_background_color+'</label>';
+			gchtml += '<div class=" input-group  colorpicker-component">';	
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="backGroundTHead" style="height:35px;" type="text" value="'+backGroundTHead+'"/>'
+			gchtml += '<span class="input-group-addon"><i></i></span>';
+			gchtml += '</div>'
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-3">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.footer_background_color+'</label>';	
+			gchtml += '<div class=" input-group  colorpicker-component">';
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="backGroundTFooter" style="height:35px;" type="text" value="'+backGroundTFooter+'"/>'
+			gchtml += '<span class="input-group-addon"><i></i></span>';
+			gchtml += '</div>'
+			gchtml += '</div>'			
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.head_height+'</label>';				
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="trHeightHead" type="number" min="0" value="'+trHeightHead+'"/>'
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.body_row_height+'</label>';				
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="trHeightBody" type="number" min="0" value="'+trHeightBody+'"/>'
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.footer_height+'</label>';				
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="trHeightFooter" type="number" min="0" value="'+trHeightFooter+'"/>'
+			gchtml += '</div>'
+			gchtml	+= '</div>'
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.head_text_color+'</label>';	
+			gchtml += '<div class=" input-group  colorpicker-component">';
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="textColorTHead" style="height:35px;" type="text" value="'+textColorTHead+'"/>'
+			gchtml += '<span class="input-group-addon"><i></i></span>';
+			gchtml += '</div>'
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.body_text_color+'</label>';
+			gchtml += '<div class=" input-group  colorpicker-component">';
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="textColorBody" style="height:35px;" type="text" value="'+textColorBody+'"/>'
+			gchtml += '<span class="input-group-addon"><i></i></span>';
+			gchtml += '</div>'
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.footer_text_color+'</label>';
+			gchtml += '<div class=" input-group  colorpicker-component">';
+			gchtml += '<input onchange="refreshGadget()" class=" form-control" id="textColorFooter" style="height:35px;" type="text" value="'+textColorFooter+'"/>'
+			gchtml += '<span class="input-group-addon"><i></i></span>';
+			gchtml += '</div>'
+			gchtml += '</div>'
+			
+			gchtml += '</div>'
+			gchtml	+= '</div>';
+			$("#configGadget").append(gchtml);				
+			$("#addMoreAxes").hide();				
+			
+	}
+	
+	//Show especific measures and config for gadget Map
+	function showConfigMap(gtype,gfields){
+		if ( $('#configContainer').hasClass('hide') === true ){ 
+			$('#configContainer').removeClass('hide');
+		}		
+		var jsonConfig;
+		if(!$("#config").val() || $("#config").val() === "{}"){					
+			jsonConfig = {  
+						center:{
+							lat:30,
+							lng:30,
+							zoom:2
+						},
+						markersFilter:"",
+						jsonMarkers:""
+				};
+		}
+		else{
+			jsonConfig = JSON.parse($("#config").val());
+		}		
+			 var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">'+gadgetCreateJson.map_config+'</h4>';			
+			 var markersFilter = jsonConfig.markersFilter;
+			 var jsonMarkers="";
+			 if(jsonConfig.jsonMarkers!=null && typeof jsonConfig.jsonMarkers != "undefined"){
+		     	 jsonMarkers = jsonConfig.jsonMarkers;
+			 }				     
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.marker_filter+'</label>';
+			gchtml += '<select  onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="markersFilter">';					
+				for(var o = 0 ; o < gfields.length;o++){
+					gchtml += '<option  value="' + gfields[o].field + '">' + gfields[o].field + '</option>'
+				}					
+			gchtml += '</select>';					
+			gchtml += '</div>';					
+			gchtml += '<div class="form-group col-md-8">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.json_marker+'</label>';					
+			gchtml += '<textarea id="jsonMarkers" onchange="refreshGadget()" class="gsoption form-control" data-live-search="true" data-width="100%" rows="5" data-min-rows="5"/>';				
+			gchtml += '</div>';					
+			gchtml += '</div>'
+			gchtml	+= '</div>';
+			$("#configGadget").append(gchtml);				
+			$("#addMoreAxes").hide();	
+			if(markersFilter!=null && markersFilter.length>0){
+				$("#markersFilter").val(markersFilter);
+			}
+			$("#jsonMarkers").val(jsonMarkers);
+	}
+	
+	
+	function selectOntologyOrDataSource(e){		
+		if(e!=null && e.options.selectedIndex!=null && e[e.options.selectedIndex].dataset!=null){
+			if (e[e.options.selectedIndex].dataset.type==="ontology"){
+				initOntology();
+				$("#icons").empty();
+				$('#query-panel').show(); 
+			}else if(e[e.options.selectedIndex].dataset.type==="datasource"){
+				showGadgetSelect();
+				$('#query-panel').hide();   
+			}
+		}
+	}
+	
+	function editDataSource(){		
+		getDataSource($("#datasources").val());
+	}
+	
+	function showDataSource(){		
+		 id=$("#datasources").val();
+		 $.get('/controlpanel/datasources/getDatasourceById/'+id, function(data) {               
+             console.log("success get datasource");
+             dataSourceForEdit = data;
+         	 initOntology(true);
+    		 $('#configContainer').hide();
+    		 $('#viewer').hide();
+    		 $('#measuresContainer').hide();
+    		
+    	     $('#query-panel').removeClass('hide');
+    		 $('#query-panel').css('display','block');
+    		 
+    		 $('#querySql').val(dataSourceForEdit.query);
+    		 $('#querySql').prop('disabled', 'disabled');
+    		 $('#crear-query').hide();
+    		 
+    		 $('#maxvaluesDataSource').val(dataSourceForEdit.maxvalues);
+    		 $('#refreshDataSource').val(dataSourceForEdit.refresh);
+    		 $("#icons").empty();
+         });
+	}
+	
+	function mostrarDialogoSelect(){		
+		 var combodb=document.getElementById('targetDatabase');
+		 var targetdb= combodb.options[combodb.selectedIndex].value;
+		 getOntologyFields();
+		 var comboFields=$('#fields').html();
+	/*[+
+		$.confirm({
+	    title: [[#{querytool.select.fields}]],
+	    content: '' +
+	    '<form action="" class="formName">' +
+	    '<div class="form-group">' +
+	    '<label>Select fields</label> <select id="checkselect" onchange="addRemoveFieldToSelect(this)" class="form-control querySelect" data-width="100%">'+ comboFields +
+	    '</select></div>' +
+	    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+	    buttons: {
+	        formSubmit: {
+	            text: 'OK',
+	            btnClass: 'btn-blue',
+	            action: function () {
+	               createQuery();
+	            }
+	        },
+	        cancel: function () {
+	            //close
+	        },
+	    },
+	    onContentReady: function () {
+	        // bind to events
+	        var jc = this;
+	        getOntologyFields();
+	        this.$content.find('form').on('submit', function (e) {
+	            // if the user submits the form by pressing enter in the field.
+	            e.preventDefault();
+	            jc.$$formSubmit.trigger('click'); // reference the button and click it
+	        });
+	    }
+	});+]*/
+	};
+	
+	
+	// MODAL DE CONDICIONES DEL WHERE 
+	var indexCondition = 0;
+	function mostrarDialogoCondicion(){
+		var combodb = document.getElementById('targetDatabase');
+		var targetdb = combodb.options[combodb.selectedIndex].value;
+		var comboFields=$('#fields').html();
+		var comboCondition=$('#select_operador').html();
+		/*[+
+		$.confirm({
+	    title: [[#{querytool.select.where}]],
+	    content: '' +
+	    '<form action="" class="form_condicion" id="form_condicion">' +
+	    '<div class="form-group">' +
+	    '<label>Select fields</label> <select id="conditionFields" class="form-control querySelect margin-bottom-10" data-width="100%">'+ comboFields +
+	    '</select> <select class="element select small form-control" id="conditionOperator" name="typeCondicion" >'+comboCondition+'</select><label class=""></label><input type="text" class="form-control" placeholder="condition" id="condition"></input></div>' +
+	    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+	    buttons: {
+	        formSubmit: {
+	            text: 'OK',
+	            btnClass: 'btn-blue',
+	            action: function () {
+	            	var campo = $("#conditionFields").val();
+	            	var fieldType = $("#conditionFields option:selected").attr("type")
+					var operador = $("#conditionOperator option:selected").text();
+					var condicion = $("#condition").val();
+							
+					var c = Number(condicion);						
+					if(fieldType=="string") {
+						condicion = "'"+condicion+"'";
+					}		
+					if( operador == " < "){ operador=" &#60; "; }else if( operador == "<="){operador=" &#60;= "; }						
+					queryCondition = campo + operador + condicion;
+					var add = checkCondition(queryCondition);
+					if( add ){							
+
+		                where = '<li  id="condicion'+indexCondition+'" condition="'+queryCondition+'"  class="list-group-item bold">'+ queryCondition +'<div class="btn btn-xs pull-right" onclick="deleteCondition(\'condicion'+indexCondition+'\')"><i class="fa fa-trash-o" style="font-size: 14px; margin-top: -6px"></i></div></li>';
+						indexCondition++;
+
+						$("#where_ul").append(where);
+						createQuery();
+					}
+	            }
+	        },
+	        cancel: function () {
+	            //close
+	        }
+	    },
+	    onContentReady: function () {
+	        // bind to events
+	        var jc = this;
+	        getOntologyFields();
+	        this.$content.find('form').on('submit', function (e) {
+	            // if the user submits the form by pressing enter in the field.
+	            e.preventDefault();
+	            jc.$$formSubmit.trigger('click'); // reference the button and click it
+	        });
+	    }
+	});+]*/
+	};
+
+	var indexOrderby = 0;
+	// DIALOGO DE CONFIGURACION DEL ORDERBY
+	function mostrarDialogoOrderBy(){
+		var comboFields=$('#fields').html();
+		var comboOrders=$('#form_orden').html();
+		/*[+
+		$.confirm({
+	    title: [[#{querytool.select.orderby}]],
+	    content: '' +
+	    '<form action="" class="form_order" id="form_order">' +
+	    '<div class="form-group">' +
+	    '<label>Select fields</label> <select id="orderFields" class="form-control querySelect" data-width="100%">'+ comboFields +
+	    '</select> <select class="element select small form-control" id="orderType" name="orderType">'+comboOrders+'</select></div>' +
+	    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+	    buttons: {
+	        formSubmit: {
+	            text: 'OK',
+	            btnClass: 'btn-blue',
+	            action: function () {
+
+	            	var field = $("#orderFields").val();
+					var order = $("#orderType").val();
+					var add = checkOrderby(field);
+					if(add){ 
+						var	orderby = '<li id="orderby'+indexOrderby+'" class="queryValues" ><div class="input-group" style="border: 1px solid #ddd; margin-top: -1px"> <input type="text" readonly  style="font-size: smaller; border: none; background-color: white" condition="'+field+' '+order+'"  class="form-control bold " value="'+field+' '+order+'"/> <span class="input-group-btn"> <button class="btn btn-circle btn-xs btn-outline blue no-border" onclick="deleteCondition(\'orderby'+indexOrderby+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px; margin-top:-6px"></i></button></span></div></li>';
+
+						$("#orderby_ul").append(orderby);
+						showLog ? console.log('regenerando query tras agregar o quitar orderby: ' + field) : '';
+						createQuery();
+					}
+					indexOrderby++;
+	            }
+	        },
+	        cancel: function () {
+	            //close
+	        },
+	    },
+	    onContentReady: function () {
+	        // bind to events
+	        var jc = this;
+	        getOntologyFields();
+	        this.$content.find('form').on('submit', function (e) {
+	            // if the user submits the form by pressing enter in the field.
+	            e.preventDefault();
+	            jc.$$formSubmit.trigger('click'); // reference the button and click it
+	        });
+	    }
+	});+]*/
+	}
+	
+	
+	
+	$(document).ready(
+		function(){
+			
+			if($("#id").val()){
+				measures = /*[[${measures}]]*/ [];
+				$("#datasources").val(measures[0].datasource.id);
+				$("#datasources").change();
+				$("#" + $("#type").val() + "").click();
+			}
+			
+			// edit mode.
+			if ($('#type').val() != ''){
+				$('#'+ $('#type').val()).addClass('bg-inverse');
+				$('#'+ $('#type').val()).find('a').trigger('click');
+			
+			}
+			$("#identification").on('input', function() {
+				validateGadgetIdentification();
+			});
+			
+			 $(window).keydown(function(event){
+				    if(event.keyCode == 13) {
+				      event.preventDefault();
+				      return false;
+				    }
+			 });
+		}
+		
+	)
+	
+    var currentLanguage = [[${lang}]];	
+	
+	var gadgetCreateJson = { 
+	
+	"table_config" :[[#{gadgets.table.config}]],
+	"hide_header" :[[#{gadgets.hide.header}]],
+	"selectable_rows" :[[#{gadgets.selectable.rows}]],
+	"boundaryLinks" :[[#{gadgets.boundaryLinks}]],
+	"limitSelect" :[[#{gadgets.limitSelect}]],
+	"page_select" :[[#{gadgets.page.select}]],
+	"pagination_limit" :[[#{gadgets.pagination.limit}]],
+	"head_background_color" : [[#{gadgets.head.background.color}]],
+	"footer_background_color" :[[#{gadgets.footer.background.color}]],
+	"head_height" :[[#{gadgets.head.height}]],
+	"body_row_height" :[[#{gadgets.body.row.height}]],
+	"footer_height" :[[#{gadgets.footer.height}]],
+	"head_text_color" : [[#{gadgets.head.text.color}]],
+	"body_text_color" :[[#{gadgets.body.text.color}]],
+	"footer_text_color" :[[#{gadgets.footer.text.color}]],
+	"measures" :[[#{gadgets.measures}]],
+	"map_config" :[[#{gadgets.map.config}]],
+	"marker_filter" :[[#{gadgets.marker.filter}]],
+	"json_marker" :[[#{gadgets.json.marker}]],
+	"json_marker_info" :[[#{gadgets.json.marker.info}]],
+	"iframe" : [[${iframe}]],
+	"type" : [[${type}]],
+	"ontologyId" : /*[[${param.id}]]*/ null
+	
+	
+	};
+		
+
+	
+	function createDataSource(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+          var d = new Date();
+          var n = d.getTime();          
+          identification = $("#identification").val()+"_"+n;       
+			 $.ajax({
+	             url: '/controlpanel/datasources/createFromGadget',
+				 headers: {
+						[csrf_header]: csrf_value
+				 },
+	             type: 'POST',
+	             data: { 
+	     			config : "",
+	    			dbtype : "RTDB",
+	    			description : "",
+	    			identification : identification,
+	    			maxvalues : $("#maxvaluesDataSource").val(),
+	    			mode : "query",
+	    			ontologyIdentification :$("#datasources").val(),
+	    			query :  $("#querySql").val(),
+	    			refresh : $("#refreshDataSource").val() },	           
+	             success: function(data) {	               
+					console.log("success createFromGadget");                 
+					//hide create query
+					$('#query-panel').toggleClass('hide'); 
+					if (!$('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } ;
+					var id = data.id;
+					var newOption = '<option  id="'+id+'" data-description="'+identification+'" data-type="datasource" value="'+id+'" text="'+identification+'" >'+identification+'</option>';
+					$('#optgroupDatasource').append(newOption);
+					if(typeof $('#datasources').selectpicker !== 'function'){
+						 loadScript('/controlpanel/static/vendor/bootstrap-select/bootstrap-select.min.js', function(){
+							 $('#datasources').selectpicker('val', id); 
+								$("#div-datasource").hide();
+								$("#datasources").selectpicker('refresh');
+								showGadgetSelect();
+								dataSourceCreated=id;
+							});
+					}else{
+						$('#datasources').selectpicker('val', id); 
+						$("#div-datasource").hide();
+						$("#datasources").selectpicker('refresh');
+						showGadgetSelect();
+						dataSourceCreated=id;
+					}
+	             },
+	             error: function(data,status,er) { 
+	             }
+          });
+	}
+	
+	
+	function loadScript (url, callback) {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+	    jQuery.ajax({
+	        url: url,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+	        dataType: 'script',
+	        success: callback,
+	        async: true
+	    });
+	}
+	
+	function updateDataSource(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+       		var  url = '/controlpanel/datasources/updateGadgetDatasourceFromGadget/'+dataSourceForEdit.id;       		
+		 $.ajax({
+           url:url,
+           headers: {
+				[csrf_header]: csrf_value
+		    },
+           type: 'POST',
+           data: {
+  			maxvalues : $("#maxvaluesDataSource").val(), 		
+  			query :  $("#querySql").val() ,
+  			refresh : $("#refreshDataSource").val() },
+         
+           success: function(data) {
+             
+               console.log("success createFromGadget");                 
+               //hide create query
+                $('#query-panel').toggleClass('hide');
+                if (!$('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } 
+                $('#configContainer').show();
+          		$('#viewer').show();
+          		$('#measuresContainer').show();
+          		showConfigAndMeasures($('#type').val());
+           },
+           error: function(data,status,er) {           
+               
+          	
+           }
+       });
+	}
+	
+	//function for create from iframe
+	function createGadgetIframe(){
+		generateMeasuresArray();
+		$("#jsonMeasures").val(JSON.stringify(measures));
+		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
+		$("#type").val(gtype);
+		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
+		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		createGadgetIframeAjaxCall();
+	}
+	
+	//function for create from iframe Ajax call
+	function createGadgetIframeAjaxCall(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		 $.ajax({
+           url: '/controlpanel/gadgets/createiframe',
+           headers: {
+				[csrf_header]: csrf_value
+		    },
+           type: 'POST',
+           data: $('#gadget_create_form').serialize(),         
+           success: function(data) {             
+               console.log("success createFromGadget");              
+               var createGadgetFromIframe = {createGadgetFromIframe:{data}};
+               parent.postMessage(JSON.stringify(createGadgetFromIframe), "*");               
+           },
+           error: function(data,status,er) {
+           }
+       });
+	}
+	
+	//function to update from iframe
+	function updateGadgetIframe(){     	
+     	generateMeasuresArray();
+		$("#jsonMeasures").val(JSON.stringify(measures));
+		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
+		$("#type").val(gtype);
+		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
+		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		updateGadgetIframeAjaxCall();
+	}
+	//function to update from iframe  Ajax call
+	function updateGadgetIframeAjaxCall(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		 $.ajax({
+           url: '/controlpanel/gadgets/updateiframe/'+[[${gadget.id}]],
+           headers: {
+				[csrf_header]: csrf_value
+		    },
+           type: 'POST',
+           data: $('#gadget_create_form').serialize(),
+         
+           success: function(data) {             
+               console.log("success updateFromGadget");             
+               parent.postMessage('{"closeGadgetFromIframe":"close"}', "*");         
+           },
+           error: function(data,status,er) {
+           }
+       });
+	}
+	
+	
+	//function for delete dataSource 
+	function deleteDataSource(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		 $.ajax({
+             url: '/controlpanel/datasources/deleteFromGadget',
+             headers: {
+					[csrf_header]: csrf_value
+			    },
+             type: 'POST',
+             data: {id : dataSourceCreated},           
+             success: function(data) {               
+                 console.log("success delete datasource");
+                 if(gadgetCreateJson.iframe){	
+                 	parent.postMessage('{"closecreateGadgetFromIframe":"close"}', "*");   
+                 }else{
+                	 GadgetsCreateController.go( [[@{/gadgets/list}]] );
+                 }
+             },
+             error: function(data,status,er) {
+             }
+         });
+	}
+
+	//function for get datasource
+	function getDataSource(id){
+		 $.get('/controlpanel/datasources/getDatasourceById/'+id, function(data) {               
+                console.log("success get datasource");
+                dataSourceForEdit = data;
+              	asignValuesToDataSourceForm();
+            });
+	}
+	//function for update datasource when push the edit button
+	function asignValuesToDataSourceForm(){
+		
+		initOntology(true);
+		$('#configContainer').hide();
+		$('#viewer').hide();
+		$('#measuresContainer').hide();
+		
+	    $('#query-panel').removeClass('hide');
+		$('#query-panel').css('display','block');
+	
+		$('#querySql').val(dataSourceForEdit.query);
+		
+		$('#maxvaluesDataSource').val(dataSourceForEdit.maxvalues);
+		$('#refreshDataSource').val(dataSourceForEdit.refresh);
+		$("#icons").empty();
+	
+	}
+	//function for close 
+	function closeWindow(){		
+		//If iframe close must close de iframe sending message to parent
+		if(gadgetCreateJson.iframe){		
+			if(dataSourceCreated){
+				deleteDataSource();
+			}else{
+				parent.postMessage('{"closeGadgetFromIframe":"close"}', "*");
+			}
+		}else{			
+			if(dataSourceCreated){
+				deleteDataSource();
+			}else{
+				GadgetsCreateController.go( [[@{/gadgets/list}]] );
+			}
+		}
+	}
+	
+	
+	
+	function validateGadgetIdentification(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		if($("#identification").val().trim().length>4){
+			 $.ajax({
+	            url: '/controlpanel/gadgets/existGadget',
+	            headers: {
+					[csrf_header]: csrf_value
+			    },
+	            type: 'POST',
+	            data: { identification:$("#identification").val()},	          
+	            success: function(data) {
+	              
+	                console.log("success existGadget");
+	               if(data.exist === "true"){
+	            	   $("#datasources").attr('disabled', 'disabled');
+	                   $("#datasources").selectpicker('refresh');
+	                   $("#identification").closest('.form-group').addClass('has-error');
+	                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+	                   $('.alert-danger').show();
+	                  
+	               }else{
+	            	   $("#datasources").prop( "disabled", null );
+	            	   $("#datasources").selectpicker('refresh');
+	            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
+	                   $('.alert-danger').hide();
+	               }
+	                
+	            },
+	            error: function(data,status,er) {
+	         
+	           	 console.log(data);
+	            }
+	        });
+		}else{
+			   $("#datasources").attr('disabled', 'disabled');
+               $("#datasources").selectpicker('refresh');
+			   $("#identification").closest('.form-group').addClass('has-error');	
+			   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+               $('.alert-danger').show();
+		}
+	}
+	
+	
+	
+	
+	// ]]>
+	</script>
+	
+</html> 
+
