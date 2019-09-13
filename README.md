@@ -4,7 +4,7 @@
   </a>
 </p>
  
-## Versions
+## Versions 
 The platform has 3 distributions, that combined, they cover transformation and creation of new digital business needs
 <p align="center">
     <img src='resources/images/onesaitPlatform-VersionsDescription.png'/>
