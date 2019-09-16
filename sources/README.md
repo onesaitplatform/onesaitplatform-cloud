@@ -2,7 +2,7 @@
   <a src='https://www.onesaitplatform.com/'>
     <img src='../resources/images/onesait-platform-logo.png'/>
   </a>
-</p>
+</p> 
 
 # Sources of onesait Platform (Cloud version)
 ![Build Status](https://sofia2-devops.westeurope.cloudapp.azure.com/jenkins/buildStatus/icon?job=onesait-platform/master)
