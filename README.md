@@ -58,6 +58,3 @@ onesait Platform is Open Source software released under the [Apache Software Lic
 
 See [`LICENSE`](LICENSE) and [`copyright.txt`](copyright.txt) for details.
 
-
-
-
