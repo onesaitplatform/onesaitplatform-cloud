@@ -37,7 +37,7 @@ For the quick start you can start watching one of the [Introductory Videos](http
 or perhaps you prefer to work with the Platform, then follow our [Getting Started Guide](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/33179/Getting+Started)
 
 
-## Getting help 
+## Getting help
 
 Having trouble with onesait Platform? We’d like to help!
 
