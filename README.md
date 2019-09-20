@@ -28,7 +28,8 @@ You can find a complete description of these modules at [Platform Modules](https
 
 If you want a more technical detail you can read our [Architectural Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/360455/Architecture+Guides)
 
-## Getting started with the platform
+
+## Getting started with the platform 
 
 The best way yo start with Onesait Platform is accesing our [Developer Portal](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/45842643/Platform+Guides) where you can find a complete set of guides and tutorials.
 
@@ -57,6 +58,4 @@ As we are working on a open source model, you can contribute with us. To contrib
 onesait Platform is Open Source software released under the [Apache Software License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 See [`LICENSE`](LICENSE) and [`copyright.txt`](copyright.txt) for details.
-
-
 
