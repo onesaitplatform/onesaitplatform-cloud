@@ -208,6 +208,10 @@
 			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
+			<id>onesait platform public</id>
+			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/public/</url>
+		</repository>
+		<repository>
 			<id>central Maven</id>
 			<url>http://central.maven.org/maven2/</url>
 		</repository>
