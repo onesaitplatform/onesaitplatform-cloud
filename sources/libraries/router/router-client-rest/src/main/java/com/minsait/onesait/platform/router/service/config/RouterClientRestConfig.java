@@ -113,7 +113,7 @@ public class RouterClientRestConfig {
 	}
 
 	@Bean
-	public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
+	public Runnable idleConnectionMonitor(PoolingHttpClientConnectionManager connectionManager) {
 		return new Runnable() {
 			@Override
 			@Scheduled(fixedDelay = 10000)
