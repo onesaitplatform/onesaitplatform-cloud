@@ -333,6 +333,7 @@ spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch
 quartz:      
    datasource:
       url: "@onesaitplatform.quartzURL@"
+      #url: jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       driver-class-name: com.mysql.jdbc.Driver
