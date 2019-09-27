@@ -330,7 +330,7 @@ spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.con
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
 
         
-quartz:      
+quartz:     
    datasource:
       url: "@onesaitplatform.quartzURL@"
       #url: jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
