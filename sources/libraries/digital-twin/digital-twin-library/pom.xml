@@ -42,7 +42,7 @@
 		<!-- LOMBOK -->
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.16.20</version>
+			<version>${lombok.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
