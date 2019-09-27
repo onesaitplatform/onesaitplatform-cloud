@@ -52,6 +52,7 @@
 		<gson.version>2.5</gson.version>
 		<micrometer.version>1.2.0</micrometer.version>
 		<jaspersoft.ws.version>1.0.1-SNAPSHOT</jaspersoft.ws.version>
+		<lombok.version>1.18.10</lombok.version>
 	</properties>
 
 	<dependencyManagement>
@@ -218,7 +219,6 @@
 	</repositories>
 
 	<modules>
-		<!-- <module>sofia2-springboot-autoconfigure-starter</module> -->
 		<!--LIBRARIES -->
 		<module>libraries/commons</module>
 		<module>libraries/audit</module>
