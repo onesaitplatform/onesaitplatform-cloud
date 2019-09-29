@@ -1,578 +1,614 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.minsait.onesait.platform</groupId>
-	<artifactId>onesaitplatform-parent</artifactId>
-	<version>1.0.0-ce</version>
-	<packaging>pom</packaging>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.minsait.onesait.platform</groupId>
+    <artifactId>onesaitplatform-parent</artifactId>
+    <version>1.0.0-ce</version>
+    <packaging>pom</packaging>
 
-	<name>onesaitplatform-parent</name>
-	<description>onesait Platform is the Digital Platform of Minsait, aka Open Platform</description>
+    <name>onesaitplatform-parent</name>
+    <description>onesait Platform is the Digital Platform of Minsait, aka Open Platform</description>
 
-	<properties>
-		<onesaitplatform.version>1.0.0-ce</onesaitplatform.version>
-		<docker.image.username>onesaitplatform</docker.image.username>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<commons-io.version>2.4</commons-io.version>
-		<javafaker.version>0.14</javafaker.version>
-		<spring-boot.version>1.5.9.RELEASE</spring-boot.version>
-		<spring-boot-admin-server.version>1.5.6</spring-boot-admin-server.version>
-		<spring-boot-admin-starter-client.version>1.5.6</spring-boot-admin-starter-client.version>
-		<httpclient.version>4.5.2</httpclient.version>
-		<docker-spotify.version>1.0.0</docker-spotify.version>
-		<springfox-swagger2.version>2.8.0</springfox-swagger2.version>
-		<!--LICENSE INFO -->
-		<license.dir>${basedir}</license.dir>
-		<project.name>onesait Platform</project.name>
-		<project.year>2019</project.year>
-		<project.organization.name>minsait by Indra</project.organization.name>
-		<project.website>https://onesaitplatform.com</project.website>
-		<freemarket.version>2.3.21</freemarket.version>
-		<elasticsearch.version>6.2.3</elasticsearch.version>
-		<skip.unit.tests>false</skip.unit.tests>
-		<skip.integration.tests>true</skip.integration.tests>
-		<maven.install>2.5.2</maven.install>
-		<jsqlparser.version>1.3</jsqlparser.version>
-		<mockito.version>2.22.0</mockito.version>
-		<tika.version>1.20</tika.version>
-		<onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false&amp;autoReconnect=true</onesaitplatform.quartzURL>
-		<onesaitplatform.client.version>1.3.0</onesaitplatform.client.version>
-		<hazelcast.zookeeper.version>3.6.3</hazelcast.zookeeper.version>
-		<hazelcast.version>3.12</hazelcast.version>
-		<curator.version>2.13.0</curator.version>
-		<jasypt.version>2.0.0</jasypt.version>
-		<saml2.version>1.0.3.RELEASE</saml2.version>
-		<aspectj.version>1.8.9</aspectj.version>
-		<gson.version>2.5</gson.version>
-		<micrometer.version>1.2.0</micrometer.version>
-		<jaspersoft.ws.version>1.0.1-SNAPSHOT</jaspersoft.ws.version>
-		<lombok.version>1.18.10</lombok.version>
-	</properties>
+    <properties>
+        <onesaitplatform.version>1.0.0-ce</onesaitplatform.version>
+        <docker.image.username>onesaitplatform</docker.image.username>
+        <maven.install>2.5.2</maven.install>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-parent</artifactId>
-				<version>${spring-boot.version}</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-			<dependency>
-				<groupId>com.minsait.onesait.platform</groupId>
-				<artifactId>onesaitplatform-comms-protocol</artifactId>
-				<version>${onesaitplatform.client.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.minsait.onesait.platform</groupId>
-				<artifactId>onesaitplatform-java-client</artifactId>
-				<version>${onesaitplatform.client.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.javafaker</groupId>
-				<artifactId>javafaker</artifactId>
-				<version>${javafaker.version}</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger2</artifactId>
-				<version>${springfox-swagger2.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.springfox</groupId>
-				<artifactId>springfox-swagger-ui</artifactId>
-				<version>${springfox-swagger2.version}</version>
-			</dependency>
+        <!-- Compile & tests -->
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <skip.unit.tests>false</skip.unit.tests>
+        <skip.integration.tests>true</skip.integration.tests>
 
-			<dependency>
-				<groupId>org.elasticsearch</groupId>
-				<artifactId>elasticsearch</artifactId>
-				<version>${elasticsearch.version}</version>
-			</dependency>
+        <onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false&amp;autoReconnect=true</onesaitplatform.quartzURL>
+        <onesaitplatform.client.version>1.3.0</onesaitplatform.client.version>
 
-			<dependency>
-				<groupId>org.elasticsearch.client</groupId>
-				<artifactId>transport</artifactId>
-				<version>${elasticsearch.version}</version>
-			</dependency>
+        <!-- Project -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.name>onesait Platform</project.name>
+        <project.year>2019</project.year>
+        <project.organization.name>minsait by Indra</project.organization.name>
+        <project.website>https://onesaitplatform.com</project.website>
 
-			<dependency>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>${docker-spotify.version}</version>
-			</dependency>
+        <!--LICENSE INFO -->
+        <license.dir>${project.basedir}</license.dir>
 
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.2</version>
-			</dependency>
+        <!-- Libraries -->
+        <aspectj.version>1.8.9</aspectj.version>
+        <commons-io.version>2.4</commons-io.version>
+        <curator.version>2.13.0</curator.version>
+        <docker-spotify.version>1.0.0</docker-spotify.version>
+        <elasticsearch.version>6.2.3</elasticsearch.version>
+        <freemarket.version>2.3.21</freemarket.version>
+        <gson.version>2.5</gson.version>
+        <hazelcast.zookeeper.version>3.6.3</hazelcast.zookeeper.version>
+        <hazelcast.version>3.12</hazelcast.version>
+        <httpclient.version>4.5.2</httpclient.version>
+        <jaspersoft.ws.version>1.0.1-SNAPSHOT</jaspersoft.ws.version>
+        <jasypt.version>2.0.0</jasypt.version>
+        <javafaker.version>0.14</javafaker.version>
+        <jsqlparser.version>1.3</jsqlparser.version>
+        <lombok.version>1.18.10</lombok.version>
+        <micrometer.version>1.2.0</micrometer.version>
+        <mockito.version>2.22.0</mockito.version>
+        <saml2.version>1.0.3.RELEASE</saml2.version>
+        <spring-boot.version>1.5.9.RELEASE</spring-boot.version>
+        <spring-boot-admin-server.version>1.5.6</spring-boot-admin-server.version>
+        <spring-boot-admin-starter-client.version>1.5.6</spring-boot-admin-starter-client.version>
+        <springfox-swagger2.version>2.8.0</springfox-swagger2.version>
+        <tika.version>1.20</tika.version>
+    </properties>
 
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-core</artifactId>
-				<version>${tika.version}</version>
-			</dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>${spring-boot.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.minsait.onesait.platform</groupId>
+                <artifactId>onesaitplatform-comms-protocol</artifactId>
+                <version>${onesaitplatform.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.minsait.onesait.platform</groupId>
+                <artifactId>onesaitplatform-java-client</artifactId>
+                <version>${onesaitplatform.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.javafaker</groupId>
+                <artifactId>javafaker</artifactId>
+                <version>${javafaker.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>${springfox-swagger2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>${springfox-swagger2.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>com.google.code.gson</groupId>
-				<artifactId>gson</artifactId>
-				<version>${gson.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.elasticsearch</groupId>
+                <artifactId>elasticsearch</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
 
-			<!-- Zookeeper SPI -->
-			<dependency>
-				<groupId>org.apache.curator</groupId>
-				<artifactId>curator-test</artifactId>
-				<version>${curator.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.curator</groupId>
-				<artifactId>curator-x-discovery</artifactId>
-				<version>${curator.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.hazelcast</groupId>
-				<artifactId>hazelcast-zookeeper</artifactId>
-				<version>${hazelcast.zookeeper.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>transport</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
 
-			<!-- Hazelcast -->
-			<dependency>
-				<groupId>com.hazelcast</groupId>
-				<artifactId>hazelcast</artifactId>
-				<version>${hazelcast.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.hazelcast</groupId>
-				<artifactId>hazelcast-spring</artifactId>
-				<version>${hazelcast.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.hazelcast</groupId>
-				<artifactId>hazelcast-client</artifactId>
-				<version>${hazelcast.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
 
-			<!-- Jasypt encription -->
-			<dependency>
-				<groupId>com.github.ulisesbocchio</groupId>
-				<artifactId>jasypt-spring-boot-starter</artifactId>
-				<version>${jasypt.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-core</artifactId>
+                <version>${tika.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.springframework.security.extensions</groupId>
-				<artifactId>spring-security-saml2-core</artifactId>
-				<version>${saml2.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
 
+            <!-- Zookeeper SPI -->
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-test</artifactId>
+                <version>${curator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.curator</groupId>
+                <artifactId>curator-x-discovery</artifactId>
+                <version>${curator.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-zookeeper</artifactId>
+                <version>${hazelcast.zookeeper.version}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>io.micrometer</groupId>
-				<artifactId>micrometer-spring-legacy</artifactId>
-				<version>${micrometer.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.micrometer</groupId>
-				<artifactId>micrometer-registry-prometheus</artifactId>
-				<version>${micrometer.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>${commons-io.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.jaspersoft.adapter.webservice</groupId>
-				<artifactId>jaspersoft-webservices-dataadapter</artifactId>
-				<version>${jaspersoft.ws.version}</version>
-			</dependency>
+            <!-- Hazelcast -->
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-spring</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-client</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
 
-		</dependencies>
-	</dependencyManagement>
+            <!-- Jasypt encription -->
+            <dependency>
+                <groupId>com.github.ulisesbocchio</groupId>
+                <artifactId>jasypt-spring-boot-starter</artifactId>
+                <version>${jasypt.version}</version>
+            </dependency>
 
-	<repositories>
-		<repository>
-			<id>onesait platform releases</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
-		</repository>
-		<repository>
-			<id>onesait platform snapshots</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
-		</repository>
-		<repository>
-			<id>onesait platform public</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/public/</url>
-		</repository>
-		<repository>
-			<id>central Maven</id>
-			<url>http://central.maven.org/maven2/</url>
-		</repository>
-	</repositories>
+            <dependency>
+                <groupId>org.springframework.security.extensions</groupId>
+                <artifactId>spring-security-saml2-core</artifactId>
+                <version>${saml2.version}</version>
+            </dependency>
 
-	<modules>
-		<!--LIBRARIES -->
-		<module>libraries/commons</module>
-		<module>libraries/audit</module>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-spring-legacy</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jaspersoft.adapter.webservice</groupId>
+                <artifactId>jaspersoft-webservices-dataadapter</artifactId>
+                <version>${jaspersoft.ws.version}</version>
+            </dependency>
 
-		<!--SECURITY -->
-		<module>libraries/security/security-ui-ri</module>
-		<module>libraries/security/security-ldap-ri</module>
-		<module>libraries/security/security-oauth2-ri</module>
-		<module>libraries/security/kafka-login</module>
+        </dependencies>
+    </dependencyManagement>
 
-		<!--PERSISTENCE -->
-		<module>libraries/persistence/interfaces</module>
-		<module>libraries/persistence/mongodb-impl</module>
-		<module>libraries/persistence/elasticsearch-impl</module>
-		<module>libraries/persistence/hadoop-impl</module>
-		<module>libraries/persistence/external-impl</module>
+    <repositories>
+        <repository>
+            <id>onesait platform releases</id>
+            <url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>onesait platform snapshots</id>
+            <url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>onesait platform public</id>
+            <url>http://nexus.onesaitplatform.com/nexus/content/repositories/public/</url>
+        </repository>
+        <repository>
+            <id>central Maven</id>
+            <url>http://central.maven.org/maven2/</url>
+        </repository>
+    </repositories>
 
-		<!--DIGITAL TWIN -->
-		<module>libraries/digital-twin/digital-twin-library</module>
-		<!-- module>libraries/digital-twin/sensehat-library</module -->
+    <modules>
+        <!--LIBRARIES -->
+        <module>libraries/commons</module>
+        <module>libraries/audit</module>
 
-		<!--CONFIG -->
-		<module>libraries/config/model</module>
-		<module>libraries/config/resources</module>
+        <!--SECURITY -->
+        <module>libraries/security/security-ui-ri</module>
+        <module>libraries/security/security-ldap-ri</module>
+        <module>libraries/security/security-oauth2-ri</module>
+        <module>libraries/security/kafka-login</module>
 
-		<!--ROUTER -->
-		<module>libraries/router/router-client-base</module>
-		<module>libraries/router/router-core</module>
-		<module>libraries/router/router-client-rest</module>
-		<module>libraries/router/advicer-client-rest</module>
-		<module>libraries/binary-repository/</module>
+        <!--PERSISTENCE -->
+        <module>libraries/persistence/interfaces</module>
+        <module>libraries/persistence/mongodb-impl</module>
+        <module>libraries/persistence/elasticsearch-impl</module>
+        <module>libraries/persistence/hadoop-impl</module>
+        <module>libraries/persistence/external-impl</module>
 
-		<!--METRICS -->
-		<module>libraries/metrics/metrics-input</module>
-		<module>libraries/metrics/metrics-aggregator</module>
+        <!--DIGITAL TWIN -->
+        <module>libraries/digital-twin/digital-twin-library</module>
+        <!-- module>libraries/digital-twin/sensehat-library</module -->
 
-		<!--PASSWORD ENCRYPTOR -->
-		<module>libraries/pass-encryptor</module>
+        <!--CONFIG -->
+        <module>libraries/config/model</module>
+        <module>libraries/config/resources</module>
 
-		<!--SERVICES -->
-		<module>services/business-services</module>
-		<module>services/mail-services</module>
-		<module>services/social-services</module>
-		<module>services/flow-engine-services</module>
-		<module>services/config-services</module>
-		<module>services/persistence-services</module>
-		<module>services/quartz-services</module>
-		<module>services/router/router-services</module>
-		<module>services/router/router-crud</module>
-		<module>services/router/router-digitaltwin</module>
+        <!--ROUTER -->
+        <module>libraries/router/router-client-base</module>
+        <module>libraries/router/router-core</module>
+        <module>libraries/router/router-client-rest</module>
+        <module>libraries/router/advicer-client-rest</module>
+        <module>libraries/binary-repository/</module>
 
-		<!--MODULES -->
-		<module>modules/config-init</module>
-		<module>libraries/iot-broker-plugable</module>
-		<module>modules/iot-broker</module>
-		<module>modules/control-panel</module>
-		<module>modules/monitoring-ui</module>
-		<module>modules/api-manager</module>
-		<module>modules/planner</module>
-		<module>modules/semantic-inf-broker</module>
-		<module>modules/cache-server</module>
-		<module>modules/flow-engine</module>
-		<module>modules/dashboard-engine</module>
-		<module>modules/device-simulator</module>
-		<module>modules/oauth-server</module>
-		<module>modules/digitaltwin-broker</module>
-		<module>modules/rtdb-maintainer</module>
-		<module>modules/rules-engine</module>
+        <!--METRICS -->
+        <module>libraries/metrics/metrics-input</module>
+        <module>libraries/metrics/metrics-aggregator</module>
 
-		<!--<module>modules/scripting-engine</module -->
-		<!--<module>modules/streaming-twitter</module> -->
+        <!--PASSWORD ENCRYPTOR -->
+        <module>libraries/pass-encryptor</module>
 
-		<!--THEMES -->
-		<module>libraries/themes/onesaitplatform-base-theme</module>
-		<module>libraries/themes/onesaitplatform-iwire-theme</module>
+        <!--SERVICES -->
+        <module>services/business-services</module>
+        <module>services/mail-services</module>
+        <module>services/social-services</module>
+        <module>services/flow-engine-services</module>
+        <module>services/config-services</module>
+        <module>services/persistence-services</module>
+        <module>services/quartz-services</module>
+        <module>services/router/router-services</module>
+        <module>services/router/router-crud</module>
+        <module>services/router/router-digitaltwin</module>
 
-		<!--CONTRIBUTIONS -->
-		<module>libraries/contributions/spring-boot-admin-server-ui-onesaitplatform</module>
-		<module>libraries/contributions/spring-boot-admin-server-ui-login</module>
+        <!--MODULES -->
+        <module>modules/config-init</module>
+        <module>libraries/iot-broker-plugable</module>
+        <module>modules/iot-broker</module>
+        <module>modules/control-panel</module>
+        <module>modules/monitoring-ui</module>
+        <module>modules/api-manager</module>
+        <module>modules/planner</module>
+        <module>modules/semantic-inf-broker</module>
+        <module>modules/cache-server</module>
+        <module>modules/flow-engine</module>
+        <module>modules/dashboard-engine</module>
+        <module>modules/device-simulator</module>
+        <module>modules/oauth-server</module>
+        <module>modules/digitaltwin-broker</module>
+        <module>modules/rtdb-maintainer</module>
+        <module>modules/rules-engine</module>
 
-	</modules>
+        <!--<module>modules/scripting-engine</module -->
+        <!--<module>modules/streaming-twitter</module> -->
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+        <!--THEMES -->
+        <module>libraries/themes/onesaitplatform-base-theme</module>
+        <module>libraries/themes/onesaitplatform-iwire-theme</module>
 
-			<plugin>
-				<groupId>com.mycila</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>3.0</version>
-				<configuration>
-					<header>${license.dir}/LICENSE-code</header>
-					<properties>
-						<owner>Indra</owner>
-						<email>onesaitplatform@minsait.com</email>
-					</properties>
-					<includes>
-						<include>**/*.java</include>
-						<include>src/main/resources/templates/**/*.html</include>
-					</includes>
-					<excludes>
-						<exclude>**/*.xml</exclude>
-						<exclude>**/*.js</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>src/test/resources/**</exclude>
-						<exclude>examples/android-firebase-notifications-example/**</exclude>
-					</excludes>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>format</goal>
-						</goals>
-						<phase>process-sources</phase>
-					</execution>
-				</executions>
-			</plugin>
+        <!--CONTRIBUTIONS -->
+        <module>libraries/contributions/spring-boot-admin-server-ui-onesaitplatform</module>
+        <module>libraries/contributions/spring-boot-admin-server-ui-login</module>
 
-			<plugin>
-				<groupId>com.github.spotbugs</groupId>
-				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>3.1.0-RC7</version>
-				<dependencies>
-					<!-- overwrite dependency on spotbugs if you want to specify the version 
-						of spotbugs -->
-					<dependency>
-						<groupId>com.github.spotbugs</groupId>
-						<artifactId>spotbugs</artifactId>
-						<version>3.1.1</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.0</version>
-				<executions>
-					<execution>
-						<id>pre-unit-test</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<destFile>${project.build.directory}/jacoco.exec</destFile>
-							<propertyName>surefireArgLine</propertyName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>post-unit-test</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<dataFile>${project.build.directory}/jacoco.exec</dataFile>
-							<outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<id>pre-integration-test</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<destFile>${project.build.directory}/jacoco-it.exec</destFile>
-							<propertyName>failsafeArgLine</propertyName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>post-integration-test</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
-							<outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.21.0</version>
-				<configuration>
-					<argLine>${surefireArgLine}</argLine>
-					<skipTests>${skip.unit.tests}</skipTests>
-					<excludedGroups>com.minsait.onesait.platform.commons.testing.IntegrationTest</excludedGroups>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<id>add-integration-test-sources</id>
-						<phase>generate-test-sources</phase>
-						<goals>
-							<goal>add-test-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/integration-test/java</source>
-							</sources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>add-integration-test-resources</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>add-test-resource</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<filtering>true</filtering>
-									<directory>src/integration-test/resources</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.21.0</version>
-				<executions>
-					<execution>
-						<id>integration-tests</id>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-						<configuration>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-							<groups>com.minsait.onesait.platform.commons.testing.IntegrationTest</groups>
-							<skipTests>${skip.integration.tests}</skipTests>
-							<argLine>${failsafeArgLine}</argLine>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
+    </modules>
 
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>**/*.properties</include>
-					<include>**/*.yml</include>
-					<include>**/*.*</include>
-				</includes>
-			</resource>
-		</resources>
-	</build>
+    <build>
 
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>3.1.0-RC7</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.21.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.21.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>${docker-spotify.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
 
-	<profiles>
-		<profile>
-			<id>development</id>
-			<properties>
-				<onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false</onesaitplatform.quartzURL>
-			</properties>
-		</profile>
-		<profile>
-			<id>integration</id>
-			<modules>
-				<module>modules/video-broker</module>
-			</modules>
-			<properties>
-				<onesaitplatform.quartzURL>jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false</onesaitplatform.quartzURL>
-			</properties>
-		</profile>
-		<profile>
-			<id>unit-test</id>
-			<properties>
-				<skip.unit.tests>false</skip.unit.tests>
-			</properties>
-		</profile>
-		<profile>
-			<id>integration-test</id>
-			<properties>
-				<skip.integration.tests>false</skip.integration.tests>
-			</properties>
-		</profile>
-		<profile>
-			<id>no-test</id>
-			<properties>
-				<skip.unit.tests>true</skip.unit.tests>
-				<skip.integration.tests>true</skip.integration.tests>
-			</properties>
-		</profile>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
 
-		<!-- INI artifacts deployment section -->
-		<profile>
-			<id>releases</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<modules>
-				<module>libraries/commons</module>
-				<module>libraries/comms-protocol</module>
-				<module>libraries/digital-twin/digital-twin-library</module>
-				<module>libraries/client-libraries/springboot-client</module>
-				<module>libraries/client-libraries/java-client</module>
-			</modules>
-			<distributionManagement>
-				<repository>
-					<id>releases</id>
-					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
-				</repository>
-			</distributionManagement>
-		</profile>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <header>${license.dir}/LICENSE-code</header>
+                    <properties>
+                        <owner>Indra</owner>
+                        <email>onesaitplatform@minsait.com</email>
+                    </properties>
+                    <includes>
+                        <include>**/*.java</include>
+                        <include>src/main/resources/templates/**/*.html</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*.xml</exclude>
+                        <exclude>**/*.js</exclude>
+                        <exclude>**/*.css</exclude>
+                        <exclude>src/test/resources/**</exclude>
+                        <exclude>examples/android-firebase-notifications-example/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
 
-		<profile>
-			<id>snapshots</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<modules>
-				<module>libraries/commons</module>
-				<module>libraries/comms-protocol</module>
-				<module>libraries/digital-twin/digital-twin-library</module>
-				<module>libraries/client-libraries/springboot-client</module>
-				<module>libraries/client-libraries/java-client</module>
-			</modules>
-			<distributionManagement>
-				<repository>
-					<id>snapshots</id>
-					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
-				</repository>
-			</distributionManagement>
-		</profile>
-		<!-- END artifacts deployment section -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version
+                        of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>3.1.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco.exec</destFile>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pre-integration-test</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                            <propertyName>failsafeArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-integration-test</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>${surefireArgLine}</argLine>
+                    <skipTests>${skip.unit.tests}</skipTests>
+                    <excludedGroups>com.minsait.onesait.platform.commons.testing.IntegrationTest</excludedGroups>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-integration-test-sources</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/integration-test/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-integration-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <filtering>true</filtering>
+                                    <directory>src/integration-test/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
+                            <groups>com.minsait.onesait.platform.commons.testing.IntegrationTest</groups>
+                            <skipTests>${skip.integration.tests}</skipTests>
+                            <argLine>${failsafeArgLine}</argLine>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
 
-	</profiles>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.yml</include>
+                    <include>**/*.*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.21.0</version>
-			</plugin>
-		</plugins>
-	</reporting>
+    <profiles>
+        <profile>
+            <id>development</id>
+            <properties>
+                <onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false</onesaitplatform.quartzURL>
+            </properties>
+        </profile>
+        <profile>
+            <id>integration</id>
+            <modules>
+                <module>modules/video-broker</module>
+            </modules>
+            <properties>
+                <onesaitplatform.quartzURL>jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false</onesaitplatform.quartzURL>
+            </properties>
+        </profile>
+        <profile>
+            <id>unit-test</id>
+            <properties>
+                <skip.unit.tests>false</skip.unit.tests>
+            </properties>
+        </profile>
+        <profile>
+            <id>integration-test</id>
+            <properties>
+                <skip.integration.tests>false</skip.integration.tests>
+            </properties>
+        </profile>
+        <profile>
+            <id>no-test</id>
+            <properties>
+                <skip.unit.tests>true</skip.unit.tests>
+                <skip.integration.tests>true</skip.integration.tests>
+            </properties>
+        </profile>
+
+        <!-- INI artifacts deployment section -->
+        <profile>
+            <id>releases</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>libraries/commons</module>
+                <module>libraries/comms-protocol</module>
+                <module>libraries/digital-twin/digital-twin-library</module>
+                <module>libraries/client-libraries/springboot-client</module>
+                <module>libraries/client-libraries/java-client</module>
+            </modules>
+            <distributionManagement>
+                <repository>
+                    <id>releases</id>
+                    <url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>snapshots</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>libraries/commons</module>
+                <module>libraries/comms-protocol</module>
+                <module>libraries/digital-twin/digital-twin-library</module>
+                <module>libraries/client-libraries/springboot-client</module>
+                <module>libraries/client-libraries/java-client</module>
+            </modules>
+            <distributionManagement>
+                <repository>
+                    <id>snapshots</id>
+                    <url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+        <!-- END artifacts deployment section -->
+
+    </profiles>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.21.0</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
 </project>
 	
