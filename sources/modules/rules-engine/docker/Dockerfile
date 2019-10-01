@@ -36,7 +36,7 @@ EXPOSE 20200
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
     SERVER_NAME=localhost \
     JDBCPROTOCOL="jdbc:mysql:" \
     CONFIGDBSERVERS=configdb:3306 \

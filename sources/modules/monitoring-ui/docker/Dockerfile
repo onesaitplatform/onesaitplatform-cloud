@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8-jre-alpine
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -34,7 +34,7 @@ VOLUME ["/tmp", "/var/log/platform-logs"]
 
 EXPOSE 18100
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
     SERVER_NAME=localhost \
     CONFIGDBSERVERS=configdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \

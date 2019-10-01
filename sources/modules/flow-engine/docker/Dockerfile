@@ -12,7 +12,7 @@ LABEL module.maintainer="onesaitplatform@indra.es" \
 
 ENV ASPECTJ_VERSION 1.8.9
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
 	SERVERNAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     CONFIGDBSERVERS=configdb:3306 \
