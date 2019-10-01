@@ -61,46 +61,6 @@ removeConfigInitExamples()
 	fi		
 }
 
-prepareNodeRED()
-{
-	cp $homepath/../../../../tools/Flow-Engine-Manager/*.zip $homepath/../../../../sources/modules/flow-engine/docker/nodered.zip
-	cd $homepath/../../../../sources/modules/flow-engine/docker
-	unzip nodered.zip
-	echo "Copying onesait platform custom node files"		
-	# FIXME: custom file not necessary
-	# cp -f $homepath/../dockerfiles/nodered/proxy-nodered.js $homepath/../../../../sources/modules/flow-engine/docker/Flow-Engine-Manager/
-	
-	# if [ $? -eq 0 ]; then
-	#	echo "proxy-nodered.js file copied...................... [OK]"
-	# else
-	#	echo "proxy-nodered.js file copied..................... [KO]"
-	# fi	
-	# 
-	
-	cp -f $homepath/../dockerfiles/nodered/onesait-platform-config.js $homepath/../../../../sources/modules/flow-engine/docker/Flow-Engine-Manager/node_modules/node-red-onesait-platform/nodes/config/onesait-platform-config.js
-	
-	if [ $? -eq 0 ]; then
-		echo "onesait-platform-config.js file copied...................... [OK]"
-	else
-		echo "onesait-platform-config.js file copied..................... [KO]"
-	fi
-		
-	cp -f $homepath/../dockerfiles/nodered/onesait-platform-public-config.js $homepath/../../../../sources/modules/flow-engine/docker/Flow-Engine-Manager/node_modules/node-red-onesait-platform/public/config/onesait-platform-config.js	
-	
-	if [ $? -eq 0 ]; then
-		echo "onesait-platform-config.js (public) file copied...................... [OK]"
-	else
-		echo "onesait-platform-config.js (public) file copied..................... [KO]"
-	fi	
-}
-
-removeNodeRED()
-{
-	cd $homepath/../../../../sources/modules/flow-engine/docker
-	rm -rf Flow-Engine-Manager
-	rm nodered.zip		
-}
-
 pushImage2Registry()
 {
 	if [ "$NO_PROMT" = false ]; then
@@ -216,13 +176,9 @@ if [[ "$MODULE_RTDBMAINTAINER" = true && "$(docker images -q $USERNAME/rtdbmaint
 	buildImage $homepath/../../../../sources/modules/rtdb-maintainer rtdbmaintainer $MODULE_TAG
 fi	
 
-#if [[ "$MODULE_FLOWENGINE" = true && "$(docker images -q $USERNAME/flowengine 2> /dev/null)" == "" ]]; then		
-#	prepareNodeRED		
-#	
-#	buildImage $homepath/../../../../sources/modules/flow-engine flowengine $MODULE_TAG
-#	
-#	removeNodeRED
-#fi
+if [[ "$MODULE_FLOWENGINE" = true && "$(docker images -q $USERNAME/flowengine 2> /dev/null)" == "" ]]; then			
+	buildImage $homepath/../../../../sources/modules/flow-engine flowengine $MODULE_TAG
+fi
 
 if [[ "$MODULE_CONFIGINIT" = true && "$(docker images -q $USERNAME/configinit 2> /dev/null)" == "" ]]; then
 	prepareConfigInitExamples $homepath/../../../../sources/modules/config-init
