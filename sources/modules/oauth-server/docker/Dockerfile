@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8-jre-alpine
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -40,5 +40,7 @@ VOLUME ["/tmp", "/var/log/platform-logs"]
 USER onesait
 
 EXPOSE 21000
+
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

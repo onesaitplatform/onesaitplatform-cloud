@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8-jre-alpine
 
 # metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -32,7 +32,7 @@ EXPOSE 19000 1883 8883
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms2G -Xmx2G" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms2G -Xmx2G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKAHOST=kafka \
