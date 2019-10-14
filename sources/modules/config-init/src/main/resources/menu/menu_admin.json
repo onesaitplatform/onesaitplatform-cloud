@@ -156,6 +156,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/caches/list"
+				},
+				{
+					"title": {
+						"EN": "Load Balancer Management",
+						"ES": "Gestión de Balanceador"
+					},
+					"icon": "",
+					"url": "/controlpanel/nginxmanager/show"
 				}
 			]
 		},

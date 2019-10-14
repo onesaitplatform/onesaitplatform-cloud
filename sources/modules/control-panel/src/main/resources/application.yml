@@ -177,6 +177,7 @@ onesaitplatform: #Config onesait Platform specific
    urls:
     iotbroker: http://localhost:19000
     iotbroker.services: http://localhost:19000/sib/services
+    nginx.service: http://localhost:8000
    paths:
       ssap: /ssap
    flowengine:
