@@ -19,7 +19,7 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<version.cxf>3.2.2</version.cxf>
+		<version.cxf>3.2.11</version.cxf>
 		<version.easyrules>3.1.0</version.easyrules>
 		<version.swaggerui>3.12.1</version.swaggerui>
 		<!-- version.prometheus>0.2.0</version.prometheus-->
