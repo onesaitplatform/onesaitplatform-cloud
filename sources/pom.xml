@@ -34,7 +34,7 @@
 		<project.organization.name>minsait by Indra</project.organization.name>
 		<project.website>https://onesaitplatform.com</project.website>
 		<freemarket.version>2.3.21</freemarket.version>
-		<elasticsearch.version>6.2.3</elasticsearch.version>
+		<elasticsearch.version>6.8.4</elasticsearch.version>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
