@@ -162,7 +162,7 @@
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-parser</artifactId>
-			<version>1.0.40</version>
+			<version>1.0.48</version>
 		</dependency>
 
 		<!-- Web: Thymeleaf and dependencies -->
