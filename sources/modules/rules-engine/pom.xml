@@ -15,7 +15,7 @@
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
 		<controlpanel.theme>onesaitplatform-base-theme</controlpanel.theme>
-		<drools-version>7.1.0.Beta1</drools-version>
+		<drools-version>7.32.0.k20191220</drools-version>
 	</properties>
 
 	<dependencies>
