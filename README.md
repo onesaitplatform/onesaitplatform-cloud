@@ -41,7 +41,7 @@ or perhaps you prefer to work with the Platform, then follow our [Getting Starte
 
 Having trouble with onesait Platform? We’d like to help!
 
-* Check the reference documentation, especially the [Platform Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/45842643/Platform+Guides), they provide solutions to the most common questions.
+* Check the reference documentation, especially the [Platform Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/229867544/Documentation), they provide solutions to the most common questions.
 * Learn more about the platform in our [Confluence Developer Portal]( https://onesaitplatform.online)
 * Report bugs of the platform at [onesait Platform GitHub](https://github.com/onesaitplatform)
 
