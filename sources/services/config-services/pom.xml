@@ -18,17 +18,17 @@
 
 		<repository>
 			<id>confluent</id>
-			<url>http://packages.confluent.io/maven/</url>
+			<url>https://packages.confluent.io/maven/</url>
 		</repository>
 
 		<repository>
 			<id>snapshots</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 		</repository>
 
 		<repository>
 			<id>Spring Plugins</id>
-			<url>http://repo.spring.io/plugins-release/</url>
+			<url>https://repo.spring.io/plugins-release/</url>
 		</repository>
 
 
