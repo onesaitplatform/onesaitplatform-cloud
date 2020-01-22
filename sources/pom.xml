@@ -202,19 +202,19 @@
 	<repositories>
 		<repository>
 			<id>onesait platform releases</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
 		</repository>
 		<repository>
 			<id>onesait platform snapshots</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
 			<id>onesait platform public</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/public/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/public/</url>
 		</repository>
 		<repository>
 			<id>central Maven</id>
-			<url>http://central.maven.org/maven2/</url>
+			<url>https://repo1.maven.org</url>
 		</repository>
 	</repositories>
 
@@ -537,7 +537,7 @@
 			<distributionManagement>
 				<repository>
 					<id>releases</id>
-					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
 				</repository>
 			</distributionManagement>
 		</profile>
@@ -557,7 +557,7 @@
 			<distributionManagement>
 				<repository>
 					<id>snapshots</id>
-					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 				</repository>
 			</distributionManagement>
 		</profile>
