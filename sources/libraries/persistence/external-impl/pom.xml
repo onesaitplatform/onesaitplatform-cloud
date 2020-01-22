@@ -182,7 +182,7 @@
 	<repositories>
 		<repository>
             <id>onesait</id>
-            <url>http://nexus.onesaitplatform.com/nexus/content/repositories/thirdparty/</url>
+            <url>https://nexus.onesaitplatform.com/nexus/content/repositories/thirdparty/</url>
         </repository>
         <repository>
 		   <id>cloudera</id>
