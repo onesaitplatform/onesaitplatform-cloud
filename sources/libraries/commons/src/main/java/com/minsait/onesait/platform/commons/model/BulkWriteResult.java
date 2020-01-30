@@ -14,13 +14,16 @@
  */
 package com.minsait.onesait.platform.commons.model;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class BulkWriteResult extends DBResult {
 
-	@Setter
-	@Getter
 	private String id;
 
+	public String getId() {
+		return id;
+	}
+
+	public DBResult setId(final String id) {
+		this.id = id;
+		return this;
+	}
 }
