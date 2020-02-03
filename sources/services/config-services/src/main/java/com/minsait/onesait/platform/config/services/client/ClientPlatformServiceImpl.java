@@ -78,7 +78,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	private OPResourceService resourceService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
-	
+
 	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
 	private static final String LOG_DEVICE_DATA_MODEL = "DeviceLog";
 	private static final String ACCESS_STR = "access";
@@ -103,7 +103,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 					clientPlatformOntologyRepository.save(relation);
 				}
 			}
-			
+
 			this.metricsManagerLogControlPanelClientsPlatformCreation(clientPlatform.getUser().getUserId(), "OK");
 			return tokenService.generateTokenForClient(clientPlatform);
 		} else {
@@ -134,13 +134,18 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			if (identification != null) {
-				clients.add(clientPlatformRepository.findByIdentification(identification));
+				ClientPlatform cli = clientPlatformRepository.findByIdentification(identification);
+				if (cli != null)
+					clients.add(cli);
 			} else {
 				clients = clientPlatformRepository.findAll();
 			}
 		} else {
 			if (identification != null) {
-				clients.add(clientPlatformRepository.findByUserAndIdentification(user, identification));
+				ClientPlatform cliUs = clientPlatformRepository.findByUserAndIdentification(user, identification);
+				if (cliUs != null) {
+					clients.add(cliUs);
+				}
 			} else {
 				clients = clientPlatformRepository.findByUser(user);
 			}
@@ -203,12 +208,12 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			ndevice.setIdentification(device.getIdentification());
 			ndevice.setMetadata(device.getMetadata());
 			ndevice.setDescription(device.getDescription());
-	
+
 			final JSONArray ontologies = new JSONArray(device.getClientPlatformOntologies());
 			final Set<ClientPlatformOntology> clientsPlatformOntologies = new HashSet<>();
 			for (int i = 0; i < ontologies.length(); i++) {
 				final JSONObject ontology = ontologies.getJSONObject(i);
-	
+
 				final Ontology ontologyDB = ontologyRepository.findByIdentification(ontology.getString("id"));
 				final AccessType accessType = AccessType.valueOf(ontology.getString(ACCESS_STR));
 				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType, ontologyDB)) {
@@ -218,19 +223,19 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				}
 				final ClientPlatformOntology clientPlatformOntology = new ClientPlatformOntology();
 				// Check if the user has access to the ontology
-	
+
 				clientPlatformOntology.setAccess(AccessType.valueOf(ontology.getString(ACCESS_STR)));
 				clientPlatformOntology.setOntology(ontologyDB);
 				clientsPlatformOntologies.add(clientPlatformOntology);
 			}
-	
+
 			ndevice.setUser(userService.getUser(userId));
-	
+
 			final String encryptionKey = UUID.randomUUID().toString();
 			ndevice.setEncryptionKey(encryptionKey);
-	
+
 			final ClientPlatform cli = clientPlatformRepository.save(ndevice);
-	
+
 			final JSONArray tokensArray = new JSONArray(device.getTokens());
 			for (int i = 0; i < tokensArray.length(); i++) {
 				final JSONObject token = tokensArray.getJSONObject(i);
@@ -239,22 +244,21 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				tokn.setTokenName(token.getString("token"));
 				tokn.setActive(token.getBoolean("active"));
 				tokenRepository.save(tokn);
-	
+
 			}
-	
+
 			for (final ClientPlatformOntology cpoNew : clientsPlatformOntologies) {
 				cpoNew.setClientPlatform(cli);
 				clientPlatformOntologyRepository.save(cpoNew);
 			}
-			
+
 			this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "OK");
-	
+
 			return ndevice;
 		} catch (Exception e) {
 			this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
 			throw e;
 		}
-		
 
 	}
 
@@ -340,19 +344,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			}
 		}
 
-		final ClientPlatform cli = clientPlatformRepository.save(ndevice);
+		clientPlatformRepository.save(ndevice);
 
-		final Set<Token> tokens = new HashSet<>();
-		final JSONArray tokensArray = new JSONArray(device.getTokens());
-		for (int i = 0; i < tokensArray.length(); i++) {
-			final JSONObject token = tokensArray.getJSONObject(i);
-			final Token tokn = new Token();
-			tokn.setClientPlatform(cli);
-			tokn.setTokenName(token.getString("token"));
-			tokn.setActive(token.getBoolean("active"));
-			tokens.add(tokn);
-		}
-		cli.setTokens(tokens);
 	}
 
 	@Override
@@ -368,23 +361,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			clientPlatformOntologyRepository.save(relation);
 		}
 
-	}
-
-	@Override
-	public Ontology createDeviceLogOntology(final ClientPlatform client) {
-		final Ontology logOntology = new Ontology();
-		logOntology.setDataModel(dataModelService.getDataModelByName(LOG_DEVICE_DATA_MODEL));
-		logOntology.setIdentification(LOG_ONTOLOGY_PREFIX + client.getIdentification().replaceAll(" ", ""));
-		logOntology.setActive(true);
-		logOntology.setUser(client.getUser());
-		logOntology
-				.setDescription("System Ontology. Centralized Log for devices of type " + client.getIdentification());
-		logOntology.setJsonSchema(dataModelService.getDataModelByName(LOG_DEVICE_DATA_MODEL).getJsonSchema());
-		logOntology.setPublic(false);
-		logOntology.setRtdbClean(true);
-		logOntology.setRtdbDatasource(RtdbDatasource.MONGO);
-		logOntology.setRtdbCleanLapse(RtdbCleanLapse.SIX_MONTHS);
-		return logOntology;
 	}
 
 	@Override
@@ -465,12 +441,28 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			throw new ClientPlatformServiceException("Platform Client already exists");
 		}
 	}
-	
+
 	private void metricsManagerLogControlPanelClientsPlatformCreation(String userId, String result) {
 		if (null != this.metricsManager) {
 			this.metricsManager.logControlPanelClientsPlatformCreation(userId, result);
 		}
 	}
-	
+
+	@Override
+	public Ontology createDeviceLogOntology(final ClientPlatform client) {
+		final Ontology logOntology = new Ontology();
+		logOntology.setDataModel(dataModelService.getDataModelByName(LOG_DEVICE_DATA_MODEL));
+		logOntology.setIdentification(LOG_ONTOLOGY_PREFIX + client.getIdentification().replaceAll(" ", ""));
+		logOntology.setActive(true);
+		logOntology.setUser(client.getUser());
+		logOntology
+				.setDescription("System Ontology. Centralized Log for devices of type " + client.getIdentification());
+		logOntology.setJsonSchema(dataModelService.getDataModelByName(LOG_DEVICE_DATA_MODEL).getJsonSchema());
+		logOntology.setPublic(false);
+		logOntology.setRtdbClean(true);
+		logOntology.setRtdbDatasource(RtdbDatasource.MONGO);
+		logOntology.setRtdbCleanLapse(RtdbCleanLapse.SIX_MONTHS);
+		return logOntology;
+	}
 
 }

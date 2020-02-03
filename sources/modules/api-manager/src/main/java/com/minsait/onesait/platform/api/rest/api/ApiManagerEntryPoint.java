@@ -59,7 +59,7 @@ public class ApiManagerEntryPoint {
 	@RequestMapping(value = "/api/**", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
 			RequestMethod.DELETE })
 	public ResponseEntity<String> processRequest(HttpServletRequest request, HttpServletResponse response,
-			@RequestBody(required = false) String requestBody) {
+			@RequestBody(required = false) byte[] requestBody) {
 		Map<String, Object> mData = new HashMap();
 		try {
 			mData = apiService.processRequestData(request, response, requestBody);

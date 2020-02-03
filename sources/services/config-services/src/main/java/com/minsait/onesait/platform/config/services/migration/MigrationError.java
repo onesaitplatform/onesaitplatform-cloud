@@ -31,7 +31,7 @@ public class MigrationError {
 	@Getter
 	private final Instance processedInstance;
 
-	public final Instance noInstance = new Instance(null, null);
+	public final Instance noInstance = new Instance(null, null, null, null);
 
 	public MigrationError(Instance instanceThatNeedsIt, Instance neededInstance, ErrorType type, String msg) {
 		this.type = type;

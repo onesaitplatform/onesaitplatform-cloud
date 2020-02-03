@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.bean.AccessType;
 import com.minsait.onesait.platform.bean.DashboardCache;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
@@ -33,9 +34,10 @@ import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.dto.socket.InputMessage;
-import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyOpsDBRepository;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.security.AppWebUtils;
 import com.minsait.onesait.platform.solver.SolverInterface;
 
@@ -88,7 +90,8 @@ public class SolverServiceImpl implements SolverService {
 	private OPResourceService resourceService;
 
 	@Override
-	public String solveDatasource(InputMessage im) {
+	public String solveDatasource(InputMessage im)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		log.debug("solveDatasource");
 		if (getDashboardUserSecurity(im.getDashboard())) {
 			final GadgetDatasource gd = gdr.findByIdentification(im.getDs());
@@ -119,8 +122,7 @@ public class SolverServiceImpl implements SolverService {
 			if (dsName.equals(ELASTIC_DATASOURCE_TYPE)) {
 				return elasticSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
 						im.getProject(), im.getGroup(), executeAs, ontology);
-			} 
-			else if (dsName.equals(VIRTUAL_DATASOURCE_TYPE)) {
+			} else if (dsName.equals(VIRTUAL_DATASOURCE_TYPE)) {
 				OntologyVirtualDatasource ontologyDatasource = ontologyVirtualRepository
 						.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
 
@@ -128,18 +130,19 @@ public class SolverServiceImpl implements SolverService {
 				case ORACLE:
 					return oracleSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
 							im.getProject(), im.getGroup(), executeAs, ontology);
-
+				case POSTGRESQL:
+					return quasarSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
+							im.getProject(), im.getGroup(), executeAs, ontology);
 				default:
 					throw new GenericRuntimeOPException("Not supported SGBD");
 				}
 
-			} 
-			else {
+			} else {
 				return quasarSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
 						im.getProject(), im.getGroup(), executeAs, ontology);
 			}
 		}
-		
+
 		return "User " + utils.getUserId() + " can't access to dashboard";
 	}
 

@@ -244,6 +244,37 @@
 													</div>
 												</div>
 												<div class="row">
+													<div class="alert alert-info alert-dismissable">
+														<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+														<i class="fa fa-info-circle"></i>
+														<span th:text="#{viewer.info}"> info.</span>
+													</div>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="" th:text="#{viewer.latitude} + ':'">Latitude</label><span class="required"> *</span>
+															<div class="input-icon ">
+																<input th:tabindex="1" id="latitude" type="text" name="latitude"  th:required="true" maxlength="50" th:field="*{latitude}" class="form-control "  th:placeholder="#{viewer.latitude}"/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="" th:text="#{viewer.longitude} + ':'">Longitude</label><span class="required"> *</span>
+															<div class="input-icon ">
+																<input th:tabindex="1" name="longitude" id="longitude" type="text"   th:required="true" maxlength="50" class="form-control " th:field="*{longitude}" th:placeholder="#{viewer.longitude}"/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="" th:text="#{viewer.height} + ':'">Height</label><span class="required"> *</span>
+															<div class="input-icon ">
+																<input th:tabindex="1" name="height" id="height" type="text"   th:required="true" maxlength="50" class="form-control " th:field="*{height}"  th:placeholder="#{viewer.height}"/>
+															</div>
+														</div>
+													</div>
+												</div>
+												<div class="row">
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label th:text="#{viewer.tecnology}" > Technology </label><span class="required"> *</span>
@@ -278,7 +309,7 @@
 													</div>
 													<div class="col-md-12">
 														<div class="panel-container">
-															<div class="panel-left">
+															<div class="panel-left" style="height: 700px;">
 																<div class="">
 																	<textarea id="jsBody" name="jsBody"></textarea>																			
 																</div>																		
@@ -364,7 +395,7 @@
 	<!-- JAVASCRIPT EDITOR -->
 	
 	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
+	<script th:src="@{/static/vendor/codemirror/mode/yaml/yaml.js}" />
 	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
 	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
 
@@ -399,7 +430,8 @@
 			"validations" : {
 				"duplicates": [[#{digitaltwintype.valid.duplicates}]],
 				"update" :[[#{digitaltwintype.validation.update}]],
-				"fields" : [[#{digitaltwintype.validation.fields}]]
+				"fields" : [[#{digitaltwintype.validation.fields}]],
+				"error": [[#{viewer.info}]]
 			}
 		};
 	

@@ -26,4 +26,6 @@ public interface DashboardConfRepository extends JpaRepository<DashboardConf, St
 
 	List<DashboardConf> findByIdentification(String identification);
 
+	List<DashboardConf> findAllByOrderByIdentificationAsc();
+
 }

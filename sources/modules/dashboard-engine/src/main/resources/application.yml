@@ -35,15 +35,24 @@ spring:
     removeAbandoned: true
      
   jpa:
-    ## Hibernate Properties
-    # The SQL dialect makes Hibernate generate better SQL for the chosen database
-    properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-    # Hibernate ddl auto (create, create-drop, validate, update)
-
-    hibernate.ddl-auto: validate
+      open-in-view: false
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update
+      properties:
+        hibernate:
+          format_sql: false
+          show_sql: false
+          ddl-auto: validate
 
 onesaitplatform: #Config Onesait Platform specific
+   metrics:
+      enabled: false
    authentication:
+      configdb:
+        acl:
+          enabled: false
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
       default_password: ENC(CuRLX3QJtxVhyxmPckWXs93L0FR7NnYj)
       provider: configdb
       cas:
@@ -66,13 +75,13 @@ onesaitplatform: #Config Onesait Platform specific
            key_alias: pass
            key_pass: keypass
         context:
-           samlServerPort: 18000
+           samlServerPort: 18300
            samlIncludePort: false
            samlScheme: http
            samlServerName: localhost
    audit.global.notify: true
    dashboardengine:
-      auth.token.endpoint: http://localhost:18000/controlpanel/api/login/info  
+      auth.token.endpoint: http://localhost:18000/controlpanel/api/login/info
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin

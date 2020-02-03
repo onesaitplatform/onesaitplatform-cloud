@@ -57,6 +57,20 @@ public class QueryParsers {
 		return stringBuffer.toString();
 	}
 
+	public static boolean hasNowFunction(String query) {
+		try {
+			// Get all now()
+			Pattern pattern = Pattern.compile("(now|NOW)\\((\\w|\\s|'|\"|\\\\|/|:|-|\\+|,)*\\)");
+			Matcher matcher = pattern.matcher(query);
+
+			// treat each occurrence
+			return matcher.find();
+		} catch (Exception e) {
+			throw new DBPersistenceException(
+					"Problem with function NOW(), can be used without parameters or NOW(\"yyyy-MM-dd'T'HH:mm:ss'Z'\") or NOW(\"yyyy-MM-dd'T'HH:mm:ss'Z'\",'unitTime', amount) or NOW('unitTime', amount), where 'unitTime' can be 'year', 'month', 'date', 'hour', 'minute', 'second', 'millisecond' and amount a positive or negative whole value");
+		}
+	}
+
 	private static String parseNow(String now) {
 		String result = "";
 		String parameters = now.substring(now.indexOf('(') + 1, now.lastIndexOf(')'));

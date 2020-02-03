@@ -3,7 +3,7 @@
       
 spring.application.name : router-core
      
-sofia2: #Config Sofia2 specific
+onesaitplatform: #Config onesaitplatform specific
    iotbroker.plugable:
       gateway:
          kafka:

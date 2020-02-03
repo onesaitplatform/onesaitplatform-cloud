@@ -23,6 +23,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -70,6 +72,7 @@ public class ProjectResourceAccess extends AuditableEntityWithUUID {
 	private OPResource resource;
 
 	@JsonIgnore
+	@Fetch(FetchMode.JOIN)
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID", nullable = false)
 	@Getter

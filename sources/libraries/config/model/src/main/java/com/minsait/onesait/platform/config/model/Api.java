@@ -53,8 +53,7 @@ public class Api extends OPResource {
 	}
 
 	public enum ApiCategories {
-		ALL, ADVERTISING, BUSINESS, COMMUNICATION, EDUCATION, ENTERTAINMENT, MEDIA, MEDICAL, OTHER, SOCIAL, SPORTS,
-		TOOLS, TRAVEL;
+		ALL, ADVERTISING, BUSINESS, COMMUNICATION, EDUCATION, ENTERTAINMENT, MEDIA, MEDICAL, OTHER, SOCIAL, SPORTS, TOOLS, TRAVEL;
 	}
 
 	public enum ApiType {
@@ -82,18 +81,6 @@ public class Api extends OPResource {
 	@Setter
 	private boolean ssl_certificate;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "api", cascade = CascadeType.ALL)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private Set<ApiComment> comments;
-
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "api", cascade = CascadeType.ALL)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private Set<ApiUserAssessment> userAssessments;
-
 	@OneToMany(mappedBy = "api", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	@Getter
 	@Setter
@@ -115,11 +102,6 @@ public class Api extends OPResource {
 	@Setter
 	@Enumerated(EnumType.STRING)
 	private ApiCategories category;
-
-	@Column(name = "ENDPOINT", length = 512)
-	@Getter
-	@Setter
-	private String endpoint;
 
 	@Column(name = "ENDPOINT_EXT", length = 512)
 	@Getter
@@ -175,5 +157,10 @@ public class Api extends OPResource {
 	@Getter
 	@Setter
 	private String swaggerJson;
+
+	@Column(name = "GRAVITEE_ID", length = 100)
+	@Getter
+	@Setter
+	private String graviteeId;
 
 }

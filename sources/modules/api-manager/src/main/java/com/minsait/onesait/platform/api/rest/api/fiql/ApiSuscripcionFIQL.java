@@ -23,11 +23,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiSuscripcionDTO;
 import com.minsait.onesait.platform.api.service.api.ApiSecurityService;
 import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiSuscripcionDTO;
 
 @Service
 public class ApiSuscripcionFIQL {

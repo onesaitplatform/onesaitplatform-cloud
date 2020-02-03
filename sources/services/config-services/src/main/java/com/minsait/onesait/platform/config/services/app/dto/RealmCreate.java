@@ -31,16 +31,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RealmCreate {
-	
-	
+
 	@Getter
 	@Setter
 	@NotNull
-	protected String realmId;
-	@Getter
-	@Setter
-	@NotNull
-	protected String name;
+	protected String identification;
 	@Getter
 	@Setter
 	@NotNull
@@ -61,15 +56,14 @@ public class RealmCreate {
 
 	public RealmCreate(App app) {
 
-		realmId = app.getAppId();
-		
-		if (null!=app.getSecret()) {
+		identification = app.getIdentification();
+
+		if (null != app.getSecret()) {
 			secret = app.getSecret();
 		}
-		if (null!=app.getTokenValiditySeconds()) {
+		if (null != app.getTokenValiditySeconds()) {
 			tokenValiditySeconds = app.getTokenValiditySeconds();
 		}
-		name = app.getName();
 		description = app.getDescription();
 
 		roles = app.getAppRoles().stream().map(r -> new RealmRole(r.getName(), r.getDescription()))

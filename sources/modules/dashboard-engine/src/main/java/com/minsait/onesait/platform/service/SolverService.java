@@ -14,9 +14,13 @@
  */
 package com.minsait.onesait.platform.service;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.InputMessage;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 public interface SolverService {
-	
-	public String solveDatasource(InputMessage im);
+
+	public String solveDatasource(InputMessage im)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
 }

@@ -10,11 +10,14 @@ onesaitplatform:
       mongodb-pool-size: 10
       mongodb-read-from-secondaries: false
       mongodb-write-concern: UNACKNOWLEDGED
+      mongodb-ssl-enabled: false
+      mongodb-use-quasar: true
       mongodb-quasar-timeout: 10000
       mongodb-quasar-compile: true
       mongodb-quasar-allow-mapreduce: true
       elastic-sql-timeout: 10000
     files:
+      allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000
     iotbroker:
       session-expiration: !!java.lang.Long 600000

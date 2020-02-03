@@ -56,14 +56,12 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @RestController
-@RequestMapping("api/devices")
+@RequestMapping("api/clientplatform")
 @CrossOrigin(origins = "*")
 @Api(value = "Client Platform Management", tags = { "Client Platform Management" })
 @ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
 		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 public class ClientPlatformManagementController {
-
-	private static final String PATH = "/device";
 
 	private static final String NOT_VALID_STR = "NOT_VALID";
 
@@ -79,10 +77,10 @@ public class ClientPlatformManagementController {
 	@Autowired
 	private OntologyService ontologyService;
 
-	@ApiOperation("Get all devices")
+	@ApiOperation("Get all clientplatforms")
 	@GetMapping
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ClientPlatformDTO[].class))
-	public ResponseEntity<Object> getAllDevices() {
+	public ResponseEntity<Object> getAllClientplatforms() {
 
 		List<ClientPlatform> list;
 
@@ -101,26 +99,28 @@ public class ClientPlatformManagementController {
 		return ResponseEntity.ok(returnlist);
 	}
 
-	@ApiOperation("Get device by id")
+	@ApiOperation("Get clientplatform by id")
 	@GetMapping("/{identification}")
 	@ApiResponses({ @ApiResponse(code = 200, message = "OK", response = ClientPlatformDTO.class),
 			@ApiResponse(code = 404, message = "Not found") })
-	public ResponseEntity<Object> getDeviceByID(
+	public ResponseEntity<Object> getClientplatformByID(
 			@ApiParam(value = "identification  ", required = true) @PathVariable("identification") String identification) {
 		final ClientPlatform clientPlatform = clientPlatformService.getByIdentification(identification);
 		if (clientPlatform == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
-		if (clientPlatform.getUser().getUserId().equals(utils.getUserId())) {
+		final User user = userService.getUser(utils.getUserId());
+
+		if (clientPlatform.getUser().getUserId().equals(utils.getUserId()) || userService.isUserAdministrator(user)) {
 			return ResponseEntity.ok(parseClientPlatform(clientPlatform));
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 	}
 
-	@ApiOperation("Create new device")
+	@ApiOperation("Create new clientplatform")
 	@PostMapping
 	@ApiResponses(@ApiResponse(code = 201, message = "Default token", response = String.class))
-	public ResponseEntity<?> createNewDevice(@Valid @RequestBody ClientPlatformCreate clientPlatformCreate,
+	public ResponseEntity<?> createNewClientplatform(@Valid @RequestBody ClientPlatformCreate clientPlatformCreate,
 			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
@@ -168,8 +168,8 @@ public class ClientPlatformManagementController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(token.getTokenName());
 	}
 
-	@ApiOperation(value = "validate Device id with token")
-	@RequestMapping(value = "/validate/device/{identification}/token/{token}", method = RequestMethod.GET)
+	@ApiOperation(value = "validate Clientplatform id with token")
+	@RequestMapping(value = "/validate/clientplatform/{identification}/token/{token}", method = RequestMethod.GET)
 	public ResponseEntity<?> validate(
 			@ApiParam(value = "identification  ", required = true) @PathVariable("identification") String identification,
 			@ApiParam(value = "Token", required = true) @PathVariable(name = "token") String token) {

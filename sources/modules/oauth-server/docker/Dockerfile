@@ -1,13 +1,13 @@
-FROM openjdk:8-jre-alpine
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="oauthserver"	
+LABEL platform.image.name="oauthserver"	
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
-	SERVER_NAME=localhost \    
+ENV SERVER_NAME=localhost \    
     REALTIMEDBSERVERS=realtimedb:27017 \  
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
@@ -16,7 +16,18 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     AUDITGLOBALNOTIFY=false \      
     QUASARHOST=quasar \
     QUASARPORT=10800 \ 
-    REALTIMEDBNAME=onesaitplatform_rtdb 
+    REALTIMEDBNAME=onesaitplatform_rtdb \
+    AUTH_PROVIDER=configdb \
+    LDAP_URL="" \
+    LDAP_BASE_DN="" \
+    LDAP_ADMIN_DN="" \
+    LDAP_ADMIN_PASSWORD="" \
+    LDAP_DEFAULT_ROLE=ROLE_USER \
+    LDAP_USERID_ATT=sAMAccountName \
+    LDAP_MAIL_ATT=mail \
+    LDAP_CN_ATT=cn \
+    CONFIGDB_ACL_ENABLED=false \
+    CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
 
 # Timezone 
 RUN apk add --no-cache tzdata
@@ -41,6 +52,4 @@ USER onesait
 
 EXPOSE 21000
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
-
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

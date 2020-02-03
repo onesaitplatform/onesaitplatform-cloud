@@ -50,7 +50,6 @@ public class ApiDTO implements Serializable {
 			}
 		}
 		this.apiLimit = api.getApilimit();
-		this.endpoint = api.getEndpoint();
 		this.endpointExt = api.getEndpointExt();
 		this.description = api.getDescription();
 		this.metainf = api.getMetaInf();
@@ -79,7 +78,7 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private String id;
 
-	@ApiModelProperty(value = "API Identification")
+	@ApiModelProperty(value = "API Identification", required = true)
 	@Getter
 	@Setter
 	private String identification;
@@ -89,7 +88,7 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private Integer version;
 
-	@ApiModelProperty(value = "API Type")
+	@ApiModelProperty(value = "API Type", required = true)
 	@Getter
 	@Setter
 	private String type;
@@ -99,7 +98,7 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private Boolean isPublic;
 
-	@ApiModelProperty(value = "API Category")
+	@ApiModelProperty(value = "API Category", required = true)
 	@Getter
 	@Setter
 	private String category;
@@ -119,11 +118,6 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private Integer apiLimit;
 
-	@ApiModelProperty(value = "Endpoint for API Invocation")
-	@Getter
-	@Setter
-	private String endpoint;
-
 	@ApiModelProperty(value = "External Endpoint for invoking API")
 	@Getter
 	@Setter
@@ -134,7 +128,7 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Tags Meta-inf for API")
+	@ApiModelProperty(value = "Tags Meta-inf for API", required = true)
 	@Getter
 	@Setter
 	private String metainf;
@@ -149,17 +143,17 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private String status;
 
-	@ApiModelProperty(value = "creation Date")
+	@ApiModelProperty(value = "creation Date", required = true)
 	@Getter
 	@Setter
 	private String creationDate;
 
-	@ApiModelProperty(value = "API Propietary")
+	@ApiModelProperty(value = "API Propietary", required = true)
 	@Getter
 	@Setter
 	private String userId;
 
-	@ApiModelProperty(value = "API Swagger Json")
+	@ApiModelProperty(value = "API Swagger Json", required = true)
 	@Getter
 	@Setter
 	private String swaggerJson;

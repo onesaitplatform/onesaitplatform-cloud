@@ -51,13 +51,14 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 						.addBinary(new FileInputStream(file), null, null);
 				final BinaryFile binaryFile = new BinaryFile();
 				binaryFile.setFileName(file.getName());
+				binaryFile.setIdentification(file.getName());
 				binaryFile.setRepository(RepositoryType.MONGO_GRIDFS);
-				binaryFile.setFileId(id);
+				binaryFile.setId(id);
 				binaryFile.setMetadata(null);
 				binaryFile.setMime("text/csv");
 				binaryFile.setFileExtension(FilenameUtils.getExtension(file.getName()));
-				binaryFile.setOwner(ontology.getUser());
-				binaryFileService.createBinaryile(binaryFile);
+				binaryFile.setUser(ontology.getUser());
+				binaryFileService.createBinaryFile(binaryFile);
 				boolean delete = file.delete();
 				log.debug("delete:" + delete);
 			} catch (FileNotFoundException | BinaryRepositoryException e) {
@@ -69,15 +70,15 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 			binaryFile.setFileName(file.getName());
 			binaryFile.setRepository(RepositoryType.FILE);
 			binaryFile.setPath(exportData.getPath());
-			binaryFile.setFileId(UUID.randomUUID().toString());
+			binaryFile.setId(UUID.randomUUID().toString());
 			binaryFile.setMetadata(null);
 			final String mime = FilenameUtils.getExtension(file.getName()).toLowerCase().contains("json")
 					? "application/json"
 					: "text/csv";
 			binaryFile.setMime(mime);
 			binaryFile.setFileExtension(FilenameUtils.getExtension(file.getName()));
-			binaryFile.setOwner(ontology.getUser());
-			binaryFileService.createBinaryile(binaryFile);
+			binaryFile.setUser(ontology.getUser());
+			binaryFileService.createBinaryFile(binaryFile);
 		}
 	}
 

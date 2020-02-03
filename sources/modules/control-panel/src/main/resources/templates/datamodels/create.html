@@ -137,7 +137,7 @@
 															<label class="" th:text="#{datamodel.name} + ':'">Name</label><span class="required"> *</span>
 															<div class="input-icon ">
 																<i class="fa fa-user"></i>
-																<input id="datamodelName" name="datamodelName" type="text"  maxlength="50" th:readonly="*{name}" th:field="*{name}" class="form-control no-remove" th:placeholder="#{datamodel.name}" th:required="true"/>
+																<input id="datamodelName" name="datamodelName" type="text"  maxlength="50" th:field="*{identification}" class="form-control no-remove" th:placeholder="#{datamodel.name}" th:required="true"/>
 															</div>
 														</div>
 													</div>	
@@ -191,15 +191,15 @@
 													<span class="sep no-border"></span>
 													
 													<!-- REMOVE -->
-													<button th:if="${datamodel.name} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'dataModelCreateController.deleteDataModel(\'' + ${datamodel.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<button th:if="${datamodel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'dataModelCreateController.deleteDataModel(\'' + ${dataModel?.identification} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 													
 													<span class="sep"></span>
 													
 													<!-- CREATE--> 
-													<button th:if="${datamodel.name} == null" id="createBtn" class="btn btn-circle btn-outline btn-primary"  name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+													<button th:if="${datamodel.identification} == null" id="createBtn" class="btn btn-circle btn-outline btn-primary"  name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 													
 													<!-- UPDATE -->
-													<button th:if="${datamodel.name} != null" id="updateBtn" class="btn btn-circle btn-outline btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+													<button th:if="${datamodel.identification} != null" id="updateBtn" class="btn btn-circle btn-outline btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 													
 												</div>
 											</div>
@@ -207,7 +207,7 @@
 										<!-- AUXILIAR FORM TO DELETE DATAMODEL -->										
 										<form id="delete_dataModel_form" class="delete-dataModel hide"  action=""  method="post">
 											<input type="hidden" name="_method" value="DELETE"/>
-											<input type="hidden" name="id" th:value="${datamodel?.id}"/>
+											<input type="hidden" name="id" th:value="${datamodel?.identification}"/>
 										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 									</div> <!-- END FORM -->
 								</div>

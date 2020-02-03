@@ -81,7 +81,7 @@ public class OPResourceRepositoryTest {
 		final User user = userRepository.findByUserId("administrator");
 		Project project = new Project();
 		project.setDescription("Example project");
-		project.setName("THis is the project name");
+		project.setIdentification("THis is the project name");
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 
@@ -95,7 +95,7 @@ public class OPResourceRepositoryTest {
 		Assert.assertNotNull(resourceRepository.findOne(resource.getId()));
 
 		projectRepository.delete(project);
-		Assert.assertTrue(projectRepository.findByName(project.getName()).size() == 0);
+		Assert.assertTrue(projectRepository.findByIdentification(project.getIdentification()).size() == 0);
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class OPResourceRepositoryTest {
 
 		final Project project = new Project();
 		project.setDescription("Example project");
-		project.setName("THis is the project name");
+		project.setIdentification("THis is the project name");
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
@@ -113,7 +113,7 @@ public class OPResourceRepositoryTest {
 		project.getProjectResourceAccesses().addAll(accesses);
 		projectRepository.save(project);
 		projectRepository.delete(project);
-		Assert.assertTrue(projectRepository.findByName(project.getName()).size() == 0);
+		Assert.assertTrue(projectRepository.findByIdentification(project.getIdentification()).size() == 0);
 
 	}
 
@@ -123,7 +123,7 @@ public class OPResourceRepositoryTest {
 
 		final Project project = new Project();
 		project.setDescription("Example project");
-		project.setName("THis is the project name");
+		project.setIdentification("THis is the project name");
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
@@ -133,9 +133,8 @@ public class OPResourceRepositoryTest {
 		Project pdb = projectRepository.save(project);
 
 		App realm = new App();
-		realm.setName("Realm test");
+		realm.setIdentification("TestRealm");
 		final AppRole role = new AppRole();
-		realm.setAppId("TestRealm");
 		role.setApp(realm);
 		role.setName("DEVOPS");
 		role.getAppUsers().addAll(userRepository.findAll().stream()
@@ -160,8 +159,7 @@ public class OPResourceRepositoryTest {
 	@Test
 	public void testAppRolesDelete() {
 		App realm = new App();
-		realm.setName("Realm test");
-		realm.setAppId("TestRealm");
+		realm.setIdentification("TestRealm");
 		final AppRole role = new AppRole();
 		final User user = userRepository.findByUserId("administrator");
 		role.getAppUsers().add(AppUser.builder().user(user).role(role).build());

@@ -16,9 +16,13 @@ package com.minsait.onesait.platform.persistence.services;
 
 import java.io.IOException;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 
 public interface OntologyReferencesValidation {
 
-	public void validate(OperationModel operationModel) throws IOException;
+	public void validate(OperationModel operationModel)
+			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
 }

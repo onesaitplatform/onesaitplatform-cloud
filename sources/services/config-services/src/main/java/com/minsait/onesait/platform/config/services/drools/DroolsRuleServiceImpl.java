@@ -180,10 +180,16 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	@Override
 	public DroolsRule create(DroolsRule rule, String userId) {
 		if (rule.getType().equals(Type.ONTOLOGY)) {
+
 			rule.setSourceOntology(
 					ontologyRepository.findByIdentification(rule.getSourceOntology().getIdentification()));
 			rule.setTargetOntology(
 					ontologyRepository.findByIdentification(rule.getTargetOntology().getIdentification()));
+			if (!droolsRuleRepository
+					.findBySourceOntologyAndUserAndActiveTrue(rule.getSourceOntology(), userService.getUser(userId))
+					.isEmpty())
+				throw new GenericRuntimeOPException(
+						"Only one Rule entity is allowed per user for the SAME source ontology. Add rules for this ontology to the main .drl file instead.");
 			if (rule.getSourceOntology().getIdentification().equals(rule.getTargetOntology().getIdentification()))
 				throw new GenericRuntimeOPException("Source and Target ontology must be different");
 

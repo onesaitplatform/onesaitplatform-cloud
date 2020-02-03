@@ -24,21 +24,21 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType, String>{
 
-	List<DigitalTwinType> findByNameIgnoreCase(String name);
+	List<DigitalTwinType> findByIdentificationIgnoreCase(String identification);
 
 	List<DigitalTwinType> findByDescription(String description);
 
-	DigitalTwinType findByName(String name);
+	DigitalTwinType findByIdentification(String identification);
 
-	List<DigitalTwinType> findAllByOrderByNameAsc();
+	List<DigitalTwinType> findAllByOrderByIdentificationAsc();
 
 	List<DigitalTwinType> findByDescriptionContaining(String description);
 
-	List<DigitalTwinType> findByNameContaining(String name);
+	List<DigitalTwinType> findByIdentificationContaining(String identification);
 	
-	List<DigitalTwinType> findByNameLikeAndDescriptionLike(String name, String description);
+	List<DigitalTwinType> findByIdentificationLikeAndDescriptionLike(String identification, String description);
 	
-	List<DigitalTwinType> findByNameContainingAndDescriptionContaining(String name, String description);
+	List<DigitalTwinType> findByIdentificationContainingAndDescriptionContaining(String identification, String description);
 	
 	DigitalTwinType findById(String id);
 	
@@ -46,7 +46,7 @@ public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType
 	
 	List<DigitalTwinType> findByUser(User user);
 	
-	@Query("SELECT o.name FROM DigitalTwinType AS o")
-	List<String> findAllNames();
+	@Query("SELECT o.identification FROM DigitalTwinType AS o")
+	List<String> findAllIdentifications();
 	
 }

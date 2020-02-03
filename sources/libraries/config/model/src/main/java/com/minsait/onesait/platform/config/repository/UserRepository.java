@@ -69,6 +69,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 	@Query("SELECT o FROM User AS o WHERE o.email=:email")
 	List<User> findByEmail(@Param("email") String email);
 
+	int countByEmail(String email);
+
 	User findByUserId(String userId);
 
 	User findUserByEmail(String email);
@@ -92,7 +94,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	@Query("SELECT o FROM User AS o WHERE (o.userId != :userId AND o.role.id != :rolId) ORDER BY o.userId)")
 	List<User> findUserByIdentificationAndNoRol(@Param("userId") String userId, @Param("rolId") String rolId);
-	
+
 	@Query("SELECT o FROM User AS o WHERE (o.userId != :userId AND o.role.id = :rolId) ORDER BY o.userId)")
 	List<User> findUserByIdentificationAndRol(@Param("userId") String userId, @Param("rolId") String rolId);
 }

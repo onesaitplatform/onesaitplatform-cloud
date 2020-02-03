@@ -25,11 +25,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
 
@@ -46,7 +49,7 @@ public class AuditController {
 	private OntologyService ontologyServie;
 	@Autowired
 	private AppWebUtils utils;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -90,7 +93,8 @@ public class AuditController {
 		return result;
 	}
 
-	private String getResultForQuery(String user, String operation, String offset) {
+	private String getResultForQuery(String user, String operation, String offset)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 
 		final String collection = ServiceUtils.getAuditCollectionName(user);
 

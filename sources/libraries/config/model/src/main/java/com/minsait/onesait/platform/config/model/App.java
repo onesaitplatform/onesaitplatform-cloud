@@ -21,23 +21,21 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.minsait.onesait.platform.config.model.base.AuditableEntity;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -45,52 +43,35 @@ import lombok.Setter;
 @Entity
 @Table(name = "APP")
 @Configurable
-public class App extends AuditableEntity {
+public class App extends OPResource {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 7199595602818161052L;
 
-	@Id
-	@Column(name = "APP")
-	@Getter
-	@Setter
-	private String appId;
-
-	@Column(name = "NAME", length = 100, unique = true, nullable = false)
-	@NotNull
-	@Getter
-	@Setter
-	private String name;
-
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
-	@Getter
-	@Setter
-	private User user;
-
 	@Column(name = "DESCRIPTION", length = 255)
 	@Getter
 	@Setter
 	private String description;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.MERGE, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private Set<AppRole> appRoles = new HashSet<>();
 
 	@JoinTable(name = "app_associated", joinColumns = {
-			@JoinColumn(name = "parent_app", referencedColumnName = "app", nullable = false) }, inverseJoinColumns = {
-					@JoinColumn(name = "child_app", referencedColumnName = "app", nullable = false) })
-	@ManyToMany(fetch = FetchType.LAZY)
+			@JoinColumn(name = "parent_app", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
+					@JoinColumn(name = "child_app", referencedColumnName = "id", nullable = false) })
+	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private Set<App> childApps;
 
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "PROJECT_ID")
 	@Getter
 	@Setter

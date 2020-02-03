@@ -1,3 +1,11 @@
+/** GLOBAL VARIABLES */
+
+/** Set the initial extent. Change the values to set your own extent */
+var startLongitude = ${longitude}
+var startLatitude = ${latitude}
+var startHeight = ${height}
+var basePath = "${basePath}";
+
 $(document).ready(function() {
 	if (viewer != undefined) {
 		var options = []
@@ -12,7 +20,6 @@ $(document).ready(function() {
 	}
 })
 
-var basePath = "${basePath}";
 var dataSourceLayers = []
 
 $('#layers').on('change', function() {
@@ -77,12 +84,6 @@ $('#layers').on('change', function() {
 	$('#layers').selectpicker('refresh')
 })
 
-/** GLOBAL VARIABLES */
-
-/** Set the initial extent. Change the values to set your own extent */
-var startLongitude = -15.434
-var startLatitude = 28.134
-var startHeight = 4500
 
 /** VIEWER */
 
@@ -98,7 +99,7 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
 	/** Geocoger input widget */
 	geocoder: false,
 	/** infoBox window **/
-	infoBox: false,
+	infoBox: true,
 	/** Useless widget button */
 	navigationHelpButton: false,
 	/** Force 3D scene always */
@@ -1340,6 +1341,9 @@ function pointEntityColorLayer() {
 				/** Add the dataSource to the viewer */
 				viewer.dataSources.add(dataSource)
 			}
+			
+			/** Clear the dataSource */
+			dataSource.entities.removeAll()
 
 			/** Iterate over all entities in the FeatureCollection */
 			data.features.forEach(function(feature) {
@@ -1371,12 +1375,12 @@ function pointEntityColorLayer() {
 
 					/** Add the feature as a entity to the dataSource */
 					dataSource.entities.add({
+						description: fakeInfoBox(feature),
 						entityProperties: {
 							id: id,
 							name: name,
 							layerName: layerName,
 							allowPicking: allowPicking,
-							properties: addProperties(feature),
 							typeGeometry: {
 								type: 'Point',
 								class: 'Point'

@@ -201,7 +201,7 @@ public class DataflowController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@PostMapping(value = { "/app/rest/v1/stageLibraries/extras/{lib}/upload" }, consumes = { "multipart/form-data" })
 	@ResponseBody
 	public ResponseEntity<String> adminUploadExternalLibrary(Model uiModel, HttpServletRequest request,
@@ -258,6 +258,16 @@ public class DataflowController {
 		} else {
 			return "ko";
 		}
+	}
+	
+	@GetMapping(value = "/show/{id}")
+	public String showDataFlow(Model Model, @PathVariable("id") String id) {
+		Pipeline dataFlow = pipelineRepository.findById(id);
+		if (dataFlow == null) {
+			return "error/403";
+		}
+		String idStreamsets = dataFlow.getIdstreamsets();
+		return "redirect:/dataflow/app/collector/pipeline/"+idStreamsets;
 	}
 
 }

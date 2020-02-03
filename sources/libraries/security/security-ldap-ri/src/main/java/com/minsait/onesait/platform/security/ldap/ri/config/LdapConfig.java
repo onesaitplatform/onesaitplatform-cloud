@@ -39,7 +39,7 @@ public class LdapConfig {
 	private String ldapPrincipalPassword;
 
 	public static final String LDAP_TEMPLATE_NO_BASE = "ldapTemplateNoBase";
-	public static final String LDAP_TEMPLATE_BASE = "ldapTemplate";
+	public static final String LDAP_TEMPLATE_BASE = "ldapTemplateBase";
 
 	@Bean
 	public LdapContextSource contextSource() {
@@ -54,7 +54,7 @@ public class LdapConfig {
 	}
 
 	@Bean
-	@Qualifier("ldapTemplate")
+	@Qualifier(LDAP_TEMPLATE_BASE)
 	public LdapTemplate ldapTemplate() {
 		return new LdapTemplate(contextSource());
 	}
@@ -71,7 +71,7 @@ public class LdapConfig {
 	}
 
 	@Bean
-	@Qualifier("ldapTemplateNoBase")
+	@Qualifier(LDAP_TEMPLATE_NO_BASE)
 	public LdapTemplate ldapTemplateNoBase() {
 		return new LdapTemplate(contextSourceNoBase());
 	}

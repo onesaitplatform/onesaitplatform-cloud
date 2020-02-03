@@ -52,6 +52,10 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineService;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
+import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,10 +68,8 @@ public class FlowDomainController {
 	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
 	private int restRequestTimeout;
 
-	@Value("${onesaitplatform.flowengine.services.baseurl:http://localhost:20100/flowengine/admin}")
 	private String baseUrl;
 
-	@Value("${onesaitplatform.flowengine.services.proxyurl:http://localhost:5050/}")
 	private String proxyUrl;
 
 	@Value("${onesaitplatform.controlpanel.avoidsslverification:false}")
@@ -78,9 +80,15 @@ public class FlowDomainController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
 	@Autowired
 	private AppWebUtils utils;
+
+	@Autowired
+	private NoderedAuthenticationServiceImpl noderedAuthService;
 
 	private FlowEngineService flowEngineService;
 
@@ -94,8 +102,11 @@ public class FlowDomainController {
 
 	@PostConstruct
 	public void init() {
+		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
+		baseUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.BASE); // <host>/flowengine/admin
 		flowEngineService = FlowEngineServiceFactory.getFlowEngineService(baseUrl, restRequestTimeout,
 				avoidSSLVerification);
+		
 	}
 
 	@GetMapping(value = "/list", produces = "text/html")
@@ -240,7 +251,9 @@ public class FlowDomainController {
 			final String password = domain.getUser().getPassword();
 			final String auth = domain.getUser() + ":" + password;
 			final String authBase64 = Base64.getEncoder().encodeToString(auth.getBytes());
-			String proxyUrlAndDomain = proxyUrl + domainId + "/?authentication=" + authBase64;
+			String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(), domainId);
+			String proxyUrlAndDomain = proxyUrl + domainId + "/?authentication=" + authBase64 + "&access_token="
+					+ accessToken;
 			if (flowId != null) {
 				proxyUrlAndDomain += "#flow/" + flowId;
 			}
@@ -291,21 +304,22 @@ public class FlowDomainController {
 				domainStatusList = new ArrayList<>();
 			}
 
-			filteredDomainStatusList = getFilteredDomainStatuses(domainList,  domainStatusList);
+			filteredDomainStatusList = getFilteredDomainStatuses(domainList, domainStatusList);
 
 		}
 		return filteredDomainStatusList;
 	}
-	
-	private List<FlowEngineDomainStatus> getFilteredDomainStatuses(List<FlowDomain> domainList, List<FlowEngineDomainStatus> domainStatusList){
+
+	private List<FlowEngineDomainStatus> getFilteredDomainStatuses(List<FlowDomain> domainList,
+			List<FlowEngineDomainStatus> domainStatusList) {
 		final List<FlowEngineDomainStatus> filteredDomainStatusList = new ArrayList<>();
 		for (final FlowDomain domain : domainList) {
-			final FlowEngineDomainStatus domainStatus = new  FlowEngineDomainStatus();
+			final FlowEngineDomainStatus domainStatus = new FlowEngineDomainStatus();
 			domainStatus.setDomain(domain.getIdentification());
 			domainStatus.setPort(domain.getPort());
 			domainStatus.setHome(domain.getHome());
 			domainStatus.setServicePort(domain.getServicePort());
-			domainStatus.setState(domain.getState());
+			
 			domainStatus.setRuntimeState("--");
 			domainStatus.setCpu("--");
 			domainStatus.setMemory("--");
@@ -314,6 +328,11 @@ public class FlowDomainController {
 			final Optional<FlowEngineDomainStatus> status = domainStatusList.stream()
 					.filter(domStatus -> domStatus.getDomain().equals(domain.getIdentification())).findAny();
 			if (status.isPresent()) {
+				domainStatus.setState(status.get().getState());
+				if (status.get().getState().equals("STOP") && !status.get().getState().equals(domain.getState())){
+					domain.setState(status.get().getState());
+					domainService.updateDomain(domain);
+				}
 				if (!status.get().getMemory().isEmpty()) {
 					final Double mem = new Double(status.get().getMemory()) / (1024d * 1024d);
 					domainStatus.setMemory(String.format("%.2f", mem));

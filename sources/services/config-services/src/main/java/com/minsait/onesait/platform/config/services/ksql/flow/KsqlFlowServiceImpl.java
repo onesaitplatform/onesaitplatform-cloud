@@ -185,7 +185,7 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 
 	private boolean hasUserPermission(String id, String userId) {
 		User user = userRepository.findByUserId(userId);
-		if (user.getRole().getName().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return true;
 		} else {
 			return ksqlFlowRepository.findById(id).getUser().getUserId().equals(userId);

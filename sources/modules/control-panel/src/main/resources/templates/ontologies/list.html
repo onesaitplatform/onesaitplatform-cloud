@@ -164,7 +164,8 @@
 															<th class="titulo-columnas text-center" th:text="#{ontology.public}">Public</th>
 															<th class="titulo-columnas text-center" th:text="#{ontology.authorizations}">Authorizations</th>
 															<th class="titulo-columnas text-center" th:text="#{ontology.datamodel}">Datamodel</th>
-															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}">Created At</span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}">Updated At</span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -186,10 +187,13 @@
 															<td class="text-center" th:if="${ontology.existOntologyUserAccessesWithUserActive()}"><i class="la la-check-circle-o text-primary font-hg"></i></td>
 															<td class="text-center" th:if="${not ontology.existOntologyUserAccessesWithUserActive()}"><i class="la la-times-circle-o text-danger font-hg"></i></td>															
 															<!-- DATAMODEL -->
-															<td class="text-center " th:text="${ontology.dataModel?.name}"></td>
+															<td class="text-center " th:text="${ontology.dataModel?.identification}"></td>
 															<!-- DATE -->
 															<td class="text-center" th:if="${ontology.createdAt!=null}"><span th:text="${#dates.format(ontology.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ontology.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${ontology.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${ontology.updatedAt!=null}"><span th:text="${#dates.format(ontology.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ontology.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${ontology.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -219,6 +223,9 @@
 																	<span  th:if="${ontology.ontologyKPI} !=null  AND ${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stop}" th:data-original-title="#{gen.stop}" th:onclick="'javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="la la-stop font-hg"></i></span>
 																	<span  th:if="${ontology.ontologyKPI} !=null  AND !${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.play}" th:data-original-title="#{gen.play}" th:onclick="'javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="la la-play font-hg"></i></span>
 																	<span  th:if="${ontology.ontologyKPI} !=null  " class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{ontology.kpi.execute}" th:data-original-title="#{ontology.kpi.execute}" th:onclick="'javascript:executeKPI(\'' + ${ontology.id} + '\');'"><i class="la la-gears font-hg"></i></span>
+																	<!-- DELETE -->
+																    <span th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteOntology(\'' + ${ontology.id} + '\');'"><i class="la la-trash font-hg"></i></span>
+																
 																</div>
 															</td>
 														</tr>
@@ -238,7 +245,8 @@
 														<label class="toggle-vis" data-column="5" th:text="#{ontology.authorizations}"> Authorizations</label>
 														<label class="toggle-vis" data-column="6" th:text="#{ontology.datamodel}"> Datamodel</label>
 														<label class="toggle-vis" data-column="7" th:text="#{ontology.createdAt}"> Created At</label>
-														<label class="toggle-vis" data-column="8" th:text="#{gen.options}" > Options</label>															
+														<label class="toggle-vis" data-column="8" th:text="#{ontology.updatedAt}"> Updated At</label>
+														<label class="toggle-vis" data-column="9" th:text="#{gen.options}" > Options</label>															
 													</div>
 												</div>												
 											</div>
@@ -246,6 +254,11 @@
 																		
 									</div>
 								</div>
+								<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+								<form id="delete_ontology_form" class="delete-ontology hide" method="post">
+									<input type="hidden" name="_method" value="DELETE"/>
+									<input type="hidden" id="delete-id" name="id"/>
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
 					</div><!-- END COL-12 -->						
@@ -274,6 +287,7 @@
 	var search = new Array();
 	var search = [[${param.identification}]] || [];
 	var description = [[${param.description}]] || '';
+	var deleteUrl =  [[@{/ontologies}]];
 	
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	description ? $('#description').val(description) : description = '';
@@ -299,6 +313,18 @@
 		} else{
 			navigateUrl('/controlpanel/ontologies/list');
 		}
+	}
+	
+	// DELETE ONTOLOGY
+	var deleteOntology = function(ontologyId){
+		console.log('deleteOntologyConfirmation() -> formId: '+ ontologyId);
+		
+		
+		$('#delete_ontology_form').attr('action', deleteUrl + '/' + ontologyId);
+		$('#delete-id').val(ontologyId);
+
+		// call ontology Confirm at header.
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form');
 	}
 	
 	// MAIN WHEN READY
@@ -392,11 +418,17 @@
 			},
 		 error: function(xhr, status, error) {	
 			 
+			
+			 var errorMessage = [[#{ontology.kpi.executed.error}]];
+			 if(typeof xhr.responseJSON !== 'undefined' && 
+					 typeof xhr.responseJSON.cause !== 'undefined' ){
+				 errorMessage = xhr.responseJSON.cause;
+			 }
 			 $.alert({
 					title : [[#{ontology.kpi.error}]],
 					type : 'red',
 					theme : 'light',
-					content :  [[#{ontology.kpi.executed.error}]]
+					content :  errorMessage
 				});
 			}
 		});

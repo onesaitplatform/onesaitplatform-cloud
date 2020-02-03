@@ -159,7 +159,7 @@
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">														
-														<tr th:each="report : ${reports}" pages:paginate="10">
+														<tr th:each="report : ${reports}">
 															<!-- NAME -->
 															<td class="text-left no-wrap " th:text="${report.identification}"></td>
 															<!-- DESCRIPTION --> 
@@ -222,6 +222,7 @@
 											</div>
 										</div>											
 									</div>
+									
 									<!-- Modal Parameters-->
 									<div id="parametersModal" class="modal fade" role="dialog">
 									  <div class="modal-dialog modal-xl">
@@ -290,7 +291,7 @@
 							</div><!-- // BODY CONTENT -->
 						</div><!-- // PORTLET BASIC LIGHT -->							
 					</div><!-- // COL-12 -->						
-				</div><!-- // MAIN ROW -->				
+				</div><!-- // MAIN ROW -->		
 			</div><!-- // CONTENT BODY -->
 		</div><!-- // CONTENT page-content-wrapper -->		
 	</div><!-- // MAIN PAGE WRAPPER -->
@@ -365,6 +366,13 @@
 	
 		$(document).ready(function() {
 			
+
+			var idToRun = [[${idToRun}]];
+
+			if (idToRun != null){
+				Report.List.getParameters(idToRun);
+			}
+			
 			//SHOW/HIDE DATATABLE COLUMNS HANDLER
 			$('label.toggle-vis').on( 'click', function (e) {
 				e.preventDefault(); 
@@ -384,7 +392,10 @@
 			
 			//DATATABLE 
 			var oTable = $('#reports').DataTable();
-			
+			oTable.page.len(10);
+			$('#reports').on('draw.dt', function () {
+				Report.List.initTableEvents();
+			} );
 			// SHOW/HIDE DATATABLES COLUMN INIT 		
 			$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 			$('#dataTable-vis-toggle').removeClass('hide');

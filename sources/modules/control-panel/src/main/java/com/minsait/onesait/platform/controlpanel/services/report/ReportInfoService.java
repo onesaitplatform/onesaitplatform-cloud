@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.controlpanel.services.report;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportInfoDto;
@@ -27,4 +29,6 @@ public interface ReportInfoService {
 	ReportInfoDto extract(InputStream is, ReportExtension reportExtension);
 
 	byte[] generate(Report entity, ReportType pdf, Map<String, Object> parameters);
+
+	void updateResource(Report report, String fileId, MultipartFile file) throws Exception;
 }

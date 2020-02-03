@@ -34,7 +34,7 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -81,7 +81,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Scope("prototype")
-@Lazy
 @Slf4j
 public class MongoDbTemplateImpl implements MongoDbTemplate {
 
@@ -97,6 +96,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	private int poolSize;
 	private boolean readFromSecondaries;
 	private String writeConcern;
+	private boolean sslEnabled;
 
 	@Autowired
 	private MongoDbCredentials credentials;
@@ -148,7 +148,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 		final MongoClientOptions.Builder mongoClientOptionsBuilder = new MongoClientOptions.Builder();
 		mongoClientOptionsBuilder.socketTimeout(socketTimeout).connectTimeout(connectTimeout).maxWaitTime(maxWaitTime)
-				.connectionsPerHost(poolSize);
+				.connectionsPerHost(poolSize).sslEnabled(sslEnabled);				
 		if (readFromSecondaries) {
 			log.info("The MongoDB connector will forward the queries to the secondary nodes.");
 			mongoClientOptionsBuilder.readPreference(ReadPreference.secondary());
@@ -179,7 +179,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	}
 
 	@Override
-	@Bean
+	@Bean("mongo")
+	@Primary
 	public MongoClient getConnection() {
 		return mongoDbClient;
 	}
@@ -373,8 +374,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	}
 
 	@Override
-	public MongoIterable<BasicDBObject> aggregate(String database, String collection, List<BasicDBObject> pipeline, boolean allowDiskUse)
-			throws DBPersistenceException {
+	public MongoIterable<BasicDBObject> aggregate(String database, String collection, List<BasicDBObject> pipeline,
+			boolean allowDiskUse) throws DBPersistenceException {
 		log.debug("Running aggregate command. Database = {} , Collection = {} , Pipeline = {} ", database, collection,
 				pipeline);
 		try {
@@ -400,7 +401,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 		try {
 			final MongoCollection<BasicDBObject> dbCollection = getCollection(database, collection,
 					BasicDBObject.class);
-			return dbCollection.aggregate(pipeline).allowDiskUse(allowDiskUse).maxTime(queryExecutionTimeoutMillis, TimeUnit.MILLISECONDS);
+			return dbCollection.aggregate(pipeline).allowDiskUse(allowDiskUse).maxTime(queryExecutionTimeoutMillis,
+					TimeUnit.MILLISECONDS);
 		} catch (final Throwable e) {
 			final String errorMessage = String.format(
 					"Unable to run aggregate command on the given collection. Database = %s , collection = %s , pipeline = %s, cause = %s , errorMessage = %s.",
@@ -518,7 +520,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	public MongoIterable<BasicDBObject> find(String database, String collection, MongoQueryAndParams mq,
 			long queryExecutionTimeoutMillis) throws DBPersistenceException {
 		if (mq.getAggregateQuery() != null) {
-			return aggregate(database, collection, mq.getAggregateQuery(), mq.isAggregateAllowDiskUse(), queryExecutionTimeoutMillis);
+			return aggregate(database, collection, mq.getAggregateQuery(), mq.isAggregateAllowDiskUse(),
+					queryExecutionTimeoutMillis);
 		} else {
 			return find(database, collection, mq.getFinalQuery(), mq.getProjection(), mq.getSort(), mq.getSkip(),
 					mq.getLimit(), queryExecutionTimeoutMillis);
@@ -600,7 +603,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 			}
 		} catch (final Exception e) {
-		    log.error("" + e);
+			log.error("" + e);
 		}
 	}
 
@@ -879,10 +882,13 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				}
 				updateResult.setCount(dbResult.getModifiedCount());
 			}
-			final int upserted = dbResult.getUpsertedId() != null ? 1 : 0;
 
-			log.info("Executed update, with query {}, rows found and {} rows updated and {} rows upserted",
-					 query, dbResult.getMatchedCount(),dbResult.getModifiedCount(),upserted);
+			if (dbResult != null) {
+				final int upserted = dbResult.getUpsertedId() != null ? 1 : 0;
+				log.info("Executed update, with query {}, rows found and {} rows updated and {} rows upserted", query,
+						dbResult.getMatchedCount(), dbResult.getModifiedCount(), upserted);
+			}
+			log.info("Executed update, with query {}, rows found and 0 rows updated and 0 rows upserted", query);
 
 			return updateResult;
 
@@ -1064,7 +1070,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 		poolSize = ((Integer) databaseConfig.get("mongodb-pool-size")).intValue();
 		readFromSecondaries = ((Boolean) databaseConfig.get("mongodb-read-from-secondaries")).booleanValue();
 		writeConcern = (String) databaseConfig.get("mongodb-write-concern");
-
+		sslEnabled = ((Boolean) databaseConfig.get("mongodb-ssl-enabled")).booleanValue();
 	}
 
 	@Override

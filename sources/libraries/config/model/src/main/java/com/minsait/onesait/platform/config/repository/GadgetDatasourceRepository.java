@@ -19,6 +19,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface GadgetDatasourceRepository extends JpaRepository<GadgetDatasource, String> {
@@ -30,6 +31,8 @@ public interface GadgetDatasourceRepository extends JpaRepository<GadgetDatasour
 	List<GadgetDatasource> findByUser(User user);
 
 	List<GadgetDatasource> findByIdentificationLike(String identification);
+
+	List<GadgetDatasource> findByOntology(Ontology ontology);
 
 	List<GadgetDatasource> findByMode(String mode);
 

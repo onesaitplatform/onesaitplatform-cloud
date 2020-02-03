@@ -1,11 +1,3 @@
-// Declaración del visor
-
- var initialLongitude = -15.4340
- var initialLatitude = 28.1340
-	
- var initialHeight = 4500
- var initialZoom = 15
-
 var viewer = new Cesium.Viewer('cesiumContainer', {
   // Desactiva el widget de la pelota inferior izquierda.
   animation: false,
@@ -1202,5 +1194,3 @@ function changeSceneMode() {
     viewer.scene.mode = Cesium.SceneMode.SCENE3D
   }
 }
-
-defineViewerInitialExtent(initialLongitude,initialLatitude,initialHeight)

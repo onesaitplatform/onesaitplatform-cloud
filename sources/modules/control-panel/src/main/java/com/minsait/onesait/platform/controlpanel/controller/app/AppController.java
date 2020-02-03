@@ -87,6 +87,8 @@ public class AppController {
 	private static final String REDIRECT_APPS_CREATE = "redirect:/apps/create";
 	private static final String REDIRECT_APPS_LIST = "redirect:/apps/list";
 	private static final String REDIRECT_APPS_UPDATE = "redirect:/apps/update/";
+	
+	private static final String URL_APP_LIST = "/controlpanel/apps/list";
 
 	@Autowired(required = false)
 	private LdapUserService ldapUserService;
@@ -139,8 +141,8 @@ public class AppController {
 			if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
 					|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) {
 
-				appHelper.populateAppUpdate(model, app, sessionUser, ldapBaseDn, ldapActive());				
-				
+				appHelper.populateAppUpdate(model, app, sessionUser, ldapBaseDn, ldapActive());
+
 				return "apps/create";
 
 			} else {
@@ -215,22 +217,23 @@ public class AppController {
 			final App app = appService.getByIdentification(id);
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
-				if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) {
-					appService.deleteApp(id);
+				if ((((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
+						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) 
+					&& (app.getProject()==null)) {
+					appService.deleteApp(app);
 				} else {
-					return REDIRECT_APPS_LIST;
+					return URL_APP_LIST;
 				}
 			} else {
-				return REDIRECT_APPS_LIST;
+				return URL_APP_LIST;
 			}
 
 		} catch (final Exception e) {
 			utils.addRedirectMessage("app.delete.error", redirect);
-			return "/controlpanel/apps/list";
+			return URL_APP_LIST;
 		}
 
-		return "/controlpanel/apps/list";
+		return URL_APP_LIST;
 	}
 
 	@PostMapping(value = "/authorization", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -238,10 +241,10 @@ public class AppController {
 			@RequestParam String userId) {
 		try {
 
-			final Long appUserId = appService.createUserAccess(appId, userId, roleId);
+			final String appUserId = appService.createUserAccess(appId, userId, roleId);
 			final UserAppCreateDTO appUserDTO = new UserAppCreateDTO();
-			appUserDTO.setId(String.valueOf(appUserId));
-			appUserDTO.setRoleName(appRoleRepository.findOne(Long.valueOf(roleId)).getName());
+			appUserDTO.setId(appUserId);
+			appUserDTO.setRoleName(appRoleRepository.findOne(roleId).getName());
 			appUserDTO.setUser(userId);
 			appUserDTO.setRoleId(roleId);
 
@@ -259,10 +262,10 @@ public class AppController {
 		try {
 			if (userService.getUser(userId) == null)
 				ldapUserService.createUser(userId, dn);
-			final Long appUserId = appService.createUserAccess(appId, userId, roleId);
+			final String appUserId = appService.createUserAccess(appId, userId, roleId);
 			final UserAppCreateDTO appUserDTO = new UserAppCreateDTO();
-			appUserDTO.setId(String.valueOf(appUserId));
-			appUserDTO.setRoleName(appRoleRepository.findOne(Long.valueOf(roleId)).getName());
+			appUserDTO.setId(appUserId);
+			appUserDTO.setRoleName(appRoleRepository.findOne(roleId).getName());
 			appUserDTO.setUser(userId);
 			appUserDTO.setRoleId(roleId);
 
@@ -277,8 +280,10 @@ public class AppController {
 	public ResponseEntity<String> deleteAuthorization(@RequestParam String id) {
 
 		try {
-			appService.deleteUserAccess(Long.parseLong(id));
+
+			appService.deleteUserAccess(id);
 			return new ResponseEntity<>("{\"status\" : \"ok\"}", HttpStatus.OK);
+
 		} catch (final RuntimeException e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
@@ -317,9 +322,9 @@ public class AppController {
 	}
 
 	@GetMapping(value = "/getRoles", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Map<Long, String>> getRolesByApp(@RequestParam String appId) {
+	public ResponseEntity<Map<String, String>> getRolesByApp(@RequestParam String appId) {
 		final App app = appService.getByIdentification(appId);
-		final Map<Long, String> roles = new HashMap<>();
+		final Map<String, String> roles = new HashMap<>();
 		for (final AppRole role : app.getAppRoles()) {
 			roles.put(role.getId(), role.getName());
 		}
@@ -358,9 +363,11 @@ public class AppController {
 			return REDIRECT_APPS_UPDATE + appId;
 		} else {
 			final App realm = appService.getByIdentification(appId);
-			if (!StringUtils.isEmpty(project.getName()) && !StringUtils.isEmpty(project.getDescription())) {
+			if (!StringUtils.isEmpty(project.getIdentification()) && !StringUtils.isEmpty(project.getDescription())) {
+				project.setUser(userService.getUser(utils.getUserId()));
 				final Project p = projectService.createProject(project);
 				p.setApp(realm);
+
 				project.setUser(userService.getUser(utils.getUserId()));
 				realm.setProject(p);
 

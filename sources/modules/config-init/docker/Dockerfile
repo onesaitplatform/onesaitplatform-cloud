@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:8-jdk-alpine
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -35,7 +35,7 @@ EXPOSE 21000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
@@ -43,14 +43,15 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
 	REALTIMEDBUSER=platformadmin \
 	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \  
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \		  
-    CONFIGDBSERVERS=configdb:3306 \
-    JDBCPROTOCOL="jdbc:mysql:" \
-    DBADDPROPS="" \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
     LOADCONFIGDB=true \
     LOADMONGODB=true \
     LOADELASTICDB=true \ 
+    LOADMAILCONFIG=false \ 
     REALTIMEDBNAME=onesaitplatform_rtdb \
     CONTROLPANEL_SERVICE=localhost
 

@@ -135,12 +135,12 @@
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap bold" th:text="${group.status.group}"></td>
 															<!-- PARTITION COUNT -->
-															<td class="text-center" th:if="${group.error!=null}"  th:text="${group.status.partition_count}"></td>
+															<td class="text-center" th:if="${group.error!=null}"  th:text="${group.status.partitionCount}"></td>
 															<td class="text-center" th:if="${group.error==null}"  th:text="--"></td>
 															<!-- TOTAL LAG -->
 															<td class="text-center" th:if="${group.error!=null}"  th:text="${group.status.totallag}"></td>
 															<td class="text-center" th:if="${group.error==null}"  th:text="--"></td>
-															<!-- COMPLETION PERCENTAJE -->
+															<!-- COMPLETION PERCENTAGE -->
 															<td class="text-center" th:if="${group.error!=null}"  th:text="${group.status.complete}*100 + ' %'"></td>
 															<td class="text-center" th:if="${group.error==null}"  th:text="--"></td>
 															<!-- STATE -->

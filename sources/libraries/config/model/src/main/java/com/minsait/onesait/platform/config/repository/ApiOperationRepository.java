@@ -71,5 +71,7 @@ public interface ApiOperationRepository extends JpaRepository<ApiOperation, Stri
 	public List<ApiOperation> findAllByApi(Api api);
 
 	public List<ApiOperation> findByApiAndOperation(Api api, Type operation);
+	
+	public List<ApiOperation> findByApiAndIdentification(Api api, String identification);
 
 }

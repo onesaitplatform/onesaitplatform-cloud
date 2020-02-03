@@ -23,6 +23,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DigitalTwinTypeDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookParagraphDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.UserDomainValidationRequest;
@@ -58,4 +61,11 @@ public interface FlowEngineNodeService {
 	public void sendMail(MailRestDTO mail);
 
 	public void sendSimpleMail(MailRestDTO mail);
+
+	public List<NotebookDTO> getNotebooksByUser(String authentication);
+
+	public String getNotebookJSONDataByUser(String notebookId, String authentication);
+	
+	public ResponseEntity<String> invokeNotebook(NotebookInvokeDTO noebookInvocationData);
+
 }

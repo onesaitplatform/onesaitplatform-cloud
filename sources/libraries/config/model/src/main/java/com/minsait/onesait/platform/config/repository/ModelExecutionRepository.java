@@ -22,7 +22,7 @@ import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.ModelExecution;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface ModelExecutionRepository extends JpaRepository<ModelExecution, Long> {
+public interface ModelExecutionRepository extends JpaRepository<ModelExecution, String> {
 
 	ModelExecution findById(String id);
 

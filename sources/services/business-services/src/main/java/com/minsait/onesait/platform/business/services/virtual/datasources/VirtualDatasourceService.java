@@ -34,9 +34,12 @@ public interface VirtualDatasourceService {
 	void deleteDatasource(OntologyVirtualDatasource datasource);
 
 	Boolean checkConnection(String datasource, String user, String credentials, String sgdb, String url,
-			String queryLimit) throws GenericOPException;
+							String queryLimit) throws GenericOPException;
 
 	Boolean checkConnectionExtern(String datasource) throws GenericOPException;
 
 	Boolean changePublic(String datasource);
+
+	String getUniqueColumn(final String ontology);
+
 }

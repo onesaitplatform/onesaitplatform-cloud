@@ -15,7 +15,9 @@
 package com.minsait.onesait.platform.controlpanel.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -30,7 +32,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -151,7 +152,7 @@ public class AppWebUtils {
 	public String getCurrentUserOauthToken() {
 		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
 		if (request.isPresent())
-			return ((OAuth2AccessToken) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT)).getValue();
+			return ((String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT));
 		else
 			throw new GenericRuntimeOPException("No request currently active");
 	}
@@ -215,7 +216,8 @@ public class AppWebUtils {
 
 	public boolean isFileExtensionForbidden(MultipartFile file) {
 		try {
-
+			if (getAllowedFileExtensions().stream().anyMatch(file.getOriginalFilename()::contains))
+				return false;
 			final String contentType = tika.detect(file.getInputStream());
 			final String[] arrayMimeTypes = mimeTypesNotAllowed.split(",");
 			final boolean isForbidden = Arrays.stream(arrayMimeTypes).parallel().anyMatch(contentType::contains);
@@ -232,5 +234,17 @@ public class AppWebUtils {
 
 	public Long getMaxFileSizeAllowed() {
 		return (Long) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("max-size");
+	}
+
+	private List<String> getAllowedFileExtensions() {
+		try {
+			return Arrays.asList(
+					((String) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("allowed-extensions"))
+							.split(","));
+
+		} catch (final Exception e) {
+			log.error("No allowed extensions stated on Global Configuration, update your database");
+			return new ArrayList<>();
+		}
 	}
 }

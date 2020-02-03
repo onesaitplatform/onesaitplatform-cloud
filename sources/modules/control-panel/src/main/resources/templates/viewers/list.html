@@ -149,6 +149,7 @@
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -161,6 +162,9 @@
 															<!-- DATE -->
 															<td class="text-center" th:if="${viewer.createdAt!=null}" th:text="${#dates.format(viewer.createdAt,'dd/MM/YYYY')}"></td>
 															<td class="text-center" th:if="${viewer.createdAt==null}" th:text="${viewer.createdAt}"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${viewer.updatedAt!=null}" th:text="${#dates.format(viewer.updatedAt,'dd/MM/YYYY')}"></td>
+															<td class="text-center" th:if="${viewer.updatedAt==null}" th:text="${viewer.updatedAt}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -175,7 +179,8 @@
 																	
 																	<!-- URL -->
 																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{viewer.url}" th:data-original-title="#{viewer.url}" th:onclick="'javascript:showViewerURLDialog(\'' + @{|/viewers/view/${viewer.id}} + '\');'"><i class="la la-link font-hg"></i></span>
-																
+																	<!-- DELETE -->
+																    <span th:if="${#authentication.name} == ${viewer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteViewer(\'' + ${viewer.id} + '\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -185,6 +190,11 @@
 										</div>											
 									</div>
 								</div>
+								<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+								<form id="delete_viewer_form" class="delete-viewer hide" method="post">
+									<input type="hidden" name="_method" value="DELETE"/>
+									<input type="hidden" id="delete-id" name="id"/>
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
 					</div><!-- END COL-12 -->						
@@ -208,9 +218,8 @@
 	
 	
 	<script th:inline="javascript">	
-	
 	var urlGis = [[#{viewer.url}]];
-	
+	var deleteUrl =  [[@{/viewers}]];
 	// TEMPLATE SEARCH FORM.
 	var search = new Array();
 	var search = [[${param.identification}]] || [];
@@ -233,6 +242,18 @@
 	
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
+	
+	// DELETE VIEWER
+	var deleteViewer = function(viewerId){
+		console.log('deleteViewerConfirmation() -> formId: '+ viewerId);
+		
+		
+		$('#delete_viewer_form').attr('action', deleteUrl + '/' + viewerId);
+		$('#delete-id').val(viewerId);
+
+		// call ontology Confirm at header.
+		HeaderController.showConfirmDialogViewer('delete_viewer_form');
+	}
 	
 	var showViewerURLDialog = function(url){
 		$.confirm({

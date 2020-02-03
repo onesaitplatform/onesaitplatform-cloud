@@ -66,14 +66,13 @@ public class OPResourceTest {
 
 		final Project project = new Project();
 		project.setDescription("Example project");
-		project.setName("THis is the project name");
+		project.setIdentification("THis is the project name");
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		Project pdb = projectRepository.save(project);
 		App realm = new App();
-		realm.setName("Realm test");
+		realm.setIdentification("TestRealm");
 		final AppRole role = new AppRole();
-		realm.setAppId("TestRealm");
 		role.setApp(realm);
 		role.setName("DEVOPS");
 		role.getAppUsers().addAll(userRepository.findAll().stream()

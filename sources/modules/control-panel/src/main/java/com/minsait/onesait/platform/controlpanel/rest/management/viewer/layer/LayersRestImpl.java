@@ -38,11 +38,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.gis.layer.LayerService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryLinestring;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryMultiPolygon;
@@ -50,6 +52,7 @@ import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.ge
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryPolygon;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryType;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
@@ -145,7 +148,7 @@ public class LayersRestImpl implements LayersRest {
 					features = runQuery(userId, layer.getOntology().getIdentification(), null);
 				}
 
-				Boolean isQuery = getPropertiesForFeatures(query, layer, userId);
+				Boolean includeAllProperties = getPropertiesForFeatures(query, layer, userId);
 
 				HeatMap heatMap = new HeatMap();
 
@@ -168,7 +171,7 @@ public class LayersRestImpl implements LayersRest {
 							feature.setOid(oid);
 						}
 
-						if (isQuery) {
+						if (!includeAllProperties) {
 							// Have Query with select params
 							rootObject = obj;
 							fieldGeometry = mapFields.get(geometryField);
@@ -262,7 +265,16 @@ public class LayersRestImpl implements LayersRest {
 							feature.setGeometry(geometry);
 						}
 
-						if (!layer.isHeatMap() && layer.getInfoBox() != null && !layer.getInfoBox().equals("[]")) {
+						Boolean existInfoBox = false;
+
+						if (layer.getInfoBox() != null) {
+							JSONArray properties = new JSONArray(layer.getInfoBox());
+							if (properties.length() != 0) {
+								existInfoBox = true;
+							}
+						}
+
+						if (!layer.isHeatMap() && existInfoBox) {
 
 							JSONArray properties = new JSONArray(layer.getInfoBox());
 
@@ -295,7 +307,7 @@ public class LayersRestImpl implements LayersRest {
 							String value = rootObject.get(layer.getWeightField()).toString();
 							mapProperties.put("value", value);
 
-						} else {
+						} else if (layer.getQuery() != null) {
 							for (Map.Entry<String, String> entry : mapFields.entrySet()) {
 								if (!entry.getValue().equals(fieldGeometry)) {
 
@@ -381,7 +393,8 @@ public class LayersRestImpl implements LayersRest {
 							} catch (final Exception e) {
 								throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 							}
-						} else if (type.equals(BOOLEAN) && (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))) {
+						} else if (type.equals(BOOLEAN)
+								&& (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))) {
 							throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 						}
 
@@ -398,11 +411,10 @@ public class LayersRestImpl implements LayersRest {
 	}
 
 	private Boolean getPropertiesForFeatures(String query, Layer layer, String userId) {
-		Boolean isQuery = true;
+		Boolean includeAllProperties = true;
 		try {
 			if (query == null) {
 				query = "select c from " + layer.getOntology().getIdentification() + " as c";
-				isQuery = false;
 			}
 			CCJSqlParserManager parserManager = new CCJSqlParserManager();
 			Select select = (Select) parserManager.parse(new StringReader(query));
@@ -412,6 +424,7 @@ public class LayersRestImpl implements LayersRest {
 
 			for (SelectItem item : selectItems) {
 				if (!item.toString().equals("c") && !item.toString().equals("*")) {
+					includeAllProperties = false;
 					String[] split = item.toString().split("AS");
 
 					Expression expression = ((SelectExpressionItem) item).getExpression();
@@ -420,7 +433,6 @@ public class LayersRestImpl implements LayersRest {
 
 					mapFields.put(col.getColumnName(), split[1].trim());
 				} else {
-					isQuery = false;
 					Map<String, String> mapFields = ontologyService
 							.getOntologyFields(layer.getOntology().getIdentification(), userId);
 
@@ -440,12 +452,12 @@ public class LayersRestImpl implements LayersRest {
 		} catch (JSQLParserException e) {
 			log.error("Error parsing the query for layer: {}", layer.getIdentification(), e);
 
-		} catch (IOException  e) {
+		} catch (IOException e) {
 			log.error("Error getting ontology fields of the ontology: {}", layer.getOntology().getIdentification(),
 					e.getMessage());
 
 		}
-		return isQuery;
+		return includeAllProperties;
 	}
 
 	private Symbology buildSymbology(Layer layer) {
@@ -542,8 +554,8 @@ public class LayersRestImpl implements LayersRest {
 					} else if (c.startsWith("rgb")) {
 						c = c.substring(c.indexOf('(') + 1, c.indexOf(')'));
 						String[] split = c.split(",");
-						colorHex = String.format(STRINGLITERAL, Integer.parseInt(split[0]),
-								Integer.parseInt(split[1]), Integer.parseInt(split[2]));
+						colorHex = String.format(STRINGLITERAL, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
+								Integer.parseInt(split[2]));
 
 						Color color = Color.decode(colorHex);
 
@@ -612,7 +624,7 @@ public class LayersRestImpl implements LayersRest {
 			if (field.equals(fieldAux)) {
 				operation = attribute + ">" + value;
 			}
-		} 
+		}
 		return operation;
 	}
 
@@ -644,7 +656,8 @@ public class LayersRestImpl implements LayersRest {
 		}
 	}
 
-	private String runQuery(String userId, String ontologyIdentification, String query) {
+	private String runQuery(String userId, String ontologyIdentification, String query)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 
 		if (ontologyService.hasUserPermissionForQuery(userId, ontologyIdentification)) {
 			final ManageDBRepository manageDB = manageFactory.getInstance(ontologyIdentification);

@@ -20,6 +20,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jeasy.rules.annotation.Action;
 import org.jeasy.rules.annotation.Condition;
 import org.jeasy.rules.annotation.Priority;
@@ -38,6 +39,7 @@ import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 
 import lombok.Data;
 
@@ -47,6 +49,9 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 
 	@Autowired
 	private ApiManagerService apiManagerService;
+
+	@Autowired
+	private OntologyVirtualRepository ontologyVirtualRepository;
 
 	private static final String SQL_LIKE_STR = "SQL";
 
@@ -58,7 +63,10 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 	@Condition
 	public boolean existsRequest(Facts facts) {
 		final HttpServletRequest request = facts.get(RuleManager.REQUEST);
-		return ((request != null) && canExecuteRule(facts));
+		final Map<String, Object> data = facts.get(RuleManager.FACTS);
+		final Api api = (Api) data.get(Constants.API);
+		return ((request != null) && canExecuteRule(facts) && api != null
+				&& api.getApiType().equals(Api.ApiType.INTERNAL_ONTOLOGY));
 	}
 
 	@Action
@@ -71,7 +79,8 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 		final Api api = (Api) data.get(Constants.API);
 		final User user = (User) data.get(Constants.USER);
 		final String pathInfo = (String) data.get(Constants.PATH_INFO);
-		final String body = (String) data.get(Constants.BODY);
+		final byte[] requestBody = (byte[]) data.get(Constants.BODY);
+		final String body = requestBody == null ? null : new String(requestBody);
 		String queryType = (String) data.get(Constants.QUERY_TYPE);
 
 		final Ontology ontology = api.getOntology();
@@ -80,19 +89,24 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 
 			final ApiOperation customSQL = apiManagerService.getCustomSQL(pathInfo, api);
 
-			final String objectId = apiManagerService.getObjectidFromPathQuery(pathInfo);
-			if (customSQL == null && !objectId.equals("") && (queryType.equals("") || queryType.equals("NONE"))) {
+			final String objectId = apiManagerService.getObjectidFromPathQuery(pathInfo, customSQL);
+			if (customSQL == null && !StringUtils.isEmpty(objectId)
+					&& (queryType.equals("") || queryType.equals("NONE"))) {
 
-				queryDb = this.buildQueryByObjectId(ontology, objectId);
+				queryDb = buildQueryByObjectId(ontology, objectId);
 
 				data.put(Constants.QUERY_TYPE, SQL_LIKE_STR);
 				queryType = SQL_LIKE_STR;
 				data.put(Constants.QUERY, queryDb);
 				data.put(Constants.QUERY_BY_ID, Boolean.TRUE);
 
-			} else if (customSQL == null && objectId.equals("") && (queryType.equals("") || queryType.equals("NONE"))) {
-
-				queryDb = "select c,_id from " + ontology.getIdentification() + " as c";
+			} else if (customSQL == null && StringUtils.isEmpty(objectId)
+					&& (queryType.equals("") || queryType.equals("NONE"))) {
+				if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
+					queryDb = "SELECT * FROM " + ontology.getIdentification();
+				} else {
+					queryDb = "select c,_id from " + ontology.getIdentification() + " as c";
+				}
 
 				data.put(Constants.QUERY_TYPE, SQL_LIKE_STR);
 				queryType = SQL_LIKE_STR;
@@ -101,7 +115,8 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 			}
 
 			if (customSQL != null) {
-				CustomQueryData result = this.buildCustomQuery(customSQL, data, body, request, user);
+				final CustomQueryData result = buildCustomQuery(customSQL, data, body == null ? null : new String(body),
+						request, user);
 				queryType = result.getQueryType();
 				queryDb = result.getQueryDb();
 				targetDb = result.getTargetDb();
@@ -130,14 +145,25 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 	private String buildQueryByObjectId(Ontology ontology, String objectId) {
 		String queryDb = "";
 		final RtdbDatasource dataSource = ontology.getRtdbDatasource();
-
-		if (dataSource.equals(RtdbDatasource.MONGO))
+		switch (dataSource) {
+		case VIRTUAL:
+			final String id = ontologyVirtualRepository
+					.findOntologyVirtualObjectIdByOntologyIdentification(ontology.getIdentification());
+			if (id != null && !id.isEmpty()) {
+				queryDb = "SELECT * FROM " + ontology.getIdentification() + " WHERE " + id + "=" + objectId;
+			} else {
+				throw new IllegalStateException("Relational database ontology has not Unique ID selected");
+			}
+			break;
+		case MONGO:
 			queryDb = "select *, _id from " + ontology.getIdentification() + " as c where  _id = OID(\"" + objectId
 					+ "\")";
-		else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH))
+			break;
+		case ELASTIC_SEARCH:
 			queryDb = "select * from " + ontology.getIdentification() + " where _id = IDS_QUERY("
 					+ ontology.getIdentification() + "," + objectId + ")";
-
+			break;
+		}
 		return queryDb;
 	}
 
@@ -166,7 +192,8 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 
 		}
 
-		Map<String, String> queryParametersValues = apiManagerService.getCustomParametersValues(request, body, queryParametersCustomQuery, customSQL);
+		final Map<String, String> queryParametersValues = apiManagerService.getCustomParametersValues(request, body,
+				queryParametersCustomQuery, customSQL);
 
 		if (body == null || body.equals("")) {
 			queryDb = apiManagerService.buildQuery(queryDb, queryParametersValues, user);
@@ -174,7 +201,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 			queryDb = body;
 		}
 
-		CustomQueryData result = new CustomQueryData();
+		final CustomQueryData result = new CustomQueryData();
 		result.setQueryDb(queryDb);
 		result.setQueryType(queryType);
 		result.setTargetDb(targetDb);

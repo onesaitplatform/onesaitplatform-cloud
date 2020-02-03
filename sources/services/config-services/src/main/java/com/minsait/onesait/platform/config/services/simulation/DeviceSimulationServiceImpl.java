@@ -23,13 +23,13 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
-import com.minsait.onesait.platform.config.repository.DeviceSimulationRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -46,16 +46,16 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
-	private DeviceSimulationRepository deviceSimulationRepository;
+	private ClientPlatformInstanceSimulationRepository deviceSimulationRepository;
 
 	@Override
 	public List<String> getClientsForUser(String userId) {
 		List<String> clientIdentifications = new ArrayList<>();
 		List<ClientPlatform> clients = null;
 		User user = this.userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) 
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
 			clients = this.clientPlatformRepository.findAll();
-		else 
+		else
 			clients = this.userService.getClientsForUser(user);
 		//
 		for (ClientPlatform client : clients) {
@@ -87,28 +87,28 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 	@Override
 	public List<String> getSimulatorTypes() {
 		List<String> simulators = new ArrayList<>();
-		for (DeviceSimulation.Type type : DeviceSimulation.Type.values()) {
+		for (ClientPlatformInstanceSimulation.Type type : ClientPlatformInstanceSimulation.Type.values()) {
 			simulators.add(type.name());
 		}
 		return simulators;
 	}
 
 	@Override
-	public List<DeviceSimulation> getAllSimulations() {
+	public List<ClientPlatformInstanceSimulation> getAllSimulations() {
 		return this.deviceSimulationRepository.findAll();
 	}
 
 	@Override
-	public DeviceSimulation getSimulatorByIdentification(String identification) {
+	public ClientPlatformInstanceSimulation getSimulatorByIdentification(String identification) {
 		return this.deviceSimulationRepository.findByIdentification(identification);
 	}
 
 	@Override
-	public DeviceSimulation createSimulation(String identification, int interval, String userId, String json)
+	public ClientPlatformInstanceSimulation createSimulation(String identification, int interval, String userId, String json)
 			throws IOException {
 
 		ObjectMapper mapper = new ObjectMapper();
-		DeviceSimulation simulation = new DeviceSimulation();
+		ClientPlatformInstanceSimulation simulation = new ClientPlatformInstanceSimulation();
 
 		simulation.setOntology(this.ontologyService
 				.getOntologyByIdentification(mapper.readTree(json).path("ontology").asText(), userId));
@@ -138,8 +138,8 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 	}
 
 	@Override
-	public DeviceSimulation updateSimulation(String identification, int interval, String json,
-			DeviceSimulation simulation) throws IOException {
+	public ClientPlatformInstanceSimulation updateSimulation(String identification, int interval, String json,
+			ClientPlatformInstanceSimulation simulation) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		simulation.setOntology(this.ontologyService.getOntologyByIdentification(
 				mapper.readTree(json).path("ontology").asText(), simulation.getUser().getUserId()));
@@ -167,24 +167,24 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 	}
 
 	@Override
-	public void save(DeviceSimulation simulation) {
+	public void save(ClientPlatformInstanceSimulation simulation) {
 		this.deviceSimulationRepository.save(simulation);
 	}
 
 	@Override
-	public DeviceSimulation getSimulationById(String id) {
+	public ClientPlatformInstanceSimulation getSimulationById(String id) {
 
 		return this.deviceSimulationRepository.findById(id);
 	}
 
 	@Override
-	public List<DeviceSimulation> getSimulationsForUser(String userId) {
+	public List<ClientPlatformInstanceSimulation> getSimulationsForUser(String userId) {
 
 		return this.deviceSimulationRepository.findByUser(this.userService.getUser(userId));
 	}
 
 	@Override
-	public DeviceSimulation getSimulationByJobName(String jobName) {
+	public ClientPlatformInstanceSimulation getSimulationByJobName(String jobName) {
 		return this.deviceSimulationRepository.findByJobName(jobName);
 	}
 

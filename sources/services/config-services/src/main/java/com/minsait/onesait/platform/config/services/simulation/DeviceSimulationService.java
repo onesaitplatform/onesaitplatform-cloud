@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.config.services.simulation;
 import java.io.IOException;
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 
 public interface DeviceSimulationService {
 
@@ -29,21 +29,21 @@ public interface DeviceSimulationService {
 
 	List<String> getSimulatorTypes();
 
-	List<DeviceSimulation> getAllSimulations();
+	List<ClientPlatformInstanceSimulation> getAllSimulations();
 
-	DeviceSimulation getSimulatorByIdentification(String identification);
+	ClientPlatformInstanceSimulation getSimulatorByIdentification(String identification);
 
-	DeviceSimulation createSimulation(String identification, int interval, String userId, String json)
+	ClientPlatformInstanceSimulation createSimulation(String identification, int interval, String userId, String json)
 			throws IOException;
 
-	void save(DeviceSimulation simulation);
+	void save(ClientPlatformInstanceSimulation simulation);
 
-	DeviceSimulation getSimulationById(String id);
+	ClientPlatformInstanceSimulation getSimulationById(String id);
 
-	List<DeviceSimulation> getSimulationsForUser(String userId);
+	List<ClientPlatformInstanceSimulation> getSimulationsForUser(String userId);
 
-	DeviceSimulation updateSimulation(String identification, int interval, String json, DeviceSimulation simulation)
+	ClientPlatformInstanceSimulation updateSimulation(String identification, int interval, String json, ClientPlatformInstanceSimulation simulation)
 			throws IOException;
 
-	DeviceSimulation getSimulationByJobName(String jobName);
+	ClientPlatformInstanceSimulation getSimulationByJobName(String jobName);
 }

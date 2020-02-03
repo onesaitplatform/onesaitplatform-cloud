@@ -98,6 +98,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "BPM Tenants",
+						"ES": "Dominios de BPM"
+					},
+					"icon": "",
+					"url": "/controlpanel/bpm/list"
 				}
 			]
 		},
@@ -269,6 +277,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/apps/list"
+				},
+				{
+					"title": {
+						"EN": "My Microservices",
+						"ES": "Mis microservicios"
+					},
+					"icon": "",
+					"url": "/controlpanel/microservices/list"
 				},
 				{
 					"title": {

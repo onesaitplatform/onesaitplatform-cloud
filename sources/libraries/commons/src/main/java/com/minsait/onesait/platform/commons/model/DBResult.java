@@ -14,19 +14,40 @@
  */
 package com.minsait.onesait.platform.commons.model;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class DBResult {
 
 	protected static final String OK_PROPERTY = "ok";
 	protected static final String ERROR_MESSAGE_PROPERTY = "errorMessage";
 
-	@Setter
-	@Getter
 	protected boolean ok;
-
-	@Setter
-	@Getter
 	protected String errorMessage;
+	private String id;
+
+	public boolean isOk() {
+		return ok;
+	}
+
+	public DBResult setOk(final boolean ok) {
+		this.ok = ok;
+		return this;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public DBResult setErrorMessage(final String errorMessage) {
+
+		this.errorMessage = errorMessage;
+		return this;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public DBResult setId(String id) {
+		this.id = id;
+		return this;
+	}
 }

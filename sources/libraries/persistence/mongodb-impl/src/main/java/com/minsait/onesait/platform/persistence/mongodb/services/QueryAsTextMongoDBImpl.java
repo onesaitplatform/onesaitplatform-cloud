@@ -27,6 +27,7 @@ import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepositor
 import com.minsait.onesait.platform.persistence.mongodb.MongoNativeManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.UtilMongoDB;
 import com.minsait.onesait.platform.persistence.mongodb.tools.sql.Sql2NativeTool;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +47,19 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	@Autowired
 	UtilMongoDB utils = null;
 
+	@Autowired
+	private IntegrationResourcesService resourcesService;
+
 	private static final String ERROR_QUERYSQLASJSON = "Error querySQLAsJson:";
+
+	private boolean useQuasar() {
+		try {
+			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+					.get("mongodb-use-quasar")).booleanValue();
+		} catch (final RuntimeException e) {
+			return true;
+		}
+	}
 
 	private void checkQueryIs4Ontology(String ontology, String query, boolean sql) throws GenericOPException {
 		query = query.replace("\n", "");
@@ -130,7 +143,8 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		try {
 			checkQueryIs4Ontology(ontology, query, true);
-			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete"))
+			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
+					|| (query.trim().toLowerCase().startsWith("select") && !useQuasar()))
 				return this.queryNativeAsJson(ontology, Sql2NativeTool.translateSql(query));
 			else
 				return mongoRepo.querySQLAsJson(ontology, query, offset);

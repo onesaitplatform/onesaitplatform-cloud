@@ -16,9 +16,11 @@ package com.minsait.onesait.platform.controlpanel.rest.management.user.model;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,21 +28,24 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(Include.NON_NULL)
 public class UserSimplified implements Comparable<UserSimplified> {
 	@NotNull
+	@ApiModelProperty(required = true)
 	private String username;
-	@JsonInclude(Include.NON_NULL)
 	private String password;
 	@NotNull
+	@ApiModelProperty(required = true)
 	private String mail;
 	@NotNull
+	@ApiModelProperty(required = true)
 	private String fullName;
 	@NotNull
+	@ApiModelProperty(required = true)
 	private String role;
-	@JsonInclude(Include.NON_NULL)
+
 	private String extraFields;
-	@JsonInclude(Include.NON_NULL)
 	private byte[] avatar;
 
 	public UserSimplified(com.minsait.onesait.platform.config.model.User user) {

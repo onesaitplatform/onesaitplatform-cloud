@@ -24,29 +24,40 @@ import java.util.Map;
 import java.util.Set;
 
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import avro.shaded.com.google.common.collect.Sets;
+import lombok.Getter;
 
 public class MigrationConfiguration {
 
 	private Map<Class<?>, Set<Serializable>> config = new HashMap<>();
+	@Getter
 	private Set<String> blacklist;
-	private static final String[] users = { "administrator", "developer", "demo_developer", "user", "demo_user",
+	@Getter
+	private Set<String> whitelist;
+	@Getter
+	private Set<String> trimlist;
+	@Getter
+	private Set<String> blackProjectlist;
+	private final static String[] users = { "administrator", "developer", "demo_developer", "user", "demo_user",
 			"analytics", "partner", "sysadmin", "operations", "dataviewer" };
-	private static final Set<String> masterUsers = Collections.unmodifiableSet(Sets.newHashSet(users));
-	private List<Instance> dataList = new ArrayList<>();
+	private final static Set<String> masterUsers = Collections.unmodifiableSet(Sets.newHashSet(users));
+	private List<Instance> dataList = new ArrayList<Instance>();
 
 	public MigrationConfiguration() {
 		blacklist = MigrationUtils.blacklist().getBlackList();
+		whitelist = MigrationUtils.whitelist().getWhiteList();
+		trimlist = MigrationUtils.trimlist().getTrimList();
+		blackProjectlist = MigrationUtils.blackProjectlist().getBlackProjectlist();
 	}
 
 	public boolean add(Instance instance) {
-		return add(instance.getClazz(), instance.getId());
+		return add(instance.getClazz(), instance.getId(), instance.getIdentification(), instance.getVersion());
 	}
 
-	public boolean add(Class<?> clazz, Serializable id) {
+	public boolean add(Class<?> clazz, Serializable id, Serializable identification, Serializable version) {
 		if (!blacklist.contains(clazz.getName())) {
 			Set<Serializable> ids;
 			if (!config.containsKey(clazz)) {
@@ -57,7 +68,41 @@ public class MigrationConfiguration {
 			}
 			if (idInsertable(clazz, id)) {
 				ids.add(id);
-				dataList.add(new Instance(clazz, id));
+				dataList.add(new Instance(clazz, id, identification, version));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean addUser(Class<?> clazz, Serializable id) {
+		Set<Serializable> ids;
+		if (!config.containsKey(clazz)) {
+			ids = new HashSet<>();
+			config.put(clazz, ids);
+		} else {
+			ids = config.get(clazz);
+		}
+		if (idInsertable(clazz, id)) {
+			ids.add(id);
+			dataList.add(new Instance(clazz, id, null, null));
+			return true;
+		}
+		return false;
+	}
+
+	public boolean addProject(Class<?> clazz, Serializable id, Serializable identification) {
+		if (!blackProjectlist.contains(clazz.getName())) {
+			Set<Serializable> ids;
+			if (!config.containsKey(clazz)) {
+				ids = new HashSet<>();
+				config.put(clazz, ids);
+			} else {
+				ids = config.get(clazz);
+			}
+			if (idInsertable(clazz, id)) {
+				ids.add(id);
+				dataList.add(new Instance(clazz, id, identification, null));
 				return true;
 			}
 		}
@@ -65,9 +110,10 @@ public class MigrationConfiguration {
 	}
 
 	public static boolean idInsertable(Class<?> clazz, Serializable id) {
-		if (AuditableEntityWithUUID.class.isAssignableFrom(clazz) || OPResource.class.isAssignableFrom(clazz)) {
-			String idStr = (String) id;
-			return !idStr.startsWith("MASTER-");
+		if (AuditableEntityWithUUID.class.isAssignableFrom(clazz)
+				|| AuditableEntityWithUUID.class.isAssignableFrom(clazz)
+				|| AuditableEntity.class.isAssignableFrom(clazz)) {
+			return (null != id && (!id.getClass().equals(String.class) || (!((String) id).startsWith("MASTER-"))));
 		} else if (User.class.isAssignableFrom(clazz)) {
 			return !masterUsers.contains(id);
 		}
@@ -76,6 +122,10 @@ public class MigrationConfiguration {
 
 	public Set<Serializable> get(Class<?> clazz) {
 		return Collections.unmodifiableSet(config.get(clazz));
+	}
+
+	public Set<Serializable> removeClazz(Class<?> clazz) {
+		return config.remove(clazz);
 	}
 
 	public Set<Class<?>> getTypes() {

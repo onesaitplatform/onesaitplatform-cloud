@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -51,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.init.elasticdb")
 @RunWith(SpringRunner.class)
+@Order(3)
 @SpringBootTest
 public class InitElasticSearchDB {
 
@@ -124,7 +126,7 @@ public class InitElasticSearchDB {
 			if (ontologyService.getOntologyByIdentification(ACCOUNTS_STR, getUserDeveloper().getUserId()) == null) {
 				final Ontology ontology = new Ontology();
 				ontology.setId("MASTER-Ontology-Accounts-1");
-				ontology.setDataModel(datamodelRepository.findByName("EmptyBase").get(0));
+				ontology.setDataModel(datamodelRepository.findByIdentification("EmptyBase").get(0));
 				ontology.setJsonSchema(loadFromResources("examples/Accounts-schema.json"));
 				ontology.setIdentification(ACCOUNTS_STR);
 				ontology.setDescription("Accounts Example for user " + getUserDeveloper().getUserId());
@@ -209,7 +211,7 @@ public class InitElasticSearchDB {
 	public void createPostOperationsUser(User user, String collectionAuditName) {
 
 		if (ontologyService.getOntologyByIdentification(collectionAuditName, user.getUserId()) == null) {
-			final DataModel dataModel = datamodelRepository.findByName("AuditPlatform").get(0);
+			DataModel dataModel = datamodelRepository.findByIdentification("AuditPlatform").get(0);
 			final Ontology ontology = new Ontology();
 
 			ontology.setJsonSchema(dataModel.getJsonSchema());

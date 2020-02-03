@@ -51,14 +51,14 @@ public class ClientPlatform extends OPResource {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<ClientPlatformOntology> clientPlatformOntologies;
+	private Set<ClientPlatformOntology> clientPlatformOntologies = new HashSet<>();
 
-	@OneToMany(mappedBy = "clientPlatform", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "clientPlatform", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<Token> tokens;
+	private Set<Token> tokens = new HashSet<>();
 
 	@OneToMany(mappedBy = "clientPlatform", fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
@@ -70,7 +70,7 @@ public class ClientPlatform extends OPResource {
 	@OneToMany(mappedBy = "clientPlatform", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<Device> devices = new HashSet<>();
+	private Set<ClientPlatformInstance> devices = new HashSet<>();
 
 	@Column(name = "ENCRYPTION_KEY", nullable = false)
 	@NotNull

@@ -382,5 +382,15 @@ public class NotebookController {
 			throws URISyntaxException, IOException {
 		return notebookService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body);
 	}
+	
+	@GetMapping(value = "/show/{id}")
+	public String showNotebook(Model Model, @PathVariable("id") String id) {
+		Notebook notebook = notebookService.getNotebook(id);
+		if (notebook ==  null) {
+			return "error/403";
+		}
+		String idZep = notebook.getIdzep();
+		return "redirect:/notebooks/app/#/notebook/"+idZep;
+	}
 
 }

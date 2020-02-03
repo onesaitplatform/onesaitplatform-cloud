@@ -1,8 +1,7 @@
-FROM openjdk:8-jre-alpine
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="digitaltwin"
+LABEL platform.image.name="digitaltwin"
 
 ADD *-exec.jar app.jar
 
@@ -32,15 +31,16 @@ EXPOSE 19300
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper 
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
-    SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
 	REALTIMEDBUSEAUTH=true \
 	REALTIMEDBUSER=platformadmin \
 	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \ 
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \        
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
@@ -53,4 +53,4 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb
     
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

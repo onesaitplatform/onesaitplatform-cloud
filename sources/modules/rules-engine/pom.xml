@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>1.0.0-ce</version>
+		<version>1.5.3-defender</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-rules-engine</artifactId>
@@ -60,7 +60,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -103,10 +102,19 @@
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-client</artifactId>
 		</dependency>
+		<!-- Zookeeper SPI -->
 		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-zookeeper</artifactId>
-		</dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-zookeeper</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>

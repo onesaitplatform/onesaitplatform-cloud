@@ -109,7 +109,7 @@ public class DigitalTwinTypeController {
 			return REDIRECT_DIG_TWIN_TYPE_CREATE;
 		}
 
-		if (!digitalTwinTypeService.isIdValid(digitalTwinType.getName())) {
+		if (!digitalTwinTypeService.isIdValid(digitalTwinType.getIdentification())) {
 			log.debug("The digital twin type name is not valid");
 			utils.addRedirectMessage(DIG_TWIN_TYPE_VAL_ERROR, redirect);
 			return REDIRECT_DIG_TWIN_TYPE_CREATE;
@@ -129,11 +129,11 @@ public class DigitalTwinTypeController {
 			List<String> tables = mongoManageRepo.getListOfTables();
 			tables.replaceAll(String::toUpperCase);
 
-			if (!tables.contains(("TwinActions" + digitalTwinType.getName().substring(0, 1).toUpperCase()
-					+ digitalTwinType.getName().substring(1)).toUpperCase())) {
+			if (!tables.contains(("TwinActions" + digitalTwinType.getIdentification().substring(0, 1).toUpperCase()
+					+ digitalTwinType.getIdentification().substring(1)).toUpperCase())) {
 				mongoManageRepo
-						.createTable4Ontology("TwinActions" + digitalTwinType.getName().substring(0, 1).toUpperCase()
-								+ digitalTwinType.getName().substring(1), "{}", null);
+						.createTable4Ontology("TwinActions" + digitalTwinType.getIdentification().substring(0, 1).toUpperCase()
+								+ digitalTwinType.getIdentification().substring(1), "{}",null);
 			}
 		} catch (DigitalTwinServiceException e) {
 			log.error("Cannot create digital twin type because of:" + e.getMessage());

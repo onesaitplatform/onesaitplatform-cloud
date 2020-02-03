@@ -29,6 +29,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -42,44 +43,53 @@ import com.minsait.onesait.platform.security.ldap.ri.service.LdapUserService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Component("ldapAuthenticationProvider")
 @Slf4j
 @ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "ldap")
 public class LdapAuthenticationProvider implements AuthenticationProvider {
-
+	private static final String OBJECT_CLASS_STR = "objectClass";
+	private static final String PERSON_STR = "person";
 	@Autowired
 	@Qualifier(LdapConfig.LDAP_TEMPLATE_BASE)
-	private LdapTemplate ldapTemplate;
+	private LdapTemplate ldapTemplateBase;
 	@Autowired
 	private LdapUserService ldapUserService;
 	@Autowired
 	private UserRepository userRepository;
-	@Value("${ldap.base-auth}")
-	private String ldapBaseAuth;
+	@Value("${ldap.attributesMap.userId}")
+	private String userIdAtt;
+	@Value("${ldap.attributesMap.mail}")
+	private String userMailAtt;
+	@Value("${ldap.attributesMap.cn}")
+	private String userCnAtt;
 
 	@Override
-	public Authentication authenticate(Authentication authentication) {
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		final String userId = authentication.getName();
 		final Object credentials = authentication.getCredentials();
-		log.info("redentials class: {} ", credentials.getClass());
+		log.info("credentials class: " + credentials.getClass());
 		if (!(credentials instanceof String)) {
 			return null;
 		}
 		final String password = credentials.toString();
 		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter("objectClass", "person"));
-		filter.and(new EqualsFilter("uid", userId));
-		final boolean authenticated = ldapTemplate.authenticate(LdapUtils.emptyLdapName(), filter.toString(), password);
-		final List<User> matches = ldapTemplate.search(LdapUtils.emptyLdapName(), filter.encode(),
-				new LdapUserMapper());
+		filter.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
+		filter.and(new EqualsFilter(userIdAtt, userId));
+		final boolean authenticated = ldapTemplateBase.authenticate(LdapUtils.emptyLdapName(), filter.toString(),
+				password);
+		final List<User> matches;
+		try {
+			matches = ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(),
+					new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
+		} catch (final Exception e) {
+			log.error("Could not map user from LDAP", e);
+			throw e;
+		}
 
 		if (authenticated) {
 			User user = userRepository.findByUserId(userId);
 			if (user == null) {
-				user = matches.get(0);
-				user.setUserId(userId);
-				user.setPassword(password);
-				user = ldapUserService.createUser(user);
+				user = ldapUserService.createUser(matches.get(0), password);
 			}
 
 			final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();

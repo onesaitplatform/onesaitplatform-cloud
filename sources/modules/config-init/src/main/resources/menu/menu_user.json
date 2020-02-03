@@ -29,6 +29,14 @@
 				},
 				{
 					"title": {
+						"EN": "My APIs",
+						"ES": "Mis APIs"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/list"
+				},
+				{
+					"title": {
 						"EN": "My Market",
 						"ES": "Mi Market"
 					},

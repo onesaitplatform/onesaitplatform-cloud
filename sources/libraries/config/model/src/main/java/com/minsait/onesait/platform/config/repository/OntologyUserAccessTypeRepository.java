@@ -20,10 +20,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 
-public interface OntologyUserAccessTypeRepository extends JpaRepository<OntologyUserAccessType, Integer>{
+public interface OntologyUserAccessTypeRepository extends JpaRepository<OntologyUserAccessType, Integer> {
 
-	OntologyUserAccessType findById(Integer id);
+	OntologyUserAccessType findById(String id);
+
 	List<OntologyUserAccessType> findByName(String name);
+
+	@Override
 	List<OntologyUserAccessType> findAll();
 
 }

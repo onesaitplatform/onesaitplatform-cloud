@@ -29,7 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -48,72 +50,69 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 	}
 
 	@Override
-	public List<String> extractData(ResultSet rs) throws SQLException {
-		Select statementData = null;
+	public List<String> extractData(ResultSet rs) throws SQLException, DataAccessException {
+		Select statement = null;
 		try {
-			statementData = (Select) CCJSqlParserUtil.parse(this.statement);
+			statement = (Select) CCJSqlParserUtil.parse(this.statement);
 		} catch (JSQLParserException e) {
 			log.error("Error executing query. {}", e);
 		}
 		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-		String table = tablesNamesFinder.getTableList(statementData).get(0);
+		String table = tablesNamesFinder.getTableList(statement).get(0);
 
 		if (rs != null) {
+			List<String> resultJson = new ArrayList<String>();
 			ResultSetMetaData rsmd = rs.getMetaData();
-			return extractResultSetAsJson(rs, table, rsmd);
-		}
-		return new ArrayList<>();
 
-	}
+			// Check hive resulset, that don't have getTableName method
+			boolean hiveRS = rsmd instanceof org.apache.hive.jdbc.HiveResultSetMetaData;
 
-	private List<String> extractResultSetAsJson(ResultSet rs, String table, ResultSetMetaData rsmd)
-			throws SQLException {
-		List<String> resultJson = new ArrayList<>();
-		// Check hive resulset, that don't have getTableName method
-		boolean hiveRS = rs instanceof org.apache.hive.jdbc.HiveQueryResultSet;
+			while (rs.next()) {
+				int numColumns = rsmd.getColumnCount();
+				JSONObject obj = new JSONObject();
 
-		while (rs.next()) {
-			int numColumns = rsmd.getColumnCount();
-			JSONObject obj = new JSONObject();
-
-			for (int i = 1; i < numColumns + 1; i++) {
-				String columnName = rsmd.getColumnName(i);
-				String tableName = (hiveRS ? null : rsmd.getTableName(i));
-				if (tableName == null || tableName.equals("")) {
-					tableName = table;
+				for (int i = 1; i < numColumns + 1; i++) {
+					String columnName = rsmd.getColumnName(i);
+					String tableName = (hiveRS ? null : rsmd.getTableName(i));
+					if (tableName == null || tableName.equals("")) {
+						tableName = table;
+					}
+					obj = this.extractResultSetRowField(rs, tableName, rsmd.getColumnType(i), columnName, obj);
 				}
-				obj = this.extractResultSetRowField(rs, tableName, rsmd.getColumnType(i), columnName, obj);
-			}
 
-			if (obj.length() > 0) {
-				resultJson.add(obj.toString());
+				if (obj.length() > 0) {
+					resultJson.add(obj.toString());
+				}
 			}
+			return resultJson;
 		}
-		return resultJson;
+		return new ArrayList<String>();
+
 	}
 
 	private JSONObject extractResultSetRowField(ResultSet rs, String table, int rowType, String columnName,
-			JSONObject obj) throws SQLException {
+			JSONObject obj) throws JSONException, SQLException {
 
 		if (rowType == java.sql.Types.VARCHAR) {
 			String value = rs.getString(columnName);
 			getRecurrence(columnName, obj, value, false);
 		} else if (rowType == java.sql.Types.BOOLEAN) {
 			Boolean value = rs.getBoolean(columnName);
-			getRecurrence(columnName, obj, value, false); // ***
+			getRecurrence(columnName, obj, value, false);
 
 		} else if (rowType == java.sql.Types.NUMERIC || rowType == java.sql.Types.BIGINT) {
-			int value = rs.getInt(columnName);
+
 			Double dValue = rs.getDouble(columnName);
 			if (dValue != null) {
-				if ((dValue == Math.floor(dValue)) && !Double.isInfinite(dValue)) {
+				if ((dValue == Math.floor(dValue)) && !Double.isInfinite(dValue) && Integer.MAX_VALUE >= dValue
+						&& Integer.MIN_VALUE <= dValue) {
+					int value = rs.getInt(columnName);
 					getRecurrence(columnName, obj, value, false);
 				} else {
-					getRecurrence(columnName, obj, dValue, false);
+					getRecurrence(columnName, obj, dValue.doubleValue(), false);
 				}
 			}
-		} else if (rowType == java.sql.Types.INTEGER || rowType == java.sql.Types.SMALLINT
-				|| rowType == java.sql.Types.TINYINT) {
+		} else if (rowType == java.sql.Types.INTEGER || rowType == java.sql.Types.SMALLINT) {
 			int value = rs.getInt(columnName);
 			getRecurrence(columnName, obj, value, false);
 		} else if (rowType == java.sql.Types.DOUBLE) {
@@ -127,7 +126,8 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 			String value = null;
 			Timestamp t = rs.getTimestamp(columnName);
 			if (t != null) {
-				value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date(t.getTime()));
+				//value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date(t.getTime()));
+				value = t.toString();
 			}
 			getRecurrence(columnName, obj, value, true);
 		} else if (rowType == java.sql.Types.CLOB) {
@@ -139,6 +139,12 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 			getRecurrence(columnName, obj, value, false);
 		} else if (rowType == java.sql.Types.NVARCHAR) {
 			String value = rs.getNString(columnName);
+			getRecurrence(columnName, obj, value, false);
+		} else if (rowType == java.sql.Types.TINYINT) {
+			int value = rs.getInt(columnName);
+			getRecurrence(columnName, obj, value, false);
+		} else if (rowType == java.sql.Types.SMALLINT) {
+			int value = rs.getInt(columnName);
 			getRecurrence(columnName, obj, value, false);
 		} else if (rowType == java.sql.Types.ARRAY) {
 			getRecurrence(columnName, obj, rs.getArray(columnName), false);
@@ -169,22 +175,24 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 
 	}
 
-	private void getRecurrence(String columnName, JSONObject obj, Object value, boolean isDate) {
+	private void getRecurrence(String columnName, JSONObject obj, Object value, boolean isDate) throws JSONException {
 
 		JSONObject o2 = new JSONObject();
+		JSONObject o = new JSONObject();
 
 		if (value != null && isDate) {
-			JSONObject aux = new JSONObject().put("$date", value);
-			o2 = new JSONObject().put(columnName, aux);
+			//JSONObject aux = new JSONObject().put("$date", value);
+			//o2 = new JSONObject().put(columnName, aux);
+			o2.put(columnName, value);
 		} else if (value != null) {
 			o2.put(columnName, value);
 		} else {
-			o2.put(columnName, "null");
+			o2.put(columnName, JSONObject.NULL);
 		}
 		checkifExistfield(o2, obj);
 	}
 
-	private JSONObject checkifExistfield(JSONObject source, JSONObject target) {
+	private JSONObject checkifExistfield(JSONObject source, JSONObject target) throws JSONException {
 
 		if (JSONObject.getNames(source) != null) {
 			for (String key : JSONObject.getNames(source)) {

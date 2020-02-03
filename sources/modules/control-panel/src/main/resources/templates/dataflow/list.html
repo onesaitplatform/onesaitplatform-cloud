@@ -96,10 +96,15 @@
 					dragWindowGap: 100,
 					backgroundDismiss: true,
 					closeIcon: true,
-					buttons: {
+					buttons: {						
+						close: {
+							text: "Cancel",
+							btnClass: 'btn btn-circle btn-outline blue no-border ',
+							action: function (){} //GENERIC CLOSE.		
+						},
 						Ok: {
 							text: "Ok",
-							btnClass: 'btn btn-sm btn-danger btn-outline',
+							btnClass: 'btn btn-circle btn-outline btn-primary',
 							action: function() {
 								if($.trim($("#newPipeline").val())=="" || !$.trim($("#newPipeline").val())){
 									$.alert('Pipeline name is empty');
@@ -108,11 +113,6 @@
 								}
 								return false;
 							}											
-						},
-						close: {
-							text: "Cancel",
-							btnClass: 'btn btn-sm btn-default btn-outline',
-							action: function (){} //GENERIC CLOSE.		
 						}
 					}
 				});
@@ -262,6 +262,7 @@
 															<th class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -277,6 +278,9 @@
 															<!-- DATE --> 
 															<td class="text-center" th:if="${pipeline.createdAt!=null}"><span th:text="${#dates.format(pipeline.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(pipeline.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${pipeline.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+															<td class="text-center" th:if="${pipeline.updatedAt!=null}"><span th:text="${#dates.format(pipeline.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(pipeline.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${pipeline.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">

@@ -19,6 +19,10 @@ onesaitplatform: #Config onesaitplatform specific
    audit.global.notify: true
    authentication:
       provider: configdb
+      configdb:
+        acl:
+          enabled: false
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
    apimanager:
       cacheable: false
    binary-repository:
@@ -56,7 +60,9 @@ onesaitplatform: #Config onesaitplatform specific
    router.avoidsslverification: true
    router.alternativeURL: http://localhost:20000/router/router/ 
    apimanager.audit.enabled: true
-   metrics.collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+   metrics:
+      collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+      enabled: true
 
     
 spring: ## General Config  

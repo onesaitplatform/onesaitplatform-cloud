@@ -80,11 +80,14 @@ function navigateUrl(url){  window.location.href = url;	}
 	
 function submitForm(formId) {
 	if($('#interval').val() > 0 && $('#identification-form').val()!=""  && $('#identification-form').val().length > 9){
-		
+		var csrfParam = headerJson.csrfParameterName;
+		var csrfToken = headerJson.csrfToken;		
 		//evaluate whether simulation source is json or property values
-		if($("#from-json").is(':checked')){	
+		if($("#from-json").is(':checked')){
 			$('#jsonInstances').val(myCodeMirror.getValue());
-			jQuery.post('/controlpanel/devicesimulation/checkjson', {'ontology': $("#ontologies").val(),'json': myCodeMirror.getValue()}, function(response){
+			var payload = {'ontology': $("#ontologies").val(),'json': myCodeMirror.getValue()}
+			payload[csrfParam] = csrfToken;
+			jQuery.post('/controlpanel/devicesimulation/checkjson', payload, function(response){
 				if(response == 'ok'){
 					$("#"+formId).submit();
 				}else{

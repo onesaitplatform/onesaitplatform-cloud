@@ -115,7 +115,7 @@
 											<span th:if="${projectObj.id} == null" class=" "
 											th:text="#{project.new}"> New Project</span> <span
 											th:if="${projectObj.id} != null" class=" "
-											th:text="${projectObj.name}"> Update</span>
+											th:text="${projectObj.identification}"> Update</span>
 									</a></li>
 									<li id="tab-users" class=""><a href="#tab_2"
 										data-toggle="tab"
@@ -174,8 +174,8 @@
 																		th:if="!*{id}" class="required"> *</span>
 																	<div class="input-icon">
 																		<input id="project-name" type="text"
-																			th:readonly="*{name}" th:required="true"
-																			maxlength="50" th:field="*{name}"
+																			th:readonly="*{identification}" th:required="true"
+																			maxlength="50" th:field="*{identification}"
 																			class="form-control" th:placeholder="#{project.name}" />
 																	</div>
 																</div>
@@ -347,7 +347,7 @@
 		"authorizations" : [[${authorizations}]],
 		"associations" : [[${associations}]],
 		"fieldEmpty":[[#{app.roles.fieldEmpty}]],
-		"realmLinked": [[${projectObj.app?.appId}]],
+		"realmLinked": [[${projectObj.app?.identification}]],
 	    "deleteAppConfirm":[[#{app.delete.confirm}]],
 	    "validations" : {
 			"createfirst": [[#{project.validation.createfirst}]],

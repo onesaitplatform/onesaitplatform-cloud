@@ -19,5 +19,10 @@ public interface NotificationEntity {
 	public String getNotificationEntityId();
 
 	public String getNotificationUrl();
+	
+	public String getNotificationDomain();
+
+	public String getNotificationDomainUser();
+	
 
 }

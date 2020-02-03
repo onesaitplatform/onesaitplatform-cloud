@@ -158,6 +158,7 @@
 															<th class="titulo-columnas " th:text="#{datasources.maxvalue}">Max. Value</th>		
 															<th class="titulo-columnas " th:text="#{datasources.refresh} + ' (s)'">Refresh Time</th>		
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th> 
 														</tr>
 													</thead>
@@ -181,6 +182,9 @@
 															<!-- DATE --> 
 															<td class="text-center" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${datasource.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+															<td class="text-center" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${datasource.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
@@ -210,7 +214,8 @@
 														<label class="toggle-vis" data-column="5" th:text="#{datasources.maxvalue}"> Max. Value</label>	
 														<label class="toggle-vis" data-column="6" th:text="#{datasources.refresh}"> Refresh</label>	
 														<label class="toggle-vis" data-column="7" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>																									
+														<label class="toggle-vis" data-column="8" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="9" th:text="#{gen.options}"> Options</label>																									
 													</div>
 												</div>											
 											</div>

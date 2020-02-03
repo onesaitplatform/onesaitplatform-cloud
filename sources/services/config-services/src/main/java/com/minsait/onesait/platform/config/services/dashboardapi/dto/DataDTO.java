@@ -25,6 +25,10 @@ public class DataDTO {
 
 	@Getter
 	@Setter
+	private String optionsDescription[];
+
+	@Getter
+	@Setter
 	private String optionsSelected[];
 
 	@Getter

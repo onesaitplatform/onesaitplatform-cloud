@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-        <version>1.0.0-ce</version>
+        <version>1.5.3-defender</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-persistence-hadoop</artifactId>
@@ -32,7 +32,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
         

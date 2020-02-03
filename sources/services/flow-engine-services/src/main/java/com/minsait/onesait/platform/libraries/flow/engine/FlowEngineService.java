@@ -37,4 +37,5 @@ public interface FlowEngineService {
 
 	public List<FlowEngineDomainStatus> getFlowEngineDomainStatus(List<String> domainList);
 
+	public void deployFlowengineDomain(String domain, String data);
 }

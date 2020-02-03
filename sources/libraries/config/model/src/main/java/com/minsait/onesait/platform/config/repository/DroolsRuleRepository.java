@@ -42,6 +42,9 @@ public interface DroolsRuleRepository extends JpaRepository<DroolsRule, String> 
 	@Cacheable(cacheNames = "DroolsRulesBySourceOntology", unless = "#result == null", key = "#p0.identification")
 	List<DroolsRule> findBySourceOntologyAndActiveTrue(Ontology sourceOntology);
 
+	@Cacheable(cacheNames = "DroolsRulesBySourceOntologyAndUser", unless = "#result == null", key = "#p0.identification")
+	List<DroolsRule> findBySourceOntologyAndUserAndActiveTrue(Ontology sourceOntology, User user);
+
 	// @Cacheable(cacheNames = "DroolsRulesByIdentification", unless = "#result ==
 	// null", key = "#p0")
 	DroolsRule findByIdentification(String identification);

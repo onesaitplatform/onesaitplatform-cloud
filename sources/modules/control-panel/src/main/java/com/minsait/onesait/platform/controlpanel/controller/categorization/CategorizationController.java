@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -43,6 +44,7 @@ import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
@@ -59,6 +61,7 @@ import com.minsait.onesait.platform.config.services.client.ClientPlatformService
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -71,45 +74,35 @@ public class CategorizationController {
 
 	@Autowired
 	private AppWebUtils utils;
-
 	@Autowired
 	private UserService userService;
-	
 	@Autowired
 	private CategorizationRepository categorizationRepository;
-	
 	@Autowired
-	private CategorizationUserRepository categorizationUserRepository;
-	
+	private CategorizationUserRepository categorizationUserRepository;	
 	@Autowired
-	private CategorizationUserService categorizationUserService;
-	
+	private CategorizationUserService categorizationUserService;	
 	@Autowired
-	private CategorizationService categorizationService;
-	
+	private CategorizationService categorizationService;	
 	@Autowired
-	private OntologyService ontologyService;
-	
+	private OntologyService ontologyService;	
 	@Autowired
-	private FlowDomainRepository flowRepository;
-	
+	private FlowDomainRepository flowRepository;	
 	@Autowired
-	private ApiManagerService apiService;
-	
+	private ApiManagerService apiService;	
 	@Autowired
-	private ClientPlatformService clientPlatformService;
-	
+	private ClientPlatformService clientPlatformService;	
 	@Autowired
-	private DashboardService dashboardService;
-	
+	private DashboardService dashboardService;	
 	@Autowired
-	private NotebookRepository notebookRepository;
-	
+	private NotebookRepository notebookRepository;	
 	@Autowired
-	private PipelineRepository dataflowRepository;
-	
+	private PipelineRepository dataflowRepository;	
 	@Autowired
 	private ViewerRepository viewerRepository;
+	@Autowired
+	private ReportService reportService;
+
 	
 	private static final String CREATE_URL = "categorization/create";
 	private static final String CATEGORIZATION = "categorization";
@@ -238,7 +231,7 @@ public class CategorizationController {
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 		try {			
-			categorizationService.editCategorization(id, json);
+			categorizationService.updateCategorization(id, json);
 		} catch (Exception e) {
 			log.error("Could not create the Categorization tree");
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
@@ -476,6 +469,30 @@ public class CategorizationController {
 		}
 	}
 	
+	@Transactional
+	@PreAuthorize("!hasRole('ROLE_USER')")
+	@RequestMapping(value = "/getReports", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<String> getReports(){
+		User user = userService.getUser(utils.getUserId());
+		try {
+			JSONObject list = new JSONObject();
+			List<Report> reports = null;
+			if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				reports = reportService.findAllActiveReports();
+			} else {
+				reports = reportService.findAllActiveReportsByUserId(user.getUserId());
+			}
+			for(Report report : reports) {
+				list.put(report.getIdentification(),report.getId());
+			}
+			return new ResponseEntity<>(list.toString(), HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("Fail requesting Viewers: "+e.getMessage());
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	
 	private String getIdentification (String id, String type) {
 		User user = userService.getUser(utils.getUserId());
 		String identification = null;
@@ -499,7 +516,7 @@ public class CategorizationController {
 			break;
 		case "apis":
 			try {
-				List<Api> apis = apiService.loadAPISByFilter("", "", utils.getUserId(), utils.getUserId());
+				List<Api> apis = apiService.loadAPISByFilter("", "", "", utils.getUserId());
 				Api api = apiService.getById(id);
 				if (apis.contains(api)) {
 					identification = api.getIdentification();
@@ -581,6 +598,22 @@ public class CategorizationController {
 			}
 			catch (Exception e) {
 				log.error("Error getting viewer identification: {}", e);}
+			break;
+		case "reports":
+			try {
+				Report report = reportService.findById(id);
+				List<Report> reports = null;
+				if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+					reports = reportService.findAllActiveReports();
+				} else {
+					reports = reportService.findAllActiveReportsByUserId(user.getUserId());
+				}
+				if (reports.contains(report)) {
+					identification = report.getIdentification();
+				}
+			}
+			catch (Exception e) {
+				log.error("Error getting report identification: {}", e);}
 			break;
 		default:
 			break;

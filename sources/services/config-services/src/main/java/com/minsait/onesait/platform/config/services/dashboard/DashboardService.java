@@ -30,6 +30,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
+import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardOrder;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardSimplifiedDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
@@ -89,7 +90,7 @@ public interface DashboardService {
 
 	DashboardExportDTO addGadgets(DashboardExportDTO dashboard);
 
-	String importDashboard(DashboardExportDTO dashboard, String userId);
+	DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboard, String userId);
 
 	boolean dashboardExistsById(String id);
 

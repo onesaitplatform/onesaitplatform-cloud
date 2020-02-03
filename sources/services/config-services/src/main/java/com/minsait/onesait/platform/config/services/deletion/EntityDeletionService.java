@@ -16,8 +16,9 @@ package com.minsait.onesait.platform.config.services.deletion;
 
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.TwitterListening;
 
 public interface EntityDeletionService {
@@ -28,9 +29,9 @@ public interface EntityDeletionService {
 
 	void deleteClient(String id);
 
-	void deleteToken(String id);
+	void deleteToken(Token token);
 
-	void deleteDeviceSimulation(DeviceSimulation simulation);
+	void deleteDeviceSimulation(ClientPlatformInstanceSimulation simulation) throws Exception;
 
 	void revokeAuthorizations(Ontology ontology);
 

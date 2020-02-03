@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,6 +42,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbToHdbStorage;
@@ -52,6 +54,7 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyConfigurati
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyServiceImpl;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyCreate;
@@ -59,6 +62,7 @@ import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyUpdate;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyUserAccessSimplified;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 
 import io.swagger.annotations.Api;
@@ -80,6 +84,9 @@ public class OntologyManagementController {
 	private static final String ONTOLOGY_STR = "Ontology \"";
 	private static final String NOT_EXIST = "\" does not exist";
 	private static final String ONTOLOGY_NOT_FOUND = "Ontologies not found";
+	private static final String MESSAGE_STR = "message";
+	private static final String STATUS_STR = "status";
+	private static final String ERROR_STR = "error";
 
 	@Autowired
 	private AppWebUtils utils;
@@ -259,7 +266,7 @@ public class OntologyManagementController {
 	@PutMapping
 	public ResponseEntity<?> update(
 			@ApiParam(value = "OntologyUpdate", required = true) @Valid @RequestBody OntologyUpdate ontologyUpdate,
-			Errors errors) {
+			Errors errors) throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		if (errors.hasErrors())
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		final User user = userService.getUser(utils.getUserId());
@@ -433,8 +440,15 @@ public class OntologyManagementController {
 			} else {
 
 				if (ontology.getOntologyKPI() != null) {
-					ontologyService.executeKPI(utils.getUserId(), ontology.getOntologyKPI().getQuery(),
-							ontology.getIdentification(), ontology.getOntologyKPI().getPostProcess());
+					Map<String, String> result = ontologyService.executeKPI(utils.getUserId(),
+							ontology.getOntologyKPI().getQuery(), ontology.getIdentification(),
+							ontology.getOntologyKPI().getPostProcess());
+
+					if (result != null && result.get(STATUS_STR).equals(ERROR_STR)) {
+						return new ResponseEntity<>(utils.getMessage(result.get(MESSAGE_STR), ""),
+								HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+
 					return new ResponseEntity<>("KPI successfully executed", HttpStatus.OK);
 
 				} else {
@@ -473,8 +487,13 @@ public class OntologyManagementController {
 						Entry<String, JsonNode> param = paramIter.next();
 						query = query.replace("{$" + param.getKey() + "}", param.getValue().asText());
 					}
-					ontologyService.executeKPI(utils.getUserId(), query, ontology.getIdentification(),
-							ontology.getOntologyKPI().getPostProcess());
+					Map<String, String> result = ontologyService.executeKPI(utils.getUserId(), query,
+							ontology.getIdentification(), ontology.getOntologyKPI().getPostProcess());
+					if (result != null && result.get(STATUS_STR).equals(ERROR_STR)) {
+						return new ResponseEntity<>(utils.getMessage(result.get(MESSAGE_STR), ""),
+								HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+
 					return new ResponseEntity<>("KPI successfully executed", HttpStatus.OK);
 
 				} else {

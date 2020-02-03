@@ -29,7 +29,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,7 +52,8 @@ public class Project extends AuditableEntityWithUUID {
 		ENGINE, THINGS, INTELLIGENCE
 	}
 
-	@ManyToMany(mappedBy = "projects", fetch = FetchType.LAZY)
+	@Fetch(FetchMode.JOIN)
+	@ManyToMany(cascade = { CascadeType.ALL }, mappedBy = "projects", fetch = FetchType.LAZY)
 	@Getter
 	@Setter
 	@JsonIgnore
@@ -68,10 +72,11 @@ public class Project extends AuditableEntityWithUUID {
 	@Setter
 	private ProjectType type;
 
-	@Column(name = "NAME", nullable = false)
+	@Column(name = "IDENTIFICATION", length = 50, unique = true, nullable = false)
+	@NotNull
 	@Getter
 	@Setter
-	private String name;
+	private String identification;
 
 	@Column(name = "DESCRIPTION", nullable = false)
 	@Getter

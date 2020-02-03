@@ -39,7 +39,7 @@ public class SLOConfigurationCAS {
 		return new SecurityContextLogoutHandler();
 	}
 
-	@Bean
+	@Bean("casLogoutFilter")
 	public LogoutFilter logoutFilter() {
 		final LogoutFilter logoutFilter = new LogoutFilter(casLogoutUrl, securityContextLogoutHandler());
 		logoutFilter.setFilterProcessesUrl("/logout");

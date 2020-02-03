@@ -82,6 +82,7 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAcces
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
+import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardOrder;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardSimplifiedDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
@@ -127,7 +128,6 @@ public class DashboardServiceImpl implements DashboardService {
 	private OntologyRepository ontologyRepository;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
-
 
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
@@ -272,8 +272,7 @@ public class DashboardServiceImpl implements DashboardService {
 			DashboardUserAccess dashUA = null;
 			if (deleteAll) {
 				dashUA = getDashboardUserAccessByIdentificationAndUser(dashboardIdentification, user);
-			} 
-			else {
+			} else {
 				List<DashboardUserAccessType> accessType = dashboardUserAccessTypeRepository
 						.findByName(dto.getAccessType());
 				if (accessType == null || accessType.isEmpty()) {
@@ -514,7 +513,7 @@ public class DashboardServiceImpl implements DashboardService {
 			d.setImage(dashboard.getImage() != null ? dashboard.getImage().getBytes() : null);
 		} catch (final IOException e1) {
 			log.error("Could not read image");
-		}	
+		}
 
 		User sessionUser = userRepository.findByUserId(userId);
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_USER.toString())
@@ -625,7 +624,6 @@ public class DashboardServiceImpl implements DashboardService {
 		return dAux.getId();
 
 	}
-
 
 	@Override
 	public List<DashboardUserAccess> getDashboardUserAccesses(Dashboard dashboard) {
@@ -784,10 +782,10 @@ public class DashboardServiceImpl implements DashboardService {
 					categoryRelation = new CategoryRelation();
 				}
 
-				categoryRelation.setCategory(
-					categoryRepository.findByIdentification(dashboard.getCategory()).get(0).getId());
+				categoryRelation
+						.setCategory(categoryRepository.findByIdentification(dashboard.getCategory()).get(0).getId());
 				categoryRelation.setSubcategory(
-					subcategoryRepository.findByIdentification(dashboard.getSubcategory()).get(0).getId());
+						subcategoryRepository.findByIdentification(dashboard.getSubcategory()).get(0).getId());
 				categoryRelation.setType(CategoryRelation.Type.DASHBOARD);
 				categoryRelation.setTypeId(dAux.getId());
 
@@ -952,8 +950,9 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	@Override
-	public String importDashboard(DashboardExportDTO dashboardimportDTO, String userId) {
+	public DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboardimportDTO, String userId) {
 		final Dashboard dashboard = new Dashboard();
+		DashboardImportResponsetDTO dashboardImportResultDTO = new DashboardImportResponsetDTO();
 		if (!dashboardExists(dashboardimportDTO.getIdentification())) {
 			dashboard.setIdentification(dashboardimportDTO.getIdentification());
 			String description = "";
@@ -992,11 +991,15 @@ public class DashboardServiceImpl implements DashboardService {
 			// include GADGET_MEASURES
 			includeGadgetMeasures(dashboardimportDTO);
 
-			return dashboardRepository.findByIdentification(dashboard.getIdentification()).get(0).getIdentification();
+			Dashboard dashboardResponse = dashboardRepository.findByIdentification(dashboard.getIdentification())
+					.get(0);
 
-		} else {
-			return "";
+			if (dashboardResponse != null) {
+				dashboardImportResultDTO.setId(dashboardResponse.getId());
+				dashboardImportResultDTO.setIdentification(dashboardResponse.getIdentification());
+			}
 		}
+		return dashboardImportResultDTO;
 
 	}
 

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -58,7 +59,7 @@ public class DashboardApiController {
 	}
 
 	@PutMapping(value = "/savemodel/{id}", produces = "application/json")
-	public @ResponseBody String updateDashboardModel(@PathVariable("id") String id, String json) {
+	public @ResponseBody String updateDashboardModel(@PathVariable("id") String id, @RequestBody String json) {
 		if (id != null && !id.equals("") && json != null && !json.equals("")) {
 			if (dashboardService.dashboardExistsById(id)) {
 				dashboardService.saveDashboardModel(id, json, utils.getUserId());
@@ -71,4 +72,8 @@ public class DashboardApiController {
 		return "{\"error\":\"Missing json data\"}";
 	}
 
+	@PostMapping(value = { "/setSynopticElementDataSource" }, produces = "application/json")
+	public @ResponseBody String setSynopticDataSource(String json) {
+		return dashboardApiService.setSynopticElementDataSource(json, this.utils.getUserId());
+	}
 }

@@ -236,7 +236,10 @@ var ViewerCreateController = function() {
 		            foldGutter: true,
 		            matchBrackets: true,
 		            styleActiveLine: true,
-		            theme:"default"
+		            theme:"elegant",
+		            autoCloseBrackets: true,
+		            lineWrapping: true,
+		            fullScreen: true
 				});
 				
 			}
@@ -245,12 +248,15 @@ var ViewerCreateController = function() {
 				logControl ? console.log('|---> Action-mode: UPDATE') : '';
 					
 				htmlEditor = CodeMirror.fromTextArea(document.getElementById("jsBody"), {
-	        	  	mode: "text/javascript",
+					mode: "text/javascript",
 					lineNumbers: true,
 		            foldGutter: true,
 		            matchBrackets: true,
 		            styleActiveLine: true,
-		            theme:"default"
+		            theme:"elegant",
+		            autoCloseBrackets: true,
+		            lineWrapping: true,
+		            fullScreen: true
 				});
 				
 				if(viewerCreateJson.isPublic){
@@ -378,11 +384,30 @@ var ViewerCreateController = function() {
 			iframe_doc.close();
 			
 			var js =htmlEditor.getValue();
+			
+			var longitude = "var startLongitude = " + $("#longitude").val();
+			var latitude = "var startLatitude = " + $("#latitude").val();
+			var height = "var startHeight = " + $("#height").val();
+			
+			var searchString = 'var startLongitude';
+			var re = new RegExp('^.*' + searchString + '.*$', 'gm');
+			var formatted = js.replace(re, longitude);
+			
+			searchString = 'var startLatitude';
+			re = new RegExp('^.*' + searchString + '.*$', 'gm');
+			formatted = formatted.replace(re, latitude);
+			
+			searchString = 'var startHeight';
+			re = new RegExp('^.*' + searchString + '.*$', 'gm');
+			formatted = formatted.replace(re, height);
+			
+			htmlEditor.setValue(formatted);
+			
 			src = base_tpl;
 			
 			// Javascript
-			js = '<script>' + js + '<\/script>';
-			src = src.replace('</body>', js + '</body>');
+			formatted = '<script>' + formatted + '<\/script>';
+			src = src.replace('</body>', formatted + '</body>');
 			
 			iframe_doc.open();
 			iframe_doc.write(src);
@@ -390,6 +415,13 @@ var ViewerCreateController = function() {
 			
 		},
 		changeTechology : function(){
+			
+			if($("#longitude").val() == "" && $("#latitude").val() == "" && $("#height").val() == "" ){
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: viewerCreateJson.validations.error}); 
+				$("#technology").val("");
+				return;
+			}
+			
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
 			$.ajax({
@@ -438,10 +470,8 @@ var ViewerCreateController = function() {
 					headers: {
 						[csrf_header]: csrf_value
 				    },
-					type : 'GET',
-					dataType: 'text', 
-					contentType: 'text/plain',
-					mimeType: 'text/plain',
+					type : 'POST',
+					data : {'latitude': $("#latitude").val(),'longitude': $("#longitude").val(),'height': $("#height").val()},
 					async: false,
 					success : function(data) {
 						
@@ -494,10 +524,8 @@ var ViewerCreateController = function() {
 					headers: {
 						[csrf_header]: csrf_value
 				    },
-					type : 'GET',
-					dataType: 'text', 
-					contentType: 'text/plain',
-					mimeType: 'text/plain',
+					type : 'POST',
+					data : {'latitude': $("#latitude").val(),'longitude': $("#longitude").val(),'height': $("#height").val()},
 					async: false,
 					success : function(data) {
 						
@@ -654,10 +682,8 @@ var ViewerCreateController = function() {
 				headers: {
 					[csrf_header]: csrf_value
 			    },
-				type : 'GET',
-				dataType: 'text', 
-				contentType: 'text/plain',
-				mimeType: 'text/plain',
+				type : 'POST',
+				data : {'latitude': $("#latitude").val(),'longitude': $("#longitude").val(),'height': $("#height").val()},
 				async: false,
 				success : function(data) {
 					

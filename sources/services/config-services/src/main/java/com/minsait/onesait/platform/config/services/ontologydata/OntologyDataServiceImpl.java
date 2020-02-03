@@ -44,6 +44,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.processors.syntax.SyntaxValidator;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.model.ContextData;
 import com.minsait.onesait.platform.commons.security.BasicEncryption;
@@ -70,6 +71,10 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
 
 	private static final String ENCRYPT_PROPERTY = "encrypted";
+	private static final String ENCRYPT_WORD = "$ENCRYPT(";
+	private static final String OBJECT_TYPE = "object";
+	private static final String ARRAY_TYPE = "array";
+	private static final String TYPE_WORD = "type";
 
 	// This is a basic functionality, it has to be improved. For instance,
 	// initVector should be random. Review AES best practices to improve this class.
@@ -177,36 +182,37 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		}
 
 	}
-	
-	String encryptionOperationAllowingArrays(String data, Ontology ontology, EncryptionOperations operation) throws IOException {
-	    if(ontology.isAllowsCypherFields()) {
-	        final JsonNode jsonData = objectMapper.readTree(data);
-	        if (jsonData.isArray()) {
-	            ArrayNode newArray = mapper.createArrayNode();
-	            for(JsonNode arrayElement: jsonData) {	                
-	                newArray.add(encryptionOperation(arrayElement, ontology, operation));
-	            }
-	            return newArray.toString();
-	        } else {
-	            JsonNode newJsonData = encryptionOperation(jsonData, ontology, operation);
-	            return newJsonData.toString();
-	        }
-	    } else {
-	        return data;
-	    }
+
+	String encryptionOperationAllowingArrays(String data, Ontology ontology, EncryptionOperations operation)
+			throws IOException {
+		if (ontology.isAllowsCypherFields()) {
+			final JsonNode jsonData = objectMapper.readTree(data);
+			if (jsonData.isArray()) {
+				ArrayNode newArray = mapper.createArrayNode();
+				for (JsonNode arrayElement : jsonData) {
+					newArray.add(encryptionOperation(arrayElement, ontology, operation));
+				}
+				return newArray.toString();
+			} else {
+				JsonNode newJsonData = encryptionOperation(jsonData, ontology, operation);
+				return newJsonData.toString();
+			}
+		} else {
+			return data;
+		}
 	}
 
-	JsonNode encryptionOperation(JsonNode jsonData, Ontology ontology, EncryptionOperations operation) throws IOException {
+	JsonNode encryptionOperation(JsonNode jsonData, Ontology ontology, EncryptionOperations operation)
+			throws IOException {
 
+		final JsonNode jsonSchema = objectMapper.readTree(ontology.getJsonSchema());
 
-			final JsonNode jsonSchema = objectMapper.readTree(ontology.getJsonSchema());
-			
-			final String path = "#";
-			final String schemaPointer = "";
+		final String path = "#";
+		final String schemaPointer = "";
 
-			processProperties(jsonData, jsonSchema, jsonSchema, path, schemaPointer, operation);
+		processProperties(jsonData, jsonSchema, jsonSchema, path, schemaPointer, operation);
 
-			return jsonData;
+		return jsonData;
 
 	}
 
@@ -252,8 +258,9 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 						operation);
 			} else {
 				final JsonNode encrypt = elementValue.path(ENCRYPT_PROPERTY);
+				final JsonNode type = elementValue.path(TYPE_WORD);
 				if (encrypt.asBoolean()) {
-					processEncryptDecryptProperty(allData, elementKey, path, operation);
+					processEncryptDecryptProperty(allData, elementKey, path, operation, type.asText());
 				} else {
 					processProperties(allData, elementValue, rootSchema, path, schemaPointer, operation);
 				}
@@ -300,28 +307,42 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	}
 
 	private void processEncryptDecryptProperty(JsonNode allData, String elementKey, String path,
-			EncryptionOperations operation) {
+			EncryptionOperations operation, String type) {
 		final JsonNode data = getReferencedJsonNode(path, allData);
-		final String dataToProcess = data.asText();
-		String dataProcessed = null;
-		try {
-			switch (operation) {
-			case ENCRYPT:
-				dataProcessed = BasicEncryption.encrypt(KEY, INIT_VECTOR, dataToProcess);
-				break;
-			case DECRYPT:
-				dataProcessed = BasicEncryption.decrypt(KEY, INIT_VECTOR, dataToProcess);
-				break;
-
-			default:
-				throw new IllegalArgumentException("Operation not soported");
-			}
+		if (!data.isMissingNode()) {
+			final String dataToProcess;
 			final String propertyPath = path.substring(0, path.lastIndexOf('/'));
 			final JsonNode originalData = getReferencedJsonNode(propertyPath, allData);
-			((ObjectNode) originalData).put(elementKey, dataProcessed);
-		} catch (final Exception e) {
-			log.error("Error in encrypting data: " + e.getMessage());
-			throw new GenericRuntimeOPException(e);
+			JsonNode obj = null;
+			if (data.isValueNode())
+				dataToProcess = data.asText();
+			else
+				dataToProcess = data.toString();
+			String dataProcessed = null;
+			try {
+				switch (operation) {
+				case ENCRYPT:
+					dataProcessed = BasicEncryption.encrypt(KEY, INIT_VECTOR, dataToProcess);
+					((ObjectNode) originalData).put(elementKey, dataProcessed);
+					break;
+				case DECRYPT:
+					dataProcessed = BasicEncryption.decrypt(KEY, INIT_VECTOR, dataToProcess);
+					if ((type.equalsIgnoreCase(OBJECT_TYPE) || type.equalsIgnoreCase(ARRAY_TYPE))
+							&& !dataProcessed.equalsIgnoreCase("")) {
+						obj = objectMapper.readTree(dataProcessed);
+						((ObjectNode) originalData).set(elementKey, obj);
+					} else
+						((ObjectNode) originalData).put(elementKey, dataProcessed);
+					break;
+
+				default:
+					throw new IllegalArgumentException("Operation not soported");
+				}
+
+			} catch (final Exception e) {
+				log.error("Error in encrypting data: " + e.getMessage());
+				throw new GenericRuntimeOPException(e);
+			}
 		}
 	}
 
@@ -359,7 +380,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	}
 
 	@Override
-	public List<String> preProcessInsertData(OperationModel operationModel) throws IOException {
+	public List<String> preProcessInsertData(OperationModel operationModel, final boolean addContext)
+			throws IOException {
 		final String ontologyName = operationModel.getOntologyName();
 		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
 
@@ -371,7 +393,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 				checkOntologySchemaCompliance(instance, ontology);
 				try {
 
-					final String bodyWithDataContext = addContextData(operationModel, instance);
+					final String bodyWithDataContext = addContext ? addContextData(operationModel, instance)
+							: instance.toString();
 
 					final String encryptedDataInBODY = encryptionOperationAllowingArrays(bodyWithDataContext, ontology,
 							EncryptionOperations.ENCRYPT);
@@ -385,7 +408,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			checkOntologySchemaCompliance(dataNode, ontology);
 			try {
 
-				final String bodyWithDataContext = addContextData(operationModel, null);
+				final String bodyWithDataContext = addContext ? addContextData(operationModel, null)
+						: dataNode.toString();
 
 				final String encryptedDataInBODY = encryptionOperationAllowingArrays(bodyWithDataContext, ontology,
 						EncryptionOperations.ENCRYPT);
@@ -398,6 +422,15 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		}
 		return encryptedData;
 
+	}
+
+	@Override
+	public String preProcessUpdateData(final OperationModel operationModel) throws IOException {
+		final String ontologyName = operationModel.getOntologyName();
+		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
+		final String encryptedDataInBODY = encryptionOperationAllowingArrays(operationModel.getBody(), ontology,
+				EncryptionOperations.ENCRYPT);
+		return encryptedDataInBODY;
 	}
 
 	@Override
@@ -438,20 +471,20 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			// if all field is UPPER is not a exception
 			if (!field.equalsIgnoreCase(field) && Character.isUpperCase(field.charAt(0)))
 				throw new OntologyDataJsonProblemException("Properties can not start with Upper case : " + field);
-			if (!value.path("type").isMissingNode()) {
+			if (!value.path(TYPE_WORD).isMissingNode()) {
 				processSubPropertiesForTilteCase(field, value, root, pointer);
 			}
 		}
 	}
 
 	private void processSubPropertiesForTilteCase(String field, JsonNode value, JsonNode root, String pointer) {
-		final String type = value.path("type").asText();
-		if (type.equalsIgnoreCase("object")) {
+		final String type = value.path(TYPE_WORD).asText();
+		if (type.equalsIgnoreCase(OBJECT_TYPE)) {
 			final String newPointer = pointer + "/" + field + "/" + PROP_STR;
 			root.at(newPointer).fields()
 					.forEachRemaining(e -> processPropertiesForTitleCase(e.getKey(), e.getValue(), root, newPointer));
 
-		} else if (type.equalsIgnoreCase("array")) {
+		} else if (type.equalsIgnoreCase(ARRAY_TYPE)) {
 			final String newPointer = pointer + "/" + field + "/items";
 			root.at(newPointer).elements().forEachRemaining(n -> {
 				if (!n.path(PROP_STR).isMissingNode()) {
@@ -483,9 +516,9 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			required = newSchema.path(REQ_STR);
 			final ArrayList<String> propertiesNew = new ArrayList<>();
 			required.elements().forEachRemaining(n -> propertiesNew.add(n.asText()));
-			if (!properties.equals(propertiesNew))
+			if (!properties.containsAll(propertiesNew)) {
 				throw new OntologyDataJsonProblemException(REQ_PROP_STR);
-
+			}
 		} else if (!newSchema.path(REQ_STR).isMissingNode()) {
 			throw new OntologyDataJsonProblemException(REQ_PROP_STR);
 		}
@@ -521,7 +554,7 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 
 	public void processSingleProperty4Required(JsonNode oldSchema, JsonNode newSchema) {
 		proccessRequiredProperties(oldSchema, newSchema);
-		if (!oldSchema.path("type").isMissingNode() && oldSchema.path("type").asText().equals("object")) {
+		if (!oldSchema.path(TYPE_WORD).isMissingNode() && oldSchema.path(TYPE_WORD).asText().equals(OBJECT_TYPE)) {
 			final JsonNode properties = oldSchema.path(PROP_STR);
 			final JsonNode propertiesNew = newSchema.path(PROP_STR);
 			final Iterator<Entry<String, JsonNode>> elements = properties.fields();
@@ -610,7 +643,7 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 						: reference + File.pathSeparator + PROP_STR;
 				final JsonNode properties = schema.at(path);
 				properties.fields().forEachRemaining(e -> {
-					if (e.getValue().path("type").asText().equals(type))
+					if (e.getValue().path(TYPE_WORD).asText().equals(type))
 						map.put(e.getKey(), parentNode + e.getKey());
 				});
 			} catch (final IOException e) {
@@ -626,4 +659,41 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			throw new OntologyDataJsonProblemException(REQ_SAME_SCH);
 		}
 	}
+
+	@Override
+	public String decryptAllUsers(String data, String ontologyName) throws OntologyDataUnauthorizedException {
+		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
+		if (ontology != null) {
+			try {
+				return encryptionOperationAllowingArrays(data, ontology, EncryptionOperations.DECRYPT);
+			} catch (final IOException e) {
+				throw new OntologyDataJsonProblemException(JSON_ERROR, e);
+			}
+		} else {
+			log.error("Target ontology of " + ontologyName + " not found on platform");
+			return "Target ontology of " + ontologyName + " not found on platform";
+		}
+	}
+
+	@Override
+	public String encryptQuery(String query, boolean mongo) {
+		try {
+			int firstInd;
+			String firstPart;
+			String dataToEncrypt;
+			String datosEnc;
+			while (query.contains(ENCRYPT_WORD)) {
+				firstInd = query.indexOf(ENCRYPT_WORD);
+				firstPart = query.substring(firstInd + ENCRYPT_WORD.length());
+				dataToEncrypt = firstPart.split("\\)")[0];
+				datosEnc = BasicEncryption.encrypt(KEY, INIT_VECTOR, dataToEncrypt);
+				query = query.replace(ENCRYPT_WORD + dataToEncrypt + ')', datosEnc);
+			}
+			return query;
+		} catch (GenericOPException e) {
+			log.error("Cannot encrypt query", e);
+			return query;
+		}
+	}
+
 }

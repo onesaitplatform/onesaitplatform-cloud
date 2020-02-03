@@ -23,7 +23,7 @@ import lombok.Setter;
 public class MailRestDTO {
 	@Getter
 	@Setter
-	private String to;
+	private String[] to;
 	@Getter
 	@Setter
 	private String subject;

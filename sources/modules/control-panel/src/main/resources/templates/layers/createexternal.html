@@ -74,7 +74,7 @@
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home </a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/viewers/list}"> <span th:text="#{layer.breadcrumb.list}">Layers </span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/layers/list}"> <span th:text="#{layer.breadcrumb.list}">Layers </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:if="${viewer?.id} == null" th:text="#{layer.breadcrumb.create.external}">Show Layer</span>
 							<span th:if="${viewer?.id} != null" th:text="#{layer.breadcrumb.update.external}">Update Layer</span>
