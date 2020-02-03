@@ -63,6 +63,7 @@
 					<option th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DEVELOPER'" th:text="Notebooks" value="notebooks"></option>
 					<option th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DEVELOPER'" th:text="DataFlows" value="dataflows"></option>
 					<option th:text="#{categorization.viewers}" value="viewers"></option>
+					<option th:text="#{categorization.reports}" value="reports"></option>
 				</select>
 				<div  class="row"></div>
 				<label class="" th:text="#{categorization.element} + ':'">Element</label>

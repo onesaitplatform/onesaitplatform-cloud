@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -70,6 +71,10 @@ import com.minsait.onesait.platform.config.services.subcategory.SubcategoryServi
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.NotebookManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -110,11 +115,12 @@ public class ModelController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
-	@Value("${onesaitplatform.dashboardengine.url.only.view}")
 	private String dashboardUrl;
 
-	@Value("${onesaitplatform.notebook.url}")
 	private String notebookUrl;
 
 	@Autowired
@@ -130,6 +136,12 @@ public class ModelController {
 	private static final String VALIDATION_ERROR_STR = "validation error";
 	private static final String ONTOLOGY_VAL_ERRROR = "ontology.validation.error";
 
+	@PostConstruct
+	public void init() {
+		notebookUrl = resourcesService.getUrl(Module.NOTEBOOK, ServiceUrl.URL);
+		dashboardUrl = resourcesService.getUrl(Module.DASHBOARDENGINE, ServiceUrl.ONLYVIEW);
+	}
+	
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public String list(org.springframework.ui.Model model) {

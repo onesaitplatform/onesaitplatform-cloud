@@ -27,7 +27,7 @@ import com.minsait.onesait.platform.config.services.app.dto.Realm;
 public interface AppService {
 
 	public List<App> getAllApps();
-	
+
 	public List<App> getAppsByUser(String sessionUserId, String identification);
 
 	public List<AppRole> getAllRoles();
@@ -38,13 +38,11 @@ public interface AppService {
 
 	public void updateApp(AppCreateDTO appDTO);
 
-	public void deleteApp(String id);
+	public void deleteApp(App app);
 
-	public Long createUserAccess(String appId, String userId, String roleId);
+	public String createUserAccess(String appId, String userId, String roleId);
 
-	public Long createUserAccess(String appId, String userId, Long roleId);
-
-	public void deleteUserAccess(Long appUserId);
+	public void deleteUserAccess(String appUserId);
 
 	public Set<AppUser> findUsersByRole(AppRole role);
 
@@ -60,10 +58,12 @@ public interface AppService {
 
 	public void deleteRole(AppRole role);
 
-	public AppRole findRole(Long roleId);
+	public AppRole findRole(String roleId);
 
-    public Realm getRealmByAppIdentification(String realmId);
-    
-    public boolean isUserInApp(String userId, String realmId);
+	public Realm getRealmByAppIdentification(String realmId);
+
+	public boolean isUserInApp(String userId, String realmId);
+
+	App getAppByIdentification(String identification);
 
 }

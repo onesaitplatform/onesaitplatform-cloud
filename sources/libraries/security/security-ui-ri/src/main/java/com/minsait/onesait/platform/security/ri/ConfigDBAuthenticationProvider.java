@@ -15,7 +15,10 @@
 package com.minsait.onesait.platform.security.ri;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 
-@ConditionalOnExpression("'${onesaitplatform.authentication.provider}' == 'cas' or '${onesaitplatform.authentication.provider}' == 'configdb'")
+@ConditionalOnExpression("'${onesaitplatform.authentication.provider}' == 'cas' or '${onesaitplatform.authentication.provider}' == 'configdb' or '${onesaitplatform.authentication.provider}' == 'saml'")
 @Qualifier("configDBAuthenticationProvider")
 public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 
@@ -57,6 +60,17 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 	@Value("${onesaitplatform.authentication.twofa.enabled:false}")
 	private boolean tfaEnabled;
 
+	@Value("${onesaitplatform.authentication.configdb.acl.enabled:false}")
+	private boolean aclEnabled;
+
+	private Set<String> acl;
+
+	@Autowired
+	public void setAcl(@Value("${onesaitplatform.authentication.configdb.acl.list}") final String strs) {
+		final List<String> clList = Arrays.asList(strs.split(","));
+		acl = new HashSet<>(clList);
+	}
+
 	@Override
 	public Authentication authenticate(Authentication authentication) {
 
@@ -67,6 +81,11 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 			return null;
 		}
 		final String password = credentials.toString();
+
+		if (aclEnabled && !acl.contains(name)) {
+			log.info("authenticate: User is not allowed to make login: {}", name);
+			throw new BadCredentialsException("Authentication failed. User is not in the ACL: " + name);
+		}
 
 		final User user = userRepository.findByUserId(name);
 
@@ -83,7 +102,7 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 		try {
 			hashPassword = PasswordEncoder.getInstance().encodeSHA256(password);
 		} catch (final Exception e) {
-			log.error("Authenticate: Error encoding: ",e.getMessage());
+			log.error("Authenticate: Error encoding: ", e.getMessage());
 			throw new BadCredentialsException("Authentication failed. Error authenticating.");
 		}
 		if (!hashPassword.equals(user.getPassword())) {

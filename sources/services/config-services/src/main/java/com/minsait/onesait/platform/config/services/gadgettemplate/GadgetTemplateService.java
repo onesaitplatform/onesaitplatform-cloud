@@ -40,4 +40,6 @@ public interface GadgetTemplateService {
 	public void deleteGadgetTemplate(String id, String userId);
 
 	public List<GadgetTemplate> getUserGadgetTemplate(String userId);
+
+	GadgetTemplate getGadgetTemplateByIdentification(String identification);
 }

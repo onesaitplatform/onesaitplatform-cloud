@@ -17,7 +17,10 @@ package com.minsait.onesait.platform.persistence.services;
 import java.util.List;
 import java.util.Map;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 public interface QueryToolService {
 
@@ -25,12 +28,14 @@ public interface QueryToolService {
 
 	String queryNativeAsJson(String user, String ontology, String query);
 
-	String querySQLAsJson(String user, String ontology, String query, int offset);
+	String querySQLAsJson(String user, String ontology, String query, int offset)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
 
 	String queryNativeAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset,
 			int limit);
 
-	String querySQLAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset);
+	String querySQLAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
 
 	String compileSQLQueryAsJson(String user, Ontology ontology, String query, int offset);
 

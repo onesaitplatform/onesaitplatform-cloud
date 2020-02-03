@@ -114,6 +114,7 @@
 															<th class="titulo-columnas text-center" ><span th:text="#{apimanager.ontology}" >Ontology</span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >User</span></th>
 															<th class="titulo-columnas text-center" > <span th:text="#{gen.created}">Created At</span></th>
+															<th class="titulo-columnas text-center" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas" > <span th:text="#{domain.state}" >State</span></th>
 															<th class="titulo-columnas text-center"> <span th:text="#{gen.options}"> Options</span></th>
 														</tr>
@@ -131,6 +132,9 @@
 																<!-- DATE -->
 																<td class="text-center" th:if="${capture.createdAt!=null}"><span th:text="${#dates.format(capture.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.createdAt,'dd/MM/YYYY')}" ></span></td>
 																<td class="text-center" th:if="${capture.createdAt==null}" th:text="'---'"></td>
+																<!-- UPDATE -->
+																<td class="text-center" th:if="${capture.updatedAt!=null}"><span th:text="${#dates.format(capture.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.updatedAt,'dd/MM/YYYY')}" ></span></td>
+																<td class="text-center" th:if="${capture.updatedAt==null}" th:text="'---'"></td>
 																<!-- STATE -->
 																<td class="text-center" th:if="${capture.state.name() == 'START'}"><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.running}" ><span th:text="1" style="display:none" ></span><i class="la la-arrow-up text-primary font-hg"></i></span></td>
 																<td class="text-center" th:if="${capture.state.name() == 'STOP'} "><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stopped}" ><span th:text="0" style="display:none" ></span><i class="la la-arrow-down text-danger font-hg" ></i></span></td>	
@@ -165,8 +169,9 @@
 														<label class="toggle-vis" data-column="2" th:text="#{apimanager.ontology}">Ontology</label>
 														<label class="toggle-vis" data-column="3" th:text="#{gen.owner}">Owner</label>
 														<label class="toggle-vis" data-column="4" th:text="#{gen.created}"> State</label>
-														<label class="toggle-vis" data-column="5" th:text="#{domain.state}"> State</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.options}"> Options</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="6" th:text="#{domain.state}"> State</label>
+														<label class="toggle-vis" data-column="7" th:text="#{gen.options}"> Options</label>
 													</div>
 												</div>	
 																				

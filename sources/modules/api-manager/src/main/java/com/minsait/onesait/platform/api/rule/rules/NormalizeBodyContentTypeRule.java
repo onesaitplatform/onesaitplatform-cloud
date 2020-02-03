@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
-import com.minsait.onesait.platform.api.service.Constants;
+import com.minsait.onesait.platform.api.service.ApiServiceInterface;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
@@ -46,35 +46,40 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 
 	@Condition
 	public boolean existsRequest(Facts facts) {
-		Map<String, Object> data = facts.get(RuleManager.FACTS);
-		Object body = data.get(Constants.BODY);
-		return body != null;
+		final Map<String, Object> data = facts.get(RuleManager.FACTS);
+		final Object body = data.get(ApiServiceInterface.BODY);
+		return (body != null);
 	}
 
 	@Action
 	public void setFirstDerivedData(Facts facts) {
 
-		Map<String, Object> data = facts.get(RuleManager.FACTS);
+		final Map<String, Object> data = facts.get(RuleManager.FACTS);
+		final byte[] requestBody = (byte[]) data.get(ApiServiceInterface.BODY);
+		final String body = new String(requestBody);
+		final String contentTypeInput = (String) data.get(ApiServiceInterface.CONTENT_TYPE_INPUT);
 
-		String body = (String) data.get(Constants.BODY);
-		String contentTypeInput = (String) data.get(Constants.CONTENT_TYPE_INPUT);
+		if (!"".equals(body)) {
 
-		if (!"".equals(body) && contentTypeInput != null && contentTypeInput.equals(MediaType.APPLICATION_ATOM_XML)) {
-			try {
-				JSONObject xmlJSONObj = XML.toJSONObject(body);
-				data.put(Constants.BODY, xmlJSONObj.toString());
-			} catch (Exception e) {
+			if (contentTypeInput != null && contentTypeInput.equals(MediaType.APPLICATION_ATOM_XML)) {
+				try {
+					final JSONObject xmlJSONObj = XML.toJSONObject(body);
+					data.put(ApiServiceInterface.BODY, xmlJSONObj.toString());
+				} catch (final Exception e) {
 
-				stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE : " + e.getMessage(),
-						DefaultRuleBase.ReasonType.GENERAL);
+					stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE : " + e.getMessage(),
+							DefaultRuleBase.ReasonType.GENERAL);
+				}
+
 			}
+
 		}
 
 	}
 
 	public boolean isValidJSON(String toTestStr) {
-		JSONObject jsonObj = toJSONObject(toTestStr);
-		JSONArray jsonArray = toJSONArray(toTestStr);
+		final JSONObject jsonObj = toJSONObject(toTestStr);
+		final JSONArray jsonArray = toJSONArray(toTestStr);
 
 		return jsonObj != null || jsonArray != null;
 	}
@@ -83,7 +88,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 		JSONObject jsonObj = null;
 		try {
 			jsonObj = new JSONObject(input);
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			return null;
 		}
 		return jsonObj;
@@ -93,7 +98,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 		JSONArray jsonObj = null;
 		try {
 			jsonObj = new JSONArray(input);
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			return null;
 		}
 		return jsonObj;
@@ -101,9 +106,9 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			DBObject dbObject = (DBObject) JSON.parse(body);
+			final DBObject dbObject = (DBObject) JSON.parse(body);
 			return dbObject != null;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return false;
 		}
 	}
@@ -117,7 +122,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 			else {
 				return dbObject.toString();
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return null;
 		}
 

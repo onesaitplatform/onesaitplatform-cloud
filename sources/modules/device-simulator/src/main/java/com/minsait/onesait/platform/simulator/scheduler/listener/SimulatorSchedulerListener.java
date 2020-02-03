@@ -20,7 +20,7 @@ import org.quartz.listeners.SchedulerListenerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
 import com.minsait.onesait.platform.simulator.service.IoTBrokerClient;
 
@@ -43,7 +43,7 @@ public class SimulatorSchedulerListener extends SchedulerListenerSupport {
 	@Override
 	public void triggerFinalized(Trigger trigger) {
 
-		DeviceSimulation simulation = this.deviceSimulationService
+		ClientPlatformInstanceSimulation simulation = this.deviceSimulationService
 				.getSimulationByJobName(trigger.getJobKey().getName());
 
 		persistenceService.disconnectDeviceRest(simulation.getClientPlatform().getIdentification());

@@ -33,11 +33,11 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
 
 public interface OntologyService {
-	
+
 	static final String QUERY_SQL = "SQL";
 	static final String QUERY_NATIVE = "NATIVE";
 	static final String DATAMODEL_DEFAULT_NAME = "EmptyBase";
-	static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";	
+	static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";
 
 	List<Ontology> getAllOntologies(String sessionUserId);
 
@@ -116,11 +116,9 @@ public interface OntologyService {
 
 	void updateOntologyUserAccess(String userAccessId, String typeName, String sessionUserId);
 
-	Map<String, String> getOntologyFieldsQueryTool(String identification, String sessionUserId)
-			throws IOException;
+	Map<String, String> getOntologyFieldsQueryTool(String identification, String sessionUserId) throws IOException;
 
-	Map<String, String> getOntologyFields(String identification, String sessionUserId)
-			throws IOException;
+	Map<String, String> getOntologyFields(String identification, String sessionUserId) throws IOException;
 
 	List<Ontology.RtdbDatasource> getDatasources();
 
@@ -150,13 +148,14 @@ public interface OntologyService {
 
 	List<String> getPublicDatasourcesRelationals();
 
-	void executeKPI(String user, String query, String ontology, String context)
-			throws Exception;
+	Map<String, String> executeKPI(String user, String query, String ontology, String context) throws Exception;
 
 	public boolean existsOntology(String identificacion);
 
 	Ontology getOntologyByIdentification(String identification);
-	
+
 	public String getOntologyFromQuery(String query);
+
+	boolean hasEncryptionEnabled(String ontology);
 
 }

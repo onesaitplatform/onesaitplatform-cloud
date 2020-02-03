@@ -209,6 +209,11 @@ public class ApiManagerService {
 				}
 			}
 		}
+
+		// We need to allow path params on queries that dont were defined without them
+		for (final ApiOperation op : operations) {
+			return op;
+		}
 		return null;
 
 	}
@@ -321,10 +326,16 @@ public class ApiManagerService {
 		return queryDb;
 	}
 
-	public String getObjectidFromPathQuery(String pathInfo) {
-		final String apiIdentifier = getApiIdentifier(pathInfo);
+	public String getObjectidFromPathQuery(String pathInfo, ApiOperation customSQL) {
+		String identifier = null;
+		
+		if (customSQL==null) {
+			identifier = getApiIdentifier(pathInfo);
+		} else {
+			return "";
+		}
 
-		String objectId = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
+		String objectId = pathInfo.substring(pathInfo.indexOf(identifier) + (identifier).length());
 
 		if (!objectId.startsWith("/")) {
 			return null;

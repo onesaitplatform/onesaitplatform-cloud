@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Dashboard;
+import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
 import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
@@ -34,14 +35,13 @@ import com.minsait.onesait.platform.controlpanel.rest.management.dashboard.Dashb
 
 @Service
 public class DashboardFIQL {
-	
+
 	@Autowired
 	private DashboardConfRepository dashboardConfRepository;
-	
 
 	public DashboardCreateDTO fromCommandToDashboardCreate(CommandDTO commandDTO, String id) {
 		DashboardCreateDTO dashboard = new DashboardCreateDTO();
-		if (id !=null)
+		if (id != null)
 			dashboard.setId(id);
 		dashboard.setIdentification(commandDTO.getInformation().getDashboard());
 		String description = "";
@@ -49,9 +49,9 @@ public class DashboardFIQL {
 			description = commandDTO.getInformation().getDashboardDescription();
 		}
 		dashboard.setDescription(description);
-		if (commandDTO.getIsPublic() != null){
+		if (commandDTO.getIsPublic() != null) {
 			dashboard.setPublicAccess(commandDTO.getIsPublic());
-		}else{
+		} else {
 			dashboard.setPublicAccess(Boolean.FALSE);
 		}
 		//
@@ -71,12 +71,15 @@ public class DashboardFIQL {
 				break;
 			}
 		}
+		if (commandDTO.getInformation() != null && commandDTO.getInformation().getDashboardType() != null) {
+			dashboard.setType(commandDTO.getInformation().getDashboardType());
+		}
 		dashboard.setDashboardConfId(initialStyleId);
 
 		return dashboard;
 	}
-	
-	public CommandDTO fromUpdateToCommand(UpdateCommandDTO updateDTO){
+
+	public CommandDTO fromUpdateToCommand(UpdateCommandDTO updateDTO) {
 		final CommandDTO dto = updateDTO;
 		if (updateDTO.getIdentification() != null)
 			dto.getInformation().setDashboard(updateDTO.getIdentification());
@@ -84,7 +87,7 @@ public class DashboardFIQL {
 			dto.getInformation().setDashboardDescription(updateDTO.getDescription());
 		return dto;
 	}
-	
+
 	public List<DashboardUserAccessDTO> dashAuthstoDTO(List<DashboardUserAccess> dashaccesses) {
 		final ArrayList<DashboardUserAccessDTO> dashAuths = new ArrayList<>();
 		for (DashboardUserAccess dashua : dashaccesses) {
@@ -95,20 +98,26 @@ public class DashboardFIQL {
 		}
 		return dashAuths;
 	}
-	
-	public DashboardDTO toDashboardDTO(Dashboard dashboard, String url, String viewUrl, String categoryId, String subCategoryId, int nGadgets, List<DashboardUserAccess> dashAuths){
+
+	public DashboardDTO toDashboardDTO(Dashboard dashboard, String url, String viewUrl, String categoryId,
+			String subCategoryId, int nGadgets, List<DashboardUserAccess> dashAuths) {
 		List<DashboardUserAccessDTO> dashAuthsDTO = null;
-		if (dashAuths !=null){
+		if (dashAuths != null) {
 			dashAuthsDTO = dashAuthstoDTO(dashAuths);
 		}
-		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss");
-		return DashboardDTO.builder().identification(dashboard.getIdentification())
-				.id(dashboard.getId()).description(dashboard.getDescription()).user(dashboard.getUser().getUserId())
+		DashboardType dst;
+		if (dashboard.getType() == null) {
+			dst = DashboardType.DASHBOARD;
+		} else {
+			dst = dashboard.getType();
+		}
+		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return DashboardDTO.builder().identification(dashboard.getIdentification()).id(dashboard.getId())
+				.description(dashboard.getDescription()).user(dashboard.getUser().getUserId())
 				.url(url + dashboard.getId()).isPublic(dashboard.isPublic()).category(categoryId)
 				.subcategory(subCategoryId).nGadgets(nGadgets).headerlibs(dashboard.getHeaderlibs())
 				.createdAt(ft.format(dashboard.getCreatedAt())).modifiedAt(ft.format(dashboard.getUpdatedAt()))
-				.viewUrl(viewUrl + dashboard.getId()).dashboardAuths(dashAuthsDTO).build();
+				.viewUrl(viewUrl + dashboard.getId()).dashboardAuths(dashAuthsDTO).type(dst).build();
 	}
-	
-	
+
 }

@@ -16,9 +16,9 @@ package com.minsait.onesait.platform.api.rest.api.fiql;
 
 import org.springframework.stereotype.Component;
 
-import com.minsait.onesait.platform.api.rest.api.dto.TokenUserDTO;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.services.apimanager.dto.TokenUserDTO;
 
 import lombok.extern.slf4j.Slf4j;
 

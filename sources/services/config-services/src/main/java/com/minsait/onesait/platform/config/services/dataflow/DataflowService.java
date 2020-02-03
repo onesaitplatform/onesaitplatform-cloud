@@ -83,6 +83,8 @@ public interface DataflowService {
 	
 	public ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len, String orderBy, String order, boolean includeStatus);
 
+	ResponseEntity<String> resetOffsetPipeline(String userId, String pipelineIdentification);
+
 	void createUserAccess(String dataflowId, String userId, String accessType);
 
 	void deleteUserAccess(String dataflowUserAccessId);

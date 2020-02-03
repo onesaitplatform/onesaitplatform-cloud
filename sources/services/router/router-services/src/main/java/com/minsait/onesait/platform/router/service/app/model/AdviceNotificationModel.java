@@ -26,6 +26,13 @@ public class AdviceNotificationModel {
 	@Getter
 	@Setter
 	private String url;
+	@Getter
+	@Setter
+	private String urlAuthkey;
+	
+	@Getter
+	@Setter
+	private String urlAuthValue;
 	
 	@Getter
 	@Setter

@@ -36,40 +36,44 @@ public interface DataModelRepository extends JpaRepository<DataModel, String> {
 	@Cacheable(cacheNames = "DataModelRepositoryById", unless = "#result == null", key = "#p0")
 	DataModel findById(String id);
 
-	@Cacheable(cacheNames = "DataModelRepositoryByName", unless = "#result==null or #result.size()==0", key = "#p0")
-	List<DataModel> findByName(String name);
+	@Cacheable(cacheNames = "DataModelRepositoryByIdentification", unless = "#result==null or #result.size()==0", key = "#p0")
+	List<DataModel> findByIdentification(String identification);
 
 	@Cacheable(cacheNames = "DataModelRepositoryByType", unless = "#result==null or #result.size()==0", key = "#p0")
 	List<DataModel> findByType(String type);
 
 	long countByType(String type);
 
-	@Query("SELECT o " + "FROM DataModel AS o " + "WHERE o.id LIKE %:id% OR " + "o.name LIKE %:name% OR "
+	@Query("SELECT o " + "FROM DataModel AS o " + "WHERE o.id LIKE %:id% OR " + "o.identification LIKE %:identification% OR "
 			+ "o.description LIKE %:description%")
-	List<DataModel> findByIdOrNameOrDescription(@Param(value = "id") String id, @Param(value = "name") String name,
+	List<DataModel> findByIdOrIdentificationOrDescription(@Param(value = "id") String id, @Param(value = "identification") String identification,
 			@Param(value = "description") String description);
 
+	@Query("SELECT o " + "FROM DataModel AS o " + "WHERE o.identification LIKE %:identification% ")
+	DataModel findDatamodelsByIdentification(@Param(value = "identification") String identification);
+
+
 	@Override
-	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByName",
+	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByIdentification",
 			"DataModelRepositoryByType" }, allEntries = true)
 	@Modifying
 	@Transactional
 	void delete(String id);
 
 	@Override
-	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByName",
+	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByIdentification",
 			"DataModelRepositoryByType" }, allEntries = true)
 	@Modifying
 	@Transactional
 	void delete(DataModel entity);
 
 	@Override
-	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByName",
+	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByIdentification",
 			"DataModelRepositoryByType" }, allEntries = true)
 	DataModel save(DataModel datamodel);
 
 	@Override
-	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByName",
+	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById", "DataModelRepositoryByIdentification",
 			"DataModelRepositoryByType" }, allEntries = true)
 	void flush();
 

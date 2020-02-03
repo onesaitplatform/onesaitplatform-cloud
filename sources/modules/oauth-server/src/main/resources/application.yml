@@ -9,10 +9,14 @@ server: ## Config Web Server
 
 ldap:
   url: ldap://localhost:10389/
-  base: ou=onesait,ou=system
+  base: ou=User,ou=onesait,ou=system
   username: uid=admin,ou=system
   password: secret
-  base-auth: ou=User,ou=onesait,ou=system
+  defaultRole: ROLE_USER
+  attributesMap:
+     userId: uid
+     mail: mail
+     cn: cn
 # all access to actuator endpoints without security
 management.security.enabled: false
 #security.basic.enabled: false
@@ -22,6 +26,10 @@ onesaitplatform:
    locale.default: en
    authentication:
       provider: configdb
+      configdb:
+        acl:
+          enabled: false
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
    password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$      
 
 sofia2: #Config onesaitplatform specific

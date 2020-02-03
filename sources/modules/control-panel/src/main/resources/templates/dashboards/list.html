@@ -150,6 +150,7 @@
 															<!--  <th class="titulo-columnas text-center" th:text="#{gen.active}">Active</th> -->	
 															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>															
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -171,6 +172,9 @@
 															<!-- DATE --> 
 			 												<td class="text-center" th:if="${dashboard.createdAt!=null}"><span th:text="${#dates.format(dashboard.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${dashboard.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+			 												<td class="text-center" th:if="${dashboard.updatedAt!=null}"><span th:text="${#dates.format(dashboard.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${dashboard.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
@@ -197,7 +201,8 @@
 																
 																    <!-- DOWNLOAD -->																   
 																    <a th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{dashboards.download}" target="_blank" th:href="'/controlpanel/dashboards/exportDashboard/' +  ${dashboard.id}"><i class="la la-download font-hg"></i></a>
-																
+																    <!-- EDIT DASHBOARD JSON-->
+																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.edit.model.json.tooltip} " th:data-original-title="#{dashboards.edit.model.json.tooltip} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>																	
 																
 																    <!-- DELETE -->
 																    <span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="la la-trash font-hg"></i></span>
@@ -219,7 +224,8 @@
 														<label class="toggle-vis" data-column="3" th:text="#{gadgets.type}"> Type</label>
 														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
 														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.options}"> Options</label>															
+														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="7" th:text="#{gen.options}"> Options</label>															
 													</div>
 												</div>											
 											</div>
@@ -971,40 +977,43 @@ var showExportImageDialog = function(id){
 		
 		var url = "/controlpanel/dashboards/importDashboard";
 			//Name inside notebook
-			var jsonData = JSON.parse(data)
-			jsonData.identification = name;
-			data = JSON.stringify(jsonData);
-		
-		
-		$.post(
-				url, 
-				{
-					name: name,
-					data: data
+			try {
+				var jsonData = JSON.parse(data)
+				jsonData.identification = name;
+				data = JSON.stringify(jsonData);
+			}catch(error) {
+				$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{dashboards.error.invalidformat}]]*/ 'Error' 
+					}
+				)
 				}
-			).done(function(data){
-				//localStorage.setItem("reload","true");//Created dashboard, reload forced
-				navigateUrl("/controlpanel/dashboards/list/",true);
-				}
-			).fail(
-				function(e){
-					if(e.status==409){
+			$.ajax({
+			    contentType: 'application/json',
+			    data: data,
+			    dataType: 'json',
+			    success: function(data){			    	
+			    	navigateUrl("/controlpanel/dashboards/list/",true);
+			    },
+			    error: function(e){			    	
+			    	if(e.statusCode().status==409){
 						$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{dashboards.error.duplicate}]]*/ 'Error'
 							}
 						)
+						console.log("Error importing dashboard, message detail, " + " error: " + e.error + ", " + e.responseText);
 					}
-					else if (e.status==400){
+					else if (e.statusCode().status==400){
 						$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{dashboards.error.invalidformat}]]*/ 'Error'
 							}
 						)
+						console.log("Error importing dashboard, message detail, " + " error: " + e.error + ", " + e.responseText);
 					}
-					console.log("Error importing dashboard, message detail, " + " error: " + e.error + ", " + e.responseText);
-				}
-			)
-		
-		
-	
+			    },
+			    processData: false,
+			    type: 'POST',
+			    url: url
+			});
+			
    }
+	
 	function fileImportChange(jsonFile){
 		var reader = new FileReader();
 		reader.readAsText(jsonFile);

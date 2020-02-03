@@ -33,13 +33,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.Device;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
-import com.minsait.onesait.platform.config.services.device.DeviceService;
+import com.minsait.onesait.platform.config.services.device.ClientPlatformInstanceService;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl;
@@ -58,7 +61,7 @@ public class DeviceManagerController {
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
-	private DeviceService deviceService;
+	private ClientPlatformInstanceService deviceService;
 	@Autowired
 	private UserService userService;
 	@Autowired
@@ -78,7 +81,7 @@ public class DeviceManagerController {
 			@RequestParam(required = false) String[] ontologies) throws JsonProcessingException {
 
 		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
-			final List<Device> devices = new ArrayList<>();
+			final List<ClientPlatformInstance> devices = new ArrayList<>();
 			for (final ClientPlatform client : clientPlatformService
 					.getclientPlatformsByUser(userService.getUser(utils.getUserId()))) {
 				devices.addAll(deviceService.getByClientPlatformId(client));
@@ -86,7 +89,7 @@ public class DeviceManagerController {
 			model.addAttribute("devices", devices);
 			model.addAttribute("devicesJson", mapper.writeValueAsString(devices));
 		} else {
-			final List<Device> devices = deviceService.getAll();
+			final List<ClientPlatformInstance> devices = deviceService.getAll();
 			model.addAttribute("devices", devices);
 			model.addAttribute("devicesJson", mapper.writeValueAsString(devices));
 		}
@@ -99,7 +102,7 @@ public class DeviceManagerController {
 	@PatchMapping
 	public String update(Model model, @RequestParam String id, @RequestParam String tags) {
 
-		deviceService.patchDevice(id, tags);
+		deviceService.patchClientPlatformInstance(id, tags);
 		return "redirect:/devices/management/show/" + id;
 	}
 
@@ -111,8 +114,9 @@ public class DeviceManagerController {
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping("/show/{id}")
-	public String info(Model model, RedirectAttributes redirect, @PathVariable String id) throws IOException {
-		final Device device = deviceService.getById(id);
+	public String info(Model model, RedirectAttributes redirect, @PathVariable String id)
+			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+		final ClientPlatformInstance device = deviceService.getById(id);
 		if (null == device)
 			return "redirect:/devices/management/list";
 		model.addAttribute("device", device);
@@ -120,7 +124,7 @@ public class DeviceManagerController {
 		final String query = "select * from " + ontology + " as c where c.DeviceLog.device = \""
 				+ device.getIdentification() + "\" ORDER BY c.contextData.timestampMillis Desc limit 50";
 		final String result = queryToolService.querySQLAsJson(utils.getUserId(), ontology, query, 0);
-		model.addAttribute("commands", deviceService.getDeviceCommands(device));
+		model.addAttribute("commands", deviceService.getClientPlatformInstanceCommands(device));
 		model.addAttribute("query", query.replace(" limit 50", ""));
 		model.addAttribute("logs", deviceService.getLogInstances(result));
 		final String iotbrokerurl = intregationResourcesService.getUrl(

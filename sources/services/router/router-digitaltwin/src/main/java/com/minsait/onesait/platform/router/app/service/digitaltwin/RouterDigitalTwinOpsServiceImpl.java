@@ -175,7 +175,7 @@ public class RouterDigitalTwinOpsServiceImpl implements RouterDigitalTwinService
 		instance.put(TIMESTAMP_STR, timestamp);
 
 		List<PropertyDigitalTwinType> properties = propertyDigitalTwinTypeRepo
-				.findByTypeId(digitalTwinTypeRepository.findByName(model.getType()));
+				.findByTypeId(digitalTwinTypeRepository.findByIdentification(model.getType()));
 
 		JSONObject status = new JSONObject(model.getStatus());
 		Iterator<String> keys = status.keys();

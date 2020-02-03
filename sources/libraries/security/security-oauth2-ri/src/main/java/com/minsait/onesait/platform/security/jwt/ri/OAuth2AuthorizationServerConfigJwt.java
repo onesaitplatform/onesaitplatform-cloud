@@ -15,6 +15,9 @@
 package com.minsait.onesait.platform.security.jwt.ri;
 
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,6 +33,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -57,6 +61,9 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	@Autowired(required = false)
 	@Qualifier("configDBAuthenticationProvider")
 	private AuthenticationProvider authProvider;
+	@Autowired(required = false)
+	@Qualifier("ldapAuthenticationProvider")
+	private AuthenticationProvider authProviderLdap;
 
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -69,7 +76,7 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 	@Override
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-		security.checkTokenAccess("permitAll()");
+		security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()").allowFormAuthenticationForClients();
 	}
 
 	@Override
@@ -78,7 +85,8 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), jwtAccessTokenConverter));
 
 		endpoints.tokenEnhancer(tokenEnhancerChain);
-		endpoints.authenticationManager(new ProviderManager(Arrays.asList(authProvider)));
+		endpoints.authenticationManager(new ProviderManager(
+				Stream.of(authProvider, authProviderLdap).filter(Objects::nonNull).collect(Collectors.toList())));
 		endpoints.userDetailsService(userDetailsService);
 		endpoints.tokenStore(tokenStore);
 		endpoints.accessTokenConverter(jwtAccessTokenConverter);
@@ -88,10 +96,11 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-
-		final String[] types = grantType.split("\\s*,\\s*");
-
-		clients.inMemory().withClient(clientId).secret(clientSecret).authorizedGrantTypes(types).scopes(scopes);
+		clients.withClientDetails(clientDetailsService());
+	}
+	@Bean
+	public ClientDetailsService clientDetailsService() {
+		return new CustomClientDetailsService();
 	}
 
 	@Bean

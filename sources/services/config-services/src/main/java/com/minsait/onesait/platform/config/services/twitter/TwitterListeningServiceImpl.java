@@ -75,7 +75,7 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 
 	@Override
 	public TwitterListening getListenByIdentificator(String identificator) {
-		return this.twitterListeningRepository.findByIdentificator(identificator);
+		return this.twitterListeningRepository.findByIdentification(identificator);
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 	public void updateListening(TwitterListening twitterListening) {
 		TwitterListening newTwitterListening = this.twitterListeningRepository.findById(twitterListening.getId());
 		if (newTwitterListening != null) {
-			newTwitterListening.setIdentificator(twitterListening.getIdentificator());
+			newTwitterListening.setIdentification(twitterListening.getIdentification());
 			newTwitterListening.setConfiguration(this.configurationService
 					.getConfigurationByDescription(twitterListening.getConfiguration().getDescription()));
 			newTwitterListening.setTopics(twitterListening.getTopics());
@@ -160,7 +160,7 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 
 	@Override
 	public Ontology createTwitterOntology(String ontologyId) {
-		DataModel dataModelTwitter = this.dataModelRepository.findByName("Twitter").get(0);
+		DataModel dataModelTwitter = this.dataModelRepository.findByIdentification("Twitter").get(0);
 		Ontology ontology = new Ontology();
 		ontology.setIdentification(ontologyId);
 		if (dataModelTwitter.getType().equals(DataModel.MainType.SOCIAL_MEDIA.toString()))

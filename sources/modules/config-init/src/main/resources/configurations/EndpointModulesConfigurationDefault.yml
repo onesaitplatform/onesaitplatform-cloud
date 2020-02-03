@@ -14,8 +14,9 @@ onesaitplatform:
     controlpanel:
       base: http://localhost:18000/controlpanel
     flowEngine:
-      base: http://localhost:20100/flowengine
+      base: http://localhost:20100/flowengine/admin
       advice: http://localhost:5050/
+      proxyurl: http://localhost:5050/
     routerStandAlone:
       base: http://localhost:20000/router
       advice: http://localhost:20000/router/router/advice/
@@ -29,11 +30,24 @@ onesaitplatform:
       swaggerUI: http://localhost:19100/api-manager/swagger-ui.html?url=
       swaggerUIManagement: http://localhost:19100/api-manager/services/management/api-docs?url=/api-manager/services/management/swagger.json
       swaggerJson: http://localhost:19100/api-manager/services/management/swagger/
+    notebook:
+      url: http://localhost:8080/
+    gravitee:      
+      ui: http://localhost:8080/#!
+      management: http://localhost:8083/management
+      gateway: http://localhost:8082
     monitoringUI:
       base: http://localhost:18100/monitoring
       embedded: http://localhost:18100/monitoring/indexNoHeader.html
     rulesEngine:
       advice: http://localhost:20200/rules-engine/advice
       base: http://localhost:20200/rules-engine
+    bpmEngine:
+      base: http://localhost:8085/bpm-engine
+      deployment: http://localhost:8085/bpm-engine/rest/deployment/create
+    dashboardEngine:
+      edit: http://localhost:8087/controlpanel/dashboards/editfulliframe/
+      view: http://localhost:8087/controlpanel/dashboards/viewiframe/
+      onlyview: http://localhost:8087/controlpanel/dashboards/view/
 
 

@@ -142,6 +142,14 @@ md-tabs.md-default-theme md-ink-bar, md-tabs md-ink-bar{
   margin-bottom: 5px  !important;
   margin-top: 5px  !important;
 }
+
+.badgesMarginRightEditMode {
+  margin-right: 85px;
+}
+
+.badgesMarginRightNoEditMode {
+  margin-right: 55px;
+}
 html, body {
   height: 100vh;
   margin: 0;
@@ -218,11 +226,27 @@ gridster-grid .column {
 
 .toolbarButtons,.toolbarButtons label {
   position: absolute;
-  right: 5%;
+  right: 418px;
+  width: 0px;
   z-index: 3;
   color: #fd0000 !important
 }
 
+
+.toolbarButtonsSynoptic {
+  position: absolute;
+  right: 462px;
+  width: 0px;
+  z-index: 3;
+  color: #fd0000 !important
+}
+.toolbarButtonsSynopticEditor {
+  position: absolute;
+  right: 506px;
+  width: 0px;
+  z-index: 3;
+  color: #fd0000 !important
+}
 
 
 gridster {

@@ -167,6 +167,8 @@
 																<span th:text="#{device.user}">User</span></th>
 															<th class="titulo-columnas text-center"> <span
 																th:text="#{device.dateCreated}">Created At</span></th>
+															<th class="titulo-columnas text-center"> <span
+																th:text="#{device.dateUpdated}">Updated At</span></th>
 															<th class="titulo-columnas" dt:sortable="false"> <span th:text="#{gen.options}">
 																	Options</span></th>
 														</tr>
@@ -192,6 +194,13 @@
 																<span th:text="${#dates.format(device.dateCreated,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center"
 																th:if="${device.dateCreated==null}" th:text="'---'"></td>
+															<!-- UPDATED -->
+															<td class="text-center"
+																th:if="${device.dateUpdated!=null}">
+																<span th:text="${#dates.format(device.dateUpdated,'YYYY/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(device.dateUpdated,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center"
+																th:if="${device.dateUpdated==null}" th:text="'---'"></td>
 
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
@@ -213,15 +222,9 @@
 																		th:onclick="'javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><i
 																		class="la la-edit font-hg"></i></span>
 													
-																	<!-- DELETE Not in this UI
-																	<button id="deleteBtn" type="button"
-																		class="btn btn-square btn-danger" name="delete"
-																		value="Remove"
-																		th:onclick="'deleteDeviceConfirmation(\'' + ${device.identification} + '\');'">
-																		<i class="la la-trash"></i> <span
-																			th:text="#{gen.deleteBtn}"> Delete </span>
-																	</button>
-																	-->
+																	<!-- DELETE -->
+																    <span th:if="${#authentication.name} == ${device.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDeviceConfirmation(\'' + ${device.id} + '\');'"><i class="la la-trash font-hg"></i></span>
+																
 																</div>
 															</td>
 
@@ -275,6 +278,8 @@
 															class="toggle-vis" data-column="4"
 															th:text="#{device.dateCreated}"> Created At</label> <label
 															class="toggle-vis" data-column="5"
+															th:text="#{device.dateUpdated}"> Updated At</label> <label
+															class="toggle-vis" data-column="6"
 															th:text="#{gen.options}"> Options</label>
 													</div>
 
@@ -443,18 +448,67 @@
 			}
 		});
 	}
+
+	var deleteDeviceConfirmation = function(id) {
+
+		// i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = [[#{device.delete.confirm}]];
+		var Title = headerReg.titleConfirm + ':';
+
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		
-	
-	
-	var  deleteDeviceConfirmation = function (id){
-		console.log('deleteUserConfirmation() -> formId: '+ id);
-		
-		// no Id no fun!
-		if ( !id ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO USER-FORM SELECTED!'}); return false; }
-		
-		// call  Confirm 
-		showConfirmDeleteDialog(id);	
-	} 
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			icon : 'fa fa-warning',
+			title : Title,
+			theme : 'light',
+			columnClass : 'medium',
+			content : Content,
+			draggable : true,
+			dragWindowGap : 100,
+			backgroundDismiss : true,
+			closeIcon : true,
+			buttons : {
+				close : {
+					text : Close,
+					btnClass : 'btn btn-sm btn-circle blue btn-outline',
+					action : function() {
+					} // GENERIC CLOSE.
+				},
+				remove : {
+					text : Remove,
+					btnClass : 'btn btn-sm btn-circle btn-primary btn-outline',
+					action : function() {
+						console.log(id);
+						$.ajax({
+							url : '/controlpanel/devices/' + id,
+							headers: {
+								[csrf_header]: csrf_value
+						    },
+							type : 'DELETE',
+							success : function(result) {
+								console.log(result.responseText);
+								navigateUrl('/controlpanel/devices/list');
+							},
+						    error: function(result){
+						    	console.log(result.responseText);
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content : result.responseText
+								});
+						    }
+						});
+					}
+				}
+				
+			}
+		});
+	}
 	
 	
 	var showConfirmDeleteDialog = function(id){	

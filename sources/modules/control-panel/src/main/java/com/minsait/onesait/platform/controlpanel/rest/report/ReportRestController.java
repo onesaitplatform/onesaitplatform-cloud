@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -86,6 +88,7 @@ public class ReportRestController {
 
 	@ApiOperation(value = "Download report")
 	@PostMapping("{id}/{extension}")
+	@Transactional
 	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
 	public ResponseEntity<?> downloadReport(
 			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
@@ -145,12 +148,12 @@ public class ReportRestController {
 	@GetMapping()
 	public ResponseEntity<List<ReportDTO>> getReports() {
 
-		List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
+		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
 				: reportService.findAllActiveReportsByUserId(utils.getUserId());
 
-		List<ReportDTO> listDTO = new ArrayList<>();
-		for (Report report : reports) {
-			ReportDTO dto = new ReportDTO();
+		final List<ReportDTO> listDTO = new ArrayList<>();
+		for (final Report report : reports) {
+			final ReportDTO dto = new ReportDTO();
 			dto.setCreatedAt(report.getCreatedAt());
 			dto.setDescription(report.getDescription());
 			dto.setName(report.getIdentification());
@@ -175,7 +178,7 @@ public class ReportRestController {
 		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-		ReportDTO dto = new ReportDTO();
+		final ReportDTO dto = new ReportDTO();
 		dto.setCreatedAt(entity.getCreatedAt());
 		dto.setDescription(entity.getDescription());
 		dto.setName(entity.getIdentification());
@@ -187,6 +190,7 @@ public class ReportRestController {
 	@ApiOperation(value = "Create new report")
 	@ApiResponse(code = 201, message = "CREATED")
 	@PostMapping(consumes = { "multipart/form-data" })
+	@Transactional
 	public ResponseEntity<Object> createNewReport(
 			@RequestParam(required = true, value = "identification") String identification,
 			@RequestParam(required = true, value = "description") String description,
@@ -198,13 +202,13 @@ public class ReportRestController {
 			return ResponseEntity.badRequest().body("Report ID must be unique");
 		}
 
-		Report report = new Report();
+		final Report report = new Report();
 		report.setIdentification(identification);
 		report.setDescription(description);
 		report.setIsPublic(isPublic);
 		try {
 			report.setFile(file.getBytes());
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new UploadFileException();
 		}
 
@@ -213,7 +217,7 @@ public class ReportRestController {
 
 		report.setActive(true);
 
-		User user = new User();
+		final User user = new User();
 		user.setUserId(utils.getUserId());
 		report.setUser(user);
 
@@ -225,13 +229,14 @@ public class ReportRestController {
 	@ApiOperation(value = "Update report by ID")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "OK"), @ApiResponse(code = 404, message = "Not found") })
 	@PutMapping("/{id}")
+	@Transactional
 	public ResponseEntity<Object> updateReport(
 			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
 			@RequestParam(required = false, value = "description") String description,
 			@RequestParam(required = false, value = "identification") String identification,
 			@RequestParam(required = false, value = "file") MultipartFile file) {
 
-		Report entity = reportService.findByIdentificationOrId(id);
+		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -249,7 +254,7 @@ public class ReportRestController {
 		if (file != null) {
 			try {
 				entity.setFile(file.getBytes());
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				throw new UploadFileException();
 			}
 		}
@@ -266,7 +271,7 @@ public class ReportRestController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> deleteReport(
 			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
-		Report entity = reportService.findByIdentificationOrId(id);
+		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);

@@ -14,6 +14,7 @@ onesaitplatform: #Config Sofia2 specific
       configdb: true
       mongodb: true
       elasticdb: false
+      mailconfig: true
    database.mongodb:
       database: onesaitplatform_rtdb
       digitaltwin.database: digital_twin  
@@ -35,7 +36,7 @@ spring:
    application.name: systemconfig-init
    ## JPA Config
    datasource:
-      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&createDatabaseIfNotExist=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       # Number of ms to wait before throwing an exception if no connection is available.

@@ -116,9 +116,10 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
-
-		utils.deactivateSessions(id);
-		userService.deleteUser(id);
+		if (!utils.getUserId().equals(id)) {
+			utils.deactivateSessions(id);
+			userService.deleteUser(id);
+		}
 		return REDIRECT_USER_LIST;
 	}
 
@@ -126,9 +127,9 @@ public class UserController {
 	public String updateForm(@PathVariable("id") String id, @PathVariable(name = "bool", required = false) boolean bool,
 			Model model) {
 		// If non admin user tries to update any other user-->forbidden
-		if (!utils.getUserId().equals(id) && !utils.isAdministrator())
+		if (!utils.getUserId().equals(id) && !utils.isAdministrator()) {
 			return ERROR_403;
-
+		}
 		populateFormData(model);
 		model.addAttribute("AccessToUpdate", bool);
 
@@ -499,8 +500,12 @@ public class UserController {
 
 		try {
 
-			utils.deactivateSessions(userId);
-			userService.deleteUser(userId);
+			if ((!utils.isAdministrator() && (utils.getUserId().equals(userId))) ||	(utils.isAdministrator() && !utils.getUserId().equals(userId))) {
+			
+				utils.deactivateSessions(userId);
+				userService.deleteUser(userId);
+			
+			}
 
 			if (utils.isAdministrator()) {
 				return REDIRECT_USER_LIST;

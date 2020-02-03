@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.controlpanel.security;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -74,7 +76,7 @@ public class SAMLUserDetails implements SAMLUserDetailsService {
 		user.setUserId(username);
 		user.setActive(true);
 		user.setEmail(username.concat("@domain.com"));
-		user.setPassword(defaultPassword);
+		user.setPassword(defaultPassword + UUID.randomUUID().toString().substring(1, 5));
 		user.setFullName(username);
 		return userRepository.save(user);
 

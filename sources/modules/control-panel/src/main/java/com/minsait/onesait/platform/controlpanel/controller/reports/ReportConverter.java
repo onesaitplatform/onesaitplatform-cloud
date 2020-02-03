@@ -15,16 +15,24 @@
 package com.minsait.onesait.platform.controlpanel.controller.reports;
 
 import java.io.IOException;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
+import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportDto;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportResourceDTO;
+import com.minsait.onesait.platform.controlpanel.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.controlpanel.services.report.UploadFileException;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -36,6 +44,10 @@ public class ReportConverter {
 
 	@Autowired
 	private AppWebUtils appWebUtils;
+	@Autowired
+	private BinaryRepositoryLogicService binaryRepositoryLogicService;
+	@Autowired
+	private BinaryFileService binaryFileService;
 
 	public Report convert(ReportDto report) {
 		log.debug("INI. Convert entity Report: {}  -->  ReportDto");
@@ -57,6 +69,16 @@ public class ReportConverter {
 		entity.setActive(Boolean.TRUE);
 		entity.setUser(findUser());
 
+		final Set<BinaryFile> resources = report.getAdditionalFiles().stream().map(mf -> {
+			try {
+				final String fileId = binaryRepositoryLogicService.addBinary(mf, null);
+				return binaryFileService.getFile(fileId);
+			} catch (final Exception e) {
+				log.error("Could not add file {}", mf.getOriginalFilename());
+				return null;
+			}
+		}).filter(Objects::nonNull).collect(Collectors.toSet());
+		entity.getResources().addAll(resources);
 		return entity;
 	}
 
@@ -65,6 +87,9 @@ public class ReportConverter {
 
 		final ReportDto reportDto = ReportDto.builder().id(report.getId()).identification(report.getIdentification())
 				.description(report.getDescription()).owner(report.getUser().getUserId()).created(report.getCreatedAt())
+				.resources(report.getResources().stream()
+						.map(r -> ReportResourceDTO.builder().id(r.getId()).fileName(r.getFileName()).build())
+						.collect(Collectors.toList()))
 				.isPublic(report.getIsPublic()).dataSourceUrl(report.getDataSourceUrl()).build();
 
 		log.debug("END. Converted ReportDto: {}", reportDto);
@@ -83,7 +108,17 @@ public class ReportConverter {
 			entity.setExtension(getReportExtension(source.getFile()));
 		}
 		entity.setDataSourceUrl(source.getDataSourceUrl());
-
+		source.getAdditionalFiles().forEach(r -> {
+			if (!r.isEmpty()) {
+				target.getResources().removeIf(bf -> bf.getFileName().equalsIgnoreCase(r.getOriginalFilename()));
+				try {
+					final String fileId = binaryRepositoryLogicService.addBinary(r, null);
+					target.getResources().add(binaryFileService.getFile(fileId));
+				} catch (BinaryRepositoryException | IOException e) {
+					log.error("Could not add file {}", r.getOriginalFilename());
+				}
+			}
+		});
 		return entity;
 	}
 

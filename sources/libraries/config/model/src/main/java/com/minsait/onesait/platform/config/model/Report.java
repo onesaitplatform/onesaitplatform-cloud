@@ -14,6 +14,9 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,6 +24,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.Lob;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -39,7 +43,8 @@ import lombok.ToString;
 @Setter
 @ToString
 @Entity
-@Table(name = "REPORT", uniqueConstraints= @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames={"IDENTIFICATION"}))
+@Table(name = "REPORT", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
+		"IDENTIFICATION" }))
 public class Report extends OPResource {
 	public enum ReportExtension {
 		JRXML, JASPER;
@@ -71,5 +76,10 @@ public class Report extends OPResource {
 	@Enumerated(EnumType.STRING)
 	@NotNull
 	private ReportExtension extension;
+
+	@OneToMany(orphanRemoval = true)
+	@Getter
+	@Setter
+	private Set<BinaryFile> resources = new HashSet<>();
 
 }

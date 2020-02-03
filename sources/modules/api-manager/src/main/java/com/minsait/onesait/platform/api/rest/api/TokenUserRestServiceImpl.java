@@ -19,10 +19,10 @@ import javax.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.minsait.onesait.platform.api.rest.api.dto.TokenUserDTO;
 import com.minsait.onesait.platform.api.rest.api.fiql.TokenUserFIQL;
 import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.apimanager.dto.TokenUserDTO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,8 +42,8 @@ public class TokenUserRestServiceImpl implements TokenUserRestService {
 			return Response
 					.ok(tokenUser.toTokenUsuarioDTO(apiService.findTokenUserByIdentification(identificacion, token)))
 					.build();
-		} catch (Exception e) {
-			log.error("Error getTokenUser",e);
+		} catch (final Exception e) {
+			log.error("Error getTokenUser", e);
 			return Response.serverError().build();
 		}
 	}
@@ -54,8 +54,8 @@ public class TokenUserRestServiceImpl implements TokenUserRestService {
 		try {
 			tokenUsuarioDTO = tokenUser.toTokenUsuarioDTO(apiService.addTokenUsuario(identificacion, token));
 			return Response.ok(tokenUsuarioDTO.getToken()).build();
-		} catch (Exception e) {
-			log.error("Error addTokenUser",e);
+		} catch (final Exception e) {
+			log.error("Error addTokenUser", e);
 			return Response.serverError().build();
 		}
 	}
@@ -66,8 +66,8 @@ public class TokenUserRestServiceImpl implements TokenUserRestService {
 		try {
 			tokenUsuarioDTO = tokenUser.toTokenUsuarioDTO(apiService.generateTokenUsuario(identificacion, token));
 			return Response.ok(tokenUsuarioDTO.getToken()).build();
-		} catch (Exception e) {
-			log.error("Error generateToken",e);
+		} catch (final Exception e) {
+			log.error("Error generateToken", e);
 			return Response.serverError().build();
 		}
 	}

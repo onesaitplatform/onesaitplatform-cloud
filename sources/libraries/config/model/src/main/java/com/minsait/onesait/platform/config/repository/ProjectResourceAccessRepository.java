@@ -16,7 +16,11 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.Project;
@@ -31,6 +35,12 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	public ProjectResourceAccess findByResourceAndProjectAndAppRole(OPResource resource, Project project, AppRole role);
 
 	public int countByResource(OPResource resource);
+
+	@Transactional
+	public void deleteByResource(OPResource resource);
+
+	@Query("SELECT p FROM Project p INNER JOIN p.projectResourceAccesses pra WHERE pra.resource.id= :resourceId")
+	public List<Project> findProjectsWithResourceId(@Param("resourceId") String resourceId);
 
 	public List<ProjectResourceAccess> findByResource(OPResource resource);
 

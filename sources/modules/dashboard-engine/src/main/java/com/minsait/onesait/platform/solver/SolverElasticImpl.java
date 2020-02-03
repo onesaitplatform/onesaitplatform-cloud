@@ -22,8 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.FilterStt;
 import com.minsait.onesait.platform.dto.socket.ProjectStt;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 
 @Component
@@ -42,7 +45,8 @@ public class SolverElasticImpl implements SolverInterface {
 
 	@Override
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group, String executeAs, String ontology) {
+			List<String> group, String executeAs, String ontology)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		StringBuilder sb = new StringBuilder();
 		int indexLimit = query.toLowerCase().lastIndexOf(LIMIT_STR);
 		if (where == null || where.size() == 0) {

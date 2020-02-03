@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controller;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -62,7 +63,9 @@ public class UserInfoController {
 	@RequestMapping("/oidc/userinfo")
 	public JsonNode userInfo(OAuth2Authentication token) {
 
-		final User principal = userRepository.findByUserId(token.getPrincipal().toString());
+		final User principal = userRepository.findByUserId(
+				token.getPrincipal() instanceof UserDetails ? ((UserDetails) token.getPrincipal()).getUsername()
+						: token.getPrincipal().toString());
 		final ObjectMapper mapper = new ObjectMapper();
 		final JsonNode node = mapper.createObjectNode();
 		((ObjectNode) node).put("mail", principal.getEmail());

@@ -41,7 +41,7 @@ public class SenseHatDevicesImpl implements SenseHatDevices {
 	@Override
 	public ResponseEntity<?> getSensehatDevices() {
 		try {
-			DigitalTwinType type = typeRepo.findByName("sensehat");
+			DigitalTwinType type = typeRepo.findByIdentification("sensehat");
 			List<DigitalTwinDevice> devices = deviceRepo.findByTypeId(type);
 			JSONArray array = new JSONArray();
 			for (DigitalTwinDevice device : devices) {

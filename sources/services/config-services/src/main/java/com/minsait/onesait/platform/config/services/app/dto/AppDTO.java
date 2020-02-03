@@ -19,19 +19,19 @@ import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
-public class AppDTO  implements java.io.Serializable {
-	
+public class AppDTO implements java.io.Serializable {
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	@Getter
 	@Setter
-	private String appId;
+	private String id;
 	@Getter
 	@Setter
-	private String name;
+	private String identification;
 	@Getter
 	@Setter
 	private String description;
@@ -41,4 +41,10 @@ public class AppDTO  implements java.io.Serializable {
 	@Getter
 	@Setter
 	private Date dateCreated;
+	@Getter
+	@Setter
+	private Date dateUpdated;
+	@Getter
+	@Setter
+	private String user;
 }

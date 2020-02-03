@@ -22,5 +22,5 @@ import com.minsait.onesait.platform.config.model.OntologyCategory;
 
 public interface OntologyCategoryRepository extends JpaRepository<OntologyCategory, Integer> {
 
-	List<OntologyCategory> findById(Integer id);
+	List<OntologyCategory> findById(String id);
 }

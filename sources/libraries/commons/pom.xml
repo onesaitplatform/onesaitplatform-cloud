@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>1.0.0-ce</version>
+		<version>1.5.3-defender</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-commons</artifactId>
@@ -28,9 +28,8 @@
 		</dependency>
 
 		<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>${lombok.version}</version>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
 		</dependency>
 
 		<dependency>
@@ -129,7 +128,7 @@
 		<dependency>
 			<groupId>io.confluent.ksql</groupId>
 			<artifactId>ksql-cli</artifactId>
-			<version>5.1.0-SNAPSHOT</version>
+			<version>5.1.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -194,7 +193,7 @@
 			<distributionManagement>
 				<repository>
 					<id>releases</id>
-					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
 				</repository>
 			</distributionManagement>
 		</profile>
@@ -207,7 +206,7 @@
 			<distributionManagement>
 				<repository>
 					<id>snapshots</id>
-					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 				</repository>
 			</distributionManagement>
 		</profile>
@@ -220,7 +219,7 @@
 		</repository>
 		<repository>
 			<id>snapshots</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
 

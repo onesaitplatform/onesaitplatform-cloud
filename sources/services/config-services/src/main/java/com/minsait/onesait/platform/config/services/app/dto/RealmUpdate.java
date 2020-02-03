@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.app.dto;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,11 +30,9 @@ public class RealmUpdate  implements java.io.Serializable {
 	
 	@Getter
 	@Setter
-	@NotNull
-	protected String name;
+	protected String identification;
 	@Getter
 	@Setter
-	@NotNull
 	protected String description;
 	@Getter
 	@Setter

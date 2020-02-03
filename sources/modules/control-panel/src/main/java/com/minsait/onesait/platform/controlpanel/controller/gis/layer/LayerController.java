@@ -110,8 +110,7 @@ public class LayerController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/createiot")
 	public String createIoT(Model model) {
-		List<Ontology> ontologies = ontologyService.getOntologiesWithDescriptionAndIdentification(utils.getUserId(),
-				null, null);
+		List<Ontology> ontologies = ontologyService.getOntologiesByUserId(utils.getUserId());
 		model.addAttribute("ontologies", ontologies);
 		model.addAttribute(LAYER, new LayerDTO());
 		return "layers/createiot";
@@ -243,7 +242,8 @@ public class LayerController {
 			}
 		} else {
 
-			layerService.create(this.buildLayerForExternalLayer(layerDto, httpServletRequest, user, new Layer()));
+			layerService
+					.create(this.buildLayerForExternalLayer(layerDto, httpServletRequest, user, new Layer(), false));
 
 			response.put(REDIRECT, REDIRECT_CONTROLPANEL_LAYERS_LIST);
 			response.put(STATUS, "ok");
@@ -293,7 +293,7 @@ public class LayerController {
 				return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 			}
 		} else {
-			layerService.create(this.buildLayerForExternalLayer(layerDto, httpServletRequest, user, new Layer()));
+			layerService.create(this.buildLayerForExternalLayer(layerDto, httpServletRequest, user, layer, true));
 
 			response.put(REDIRECT, REDIRECT_CONTROLPANEL_LAYERS_LIST);
 			response.put(STATUS, "ok");
@@ -574,10 +574,14 @@ public class LayerController {
 	}
 
 	private Layer buildLayerForExternalLayer(LayerDTO layerDto, HttpServletRequest httpServletRequest, User user,
-			Layer layer) {
+			Layer layer, Boolean isUpdate) {
 		Boolean isPublic = Boolean.valueOf(httpServletRequest.getParameter(IS_PUBLIC));
+
+		if (!isUpdate) {
+			layer.setIdentification(layerDto.getIdentification());
+		}
+
 		layer.setDescription(layerDto.getDescription());
-		layer.setIdentification(layerDto.getIdentification());
 		layer.setPublic(isPublic);
 		layer.setUser(user);
 		layer.setExternalType(layerDto.getExternalType());

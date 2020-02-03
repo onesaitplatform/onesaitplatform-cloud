@@ -1,8 +1,7 @@
-FROM maven:3.5.3-jdk-8-alpine
+FROM onesaitplatform/baseimage:latest
 
 # metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="rules-engine"	
+LABEL platform.image.name="rules-engine"	
 
 ADD *-exec.jar app.jar
 
@@ -24,23 +23,21 @@ RUN apk update && apk upgrade && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log 
     
-
-
-    
 VOLUME ["/var/log/platform-logs"]
 
-	
 USER onesait
 
 EXPOSE 20200
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
-    SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     JDBCPROTOCOL="jdbc:mysql:" \
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
+    HZ_ZOOKEEPER_URL=zookeeper:2181 \
     DBADDPROPS=""
     
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar

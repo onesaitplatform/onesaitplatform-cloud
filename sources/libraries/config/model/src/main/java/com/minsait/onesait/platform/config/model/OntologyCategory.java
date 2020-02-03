@@ -16,13 +16,12 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntity;
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -30,21 +29,15 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_CATEGORY")
-public class OntologyCategory extends AuditableEntity {
+public class OntologyCategory extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@Column(name = "ID")
-	@Getter
-	@Setter
-	private Integer id;
-
-	@Column(name = "IDENTIFICATOR", length = 512, nullable = false)
+	@Column(name = "IDENTIFICATION", length = 512, nullable = false)
 	@NotNull
 	@Getter
 	@Setter
-	private String identificator;
+	private String identification;
 
 	@Column(name = "DESCRIPTION", length = 1024, nullable = false)
 	@NotNull

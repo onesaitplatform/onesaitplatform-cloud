@@ -108,7 +108,21 @@ onesaitplatform:
       sql.connectionTimeout.millis: 10000
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
-      port: 9300     
+      port: 9300    
+   analytics.notebook:
+      zeppelinGlobalTimeout: 120000
+      zeppelinProtocol: http
+      zeppelinHostname: localhost
+      zeppelinPort: 8080
+      zeppelinPathname: 
+      shiroAdminUsername: admin
+      shiroAdminPass: password1
+      shiroUsername: user1
+      shiroPass: password2
+      restUsername: userrest
+      restPass: passrest
+      notebookInfoPath: /api/notebook/
+      restTimeout.millis: 10000 
 ## LOGGING CONF
 logging:
    path: ./target/ 

@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.dataflow;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -33,7 +32,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -44,7 +42,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -209,14 +206,6 @@ public class DataflowServiceImpl implements DataflowService {
 
 		try {
 			responseEntity = sendHttp(path, HttpMethod.PUT, "", headers, null);
-		} catch (final URISyntaxException e) {
-			log.error("The URI of the endpoint is invalid in creation PUT");
-			metricsManagerLogControlPanelDataflowsCreation(user, "KO");
-			throw new DataflowServiceException("The URI of the endpoint is invalid in creation PUT: " + e);
-		} catch (final IOException e) {
-			log.error("Exception in PUT in creation PUT");
-			metricsManagerLogControlPanelDataflowsCreation(user, "KO");
-			throw new DataflowServiceException("Exception in PUT in creation PUT: ", e);
 		} catch (final Exception e) {
 			log.error("Exception in PUT in creation PUT");
 			metricsManagerLogControlPanelDataflowsCreation(user, "KO");
@@ -278,16 +267,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 		if (hasUserEditPermission(pl.getIdstreamsets(), userId)) {
 
-			try {
-				responseEntity = sendHttp("rest/v1/pipeline/" + pl.getIdstreamsets(), HttpMethod.DELETE, "", userId,
-						id);
-			} catch (final URISyntaxException e) {
-				log.error("The URI of the endpoint is invalid in delete pipeline");
-				throw new DataflowServiceException("The URI of the endpoint is invalid in delete pipeline: " + e);
-			} catch (final IOException e) {
-				log.error("Exception in DELETE in creation DELETE");
-				throw new DataflowServiceException("Exception in DELETE in delete pipeline: ", e);
-			}
+			responseEntity = sendHttp("rest/v1/pipeline/" + pl.getIdstreamsets(), HttpMethod.DELETE, "", userId, id);
 
 			final HttpStatus statusCode = responseEntity.getStatusCode();
 
@@ -307,7 +287,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body,
-			String user) throws URISyntaxException, IOException {
+			String user) {
 		return sendHttp(
 				requestServlet.getServletPath()
 						+ (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : ""),
@@ -317,7 +297,7 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, Object body, String user,
-			String contentType, String dataflowId) throws URISyntaxException, IOException {
+			String contentType, String dataflowId) {
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(contentType));
 		headers.add(DATAFLOW_HEADER, dataflowId);
@@ -326,7 +306,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, Object body, String user,
-			String dataflowId) throws URISyntaxException, IOException {
+			String dataflowId)  {
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add(DATAFLOW_HEADER, dataflowId);
@@ -351,7 +331,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, Object body, HttpHeaders headers,
-			String userId) throws URISyntaxException, IOException {
+			String userId) {
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
@@ -362,9 +342,15 @@ public class DataflowServiceImpl implements DataflowService {
 
 		if (body instanceof MultipartFile) {
 			try {
-				final MultiValueMap<String, Object> valueMap = new LinkedMultiValueMap<>();
-				valueMap.add("file", new FileSystemResource(convert((MultipartFile) body)));
-				body = valueMap;
+				final MultipartFile file = (MultipartFile) body;
+				final MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+				fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\""+file.getOriginalFilename()+"\"");
+				final HttpEntity<byte[]> fileEntity = new HttpEntity<>(file.getBytes(), fileMap);
+
+				final MultiValueMap<String, Object> newBody = new LinkedMultiValueMap<>();
+				newBody.add("file", fileEntity);
+
+				body = newBody;
 			} catch (final Exception e) {
 				log.error(e.getMessage());
 				return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -387,20 +373,6 @@ public class DataflowServiceImpl implements DataflowService {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-	}
-
-	/**
-	 * Converts MultipartFile to File
-	 *
-	 * @param file
-	 * @return File
-	 * @throws IOException, IllegalStateException, IllegalArgumentException
-	 */
-	private File convert(MultipartFile file) throws IOException {
-		Assert.notNull(file, "File cannot be null");
-		final File convFile = new File(file.getOriginalFilename());
-		file.transferTo(convFile);
-		return convFile;
 	}
 
 	@Override
@@ -715,6 +687,18 @@ public class DataflowServiceImpl implements DataflowService {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
+
+	@Override
+	public ResponseEntity<String> resetOffsetPipeline(String userId, String pipelineIdentification) {
+		final Pipeline pipeline = pipelineRepository.findByIdentification(pipelineIdentification);
+		if (pipeline != null && hasUserEditPermission(pipeline.getIdstreamsets(), userId)) {
+			final HttpHeaders headers = StreamsetsApiWrapper.setBasicAuthorization(new HttpHeaders(), dataflowUser,
+					dataflowPass);
+			return StreamsetsApiWrapper.resetOffset(rt, headers, dataflowServiceUrl, pipeline.getIdstreamsets());
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+	}
 
 	@Override
 	public void createUserAccess(String dataflowId, String userId, String accessType) {

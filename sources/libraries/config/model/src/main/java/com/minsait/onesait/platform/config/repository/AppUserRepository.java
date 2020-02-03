@@ -23,10 +23,13 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface AppUserRepository extends JpaRepository<AppUser, Long> {
+public interface AppUserRepository extends JpaRepository<AppUser, String> {
 
-	@Query("SELECT ur FROM AppUser AS ur WHERE ur.user.userId = :user and ur.role.app.appId = :app")
-	List<AppUser> findByUserId(@Param("user") String user, @Param("app") String app);
+	@Query("SELECT ur FROM AppUser AS ur WHERE ur.user.userId = :user and ur.role.app.identification = :identification")
+	List<AppUser> findByUserId(@Param("user") String user, @Param("identification") String identification);
+	
+	@Query("SELECT ur FROM AppUser AS ur WHERE ur.user.userId = :user and ur.role.app.identification = :id")
+	List<AppUser> findByUserAndIdentification(@Param("user") String user, @Param("id") String id);
 
 	List<AppUser> findByUser(User user);
 

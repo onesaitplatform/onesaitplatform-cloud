@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.ontology;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -171,6 +172,8 @@ public class OntologyServiceImpl implements OntologyService {
 	@Autowired
 	private ObjectMapper mapper;
 
+	final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
 	@Override
 	public List<Ontology> getAllOntologies(String sessionUserId) {
 
@@ -234,10 +237,10 @@ public class OntologyServiceImpl implements OntologyService {
 	@Override
 	public List<Ontology> getOntologiesByUserIdAndDataModel(String sessionUserId, String datamodel) {
 		final User sessionUser = userService.getUser(sessionUserId);
-		final List<DataModel> lDataModels = dataModelRepository.findByName(datamodel);
+		final List<DataModel> lDataModels = dataModelRepository.findByIdentification(datamodel);
 		if (lDataModels == null || lDataModels.isEmpty()) {
 			log.warn("DataModel {} not found, no ontologies will be returned", datamodel);
-			return new ArrayList<>();
+			return new ArrayList<Ontology>();
 		} else if (lDataModels.size() > 1) {
 			log.warn("Several DataModels were found for name {}, using first one", datamodel);
 		}
@@ -284,6 +287,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public List<String> getAllIdentificationsByUser(String userId) {
+
 		List<Ontology> ontologies;
 		final User user = userService.getUser(userId);
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
@@ -292,7 +296,7 @@ public class OntologyServiceImpl implements OntologyService {
 			ontologies = ontologyRepository.findByUserOrderByIdentificationAsc(user);
 		}
 
-		final List<String> identifications = new ArrayList<>();
+		final List<String> identifications = new ArrayList<String>();
 		for (final Ontology ontology : ontologies) {
 			identifications.add(ontology.getIdentification());
 
@@ -364,13 +368,13 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public List<DataModelDTO> getEmptyBaseDataModel() {
-		return DataModelDTO.fromDataModels(dataModelRepository.findByName(DATAMODEL_DEFAULT_NAME));
+		return DataModelDTO.fromDataModels(dataModelRepository.findByIdentification(DATAMODEL_DEFAULT_NAME));
 	}
 
 	@Override
 	public List<String> getAllDataModelTypes() {
 		final List<MainType> types = Arrays.asList(DataModel.MainType.values());
-		final List<String> typesString = new ArrayList<>();
+		final List<String> typesString = new ArrayList<String>();
 		for (final MainType type : types) {
 			typesString.add(type.toString());
 		}
@@ -456,6 +460,15 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	@Override
+	public boolean hasEncryptionEnabled(String ontology) {
+		Ontology ont = getOntologyByIdentification(ontology);
+		if (ont == null)
+			return false;
+		else
+			return ont.isAllowsCypherFields();
+	}
+
+	@Override
 	public Map<String, String> getOntologyFields(String identification, String sessionUserId) throws IOException {
 
 		Map<String, String> fields = new TreeMap<>();
@@ -524,13 +537,13 @@ public class OntologyServiceImpl implements OntologyService {
 				} else {
 					jsonNode = jsonNode.path(PROP_STR);
 				}
-				
+
 				fields = extractFieldsQueryToolFromJsonNode(jsonNode);
 			}
 		}
 		// add Context to fields for query
 		if (!context.equals("")) {
-			final Map<String, String> fieldsForQuery = new TreeMap<>();
+			final Map<String, String> fieldsForQuery = new TreeMap<String, String>();
 			for (final Map.Entry<String, String> field : fields.entrySet()) {
 				final String key = field.getKey();
 				final String value = field.getValue();
@@ -643,7 +656,7 @@ public class OntologyServiceImpl implements OntologyService {
 				final DataModel dataModel = dataModelRepository.findById(ontology.getDataModel().getId());
 				ontology.setDataModel(dataModel);
 			} else {
-				final DataModel dataModel = dataModelRepository.findByName(DATAMODEL_DEFAULT_NAME).get(0);
+				final DataModel dataModel = dataModelRepository.findByIdentification(DATAMODEL_DEFAULT_NAME).get(0);
 				ontology.setDataModel(dataModel);
 			}
 
@@ -751,7 +764,7 @@ public class OntologyServiceImpl implements OntologyService {
 			final Set<OntologyRestOperation> operationsList = new HashSet<>();
 			final Set<OntologyRestOperationParam> paramsRestOperations = new HashSet<>();
 
-			List<OntologyRestOperation> operationsOld = new ArrayList<>();
+			List<OntologyRestOperation> operationsOld = new ArrayList<OntologyRestOperation>();
 
 			if (config.getOperations() != null) {
 
@@ -928,7 +941,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public List<Ontology> getOntologiesByClientPlatform(ClientPlatform clientPlatform) {
-		final List<Ontology> ontologies = new ArrayList<>();
+		final List<Ontology> ontologies = new ArrayList<Ontology>();
 		for (final ClientPlatformOntology relation : clientPlatformOntologyRepository
 				.findByClientPlatform(clientPlatform)) {
 			ontologies.add(relation.getOntology());
@@ -1033,14 +1046,8 @@ public class OntologyServiceImpl implements OntologyService {
 		final List<OntologyUserAccessType> types = ontologyUserAccessTypeRepository.findByName(typeName);
 		if (!CollectionUtils.isEmpty(types)) {
 			if (hasUserPermisionForChangeOntology(sessionUser, userAccess.getOntology())) {
-
 				final OntologyUserAccessType typeDB = types.get(0);
-				final Set<OntologyUserAccess> accesses = userAccess.getOntology().getOntologyUserAccesses();
-				accesses.remove(userAccess);
 				userAccess.setOntologyUserAccessType(typeDB);
-				accesses.add(userAccess);
-				userAccess.getOntology().getOntologyUserAccesses().clear();
-				userAccess.getOntology().getOntologyUserAccesses().addAll(accesses);
 				ontologyRepository.save(userAccess.getOntology());
 			} else {
 				throw new OntologyServiceException(USER_UNAUTH_STR);
@@ -1196,11 +1203,11 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	@Override
-	public void executeKPI(String user, String query, String ontology, String postProcessScript)
+	public Map<String, String> executeKPI(String user, String query, String ontology, String postProcessScript)
 			throws Exception {
 
 		final PlatformQuery newQuery = queryTemplateService.getTranslatedQuery(ontology, query);
-		
+		Map<String, String> mapResponse = new HashMap<String, String>();
 		// send query
 		String queryTranslated = query;
 		if (newQuery != null) {
@@ -1215,17 +1222,32 @@ public class OntologyServiceImpl implements OntologyService {
 			log.debug("Insert result query for ontology: " + ontology + "  query:" + query + " for user:" + user);
 			String output = result;
 			if (postProcessScript != null && !"".equals(postProcessScript)) {
-				final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 				try {
 					final String scriptPostprocessFunction = "function postprocess(data){ " + postProcessScript + " }";
 					engine.eval(scriptPostprocessFunction);
 					final Invocable inv = (Invocable) engine;
 					output = (String) inv.invokeFunction("postprocess", result);
 				} catch (final ScriptException e) {
+					mapResponse.put("status", "error");
+					mapResponse.put("message", "ontology.error.create.kpi.message.postprocess");
 					log.error("ERROR from Scripting Post Process, Exception detected", e.getCause().getMessage());
+					return mapResponse;
 				}
 			}
-			processQuery("", ontology, ApiOperation.Type.POST.name(), output, "", user);
+			String resultInsert = processQuery("", ontology, ApiOperation.Type.POST.name(), output, "", user);
+			if (resultInsert.equals("error")) {
+				mapResponse.put("status", "error");
+				mapResponse.put("message", "ontology.error.create.kpi.message.insert");
+				return mapResponse;
+			} else {
+				mapResponse.put("status", "OK");
+				return mapResponse;
+			}
+
+		} else {
+			mapResponse.put("status", "error");
+			mapResponse.put("message", "ontology.error.create.kpi.message.query");
+			return mapResponse;
 		}
 	}
 
@@ -1260,7 +1282,7 @@ public class OntologyServiceImpl implements OntologyService {
 		final OperationResultModel result = routerService.query(modelNotification);
 
 		if (result != null) {
-			if ("ERROR".equals(result.getResult())) {
+			if (!result.isStatus()) {
 				return "error";
 			}
 
@@ -1301,7 +1323,7 @@ public class OntologyServiceImpl implements OntologyService {
 				}
 			}
 		}
-		
+
 		if (query.contains("db.")) {
 			String result = query.substring(query.indexOf("db.") + 3);
 			result = result.substring(0, result.indexOf('.'));

@@ -92,9 +92,9 @@ EXPOSE 24000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     SERVER_NAME=localhost \
-    KAFKAENABLED=false \
+    KAFKAENABLED=true \
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     KAFKAUSER=VideoBrokerClient\

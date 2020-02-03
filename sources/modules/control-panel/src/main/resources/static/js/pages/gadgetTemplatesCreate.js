@@ -41,7 +41,7 @@ var GadgetsTemplateCreateController = function() {
         
         var htmlelement = document.getElementById('htmlcode');
         
-        if(!$("#id").val()){
+        if(!$("#id").val()  && ($('#templateCode').text().trim().length == 0 && $('#templateCodeJS').text().trim().length == 0)){
         	myTextArea.value = "<!--Write your HTML <div></div> and CSS <style></style> here -->\n\n<!--Focus here and F1 to show help \n    F11/ESC to enable/disable full screen editor\n    Ctrl + F to find/replace, ... -->\n\n<!--When you are editing this template, in this section, you can drop params in the cursor position. \n    To test this params go to show view or added it to a dashboard-->";
         	myTextAreaJS.value = "//Write your controller (JS code) code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\nvm.initLiveComponent = function(){\n\n};\n\n//This function will be call when data change. On first execution oldData will be null\nvm.drawLiveComponent = function(newData, oldData){\n\n};\n\n//This function will be call on element resize\nvm.resizeEvent = function(){\n\n}\n\n//This function will be call when element is destroyed\nvm.destroyLiveComponent = function(){\n\n};";       
         }
@@ -178,6 +178,7 @@ var GadgetsTemplateCreateController = function() {
         			function(){
         				$('#templateCode').val(myVSHTML.getValue());
         				$('#templateCodeJS').val(myVSJS.getValue());
+        				searchProperties(myVSHTML.getValue());
         				updatePreview();
         			},
         			1000

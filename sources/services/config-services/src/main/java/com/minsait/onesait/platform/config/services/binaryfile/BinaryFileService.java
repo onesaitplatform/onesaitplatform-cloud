@@ -23,7 +23,7 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface BinaryFileService {
 
-	public void createBinaryile(BinaryFile binaryFile);
+	public void createBinaryFile(BinaryFile binaryFile);
 
 	public void updateBinaryFile(String fileId, String metadata, String mime, String fileName);
 

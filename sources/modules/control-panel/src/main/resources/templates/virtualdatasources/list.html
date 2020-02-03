@@ -139,6 +139,7 @@
 															<th class="titulo-columnas text-center">SGDB</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -156,6 +157,9 @@
 															<!-- DATE -->
 															<td class="text-center" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${datasource.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${datasource.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">

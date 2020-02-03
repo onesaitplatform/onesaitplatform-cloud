@@ -233,17 +233,17 @@
 														</div>
 														<!-- endpoint, image -->												
 														<div class="row">
+																<input id="id_endpoint_hidden" name="id_endpoint_hidden" type="hidden" th:value="${apiEndpoint}"/>
 															<div class="col-md-6 col-sm-6 col-xs-12">
 																<div class="form-group">
-																	<label  id="id_endpoint_label"  th:text="#{apimanager.endpoint}">EndPoint</label>
+																	<label  class="description notAnimate" id="id_endpoint_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint}">EndPoint</label>
 																	<input id="id_endpoint" name="id_endpoint" class="form-control" type="text" maxlength="512" readonly="readonly"/>
-																	<input id="id_endpoint_hidden" name="id_endpoint_hidden" type="hidden" th:field="*{endpoint}"/>
 																</div>
 															</div>
-																	<input id="id_endpoint_ext_hidden" name="id_endpoint_ext_hidden" type="hidden" th:field="*{endpointExt}"/>
+																<input id="id_endpoint_ext_hidden" name="id_endpoint_ext_hidden" type="hidden" th:field="*{endpointExt}"/>
 															<div class="col-md-6 col-sm-6 col-xs-12">
 																<div class="form-group">																
-																	<label class="description notAnimate" id="id_endpoint_label" for="id_endpoint" th:text="#{apimanager.endpoint.swagger}">Swagger</label>
+																	<label class="description notAnimate" id="id_endpoint_swagger_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint.swagger}">Swagger</label>
 																	<input id="id_endpoint_swagger" name="id_endpoint_swagger" class="form-control" type="text" maxlength="512" readonly="readonly" th:value="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'"/>
 																</div>		
 															</div>
@@ -271,6 +271,16 @@
 																	<img id="showedImg" th:if="${not #lists.isEmpty(api.image)}" th:src="@{/apimanager/} + ${api.id + '/getImage'}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>
 																	<img id="showedImg" th:if="${#lists.isEmpty(api.image)}" th:src="@{/img/API.png}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>																	
 																</div>		
+															</div>
+															<div th:if="!*{graviteeId}AND ${graviteeOn}" class="col-md-6 col-sm-6 col-xs-12">																
+																<div class="form-group">
+																	<label th:text="#{apimanager.publish.gravitee}">Publish to gravitee</label>
+																	<div style="padding: 5px;">
+																		<input id="checkbox-gravitee" name="checkbox-gravitee" type="checkbox" onchange="updateCheckGravitee()" />
+																		<input type="hidden" name="publish2gravitee" id="publish2gravitee" value="false"/>
+																	</div>
+																	<img id="showedImg"  th:src="@{/static/images/graviteeio.png}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>
+																</div>																
 															</div>	
 														</div>		
 														<!-- JSON swagger import -->	
@@ -394,8 +404,8 @@
 																					</div>
 																					<div class="op_desc_div">
 																						<label th:id="${operation.identification + '_LABEL'}" class="description bold" style="font-size: 14px; color: rgb(34, 48, 77); padding-right:15px; min-width: 200px;display: inline-block;" th:text="${operation.identification}"/>
-																						<input th:id="${operation.identification + '_Edit'}" class="btn btn-sm blue-hoki" type="button" th:value="#{gen.editBtn}" th:name="${operation.identification + '_Edit'}" style="float: right; position: relative;top: -40px;" th:onclick="'javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'" />
-																						<input th:id="${operation.identification + '_Eliminar'}" class="btn btn-sm red-sunglo" type="button" th:value="#{gen.deleteBtn}" th:name="${operation.identification + '_Eliminar'}" style="float: right;  margin-right: 4px;position: relative;top: -40px;" th:onclick="'javascript:ApiCustomOpsController.removeCustomSqlOp(\'' + ${operation.identification} + '\');'"/>
+																						<input th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" th:id="${operation.identification + '_Edit'}" class="btn btn-sm blue-hoki" type="button" th:value="#{gen.editBtn}" th:name="${operation.identification + '_Edit'}" style="float: right; position: relative;top: -40px;" th:onclick="'javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'" />
+																						<input th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" th:id="${operation.identification + '_Eliminar'}" class="btn btn-sm red-sunglo" type="button" th:value="#{gen.deleteBtn}" th:name="${operation.identification + '_Eliminar'}" style="float: right;  margin-right: 4px;position: relative;top: -40px;" th:onclick="'javascript:ApiCustomOpsController.removeCustomSqlOp(\'' + ${operation.identification} + '\');'"/>
 																						<span style="padding-right:15px; min-width: 250px;display: inline-block;"><span class="label label-success "><small>ENDPOINT</small></span> <span th:id="${operation.identification + '_PATH'}"  class="bold" th:text="${operation.path}">path</span></span>
 																						<span th:each="querystring : ${operation.querystrings}" th:if="${(querystring.name == '$query')}" th:id="${operation.identification + '_QUERY'}" style="padding-right: 30px; min-width: 150px; display: inline-block;"><span class="label label-info "><small>QUERY</small></span> <span class="bold" th:text="${querystring.value}"> query </span></span>
 																						<span  style="padding-left: 20px; display: inline-block;"><span class="label label-info "><small>DESC.</small></span> <span th:id="${operation.identification + '_DESC'}" class="text-truncate-lg" th:text="${operation.description}"> Description </span></span>
@@ -403,7 +413,7 @@
 																				</div>
 																			</div>
 																			
-																			<div id="divCUSTOMSQL" class="op_div">
+																			<div  th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" id="divCUSTOMSQL" class="op_div">
 																				<div id="buttonOperationCUSTOMSQL" class="op_button_div">
 																				<input id="CUSTOMSQL" class="btn btn-outline blue-hoki sbold " type="button" value="CUSTOMSQL" name="CUSTOMSQL" th:value="#{apimanager.CUSTOMSQL}" onclick="ApiCustomOpsController.selectEditCustomOp('')"/>
 																				</div>
@@ -619,7 +629,7 @@
 							</div>					
 							<div class="modal-footer">
 						        <button type="button" class="btn btn-circle btn-outline blue" data-dismiss="modal">Close</button>
-						        <button type="button" class="btn btn-circle btn-outline btn-primary" th:onclick="'javascript:ApiCustomOpsController.saveCustom()'" >Save changes</button>
+						        <button th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" type="button" class="btn btn-circle btn-outline btn-primary" th:onclick="'javascript:ApiCustomOpsController.saveCustom()'" >Save changes</button>
 							</div>
 						</div>
 					</div>
@@ -805,6 +815,11 @@
 				});
 			}
 		});
+	}
+	
+	function updateCheckGravitee(){
+		var checked = $('#checkbox-gravitee').is(':checked');
+		$('#publish2gravitee').val(checked);
 	}
 	
 	

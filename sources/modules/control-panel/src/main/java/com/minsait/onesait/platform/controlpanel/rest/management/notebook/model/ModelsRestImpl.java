@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,9 @@ import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.model.ModelService;
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.controlpanel.controller.model.ModelController;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -87,10 +92,8 @@ public class ModelsRestImpl implements ModelsRest {
 	@Autowired
 	ParameterModelRepository parameterModelRepository;
 
-	@Value("${onesaitplatform.dashboardengine.url.only.view}")
 	private String dashboardUrl;
 
-	@Value("${onesaitplatform.notebook.url}")
 	private String notebookUrl;
 
 	@Autowired
@@ -101,7 +104,16 @@ public class ModelsRestImpl implements ModelsRest {
 
 	@Autowired
 	private JWTService jwtService;
+	
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
+	@PostConstruct
+	public void init() {
+		notebookUrl = resourcesService.getUrl(Module.NOTEBOOK, ServiceUrl.URL);
+		dashboardUrl = resourcesService.getUrl(Module.DASHBOARDENGINE, ServiceUrl.ONLYVIEW);
+	}
+	
 	@Override
 	public ResponseEntity<?> getByCategoryAndSubcategory(@RequestHeader(value = "Authorization") String authorization,
 			@RequestParam(value = "Category", required = true) String category,

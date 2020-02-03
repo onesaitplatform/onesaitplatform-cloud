@@ -44,8 +44,6 @@ public interface ClientPlatformService {
 
 	void createOntologyRelation(Ontology ontology, ClientPlatform clientPlatform);
 
-	public Ontology createDeviceLogOntology(ClientPlatform client);
-
 	Ontology getDeviceLogOntology(ClientPlatform client);
 
 	public List<Token> getTokensByClientPlatformId(String clientPlatformId);
@@ -60,4 +58,5 @@ public interface ClientPlatformService {
 
 	public Token createClientTokenWithAccessType(Map<Ontology, AccessType> ontologies, ClientPlatform clientPlatform);
 
+	public Ontology createDeviceLogOntology(ClientPlatform client);
 }

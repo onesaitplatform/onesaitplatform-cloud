@@ -89,7 +89,7 @@
 						<div class="portlet light container">
 							<div class="portlet-title">
 								<div class="caption">
-									<span class="caption-subject" th:object="${dataModel}" th:text="#{datamodel.template.show} + ' ' + ${dataModel.name}"> Data Model Name</span>
+									<span class="caption-subject" th:object="${dataModel}" th:text="#{datamodel.template.show} + ' ' + ${dataModel.identification}"> Data Model Name</span>
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>																			
@@ -109,7 +109,7 @@
 													<div class="col-md-6 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label class="control-label" th:text="#{datamodel.name} + ':'">Name</label>
-															<p id="viewName" name="viewName" class="form-control-static-block " th:text="*{name}"> Data Model Name </p>
+															<p id="viewName" name="viewName" class="form-control-static-block " th:text="*{identification}"> Data Model Name </p>
 														</div>
 													</div>
 													<div class="col-md-6 col-sm-12 col-xs-12" >
@@ -155,13 +155,13 @@
 												<div class="pull-right">
 													
 													<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-													<button th:if="${dataModel.name} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
 													<button sec:authorize="!hasAuthority('ROLE_PARTNER')"  th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} +'\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 													
 													<span class="sep no-border">&nbsp;</span>
 													
 													<!-- REMOVE TO-DO: caducado -->
-													<button th:if="${dataModel.name} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDataModelConfirmation(\'' + ${dataModel.id} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDataModelConfirmation(\'' + ${dataModel.id} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
 													
 													<span class="sep">&nbsp;</span>
 													

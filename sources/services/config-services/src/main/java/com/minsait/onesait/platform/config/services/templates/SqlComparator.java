@@ -182,13 +182,17 @@ public class SqlComparator {
 			} else if (selectItems2.size() == 1) {
 				// The template consists of a variable which will store some
 				// SelectExpressionItems in Array format
-				final SelectExpressionItem selectItem2 = (SelectExpressionItem) selectItems2.get(0);
-				if (SelectExpressionItem.class.equals(selectItems2.get(0).getClass())
-						&& UserVariable.class.equals(selectItem2.getExpression().getClass())) {
-					final UserVariable userVariable = (UserVariable) selectItem2.getExpression();
-					result.addVariable(userVariable.getName(), selectItems1.toString(), VariableData.Type.STRING);
-					result.setResult(true);
-				}
+			    //net.sf.jsqlparser.statement.select.AllColumns
+			    SelectItem selectItem = selectItems2.get(0);
+			    if (!(selectItem instanceof AllColumns)) {
+    				final SelectExpressionItem selectItem2 = (SelectExpressionItem) selectItems2.get(0);
+    				if (SelectExpressionItem.class.equals(selectItems2.get(0).getClass())
+    						&& UserVariable.class.equals(selectItem2.getExpression().getClass())) {
+    					final UserVariable userVariable = (UserVariable) selectItem2.getExpression();
+    					result.addVariable(userVariable.getName(), selectItems1.toString(), VariableData.Type.STRING);
+    					result.setResult(true);
+    				}
+			    }
 			}
 		}
 	}

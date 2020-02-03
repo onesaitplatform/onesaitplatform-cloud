@@ -27,9 +27,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.Device;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
-import com.minsait.onesait.platform.config.repository.DeviceRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -46,7 +46,7 @@ public class GraphDeviceUtil {
 	private ClientPlatformRepository clientPlatformRepository;
 
 	@Autowired
-	private DeviceRepository deviceRepository;
+	private ClientPlatformInstanceRepository deviceRepository;
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
@@ -71,7 +71,7 @@ public class GraphDeviceUtil {
 	@PostConstruct
 	public void init() {
 		// initialize URLS
-	    String url = this.intregationResourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE);
+		String url = this.intregationResourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE);
 		this.urlImages = url + "/static/images/";
 	}
 
@@ -94,13 +94,13 @@ public class GraphDeviceUtil {
 
 		for (ClientPlatform clientPlatform : clientPlatforms) {
 
-			List<Device> listDevice = deviceRepository.findByClientPlatform(clientPlatform);
+			List<ClientPlatformInstance> listDevice = deviceRepository.findByClientPlatform(clientPlatform);
 
 			String clientImage = IMAGE_CLIENT;
 			if (listDevice != null && !listDevice.isEmpty()) {
-				for (Iterator<Device> iterator = listDevice.iterator(); iterator.hasNext();) {
-					Device device = iterator.next();
-					if (!device.getStatus().equals(Device.StatusType.OK.toString())) {
+				for (Iterator<ClientPlatformInstance> iterator = listDevice.iterator(); iterator.hasNext();) {
+					ClientPlatformInstance device = iterator.next();
+					if (!device.getStatus().equals(ClientPlatformInstance.StatusType.OK.toString())) {
 						clientImage = IMAGE_CLIENT_ERROR;
 					}
 				}
@@ -111,22 +111,22 @@ public class GraphDeviceUtil {
 					null));
 
 			if (listDevice != null && !listDevice.isEmpty()) {
-				for (Iterator<Device> iterator = listDevice.iterator(); iterator.hasNext();) {
-					Device device = iterator.next();
+				for (Iterator<ClientPlatformInstance> iterator = listDevice.iterator(); iterator.hasNext();) {
+					ClientPlatformInstance device = iterator.next();
 					String state;
 					String image;
 					if (device.isConnected() && !maximunTimeUpdatingExceeded(device.getUpdatedAt())) {
 						state = ACTIVE;
 						image = IMAGE_DEVICE_ACTIVE;
 						if (device.getStatus() != null && device.getStatus().trim().length() > 0
-								&& !device.getStatus().equals(Device.StatusType.OK.toString())) {
+								&& !device.getStatus().equals(ClientPlatformInstance.StatusType.OK.toString())) {
 							image = IMAGE_DEVICE_ERROR;
 						}
 					} else {
 						state = INACTIVE;
 						image = IMAGE_DEVICE_INACTIVE;
 						if (device.getStatus() != null && device.getStatus().trim().length() > 0
-								&& !device.getStatus().equals(Device.StatusType.OK.toString())) {
+								&& !device.getStatus().equals(ClientPlatformInstance.StatusType.OK.toString())) {
 							image = IMAGE_DEVICE_ERROR;
 						}
 					}

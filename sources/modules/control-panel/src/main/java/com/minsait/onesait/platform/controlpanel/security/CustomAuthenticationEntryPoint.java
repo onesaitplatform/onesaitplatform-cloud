@@ -25,6 +25,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 
 public class CustomAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
+	private static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
 
 	public CustomAuthenticationEntryPoint(String loginFormUrl) {
 		super(loginFormUrl);
@@ -34,6 +35,7 @@ public class CustomAuthenticationEntryPoint extends LoginUrlAuthenticationEntryP
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException authException) throws IOException, ServletException {
 		request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getServletPath());
+		request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, request.getParameterMap());
 		super.commence(request, response, authException);
 	}
 

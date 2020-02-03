@@ -56,6 +56,14 @@
 				},
 				{
 					"title": {
+						"EN": "My Microservices",
+						"ES": "Mis microservicios"
+					},
+					"icon": "",
+					"url": "/controlpanel/microservices/list"
+				},
+				{
+					"title": {
 						"EN": "Data Import Tools",
 						"ES": "Herramientas de importación"
 					},
@@ -117,6 +125,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/apps/list"
+				},
+				{
+					"title": {
+						"EN": "BPM Tenants",
+						"ES": "Dominios de BPM"
+					},
+					"icon": "",
+					"url": "/controlpanel/bpm/list"
 				}
 			]
 		},

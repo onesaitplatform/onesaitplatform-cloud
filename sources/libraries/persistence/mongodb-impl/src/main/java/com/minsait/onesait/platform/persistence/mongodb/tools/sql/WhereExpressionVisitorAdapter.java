@@ -25,12 +25,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
@@ -47,6 +49,8 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	private static final String DOLLAR_OR = "$or";
 	private static final String OR_SPLITTER = " or ";
 	private static final String AND_SPLITTER = " and ";
+	private static final String BOOLEAN_FUNCTION = "BOOLEAN";
+	private static final String OID_FUNCTION = "OID";
 	@Getter
 	@Setter
 	private boolean firstAnd;
@@ -59,6 +63,32 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	@Getter
 	@Setter
 	private int orsInQuery;
+
+	@Override
+	public void visit(Function function) {
+		if (function.getName().equalsIgnoreCase(BOOLEAN_FUNCTION)) {
+			final ExpressionList params = function.getParameters();
+			if (params.getExpressions().size() == 1) {
+				final String param = params.getExpressions().get(0).toString();
+				builder.append(Boolean.valueOf(param));
+				builder.append("}");
+			} else {
+				throw new RuntimeException("Incorrect use of " + BOOLEAN_FUNCTION + " function");
+			}
+
+		} else if (function.getName().equalsIgnoreCase(OID_FUNCTION)) {
+			final ExpressionList params = function.getParameters();
+			if (params.getExpressions().size() == 1) {
+				final String param = ((StringValue) params.getExpressions().get(0)).getValue();
+				builder.append(getObjectId(param));
+				builder.append("}");
+			} else {
+				throw new RuntimeException("Incorrect use of " + OID_FUNCTION + " function");
+			}
+		} else {
+			throw new RuntimeException("SQL Function " + function.getName() + " not supported");
+		}
+	}
 
 	@Override
 	public void visit(OrExpression or) {
@@ -189,8 +219,8 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	public void visit(StringValue stringValue) {
 		if (isDateTimeFormat(stringValue.getValue()))
 			builder.append(getDateTime(stringValue.getValue()));
-		else if (isObjectId(stringValue.getValue()))
-			builder.append(getObjectId(stringValue.getValue()));
+		// else if (isObjectId(stringValue.getValue()))
+		// builder.append(getObjectId(stringValue.getValue()));
 		else if (isBooleanValue(stringValue.getValue()))
 			builder.append(getBooleanValue(stringValue.getValue()));
 		else
@@ -231,7 +261,10 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	}
 
 	private boolean isObjectId(String value) {
-		return getObjectId(value) != null;
+
+		final Pattern pattern = Pattern.compile("^[0-9a-fA-F]{24}$");
+		final Matcher matcher = pattern.matcher(value);
+		return matcher.matches();
 	}
 
 	private String getDateTime(String dateTimeValue) {
@@ -245,13 +278,7 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	}
 
 	private String getObjectId(String oid) {
-		final Pattern pattern = Pattern.compile("^[0-9a-fA-F]{24}$");
-		final Matcher matcher = pattern.matcher(oid);
-		if (matcher.matches()) {
-			return OBJECTID_FUNCTION + "('" + oid + "')";
-		} else {
-			return null;
-		}
+		return OBJECTID_FUNCTION + "('" + oid + "')";
 	}
 
 	private boolean getBooleanValue(String value) {

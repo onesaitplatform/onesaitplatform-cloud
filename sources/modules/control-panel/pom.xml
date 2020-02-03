@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>1.0.0-ce</version>
+		<version>1.5.3-defender</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-controlpanel</artifactId>
@@ -126,7 +126,11 @@
 			</exclusions>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-nodered-auth-services</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
 		<!-- Spring fox swagger ui -->
 
 		<dependency>
@@ -198,7 +202,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
-			<version>3.3.7</version>
+			<version>3.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -247,7 +251,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -332,13 +335,34 @@
 			<version>1.2.3</version>
 		</dependency>
 
-
 		<!-- JASPER REPORTS -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
 			<version>6.7.0</version>
+
 		</dependency>
+
+		<dependency>
+			<groupId>com.jaspersoft.adapter.webservice</groupId>
+			<artifactId>jaspersoft-webservices-dataadapter</artifactId>
+			<version>1.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.eclipse.jdt.core.compiler</groupId> <artifactId>ecj</artifactId> 
+			<version>4.6.1</version> </dependency> -->
+
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.3.6</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.jaspersoft.adapter.webservice</groupId>
 			<artifactId>jaspersoft-webservices-dataadapter</artifactId>
@@ -351,10 +375,15 @@
 			<version>4.3.6</version>
 		</dependency>
 
-
 		<dependency>
 			<groupId>org.jolokia</groupId>
 			<artifactId>jolokia-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.oracle.jdbc</groupId>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
 		</dependency>
 
 		<dependency>
@@ -417,6 +446,10 @@
 		<repository>
 			<id>Spring Plugins</id>
 			<url>http://repo.spring.io/plugins-release/</url>
+		</repository>
+		<repository>
+			<id>Jasper</id>
+			<url>https://maven.xwiki.org/externals</url>
 		</repository>
 		<repository>
 			<id>jasper</id>

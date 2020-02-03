@@ -46,14 +46,15 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	private GlobalConfiguration globalConfiguration;
 
 	public enum ServiceUrl {
-		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY, MANAGEMENT
+		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY, MANAGEMENT, DEPLOYMENT, 
+		URL, EDIT, VIEW, ONLYVIEW, PROXYURL;
 	}
 
 	public enum Module {
-		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"), ROUTERSTANDALONE(
-				"routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"), DIGITALTWINBROKER(
-						"digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI(
-								"monitoringUI"), RULES_ENGINE("rulesEngine");
+		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"), ROUTERSTANDALONE("routerStandAlone"), 
+		APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"), DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), 
+		MONITORINGUI("monitoringUI"), GRAVITEE("gravitee"), RULES_ENGINE("rulesEngine"), BPM_ENGINE("bpmEngine"), 
+		NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine");
 
 		String moduleString;
 
@@ -110,6 +111,8 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					return urls.getFlowEngine().getBase();
 				case ADVICE:
 					return urls.getFlowEngine().getAdvice();
+				case PROXYURL:
+					return urls.getFlowEngine().getProxyurl();
 				default:
 					break;
 				}
@@ -149,6 +152,14 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					break;
 				}
 				break;
+			case NOTEBOOK:
+				switch(service) {
+				case URL:
+					return urls.getNotebook().getUrl();
+				default:
+					break;
+				}
+				break;
 			case DIGITALTWINBROKER:
 				if (service.equals(ServiceUrl.BASE))
 					return urls.getDigitalTwinBroker().getBase();
@@ -157,6 +168,19 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 			case DOMAIN:
 				if (service.equals(ServiceUrl.BASE))
 					return urls.getDomain().getBase();
+				break;
+
+			case GRAVITEE:
+				switch (service) {
+				case UI:
+					return urls.getGravitee().getUi();
+				case MANAGEMENT:
+					return urls.getGravitee().getManagement();
+				case GATEWAY:
+					return urls.getGravitee().getGateway();
+				default:
+					break;
+				}
 				break;
 			case MONITORINGUI:
 				switch (service) {
@@ -174,6 +198,28 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					return urls.getRulesEngine().getAdvice();
 				case BASE:
 					return urls.getRulesEngine().getBase();
+				default:
+					break;
+				}
+				break;
+			case BPM_ENGINE:
+				switch (service) {
+				case BASE:
+					return urls.getBpmEngine().getBase();
+				case DEPLOYMENT:
+					return urls.getBpmEngine().getDeployment();
+				default:
+					break;
+				}
+				break;
+			case DASHBOARDENGINE:
+				switch (service) {
+				case EDIT:
+					return urls.getDashboardEngine().getEdit();
+				case VIEW:
+					return urls.getDashboardEngine().getView();
+				case ONLYVIEW:
+					return urls.getDashboardEngine().getOnlyview();
 				default:
 					break;
 				}

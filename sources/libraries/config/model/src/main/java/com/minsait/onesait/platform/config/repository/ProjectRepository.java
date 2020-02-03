@@ -30,8 +30,8 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 	@Override
 	void delete(Project project);
 
-	// @Query("select p from Project p where ?1 in p.users.userId")
 	public List<Project> findByUsersIn(List<User> users);
 
-	public List<Project> findByName(String name);
+	public List<Project> findByIdentification(String identification);
+
 }

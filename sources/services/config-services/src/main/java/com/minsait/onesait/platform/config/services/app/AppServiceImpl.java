@@ -108,8 +108,8 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public void createApp(App app) {
-		if (appRepository.exists(app.getAppId())) {
-			throw new AppServiceException("App with identification: " + app.getAppId() + " exists");
+		if (appRepository.findByIdentificationEquals(app.getIdentification())!=null) {
+			throw new AppServiceException("App with identification: " + app.getIdentification() + " exists");
 		}
 		appRepository.save(app);
 
@@ -117,21 +117,20 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	@Transactional
-	public App getByIdentification(String identification) {
-		return appRepository.findOne(identification);
+	public App getByIdentification(String id) {
+		return appRepository.findOne(id);
 	}
 
 	@Override
 	@Transactional
 	public void updateApp(AppCreateDTO appDTO) {
 
-		final App app = appRepository.findOne(appDTO.getAppId());
+		final App app = appRepository.findOne(appDTO.getId());
 		app.setSecret(appDTO.getSecret());
 		app.setTokenValiditySeconds(appDTO.getTokenValiditySeconds());
-		app.setName(appDTO.getName());
+		app.setIdentification(appDTO.getIdentification());
 		app.setDescription(appDTO.getDescription());
 
-		// Borramos la asociacion entre roles
 		for (final AppRole role : app.getAppRoles()) {
 			for (final AppRole appRole : getAllRoles()) {
 				if (appRole.getChildRoles() != null && appRole.getChildRoles().contains(role)) {
@@ -145,24 +144,21 @@ public class AppServiceImpl implements AppService {
 						.removeIf(pra -> pra.getAppRole() != null && pra.getAppRole().equals(role));
 				projectService.updateProject(project);
 			}
-			role.setApp(null);
-			appRoleRepository.delete(role.getId());
 		}
+		
+		app.getAppRoles().clear();
 
-		// Borramos la asociacion entre apps
 		for (final App application : getAllApps()) {
 			if (application.getChildApps() != null && application.getChildApps().contains(app)) {
 				application.getChildApps().remove(app);
 				appRepository.save(application);
 			}
 		}
+
+		app.getChildApps().clear();
 		
-		app.setChildApps(null);
-
-		app.getAppRoles().clear();
-		appRepository.save(app);
-
 		updateAppRoles(app, appDTO);
+	
 		appRepository.save(app);
 
 	}
@@ -194,13 +190,13 @@ public class AppServiceImpl implements AppService {
 						final AppUser appUser = new AppUser();
 						appUser.setUser(usuario);
 						appUser.setRole(rol);
-						if (rol!= null && rol.getAppUsers()!=null) {
+						if (rol != null && rol.getAppUsers() != null) {
 							rol.getAppUsers().add(appUser);
 						}
 					}
 				}
 			}
-			
+
 			updateAppAssociations(associations, app);
 
 		} catch (final Exception e) {
@@ -210,10 +206,10 @@ public class AppServiceImpl implements AppService {
 
 	private void updateAppAssociations(List<AppAssociatedCreateDTO> associations, App app) {
 		if (!associations.isEmpty()) {
-			for (final AppAssociatedCreateDTO association : associations) {		
-				if (association.getFatherAppId().equals(app.getAppId())) {						
-					updateFatherAssociation(association, app);						
-				} else if (association.getChildAppId().equals(app.getAppId())) {						
+			for (final AppAssociatedCreateDTO association : associations) {
+				if (association.getFatherAppId().equals(app.getIdentification())) {
+					updateFatherAssociation(association, app);
+				} else if (association.getChildAppId().equals(app.getIdentification())) {
 					updateChildAssociation(association, app);
 				}
 			}
@@ -223,78 +219,74 @@ public class AppServiceImpl implements AppService {
 	private void updateFatherAssociation(AppAssociatedCreateDTO association, App app) {
 		AppRole fatherRole = null;
 		final Optional<AppRole> fatherRoleOptional = app.getAppRoles().stream()
-				.filter(rolPadre -> rolPadre.getName().equals(association.getFatherRoleName()))
-				.findFirst();
-		
+				.filter(rolPadre -> rolPadre.getName().equals(association.getFatherRoleName())).findFirst();
+
 		if (fatherRoleOptional.isPresent()) {
 			fatherRole = fatherRoleOptional.get();
 		}
-		
-		final App childApp = appRepository.findOne(association.getChildAppId());
-		
+
+		final App childApp = appRepository.findByIdentification(association.getChildAppId());
+
 		AppRole childRole = null;
 		final Optional<AppRole> childRoleOptional = childApp.getAppRoles().stream()
-				.filter(rolHijo -> rolHijo.getName().equals(association.getChildRoleName()))
-				.findFirst();
+				.filter(rolHijo -> rolHijo.getName().equals(association.getChildRoleName())).findFirst();
 
 		if (childRoleOptional.isPresent()) {
 			childRole = childRoleOptional.get();
 		}
-		
-		if (fatherRole!=null) {
+
+		if (fatherRole != null) {
 			if (fatherRole.getChildRoles() == null) {
 				fatherRole.setChildRoles(new HashSet<AppRole>());
 			}
 			fatherRole.getChildRoles().add(childRole);
 		}
-		
+
 		if (app.getChildApps() == null) {
 			app.setChildApps(new HashSet<App>());
 		}
 		app.getChildApps().add(childApp);
 		appRepository.save(app);
 	}
-	
+
 	private void updateChildAssociation(AppAssociatedCreateDTO association, App app) {
-		final App fatherApp = appRepository.findOne(association.getFatherAppId());
-		
+		final App fatherApp = appRepository.findByIdentification(association.getFatherAppId());
+
 		AppRole fatherRole = null;
 
 		final Optional<AppRole> fatherRoleOptional = fatherApp.getAppRoles().stream()
-				.filter(rolPadre -> rolPadre.getName().equals(association.getFatherRoleName()))
-				.findFirst();
-		
+				.filter(rolPadre -> rolPadre.getName().equals(association.getFatherRoleName())).findFirst();
+
 		if (fatherRoleOptional.isPresent()) {
 			fatherRole = fatherRoleOptional.get();
 		}
-		
-		AppRole childRole = null;		
+
+		AppRole childRole = null;
 		final Optional<AppRole> childRoleOptional = app.getAppRoles().stream()
-				.filter(rolHijo -> rolHijo.getName().equals(association.getChildRoleName()))
-				.findFirst();
-		
+				.filter(rolHijo -> rolHijo.getName().equals(association.getChildRoleName())).findFirst();
+
 		if (childRoleOptional.isPresent()) {
 			childRole = childRoleOptional.get();
 		}
 
-		if (fatherRole!=null) {
+		if (fatherRole != null) {
 			if (fatherRole.getChildRoles() == null) {
 				fatherRole.setChildRoles(new HashSet<AppRole>());
 			}
 			fatherRole.getChildRoles().add(childRole);
 		}
-		
+
 		if (fatherApp.getChildApps() == null) {
 			fatherApp.setChildApps(new HashSet<App>());
 		}
 		fatherApp.getChildApps().add(app);
 		appRepository.save(fatherApp);
-		
+
 	}
 
 	private AppRole findRole(App app, String roleName) {
 		final Optional<AppRole> opt = app.getAppRoles().stream().filter(x -> x.getName().equals(roleName)).findFirst();
-		if (opt.isPresent()){
+		if (opt.isPresent()) {
 			return (opt.get());
 		} else {
 			return null;
@@ -303,50 +295,43 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	@Transactional
-	public void deleteApp(String id) {
-		final App app = appRepository.findOne(id);
+	public void deleteApp(App app) {
 
-		deleteRolesApp (app);
-		deleteChildApps(app);
-
-		appRepository.delete(app.getAppId());
+		if (app.getChildApps() != null && !app.getChildApps().isEmpty()) {
+			deleteFatherApp(app);
+		} else {		
+			for (final App application : getAllApps()) {
+				if (application.getChildApps() != null && application.getChildApps().contains(app)) {
+					deleteChildApp(application, app);
+				}
+			}
+		}
+		appRepository.delete(app);
 	}
-
-	private void deleteRolesApp(App app) {
-		for (final AppRole role : app.getAppRoles()) {
-			if (role.getChildRoles() != null && !role.getChildRoles().isEmpty()) {
-				role.setChildRoles(null);
-				appRoleRepository.save(role);
-			} else {
-				for (final AppRole appRole : getAllRoles()) {
-					if (appRole.getChildRoles() != null && appRole.getChildRoles().contains(role)) {
-						appRole.getChildRoles().remove(role);
-						appRoleRepository.save(appRole);
+	
+	private void deleteChildApp(App application, App app) {
+		application.getChildApps().remove(app);
+		for (final AppRole appRole : application.getAppRoles()) {
+			if (appRole.getChildRoles() != null) {
+				for (final AppRole childRole : appRole.getChildRoles()) {
+					if (childRole.getApp().equals(app)) {
+						appRole.getChildRoles().remove(childRole);
 					}
 				}
 			}
-			role.setApp(null);
-			appRoleRepository.delete(role.getId());
 		}
-		app.getAppRoles().clear();
+		appRepository.save(application);
 	}
 	
-	private void deleteChildApps(App app) {
-		if (app.getChildApps() != null && !app.getChildApps().isEmpty()) {
-			app.setChildApps(null);
-			appRepository.save(app);
-		} else {
-			for (final App application : getAllApps()) {
-				if (application.getChildApps() != null && application.getChildApps().contains(app)) {
-					application.getChildApps().remove(app);
-					appRepository.save(application);
-				}
-			}
+	private void deleteFatherApp(App app) {
+		for (final AppRole appRole : app.getAppRoles()) {
+			appRole.getChildRoles().clear();
 		}
+		app.getChildApps().clear();
 	}
 
 	@Override
-	public Long createUserAccess(String appId, String userId, Long roleId) {
+	public String createUserAccess(String appId, String userId, String roleId) {
 
 		final App app = appRepository.findOne(appId);
 		final User sessionUser = userService.getUser(userId);
@@ -364,12 +349,7 @@ public class AppServiceImpl implements AppService {
 	}
 
 	@Override
-	public Long createUserAccess(String appId, String userId, String roleId) {
-		return this.createUserAccess(appId, userId, Long.valueOf(roleId));
-	}
-
-	@Override
-	public void deleteUserAccess(Long appUserId) {
+	public void deleteUserAccess(String appUserId) {
 		final AppUser appUser = appUserRepository.findOne(appUserId);
 		final AppRole appRole = appRoleRepository.findOne(appUser.getRole().getId());
 		if (appRole.getAppUsers().contains(appUser)) {
@@ -389,17 +369,17 @@ public class AppServiceImpl implements AppService {
 	public Map<String, String> createAssociation(String fatherRoleId, String childRoleId) {
 		final Map<String, String> result = new HashMap<>();
 
-		final AppRole fatherRole = appRoleRepository.findOne(Long.valueOf(fatherRoleId));
-		final AppRole childRole = appRoleRepository.findOne(Long.valueOf(childRoleId));
+		final AppRole fatherRole = appRoleRepository.findOne(fatherRoleId);
+		final AppRole childRole = appRoleRepository.findOne(childRoleId);
 		final App fatherApp = fatherRole.getApp();
 		final App childApp = childRole.getApp();
 
 		fatherApp.getChildApps().add(childApp);
 		fatherRole.getChildRoles().add(childRole);
 
-		result.put("fatherAppId", fatherApp.getAppId());
+		result.put("fatherAppId", fatherApp.getIdentification());
 		result.put("fatherRoleName", fatherRole.getName());
-		result.put("childAppId", childApp.getAppId());
+		result.put("childAppId", childApp.getIdentification());
 		result.put("childRoleName", childRole.getName());
 
 		appRepository.save(fatherApp);
@@ -409,9 +389,9 @@ public class AppServiceImpl implements AppService {
 	@Override
 	@Transactional
 	public void createAssociation(String fatherRoleName, String childRoleName, String fatherAppId, String childAppId) {
-		final App fatherApp = appRepository.findOne(fatherAppId);
+		final App fatherApp = getAppByIdentification(fatherAppId);
 		final AppRole fatherRole = getByRoleNameAndApp(fatherRoleName, fatherApp);
-		final App childApp = appRepository.findOne(childAppId);
+		final App childApp = getAppByIdentification(childAppId);
 		final AppRole childRole = getByRoleNameAndApp(childRoleName, childApp);
 
 		fatherApp.getChildApps().add(childApp);
@@ -425,9 +405,9 @@ public class AppServiceImpl implements AppService {
 	@Transactional
 	public void deleteAssociation(String fatherRoleName, String childRoleName, String fatherAppId, String childAppId) {
 
-		final App fatherApp = appRepository.findOne(fatherAppId);
+		final App fatherApp = getAppByIdentification(fatherAppId);
 		final AppRole fatherRole = getByRoleNameAndApp(fatherRoleName, fatherApp);
-		final App childApp = appRepository.findOne(childAppId);
+		final App childApp = getAppByIdentification(childAppId);
 		final AppRole childRole = getByRoleNameAndApp(childRoleName, childApp);
 
 		if (fatherRole.getChildRoles().contains(childRole)) {
@@ -484,10 +464,15 @@ public class AppServiceImpl implements AppService {
 	}
 
 	@Override
-	public AppRole findRole(Long roleId) {
+	public AppRole findRole(String roleId) {
 		return appRoleRepository.findOne(roleId);
 	}
 
+	@Override
+	public App getAppByIdentification(String identification) {
+		return appRepository.findByIdentification(identification);
+	}
+	
 	@Override
 	@Transactional
 	public Realm getRealmByAppIdentification(String appId) {
@@ -498,7 +483,7 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public boolean isUserInApp(String userId, String realmId) {
-		List<AppUser> listUser = appUserRepository.findByUserId(userId, realmId);
+		List<AppUser> listUser = appUserRepository.findByUserAndIdentification(userId, realmId);
 		return !(listUser == null || listUser.isEmpty());
 	}
 }

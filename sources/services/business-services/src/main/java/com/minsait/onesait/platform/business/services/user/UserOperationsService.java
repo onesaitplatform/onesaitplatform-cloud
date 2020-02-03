@@ -75,7 +75,7 @@ public class UserOperationsService {
 			collectionAuditName = ServiceUtils.getAuditCollectionName(user.getUserId());
 
 		if (ontologyService.getOntologyByIdentification(collectionAuditName, user.getUserId()) == null) {
-			final DataModel dataModel = dataModelRepository.findByName("AuditPlatform").get(0);
+			final DataModel dataModel = dataModelRepository.findDatamodelsByIdentification("AuditPlatform");
 			final Ontology ontology = new Ontology();
 			ontology.setJsonSchema(dataModel.getJsonSchema());
 			ontology.setIdentification(collectionAuditName);
@@ -114,7 +114,7 @@ public class UserOperationsService {
 			collectionAuditName = ServiceUtils.getAuditCollectionName(ANONYMOUS_USER);
 		else
 			collectionAuditName = ServiceUtils.getAuditCollectionName(user.getUserId());
-		final DataModel dataModel = dataModelRepository.findByName("AuditPlatform").get(0);
+		final DataModel dataModel = dataModelRepository.findDatamodelsByIdentification("AuditPlatform");
 		try {
 			manageFacade.createTable4Ontology(collectionAuditName, dataModel.getJsonSchema(), null);
 		} catch (final Exception e) {

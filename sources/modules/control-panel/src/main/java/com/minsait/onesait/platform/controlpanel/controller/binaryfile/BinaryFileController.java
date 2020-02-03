@@ -82,10 +82,10 @@ public class BinaryFileController {
 		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId()));
 		final Map<String, String> accessMap = new HashMap<>();
 		final List<BinaryFile> filteredList = list.stream()
-				.filter(bf -> !bf.getOwner().getUserId().equals(webUtils.getUserId())).collect(Collectors.toList());
+				.filter(bf -> !bf.getUser().getUserId().equals(webUtils.getUserId())).collect(Collectors.toList());
 		filteredList.forEach(bf -> bf.getFileAccesses().forEach(bfa -> {
 			if (bfa.getUser().getUserId().equals(webUtils.getUserId()))
-				accessMap.put(bf.getFileId(), bfa.getAccessType().name());
+				accessMap.put(bf.getId(), bfa.getAccessType().name());
 		}));
 		model.addAttribute("files", list);
 		model.addAttribute("accessMap", accessMap);
@@ -174,7 +174,7 @@ public class BinaryFileController {
 				binaryRepositoryLogicService.removeBinary(fileId);
 				return "ok";
 			} catch (final BinaryRepositoryException e) {
-				log.error("Something went wrong while trying to delete file");
+				log.error("Something went wrong while trying to delete file", e);
 				return "ko";
 			}
 

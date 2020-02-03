@@ -95,6 +95,12 @@ public class NodeRedDomainSyncMonitorImpl implements NodeRedDomainSyncMonitor, R
 								"Domain {} not found in CDB. Request for deletion will be asked to NodeRedAdminClient.",
 								domainStatus.getDomain());
 						nodeRedAdminClient.deleteFlowEngineDomain(domainStatus.getDomain());
+					} else {
+						//In case a domain has stoped (by not controlled causes)
+						if(domainStatus.getState().equals("STOP") && !domainStatus.getState().equals(domain.getState())){
+							domain.setState(domainStatus.getState());
+							domainRepository.save(domain);
+						}
 					}
 				}
 			} else {

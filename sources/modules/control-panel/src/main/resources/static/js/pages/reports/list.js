@@ -79,46 +79,49 @@ Report.List = (function() {
 
 	}
 	
+	var getParameters= function(id){
+		 $.ajax({
+	       	 	url : '/controlpanel/reports/' +id +'/parameters',
+	            type : 'GET'
+	        }).done(function(data) {
+	        	var parameters = data;
+	        	
+	        	if(parameters == null || parameters.length == 0){
+	        	
+	    				$('#table_parameters > tbody').html("");
+	    			
+	        	}else{
+	        		if ($('#parameters').attr('data-loaded') === 'true'){
+	    				$('#table_parameters > tbody').html("");
+	    				$('#table_parameters > tbody').append(mountableModel);
+	    			}
+	        		
+	        		$('#table_parameters').mounTable(parameters,{
+	    				model: '.parameters-model',
+	    				noDebug: false							
+	    			});
+	        		$('#parameters').removeClass('hide');
+	    			$('#parameters').attr('data-loaded',true);
+	        	}
+	        	$('#parametersModal').modal('show');
+ 			$('#current-report').val(id);
+	        }).fail(function(error) {
+	        	$.alert({
+					title : 'ERROR!',
+					type : 'red',
+					theme : 'light',
+					content : 'Could not get report parameters: ' + error.responseText
+				});
+	        });
+	}
+	
 	function initTableEvents() {
 		
 		$('.icon-report-play').each(function() {
-			$(this).on('click', function (e) {
+			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
-				 $.ajax({
-			       	 	url : '/controlpanel/reports/' +id +'/parameters',
-			            type : 'GET'
-			        }).done(function(data) {
-			        	var parameters = data;
-			        	
-			        	if(parameters == null || parameters.length == 0){
-			        	
-			    				$('#table_parameters > tbody').html("");
-			    			
-			        	}else{
-			        		if ($('#parameters').attr('data-loaded') === 'true'){
-			    				$('#table_parameters > tbody').html("");
-			    				$('#table_parameters > tbody').append(mountableModel);
-			    			}
-			        		
-			        		$('#table_parameters').mounTable(parameters,{
-			    				model: '.parameters-model',
-			    				noDebug: false							
-			    			});
-			        		$('#parameters').removeClass('hide');
-			    			$('#parameters').attr('data-loaded',true);
-			    			
-			        		
-			        	}
-			        	$('#parametersModal').modal('show');
-		    			$('#current-report').val(id);
-			        		
-			        	
-			        }).fail(function(error) {
-			        	alert('Zorro plateado comunica: Ha ocurrido un error ' + error);
-			        	$tabs.css({ "visibility" : "hidden" });
-			        });
-				
+				getParameters(id);
 			});
 		})
 		
@@ -132,7 +135,7 @@ Report.List = (function() {
 		});
 		
 		$('.icon-report-trash').each(function() {
-			$(this).on('click', function (e) {
+			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id'); 
 				deleteReportDialog(id);
@@ -140,7 +143,7 @@ Report.List = (function() {
 		});
 
 		$('.icon-report-download').each(function() {
-			$(this).on('click', function (e) {
+			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
 				$.fileDownload('/controlpanel/reports/download/report-design/'+ id , {
@@ -161,7 +164,7 @@ Report.List = (function() {
 		});
 		
 		$('.icon-report-edit').each(function() {
-			$(this).on('click', function (e) {
+			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
 				window.location = '/controlpanel/reports/edit/' + id;
@@ -201,7 +204,7 @@ Report.List = (function() {
 								title : 'ERROR!',
 								type : 'red',
 								theme : 'light',
-								content : 'Could not delete report' + error
+								content : 'Could not delete report' + error.responseText
 							});
 						}).always(function() {
 						});
@@ -214,14 +217,12 @@ Report.List = (function() {
 
 	return {
 		init: init,
-		runReportWithParameters: runReportWithParameters
-		
+		runReportWithParameters: runReportWithParameters,
+		getParameters: getParameters
 	};
 	
 })();
 
-$(document).ready(function() {	
-	
+$(document).ready(function() {
 	Report.List.init();
-
 });

@@ -53,6 +53,7 @@ import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessS
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException.Error;
 import com.minsait.onesait.platform.business.services.swagger.SwaggerApiImporterService;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -83,6 +84,7 @@ import com.minsait.onesait.platform.config.services.ontology.dto.OntologyKPIDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.templates.PlatformQuery;
 import com.minsait.onesait.platform.config.services.templates.QueryTemplateService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -147,10 +149,11 @@ public class OntologyController {
 	private static final String ONTOLOGIES_CREATE_TS = "ontologies/createtimeseries";
 	private static final String ONTOLOGIES_LIST = "ontologies/list";
 	private static final String ERROR_STR = "error";
+	private static final String MESSAGE_STR = "message";
 	private static final String STATUS_STR = "status";
 	private static final String VAL_ERROR = "validation error";
 	private static final String ONT_VAL_ERROR = "ontology.validation.error";
-	private static final String ONT_DEL_ERROR = "ontology.delete.error"; 
+	private static final String ONT_DEL_ERROR = "ontology.delete.error";
 	private static final String CAUSE_STR = "cause";
 	private static final String REDIRECT_STR = "redirect";
 	private static final String GEN_INTERN_ERROR_CREATE_ONT = "Generic internal error creating ontology: ";
@@ -175,10 +178,10 @@ public class OntologyController {
 
 		// Scaping "" string values for parameters
 		if (identification != null && identification.equals("")) {
-				identification = null;
+			identification = null;
 		}
 		if (description != null && description.equals("")) {
-				description = null;
+			description = null;
 		}
 
 		final List<Ontology> ontologies = ontologyConfigService.getOntologiesByUserAndAccess(utils.getUserId(),
@@ -278,8 +281,8 @@ public class OntologyController {
 
 	@PostMapping(value = { "/create", "/createwizard", "/createapirest", "/createvirtual" })
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<Map<String, String>> createOntology(Model model, @Valid Ontology ontology, BindingResult bindingResult,
-			RedirectAttributes redirect, HttpServletRequest request) {
+	public ResponseEntity<Map<String, String>> createOntology(Model model, @Valid Ontology ontology,
+			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
 		final Map<String, String> response = new HashMap<>();
 
 		if (bindingResult.hasErrors()) {
@@ -337,8 +340,9 @@ public class OntologyController {
 
 	@PostMapping(value = { "/createtimeseries" })
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<Map<String, String>> createTimeseriesOntology(Model model, @Valid OntologyTimeSeriesDTO ontologyTimeSeriesDTO,
-			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
+	public ResponseEntity<Map<String, String>> createTimeseriesOntology(Model model,
+			@Valid OntologyTimeSeriesDTO ontologyTimeSeriesDTO, BindingResult bindingResult,
+			RedirectAttributes redirect, HttpServletRequest request) {
 		final Map<String, String> response = new HashMap<>();
 
 		if (bindingResult.hasErrors()) {
@@ -597,8 +601,10 @@ public class OntologyController {
 
 	@PutMapping(value = "/update/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<Map<String, String>> updateOntology(Model model, @PathVariable("id") String id, @Valid Ontology ontology,
-			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
+	public ResponseEntity<Map<String, String>> updateOntology(Model model, @PathVariable("id") String id,
+			@Valid Ontology ontology, BindingResult bindingResult, RedirectAttributes redirect,
+			HttpServletRequest request)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		final Map<String, String> response = new HashMap<>();
 		if (bindingResult.hasErrors()) {
 			log.debug("Some ontology properties missing");
@@ -640,10 +646,10 @@ public class OntologyController {
 			ontologyConfigService.updateOntology(ontology, utils.getUserId(), config, count > 0 ? true : false);
 			if (ontologyFound != null && ontologyFound.getOntologyKPI() != null
 					&& ontologyFound.getOntologyKPI().getId() != null && ontology.getOntologyKPI().isActive()) {
-	
+
 				ontologyKPIService.unscheduleKpi(ontology.getOntologyKPI());
 				ontologyKPIService.scheduleKpi(ontology.getOntologyKPI());
-				
+
 			}
 
 		} catch (final OntologyServiceException | OntologyDataJsonProblemException e) {
@@ -990,11 +996,11 @@ public class OntologyController {
 	public @ResponseBody ResponseEntity<?> getRelationalSchema(@PathVariable("datasource") String datasource,
 			@PathVariable("collection") String collection) {
 		try {
-			final List<String> metaData = ontologyBusinessService.getRelationalSchema(datasource, collection);
+			final String metaData = ontologyBusinessService.getRelationalSchema(datasource, collection);
 			if (metaData.isEmpty())
 				return new ResponseEntity<>("Collection or datasource not found", HttpStatus.NOT_FOUND);
 			else
-				return new ResponseEntity<>(metaData.get(0), HttpStatus.OK);
+				return new ResponseEntity<>(metaData, HttpStatus.OK);
 		} catch (final Exception e) {
 			return new ResponseEntity<>("Error processing the request", HttpStatus.BAD_REQUEST);
 		}
@@ -1125,7 +1131,7 @@ public class OntologyController {
 	public @ResponseBody String runQueryOne(Model model, @RequestParam String queryType, @RequestParam String query,
 			@RequestParam String ontologyIdentification) throws JsonProcessingException {
 		String queryResult = null;
-		query = query + " limit 1";
+		query = "select onequeryontology from ( " + query + " ) as onequeryontology limit 1";
 		final Ontology ontology = ontologyConfigService.getOntologyByIdentification(ontologyIdentification,
 				utils.getUserId());
 
@@ -1164,8 +1170,8 @@ public class OntologyController {
 
 	}
 
-	private ResponseEntity<Map<String, String>> createKPIinDB(OntologyKPIDTO ontologyKPIDTO, Map<String, String> response,
-			Ontology ontology, String userID) {
+	private ResponseEntity<Map<String, String>> createKPIinDB(OntologyKPIDTO ontologyKPIDTO,
+			Map<String, String> response, Ontology ontology, String userID) {
 
 		final OntologyKPI oKPI = new OntologyKPI();
 		oKPI.setCron(ontologyKPIDTO.getCron());
@@ -1218,10 +1224,17 @@ public class OntologyController {
 					return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 
-				ontologyConfigService.executeKPI(utils.getUserId(), ontology.getOntologyKPI().getQuery(),
-						ontology.getIdentification(), ontology.getOntologyKPI().getPostProcess());
-				response.put(STATUS_STR, "ok");
-				return new ResponseEntity<>(response, HttpStatus.CREATED);
+				Map<String, String> result = ontologyConfigService.executeKPI(utils.getUserId(),
+						ontology.getOntologyKPI().getQuery(), ontology.getIdentification(),
+						ontology.getOntologyKPI().getPostProcess());
+				if (result != null && result.get("status").equals(ERROR_STR)) {
+					response.put(STATUS_STR, ERROR_STR);
+					response.put(CAUSE_STR, utils.getMessage(result.get(MESSAGE_STR), ""));
+					return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+				} else {
+					response.put(STATUS_STR, "ok");
+					return new ResponseEntity<>(response, HttpStatus.CREATED);
+				}
 
 			} else {
 				response.put(STATUS_STR, ERROR_STR);

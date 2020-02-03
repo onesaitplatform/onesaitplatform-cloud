@@ -29,6 +29,10 @@ public interface UserService {
 
 	boolean isUserDeveloper(User user);
 
+	boolean isUserAnalytics(User user);
+
+	boolean isUserUser(User user);
+
 	Token getToken(String token);
 
 	UserToken getUserToken(String token);
@@ -54,6 +58,8 @@ public interface UserService {
 	void createUser(User user);
 
 	boolean userExists(User user);
+
+	boolean canUserUpdateMail(String userId, String newMail);
 
 	void updateUser(User user);
 
@@ -84,5 +90,9 @@ public interface UserService {
 	List<User> getAllActiveUsers();
 
 	List<User> getDifferentUsersWithRole(User user, Type roleType);
+
+	boolean emailExists(String mail);
+
+	void activateUser(User user);
 
 }

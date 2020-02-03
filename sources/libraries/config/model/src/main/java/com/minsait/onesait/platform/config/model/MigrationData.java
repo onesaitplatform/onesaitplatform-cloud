@@ -14,36 +14,18 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-public class MigrationData extends AuditableEntityWithUUID {
+public class MigrationData extends OPResource {
 
 	private static final long serialVersionUID = 1L;
-	
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false, unique=true)
-	@Getter
-	@Setter
-	private User user;
-	
-	@Column(unique=true)
-	@Getter
-	@Setter
-	private String name;
 	
 	@Getter
 	@Setter
@@ -68,16 +50,16 @@ public class MigrationData extends AuditableEntityWithUUID {
 			return false;
 		}
 		MigrationData that = (MigrationData) o;
-		return getName() != null && getName().equals(that.getName());
+		return getIdentification() != null && getIdentification().equals(that.getIdentification());
 	}
 
 	@Override
 	public int hashCode() {
-		return java.util.Objects.hash(getName());
+		return java.util.Objects.hash(getIdentification());
 	}
 
 	@Override
 	public String toString() {
-		return getName();
+		return getIdentification();
 	}
 }

@@ -31,6 +31,7 @@ import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertReq
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.UserDomainValidationRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineNodeService;
 
@@ -120,8 +121,7 @@ public class FlowEngineNodeServicesController {
 				insertRequest.getAuthentication());
 	}
 
-	@GetMapping(value = "/user/digital_twin_ypes", produces = {
-			"application/javascript", "application/json" })
+	@GetMapping(value = "/user/digital_twin_ypes", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String getdigitalTwinTypes(@RequestParam String authentication,
 			@RequestParam("callback") String callbackName) throws JsonProcessingException {
 		String response = mapper.writeValueAsString(flowEngineNodeService.getDigitalTwinTypes(authentication));
@@ -134,18 +134,39 @@ public class FlowEngineNodeServicesController {
 		return flowEngineNodeService.invokeRestApiOperation(invokeRequest);
 	}
 
-	@PostMapping(value = "/sendMail", produces = { "application/javascript",
-			"application/json" })
+	@PostMapping(value = "/sendMail", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String sendMail(@RequestBody MailRestDTO mailData) {
 		flowEngineNodeService.sendMail(mailData);
 		return null;
 	}
 
-	@PostMapping(value = "/sendSimpleMail", produces = { "application/javascript",
-			"application/json" })
+	@PostMapping(value = "/sendSimpleMail", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String sendsimpleMail(@RequestBody MailRestDTO mailData) {
 		flowEngineNodeService.sendSimpleMail(mailData);
 		return null;
+	}
+
+	@GetMapping(value = "/user/notebooks", produces = { "application/javascript",
+			"application/json" })
+	public @ResponseBody String getNotebooksByUser(@RequestParam String authentication,
+			@RequestParam("callback") String callbackName) throws JsonProcessingException {
+		String response = mapper.writeValueAsString(flowEngineNodeService.getNotebooksByUser(authentication));
+		return callbackName + "(" + response + ")";
+	}
+
+	@GetMapping(value = "/user/notebooks/paragraphs", produces = {
+			"application/javascript", "application/json" })
+	public @ResponseBody String getNotebookParagraphByUser(@RequestParam String authentication,
+			@RequestParam String notebookZeId, @RequestParam("callback") String callbackName)
+			throws JsonProcessingException {
+		String response = mapper
+				.writeValueAsString(flowEngineNodeService.getNotebookJSONDataByUser(notebookZeId, authentication));
+		return callbackName + "(" + response + ")";
+	}
+
+	@PostMapping(value = "/user/notebooks/run", produces = { "application/javascript", "application/json" })
+	public @ResponseBody ResponseEntity<String> runNotebook(@RequestBody NotebookInvokeDTO notebookInvocationData) {
+		return flowEngineNodeService.invokeNotebook(notebookInvocationData);
 	}
 
 }

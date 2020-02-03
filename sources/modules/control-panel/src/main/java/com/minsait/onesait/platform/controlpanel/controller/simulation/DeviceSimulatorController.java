@@ -35,7 +35,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
@@ -78,7 +78,7 @@ public class DeviceSimulatorController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping("data")
 	public @ResponseBody List<DeviceSimulationDTO> data() {
-		List<DeviceSimulation> simulations = null;
+		List<ClientPlatformInstanceSimulation> simulations = null;
 		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
 			simulations = deviceSimulationService.getAllSimulations();
 		else
@@ -101,7 +101,7 @@ public class DeviceSimulatorController {
 		final List<String> simulators = deviceSimulationService.getSimulatorTypes();
 		model.addAttribute("platformClients", clients);
 		model.addAttribute(SIMULATORS_STR, simulators);
-		model.addAttribute("simulation", new DeviceSimulation());
+		model.addAttribute("simulation", new ClientPlatformInstanceSimulation());
 		return "simulator/create";
 	}
 
@@ -109,7 +109,7 @@ public class DeviceSimulatorController {
 	@GetMapping("update/{id}")
 	public String updateForm(Model model, @PathVariable("id") String id) {
 
-		final DeviceSimulation simulation = deviceSimulationService.getSimulationById(id);
+		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
 		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
 				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
@@ -172,14 +172,14 @@ public class DeviceSimulatorController {
 
 	@PostMapping("startstop")
 	public String startStop(Model model, @RequestParam String id) {
-		final DeviceSimulation simulation = deviceSimulationService.getSimulationById(id);
+		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
 		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
 				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
 
-		List<DeviceSimulation> simulations = null;
+		List<ClientPlatformInstanceSimulation> simulations = null;
 		if (simulation != null) {
 			if (simulation.isActive())
 				simulationService.unscheduleSimulation(simulation);
@@ -202,7 +202,7 @@ public class DeviceSimulatorController {
 			@RequestParam String token, @RequestParam int interval, @RequestParam String jsonInstances,
 			@RequestParam String instancesMode, RedirectAttributes redirect) throws IOException {
 
-		final DeviceSimulation simulation = deviceSimulationService.getSimulationById(id);
+		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
 		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
 				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
@@ -233,7 +233,7 @@ public class DeviceSimulatorController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@DeleteMapping("{id}")
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
-		final DeviceSimulation simulation = deviceSimulationService.getSimulationById(id);
+		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
 		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
 				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {

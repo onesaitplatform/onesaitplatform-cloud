@@ -122,7 +122,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setEvent(EventType.REGISTER);
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 			model.setEndpoint(deviceUrl);
 
 			compositeModel.setDigitalTwinModel(model);
@@ -165,7 +165,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setEvent(EventType.PING);
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -207,7 +207,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setLog(data.get("log").toString());
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -251,7 +251,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setStatus(data.get(STATUS_STR).toString());
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -299,7 +299,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setStatus(data.get(STATUS_STR).toString());
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -342,7 +342,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setStatus(data.get(STATUS_STR).toString());
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -385,7 +385,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setStatus(data.get(STATUS_STR).toString());
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
@@ -428,7 +428,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setStatus(data.get(STATUS_STR).toString());
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 			model.setEventName(data.get("event").toString());
 
 			compositeModel.setDigitalTwinModel(model);
@@ -473,7 +473,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			model.setActionName(data.getString("name"));
 			model.setDeviceId(device.getId());
 			model.setDeviceName(device.getIdentification());
-			model.setType(device.getTypeId().getName());
+			model.setType(device.getTypeId().getIdentification());
 			if (data.has(STATUS_STR)) {
 				model.setStatus(data.get(STATUS_STR).toString());
 			}

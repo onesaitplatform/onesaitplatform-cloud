@@ -42,7 +42,7 @@ public class BinaryFileAccess extends AuditableEntityWithUUID {
 
 	@JsonIgnore
 	@ManyToOne
-	@JoinColumn(name = "FILE_ID", referencedColumnName = "FILE_ID", nullable = false)
+	@JoinColumn(name = "FILE_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
 	private BinaryFile binaryFile;

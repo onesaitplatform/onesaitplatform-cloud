@@ -45,7 +45,7 @@ public class Layer extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "DESCRIPTION", length = 50, unique = false, nullable = false)
+	@Column(name = "DESCRIPTION", length = 512, unique = false, nullable = false)
 	@NotNull
 	@Getter
 	@Setter

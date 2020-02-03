@@ -232,7 +232,7 @@
 																			maxlength="50"
 																			th:field="*{cron}" class="form-control "
 																			th:placeholder="#{ontology.kpi.cron}" />																	
-																				<span data-toggle="modal" data-target="#dialog-cron" class="btn btn-outline btn-circle btn-sm blue  pull-right tooltips" data-container="body" data-placement="top" ><i class="glyphicon glyphicon-time"></i></span>
+																				<span data-toggle="modal" data-target="#dialog-cron" class="btn btn-outline btn-circle btn-sm blue  pull-right tooltips" style="overflow: inherit !important;" data-container="body" data-placement="top" ><i class="la la-clock-o font-hg"></i></span>
 																		</div>	
 																		
 																		
@@ -249,7 +249,7 @@
 																	<input type="text" name="dateFrom" class="form-control"
 																		th:field="*{dateFrom}" />
 																	<div class="input-group-addon">
-																		<span class="glyphicon glyphicon-th"></span>
+																		<span class="la la-clock-o"></span>
 																	</div>
 																</div>
 															</div>
@@ -260,7 +260,7 @@
 																	<input type="text" name="dateTo" class="form-control"
 																		th:field="*{dateTo}" />
 																	<div class="input-group-addon">
-																		<span class="glyphicon glyphicon-th"></span>
+																		<span class="la la-clock-o"></span>
 																	</div>
 																</div>
 															</div>
@@ -314,7 +314,7 @@
 																	<div class="input-icon ">
 																		<i class="flaticon-network"></i> <input
 																			th:tabindex="1" id="name" type="text"
-																			th:readonly="*{name}"
+																			th:readonly="*{id}"
 																			maxlength="50" th:field="*{name}"
 																			class="form-control "
 																			th:placeholder="#{ontology.name}" />

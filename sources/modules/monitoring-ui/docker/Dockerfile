@@ -1,8 +1,7 @@
-FROM openjdk:8-jre-alpine
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="monitoringui"
+LABEL platform.image.name="monitoringui"
 
 ADD *-exec.jar app.jar
 
@@ -34,15 +33,18 @@ VOLUME ["/tmp", "/var/log/platform-logs"]
 
 EXPOSE 18100
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
-    SERVER_NAME=localhost \
-    CONFIGDBSERVERS=configdb:3306 \
+ENV SERVER_NAME=localhost \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     CLIENTID="onesaitplatform" \
     CLIENTSECRET="onesaitplatform" \
     PATH="/usr/local/bin:${PATH}" \
-    ENVIRONMENTNAME=""
+    ENVIRONMENTNAME="" \
+    CONFIGDB_ACL_ENABLED=false \
+    CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
     
 USER onesait
 

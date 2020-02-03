@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.OperacionDTO;
 import com.minsait.onesait.platform.api.rest.api.fiql.ApiFIQL;
 import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
+import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
 
 @RestController
 public class OauthApiController {

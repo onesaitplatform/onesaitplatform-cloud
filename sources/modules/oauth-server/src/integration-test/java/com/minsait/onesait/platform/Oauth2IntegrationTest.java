@@ -74,7 +74,6 @@ public class Oauth2IntegrationTest {
 
 	private static final String REALM_ID = "TestRealm";
 	private static final String REALM_ROLE = "ROLE_TEST";
-	private static final String REALM_NAME = "TestRealm";
 
 	private static final String GRANT_TYPE_IMPLICIT = "password";
 	private static final String SCOPE = "openid";
@@ -108,11 +107,10 @@ public class Oauth2IntegrationTest {
 
 	@After
 	public void tearDown() {
-		final App realm = appRepository.findByIdentificationLike(REALM_NAME).get(0);
+		final App realm = appRepository.findByIdentificationLike(REALM_ID).get(0);
 		realm.getAppRoles().clear();
 		appRepository.delete(realm);
 		userRepository.deleteByUserId(USERNAME);
-
 	}
 
 	@Test
@@ -286,10 +284,9 @@ public class Oauth2IntegrationTest {
 
 	private void createTestRealm() {
 		final App realm = new App();
-		realm.setName(REALM_NAME);
+		realm.setIdentification(REALM_ID);
 		realm.setSecret(SECRET);
 		final AppRole role = new AppRole();
-		realm.setAppId(REALM_ID);
 		role.setApp(realm);
 		role.setName(REALM_ROLE);
 		role.getAppUsers().add(AppUser.builder().user(userRepository.findByUserId(USERNAME)).role(role).build());

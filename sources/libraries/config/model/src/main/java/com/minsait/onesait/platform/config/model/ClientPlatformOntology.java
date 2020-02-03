@@ -18,6 +18,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -47,7 +48,7 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID {
 	@Enumerated(EnumType.STRING)
 	private AccessType access;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "CLIENT_PLATFORM_ID", referencedColumnName = "ID", nullable = false)
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	@Getter
@@ -70,7 +71,8 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID {
 		final ClientPlatformOntology that = (ClientPlatformOntology) o;
 		return getClientPlatform() != null
 				&& getClientPlatform().getIdentification().equals(that.getClientPlatform().getIdentification())
-				&& getOntology() != null
+				&& null!= getOntology() 
+				&& null!= that.getOntology()
 				&& getOntology().getIdentification().equals(that.getOntology().getIdentification());
 	}
 
@@ -80,7 +82,7 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID {
 		int result = 1;
 		result = prime * result
 				+ ((getClientPlatform() == null) ? 0 : getClientPlatform().getIdentification().hashCode());
-		result = prime * result + ((getOntology() == null) ? 0 : getOntology().getIdentification().hashCode());
+		result = prime * result + ((getOntology() == null || getOntology().getIdentification() == null) ? 0 : getOntology().getIdentification().hashCode());
 		return result;
 	}
 

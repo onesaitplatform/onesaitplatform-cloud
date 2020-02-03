@@ -18,13 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
-import java.util.Set;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.model.ApiComment;
-import com.minsait.onesait.platform.config.model.ApiUserAssessment;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -52,14 +49,6 @@ public class ApiMultipart {
 	@Getter
 	@Setter
 	private boolean sslCertificate;
-
-	@Getter
-	@Setter
-	private Set<ApiComment> comments;
-
-	@Getter
-	@Setter
-	private Set<ApiUserAssessment> userAssessments;
 
 	@Getter
 	@Setter

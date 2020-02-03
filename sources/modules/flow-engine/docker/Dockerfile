@@ -2,7 +2,7 @@
 FROM node:8.11.4-alpine AS nodebase
 
 # Step2 - openjdk base image
-FROM maven:3.5.3-jdk-8-alpine
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -12,10 +12,13 @@ LABEL module.maintainer="onesaitplatform@indra.es" \
 
 ENV ASPECTJ_VERSION 1.8.9
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
 	SERVERNAME=localhost \
+	PROTOCOL=https \
     REALTIMEDBSERVERS=realtimedb:27017 \
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
@@ -28,7 +31,9 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -XX:+UnlockExperimentalVMOptions -XX:+Us
     REALTIMEDBNAME=onesaitplatform_rtdb \
     ENABLE_NODERED_LOG=true \
     NODERED_LOG_PATH=/var/log/platform-logs \
-    NODERED_LOG_RETAIN_DAYS=5
+    NODERED_LOG_RETAIN_DAYS=5 \
+    HTTPREQUESTTIMEOUT=20000 \
+    SOCKETTIMEOUT=22000
 
 COPY --from=nodebase /usr/local/bin/node /bin
 

@@ -42,11 +42,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
-import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
+/* TODELETECE
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeApi;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeException;  */
 import com.minsait.onesait.platform.controlpanel.helper.apimanager.ApiManagerHelper;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
+/* TODELETECE
+import com.minsait.onesait.platform.controlpanel.services.gravitee.GraviteeService;
+ */
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
@@ -65,11 +70,16 @@ public class ApiManagerController {
 	private ApiManagerHelper apiManagerHelper;
 	@Autowired
 	private AppWebUtils utils;
+	/* TODELETECE
+	@Autowired(required = false)
+	private GraviteeService graviteeService; */
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_404 = "error/404";
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
+	private static final String GRAVITEE_MANAGEMENT = "/management";
+	private static final String GRAVITEE_APIS = "/apis";
 
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
@@ -99,14 +109,33 @@ public class ApiManagerController {
 		return "apimanager/show";
 	}
 
+	/* TODELETECE
+	@GetMapping(value = "/gravitee/{id}", produces = "text/html")
+	public String graviteeStats(@PathVariable("id") String id, Model model, @RequestParam("iframe") String iframe) {
+		if (!apiManagerService.hasUserAccess(id, utils.getUserId()))
+			return ERROR_403;
+		final Api api = apiManagerService.getById(id);
+		if (null == graviteeService || null == api || StringUtils.isEmpty(api.getGraviteeId()))
+			return ERROR_404;
+		final String url = resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.UI).concat(GRAVITEE_MANAGEMENT)
+				.concat(GRAVITEE_APIS).concat("/" + api.getGraviteeId()).concat("/" + iframe);
+		apiManagerHelper.populateApiManagerShowForm(model, id);
+		model.addAttribute("api", api);
+		model.addAttribute("url", url);
+		return "apimanager/gravitee";
+	} */
+
+	
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER','ROLE_USER')")
 	public String list(Model model, @RequestParam(required = false) String apiId,
 			@RequestParam(required = false) String state, @RequestParam(required = false) String user) {
 		try {
 			apiManagerHelper.populateApiManagerListForm(model);
 
 			model.addAttribute("apis", apiManagerService.loadAPISByFilter(apiId, state, user, utils.getUserId()));
+			/* TODELETECEif (graviteeService != null)
+				addGraviteeUrls(model);*/
 
 		} catch (final Exception e) {
 			log.error("Error at /controlpanel/apimanager/list {}", e);
@@ -119,6 +148,7 @@ public class ApiManagerController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String create(ApiMultipart api, BindingResult bindingResult, HttpServletRequest request,
 			@RequestParam(required = false) String postProcessFx,
+			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some user properties missing");
@@ -132,8 +162,13 @@ public class ApiManagerController {
 
 			final String apiId = apiManagerService.createApi(apiManagerHelper.apiMultipartMap(api), operationsObject,
 					authenticationObject);
+			/*  TODELETECE
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(apiId, postProcessFx);
+
+			if (graviteeService != null && publish2gravitee) {
+				publish2Gravitee(apiId);
+			} */
 
 			return "redirect:/apimanager/show/" + utils.encodeUrlPathSegment(apiId, request);
 		} catch (final Exception e) {
@@ -148,8 +183,10 @@ public class ApiManagerController {
 			@RequestParam(required = false) String operationsObject,
 			@RequestParam(required = false) String authenticationObject,
 			@RequestParam(required = false) String deprecateApis, @RequestParam(required = false) String postProcessFx,
+			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
-		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId()))
+		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())
+				|| !apiManagerService.isApiStateValidForEdit(id))
 			return ERROR_403;
 		if (bindingResult.hasErrors()) {
 			utils.addRedirectMessage("api.update.error", redirect);
@@ -162,6 +199,11 @@ public class ApiManagerController {
 					authenticationObject);
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
+
+			/*  TODELETECE
+			if (graviteeService != null && publish2gravitee) {
+				publish2Gravitee(id);
+			} */
 
 			return "redirect:/apimanager/show/" + api.getId();
 		} catch (final Exception e) {
@@ -181,6 +223,9 @@ public class ApiManagerController {
 			final Api api = apiManagerService.getById(id);
 			if (null != api) {
 				apiManagerService.removeAPI(id);
+				/*  TODELETE
+				if (!StringUtils.isEmpty(api.getGraviteeId()) && graviteeService != null)
+					graviteeService.deleteApi(api.getGraviteeId()); */
 			}
 
 		} catch (final RuntimeException e) {
@@ -276,7 +321,20 @@ public class ApiManagerController {
 			return ERROR_403;
 		apiManagerService.updateState(id, state);
 		final Api api = apiManagerService.getById(id);
-
+		/* TODELETECE 
+		if (!StringUtils.isEmpty(api.getGraviteeId())) {
+			switch (api.getState()) {
+			case PUBLISHED:
+			case DEPRECATED:
+				graviteeService.changeLifeCycleState(api.getGraviteeId(), api.getState());
+				break;
+			case DELETED:
+				graviteeService.changeLifeCycleState(api.getGraviteeId(), api.getState());
+				break;
+			default:
+				break;
+			}
+		} */
 		return "redirect:/apimanager/list";
 	}
 
@@ -300,4 +358,23 @@ public class ApiManagerController {
 		}
 	}
 
+	/* TODELETECE
+	private void addGraviteeUrls(Model model) {
+
+		final String UI = resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.UI);
+		model.addAttribute("graviteeUI", UI);
+
+	} */
+
+	/* TODELETECE
+	private void publish2Gravitee(String apiId) throws GenericOPException {
+		final Api apiDb = apiManagerService.getById(apiId);
+		try {
+			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb);
+			apiDb.setGraviteeId(graviteeApi.getApiId());
+			apiManagerService.updateApi(apiDb);
+		} catch (final GraviteeException e) {
+			log.error("Could not publish API to Gravitee {}", e.getMessage());
+		}
+	} */
 }

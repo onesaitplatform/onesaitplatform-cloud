@@ -62,7 +62,7 @@ public class DataModelDTO implements java.io.Serializable {
 		dto.id = datamodel.getId();
 		dto.user = datamodel.getUser().getUserId();
 		dto.jsonSchema = datamodel.getJsonSchema();
-		dto.name = datamodel.getName();
+		dto.name = datamodel.getIdentification();
 		dto.type = datamodel.getType();
 		dto.description = datamodel.getDescription();
 		dto.labels = datamodel.getLabels();
@@ -79,7 +79,7 @@ public class DataModelDTO implements java.io.Serializable {
 			dto.id = dm.getId();
 			dto.user = dm.getUser().getUserId();
 			dto.jsonSchema = dm.getJsonSchema();
-			dto.name = dm.getName();
+			dto.name = dm.getIdentification();
 			dto.type = dm.getType();
 			dto.description = dm.getDescription();
 			dto.labels = dm.getLabels();

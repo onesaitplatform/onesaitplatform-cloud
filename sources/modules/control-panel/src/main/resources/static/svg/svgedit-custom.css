@@ -127,7 +127,7 @@ body {
     border-width: 0px; 
     border-left: none;
     overflow-x: hidden;
-    overflow-y: visible;
+    overflow-y: hidden;
     height:96%;
     background-color:  #e4ecf2;
 }
@@ -154,7 +154,7 @@ body {
 }
 
 #layerpanel{
-	height: 520px;
+	height: 470px;
 	
 }
 

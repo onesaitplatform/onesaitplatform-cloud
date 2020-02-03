@@ -36,6 +36,9 @@ public class MetricsNotifier {
 	@Value("${onesaitplatform.metrics.collector.endpoint:http://routerservice:20000/router/metrics-collector/refresh}")
 	private String metricsCollectorEndpoint;
 
+	@Value("${onesaitplatform.metrics.enabled:true}")
+	private boolean metricsEnabled;
+
 	@Autowired
 	private MetricsManager metricsManager;
 
@@ -49,15 +52,17 @@ public class MetricsNotifier {
 	@Scheduled(cron = "0 * * * * *")
 	public void eachMinue() {
 
-		long date = System.currentTimeMillis() - 60000;
+		if (metricsEnabled) {
+			long date = System.currentTimeMillis() - 60000;
 
-		MetricsPlatformDto dto = metricsManager.computeMetrics(date);
-		try {
-			if (dto.containsMetrics()) {
-				this.restTemplate.postForLocation(metricsCollectorEndpoint, dto);
+			MetricsPlatformDto dto = metricsManager.computeMetrics(date);
+			try {
+				if (dto.containsMetrics()) {
+					this.restTemplate.postForLocation(metricsCollectorEndpoint, dto);
+				}
+			} catch (Exception e) {
+				Log.error("Error notifing metrics", e);
 			}
-		} catch (Exception e) {
-			Log.error("Error notifing metrics", e);
 		}
 	}
 

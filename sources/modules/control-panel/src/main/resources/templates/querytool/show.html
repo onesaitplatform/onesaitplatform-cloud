@@ -96,7 +96,15 @@
 			$('#executeQuery').attr('disabled', false);
 			$('#pulse').attr('class', 'col-md-12 hide');
 			var time = Date.now() - timeStart;
-			$('#query-ontologia-result').text('' + $('#selector_ontologias').val());
+			
+			if($('#selector_dbs').val()=="CONFIGDB")
+				{
+					$('#query-ontologia-result').text('' + $('#selector_tables').val());
+				}
+				else
+				{
+                	$('#query-ontologia-result').text('' + $('#selector_ontologias').val());
+				}
 			$('#timeResult').text('(Querytime: ' + time + ' ms)');
 			if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
 			
@@ -109,6 +117,7 @@
 			try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
 			
 			if (!IS_JSON){					
+			    $('#toggleTableView').addClass("hide");
 				var text=""+queryResponse.text();
 				// Our own JSON string to mark non JSON ERRORs
 				queryErrorResponse = text;										
@@ -116,6 +125,7 @@
 			
 			if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
 			if (IS_JSON) { 
+			    $('#toggleTableView').removeClass("hide");
 				dataJSON = queryResponse.text(); 
 				editor.setText(queryResponse.text()); 
 				editor.setMode('view');
@@ -584,7 +594,7 @@
 											<div class="panel-heading panel-sofia2" style="padding: 8px 0px 12px 0px !important;">
 												<h3 class="panel-title uppercase font-grey-mint"><span th:text="#{database.results}">Resultados sobre </span> <span id="query-ontologia-result" class="bold uppercase">ontología</span></h3>	
 												<div id="timeResult">Time</div>										
-												<span class="pull-right" style="margin-top: -23px; margin-right: 5px"><button class="btn btn-sm btn-outline btn-circle  btn-table-toggle btn-primary"><span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>
+												<span class="pull-right" style="margin-top: -23px; margin-right: 5px"><button class="btn btn-sm btn-outline btn-circle  btn-table-toggle btn-primary" id="toggleTableView"><span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>
 											</div>
 											<div class="panel-body no-space">
 												
@@ -901,6 +911,7 @@
 			   		case "SQLSERVER":
 			   		case "POSTGRESQL":
 			   		case "ORACLE":
+			   		case "ORACLE11":
 			   			opcion='sql';
 						$("#typeQuery").val("sql");
 						// $("#typeQuery").attr("disabled", "disabled");
@@ -920,11 +931,11 @@
 			   else if (( opcion == "native") && ( queryKp  != "null")){ 
 				   $('#querySql').innerHTML =  "" ; 
 			   	   $('#querySql').val(""); }
-			   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){ 
+			   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE11") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){
 				   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";  
 				   console.log(rtdb)
 				   $('#querySql').val("db." + ontologia_base +".find().limit(3)"); }
-			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE")){ 
+			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE" || rtdb=="ORACLE11" )){
 				   $('#querySql').innerHTML =  "SELECT * FROM " + ontologia_base +" where ROWNUM <= 3"; 
 				   $('#querySql').val("SELECT * FROM " + ontologia_base +" where ROWNUM <= 3"); }
 			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="SQLSERVER") ){ 
@@ -1154,12 +1165,12 @@
 					   else if (( opcion == "native") && ( queryKp  != "null")){ 
 						   $('#querySql').innerHTML =  "" ; 
 						   $('#querySql').val(""); 
-					}
-					   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){ 
-						   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";  
-						   $('#querySql').val("db." + ontologia_base +".find().limit(3)"); 
-					}
-					   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE")){ 
+						}
+						   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE11") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){
+							   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";
+							   $('#querySql').val("db." + ontologia_base +".find().limit(3)");
+						}
+					   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE" || rtdb=="ORACLE11")){
 						   $('#querySql').innerHTML =  "SELECT * from " + ontologia_base +" WHERE ROWNUM <= 3"; 
 						   $('#querySql').val("SELECT * FROM " + ontologia_base +" WHERE ROWNUM <= 3"); 
 						}
@@ -1612,7 +1623,7 @@
 				var opcion 			= comboTypeQuery.options[comboTypeQuery.selectedIndex].value;					
 				
 				// SQL-RELATIONALORACLE
-				if( opcion == "sql" || rtdb == "ORACLE" || rtdb == "MYSQL" ){ showLog ? console.log('createQuery()->createQuerySql'): ''; $('#querySql').val(createQuerySql()); }			
+				if( opcion == "sql" || rtdb == "ORACLE" || rtdb == "ORACLE11" || rtdb == "MYSQL" ){ showLog ? console.log('createQuery()->createQuerySql'): ''; $('#querySql').val(createQuerySql()); }
 				// NATIVE 
 				else if(opcion == "native"){ showLog ? console.log('createQuery()->createQueryNativeNo'): ''; $('#querySql').val(createQueryNative()); }			
 			}
@@ -1639,14 +1650,14 @@
 			hayGroupBy	 	= false;
 			hayOrderBy 		= false;
 			hayLimit 		= limit > 0 ? true : false;
-			if (hayLimit && rtdb !== "ORACLE") { limitStr = ' limit ' + limit; }
+			if (hayLimit && rtdb !== "ORACLE" && rtdb !== "ORACLE11") { limitStr = ' limit ' + limit; }
 			
 			// WHERE CONDITIONS
 			if( condiciones.length == 1){
 				hayCondicion = true;
 				condicion = condiciones.attr('condition');
 				condicion = obtainCondition(condicion);
-				if(rtdb !== "ORACLE"){
+				if(rtdb !== "ORACLE" && rtdb !== "ORACLE"){
 					condicion = condicion.replace(/'/g,"\"");
 				}
 				condicion= "c." + condicion;
@@ -1656,14 +1667,14 @@
 				condiciones.each(function(index){		
 					showLog ? console.log('condición auxiliar en EACH-'+ index +' es: ' + $(this).attr('condition')) : '';
 					var condicionAux = obtainCondition($(this).attr('condition'));
-					if(rtdb !== "ORACLE"){
+					if(rtdb !== "ORACLE" && rtdb !== "ORACLE11"){
 						condicionAux = condicionAux.replace(/'/g,"\"");
 					}		
 					if( index == 0){ condicion = "c." + condicionAux; } else {  condicion = condicion + " AND " + condicionAux; }			
 				});           
 			}
 			
-			if ( rtdb == "ORACLE"){
+			if ( rtdb == "ORACLE" || rtdb == "ORACLE11"){
 				if(!hayCondicion){
 					hayCondicion = true;
 					condicion = "ROWNUM <= " + limit;

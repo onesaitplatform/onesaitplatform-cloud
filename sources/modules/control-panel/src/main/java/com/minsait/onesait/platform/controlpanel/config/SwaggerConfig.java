@@ -130,6 +130,24 @@ public class SwaggerConfig {
 	}
 
 	@Bean
+	public Docket clientplatform() {
+
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Clientplatform").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorClientplatform()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorClientplatform() {
+		return or(regex("/api/clientplatform.*"));
+	}
+
+	@Bean
 	public Docket devices() {
 
 		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
@@ -492,6 +510,109 @@ public class SwaggerConfig {
 		return or(regex("/binary-repository.*"));
 	}
 
-	
+	@Bean
+	public Docket projectAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Projects").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorProjectManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorProjectManagement() {
+		return or(regex("/api/projects.*"));
+	}
+
+	@Bean
+	public Docket categorizationManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Categorization").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorCategorizationManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorCategorizationManagement() {
+		return or(regex("/api/categorization.*"));
+	}
+
+	@Bean
+	public Docket migrationManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Migration").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorMigrationManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorMigrationManagement() {
+		return or(regex("/api/migration.*"));
+	}
+
+	@Bean
+	public Docket querytoolAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Querytool").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorQueryToolManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorQueryToolManagement() {
+		return or(regex("/api/querytool.*"));
+	}
+
+	@Bean
+	public Docket flowEngineManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("FlowEngine").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorFlowEngineManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorFlowEngineManagement() {
+		return or(regex("/api/flowengine.*"));
+	}
 
 }

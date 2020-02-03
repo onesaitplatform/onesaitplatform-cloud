@@ -43,10 +43,11 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 
 	@Autowired
 	private QueryTemplateRepository queryTemplateRepository;
+	
+	final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
 	@Override
 	public PlatformQuery getTranslatedQuery(String ontology, String query) {
-		// List<QueryTemplate> templates = ;
 
 		List<QueryTemplate> templates = new ArrayList<>(
 				queryTemplateRepository.findByOntologyIdentification(ontology));
@@ -94,7 +95,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	}
 
 	String processQuery(String query, String templateName) throws ScriptException, NoSuchMethodException {
-		final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+		
 		try {
 			final String scriptPostprocessFunction = "function postprocess(){ " + query + " }";
 			final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(

@@ -21,7 +21,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
 
-public interface ViewerRepository extends JpaRepository<Viewer, Long> {
+public interface ViewerRepository extends JpaRepository<Viewer, String> {
 
 	Viewer findById(String id);
 

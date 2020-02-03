@@ -68,7 +68,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 	@Override
 	@ApiManagerAuditable
 	public Map<String, Object> processRequestData(HttpServletRequest request, HttpServletResponse response,
-			String requestBody) throws GenericOPException {
+			byte[] requestBody) throws GenericOPException {
 
 		final Facts facts = new Facts();
 		facts.put(RuleManager.REQUEST, request);
@@ -128,7 +128,8 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 
 		final String contentTypeOutput = getContentTypeOutput(data);
 
-		String output = (String) data.get(Constants.OUTPUT);
+		final Object response = data.get(Constants.OUTPUT);
+		String output = response instanceof byte[] ? new String((byte[]) response) : (String) response;
 
 		if (StringUtils.isEmpty(output)) {
 			output = "{}";

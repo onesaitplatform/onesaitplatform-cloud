@@ -223,4 +223,19 @@ public class DigitalTwinDeviceController {
 		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
 
+	/* TODELETECE
+	@GetMapping(value = "/createMicroservice/{identification}/{sensehat}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public String createMicroservice(@PathVariable("identification") String identification,
+			@PathVariable("sensehat") Boolean sensehat,
+			@RequestParam(value = "gitlabUrl", required = false) String gitlabUrl,
+			@RequestParam(value = "gitlabToken", required = false) String gitlabToken, RedirectAttributes ra) {
+		try {
+			digitalTwinDeviceHelper.createMicroservice(identification, sensehat, gitlabUrl, gitlabToken);
+		} catch (final Exception e) {
+			utils.addRedirectException(e, ra);
+		}
+		return "redirect:/microservices/list";
+
+	} */
+
 }

@@ -6,11 +6,40 @@ onesaitplatform:
       url: ${ELASTICDBHOST} 
       port: 9300
    audit.global.notify: ${AUDITGLOBALNOTIFY}
-   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$      
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+   authentication:
+      configdb:
+        acl:
+          enabled: ${CONFIGDB_ACL_ENABLED}
+          list: ${CONFIGDB_ACL_LIST}    
+      
+ldap:
+  url: ${LDAP_URL}
+  base: ${LDAP_BASE_DN}
+  username: ${LDAP_ADMIN_DN}
+  password: ${LDAP_ADMIN_PASSWORD}
+  defaultRole: ${LDAP_DEFAULT_ROLE}
+  attributesMap:
+     userId: ${LDAP_USERID_ATT}
+     mail: ${LDAP_MAIL_ATT}
+     cn: ${LDAP_CN_ATT}
+  
      
 spring:
    datasource:  
-      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      url: ${CONFIGDBURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS} 
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
    boot.admin: #Spring Boot Admin Config    
       url: http://monitoringuiservice:18100/monitoring
       client.service-url: http://oauthservice:${server.port}${server.contextPath}/ 

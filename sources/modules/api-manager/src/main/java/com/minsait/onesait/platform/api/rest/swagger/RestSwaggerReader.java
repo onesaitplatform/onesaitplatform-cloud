@@ -29,16 +29,17 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.util.StringUtils;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.ApiQueryParameterDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.OperacionDTO;
 import com.minsait.onesait.platform.api.service.Constants;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiQueryParameterDTO;
+import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Contact;
 import io.swagger.models.Info;
 import io.swagger.models.License;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Response;
@@ -81,18 +82,22 @@ public class RestSwaggerReader {
 
 		final Response r2 = new Response();
 		r2.setDescription("Bad Request");
+		r2.setResponseSchema(new ModelImpl());
 		responses.put("400", r2);
 
 		final Response r3 = new Response();
 		r3.setDescription("Unauthorized");
+		r3.setResponseSchema(new ModelImpl());
 		responses.put("401", r3);
 
 		final Response r4 = new Response();
 		r4.setDescription("Internal Server Error");
+		r4.setResponseSchema(new ModelImpl());
 		responses.put("501", r4);
 
 		final Response r5 = new Response();
 		r5.setDescription("OK");
+		r5.setResponseSchema(new ModelImpl());
 		responses.put("200", r5);
 
 		schemes.add(Scheme.HTTPS);
@@ -211,6 +216,9 @@ public class RestSwaggerReader {
 			op.addParameter(parameter);
 		}
 		op.setTags(swagger.getTags().stream().map(t -> t.getName()).collect(Collectors.toList()));
+		op.setConsumes(consumes);
+		op.setProduces(produces);
+		op.setResponses(responses);
 
 	}
 

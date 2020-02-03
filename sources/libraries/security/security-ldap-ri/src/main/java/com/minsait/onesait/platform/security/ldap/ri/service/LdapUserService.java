@@ -31,8 +31,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
@@ -54,13 +52,21 @@ public class LdapUserService {
 
 	@Autowired
 	@Qualifier(LdapConfig.LDAP_TEMPLATE_BASE)
-	private LdapTemplate ldapTemplate;
+	private LdapTemplate ldapTemplateBase;
 	@Autowired
 	@Qualifier(LdapConfig.LDAP_TEMPLATE_NO_BASE)
 	private LdapTemplate ldapTemplateNoBase;
 
-	@Value("${ldap.base-auth}")
-	private String ldapBaseAuth;
+	@Value("${ldap.defaultRole}")
+	private String defaultRole;
+	@Value("${onesaitplatform.authentication.default_password:changeIt9900!}")
+	private String defaultPassword;
+	@Value("${ldap.attributesMap.userId}")
+	private String userIdAtt;
+	@Value("${ldap.attributesMap.mail}")
+	private String userMailAtt;
+	@Value("${ldap.attributesMap.cn}")
+	private String userCnAtt;
 
 	public static final String MEMBER_OF_GROUP = "member";
 
@@ -68,52 +74,54 @@ public class LdapUserService {
 	private static final String PERSON_STR = "person";
 	private static final String GROUP_OF_NAMES = "groupOfNames";
 
-	public User createUser(User user) {
+	public User createUser(User user, String password) {
+		user.setPassword(password);
 		user.setActive(true);
-		user.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.name()));
+		user.setRole(roleRepository.findById(defaultRole));
 		log.debug("Importing user {} from LDAP server", user.getUserId());
 		return userRepository.save(user);
 	}
 
-	public void createUser(String userId, String dn) throws GenericOPException {
+	public void createUser(String userId, String dn) {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
-		filter.and(new EqualsFilter("uid", userId));
+		filter.and(new EqualsFilter(userIdAtt, userId));
 		final List<User> matches;
 		try {
-			matches = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(), new LdapUserMapper());
+			matches = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(),
+					new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
 		} catch (final RuntimeException e) {
 			log.error("Could not map user from LDAP");
-			throw new GenericOPException("Could not import user from LDAP");
+			throw new RuntimeException("Could not import user from LDAP");
 		}
 
 		if (matches.isEmpty()) {
 			log.error("User not found in LDAP server, it may not exist or it may not be objectClass=person");
 			throw new UsernameNotFoundException("User not found in LDAP server");
 		}
-		User user = new User();
-		user = matches.get(0);
+		final User user = matches.get(0);
 		user.setUserId(userId);
-		user.setPassword("");
-		createUser(user);
+		createUser(user, defaultPassword);
 	}
 
 	public List<User> getAllUsers() {
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR);
-		return ldapTemplate.search(LdapUtils.emptyLdapName(), filter.encode(), new LdapUserMapper());
+		return ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(),
+				new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
 	}
 
 	public List<User> getAllUsers(String dn) {
 		if (StringUtils.isEmpty(dn))
 			return getAllUsers();
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR);
-		return ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(), new LdapUserMapper());
+		return ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(),
+				new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
 	}
 
 	public List<User> getAllUsersFromGroup(String dn, String cn) {
 		final AndFilter filterAnd = new AndFilter();
 		filterAnd.and(new EqualsFilter(OBJECT_CLASS_STR, GROUP_OF_NAMES));
-		filterAnd.and(new EqualsFilter("cn", cn));
+		filterAnd.and(new EqualsFilter(userCnAtt, cn));
 		final List<List<User>> users = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filterAnd.encode(),
 				new LdapGroupMemberMapper(MEMBER_OF_GROUP));
 		if (!users.isEmpty())
@@ -124,7 +132,7 @@ public class LdapUserService {
 
 	public List<String> getAllGroups() {
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, GROUP_OF_NAMES);
-		return ldapTemplate.search(LdapUtils.emptyLdapName(), filter.encode(), new LdapGroupNameMapper());
+		return ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(), new LdapGroupNameMapper());
 
 	}
 

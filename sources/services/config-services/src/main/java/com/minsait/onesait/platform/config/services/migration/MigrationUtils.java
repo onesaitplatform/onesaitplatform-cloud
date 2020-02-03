@@ -70,7 +70,7 @@ public class MigrationUtils {
 	static Map<String, Field> getAllFields(Map<String, Field> fields, Class<?> type) {
 		Field[] ownFields = type.getDeclaredFields();
 		for (Field f : ownFields) {
-			if (!fields.containsKey(f.getName())) {
+			if (!f.getType().getName().startsWith("org.aspectj") && !fields.containsKey(f.getName())) {
 				fields.put(f.getName(), f);
 			}
 		}
@@ -141,6 +141,111 @@ public class MigrationUtils {
 	static ImportExportClasses blacklist() {
 		try {
 			ClassPathResource resource = new ClassPathResource("/migration.blacklist.yml");
+
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
+
+			Properties properties = factoryBean.getObject();
+
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
+
+			ImportExportClasses classes = new ImportExportClasses();
+
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
+
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
+
+		}
+	}
+
+	// to load properties from application.yml without spring context.
+	// this is necessary because DataFromDB need some properties, but it is used
+	// in a Jackson deserializer outside of the Spring context.
+	// It uses the ImportExportClasses class as if it was done with spring
+	// @Autowire.
+	static ImportExportClasses whitelist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migrationbyuser.whitelist.yml");
+
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
+
+			Properties properties = factoryBean.getObject();
+
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
+
+			ImportExportClasses classes = new ImportExportClasses();
+
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
+
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
+
+		}
+	}
+
+	// to load properties from application.yml without spring context.
+	// this is necessary because DataFromDB need some properties, but it is used
+	// in a Jackson deserializer outside of the Spring context.
+	// It uses the ImportExportClasses class as if it was done with spring
+	// @Autowire.
+	static ImportExportClasses trimlist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migrationbyuser.trimlist.yml");
+
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
+
+			Properties properties = factoryBean.getObject();
+
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
+
+			ImportExportClasses classes = new ImportExportClasses();
+
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
+
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
+
+		}
+	}
+
+	// to load properties from application.yml without spring context.
+	// this is necessary because DataFromDB need some properties, but it is used
+	// in a Jackson deserializer outside of the Spring context.
+	// It uses the ImportExportClasses class as if it was done with spring
+	// @Autowire.
+	static ImportExportClasses blackProjectlist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migration.blacklist.project.yml");
 
 			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
 			factoryBean.setSingleton(true);

@@ -21,9 +21,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -32,9 +29,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntity;
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -42,19 +41,12 @@ import lombok.Setter;
 @Entity
 @Table(name = "APP_ROLE_TYPE")
 @Configurable
-public class AppRole extends AuditableEntity {
+public class AppRole extends AuditableEntityWithUUID {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = -3041037657548992627L;
-
-	@Id
-	@Column(name = "ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Setter
-	@Getter
-	private Long id;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "app", nullable = false)
@@ -74,6 +66,7 @@ public class AppRole extends AuditableEntity {
 	private String description;
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
 	private Set<AppUser> appUsers = new HashSet<>();
@@ -81,9 +74,8 @@ public class AppRole extends AuditableEntity {
 	@JoinTable(name = "app_associated_roles", joinColumns = {
 			@JoinColumn(name = "parent_role", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
 					@JoinColumn(name = "child_role", referencedColumnName = "id", nullable = false) })
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<AppRole> childRoles;
-
+	private Set<AppRole> childRoles = new HashSet<>();
 }

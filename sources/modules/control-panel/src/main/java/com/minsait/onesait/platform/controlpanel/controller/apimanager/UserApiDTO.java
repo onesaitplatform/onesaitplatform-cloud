@@ -20,32 +20,37 @@ import com.minsait.onesait.platform.config.model.UserApi;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public class UserApiDTO implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-
-	public UserApiDTO() {
-
-	}
-
-	public UserApiDTO(UserApi userApi) {
-		this.userId = userApi.getUser().getUserId();
-		this.apiIdentification = userApi.getApi().getIdentification();
-		this.apiVersion = userApi.getApi().getNumversion();
-	}
-
+	@Getter
+ 	@Setter
+ 	private String id;
 	@Getter
 	@Setter
 	private String userId;
 	@Getter
 	@Setter
+	private String apiId;
+	@Getter
+	@Setter
+	private String userFullName;
+	@Getter
+	@Setter
 	private String apiIdentification;
-
 	@Getter
 	@Setter
 	private Integer apiVersion;
+
+	public UserApiDTO(UserApi userApi) {
+		this.id = userApi.getId();
+		this.userId = userApi.getUser().getUserId();
+		this.apiId = userApi.getApi().getId();
+		this.userFullName = userApi.getUser().getFullName();
+		this.apiIdentification = userApi.getApi().getIdentification();
+		this.apiVersion = userApi.getApi().getNumversion();
+	}
 }

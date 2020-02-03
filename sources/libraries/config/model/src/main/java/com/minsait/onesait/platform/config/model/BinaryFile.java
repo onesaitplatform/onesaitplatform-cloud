@@ -21,15 +21,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntity;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -37,19 +34,13 @@ import lombok.Setter;
 @Entity
 @Table(name = "BINARY_FILE")
 @Configurable
-public class BinaryFile extends AuditableEntity {
+public class BinaryFile extends OPResource {
 
 	private static final long serialVersionUID = 5923804579468183726L;
 
 	public enum RepositoryType {
 		MONGO_GRIDFS, FILE
 	}
-
-	@Column(name = "FILE_ID", unique = true, nullable = false)
-	@Id
-	@Getter
-	@Setter
-	private String fileId;
 
 	@Column(name = "FILE_NAME", nullable = false)
 	@Getter
@@ -76,12 +67,6 @@ public class BinaryFile extends AuditableEntity {
 	@Setter
 	private String mime;
 
-	@OneToOne
-	@JoinColumn(name = "OWNER", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User owner;
-
 	@Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT default 0")
 	@Getter
 	@Setter
@@ -103,14 +88,14 @@ public class BinaryFile extends AuditableEntity {
 		if (this == o)
 			return true;
 		else if (o instanceof BinaryFileAccess) {
-			return (getFileId().equals(((BinaryFile) o).getFileId()));
+			return (getId().equals(((BinaryFile) o).getId()));
 		} else
 			return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return java.util.Objects.hash(getFileId());
+		return java.util.Objects.hash(getId());
 	}
 
 }

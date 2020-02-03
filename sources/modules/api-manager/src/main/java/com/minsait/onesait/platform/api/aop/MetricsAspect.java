@@ -46,7 +46,7 @@ public class MetricsAspect extends BaseAspect {
 
 		counterService.increment("counter.calls." + getMethod(joinPoint) + "." + joinPoint.getSignature());
 
-		log.info("Controller @Around for {}, Interceptor Call {}",getMethod(joinPoint),joinPoint.getSignature());
+		log.info("Controller @Around for {}, Interceptor Call {}", getMethod(joinPoint), joinPoint.getSignature());
 
 		final long start = System.currentTimeMillis();
 		Object proceed = null;
@@ -59,7 +59,8 @@ public class MetricsAspect extends BaseAspect {
 		}
 
 		final long executionTime = System.currentTimeMillis() - start;
-		log.info("Controller @Around for {}, Interceptor Called: {} executed in {} ms", getMethod(joinPoint), joinPoint.getSignature(),executionTime );
+		log.info("Controller @Around for {}, Interceptor Called: {} executed in {} ms", getMethod(joinPoint),
+				joinPoint.getSignature(), executionTime);
 
 		return proceed;
 	}
@@ -68,15 +69,14 @@ public class MetricsAspect extends BaseAspect {
 	public void beforeSampleCreation(JoinPoint joinPoint) {
 
 		counterService.increment("counter.calls.beforeSampleCreation");
-		log.info("Controller @Before for {}, Method Invoked: {}"
-				,getMethod(joinPoint), joinPoint.getSignature().getName());
-		
+		log.info("Controller @Before for {}, Method Invoked: {}", getMethod(joinPoint),
+				joinPoint.getSignature().getName());
 
 		if (joinPoint.getArgs() != null) {
-			int size = joinPoint.getArgs().length;
+			final int size = joinPoint.getArgs().length;
 			if (size > 0) {
-				log.info("Controller @Before for {}, Arguments Passed: {}"
-						,getMethod(joinPoint), joinPoint.getArgs()[0]);
+				log.info("Controller @Before for {}, Arguments Passed: {}", getMethod(joinPoint),
+						joinPoint.getArgs()[0]);
 
 			}
 		}
@@ -87,10 +87,10 @@ public class MetricsAspect extends BaseAspect {
 
 		counterService.increment("counter.calls.logServiceAccess");
 
-		log.info("Controller @AfterReturning for {} Completed: {} " ,getMethod(joinPoint), joinPoint);
+		log.info("Controller @AfterReturning for {} Completed: {} ", getMethod(joinPoint), joinPoint);
 
 		if (retVal != null) {
-			log.info("Controller @AfterReturning for {} Returned: {}", getMethod(joinPoint), retVal.toString());
+			log.debug("Controller @AfterReturning for {} Returned: {}", getMethod(joinPoint), retVal.toString());
 		}
 
 	}
@@ -98,7 +98,7 @@ public class MetricsAspect extends BaseAspect {
 	@AfterThrowing(pointcut = "execution(* com.minsait.onesait.platform.api.rest.api.*.*(..))", throwing = "ex")
 	public void doRecoveryActions(JoinPoint joinPoint, Exception ex) {
 
-		log.info("After Throwing {} Method Invoked: {} ",getMethod(joinPoint), joinPoint.getSignature().getName());
+		log.info("After Throwing {} Method Invoked: {} ", getMethod(joinPoint), joinPoint.getSignature().getName());
 		log.info(" Exception Message: {} ", ex.getMessage());
 
 	}

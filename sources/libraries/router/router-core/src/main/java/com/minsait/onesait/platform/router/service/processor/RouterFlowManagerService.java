@@ -293,7 +293,8 @@ public class RouterFlowManagerService {
 						}
 
 					}
-
+					compositeModelTemp.setHeaderAuthKey(entity.getUrlAuthkey());
+					compositeModelTemp.setHeaderAuthValue(entity.getUrlAuthValue());
 					adviceServiceImpl.execute(compositeModelTemp);
 
 					log.debug("adviceScriptsAndNodereds: END");

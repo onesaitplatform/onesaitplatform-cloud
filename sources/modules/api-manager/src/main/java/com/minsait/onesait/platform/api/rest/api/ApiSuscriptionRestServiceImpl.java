@@ -20,10 +20,10 @@ import javax.ws.rs.core.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiSuscripcionDTO;
 import com.minsait.onesait.platform.api.rest.api.fiql.ApiSuscripcionFIQL;
 import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiSuscripcionDTO;
 
 @Component("apiSuscripcionRestServiceImpl")
 public class ApiSuscriptionRestServiceImpl implements ApiSuscriptionRestService {
@@ -52,21 +52,21 @@ public class ApiSuscriptionRestServiceImpl implements ApiSuscriptionRestService 
 	@Override
 	public Response autorize(ApiSuscripcionDTO suscripcion, String tokenUsuario) throws GenericOPException {
 		apiService.createSuscripcion(apiSuscripcionFIQL.copyProperties(suscripcion), tokenUsuario);
-		Object[] parametros = { suscripcion.getApiIdentification(), suscripcion.getUserId() };
+		final Object[] parametros = { suscripcion.getApiIdentification(), suscripcion.getUserId() };
 		return Response.ok(parametros).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@Override
 	public Response autorizeUpdate(ApiSuscripcionDTO suscripcion, String tokenUsuario) throws GenericOPException {
 		apiService.updateSuscripcion(apiSuscripcionFIQL.copyProperties(suscripcion), tokenUsuario);
-		Object[] parametros = { suscripcion.getApiIdentification(), suscripcion.getUserId() };
+		final Object[] parametros = { suscripcion.getApiIdentification(), suscripcion.getUserId() };
 		return Response.ok(parametros).type(MediaType.APPLICATION_JSON).build();
 	}
 
 	@Override
 	public Response deleteAutorizacion(ApiSuscripcionDTO suscripcion, String tokenUsuario) throws GenericOPException {
 		apiService.removeSuscripcionByUserAndAPI(apiSuscripcionFIQL.copyProperties(suscripcion), tokenUsuario);
-		Object[] parametros = { suscripcion.getApiIdentification(), suscripcion.getUserId() };
+		final Object[] parametros = { suscripcion.getApiIdentification(), suscripcion.getUserId() };
 		return Response.ok(parametros).type(MediaType.APPLICATION_JSON).build();
 	}
 

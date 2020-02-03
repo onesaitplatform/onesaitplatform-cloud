@@ -53,7 +53,7 @@
 			if(indexOf == -1) {
 				indexOf = query.length;
 			}
-			var testOntology = query.substring(indexfrom + 5, indexOf).trim();
+			var testOntology = getOntologyFromQuery(query);
 			while(testOntology.startsWith("(") && indexfrom!=-1) {
 				indexfrom = query.toLowerCase().indexOf("from ",indexfrom);
 				indexOf = query.toLowerCase().indexOf(" ",indexfrom + 5);
@@ -73,6 +73,27 @@
 			$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': $("#query").val(), 'queryType': 'SQL', 'ontologyIdentification': testOntology});
 			$("#dimensionsPanel").show();
 		} 
+		
+		function getOntologyFromQuery(query){			
+			query = query.replace(/(\r\n\t|\n|\r\t)/gm," ");
+			query = query.replace(/  +/g, ' ');
+			var list = query.split(/from /i);
+			if(list.length>1){
+				for (var i=1; i< list.length;i++){
+					if(!list[i].startsWith("(")){
+						var indexOf = list[i].toLowerCase().indexOf(" ",0);
+						var indexOfCloseBracket = list[i].toLowerCase().indexOf(")",0);
+						indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf)?indexOfCloseBracket:indexOf;
+						if(indexOf == -1) {
+							indexOf = list[i].length;
+						}
+						return  list[i].substring(0, indexOf).trim();
+					}
+				}
+			}else{ 
+				return "";
+			}
+		}
 	
 		function getOntologyFields() {
 			var csrf_value = $("meta[name='_csrf']").attr("content");

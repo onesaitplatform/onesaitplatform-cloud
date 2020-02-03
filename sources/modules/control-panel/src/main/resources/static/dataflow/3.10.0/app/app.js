@@ -128,6 +128,10 @@ angular.module('dataCollectorApp')
 
     $http.defaults.headers.common['X-Requested-By'] = 'Data Collector' ;
 
+    //Add header with Dataflow ID
+    var dataflowId= loc.pathname.split("/")[loc.pathname.split("/").length-1] == '' ? loc.pathname.split("/")[loc.pathname.split("/").length-2] : loc.pathname.split("/")[loc.pathname.split("/").length-1]; 
+    $http.defaults.headers.common['X-Streamsets-ID'] = dataflowId ;
+
     $rootScope.pipelineConstant = pipelineConstant;
     $rootScope.$storage = $localStorage.$default({
       displayDensity: pipelineConstant.DENSITY_COMFORTABLE,

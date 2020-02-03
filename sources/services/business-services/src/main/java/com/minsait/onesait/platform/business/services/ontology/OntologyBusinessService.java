@@ -36,7 +36,7 @@ public interface OntologyBusinessService {
 
 	JsonNode organizeRootNodeIfExist(String schema) throws IOException;
 
-	public List<String> getRelationalSchema(String datasource, String collection);
+	public String getRelationalSchema(String datasource, String collection);
 	
 	public HashMap<String, String> getAditionalDBConfig(Ontology ontology);
 

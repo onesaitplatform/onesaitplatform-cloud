@@ -24,6 +24,8 @@
 
 		<property name="hazelcast.elastic.memory.enabled">false</property>
 		<property name="hazelcast.elastic.memory.total.size">4G</property>
+		
+		<property name="hazelcast.client.invocation.timeout.seconds">5</property>
 	</properties>
 	<group>
 		<name>onesaitplatform</name>

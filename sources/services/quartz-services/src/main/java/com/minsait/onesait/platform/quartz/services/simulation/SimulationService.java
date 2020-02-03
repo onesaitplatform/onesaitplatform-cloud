@@ -16,7 +16,7 @@ package com.minsait.onesait.platform.quartz.services.simulation;
 
 import java.io.IOException;
 
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 
 public interface SimulationService {
 
@@ -25,10 +25,10 @@ public interface SimulationService {
 	String getDeviceSimulationJson(String identification, String clientPlatform, String token, String ontology,
 			String jsonMap, String jsonInstances, String instancesMode) throws IOException;
 
-	void scheduleSimulation(DeviceSimulation deviceSimulation);
+	void scheduleSimulation(ClientPlatformInstanceSimulation deviceSimulation);
 
-	void unscheduleSimulation(DeviceSimulation deviceSimulation);
+	void unscheduleSimulation(ClientPlatformInstanceSimulation deviceSimulation);
 
-	void updateSimulation(String identification, int interval, String json, DeviceSimulation simulation)
+	void updateSimulation(String identification, int interval, String json, ClientPlatformInstanceSimulation simulation)
 			throws IOException;
 }

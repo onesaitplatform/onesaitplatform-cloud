@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.router.service.app.service.crud;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelation
 import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.OntologyReferencesValidation;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.router.audit.aop.Auditable;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.QueryType;
@@ -77,6 +79,9 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+	private IntegrationResourcesService resourcesServices;
 
 	private static final String ERROR_STR = "ERROR";
 	private static final String INSERT_STR = "INSERT";
@@ -99,8 +104,6 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 			rtdbDatasource = ontology.getRtdbDatasource();
 
-			final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel);
-
 			try {
 				referencesValidation.validate(operationModel);
 
@@ -114,17 +117,27 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					|| METHOD.equalsIgnoreCase(OperationModel.OperationType.INSERT.name())) {
 
 				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
-					ComplexWriteResult data = virtualRepo.insertBulk(ontologyName, ontology.getJsonSchema(),
-							processedData, true, true);
-
+					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, false);
+					final ComplexWriteResult data = virtualRepo.insertBulk(ontologyName, ontology.getJsonSchema(), processedData, true, true);
 					final List<? extends DBResult> results = data.getData();
+					final InsertResult insertResult = new InsertResult();
+					final MultiDocumentOperationResult insertResultData = new MultiDocumentOperationResult();
+					final ArrayList<String> idList = new ArrayList<>();
 
-					if (results.size() > 1) {
-						output = String.valueOf(results.size());
-					} else if (!results.isEmpty()) {
-						output = ((BulkWriteResult) results.get(0)).getId();
+					if (!results.isEmpty() && results.get(0).getId() != null) {
+						results.stream()
+								.map(DBResult::getId)
+								.forEach( id -> idList.add(id));
 					}
+
+					insertResultData.setCount(results.size());
+					insertResultData.setIds(idList);
+					insertResult.setType(ComplexWriteResultType.BULK);
+					insertResult.setData(insertResultData);
+					output = insertResult.toString();
 				} else {
+
+					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, true);
 
 					final ComplexWriteResult data = basicOpsService.insertBulk(ontologyName, ontology.getJsonSchema(),
 							processedData, true, true);
@@ -221,46 +234,53 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 		log.debug("Update: {}", operationModel.toString());
 		final OperationResultModel result = new OperationResultModel();
 
-		final String METHOD = operationModel.getOperationType().name();
-		final String BODY = operationModel.getBody();
+		final String method = operationModel.getOperationType().name();
+		final String body = operationModel.getBody();
 		final String ontologyName = operationModel.getOntologyName();
-		final String OBJECT_ID = operationModel.getObjectId();
-		final String USER = operationModel.getUser();
-		final boolean INCLUDEIDs = operationModel.isIncludeIds();
-		final String CLIENTPLATFORM = operationModel.getDeviceTemplate();
+		final String objectId = operationModel.getObjectId();
+		final String user = operationModel.getUser();
+		final boolean includeIds = operationModel.isIncludeIds();
+		final String clientPlatform = operationModel.getDeviceTemplate();
 
 		String output = "";
 		result.setMessage("OK");
 		result.setStatus(true);
 		try {
-			final RtdbDatasource rtdbDatasource = ontologyRepository.findByIdentification(ontologyName)
-					.getRtdbDatasource();
-			if (METHOD.equalsIgnoreCase("PUT") || METHOD.equalsIgnoreCase(OperationModel.OperationType.UPDATE.name())) {
+			final RtdbDatasource rtdbDatasource = ontologyRepository.findByIdentification(ontologyName).getRtdbDatasource();
+			if (method.equalsIgnoreCase("PUT") || method.equalsIgnoreCase(OperationModel.OperationType.UPDATE.name())) {
 				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
-					output = String.valueOf(virtualRepo.updateNative(ontologyName, BODY, INCLUDEIDs));
-				} else {
-					if (OBJECT_ID != null && OBJECT_ID.length() > 0) {
-						basicOpsService.updateNativeByObjectIdAndBodyData(ontologyName, OBJECT_ID, BODY);
-						final String query = getQueryForOid(ontologyName, OBJECT_ID);
-						output = (!nullString(CLIENTPLATFORM))
-								? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName, query,
-										0)
-								: queryToolService.querySQLAsJson(USER, ontologyName, query, 0);
-						try {
-							if (!StringUtils.isEmpty(output)) {
-								final ArrayNode updatedResource = (ArrayNode) mapper.readTree(output);
-								if (updatedResource.size() > 0)
-									output = mapper.writeValueAsString(updatedResource.get(0));
-							}
-
-						} catch (final Exception e) {
-							log.error("Could not extract updated resource from array");
-						}
-
+					if (objectId != null && objectId.length() > 0) {
+						output = String.valueOf(virtualRepo.updateNativeByObjectIdAndBodyData(ontologyName, objectId, body));
+					} else {
+						output = String.valueOf(virtualRepo.updateNative(ontologyName, body, includeIds));
 					}
-
-					else {
-						output = basicOpsService.updateNative(ontologyName, BODY, INCLUDEIDs).toString();
+				} else {
+					if (objectId != null && objectId.length() > 0) {
+						final String processedBody = ontologyDataService.preProcessUpdateData(operationModel);
+						basicOpsService.updateNativeByObjectIdAndBodyData(ontologyName, objectId, processedBody);
+						final String query;
+						if (rtdbDatasource.equals(RtdbDatasource.MONGO)) {//OID Search explicit return of OID
+							query = getQueryForOid(ontologyName, objectId);
+							output = executeSQLQuery(query, ontologyName, user, clientPlatform);
+						}
+						else if (rtdbDatasource.equals(RtdbDatasource.ELASTIC_SEARCH)){//_id Search explicit return _id
+							query = getQueryForId(ontologyName, objectId);
+							output = executeSQLQuery(query, ontologyName, user, clientPlatform);
+						}
+						else {//generic _id search no explicit return of oid (inside data)
+							output = basicOpsService.findById(ontologyName, objectId);
+						}
+						
+					} else {
+						switch (operationModel.getQueryType()){
+							case SQL:
+								output = executeSQLQuery(body, ontologyName, user, clientPlatform);
+								break;
+							case NATIVE:
+							default:
+								output = basicOpsService.updateNative(ontologyName, body, includeIds).toString();
+								break;
+						}
 					}
 				}
 			}
@@ -270,8 +290,35 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setStatus(false);
 			result.setMessage(e.getMessage());
 		}
+
 		result.setResult(output);
-		result.setOperation(METHOD);
+		result.setOperation(method);
+		return result;
+	}
+
+	private String executeSQLQuery(final String body, final String ontologyName, final String user,
+								   final String clientPlatform) throws OntologyDataUnauthorizedException, GenericOPException {
+		final String result;
+		if ( clientPlatform != null && !clientPlatform.isEmpty() ) {
+			result = queryToolService.querySQLAsJsonForPlatformClient(clientPlatform, ontologyName, body, 0);
+		} else {
+			result = queryToolService.querySQLAsJson(user, ontologyName, body, 0);
+		}
+
+		return extractUpdatedResource(result);
+	}
+
+	private String extractUpdatedResource(final String result) {
+		try {
+			if ( result != null && !result.isEmpty() ) {
+				final ArrayNode updatedResource = (ArrayNode) mapper.readTree(result);
+				if (updatedResource.size() > 0) {
+					return mapper.writeValueAsString(updatedResource.get(0));
+				}
+			}
+		} catch (final Exception e) {
+			log.error("Could not extract updated resource from array");
+		}
 		return result;
 	}
 
@@ -296,7 +343,11 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					|| METHOD.equalsIgnoreCase(OperationModel.OperationType.DELETE.name())) {
 
 				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
-					output = String.valueOf(virtualRepo.deleteNative(ontologyName, BODY, INCLUDEIDs));
+					if (OBJECT_ID != null && OBJECT_ID.length() > 0) {
+						output = String.valueOf(virtualRepo.deleteNativeById(ontologyName, OBJECT_ID));
+					} else {
+						output = String.valueOf(virtualRepo.deleteNative(ontologyName, BODY, INCLUDEIDs));
+					}
 				} else {
 					if (OBJECT_ID != null && OBJECT_ID.length() > 0) {
 						output = basicOpsService.deleteNativeById(ontologyName, OBJECT_ID).toString();
@@ -367,8 +418,8 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							// OUTPUT = queryToolService.queryNativeAsJson(ontologyName, QUERY, 0,0);
 							OUTPUT = (!nullString(CLIENTPLATFORM))
 									? queryToolService.queryNativeAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
-											BODY, 0, 0)
-									: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0, 0);
+											BODY, 0, getMaxRegisters())
+									: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0, getMaxRegisters());
 						}
 					} else {
 						OUTPUT = basicOpsService.findById(ontologyName, OBJECT_ID);
@@ -440,5 +491,13 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 	private String getQueryForOid(String ontology, String oid) {
 		return "select c,_id from ".concat(ontology).concat(" as c where _id=OID(\"").concat(oid).concat("\")");
 	}
+	
+	private String getQueryForId(String ontology, String oid) {
+		return "select c,_id from ".concat(ontology).concat(" as c where _id=\"").concat(oid).concat("\"");
+	}
 
+	private int getMaxRegisters() {
+		return ((Integer) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("queries-limit"))
+				.intValue();
+	}
 }

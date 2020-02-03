@@ -73,7 +73,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Override
 	public List<String> getAllDigitalTwinTypeNames() {
-		return digitalTwinTypeRepo.findAllNames();
+		return digitalTwinTypeRepo.findAllIdentifications();
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Override
 	public String getLogicFromType(String type) {
-		final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findByName(type);
+		final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findByIdentification(type);
 		if (digitalTwinType != null) {
 			final String logic = digitalTwinType.getLogic();
 			if (logic != null) {
@@ -105,7 +105,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 			try {
 				final String type = httpServletRequest.getParameter("typeSelected").trim();
 				if (type != null && type != "") {
-					final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findByName(type);
+					final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findByIdentification(type);
 					if (digitalTwinType == null) {
 						log.error("Digital Twin Type : " + type + "doesn't exist.");
 						return;
@@ -139,7 +139,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 		if (digitalTwinDevice != null) {
 			model.addAttribute("digitaltwindevice", digitalTwinDevice);
 			model.addAttribute("logic", digitalTwinDevice.getTypeId().getLogic());
-			model.addAttribute("typeDigital", digitalTwinDevice.getTypeId().getName());
+			model.addAttribute("typeDigital", digitalTwinDevice.getTypeId().getIdentification());
 		} else {
 			log.error("DigitalTwinDevice with id:" + id + ", not found.");
 		}
@@ -176,12 +176,12 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Override
 	public List<String> getDigitalTwinDevicesByTypeId(String typeId) {
-		return digitalTwinDeviceRepo.findNamesByTypeId(digitalTwinTypeRepo.findByName(typeId));
+		return digitalTwinDeviceRepo.findNamesByTypeId(digitalTwinTypeRepo.findByIdentification(typeId));
 	}
 
 	@Override
 	public List<DigitalTwinDevice> getAllDigitalTwinDevicesByTypeId(String typeId) {
-		return digitalTwinDeviceRepo.findByTypeId(digitalTwinTypeRepo.findByName(typeId));
+		return digitalTwinDeviceRepo.findByTypeId(digitalTwinTypeRepo.findByIdentification(typeId));
 	}
 
 	@Override
@@ -199,9 +199,9 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 	public List<String> getDigitalTwinDevicesIdsByUserAndTypeId(String userId, String typeId) {
 		final User user = userService.getUser(userId);
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
-			return digitalTwinDeviceRepo.findIdsByTypeId(digitalTwinTypeRepo.findByName(typeId));
+			return digitalTwinDeviceRepo.findIdsByTypeId(digitalTwinTypeRepo.findByIdentification(typeId));
 		} else {
-			return digitalTwinDeviceRepo.findIdsByUserAndTypeId(user, digitalTwinTypeRepo.findByName(typeId));
+			return digitalTwinDeviceRepo.findIdsByUserAndTypeId(user, digitalTwinTypeRepo.findByIdentification(typeId));
 		}
 	}
 
@@ -212,7 +212,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Override
 	public Integer getNumOfDevicesByTypeId(String type) {
-		final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findByName(type);
+		final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findByIdentification(type);
 		if (digitalTwinType != null) {
 			return digitalTwinDeviceRepo.findByTypeId(digitalTwinType).size();
 		} else {

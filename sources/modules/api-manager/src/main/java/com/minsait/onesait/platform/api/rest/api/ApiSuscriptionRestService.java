@@ -26,8 +26,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiSuscripcionDTO;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiSuscripcionDTO;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
