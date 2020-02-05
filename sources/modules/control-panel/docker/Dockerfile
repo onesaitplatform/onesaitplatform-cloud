@@ -61,9 +61,6 @@ RUN cd /tmp/ \
    
     
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
-
-# Rancher CLI    
-COPY rancher /bin
 	
 USER onesait
 
