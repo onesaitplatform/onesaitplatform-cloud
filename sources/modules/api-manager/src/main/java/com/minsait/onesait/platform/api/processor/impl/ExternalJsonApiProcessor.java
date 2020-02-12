@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.api.processor.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import io.swagger.parser.OpenAPIParser;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
 
@@ -253,20 +255,21 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
 			openAPI.getPaths().entrySet().forEach(e -> {
 				final PathItem path = e.getValue();
+				List<Parameter> parameters = path.getParameters() == null ? new ArrayList<Parameter>() : path.getParameters();
 				path.readOperationsMap().entrySet().forEach(op -> {
 					final io.swagger.v3.oas.models.Operation operation = op.getValue();
-					if (operation.getParameters() != null) {
-						operation.getParameters().stream()
-								.filter(p -> p instanceof io.swagger.v3.oas.models.parameters.HeaderParameter)
-								.forEach(p -> {
-									final String header = request.getHeader(p.getName());
-									if (!StringUtils.isEmpty(header) && !headers.containsKey(p.getName()))
-										headers.add(p.getName(), header);
-								});
-					}
+					if (operation.getParameters() != null)
+						parameters.addAll(operation.getParameters());
+					parameters.stream().filter(p -> p instanceof io.swagger.v3.oas.models.parameters.HeaderParameter)
+						.forEach(p -> {
+							final String header = request.getHeader(p.getName());
+							if (!StringUtils.isEmpty(header) && !headers.containsKey(p.getName()))
+								headers.add(p.getName(), header);
+						});
 				});
 			});
-		}
+		}          
+
 		final String contentType = request.getContentType();
 		if (contentType == null)
 			headers.setContentType(MediaType.APPLICATION_JSON);
