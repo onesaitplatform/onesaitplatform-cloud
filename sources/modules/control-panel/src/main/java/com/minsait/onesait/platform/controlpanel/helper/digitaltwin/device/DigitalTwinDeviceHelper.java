@@ -39,9 +39,7 @@ import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.config.repository.PropertyDigitalTwinTypeRepository;
 import com.minsait.onesait.platform.config.services.utils.ZipUtil;
-/* TODELETECE
-import com.minsait.onesait.platform.controlpanel.services.microservice.MicroserviceBusinessService;
- */
+
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
@@ -57,10 +55,6 @@ public class DigitalTwinDeviceHelper {
 
 	@Autowired
 	private PropertyDigitalTwinTypeRepository propDigitalTwinTypeRepo;
-
-	/* TODELETECE
-	@Autowired
-	private MicroserviceBusinessService microservicesBusinessService;  */
 
 	@Autowired
 	private ZipUtil zipUtil;
@@ -307,13 +301,5 @@ public class DigitalTwinDeviceHelper {
 
 	}
 
-	/* TODELETECE 
-	public String createMicroservice(String identification, Boolean sensehat, String gitlabUrl, String gitlabToken) {
-		final File file = generateProject(identification, false, sensehat);
-		final Microservice microservice = microservicesBusinessService.createMicroserviceFromDigitalTwin(
-				digitalTwinDeviceRepo.findByIdentification(identification), file,
-				GitlabConfiguration.builder().site(gitlabUrl).privateToken(gitlabToken).build(), identification + "/",
-				identification + "/docker/");
-		return microservice.getIdentification();
-	} */
+	
 }

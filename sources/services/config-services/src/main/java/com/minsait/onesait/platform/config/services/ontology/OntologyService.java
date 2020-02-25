@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -31,6 +32,7 @@ import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 
 public interface OntologyService {
 
@@ -41,6 +43,8 @@ public interface OntologyService {
 
 	List<Ontology> getAllOntologies(String sessionUserId);
 
+	List<OntologyForList> getOntologiesForListByUserId(String sessionUserId);
+
 	List<Ontology> getOntologiesByUserId(String sessionUserId);
 
 	List<Ontology> getOntologiesByUserAndAccess(String sessionUserId, String identification, String description);
@@ -48,11 +52,12 @@ public interface OntologyService {
 	List<Ontology> getOntologiesWithDescriptionAndIdentification(String sessionUserId, String identification,
 			String description);
 
+	List<OntologyForList> getOntologiesForListWithDescriptionAndIdentification(String sessionUserId,
+			String identification, String description);
+
 	List<Ontology> getOntologiesByUserIdAndDataModel(String sessionUserId, String datamodel);
 
 	List<Ontology> getOntologiesByUserIdAndType(String sessionUserId, String type);
-
-	List<String> getAllIdentificationsByUser(String userId);
 
 	Ontology getOntologyById(String ontologyId, String sessionUserId);
 
@@ -157,5 +162,13 @@ public interface OntologyService {
 	public String getOntologyFromQuery(String query);
 
 	boolean hasEncryptionEnabled(String ontology);
+
+	List<String> getAllIdentificationsByUser(String userId);
+
+	List<OntologyDTO> getAllOntologiesForListWithProjectsAccess(String sessionUserId);
+
+	List<OntologyDTO> getAllOntologiesForList(String sessionUserId, String identification, String description);
+
+	List<OntologyDTO> getOntologiesForListByUser(String sessionUserId, String identification, String description);
 
 }

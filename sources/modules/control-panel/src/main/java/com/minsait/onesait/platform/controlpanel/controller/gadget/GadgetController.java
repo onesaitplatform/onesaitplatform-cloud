@@ -43,7 +43,6 @@ import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
@@ -159,8 +158,7 @@ public class GadgetController {
 	public String createGadget(Model model) {
 		model.addAttribute(IFRAME_STR, Boolean.FALSE);
 		model.addAttribute(GADGET_STR, new Gadget());
-		model.addAttribute(DATASOURCES_STR, mapGadgetDataSourceListToGadgetDataSourceDTOList(
-				gadgetDatasourceService.getUserGadgetDatasources(utils.getUserId())));
+		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
 		return GADGETS_CREATE;
 
@@ -171,8 +169,7 @@ public class GadgetController {
 		model.addAttribute("type", type);
 		model.addAttribute(IFRAME_STR, Boolean.TRUE);
 		model.addAttribute(GADGET_STR, new Gadget());
-		model.addAttribute(DATASOURCES_STR, mapGadgetDataSourceListToGadgetDataSourceDTOList(
-				gadgetDatasourceService.getUserGadgetDatasources(utils.getUserId())));
+		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
 		return GADGETS_CREATE;
 	}
@@ -222,8 +219,7 @@ public class GadgetController {
 		model.addAttribute(GADGET_STR, mapGadgetToGadgetDTO(gadgetService.getGadgetById(utils.getUserId(), gadgetId)));
 		model.addAttribute(MEASURES, mapGadgetMeasureListToGadgetMeasureDTOList(
 				gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadgetId)));
-		model.addAttribute(DATASOURCES_STR, mapGadgetDataSourceListToGadgetDataSourceDTOList(
-				gadgetDatasourceService.getUserGadgetDatasources(utils.getUserId())));
+		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
 		model.addAttribute(IFRAME_STR, Boolean.FALSE);
 		model.addAttribute("dataSourceAccessType",
@@ -241,8 +237,7 @@ public class GadgetController {
 		model.addAttribute(GADGET_STR, mapGadgetToGadgetDTO(gadgetService.getGadgetById(utils.getUserId(), gadgetId)));
 		model.addAttribute(MEASURES, mapGadgetMeasureListToGadgetMeasureDTOList(
 				gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadgetId)));
-		model.addAttribute(DATASOURCES_STR, mapGadgetDataSourceListToGadgetDataSourceDTOList(
-				gadgetDatasourceService.getUserGadgetDatasources(utils.getUserId())));
+		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
 		model.addAttribute(IFRAME_STR, Boolean.FALSE);
 		return GADGETS_SHOW;
@@ -259,8 +254,7 @@ public class GadgetController {
 		model.addAttribute(GADGET_STR, mapGadgetToGadgetDTO(gadgetService.getGadgetById(utils.getUserId(), gadgetId)));
 		model.addAttribute(MEASURES, mapGadgetMeasureListToGadgetMeasureDTOList(
 				gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadgetId)));
-		model.addAttribute(DATASOURCES_STR, mapGadgetDataSourceListToGadgetDataSourceDTOList(
-				gadgetDatasourceService.getUserGadgetDatasources(utils.getUserId())));
+		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
 		model.addAttribute(IFRAME_STR, Boolean.TRUE);
 		model.addAttribute("dataSourceAccessType",
@@ -344,8 +338,8 @@ public class GadgetController {
 	}
 
 	private List<OntologyDTO> getOntologiesDTO() {
-		final Set<Ontology> ontologies = new LinkedHashSet<>(ontologyService.getOntologiesByUserId(utils.getUserId()));
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
+		final Set<com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO> ontologies = new LinkedHashSet<>(
+				ontologyService.getAllOntologiesForListWithProjectsAccess(utils.getUserId()));
 		return ontologies
 				.stream().map(o -> OntologyDTO.builder().identification(o.getIdentification())
 						.description(o.getDescription()).user(o.getUser().getUserId()).build())

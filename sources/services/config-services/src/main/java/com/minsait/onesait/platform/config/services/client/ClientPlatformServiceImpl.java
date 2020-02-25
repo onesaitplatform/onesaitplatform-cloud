@@ -313,7 +313,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		final ClientPlatform ndevice = clientPlatformRepository.findByIdentification(device.getIdentification());
 		ndevice.setMetadata(device.getMetadata());
 		ndevice.setDescription(device.getDescription());
-		ndevice.setUser(userService.getUser(userId));
 		JSONArray ontologies = new JSONArray();
 		if (device.getClientPlatformOntologies() != null) {
 			ontologies = new JSONArray(device.getClientPlatformOntologies());

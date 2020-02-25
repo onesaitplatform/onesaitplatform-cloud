@@ -116,9 +116,23 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 	}
 
+	private long getExecutionTimeout() {
+		try {
+			return ((Long) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("execution-timeout"))
+					.longValue();
+		} catch (final Exception e) {
+			return queryExecutionTimeout;
+		}
+
+	}
+
 	private int getMaxRegisters() {
-		return ((Integer) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("queries-limit"))
-				.intValue();
+		try {
+			return ((Integer) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("queries-limit"))
+					.intValue();
+		} catch (final Exception e) {
+			return queryDefaultLimit;
+		}
 	}
 
 	@Override
@@ -126,7 +140,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		log.debug("insertInstance", ontology, instance);
 		try {
 			if (ontologyTimeSeriesRepository.isTimeSeries(ontology)) {
-				List<TimeSeriesResult> result = timeSeriesProcessor.processTimeSerie(ontology, instance);
+				final List<TimeSeriesResult> result = timeSeriesProcessor.processTimeSerie(ontology, instance);
 				return objectMapper.writeValueAsString(result);
 			} else {
 				final ObjectId objectId = mongoDbConnector.insert(database, ontology, util.prepareQuotes(instance));
@@ -147,15 +161,15 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			dataToInsert.add(util.prepareQuotes(document));
 		}
 
-		ComplexWriteResult result = new ComplexWriteResult();
+		final ComplexWriteResult result = new ComplexWriteResult();
 		try {
 			if (ontologyTimeSeriesRepository.isTimeSeries(ontology)) {
-				List<TimeSeriesResult> data = timeSeriesProcessor.processTimeSerie(ontology, instances.get(0));
+				final List<TimeSeriesResult> data = timeSeriesProcessor.processTimeSerie(ontology, instances.get(0));
 
 				result.setType(ComplexWriteResultType.TIME_SERIES);
 				result.setData(data);
 			} else {
-				List<BulkWriteResult> data = mongoDbConnector.bulkInsert(database, ontology, dataToInsert, order,
+				final List<BulkWriteResult> data = mongoDbConnector.bulkInsert(database, ontology, dataToInsert, order,
 						includeIds);
 
 				result.setType(ComplexWriteResultType.BULK);
@@ -378,13 +392,13 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 	private MongoIterable<BasicDBObject> queryNativeMongo(String ontology, String query, int offset, int limit) {
 		log.debug("queryNativeMongo", query, ontology);
 		try {
-			log.info("Executing query: {}", query);
+			log.debug("Executing query: {}", query);
 			final MongoQueryAndParams mc = new MongoQueryAndParams();
 			mc.parseQuery(query, limit, offset);
 			if (mc.getLimit() == 0) {
-				mc.setLimit(queryDefaultLimit);
+				mc.setLimit(getMaxRegisters());
 			}
-			return mongoDbConnector.find(database, ontology, mc, queryExecutionTimeout);
+			return mongoDbConnector.find(database, ontology, mc, getExecutionTimeout());
 		} catch (final QueryNativeFormatException e) {
 			log.error("Error: ", e, query, ontology);
 			throw new QueryNativeFormatException(e);
@@ -429,7 +443,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 	public List<String> findAll(String collection, int limit) {
 		final List<String> result = new ArrayList<>();
 		log.debug("findAll", collection, limit);
-		for (final BasicDBObject obj : mongoDbConnector.findAll(database, collection, 0, limit, queryExecutionTimeout))
+		for (final BasicDBObject obj : mongoDbConnector.findAll(database, collection, 0, limit, getExecutionTimeout()))
 			result.add(obj.toJson());
 		return result;
 	}
@@ -448,7 +462,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 	public String querySQLAsJson(String ontology, String query) {
 		try {
 			if (isMetricsOntology(ontology)) {
-				return this.processMetricsQuery(ontology, query);
+				return processMetricsQuery(ontology, query);
 			}
 			return quasarMongoConnector.queryAsJson(ontology, query, 0, getMaxRegisters());
 		} catch (final DBPersistenceException e) {
@@ -477,7 +491,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		try {
 			if (isMetricsOntology(ontology)) {
-				return this.processMetricsQuery(ontology, query);
+				return processMetricsQuery(ontology, query);
 			}
 			return quasarMongoConnector.queryAsJson(ontology, query, offset, getMaxRegisters());
 		} catch (final QueryNativeFormatException e) {
@@ -511,11 +525,11 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	private String processMetricsQuery(String ontology, String query) throws DBPersistenceException {
 		try {
-			int indexOfHours = query.indexOf("HOURS") != -1 ? 1 : -1;
-			int indexOfDays = query.indexOf("DAYS") != -1 ? 1 : -1;
-			int indexOfMonths = query.indexOf("MONTHS") != -1 ? 1 : -1;
+			final int indexOfHours = query.indexOf("HOURS") != -1 ? 1 : -1;
+			final int indexOfDays = query.indexOf("DAYS") != -1 ? 1 : -1;
+			final int indexOfMonths = query.indexOf("MONTHS") != -1 ? 1 : -1;
 
-			int indexesSum = indexOfHours + indexOfDays + indexOfMonths;
+			final int indexesSum = indexOfHours + indexOfDays + indexOfMonths;
 
 			if (indexesSum == -3) {// No interval selected
 				throw new DBPersistenceException(
@@ -532,19 +546,19 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 						"Ontology in query statement is not the indicated as selected ontology");
 			}
 
-			List<String> data = this.queryNative(ontology, queryData.get(MetricQueryResolver.STATEMENT));
+			final List<String> data = this.queryNative(ontology, queryData.get(MetricQueryResolver.STATEMENT));
 
 			metricQueryResolver.loadMetricsBase(this);
 
-			List<String> cerosInInterval = this.queryNative(METRICS_BASE,
+			final List<String> cerosInInterval = this.queryNative(METRICS_BASE,
 					queryData.get(MetricQueryResolver.STATEMENT_CEROS_COMPLETION));
 
-			String result = metricQueryResolver.buildUnifiedResponse(data, cerosInInterval,
+			final String result = metricQueryResolver.buildUnifiedResponse(data, cerosInInterval,
 					queryData.get(MetricQueryResolver.SELECT_ITEMS));
 
 			return result;
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new DBPersistenceException(e);
 		}
 	}

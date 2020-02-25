@@ -22,12 +22,15 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
+import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTOForList;
+import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 
@@ -45,6 +48,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	private OPResourceService resourceService;
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	SecurityService securityService;
 	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
 
 	@Override
@@ -54,71 +59,29 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	}
 
 	@Override
-	public List<GadgetDatasource> findGadgetDatasourceWithIdentificationAndDescription(String identification,
+	public List<GadgetDatasourceForList> findGadgetDatasourceWithIdentificationAndDescription(String identification,
 			String description, String userId) {
-		List<GadgetDatasource> datasources;
+
+		description = description == null ? "" : description;
+		identification = identification == null ? "" : identification;
+
+		List<GadgetDatasourceForList> datasources;
 		final User user = userRepository.findByUserId(userId);
 
 		if (user.getRole().getId().equals(GadgetServiceImpl.ADMINISTRATOR)) {
-			datasources = getGadgetDatasourcesForAdmin(identification, description);
+			datasources = gadgetDatasourceRepository
+					.findForListByIdentificationContainingAndDescriptionContaining(identification, description);
 		} else {
-			datasources = getGadgetDatasourcesForNonAdmin(identification, description, user);
+			datasources = gadgetDatasourceRepository
+					.findForListByUserAndIdentificationContainingAndDescriptionContaining(user, identification,
+							description);
 		}
 		return datasources;
 	}
 
-	private List<GadgetDatasource> getGadgetDatasourcesForAdmin(String identification, String description) {
-		if (description != null && identification != null) {
-
-			return gadgetDatasourceRepository.findByIdentificationContainingAndDescriptionContaining(identification,
-					description);
-
-		} else if (description == null && identification != null) {
-
-			return gadgetDatasourceRepository.findByIdentificationContaining(identification);
-
-		} else if (description != null) {
-
-			return gadgetDatasourceRepository.findByDescriptionContaining(description);
-
-		} else {
-
-			return gadgetDatasourceRepository.findAll();
-		}
-
-	}
-
-	private List<GadgetDatasource> getGadgetDatasourcesForNonAdmin(String identification, String description,
-			User user) {
-		if (description != null && identification != null) {
-
-			return gadgetDatasourceRepository.findByUserAndIdentificationContainingAndDescriptionContaining(user,
-					identification, description);
-
-		} else if (description == null && identification != null) {
-
-			return gadgetDatasourceRepository.findByUserAndIdentificationContaining(user, identification);
-
-		} else if (description != null) {
-
-			return gadgetDatasourceRepository.findByUserAndDescriptionContaining(user, description);
-
-		} else {
-
-			return gadgetDatasourceRepository.findByUser(user);
-		}
-
-	}
-
 	@Override
 	public List<String> getAllIdentifications() {
-		final List<GadgetDatasource> datasources = gadgetDatasourceRepository.findAllByOrderByIdentificationAsc();
-		final List<String> names = new ArrayList<>();
-		for (final GadgetDatasource datasource : datasources) {
-			names.add(datasource.getIdentification());
-
-		}
-		return names;
+		return gadgetDatasourceRepository.findIdentificationByOrderByIdentificationAsc();
 	}
 
 	@Override
@@ -218,6 +181,41 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 			result.addAll(projectService.getResourcesForUserOfType(userId, GadgetDatasource.class));
 			return result;
 		}
+	}
+
+	@Override
+	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId) {
+		final User user = userRepository.findByUserId(userId);
+		List<GadgetDatasourceForList> datasourcesForList = new ArrayList<>();
+		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+			datasourcesForList = gadgetDatasourceRepository.findAllForListByOrderByIdentificationAsc();
+		} else {
+			datasourcesForList = gadgetDatasourceRepository.findForListByUserOrderByIdentificationAsc(user);
+			securityService.setSecurityToInputList(datasourcesForList, user, "GadgetDatasource");
+		}
+		List<GadgetDatasourceDTOForList> dtos = new ArrayList<>();
+		for (GadgetDatasourceForList temp : datasourcesForList) {
+			if (temp.getAccessType() != null) {
+
+				final GadgetDatasourceDTOForList obj = new GadgetDatasourceDTOForList();
+
+				obj.setCreatedAt(temp.getCreated_at());
+				obj.setDescription(temp.getDescription());
+				obj.setId(temp.getId());
+				obj.setIdentification(temp.getIdentification());
+				obj.setUpdatedAt(temp.getUpdated_at());
+				obj.setUser(temp.getUser());
+				obj.setDbtype(temp.getDbtype());
+				obj.setMaxvalues(temp.getMaxValues());
+				obj.setMode(temp.getMode());
+				obj.setOntologyIdentification(temp.getOntologyIdentification());
+				obj.setQuery(temp.getQuery());
+				obj.setRefresh(temp.getRefresh());
+				dtos.add(obj);
+			}
+		}
+
+		return dtos;
 	}
 
 	@Override

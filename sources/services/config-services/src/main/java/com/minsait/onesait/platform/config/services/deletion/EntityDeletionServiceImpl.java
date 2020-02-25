@@ -21,13 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 
 import com.minsait.onesait.platform.config.model.ClientConnection;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -279,6 +276,9 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 					tokens.add(tokencp);
 				}
 			}
+			
+			tokenRepository.delete(token);
+			
 			cp.setTokens(tokens);
 			clientPlatformRepository.save(cp);
 			

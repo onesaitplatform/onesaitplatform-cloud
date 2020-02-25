@@ -34,7 +34,7 @@ public interface AppService {
 
 	public void createApp(App app);
 
-	public App getByIdentification(String identification);
+	public App getById(String identification);
 
 	public void updateApp(AppCreateDTO appDTO);
 
@@ -64,6 +64,6 @@ public interface AppService {
 
 	public boolean isUserInApp(String userId, String realmId);
 
-	App getAppByIdentification(String identification);
+	public App getAppByIdentification(String identification);
 
 }

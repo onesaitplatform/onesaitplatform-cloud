@@ -62,15 +62,16 @@ RuleDomain.List = (function() {
 	function initTableEvents() {
 		$('.tooltips').tooltip();
 		
-		$('.btn-show').on('click', function(){
+		$('.btn-show').off().on('click', function(){
 			var id = $(this).data('id');
 			navigateUrl(id+'/rules');
 		});
 		
 		$('.btn-stop , .btn-start').each(function() {
-			$(this).on('click', function (e) {
+			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
+				var message = $(this).hasClass('btn-start') ? 'started' : 'stopped';
 				$.ajax({
 		       	 	url : id +'/start-stop' ,  
 		       	 	headers: headersObj,
@@ -80,7 +81,7 @@ RuleDomain.List = (function() {
 						title : 'INFO',
 						type : 'blue',
 						theme : 'light',
-						content : 'Domain stopped'
+						content : 'Domain ' + message
 					});
 		        	reloadRuleDomainTable();
 		        }).fail(function(error) {
@@ -96,7 +97,7 @@ RuleDomain.List = (function() {
 		});
 		
 		$('.icon-ruledomain-trash').each(function() {
-			$(this).on('click', function (e) {
+			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id'); 
 				deleteRuleDomainDialog(id);

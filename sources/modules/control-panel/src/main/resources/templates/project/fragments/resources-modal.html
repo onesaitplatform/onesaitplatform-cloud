@@ -67,7 +67,7 @@
 										<select name="authorizing[]" class="form-control select-modal authorizing" data-live-search="true" data-width="100%" >			
 											<option value="" th:text="#{app.roleselect}"> Select Role...</option>
 											<option th:if="${roles.size() != 0}" th:value="#{project.users.all}" th:text="#{project.users.all}">ALL</option>										
-											<option th:each="role :${roles}" th:value="${role.id}" th:text="${role.name}  +' ('+ ${role.app.appId} +')'" ></option>
+											<option th:each="role :${roles}" th:value="${role.id}" th:text="${role.name}  +' ('+ ${role.app.identification} +')'" ></option>
 										</select>
 									</td>											
 									<td width="150px" class="no-wrap text-center">											

@@ -65,10 +65,11 @@ RUN chown -R onesait:onesait /usr/local && \
     
 VOLUME ["/tmp", "/var/log/platform-logs"]
     
+
 EXPOSE 10000 20100 5050
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
 
 USER onesait
 

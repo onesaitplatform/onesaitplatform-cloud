@@ -15,10 +15,8 @@
 package com.minsait.onesait.platform.controlpanel.controller.querytool;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +35,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -83,8 +82,9 @@ public class QueryToolController {
 
 	@GetMapping("show")
 	public String show(Model model) {
-		final Set<Ontology> ontologies = new LinkedHashSet<>(ontologyService.getAllOntologies(utils.getUserId()));
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
+		final List<OntologyDTO> ontologies = ontologyService
+				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
+
 		final List<String> tables = queryToolService.getTables();
 		model.addAttribute("ontologies", ontologies);
 		model.addAttribute("userRole", utils.getRole());

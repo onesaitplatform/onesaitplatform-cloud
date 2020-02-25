@@ -46,10 +46,8 @@ ENV SERVER_NAME=localhost \
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
     
-
-
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
 
 USER onesait
 

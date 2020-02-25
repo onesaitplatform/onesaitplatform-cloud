@@ -23,7 +23,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +35,8 @@ public class ConfigDBDetailsService implements UserDetailsService {
 
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private UserTokenRepository tokenRepository;
 
 	@Value("${onesaitplatform.authentication.twofa:false}")
 	private boolean tfaEnabled;
@@ -48,6 +52,21 @@ public class ConfigDBDetailsService implements UserDetailsService {
 		}
 
 		return toUserDetails(user);
+	}
+
+	public UserDetails loadUserByUserToken(String token) {
+
+		final UserToken userToken = tokenRepository.findByToken(token);
+
+		if (userToken == null) {
+			log.info("LoadUserByUserToken: User not found by token: {}", token);
+			return null;
+		}
+
+		return org.springframework.security.core.userdetails.User.withUsername(userToken.getUser().getUserId())
+				.password(userToken.getUser().getPassword())
+				.authorities(new SimpleGrantedAuthority(userToken.getUser().getRole().getId())).build();
+
 	}
 
 	private UserDetails toUserDetails(User userObject) {

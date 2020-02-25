@@ -184,8 +184,8 @@
 															<td class="text-center" th:if="${ontology.public}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i></td>
 															<td class="text-center" th:if="${!ontology.public}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>
 															<!-- AUTHORIZATIONS -->
-															<td class="text-center" th:if="${ontology.existOntologyUserAccessesWithUserActive()}"><i class="la la-check-circle-o text-primary font-hg"></i></td>
-															<td class="text-center" th:if="${not ontology.existOntologyUserAccessesWithUserActive()}"><i class="la la-times-circle-o text-danger font-hg"></i></td>															
+															<td class="text-center" th:if="${ontology.authorizations}"><i class="la la-check-circle-o text-primary font-hg"></i></td>
+															<td class="text-center" th:if="${!ontology.authorizations}"><i class="la la-times-circle-o text-danger font-hg"></i></td>															
 															<!-- DATAMODEL -->
 															<td class="text-center " th:text="${ontology.dataModel?.identification}"></td>
 															<!-- DATE -->
