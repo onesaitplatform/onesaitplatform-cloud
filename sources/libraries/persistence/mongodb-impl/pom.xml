@@ -33,6 +33,10 @@
 			<artifactId>onesaitplatform-commons</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
+		<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver</artifactId>
+			</dependency>
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -57,7 +61,14 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.mongodb</groupId>
+					<artifactId>mongodb-driver</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/javax.persistence/persistence-api -->
 		<dependency> <!--si ponemos javax-persistence-1.0.2 no funciona en ejecución -->
 			<groupId>org.hibernate.javax.persistence</groupId>
@@ -101,6 +112,12 @@
 			<groupId>com.github.vincentrussell</groupId>
 			<artifactId>sql-to-mongo-db-query-converter</artifactId>
 			<version>${sql-to-mongo.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-nop</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>

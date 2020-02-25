@@ -80,6 +80,7 @@ import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceEx
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyKPIDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
@@ -184,7 +185,7 @@ public class OntologyController {
 			description = null;
 		}
 
-		final List<Ontology> ontologies = ontologyConfigService.getOntologiesByUserAndAccess(utils.getUserId(),
+		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(),
 				identification, description);
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", false);
@@ -196,8 +197,16 @@ public class OntologyController {
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
 
-		final List<Ontology> ontologies = ontologyRepository
-				.findByUserOrderByIdentificationAsc(userService.getUser(utils.getUserId()));
+		// Scaping "" string values for parameters
+		if (identification != null && identification.equals("")) {
+			identification = null;
+		}
+		if (description != null && description.equals("")) {
+			description = null;
+		}
+
+		final List<OntologyDTO> ontologies = ontologyConfigService.getOntologiesForListByUser(utils.getUserId(),
+				identification, description);
 
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", true);

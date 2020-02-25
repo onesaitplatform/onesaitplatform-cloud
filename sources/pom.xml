@@ -39,7 +39,8 @@
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
 		<jsqlparser.version>1.3</jsqlparser.version>
-		<sql-to-mongo.version>1.10</sql-to-mongo.version>
+		<sql-to-mongo.version>1.11</sql-to-mongo.version>
+		<mongo-driver.version>3.12.0</mongo-driver.version>
 		<mockito.version>2.22.0</mockito.version>
 		<tika.version>1.20</tika.version>
 		<onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false&amp;autoReconnect=true</onesaitplatform.quartzURL>
@@ -61,6 +62,11 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver</artifactId>
+				<version>${mongo-driver.version}</version><!--$NO-MVN-MAN-VER$ -->
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-parent</artifactId>
@@ -199,26 +205,26 @@
 				<artifactId>jaspersoft-webservices-dataadapter</artifactId>
 				<version>${jaspersoft.ws.version}</version>
 			</dependency>
-			
-			<!-- Persistence external dependencies -->			
+
+			<!-- Persistence external dependencies -->
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<version>${postgresql.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.mariadb.jdbc</groupId>
 				<artifactId>mariadb-java-client</artifactId>
 				<version>${mariadb.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.microsoft.sqlserver</groupId>
 				<artifactId>mssql-jdbc</artifactId>
 				<version>${sqlserver.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.oracle</groupId>
 				<artifactId>ojdbc6</artifactId>
@@ -253,7 +259,7 @@
 		<module>libraries/security/security-ui-ri</module>
 		<module>libraries/security/security-ldap-ri</module>
 		<module>libraries/security/security-oauth2-ri</module>
-        <module>libraries/security/kafka-login</module>
+		<module>libraries/security/kafka-login</module>
 		<module>services/nodered-auth-services</module>
 
 		<!--PERSISTENCE -->
@@ -314,8 +320,7 @@
 		<module>modules/digitaltwin-broker</module>
 		<module>modules/rtdb-maintainer</module>
 		<module>modules/rules-engine</module>
-		<!--<module>modules/bpm-engine</module> -->
-		
+
 		<!-- TESTING -->
 		<module>libraries/integration-testing</module>
 

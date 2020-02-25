@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.security.jwt.ri;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -145,12 +146,22 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 			@Override
 			public void preHandle(WebRequest request) throws Exception {
-				String oAuthClientId = request.getUserPrincipal().getName();
-				String username = request.getParameter("username");
+				final Map<String, String[]> map = request.getParameterMap();
+				// only grant_type password scope
+				final boolean isInterceptable = map.entrySet().stream().filter(e -> e.getKey().equals("grant_type"))
+						.anyMatch(e -> Arrays.asList(e.getValue()).contains("password"));
+				if (isInterceptable) {
+					// prioritize client_id parameter over principal client for non authenticated
+					// requests such as gravitee SSO
+					final String oAuthClientId = map.entrySet().stream().filter(e -> e.getKey().equals("client_id"))
+							.map(e -> e.getValue()[0]).findFirst().orElse(request.getUserPrincipal().getName());
+					final String username = request.getParameter("username");
 
-				if (!oAuthClientId.equals(platformClientId) && !appService.isUserInApp(username, oAuthClientId)) {
-					throw OAuth2Exception.create(OAuth2Exception.ACCESS_DENIED, "User is not in clientId/Realm");
+					if (!oAuthClientId.equals(platformClientId) && !appService.isUserInApp(username, oAuthClientId)) {
+						throw OAuth2Exception.create(OAuth2Exception.ACCESS_DENIED, "User is not in clientId/Realm");
+					}
 				}
+
 			}
 
 			@Override

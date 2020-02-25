@@ -50,6 +50,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Oauth2AuthorizationServerApplication.class)
@@ -107,7 +108,7 @@ public class Oauth2IntegrationTest {
 
 	@After
 	public void tearDown() {
-		final App realm = appRepository.findByIdentificationLike(REALM_ID).get(0);
+		final App realm = EntitiesCast.castAppList(appRepository.findByIdentificationLike(REALM_ID).get(0),false);
 		realm.getAppRoles().clear();
 		appRepository.delete(realm);
 		userRepository.deleteByUserId(USERNAME);

@@ -87,7 +87,7 @@ public class AppController {
 	private static final String REDIRECT_APPS_CREATE = "redirect:/apps/create";
 	private static final String REDIRECT_APPS_LIST = "redirect:/apps/list";
 	private static final String REDIRECT_APPS_UPDATE = "redirect:/apps/update/";
-	
+
 	private static final String URL_APP_LIST = "/controlpanel/apps/list";
 
 	@Autowired(required = false)
@@ -133,7 +133,7 @@ public class AppController {
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	@Transactional
 	public String update(Model model, @PathVariable("id") String id) {
-		final App app = appService.getByIdentification(id);
+		final App app = appService.getById(id);
 
 		if (app != null) {
 
@@ -165,7 +165,7 @@ public class AppController {
 
 		try {
 
-			final App app = appService.getByIdentification(id);
+			final App app = appService.getById(id);
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
 				if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
@@ -190,7 +190,7 @@ public class AppController {
 	@GetMapping("/show/{id}")
 	@Transactional
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
-		final App app = appService.getByIdentification(id);
+		final App app = appService.getById(id);
 
 		if (app != null) {
 
@@ -214,12 +214,12 @@ public class AppController {
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
 		try {
-			final App app = appService.getByIdentification(id);
+			final App app = appService.getById(id);
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
 				if ((((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) 
-					&& (app.getProject()==null)) {
+						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId()))
+						&& (app.getProject() == null)) {
 					appService.deleteApp(app);
 				} else {
 					return URL_APP_LIST;
@@ -323,7 +323,7 @@ public class AppController {
 
 	@GetMapping(value = "/getRoles", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Map<String, String>> getRolesByApp(@RequestParam String appId) {
-		final App app = appService.getByIdentification(appId);
+		final App app = appService.getById(appId);
 		final Map<String, String> roles = new HashMap<>();
 		for (final AppRole role : app.getAppRoles()) {
 			roles.put(role.getId(), role.getName());
@@ -362,7 +362,7 @@ public class AppController {
 
 			return REDIRECT_APPS_UPDATE + appId;
 		} else {
-			final App realm = appService.getByIdentification(appId);
+			final App realm = appService.getById(appId);
 			if (!StringUtils.isEmpty(project.getIdentification()) && !StringUtils.isEmpty(project.getDescription())) {
 				project.setUser(userService.getUser(utils.getUserId()));
 				final Project p = projectService.createProject(project);

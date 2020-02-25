@@ -3944,7 +3944,7 @@ public class InitConfigDB {
 				//
 				type = new User();
 				type.setUserId(DEVELOPER);
-				type.setPassword("SHA256(yskOwp3Zjjuvf4UxUGcC7Ybq5w9S1iXJS2whDw4sE1A=)");
+				type.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
 				type.setFullName("A Developer of the Platform.");
 				type.setEmail("developer@onesaitplatform.com");
 				type.setActive(true);

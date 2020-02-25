@@ -48,8 +48,6 @@ public interface DashboardService {
 
 	Dashboard getDashboardById(String id, String userId);
 
-	String getCredentialsString(String userId);
-
 	String cloneDashboard(Dashboard originalDashboard, String identification, User user);
 
 	String createNewDashboard(DashboardCreateDTO dashboardCreateDTO, String userId);

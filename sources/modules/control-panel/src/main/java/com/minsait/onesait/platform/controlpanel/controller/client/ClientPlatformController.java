@@ -66,6 +66,7 @@ import com.minsait.onesait.platform.config.services.client.dto.TokensRequest;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.ClientPlatformServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
@@ -205,9 +206,8 @@ public class ClientPlatformController {
 
 		createInitalTokenToJson(deviceDTO);
 		model.addAttribute(DEVICE_STR, deviceDTO);
-		final List<Ontology> ontologies = ontologyService
-				.getOntologiesWithDescriptionAndIdentification(utils.getUserId(), null, null);
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
+		final List<OntologyDTO> ontologies = ontologyService
+				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 
 		return "devices/create";
@@ -302,15 +302,15 @@ public class ClientPlatformController {
 	private void mapOntologiesToJson(Model model, ClientPlatform device, DeviceCreateDTO deviceDTO) {
 		final ObjectMapper mapper = new ObjectMapper();
 		final ArrayNode arrayNode = mapper.createArrayNode();
-		final List<Ontology> ontologies = ontologyService.getOntologiesByUserId(utils.getUserId());
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
+		final List<OntologyDTO> ontologies = ontologyService
+				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		for (final ClientPlatformOntology cpo : device.getClientPlatformOntologies()) {
 			final ObjectNode on = mapper.createObjectNode();
 			on.put("id", cpo.getOntology().getIdentification());
 			on.put("access", cpo.getAccess().name());
 
-			for (final Iterator<Ontology> iterator = ontologies.iterator(); iterator.hasNext();) {
-				final Ontology ontology = iterator.next();
+			for (final Iterator<OntologyDTO> iterator = ontologies.iterator(); iterator.hasNext();) {
+				final OntologyDTO ontology = iterator.next();
 				if (ontology.getIdentification().equals(cpo.getOntology().getIdentification())) {
 					iterator.remove();
 					break;

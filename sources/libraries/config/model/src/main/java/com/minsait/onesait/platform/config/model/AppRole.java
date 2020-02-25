@@ -41,7 +41,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "APP_ROLE_TYPE")
 @Configurable
-public class AppRole extends AuditableEntityWithUUID {
+public class AppRole extends AppRoleParent {
 
 	/**
 	 *
@@ -53,24 +53,7 @@ public class AppRole extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private App app;
-
-	@Column(name = "NAME", length = 24, nullable = false)
-	@NotNull
-	@Getter
-	@Setter
-	private String name;
-
-	@Column(name = "DESCRIPTION", length = 255)
-	@Getter
-	@Setter
-	private String description;
-
-	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private Set<AppUser> appUsers = new HashSet<>();
-
+	
 	@JoinTable(name = "app_associated_roles", joinColumns = {
 			@JoinColumn(name = "parent_role", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
 					@JoinColumn(name = "child_role", referencedColumnName = "id", nullable = false) })
@@ -78,4 +61,11 @@ public class AppRole extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private Set<AppRole> childRoles = new HashSet<>();
+	
+	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@Getter
+	@Setter
+	private Set<AppUser> appUsers = new HashSet<>();
+
 }

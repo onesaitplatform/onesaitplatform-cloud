@@ -18,14 +18,11 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,7 +36,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppUser extends AuditableEntityWithUUID {
+public class AppUser extends AppUserParent {
 
 	/**
 	 *
@@ -52,7 +49,7 @@ public class AppUser extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private AppRole role;
-
+	
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)

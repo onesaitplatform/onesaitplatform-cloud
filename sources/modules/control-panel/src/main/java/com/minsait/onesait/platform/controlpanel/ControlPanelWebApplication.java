@@ -63,6 +63,7 @@ import com.github.dandelion.thymeleaf.dialect.DandelionDialect;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.controlpanel.converter.YamlHttpMessageConverter;
+import com.minsait.onesait.platform.controlpanel.security.CheckSecurityFilter;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 import com.minsait.onesait.platform.metrics.manager.MetricsNotifier;
 
@@ -99,6 +100,9 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	private CorrelationInterceptor logInterceptor;
 
 	@Autowired
+	private CheckSecurityFilter securityCheckInterceptor;
+
+	@Autowired
 	private ApplicationContext appCtx;
 
 	public static void main(String[] args) throws Exception {
@@ -133,7 +137,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		registry.addResourceHandler("/notebooks/app/**").addResourceLocations("classpath:/static/notebooks/");
-		registry.addResourceHandler("/dataflow/app/**").addResourceLocations("classpath:/static/dataflow/"+streamsetsVersion+"/");
+		registry.addResourceHandler("/dataflow/app/**")
+				.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/gitlab/**").addResourceLocations("classpath:/static/gitlab/");
 	}
 
@@ -192,6 +197,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());
 		registry.addInterceptor(logInterceptor);
+		registry.addInterceptor(securityCheckInterceptor);
+
 	}
 
 	private static final String MSJ_SSL_ERROR = "Error configuring SSL verification in Control Panel";
@@ -231,10 +238,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	}
 
 	@Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(false);
-    }
+	public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+		configurer.favorPathExtension(false);
+	}
 
-	
-	
 }

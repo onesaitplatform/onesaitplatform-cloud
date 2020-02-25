@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.opresource;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -38,6 +39,8 @@ public interface OPResourceService {
 	public boolean hasAccess(String userId, String resourceId, ResourceAccessType access);
 
 	public ResourceAccessType getResourceAccess(String userId, String resourceId);
+	
+	public Map<String,ResourceAccessType> getResourcesAccessMapByUserAndResourceIdList(User user, List<String> resourceIdList);
 
 	public void insertAuthorizations(Set<ProjectResourceAccess> accesses);
 
@@ -67,4 +70,5 @@ public interface OPResourceService {
 			List<String> resources, List<String> versions, List<String> resourceTypes, List<String> resourceAccessTypes,
 			String currentUser);
 
+	public Collection<OPResource> getResourcesByType(String userId, String type);
 }

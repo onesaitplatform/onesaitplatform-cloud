@@ -51,7 +51,7 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 		final DroolsRule droolsRule = droolsRuleService.getRule(rule.getIdentification());
 		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()))
 			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification());
-		else if (droolsRule == null || droolsRule.getSourceOntology() != null) {
+		else {
 			final Results results = kieServicesManager.updateRule(rule.getUserId(), rule.getIdentification(),
 					rule.getDRL());
 			if (results.hasMessages(Level.ERROR)) {
