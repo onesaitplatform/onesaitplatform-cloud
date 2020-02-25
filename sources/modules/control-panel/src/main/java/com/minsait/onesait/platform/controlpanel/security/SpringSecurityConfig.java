@@ -106,6 +106,7 @@ import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -122,6 +123,9 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.components.BeanUtil;
+import com.minsait.onesait.platform.controlpanel.interceptor.BearerTokenFilter;
+import com.minsait.onesait.platform.controlpanel.interceptor.XOpAPIKeyFilter;
 import com.minsait.onesait.platform.controlpanel.security.xss.XSSFilter;
 
 import lombok.extern.slf4j.Slf4j;
@@ -168,6 +172,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${csrf.enable}")
 	private boolean csrfOn;
+
+	@Autowired
+	private BeanUtil beanUtils;
 
 	@Bean
 	public FilterRegistrationBean corsFilterOauth() {
@@ -290,6 +297,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					BasicAuthenticationFilter.class);
 
 		}
+		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class);
 
 	}
 

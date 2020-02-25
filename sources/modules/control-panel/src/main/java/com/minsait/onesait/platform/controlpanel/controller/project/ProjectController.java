@@ -237,7 +237,7 @@ public class ProjectController {
 		if (!projectService.isUserAuthorized(projectId, utils.getUserId())
 				&& !projectService.isUserInProject(utils.getUserId(), projectId))
 			return ERROR_403;
-		model.addAttribute("resourcesMatch", getAllResourcesDTO(identification, resource));
+		model.addAttribute("resourcesMatch", getAllResourcesDTO2(identification, resource));
 		populateResourcesModal(model, projectId);
 		return "project/fragments/resources-modal";
 	}
@@ -452,6 +452,29 @@ public class ProjectController {
 				type_resource = type.name();
 			}
 			return resources.stream().filter(r -> r.getClass().getSimpleName().equalsIgnoreCase(type_resource))
+					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification())
+							.type(r.getClass().getSimpleName()).build())
+					.collect(Collectors.toList());
+		}
+	}
+
+	private List<ProjectResourceDTO> getAllResourcesDTO2(String identification, Resources type) {
+
+		String type_resource;
+		if (type.name().equals("DATAFLOW"))
+			type_resource = "PIPELINE";
+		else
+			type_resource = type.name();
+		final Collection<OPResource> resources2 = resourceService.getResourcesByType(utils.getUserId(), type_resource);
+
+		if (type_resource.equals("API")) {
+			return resources2.stream().filter(r -> r.getIdentification().contains(identification))
+					.map(r -> ProjectResourceDTO.builder().id(r.getId())
+							.identification(r.getIdentification() + " - V" + ((Api) r).getNumversion())
+							.type(r.getClass().getSimpleName()).build())
+					.collect(Collectors.toList());
+		} else {
+			return resources2.stream().filter(r -> r.getIdentification().contains(identification))
 					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification())
 							.type(r.getClass().getSimpleName()).build())
 					.collect(Collectors.toList());

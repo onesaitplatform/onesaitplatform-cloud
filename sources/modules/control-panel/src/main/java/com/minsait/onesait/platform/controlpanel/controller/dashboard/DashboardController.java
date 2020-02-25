@@ -125,7 +125,7 @@ public class DashboardController {
 	private static final String REDIRECT_DASHB_CREATE = "redirect:/dashboards/create";
 	private static final String REDIRECT_DASHB_CREATE_SYNOPTIC = "redirect:/dashboards/createsynoptic";
 	private static final String REDIRECT_DASHB_LIST = "redirect:/dashboards/list/";
-	private static final String CREDENTIALS_STR = "credentials";
+
 	private static final String HEADERLIBS = "headerlibs";
 	private static final String EDITION = "edition";
 	private static final String IFRAME = "iframe";
@@ -392,7 +392,6 @@ public class DashboardController {
 	@GetMapping(value = "/editor/{id}", produces = "text/html")
 	public String editorDashboard(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardById(id, utils.getUserId()));
-		model.addAttribute(CREDENTIALS_STR, dashboardService.getCredentialsString(utils.getUserId()));
 		return "dashboards/editor";
 
 	}
@@ -408,7 +407,6 @@ public class DashboardController {
 		if (dashboardService.hasUserEditPermission(id, utils.getUserId())) {
 			final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 			model.addAttribute(DASHBOARD_STR, dashboard);
-			model.addAttribute(CREDENTIALS_STR, dashboardService.getCredentialsString(utils.getUserId()));
 			model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 			model.addAttribute(EDITION, true);
 			model.addAttribute(IFRAME, false);
@@ -428,7 +426,6 @@ public class DashboardController {
 		if (dashboardService.hasUserViewPermission(id, utils.getUserId())) {
 			final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 			model.addAttribute(DASHBOARD_STR, dashboard);
-			model.addAttribute(CREDENTIALS_STR, dashboardService.getCredentialsString(utils.getUserId()));
 			model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 			model.addAttribute(EDITION, false);
 			model.addAttribute(IFRAME, false);
@@ -515,8 +512,6 @@ public class DashboardController {
 					final Dashboard dashboard = dashboardService.getDashboardById(id,
 							(String) info.getUserAuthentication().getPrincipal());
 					model.addAttribute(DASHBOARD_STR, dashboard);
-					model.addAttribute(CREDENTIALS_STR, dashboardService
-							.getCredentialsString((String) info.getUserAuthentication().getPrincipal()));
 					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 					model.addAttribute(EDITION, true);
 					model.addAttribute(IFRAME, true);
@@ -608,8 +603,7 @@ public class DashboardController {
 					final Dashboard dashboard = dashboardService.getDashboardById(id,
 							(String) info.getUserAuthentication().getPrincipal());
 					model.addAttribute(DASHBOARD_STR, dashboard);
-					model.addAttribute(CREDENTIALS_STR, dashboardService
-							.getCredentialsString((String) info.getUserAuthentication().getPrincipal()));
+
 					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 					model.addAttribute(EDITION, false);
 					model.addAttribute(IFRAME, true);

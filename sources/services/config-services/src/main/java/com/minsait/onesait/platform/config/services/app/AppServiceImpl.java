@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.app;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,13 +25,16 @@ import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import org.hibernate.jpa.event.internal.jpa.EntityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.Role;
@@ -42,6 +46,7 @@ import com.minsait.onesait.platform.config.services.app.dto.AppAssociatedCreateD
 import com.minsait.onesait.platform.config.services.app.dto.AppCreateDTO;
 import com.minsait.onesait.platform.config.services.app.dto.Realm;
 import com.minsait.onesait.platform.config.services.app.dto.UserAppCreateDTO;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.AppServiceException;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -67,30 +72,41 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public List<App> getAllApps() {
-		return appRepository.findAll();
+		List<App> appCastList = new ArrayList<App>();
+		for(AppList appList : appRepository.findAllList()) {
+			appCastList.add(EntitiesCast.castAppList(appList, false));
+		}
+		return appCastList;
 	}
 
 	@Override
 	public List<AppRole> getAllRoles() {
-		final List<App> allApps = appRepository.findAll();
+		final List<AppList> allApps = appRepository.findAllList();
 		final List<AppRole> allRoles = new ArrayList<>();
-		for (final App app : allApps) {
-			allRoles.addAll(app.getAppRoles());
+		for (final AppList app : allApps) {
+			for (final AppRoleList appRole : app.getAppRoles()) {
+				allRoles.add(EntitiesCast.castAppRole(appRole));
+			}
 		}
 		return allRoles;
 	}
 
+	@Transactional
 	@Override
 	public List<App> getAppsByUser(String sessionUserId, String identification) {
-		List<App> apps;
+		List<App> apps = new LinkedList<>();
+		List<AppList> appsList;
 		final User sessionUser = userService.getUser(sessionUserId);
 
 		identification = identification == null ? "" : identification;
 
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
-			apps = appRepository.findByIdentificationLike(identification);
+			appsList = appRepository.findByIdentificationLike(identification);
 		} else {
-			apps = appRepository.findByUserANDIdentification(sessionUser, identification);
+			appsList = appRepository.findByUserANDIdentification(sessionUser, identification);
+		}
+		for(AppList al: appsList) {
+			apps.add(EntitiesCast.castAppList(al,false));
 		}
 		return apps;
 
@@ -108,7 +124,7 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public void createApp(App app) {
-		if (appRepository.findByIdentificationEquals(app.getIdentification())!=null) {
+		if (appRepository.findByIdentificationEquals(app.getIdentification()) != null) {
 			throw new AppServiceException("App with identification: " + app.getIdentification() + " exists");
 		}
 		appRepository.save(app);
@@ -117,7 +133,7 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	@Transactional
-	public App getByIdentification(String id) {
+	public App getById(String id) {
 		return appRepository.findOne(id);
 	}
 
@@ -145,7 +161,7 @@ public class AppServiceImpl implements AppService {
 				projectService.updateProject(project);
 			}
 		}
-		
+
 		app.getAppRoles().clear();
 
 		for (final App application : getAllApps()) {
@@ -156,9 +172,9 @@ public class AppServiceImpl implements AppService {
 		}
 
 		app.getChildApps().clear();
-		
+
 		updateAppRoles(app, appDTO);
-	
+
 		appRepository.save(app);
 
 	}
@@ -299,7 +315,7 @@ public class AppServiceImpl implements AppService {
 
 		if (app.getChildApps() != null && !app.getChildApps().isEmpty()) {
 			deleteFatherApp(app);
-		} else {		
+		} else {
 			for (final App application : getAllApps()) {
 				if (application.getChildApps() != null && application.getChildApps().contains(app)) {
 					deleteChildApp(application, app);
@@ -308,7 +324,7 @@ public class AppServiceImpl implements AppService {
 		}
 		appRepository.delete(app);
 	}
-	
+
 	private void deleteChildApp(App application, App app) {
 		application.getChildApps().remove(app);
 		for (final AppRole appRole : application.getAppRoles()) {
@@ -322,7 +338,7 @@ public class AppServiceImpl implements AppService {
 		}
 		appRepository.save(application);
 	}
-	
+
 	private void deleteFatherApp(App app) {
 		for (final AppRole appRole : app.getAppRoles()) {
 			appRole.getChildRoles().clear();
@@ -472,7 +488,7 @@ public class AppServiceImpl implements AppService {
 	public App getAppByIdentification(String identification) {
 		return appRepository.findByIdentification(identification);
 	}
-	
+
 	@Override
 	@Transactional
 	public Realm getRealmByAppIdentification(String appId) {
@@ -486,4 +502,5 @@ public class AppServiceImpl implements AppService {
 		List<AppUser> listUser = appUserRepository.findByUserAndIdentification(userId, realmId);
 		return !(listUser == null || listUser.isEmpty());
 	}
+	
 }

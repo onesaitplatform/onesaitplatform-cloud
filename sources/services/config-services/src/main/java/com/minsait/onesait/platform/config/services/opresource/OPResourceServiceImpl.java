@@ -16,8 +16,10 @@ package com.minsait.onesait.platform.config.services.opresource;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.dto.ProjectUserAccess;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppUser;
@@ -127,6 +130,21 @@ public class OPResourceServiceImpl implements OPResourceService {
 					.findAny().orElse(false)).collect(Collectors.toSet()));
 			return resourcesFiltered;
 		}
+
+	}
+
+	@Override
+	public Collection<OPResource> getResourcesByType(String userId, String type) {
+		final User user = userService.getUser(userId);
+		List<OPResource> res;
+		if (userService.isUserAdministrator(user)) {
+			res = resourceRepository.findAll();
+		} else {
+			res = resourceRepository.findByUser(userService.getUser(userId));
+		}
+
+		return res.stream().filter(r -> r.getClass().getSimpleName().equalsIgnoreCase(type))
+				.collect(Collectors.toList());
 
 	}
 
@@ -253,6 +271,16 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 		}).filter(Objects::nonNull).findFirst().orElse(null);
 
+	}
+	
+	@Override
+	public Map<String,ResourceAccessType> getResourcesAccessMapByUserAndResourceIdList(User user, List<String> resourceIdList) {
+		Map<String,ResourceAccessType> midrat = new HashMap<String,ResourceAccessType>();
+		final List<ProjectUserAccess> accesses = resourceAccessRepository.findUserAccessByUserAndResourceIds(user,resourceIdList);
+		for(ProjectUserAccess pra: accesses) {
+			midrat.put(pra.getEntity_id(),pra.getAccessType());
+		}
+		return midrat;
 	}
 
 	@Override
@@ -600,7 +628,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 		if (!(projectName.equals("")) && !(realmId.equals("")) && !(resourceId.equals("")) && !(resourceType.equals(""))
 				&& !(roleId.equals(""))) {
 			final Project project = projectService.getByName(projectName);
-			final App realm = appService.getByIdentification(realmId);
+			final App realm = appService.getAppByIdentification(realmId);
 
 			if (realm == null) {
 				log.error(ERROR_REALM_NOT_FOUND);
@@ -628,8 +656,9 @@ public class OPResourceServiceImpl implements OPResourceService {
 				resource = apiRepository.findByIdentificationAndNumversion(resourceId, Integer.parseInt(version));
 			}
 
-			final AppRole rol = appRoleRepository.findAll().stream().filter(r -> r.getApp().getIdentification().equals(realmId))
-					.filter(r -> r.getName().equals(roleId)).collect(Collectors.toList()).get(0);
+			final AppRole rol = appRoleRepository.findAll().stream()
+					.filter(r -> r.getApp().getIdentification().equals(realmId)).filter(r -> r.getName().equals(roleId))
+					.collect(Collectors.toList()).get(0);
 
 			if (resource == null) {
 				log.error(ERROR_RESOURCE_NOT_FOUND);
@@ -705,7 +734,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 		if (!(projectName.equals("")) && !(realmId.equals("")) && !(resourceId.equals("")) && !(resourceType.equals(""))
 				&& !(roleId.equals(""))) {
 			final Project project = projectService.getByName(projectName);
-			final App realm = appService.getByIdentification(realmId);
+			final App realm = appService.getAppByIdentification(realmId);
 
 			if (realm == null) {
 				log.error(ERROR_REALM_NOT_FOUND);
@@ -739,8 +768,9 @@ public class OPResourceServiceImpl implements OPResourceService {
 				throw new OPResourceServiceException(ERROR_RESOURCE_NOT_FOUND);
 			}
 
-			final AppRole rol = appRoleRepository.findAll().stream().filter(r -> r.getApp().getIdentification().equals(realmId))
-					.filter(r -> r.getName().equals(roleId)).collect(Collectors.toList()).get(0);
+			final AppRole rol = appRoleRepository.findAll().stream()
+					.filter(r -> r.getApp().getIdentification().equals(realmId)).filter(r -> r.getName().equals(roleId))
+					.collect(Collectors.toList()).get(0);
 
 			ProjectResourceAccess pRA = checkResourceAccessByRealm(project, rol, resource, version, resourceType,
 					resourceAccessType, currentUserId);

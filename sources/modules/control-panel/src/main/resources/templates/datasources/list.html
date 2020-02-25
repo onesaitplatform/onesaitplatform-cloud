@@ -173,18 +173,18 @@
 															<!-- TYPE -->
 															<td class="text-center text-truncate-sm" th:title="${datasource.dbtype}" th:text="${datasource.dbtype}"></td>
 															<!-- ONTOLOGY -->
-															<td th:if="${datasource.ontology!=null}" class="text-left text-truncate-sm" th:title="${datasource.ontology.identification}" th:text="${datasource.ontology.identification}"></td>
-															<td th:if="${datasource.ontology==null}" class="text-left text-truncate-sm" th:title="${datasource.query}" th:text="${datasource.query}"></td>
+															<td th:if="${datasource.ontologyIdentification!=null}" class="text-left text-truncate-sm" th:title="${datasource.ontologyIdentification}" th:text="${datasource.ontologyIdentification}"></td>
+															<td th:if="${datasource.ontologyIdentification==null}" class="text-left text-truncate-sm" th:title="${datasource.query}" th:text="${datasource.query}"></td>
 															<!-- MAX VALUE -->
-															<td class="text-center text-truncate-sm" th:title="${datasource.maxvalues}" th:text="${datasource.maxvalues}"></td>
+															<td class="text-center text-truncate-sm" th:title="${datasource.maxValues}" th:text="${datasource.maxValues}"></td>
 															<!-- REFRESH TIME -->
 															<td class="text-center text-truncate-sm" th:title="${datasource.refresh}" th:text="${datasource.refresh}"></td>
 															<!-- DATE --> 
-															<td class="text-center" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${datasource.createdAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${datasource.created_at!=null}"><span th:text="${#dates.format(datasource.created_at,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.created_at,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${datasource.created_at==null}" th:text="'---'"></td>
 															<!-- UPDATE --> 
-															<td class="text-center" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${datasource.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${datasource.updated_at!=null}"><span th:text="${#dates.format(datasource.updated_at,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updated_at,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${datasource.updated_at==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">

@@ -36,6 +36,7 @@ import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.repository.IoTSessionRepository;
+import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
@@ -79,6 +80,9 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 		final Token retrivedToken = tokenService.getTokenByToken(token);
 		if (retrivedToken == null) {
 			log.info("Impossible to retrieve Token with token: {}",token);
+			return Optional.empty();
+		} else if (!retrivedToken.isActive()) {
+			log.info("Token inactive with token: {}",token);
 			return Optional.empty();
 		}
 
@@ -193,6 +197,12 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 		final IoTSession session = ioTSessionRepository.findBySessionKey(sessionKey);
 		if (session == null) {
 			return Optional.empty();
+		} else {
+			Token token = tokenService.getTokenByToken(session.getToken());
+			if (token == null || !token.isActive()) {
+				closeSession(sessionKey);
+				return Optional.empty();
+			}
 		}
 
 		return Optional.of(session);

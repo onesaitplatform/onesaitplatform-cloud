@@ -1585,7 +1585,7 @@ public class ProjectManagementController {
 
 			String created = "";
 
-			final App realm = appService.getByIdentification(realmId);
+			final App realm = appService.getAppByIdentification(realmId);
 			if (realm == null) {
 				created = ERROR_REALM_NOT_FOUND;
 			} else if (project.getApp() != null) {

@@ -64,7 +64,7 @@
 								<input type="text" name="users[]" readonly="readonly"  class="form-control" th:value="${access.user.fullName}  +' ('+ ${access.user.userId} +')'"/>
 							</td>
 							<td th:if="${projectObj.app != null}">
-								<input type="text" name="users[]" readonly="readonly"  class="form-control" th:value="${access.appRole.name}  +' ('+ ${access.appRole.app.appId} +')'"/>
+								<input type="text" name="users[]" readonly="readonly"  class="form-control" th:value="${access.appRole.name}  +' ('+ ${access.appRole.app.identification} +')'"/>
 							</td>											
 							<td width="150px" class="no-wrap text-center">											
 								<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'" th:text="#{project.removeauthorization}">Insert Assignment</button>

@@ -22,6 +22,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.ProjectUserAccess;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
@@ -45,6 +46,9 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	public List<ProjectResourceAccess> findByResource(OPResource resource);
 
 	public List<ProjectResourceAccess> findByUser(User user);
+	
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.ProjectUserAccess(pra.resource.id, pra.access ) FROM com.minsait.onesait.platform.config.model.ProjectResourceAccess as pra WHERE pra.user = :user and pra.resource.id in :resourceIdList")
+	public List<ProjectUserAccess> findUserAccessByUserAndResourceIds(@Param("user") User user, @Param("resourceIdList") List<String> resourceIdList);
 
 	public List<ProjectResourceAccess> findByAppRole(AppRole role);
 }

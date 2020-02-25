@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.project;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
@@ -42,6 +44,7 @@ import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
 import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 
@@ -65,6 +68,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Project createProject(ProjectDTO project) {
+
 		Project p = new Project();
 		p.setIdentification(project.getIdentification());
 		p.setDescription(project.getDescription());
@@ -97,7 +101,11 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public List<Project> getAllProjects() {
-		return projectRepository.findAll();
+		List<Project> lproject = new LinkedList<Project>();
+		for (ProjectList plist: projectRepository.findAllForList()) {
+			lproject.add(EntitiesCast.castProjectList(plist, true));
+		}
+		return lproject;
 	}
 
 	@Override
@@ -186,10 +194,22 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public List<Project> getProjectsForUser(String userId) {
-		final List<Project> projects = projectRepository.findAll();
+		
+		List<ProjectList> projectsList = projectRepository.findAllForList();
+		List<Project> projects = new LinkedList<Project>();
+		
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+			for(ProjectList pl: projectsList) {
+				projects.add(EntitiesCast.castProjectList(pl, true));
+			}
 			return projects;
+		}
+		else{
+			for(ProjectList pl: projectsList) {
+				projects.add(EntitiesCast.castProjectList(pl, false));
+			}
+		}
 		final List<Project> filteredProjects = projects.stream()
 				.filter(p -> p.getUser().equals(user) || p.getUsers().contains(user)).collect(Collectors.toList());
 		projects.forEach(p -> addAppRelatedProjects(p, filteredProjects, user));
@@ -255,7 +275,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void setRealm(String realmId, String projectId) {
-		final App app = appService.getByIdentification(realmId);
+		final App app = appService.getAppByIdentification(realmId);
 		if (app != null) {
 			final Project project = projectRepository.findOne(projectId);
 			if (!project.getUsers().isEmpty()) {
@@ -273,7 +293,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void unsetRealm(String realmId, String projectId) {
-		final App app = appService.getByIdentification(realmId);
+		final App app = appService.getAppByIdentification(realmId);
 		if (app != null) {
 			final Project project = projectRepository.findOne(projectId);
 			project.setApp(null);

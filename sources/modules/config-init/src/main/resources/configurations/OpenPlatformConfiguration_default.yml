@@ -1,6 +1,7 @@
 onesaitplatform:
   env:
     database:
+      execution-timeout: !!java.lang.Long 10000
       queries-limit: 2000
       mongodb-servers: localhost:27017
       mongodb-database: onesaitplatform_rtdb

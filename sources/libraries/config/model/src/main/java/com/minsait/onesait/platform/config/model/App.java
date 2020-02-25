@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,18 +44,19 @@ import lombok.Setter;
 @Entity
 @Table(name = "APP")
 @Configurable
-public class App extends OPResource {
+public class App extends AppParent {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 7199595602818161052L;
+	private static final long serialVersionUID = 2199595602818161052L;
 
-	@Column(name = "DESCRIPTION", length = 255)
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "PROJECT_ID")
 	@Getter
 	@Setter
-	private String description;
-
+	private Project project;
+	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
@@ -70,27 +72,30 @@ public class App extends OPResource {
 	@Setter
 	@JsonIgnore
 	private Set<App> childApps;
+	
+	public App() {};
 
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "PROJECT_ID")
-	@Getter
-	@Setter
-	private Project project;
-
-	@Column(name = "TOKEN_VALIDITY_SECONDS")
-	@Getter
-	@Setter
-	private Integer tokenValiditySeconds;
-
-	@Column(name = "SECRET", length = 128)
-	@Getter
-	@Setter
-	private String secret;
-
-	@Column(name = "user_extra_fields", nullable = true)
-	@Lob
-	@JsonRawValue
-	@Getter
-	@Setter
-	private String userExtraFields;
+	
+	public App(String id, String identification, String description, User user, String secret, String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
+		this.setId(id);
+		this.setIdentification(identification);
+		this.setDescription(description);
+		this.setUser(user);
+		this.setCreatedAt(createAt);
+		this.setUpdatedAt(updateAt);
+		this.setSecret(secret);
+		this.setUserExtraFields(user_extra_fields);
+		this.setTokenValiditySeconds(tokenValiditySeconds);
+		Set<AppRole> appRoles = new HashSet<AppRole>();
+		if(appRole != null) {
+			appRoles.add(appRole);
+		}
+		this.setAppRoles(appRoles);
+		
+		/*Set<App> childapps = new HashSet<App>();
+		if(childApp != null) {
+			childApps.add(new App(childApp));
+		}
+		this.setChildApps(childapps);*/
+	};
 }

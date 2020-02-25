@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.QueryTemplate;
 import com.minsait.onesait.platform.config.model.QueryTemplate.QueryType;
@@ -208,10 +209,10 @@ public class QueryTemplateController {
 
 	private List<OntologyDTO> getOntologiesDTO() {
 		List<OntologyDTO> listOntologies = new ArrayList<>();
-		List<Ontology> ontologies = this.ontologyService.getOntologiesByUserId(utils.getUserId());
+		List<OntologyForList> ontologies = this.ontologyService.getOntologiesForListByUserId(utils.getUserId());
 		if (ontologies != null && !ontologies.isEmpty()) {
-			for (Iterator<Ontology> iterator = ontologies.iterator(); iterator.hasNext();) {
-				Ontology ontology = iterator.next();
+			for (Iterator<OntologyForList> iterator = ontologies.iterator(); iterator.hasNext();) {
+				OntologyForList ontology = iterator.next();
 				OntologyDTO oDTO = new OntologyDTO();
 				oDTO.setIdentification(ontology.getIdentification());
 				oDTO.setDescription(ontology.getDescription());

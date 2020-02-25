@@ -24,7 +24,7 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /usr/local
     
 VOLUME ["/tmp", "/var/log/platform-logs"]
-  
+
 EXPOSE 20000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
@@ -72,7 +72,7 @@ ENV SERVER_NAME=localhost \
     NOTIFICATION_POOL_RULESENGINE=50 
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
 
 USER onesait
 

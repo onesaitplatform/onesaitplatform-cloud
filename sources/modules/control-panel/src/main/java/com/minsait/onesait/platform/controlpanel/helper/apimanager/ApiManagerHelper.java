@@ -40,12 +40,10 @@ import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService
 import com.minsait.onesait.platform.config.services.apimanager.operation.OperationJson;
 import com.minsait.onesait.platform.config.services.apimanager.operation.QueryStringJson;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.apimanager.UserApiDTO;
-/* TODELETECE
-import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiCreate;
- */
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -103,11 +101,10 @@ public class ApiManagerHelper {
 
 	// To populate the Create Api Form
 	public void populateApiManagerCreateForm(Model uiModel) {
-		Set<Ontology> ontologies;
+		List<OntologyDTO> ontologies;
 
-		ontologies = new LinkedHashSet<>(ontologyService.getAllOntologies(utils.getUserId()));
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
-
+		ontologies = ontologyService.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
+		
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		uiModel.addAttribute(API_ENDPOINT_STR,"");
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
