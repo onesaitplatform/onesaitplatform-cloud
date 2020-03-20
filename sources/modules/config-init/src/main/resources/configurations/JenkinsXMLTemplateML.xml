@@ -118,7 +118,7 @@
    stages {
        stage(&apos;Fetching from repository&apos;) {  
         steps {  
-           sh &quot;/opt/gitlab/embedded/bin/git clone ${params.GIT_URL} ${env.BASEPATH}&quot;            
+           sh &quot;git clone ${params.GIT_URL} ${env.BASEPATH}&quot;            
         }          
        }
      

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.mail.MailSendException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -116,9 +117,10 @@ public class UserController {
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
-
-		utils.deactivateSessions(id);
-		userService.deleteUser(id);
+		if (!utils.getUserId().equals(id)) {
+			utils.deactivateSessions(id);
+			userService.deleteUser(id);
+		}
 		return REDIRECT_USER_LIST;
 	}
 
@@ -126,9 +128,9 @@ public class UserController {
 	public String updateForm(@PathVariable("id") String id, @PathVariable(name = "bool", required = false) boolean bool,
 			Model model) {
 		// If non admin user tries to update any other user-->forbidden
-		if (!utils.getUserId().equals(id) && !utils.isAdministrator())
+		if (!utils.getUserId().equals(id) && !utils.isAdministrator()) {
 			return ERROR_403;
-
+		}
 		populateFormData(model);
 		model.addAttribute("AccessToUpdate", bool);
 
@@ -393,7 +395,7 @@ public class UserController {
 		if (user != null) {
 			if (userService.emailExists(user)) {
 				log.debug("There is already an user with this email");
-				utils.addRedirectMessage("login.error.email.generic", redirectAttributes);
+				utils.addRedirectMessage("login.error.email.duplicate", redirectAttributes);
 				return REDIRECT_LOGIN;
 			}
 			if (!userService.emailExists(user)) {
@@ -445,9 +447,13 @@ public class UserController {
 					log.error("This user already exist", e);
 					utils.addRedirectMessage("login.error.register", redirectAttributes);
 					return REDIRECT_LOGIN;
+				} catch (final MailSendException e) {
+					log.error("Error sending mail to finish user creation", e);
+					utils.addRedirectMessage("login.error.email.fail", redirectAttributes);
+					return REDIRECT_LOGIN;
 				} catch (final Exception e) {
 					log.error("Error creating user", e);
-					utils.addRedirectMessage("login.error.user.register", redirectAttributes);
+					utils.addRedirectMessage("login.error.email.generic", redirectAttributes);
 					return REDIRECT_LOGIN;
 				}
 			}
@@ -499,8 +505,13 @@ public class UserController {
 
 		try {
 
-			utils.deactivateSessions(userId);
-			userService.deleteUser(userId);
+			if ((!utils.isAdministrator() && (utils.getUserId().equals(userId)))
+					|| (utils.isAdministrator() && !utils.getUserId().equals(userId))) {
+
+				utils.deactivateSessions(userId);
+				userService.deleteUser(userId);
+
+			}
 
 			if (utils.isAdministrator()) {
 				return REDIRECT_USER_LIST;

@@ -209,7 +209,7 @@ public class RulesEngineIntegrationTest {
 		final Ontology sensorTag = new Ontology();
 		sensorTag.setIdentification(SENSOR_TAG);
 		sensorTag.setUser(admin);
-		sensorTag.setDataModel(dataModelRepository.findByName(EMPTY_BASE).get(0));
+		sensorTag.setDataModel(dataModelRepository.findByIdentification(EMPTY_BASE).get(0));
 		sensorTag.setJsonSchema(loadFromResources(SENSOR_TAG_SCHEMA_FILE));
 		sensorTag.setActive(true);
 		sensorTag.setMetainf("");
@@ -219,7 +219,7 @@ public class RulesEngineIntegrationTest {
 		final Ontology sensorAlarm = new Ontology();
 		sensorAlarm.setIdentification(SENSOR_ALARM);
 		sensorAlarm.setUser(admin);
-		sensorAlarm.setDataModel(dataModelRepository.findByName(EMPTY_BASE).get(0));
+		sensorAlarm.setDataModel(dataModelRepository.findByIdentification(EMPTY_BASE).get(0));
 		sensorAlarm.setJsonSchema(loadFromResources(SENSOR_ALARM_SCHEMA_FILE));
 		sensorAlarm.setActive(true);
 		sensorAlarm.setMetainf("");

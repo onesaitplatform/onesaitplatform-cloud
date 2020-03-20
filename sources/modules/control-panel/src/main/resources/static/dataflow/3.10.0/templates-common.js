@@ -900,33 +900,12 @@ angular.module("common/administration/logs/logs.tpl.html", []).run(["$templateCa
     "      </div>\n" +
     "\n" +
     "\n" +
-    "      <span class=\"sort-by-label\" ng-if=\"pipelines.length\">Pipeline:</span>\n" +
-    "      <div class=\"btn-group pipeline-dropdown\" ng-if=\"pipelines.length\">\n" +
+    "      <span class=\"sort-by-label\" ng-if=\"pipelines.length\">Pipeline: {{filterPipelineLabel}}</span>\n" +
     "\n" +
-    "        <button class=\"btn btn-link dropdown-toggle icon-button\" type=\"button\" data-toggle=\"dropdown\">\n" +
-    "          <span ng-if=\"!filterPipeline\" translate=\"logs.all\">All</span>\n" +
-    "          <span ng-if=\"filterPipeline\">{{filterPipelineLabel}}</span>\n" +
-    "        </button>\n" +
+    "      <a class=\"btn btn-link icon-button\" ng-if=\"filterPipeline\" ng-click=\"returnToPipeline()\" >( view pipeline... )</a>\n" +
     "\n" +
-    "        <ul class=\"dropdown-menu\" role=\"menu\"\n" +
-    "            aria-labelledby=\"dropdownMenu1\">\n" +
+    "<!--      <a class=\"btn btn-link icon-button\" ng-if=\"filterPipeline\" href=\"/controlpanel/dataflow/app/collector/pipeline/{{filterPipeline}}\" target=\"_blank\" >( view pipeline... )</a>-->\n" +
     "\n" +
-    "          <li role=\"presentation\" ng-if=\"common.isUserAdmin\">\n" +
-    "            <a role=\"menuitem\" tabindex=\"-1\" ng-href=\"/collector/logs\">\n" +
-    "              <span translate=\"logs.all\">All</span>\n" +
-    "            </a>\n" +
-    "          </li>\n" +
-    "\n" +
-    "          <li role=\"presentation\" ng-repeat=\"pipeline in pipelines\">\n" +
-    "            <a role=\"menuitem\" tabindex=\"-1\" ng-href=\"/collector/logs/{{pipeline.title}}/{{pipeline.name}}\">\n" +
-    "              <span>{{pipeline.title}}/{{pipeline.name}}</span>\n" +
-    "            </a>\n" +
-    "          </li>\n" +
-    "\n" +
-    "        </ul>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <a ng-if=\"filterPipeline\" ng-href=\"/collector/pipeline/{{filterPipeline}}\">( view pipeline... )</a>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +

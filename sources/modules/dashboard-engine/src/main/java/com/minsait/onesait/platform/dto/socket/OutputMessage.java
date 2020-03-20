@@ -22,10 +22,12 @@ import lombok.Setter;
 public class OutputMessage {
 
 	private String data;
-    private String time;
+	private String time;
+	private Long startTime;
 
-    public OutputMessage(final String data, final String time) {
-        this.data = data;
-        this.time = time;
-    }
+	public OutputMessage(final String data, final String time, final Long startTime) {
+		this.data = data;
+		this.time = time;
+		this.startTime = startTime;
+	}
 }

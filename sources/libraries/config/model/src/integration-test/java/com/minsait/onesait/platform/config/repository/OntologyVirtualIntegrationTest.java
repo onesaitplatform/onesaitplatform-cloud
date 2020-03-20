@@ -83,7 +83,7 @@ public class OntologyVirtualIntegrationTest {
 		ontology.setRtdbToHdb(true);
 		ontology.setPublic(true);
 		// ontology.setDigitaltwin(false);
-		ontology.setDataModel(this.dataModelRepository.findByName("EmptyBase").get(0));
+		ontology.setDataModel(this.dataModelRepository.findByIdentification("EmptyBase").get(0));
 		ontology.setUser(getUserDeveloper());
 		ontology.setAllowsCypherFields(false);
 

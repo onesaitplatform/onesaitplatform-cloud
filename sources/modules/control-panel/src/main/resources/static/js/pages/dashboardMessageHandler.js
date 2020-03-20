@@ -63,19 +63,32 @@ eventer(messageEvent, function (e) {
     	}else if(message.command === "saveDashboard"){    	
     		apiSaveDashboard(messageString);
     		return ;
+    	}else if(message.command === "saveSynopticAndDashboard"){    	
+    		apiSaveSynopticAndDashboard(messageString);
+    		return ;    		
+    	}else if(message.command === "hideShowSynopticEditor"){    	
+    		apiHideShowSynopticEditor(messageString);
+    		return ;
+    	}else if(message.command === "hideShowGadgetsSynopticEditor"){    	
+    		apiHideShowGadgetsSynopticEditor(messageString);
+    		return ;
     	}else if(message.command === "dropOnElement"){    	
     		dropOnElement(messageString);
     		return ;
     	}else if(message.command === "updateGadget"){    	
     		apiUpdateGadget(messageString);
     		return ;
+    	}else if(message.command === "setSynopticElementDataSource"){    	
+    		apiSetSynopticElementDataSource(messageString);
+    		return ;
+    	}else if(message.command === "getSynopticElementDataSource"){
+    		sendMessageParent(messageString);
+    		return ;
     	}
     } 
-    
-    
     }); 
      
-       //Functions 
+       //Functions
     
        function apiCreateGadget(commandData){
     	    var command= JSON.parse(commandData)
@@ -105,17 +118,12 @@ eventer(messageEvent, function (e) {
            'error': function(data,status,er) {  
         	   console.log('errorCreateGadget: ', data);
         	   sendMessageParent(data);
-          	
            }
 		 });
        }    
    
-
-     
-       
-       
        function apiUpdateGadget(commandData){
-   	    var command= JSON.parse(commandData)
+   	        var command= JSON.parse(commandData);
      		var url = '/controlpanel/dashboardapi/updateGadget/';   
      		var token =    'Bearer '+ command.authorization;
      		 console.log('apiEditGadget'); 
@@ -145,48 +153,96 @@ eventer(messageEvent, function (e) {
           'error': function(data,status,er) {  
        	   console.log('errorUpdateGadget: ', data);
        	   sendMessageParent(data);
-         	
           }
 		 });
       }    
   
 
        function dropOnElement(commandData){
-    	    var command= JSON.parse(commandData)
-      	
+    	    var command= JSON.parse(commandData);
       		console.log('dropOnElement');
     	    console.log(commandData);
       		var response = angular.element(document.querySelector("dashboard")).controller("dashboard").api.dropOnElement(command.information.x,command.information.y); 
       		console.log(response);
       		sendMessageParent(response)
        }    
+       
+       
+       function apiSetSynopticElementDataSource(commandData){   	   
+   	    var command= JSON.parse(commandData);
+  		var url = '/controlpanel/dashboardapi/setSynopticElementDataSource/';   
+  		var token =    'Bearer '+ command.authorization;
+  		console.log('setSynopticElementDataSource');
+		 $.ajax({
+	       'url':url,
+	       'type': 'POST',
+	       'headers': {
+	           'Authorization':token            	  
+	       },        
+       'data': {
+			json : commandData },        
+       'success': function(data) {
+    	   console.log('success apiSetSynopticElementDataSource: ',data);
+    	   if(data.status!=null && data.status === "OK"){
+    		    $("#synoptic_editor")[0].contentWindow.svgEditor.setDatasourceToElement(data);
+           		console.log("success apiSetSynopticElementDataSource data ok");              		
+           		sendMessageParent(data);
+           }else{
+    			console.log("success apiSetSynopticElementDataSource data error"); 
+    			sendMessageParent(data);
+           }
+       },
+       'error': function(data,status,er) {  
+    	   console.log('error apiSetSynopticElementDataSource: ', data);
+    	   sendMessageParent(data);
+       }
+		 });   	     
+      }    
+  
    
        
        function apiSaveDashboard(commandData){  
-    	  console.log('apiSaveDashboard');
-    	  var command= JSON.parse(commandData)  
-    	  var data =  angular.element(document.querySelector("edit-dashboard")).controller("edit-dashboard").getDataToSavePage();  
-    	  var url = '/controlpanel/dashboardapi/savemodel/'+data.id;
-    	  var token = 'Bearer '+ command.authorization;
-    	  $.ajax({
-              'url':url,
-              'type': 'PUT',
-              'headers': {
-                  'Authorization':token               	  
-              },        
-              'data':{json:data.data.model},            
-              'success': function(data) {
-            	  console.log('successSaveDashboard: ', data);
-            	  angular.element(document.querySelector("edit-dashboard")).controller("edit-dashboard").showSaveOK();
-                  
-              },
-              'error': function(data,status,er) {  
-              console.log('errorSaveDashboard: ', data);
-           	   sendMessageParent(data);             	
-              }
-   		 });
+    	  console.log('apiSaveDashboard');    	  
+    	  var command = JSON.parse(commandData);    
+    	  angular.element(document.querySelector("edit-dashboard")).controller("edit-dashboard").getDataToSavePage('Bearer '+ command.authorization).then(
+    			  function(response) {    				 
+    				  if(response.status===200){
+    					  var data = {requestcode:"saveDashboard",status:"OK"};
+    					  sendMessageParent(data);
+    				  }else{
+    					  var data = {requestcode:"saveDashboard",status:"ERROR"};
+    					  sendMessageParent(data);
+    				  }
+    			   });    	
         }
+       
      
+       
+       function apiSaveSynopticAndDashboard(commandData){  
+      	  console.log('apiSaveSynopticAndDashboard'); 
+      	 var command= JSON.parse(commandData) ;
+      	 angular.element(document.querySelector("edit-dashboard")).controller("edit-dashboard").saveSynopticAndDashboard('Bearer '+ command.authorization).then(
+   			  function(response) {				
+				  if(response.status===200){
+					  var data = {requestcode:"saveSynopticAndDashboard",status:"OK"};
+					  sendMessageParent(data);
+				  }else{
+					  var data = {requestcode:"saveSynopticAndDashboard",status:"ERROR"};
+					  sendMessageParent(data);
+				  }
+			   });    	
+      	};
+  
+       function apiHideShowSynopticEditor(commandData){  
+      	   console.log('apiHideShowSynopticEditor');
+           angular.element(document.querySelector("edit-dashboard")).controller("edit-dashboard").hideShowSynopticEditor();       
+          }
+      
+       function apiHideShowGadgetsSynopticEditor(commandData){  
+      	   console.log('apiHideShowGadgetsSynopticEditor');
+           angular.element(document.querySelector("edit-dashboard")).controller("edit-dashboard").changeZindexEditor();
+          }
+       
        function inIframe () {
     	    try {
     	        return window.self !== window.top;

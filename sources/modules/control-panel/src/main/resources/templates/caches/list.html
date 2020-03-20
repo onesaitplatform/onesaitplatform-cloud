@@ -139,6 +139,7 @@
 															<th class="titulo-columnas" ><span th:text="#{cache.userId}" >Owner</span></th>
                                                             <th class="titulo-columnas" ><span th:text="#{cache.type}" >Type</span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{cache.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{cache.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -153,6 +154,9 @@
 															<!-- DATE -->
 															<td class="text-center" th:if="${cache.createdAt!=null}"><span th:text="${#dates.format(cache.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cache.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${cache.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${cache.updatedAt!=null}"><span th:text="${#dates.format(cache.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cache.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${cache.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -178,8 +182,9 @@
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
 														<label class="toggle-vis" data-column="0" th:text="#{cache.identification}"> Identification </label>
 														<label class="toggle-vis" data-column="1" th:text="#{cache.userId}"> Owner </label>
-                                                        <label class="toggle-vis" data-column="1" th:text="#{cache.type}"> Type </label>
-														<label class="toggle-vis" data-column="4" th:text="#{cache.createdAt}"> Created At</label>
+                                                        <label class="toggle-vis" data-column="2" th:text="#{cache.type}"> Type </label>
+														<label class="toggle-vis" data-column="3" th:text="#{cache.createdAt}"> Created At</label>
+														<label class="toggle-vis" data-column="4" th:text="#{cache.updatedAt}"> Updated At</label>
 														<label class="toggle-vis" data-column="5" th:text="#{gen.options}" > Options</label>															
 													</div>
 												</div>												
@@ -294,7 +299,7 @@
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([ 2,6,7 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 6,7 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 	

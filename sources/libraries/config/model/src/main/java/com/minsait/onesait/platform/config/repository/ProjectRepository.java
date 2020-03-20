@@ -17,8 +17,10 @@ package com.minsait.onesait.platform.config.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface ProjectRepository extends JpaRepository<Project, String> {
@@ -29,9 +31,12 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 
 	@Override
 	void delete(Project project);
+	
+	@Query("SELECT o FROM ProjectList AS o")
+	public List<ProjectList> findAllForList();
 
-	// @Query("select p from Project p where ?1 in p.users.userId")
 	public List<Project> findByUsersIn(List<User> users);
 
-	public List<Project> findByName(String name);
+	public List<Project> findByIdentification(String identification);
+	
 }

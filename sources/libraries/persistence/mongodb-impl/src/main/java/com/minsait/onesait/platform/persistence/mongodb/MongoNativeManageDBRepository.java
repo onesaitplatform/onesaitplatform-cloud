@@ -184,40 +184,19 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				throw new DBPersistenceException("Query bad formed:" + pquery
 						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})");
 			}
-			if (pquery.contains("},{")) {// complex index
-				final String keysOptions[] = pquery.split("\\}\\,\\{");
-				try {
-					indexKeys = objectMapper.readValue(util.prepareQuotesCreateIndex(keysOptions[0]),
-							new TypeReference<Map<String, ?>>() {
-							});
-					String indexOptionsStr = keysOptions[1];
-					if (keysOptions.length > 2) {
-						for (int i = 2; i < keysOptions.length; i++) {
-							if (keysOptions[i].startsWith("{")) {
-								keysOptions[i] = keysOptions[i].substring(1, keysOptions[i].length());
-							}
-							if (keysOptions[i].endsWith("}")) {
-								keysOptions[i] = keysOptions[i].substring(0, keysOptions[i].length() - 1);
-							}
-							indexOptionsStr = indexOptionsStr + "," + keysOptions[i];
-						}
-					}
-					indexOptions = objectMapper.readValue(util.prepareQuotesCreateIndex(indexOptionsStr),
+			List<String> keyElements= getElements(pquery);
+			try {
+				indexKeys = objectMapper.readValue(keyElements.get(0),
+						new TypeReference<Map<String, ?>>() {
+						});
+				if (keyElements.size() == 2) {
+					indexOptions = objectMapper.readValue(keyElements.get(1),
 							IndexOptions.class);
-				} catch (final IOException e) {
-					log.error("Invalid index key or index options. Sentence = {}, cause = {}, errorMessage = {}.",
-							sentence, e.getCause(), e.getMessage());
-					throw new DBPersistenceException("Invalid index key or index options", e);
-				}
-			} else {
-				try {
-					indexKeys = objectMapper.readValue(util.prepareQuotes(pquery), new TypeReference<Map<String, ?>>() {
-					});
-				} catch (final IOException e) {
-					log.error("Invalid index key. Sentence = {}, cause = {}, errorMessage = {}.", sentence,
-							e.getCause(), e.getMessage());
-					throw new DBPersistenceException("Invalid index key", e);
-				}
+				}					
+			} catch (final IOException e) {
+				log.error("Invalid index key or index options. Sentence = {}, cause = {}, errorMessage = {}.",
+						sentence, e.getCause(), e.getMessage());
+				throw new DBPersistenceException("Invalid index key or index options", e);
 			}
 			mongoDbConnector.createIndex(database, collection, new MongoDbIndex(indexKeys, indexOptions));
 
@@ -225,6 +204,45 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			log.error(CREATE_INDEX + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
+	}
+	
+	private List<String> getElements(String query){
+		List<String> elements = new ArrayList<>();
+		StringBuilder element = new StringBuilder();
+		int i = 0;
+		int openKeys = 0;
+		int comma = 0;
+		while (i < query.length()) {
+			final char c = query.charAt(i);
+			i++;
+			if (c == '{') {
+				element.append(c);
+				openKeys++;
+			} else if (c == '}') {
+				element.append(c);
+				openKeys--;
+				if (openKeys == 0) {
+					elements.add(element.toString());
+					element = new StringBuilder();
+				}
+			} else if (openKeys == 0) {
+				if (c == ',') {
+					comma++;
+				} else if (c != ' ' && c != '\n' && c != '\t') {
+					String errorMessage = String.format("Query malformed, error on character in position %s. Query: %s",i,query);
+					log.error(errorMessage);
+					throw new DBPersistenceException(errorMessage);
+				}
+			} else {
+				element.append(c);
+			}
+		}
+		if (elements.size() > 2 || comma != elements.size()-1) {
+			String errorMessage = String.format("createIndex({keys},{options}) structure malformed on query: %s",query);
+			log.error(errorMessage);
+			throw new DBPersistenceException(errorMessage);	
+		}
+		return elements;
 	}
 
 	@Override

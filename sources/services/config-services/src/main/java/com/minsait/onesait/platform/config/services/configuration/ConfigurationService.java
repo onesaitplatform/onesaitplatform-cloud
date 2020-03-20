@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
+import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.MailConfiguration;
 import com.minsait.onesait.platform.config.components.OpenshiftConfiguration;
@@ -91,5 +92,7 @@ public interface ConfigurationService {
 	Urls getEndpointsUrls(String environment);
 
 	GlobalConfiguration getGlobalConfiguration(String environment);
+
+	GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment);
 
 }

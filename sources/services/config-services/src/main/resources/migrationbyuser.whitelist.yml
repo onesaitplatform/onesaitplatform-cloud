@@ -1,0 +1,3 @@
+onesaitplatform.migrationconfig.classes:
+  - com.minsait.onesait.platform.config.model.DataModel
+  - com.minsait.onesait.platform.config.model.BaseLayer

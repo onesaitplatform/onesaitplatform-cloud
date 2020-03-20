@@ -42,7 +42,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
-import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
 import com.minsait.onesait.platform.controlpanel.helper.apimanager.ApiManagerHelper;
@@ -70,6 +69,8 @@ public class ApiManagerController {
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_404 = "error/404";
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
+	private static final String GRAVITEE_MANAGEMENT = "/management";
+	private static final String GRAVITEE_APIS = "/apis";
 
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
@@ -99,8 +100,9 @@ public class ApiManagerController {
 		return "apimanager/show";
 	}
 
+
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER','ROLE_USER')")
 	public String list(Model model, @RequestParam(required = false) String apiId,
 			@RequestParam(required = false) String state, @RequestParam(required = false) String user) {
 		try {
@@ -119,6 +121,7 @@ public class ApiManagerController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String create(ApiMultipart api, BindingResult bindingResult, HttpServletRequest request,
 			@RequestParam(required = false) String postProcessFx,
+			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some user properties missing");
@@ -132,8 +135,6 @@ public class ApiManagerController {
 
 			final String apiId = apiManagerService.createApi(apiManagerHelper.apiMultipartMap(api), operationsObject,
 					authenticationObject);
-			if (!StringUtils.isEmpty(postProcessFx))
-				apiManagerService.updateApiPostProcess(apiId, postProcessFx);
 
 			return "redirect:/apimanager/show/" + utils.encodeUrlPathSegment(apiId, request);
 		} catch (final Exception e) {
@@ -148,8 +149,10 @@ public class ApiManagerController {
 			@RequestParam(required = false) String operationsObject,
 			@RequestParam(required = false) String authenticationObject,
 			@RequestParam(required = false) String deprecateApis, @RequestParam(required = false) String postProcessFx,
+			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
-		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId()))
+		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())
+				|| !apiManagerService.isApiStateValidForEdit(id))
 			return ERROR_403;
 		if (bindingResult.hasErrors()) {
 			utils.addRedirectMessage("api.update.error", redirect);
@@ -163,6 +166,7 @@ public class ApiManagerController {
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
 
+			
 			return "redirect:/apimanager/show/" + api.getId();
 		} catch (final Exception e) {
 			log.error("Could not update API: {}", e);
@@ -181,6 +185,7 @@ public class ApiManagerController {
 			final Api api = apiManagerService.getById(id);
 			if (null != api) {
 				apiManagerService.removeAPI(id);
+				
 			}
 
 		} catch (final RuntimeException e) {
@@ -276,7 +281,6 @@ public class ApiManagerController {
 			return ERROR_403;
 		apiManagerService.updateState(id, state);
 		final Api api = apiManagerService.getById(id);
-
 		return "redirect:/apimanager/list";
 	}
 

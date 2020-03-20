@@ -44,4 +44,8 @@ public class DeviceDTO implements Serializable {
 	@Setter
 	private Date dateCreated;
 
+	@Getter
+	@Setter
+	private Date dateUpdated;
+
 }

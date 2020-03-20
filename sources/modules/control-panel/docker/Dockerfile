@@ -61,9 +61,6 @@ RUN cd /tmp/ \
    
     
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
-
-# Rancher CLI    
-COPY rancher /bin
 	
 USER onesait
 
@@ -71,7 +68,7 @@ EXPOSE 18000 5701
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKAHOST=kafka \
@@ -82,7 +79,9 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
 	REALTIMEDBUSER=platformadmin \
 	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \ 
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \		    
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \   
@@ -108,6 +107,9 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
 	KUDUNUMREPLICAS=1 \
 	KUDUURL=localhost:7051 \
 	INCLUDEKUDUTABLENAME=false \
+    GRAVITEE_ON=false \
+    GRAVITEE_CLIENTID=onesait \
+    GRAVITEE_CLIENTSECRET=admin \
 	CAPTCHA_ON=false \
 	CAPTCHA_TOKEN=6Lc40JkUAAAAANyTpMrn9JNwKsiNRCY0bZ32cWIh \
 	CSRF_ON=true \
@@ -118,6 +120,14 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
     AUTH_PROVIDER=configdb \
     CAS_ATT_MAIL=mail \
     CAS_ATT_NAME=name \
+    LDAP_URL="" \
+    LDAP_BASE_DN=OU="" \
+    LDAP_ADMIN_DN="" \
+    LDAP_ADMIN_PASSWORD="" \
+    LDAP_DEFAULT_ROLE=ROLE_USER \
+    LDAP_USERID_ATT=sAMAccountName \
+    LDAP_MAIL_ATT=mail \
+    LDAP_CN_ATT=cn \
     JKS_URI=saml.jks \
     JKS_PASS=pass \
     KEY_ALIAS=pass \
@@ -127,9 +137,24 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
     ENTITY_ID=entityid \
     ENTITY_URL=https://${SERVER_NAME} \
     SAML_SCHEME=https \
-    SAML_SERVER_NAME=localhost \
+    SAML_SERVER_NAME=localhost \ 
+    SAML_INCLUDE_PORT=false \
+    SAML_UNAUTHORIZED_URL=https://unauthorized.axpoiberia.es/ \
     STREAMSETS_SDC_VERSION=3.10.0 \
-    TWOFA_ENABLED=false
+    TWOFA_ENABLED=false \
+    CONFIGDB_ACL_ENABLED=false \
+    CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
+    DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS=10000 \
+    DS_MIN_EVICTABLE_IDLE_TIME_MILLIS=180000 \
+    DS_MAX_WAIT_MILLIS=10000 \
+    DS_MAX_WAIT=10000 \
+    DS_INITIAL_SIZE=10 \
+    DS_MAX_ACTIVE=30 \
+    DS_MAX_IDLE=5 \
+    DS_MIN_IDLE=5 \
+    DS_REMOVE_ABANDONED=true \
+    DS_REMOVE_ABANDONED_TIMEOUT=60 \
+    ENABLE_METRICS=true
 
     
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar

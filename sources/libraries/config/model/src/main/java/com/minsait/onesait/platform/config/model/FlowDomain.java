@@ -71,6 +71,11 @@ public class FlowDomain extends OPResource {
 	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
 	private Boolean active;
 
+	@Getter
+	@Setter
+	@Column(name = "ACCESS_TOKEN", nullable = true)
+	private String accessToken;
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

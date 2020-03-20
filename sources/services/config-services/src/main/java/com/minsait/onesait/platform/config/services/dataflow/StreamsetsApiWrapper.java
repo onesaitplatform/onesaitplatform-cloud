@@ -312,32 +312,61 @@ public class StreamsetsApiWrapper {
         return rt.exchange(uri, HttpMethod.GET, headersEntity, String.class);
 	}
 	
-	public static ResponseEntity<String> pipelineMetrics(RestTemplate rt, HttpHeaders headers, String dataflowServiceUrl, 
-	        String pipelineId){
-        // /rest/v1/pipelines?filterText=<filter>&label=<label>&offset=<offset>&len=<longitud>&orderBy=<orderField>&order=<orderType>&includeStatus=true
-        // /rest/v1/pipelines?filterText=kfk&label=system%3AallPipelines&offset=0&len=50&orderBy=NAME&order=ASC&includeStatus=true
-        
-        //configure headers
-        HttpEntity<?> headersEntity = new HttpEntity<>(headers);
-        
-        // construct url
-        StringBuilder urlBuilder = new StringBuilder();
-        String url = urlBuilder
-                .append(dataflowServiceUrl)
-                .append(CONTEXT)
-                .append(VERSION)
-                .append("/pipeline/{pipelineId}/metrics")
-                .toString();
-        
-        // construct uri with url parameters
-        Map<String, String> uriParams = new HashMap<>();
-        uriParams.put(PIPELINEID_STR, pipelineId);
-        URI uri = UriComponentsBuilder.fromUriString(url).buildAndExpand(uriParams).toUri();
-        
-        //add query parameters
-        uri = UriComponentsBuilder.fromUri(uri).queryParam("rev", "0").build().toUri();
-        
-        return rt.exchange(uri, HttpMethod.GET, headersEntity, String.class);
-    }
+	public static ResponseEntity<String> pipelineMetrics(RestTemplate rt, HttpHeaders headers, String dataflowServiceUrl,
+														  String pipelineId){
+		// /rest/v1/pipelines?filterText=<filter>&label=<label>&offset=<offset>&len=<longitud>&orderBy=<orderField>&order=<orderType>&includeStatus=true
+		// /rest/v1/pipelines?filterText=kfk&label=system%3AallPipelines&offset=0&len=50&orderBy=NAME&order=ASC&includeStatus=true
+
+		//configure headers
+		HttpEntity<?> headersEntity = new HttpEntity<>(headers);
+
+		// construct url
+		StringBuilder urlBuilder = new StringBuilder();
+		String url = urlBuilder
+				.append(dataflowServiceUrl)
+				.append(CONTEXT)
+				.append(VERSION)
+				.append("/pipeline/{pipelineId}/metrics")
+				.toString();
+
+		// construct uri with url parameters
+		Map<String, String> uriParams = new HashMap<>();
+		uriParams.put(PIPELINEID_STR, pipelineId);
+		URI uri = UriComponentsBuilder.fromUriString(url).buildAndExpand(uriParams).toUri();
+
+		//add query parameters
+		uri = UriComponentsBuilder.fromUri(uri).queryParam("rev", "0").build().toUri();
+
+		return rt.exchange(uri, HttpMethod.GET, headersEntity, String.class);
+	}
+
+	public static ResponseEntity<String> resetOffset(RestTemplate rt, HttpHeaders headers, String dataflowServiceUrl,
+														 String pipelineId){
+		// /rest/v1/pipeline/OPCUAdatab87df379-a083-4e25-846d-3d4b4859a28d/resetOffset
+
+		// configure headers
+		headers.set(XREQUESTEDBY_STR, "sdc"); // this header is needed in POST, DELETE and PUT methods
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		HttpEntity<?> headersEntity = new HttpEntity<>(headers);
+
+		// construct url
+		StringBuilder urlBuilder = new StringBuilder();
+		String url = urlBuilder
+				.append(dataflowServiceUrl)
+				.append(CONTEXT)
+				.append(VERSION)
+				.append("/pipeline/{pipelineId}/resetOffset")
+				.toString();
+
+		// construct uri with url parameters
+		Map<String, String> uriParams = new HashMap<>();
+		uriParams.put(PIPELINEID_STR, pipelineId);
+		URI uri = UriComponentsBuilder.fromUriString(url).buildAndExpand(uriParams).toUri();
+
+		//add query parameters
+		uri = UriComponentsBuilder.fromUri(uri).queryParam("rev", "0").build().toUri();
+
+		return rt.exchange(uri, HttpMethod.POST, headersEntity, String.class);
+	}
 
 }

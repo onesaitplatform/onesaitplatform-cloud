@@ -257,7 +257,7 @@
 															<label class="" th:text="#{digitaltwindisplay.type} + ':'">Type</label>											
 															<select class="form-control" id="types" name="types" onChange="changeType();">
 																<option name="all" value="all" id="all"> ALL (*) </option>
-																<option th:each="type : ${types}" th:id="${type.user.userId}" th:data-description="${type.description}" data-type="general" th:value="${type.name}" th:text="${type.name}"  ></option>
+																<option th:each="type : ${types}" th:id="${type.user.userId}" th:data-description="${type.description}" data-type="general" th:value="${type.identification}" th:text="${type.identification}"  ></option>
 															</select>
 														</div>
 														<div class="col-md-3">

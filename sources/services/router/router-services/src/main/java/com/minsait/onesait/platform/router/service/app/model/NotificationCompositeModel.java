@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.router.service.app.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,5 +39,15 @@ public class NotificationCompositeModel implements Serializable {
 	@Getter
 	@Setter
 	private String url;
+
+	@Getter
+	@Setter
+	@JsonIgnore
+	private String headerAuthKey;
+	
+	@Getter
+	@Setter
+	@JsonIgnore
+	private String headerAuthValue;
 
 }

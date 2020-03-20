@@ -26,7 +26,7 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
 import com.minsait.onesait.platform.scheduler.SchedulerType;
 import com.minsait.onesait.platform.scheduler.scheduler.bean.TaskInfo;
@@ -69,13 +69,13 @@ public class SimulationServiceImpl implements SimulationService {
 	@Override
 	public void createSimulation(String identification, int interval, String userId, String json) throws IOException {
 
-		final DeviceSimulation simulation = deviceSimulationService.createSimulation(identification, interval, userId,
+		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.createSimulation(identification, interval, userId,
 				json);
 		scheduleSimulation(simulation);
 	}
 
 	@Override
-	public void unscheduleSimulation(DeviceSimulation deviceSimulation) {
+	public void unscheduleSimulation(ClientPlatformInstanceSimulation deviceSimulation) {
 		final String jobName = deviceSimulation.getJobName();
 		if (jobName != null && deviceSimulation.isActive()) {
 			final TaskOperation operation = new TaskOperation();
@@ -89,7 +89,7 @@ public class SimulationServiceImpl implements SimulationService {
 	}
 
 	@Override
-	public void scheduleSimulation(DeviceSimulation deviceSimulation) {
+	public void scheduleSimulation(ClientPlatformInstanceSimulation deviceSimulation) {
 
 		if (!deviceSimulation.isActive()) {
 			final TaskInfo task = new TaskInfo();
@@ -114,7 +114,7 @@ public class SimulationServiceImpl implements SimulationService {
 	}
 
 	@Override
-	public void updateSimulation(String identification, int interval, String json, DeviceSimulation simulation)
+	public void updateSimulation(String identification, int interval, String json, ClientPlatformInstanceSimulation simulation)
 			throws IOException {
 		deviceSimulationService.updateSimulation(identification, interval, json, simulation);
 

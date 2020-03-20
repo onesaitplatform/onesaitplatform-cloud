@@ -16,22 +16,37 @@ package com.minsait.onesait.platform.controlpanel.services.report;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
+import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
+import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
+import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
+import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportField;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportInfoDto;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportParameter;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportParameterType;
 import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportType;
+import com.minsait.onesait.platform.controlpanel.services.binaryrepository.BinaryRepositoryLogicService;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JREmptyDataSource;
@@ -40,6 +55,7 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.SimpleJasperReportsContext;
 import net.sf.jasperreports.engine.export.HtmlExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -51,13 +67,44 @@ import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimpleXmlExporterOutput;
+import net.sf.jasperreports.repo.FileRepositoryPersistenceServiceFactory;
+import net.sf.jasperreports.repo.FileRepositoryService;
+import net.sf.jasperreports.repo.PersistenceServiceFactory;
+import net.sf.jasperreports.repo.RepositoryService;
 
 @Service
 @Slf4j
 public class ReportInfoServiceImpl implements ReportInfoService {
+	private static List<String> datasources;
 
 	public static final String JSON_DATA_SOURCE_ATT_NAME = "net.sf.jasperreports.json.source";
+	public static final String DATA_ADAPTER_ATT_NAME = "net.sf.jasperreports.data.adapter";
+	public static final String DATASOURCE_ATT_NAME = "net.sf.jasperreports.engine.JRDataSource";
+	public static final String DATASOURCE_JSS_NAME = "com.jaspersoft.studio.data.defaultdataadapter";
 	public static final String JSON_DATA_SOURCE_ATT_TYPE = "STRING";
+
+	@Autowired
+	private BinaryRepositoryLogicService binaryRepositoryLogicService;
+	@Autowired
+	private BinaryFileService binaryFileService;
+	@Autowired
+	private ReportService reportService;
+
+	static {
+		datasources = new ArrayList<>();
+		datasources.add(JSON_DATA_SOURCE_ATT_NAME);
+		datasources.add(DATA_ADAPTER_ATT_NAME);
+		datasources.add(DATASOURCE_ATT_NAME);
+
+	}
+
+	@Override
+	public void updateResource(Report report, String fileId, MultipartFile file) throws Exception {
+		report.getResources().removeIf(r -> r.getId().equals(fileId));
+		binaryRepositoryLogicService.updateBinary(fileId, file, null);
+		report.getResources().add(binaryFileService.getFile(fileId));
+		reportService.saveOrUpdate(report);
+	}
 
 	@Override
 	public ReportInfoDto extract(InputStream is, ReportExtension reportExtension) {
@@ -65,11 +112,11 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 
 		switch (reportExtension) {
 		case JRXML:
-			reportInfo = extractFromJrxml(is, reportExtension);
+			reportInfo = extractFromJrxml(is);
 			break;
 
 		case JASPER:
-			reportInfo = extractFromJasper(is, reportExtension);
+			reportInfo = extractFromJasper(is);
 			break;
 
 		default:
@@ -79,7 +126,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		return reportInfo;
 	}
 
-	private ReportInfoDto extractFromJrxml(InputStream is, ReportExtension reportExtension) {
+	private ReportInfoDto extractFromJrxml(InputStream is) {
 		try {
 
 			final JasperReport report = JasperCompileManager.compileReport(is);
@@ -91,7 +138,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		}
 	}
 
-	private ReportInfoDto extractFromJasper(InputStream is, ReportExtension reportExtension) {
+	private ReportInfoDto extractFromJasper(InputStream is) {
 		try {
 
 			final JasperReport report = (JasperReport) JRLoader.loadObject(is);
@@ -138,28 +185,76 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 
 	@Override
 	public byte[] generate(Report entity, ReportType type, Map<String, Object> parameters) {
+		// TO-DO Create dir with files
+		final Set<BinaryFile> resources = entity.getResources();
+		if (resources.isEmpty()) {
+			return generate(entity.getFile(), type, parameters, entity.getExtension(), null);
+		}
+		final String path = "/tmp/reports/" + entity.getIdentification() + "/";
+		createDirectoryAndFiles(path, entity, resources);
 
-		return generate(entity.getFile(), type, parameters, entity.getExtension());
+		final byte[] generated = generate(entity.getFile(), type, parameters, entity.getExtension(), path);
+		deleteAllFiles(path);
+		return generated;
 
 	}
 
-	private byte[] generate(byte[] source, ReportType type, Map<String, Object> params, ReportExtension extension) {
+	private File createDirectoryAndFiles(String path, Report report, Set<BinaryFile> resources) {
+		final File directory = new File(path);
+		directory.mkdirs();
+		resources.forEach(r -> writeFileToPath(path + r.getFileName(), r.getId()));
+		return new File(path + report.getIdentification());
+	}
+
+	private void deleteAllFiles(String path) {
+		final File f = new File(path);
+		for (final File file : f.listFiles()) {
+			try {
+				Files.delete(file.toPath());
+			} catch (final IOException e) {
+				log.error("Could not delete file {}", f.getName());
+			}
+		}
+	}
+
+	private void writeFileToPath(String path, byte[] content) {
+		try (FileOutputStream fileOuputStream = new FileOutputStream(path)) {
+			fileOuputStream.write(content);
+		} catch (final Exception e) {
+			log.error("Error while trying to create file", e);
+		}
+	}
+
+	private void writeFileToPath(String path, String binaryFileId) {
+		BinaryFileData data;
+		try {
+			data = binaryRepositoryLogicService.getBinaryFile(binaryFileId);
+			writeFileToPath(path, ((ByteArrayOutputStream) data.getData()).toByteArray());
+		} catch (IOException | BinaryRepositoryException e) {
+			log.error("Error while trying to create file", e);
+		}
+
+	}
+
+	private byte[] generate(byte[] source, ReportType type, Map<String, Object> params, ReportExtension extension,
+			String path) {
 		final InputStream is = new ByteArrayInputStream(source);
 
-		return generate(is, params, extension, type);
+		return generate(is, params, extension, type, path);
 	}
 
-	private byte[] generate(InputStream is, Map<String, Object> params, ReportExtension extension, ReportType type) {
+	private byte[] generate(InputStream is, Map<String, Object> params, ReportExtension extension, ReportType type,
+			String path) {
 
 		byte[] bytes = null;
 
 		switch (extension) {
 		case JRXML:
-			bytes = generateFromJrXml(is, params, type);
+			bytes = generateFromJrXml(is, params, type, path);
 			break;
 
 		case JASPER:
-			bytes = generateFromJasper(is, params, type);
+			bytes = generateFromJasper(is, params, type, path);
 			break;
 
 		default:
@@ -169,37 +264,53 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		return bytes;
 	}
 
-	private byte[] generateFromJrXml(InputStream is, Map<String, Object> params, ReportType type) {
+	private byte[] generateFromJrXml(InputStream is, Map<String, Object> params, ReportType type, String path) {
 
 		try {
 			final JasperReport jasperReport = JasperCompileManager.compileReport(is);
 
-			return generateFromReport(jasperReport, params, type);
+			return generateFromReport(jasperReport, params, type, path);
 		} catch (final JRException e) {
 			log.error("Handle unchecked exception", e);
 			throw new GenerateReportException(e);
 		}
 	}
 
-	private byte[] generateFromJasper(InputStream is, Map<String, Object> params, ReportType type) {
+	private byte[] generateFromJasper(InputStream is, Map<String, Object> params, ReportType type, String path) {
 
 		try {
 			final JasperReport jasperReport = (JasperReport) JRLoader.loadObject(is);
 
-			return generateFromReport(jasperReport, params, type);
+			return generateFromReport(jasperReport, params, type, path);
 		} catch (final JRException e) {
 			log.error("Handle unchecked exception", e);
 			throw new GenerateReportException(e);
 		}
 	}
 
-	private byte[] generateFromReport(JasperReport jasperReport, Map<String, Object> params, ReportType type)
-			throws JRException {
+	private byte[] generateFromReport(JasperReport jasperReport, Map<String, Object> params, ReportType type,
+			String path) throws JRException {
 		JasperPrint jasperPrint = null;
-		if (hasDatasource(jasperReport))
-			jasperPrint = JasperFillManager.fillReport(jasperReport, params);
-		else
-			jasperPrint = JasperFillManager.fillReport(jasperReport, params, new JREmptyDataSource());
+		SimpleJasperReportsContext ctx = null;
+		if (!StringUtils.isEmpty(path)) {
+			ctx = new SimpleJasperReportsContext();
+			final FileRepositoryService fileRepository = new FileRepositoryService(ctx, path, false);
+			ctx.setExtensions(RepositoryService.class, Collections.singletonList(fileRepository));
+			ctx.setExtensions(PersistenceServiceFactory.class,
+					Collections.singletonList(FileRepositoryPersistenceServiceFactory.getInstance()));
+		}
+		if (hasDatasource(jasperReport)) {
+			if (ctx != null)
+				jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params);
+			else
+				jasperPrint = JasperFillManager.fillReport(jasperReport, params);
+		} else {
+			if (ctx != null) {
+				jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params, new JREmptyDataSource());
+			} else {
+				jasperPrint = JasperFillManager.fillReport(jasperReport, params, new JREmptyDataSource());
+			}
+		}
 		return export(jasperPrint, type);
 
 	}
@@ -251,9 +362,23 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	}
 
 	private boolean hasDatasource(JasperReport report) {
-		return Arrays.stream(report.getParameters())
-				.filter(p -> p.getName().equalsIgnoreCase(JSON_DATA_SOURCE_ATT_NAME)).map(p -> true).findFirst()
-				.orElse(false);
+		// first condition for adapters, second for json datasources
+		replaceJSSDatasourceClass(report);
+		report.getPropertiesMap().removeProperty(DATASOURCE_JSS_NAME);
+		return Arrays.stream(report.getPropertiesMap().getPropertyNames()).anyMatch(s -> datasources.contains(s))
+				|| Arrays.stream(report.getParameters()).anyMatch(p -> datasources.contains(p.getName()));
 
+	}
+
+	private void replaceJSSDatasourceClass(JasperReport report) {
+		try {
+			final String p = report.getPropertiesMap().getProperty(DATASOURCE_JSS_NAME);
+			if (!StringUtils.isEmpty(p)) {
+				report.getPropertiesMap().removeProperty(DATASOURCE_JSS_NAME);
+				report.getPropertiesMap().setProperty(DATA_ADAPTER_ATT_NAME, p);
+			}
+		} catch (final Exception e) {
+			log.warn("Could not replace jss data adapter class");
+		}
 	}
 }

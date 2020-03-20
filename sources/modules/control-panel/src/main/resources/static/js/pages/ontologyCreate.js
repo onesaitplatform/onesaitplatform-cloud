@@ -55,6 +55,7 @@ var OntologyCreateController = function() {
 		var isGeometryMultiPoint = false;
 		var isGeometryMultiLineString	= false;
 		var isGeometryMultiPolygon	= false;
+		var isDate	= false;
 		var isTimestampMongo     = false;
 		var objectType		= '';
 		var isTimestamp = false;
@@ -76,8 +77,10 @@ var OntologyCreateController = function() {
 				isGeometryMultiPoint = false;
 				isGeometryMultiLineString	= false;
 				isGeometryMultiPolygon	= false;
+				isDate	= false;
 				isTimestampMongo     = false;
 				isTimestamp = false;
+				propEncrypted = false;
 				console.log('|--- Key: '+ key );
 				$.each(object, function (propKey, propValue){
 					if ( propKey == 'encrypted'){
@@ -95,8 +98,13 @@ var OntologyCreateController = function() {
 
 						// try to find geometry object
 						// try to find file object
-						if(object.hasOwnProperty('format'))
-							isTimestamp=true;
+						if(object.hasOwnProperty('format')){
+							if (object['format'] == 'date'){
+								isDate	= true;
+							} else {
+								isTimestamp=true;									
+							}						
+						}
 						if ( object.hasOwnProperty('properties')) { if (object.properties.hasOwnProperty('media')){ isFile = true;  } }
 						if ( object.hasOwnProperty('properties')) { 
 							if (object.properties.hasOwnProperty('coordinates'))
@@ -120,7 +128,8 @@ var OntologyCreateController = function() {
 						if ( object.hasOwnProperty('properties')) { if (object.properties.hasOwnProperty('$date')){ isTimestampMongo = true;  }}
 						if (isFile) { objectType = 'file';  } else if (isGeometryPoint) { objectType = 'geometry-point'; } else if (isGeometryLineString) { objectType = 'geometry-linestring'; } else if (isGeometryPolygon) { objectType = 'geometry-polygon'; }
 						else if (isGeometryMultiPoint) { objectType = 'geometry-multipoint'; } else if (isGeometryMultiLineString) { objectType = 'geometry-multilinestring'; } else if (isGeometryMultiPolygon) { objectType = 'geometry-multipolygon'; }
-						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else { objectType = propValue; }
+						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else if (isDate) { objectType = 'date'; }
+						else { objectType = propValue; }
 
 						// adding properties
 						propObj = {"property": key, "type": objectType, "required": propRequired, "encrypted": propEncrypted , "descriptions": propDescription};
@@ -521,6 +530,8 @@ var OntologyCreateController = function() {
 			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "items": [{"type": "array","minItems": 4, "items": [{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]} ]}]}]},"type": {"type": "string","enum": ["MultiPolygon"]}},"additionalProperties": false}');
 		}else if(type == 'timestamp'){
 			properties[prop] = JSON.parse('{"type": "string","format": "date-time"}');
+		}else if(type == 'date'){
+			properties[prop] = JSON.parse('{"type": "string","format": "date"}');
 		}else {
 			propString = '{' + updDesc +' '+ updEncryp +' "type": "' + type + '"}';
 			properties[prop] = JSON.parse(propString);
@@ -1172,6 +1183,9 @@ var OntologyCreateController = function() {
             } else if (tipo.toLowerCase() == "object"){ console.log('INSTANCE (obj): ' + instance); instance = instance + generateObject(property, "", propertyName);
 			// adding array type
             } else if (tipo.toLowerCase() == "array" ){ console.log('INSTANCE (arr): ' + instance); instance = instance + generateArray(property, "", propertyName);
+            // date
+            } else if (tipo.toLowerCase() == "string" && property.format == "date"){
+            	instance = instance +"\"2014-01-30\""; 
             // timestamp
             } else if (tipo.toLowerCase() == "string" && property.format != null){
             	instance = instance +"\"2014-01-30T17:14:00Z\""; 

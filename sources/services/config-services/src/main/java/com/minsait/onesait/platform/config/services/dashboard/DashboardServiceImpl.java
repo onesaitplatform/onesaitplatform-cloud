@@ -54,6 +54,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
+import com.minsait.onesait.platform.config.dto.DashboardForList;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Dashboard;
@@ -82,6 +83,7 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAcces
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
+import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardOrder;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardSimplifiedDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
@@ -91,6 +93,7 @@ import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetMeasureDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.OntologyDTO;
+import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -127,8 +130,8 @@ public class DashboardServiceImpl implements DashboardService {
 	private OntologyRepository ontologyRepository;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
-
-
+	@Autowired
+	SecurityService securityService;
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
 
@@ -173,36 +176,38 @@ public class DashboardServiceImpl implements DashboardService {
 	@Override
 	public List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,
 			String userId) {
-		List<Dashboard> dashboards;
+		List<DashboardForList> dashboardsForList = null;
+
 		final User sessionUser = userRepository.findByUserId(userId);
 
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
-			dashboards = dashboardRepository.findByIdentificationContainingAndDescriptionContaining(identification,
-					description);
-		} else {
-			dashboards = dashboardRepository
-					.findByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(sessionUser,
-							identification, description);
+		try {
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				dashboardsForList = dashboardRepository
+						.findByIdentificationContainingAndDescriptionContaining(identification, description);
+			} else {
+				dashboardsForList = dashboardRepository
+						.findByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(sessionUser,
+								identification, description);
+				securityService.setSecurityToInputList(dashboardsForList, sessionUser, "Dashboard");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage());
 		}
 
-		return dashboards.stream().map(temp -> {
+		return dashboardsForList.stream().map(temp -> {
 			final DashboardDTO obj = new DashboardDTO();
-			obj.setCreatedAt(temp.getCreatedAt());
+			obj.setCreatedAt(temp.getCreated_at());
 			obj.setDescription(temp.getDescription());
 			obj.setId(temp.getId());
 			obj.setIdentification(temp.getIdentification());
-			if (null != temp.getImage()) {
-				obj.setHasImage(Boolean.TRUE);
-			} else {
-				obj.setHasImage(Boolean.FALSE);
-			}
+			obj.setHasImage(Boolean.TRUE);
 			obj.setPublic(temp.isPublic());
-			obj.setUpdatedAt(temp.getUpdatedAt());
+			obj.setUpdatedAt(temp.getUpdated_at());
+			obj.setUserAccessType(temp.getAccessType());
 			obj.setUser(temp.getUser());
-			obj.setUserAccessType(getUserTypePermissionForDashboard(temp, sessionUser));
 			obj.setType(temp.getType());
 			return obj;
 		}).collect(Collectors.toList());
@@ -272,8 +277,7 @@ public class DashboardServiceImpl implements DashboardService {
 			DashboardUserAccess dashUA = null;
 			if (deleteAll) {
 				dashUA = getDashboardUserAccessByIdentificationAndUser(dashboardIdentification, user);
-			} 
-			else {
+			} else {
 				List<DashboardUserAccessType> accessType = dashboardUserAccessTypeRepository
 						.findByName(dto.getAccessType());
 				if (accessType == null || accessType.isEmpty()) {
@@ -460,12 +464,6 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	@Override
-	public String getCredentialsString(String userId) {
-		final User user = userRepository.findByUserId(userId);
-		return user.getUserId();
-	}
-
-	@Override
 	public boolean dashboardExists(String identification) {
 		return !CollectionUtils.isEmpty(dashboardRepository.findByIdentification(identification));
 	}
@@ -514,7 +512,7 @@ public class DashboardServiceImpl implements DashboardService {
 			d.setImage(dashboard.getImage() != null ? dashboard.getImage().getBytes() : null);
 		} catch (final IOException e1) {
 			log.error("Could not read image");
-		}	
+		}
 
 		User sessionUser = userRepository.findByUserId(userId);
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_USER.toString())
@@ -625,7 +623,6 @@ public class DashboardServiceImpl implements DashboardService {
 		return dAux.getId();
 
 	}
-
 
 	@Override
 	public List<DashboardUserAccess> getDashboardUserAccesses(Dashboard dashboard) {
@@ -784,10 +781,10 @@ public class DashboardServiceImpl implements DashboardService {
 					categoryRelation = new CategoryRelation();
 				}
 
-				categoryRelation.setCategory(
-					categoryRepository.findByIdentification(dashboard.getCategory()).get(0).getId());
+				categoryRelation
+						.setCategory(categoryRepository.findByIdentification(dashboard.getCategory()).get(0).getId());
 				categoryRelation.setSubcategory(
-					subcategoryRepository.findByIdentification(dashboard.getSubcategory()).get(0).getId());
+						subcategoryRepository.findByIdentification(dashboard.getSubcategory()).get(0).getId());
 				categoryRelation.setType(CategoryRelation.Type.DASHBOARD);
 				categoryRelation.setTypeId(dAux.getId());
 
@@ -952,8 +949,9 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	@Override
-	public String importDashboard(DashboardExportDTO dashboardimportDTO, String userId) {
+	public DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboardimportDTO, String userId) {
 		final Dashboard dashboard = new Dashboard();
+		DashboardImportResponsetDTO dashboardImportResultDTO = new DashboardImportResponsetDTO();
 		if (!dashboardExists(dashboardimportDTO.getIdentification())) {
 			dashboard.setIdentification(dashboardimportDTO.getIdentification());
 			String description = "";
@@ -992,11 +990,15 @@ public class DashboardServiceImpl implements DashboardService {
 			// include GADGET_MEASURES
 			includeGadgetMeasures(dashboardimportDTO);
 
-			return dashboardRepository.findByIdentification(dashboard.getIdentification()).get(0).getIdentification();
+			Dashboard dashboardResponse = dashboardRepository.findByIdentification(dashboard.getIdentification())
+					.get(0);
 
-		} else {
-			return "";
+			if (dashboardResponse != null) {
+				dashboardImportResultDTO.setId(dashboardResponse.getId());
+				dashboardImportResultDTO.setIdentification(dashboardResponse.getIdentification());
+			}
 		}
+		return dashboardImportResultDTO;
 
 	}
 

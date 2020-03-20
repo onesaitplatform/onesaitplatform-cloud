@@ -77,11 +77,11 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 			watch.start();
 			data = postProcess(data);
 			watch.stop();
-			log.info("API PostProcess in {} ms",watch.getTotalTimeMillis() );
+			log.info("API PostProcess in {} ms", watch.getTotalTimeMillis());
 			return data;
 		} catch (final Exception e) {
 			watch.stop();
-			log.info("API Error Process in {} ms",watch.getTotalTimeMillis() );
+			log.info("API Error Process in {} ms", watch.getTotalTimeMillis());
 			throw new GenericOPException(e);
 		}
 
@@ -93,7 +93,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		final Ontology ontology = (Ontology) data.get(Constants.ONTOLOGY);
 		final User user = (User) data.get(Constants.USER);
 		final String METHOD = (String) data.get(Constants.METHOD);
-		final String BODY = (String) data.get(Constants.BODY);
+		final byte[] BODY = (byte[]) data.get(Constants.BODY);
 		String queryType = (String) data.get(Constants.QUERY_TYPE);
 
 		if (queryType.toUpperCase().indexOf("SQL") != -1) {
@@ -103,27 +103,30 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		final String QUERY = (String) data.get(Constants.QUERY);
 		final String OBJECT_ID = (String) data.get(Constants.OBJECT_ID);
 
-		OperationType operationType = this.getOperationType(METHOD);
+		// final String METHODQUERYINLINE = getQueryMethod(QUERY);
+
+		OperationType operationType = OperationType.GET;
 
 		String body;
 		if (METHOD.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
 			body = QUERY;
 		} else {
-			body = BODY;
+			operationType = getOperationType(METHOD);
+			body = BODY == null ? "" : new String(BODY);
 		}
 
 		final OperationModel model = OperationModel
 				.builder(ontology.getIdentification(), OperationType.valueOf(operationType.name()), user.getUserId(),
 						OperationModel.Source.APIMANAGER)
-				.body(body).queryType(QueryType.valueOf(queryType.toUpperCase())).objectId(OBJECT_ID)
-				.deviceTemplate("").cacheable(cacheable).build();
+				.body(body).queryType(QueryType.valueOf(queryType.toUpperCase())).objectId(OBJECT_ID).deviceTemplate("")
+				.cacheable(cacheable).build();
 
 		final NotificationModel modelNotification = new NotificationModel();
 		modelNotification.setOperationModel(model);
 		final OperationResultModel result = routerService.query(modelNotification);
 
 		if (result != null) {
-			this.processQueryResult(result, data, operationType);
+			processQueryResult(result, data, operationType);
 		} else {
 			data.put(Constants.STATUS, ChainProcessingStatus.STOP);
 			final String messageError = ApiProcessorUtils.generateErrorMessage("ERROR Output from Router Processing",
@@ -133,6 +136,15 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		}
 		return data;
 
+	}
+
+	private String getQueryMethod(String query) {
+		if (query.toLowerCase().indexOf("update") != -1) {
+			return "PUT";
+		} else if (query.toLowerCase().indexOf("delete") != -1 || query.toLowerCase().indexOf("remove") != -1) {
+			return "DELETE";
+		}
+		return "QUERY";
 	}
 
 	private OperationType getOperationType(String method) {

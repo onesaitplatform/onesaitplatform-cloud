@@ -27,6 +27,10 @@ public class GadgetDatasourceDTO implements Serializable {
 
 	@Getter
 	@Setter
+	private String id;
+
+	@Getter
+	@Setter
 	private String identification;
 
 	@Getter

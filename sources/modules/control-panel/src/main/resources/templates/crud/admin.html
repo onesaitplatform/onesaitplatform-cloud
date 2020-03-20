@@ -16,31 +16,31 @@
 -->
 <html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
 
-	<head>
-		<meta name="_csrf" th:content="${_csrf.token}"/>
-		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-		<meta http-equiv="Content-Language" th:content="${lang}"/>
-		<title th:text="#{name.app}"></title>
-	    <meta name="description" content="Gadget list template"/>
-		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
-		<meta name="author" content="Indra Sistemas, S.A."/>
-		
-		
-		<!-- STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
-		<!-- THEME -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-		
-		<!-- PLUGINS STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
-		
-		<style>
+<head>
+	<meta name="_csrf" th:content="${_csrf.token}"/>
+	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+	<meta http-equiv="Content-Language" th:content="${lang}"/>
+	<title th:text="#{name.app}"></title>
+	<meta name="description" content="Gadget list template"/>
+	<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
+	<meta name="author" content="Indra Sistemas, S.A."/>
+
+
+	<!-- STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+	<!-- THEME -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+	<!-- PLUGINS STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+
+	<style>
 		#editor_holder h3 > span{
 		    font-size: 16px;
     		font-weight: 500;
@@ -64,333 +64,333 @@
 	    font-size: 14px !important;
 	  } 
 		</style>
-		
-	</head>	
-	
-	<!-- page-sidebar-closed to start page with collapsed menu -->
-	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
-	<!-- MAIN PAGE WRAPPER -->
-	<div class="page-wrapper">
-	
-		<!-- BEGIN HEADER INCLUDE -->
-		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
-		<!-- END HEADER -->
-		
-		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>		
-			
-		<!-- BEGIN SIDEBAR -->
-		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
-		<!-- END SIDEBAR -->
-		
-		<!-- BEGIN CONTENT -->
-		<div class="page-content-wrapper">
-			
-			<!-- BEGIN CONTENT BODY -->
-			<div class="page-content">
-				
-				<!-- BEGIN PAGE HEADER-->
-				
-				<!-- BEGIN PAGE BAR AND BREADCRUM -->
-				<div class="page-bar margin-bottom-20">
-					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/ontologies/list}" > <span th:text="#{ontology.breadcrumb.list}">Ontologies</span></a><i class="fa fa-angle-right"></i></li>
-						<li><span th:text="#{crud.crud}">CRUD</span></li>						
-					</ul>						
-				</div>
-				<!-- END PAGE BAR -->
-				
-				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{crud.crud}">CRUD</span></h1>
-				<!-- END PAGE TITLE-->		
-				
-				<!-- MAIN ROW -->			
+</head>
+
+<!-- page-sidebar-closed to start page with collapsed menu -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+<!-- MAIN PAGE WRAPPER -->
+<div class="page-wrapper">
+
+	<!-- BEGIN HEADER INCLUDE -->
+	<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+	<!-- END HEADER -->
+
+	<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+	<div class="clearfix"> </div>
+
+	<!-- BEGIN SIDEBAR -->
+	<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+	<!-- END SIDEBAR -->
+
+	<!-- BEGIN CONTENT -->
+	<div class="page-content-wrapper">
+
+		<!-- BEGIN CONTENT BODY -->
+		<div class="page-content">
+
+			<!-- BEGIN PAGE HEADER-->
+
+			<!-- BEGIN PAGE BAR AND BREADCRUM -->
+			<div class="page-bar margin-bottom-20">
+				<ul class="page-breadcrumb">
+					<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+					<li><a th:href="@{/ontologies/list}" > <span th:text="#{ontology.breadcrumb.list}">Ontologies</span></a><i class="fa fa-angle-right"></i></li>
+					<li><span th:text="#{crud.crud}">CRUD</span></li>
+				</ul>
+			</div>
+			<!-- END PAGE BAR -->
+
+			<!-- BEGIN PAGE TITLE-->
+			<h1 class="page-title hide "><span th:text="#{crud.crud}">CRUD</span></h1>
+			<!-- END PAGE TITLE-->
+
+			<!-- MAIN ROW -->
+			<div class="row">
 				<div class="row">
-					<div class="row">
-								<div class="col-md-12 alert-zone">
-									<!-- ALERT ZONE -->	
-									<div id="alertInsert" style="display:none;" class="alert alert-warning alert-dismissible">
-									 <a href="#" class="close" onclick="$('#alertInsert').hide();" aria-label="close">&times;</a>
-										<label id="alertInsertlabel"></label>
-									</div>																		
-								</div>
-												
-							</div>
-							<div class="row">
-								<div class="col-md-12">	
-									<div class="portlet light container">
-										<div class="portlet-title tabbable-line">
-											<div class="caption"></div>
-											
-											<div class="tools hide">
-												<a href="" class="collapse" data-original-title="" title=""> </a>
-												<a href="" class="fullscreen" data-original-title="" title=""> </a>
-											</div>
-											
-											<ul id="mytabs" class="nav nav-tabs pull-left">									
-												<li id="tab-table"  class="active"><a href="#tab_table" data-toggle="tab" aria-expanded="true" th:text="#{gen.search}" >SEARCH </a></li>
-												<li id="tab-form" class=""><a href="#tab_form" data-toggle="tab" aria-expanded="true" th:text="#{crud.record}" >RECORD </a></li>
-											</ul>
-											<div id="crear-query">															
-												<div class="col-md-5 col-xs-12 pull-right" >
-													<div class="btn-group pull-right" >
-														<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn btn-circle btn-outline blue button_admin" onclick="toggleFindElements();"><span th:text="#{gen.search}">Search</span></button>
-														<button type="button" id="createBtn"  class="btn btn-circle btn-outline blue button_admin" onclick="cleanJSONEditor();" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>																																																	
-														<button	class="btn btn-circle btn-outline blue button_admin" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>														
-													</div>
-												</div>													
-												<div class="col-sm-12 col-md-12" style="display:none"> 
-												  <!-- TABLA dt:table="true" dt:paginate="false" dt:sort="false" -->
-												  <table id="camposConsultaSuscripcion" >														
-													  <tbody th:remove="all-but-first" >
-														<tr pages:paginate="10" class="odd">
-														  <td>
-															  <div id="checks" ></div>    
-														  </td>
-													   </tr>
-													 </tbody>
-												  </table>
-												  <!-- FINAL TABLA -->
-												</div>
-											</div>						
-										</div>			
-										<div class="portlet-body" style="display: block; height: auto;">
-											<div class="tab-content">
-												<div class="tab-pane active" id="tab_table">
-													<div class="row" id="create_query" style="display:none;">
-														<div class="col-md-6 col-xs-12">
-															<div  style="margin-top: 23px;">
-																<ul id="tree_menu">
-																	<!-- WHERE PANEL -->
-																	<li type="none" class="columnMine" style ="max-width: 50%;min-width: 50%;">
-																		<ul id="where_ul" class="list-group "  style="height: 100px;">
-																			<!-- LI principal , agrega elementos de condición al where, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
-																			<li class="list-group-item panel-sofia2 bold uppercase" ><i class="fa fa-filter"></i> WHERE<span onclick="addCondition()" class="btn bg-grey-steel font-grey-mint btn-xs pull-right tooltips btn_filters" data-container="body" data-placement="top" th:data-original-title="#{crud.aggregate.fields.where}"><i class="fa fa-plus"></i></span></li>																													
-																		</ul>
-																	</li>
-																	<!-- END WHERE PANEL -->												
-																
-																	
-																	<!-- ORDERBY PANEL -->
-																	<li type="none" class="columnMine" style ="max-width: 50%;min-width: 50%;">
-																		<ul id="orderby_ul" class="list-group list-orderby"  style="height: 100px;">
-																			<!-- LI principal , agrega orderby, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
-																			<li class="list-group-item panel-sofia2 bold uppercase"><i class="fa fa-sort"></i> ORDER BY<span onclick="addOrderBy()" class="btn bg-grey-steel font-grey-mint btn-xs pull-right tooltips btn_filters" data-container="body" data-placement="top" th:data-original-title="#{crud.aggregate.fields.order}"><i class="fa fa-plus"></i></span></li>																													
-																		</ul>
-																	</li>
-																	<!-- END ORDERBY PANEL -->
-																</ul>
-															</div>
-														</div>
-														<div class="col-md-2 col-sm-2 col-xs-12">
-															<div class="form-group">
-																<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasources.maxvalue} + ':'">Max register</span></label>
-																	<input  id="maxvalues" type="number" min="1" max="5000" name="maxvalues" th:required="true"  value="100"  class="form-control " th:placeholder="#{datasources.maxvalue}"  />
-															</div>
-														</div>
-														<div class="col-md-2 col-sm-2 col-xs-12">
-															<div class="form-group">
-																<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{crud.offset} + ':'">Offset</span></label>
-																	<input  id="offset" type="number" min="1" max="5000" name="offset" th:required="true"  value="0"  class="form-control " th:placeholder="#{crud.offset}"  />
-															</div>
-														</div>
-														<div class="col-md-2 col-xs-12 pull-right" >
-															<div class="btn-group pull-right" style="margin-top: 23px;" >
-																<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn grey-mint  btn-outline sbold button_admin" onclick="findElements();"><i class="fa fa-search"></i> <span th:text="#{gen.search}">Search</span></button>															
-																<button type="button" id="reset_ontology" name="reset_ontology" value="Reset" class="btn purple-plum btn-outline sbold button_admin" title="Reset" onclick="refreshFilters();"><i class="fa fa-refresh"></i>&nbsp;</button>
-															</div>
-														</div>
-													</div>	
-													<div class="row">
-														<div class="col-md-12">																									
-																<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-																	<div>
-																	<!-- DATATABLE DANDELION CONF.  -->												
-																	<table id="records" class="table table-hover table-striped table-condensed " dt:table="true" dt:paginationtype="full_numbers">
-																		<thead>
-																			<tr class="cabecera-tabla">
-																				<th class="titulo-columnas" style="width:180px" th:text="#{ontology.identification}">Identification</th>
-																				<th class="titulo-columnas" style="width:73px" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
-																				<th class="titulo-columnas" th:text="#{crud.record}">record</th> 																									
-																			</tr>
-																		</thead>
-																		<tbody th:remove="all-but-first">
-																			
-																		</tbody>
-																	</table>												
-																	<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-																	<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-																		<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-																			<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
-																		</a>
-																		<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-																			<label class="toggle-vis" data-column="0" th:text="#{ontology.identification}"> identification </label>
-																			<label class="toggle-vis" data-column="1" th:text="#{gen.options}" > Options</label>															
-																			<label class="toggle-vis" data-column="2" th:text="#{crud.record}"> record </label>
-																		</div>
-																	</div>												
-																</div>
-															</div>	
-														</div>
-													</div>
-												</div>			
-												<!-- tab editor -->
-												<div class="tab-pane" id="tab_form">					
-													<div class="row"> 
-														<div id="editor_holder" class=" col-md-8 col-sm-8 col-xs-12"></div>
-														
-														<div class=" col-md-4 col-sm-4 col-xs-12"    style="margin-top: 20px;">
-															<div class="row">
-																<div class="col-md-6 col-sm-6 col-xs-12 ">
-																	<!-- cleanJson -->
-																	
-																	<div class="form-group">
-																		<label class="" th:text="#{crud.objectLayout} + ':'">Show like grid</label>
-																		<div class="mt-checkbox-list">
-																			<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{crud.objectLayout.info},data-title=#{crud.objectLayout}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{crud.grid} +'?'">Grid?</div>
-																				<input  id="objectLayout" class="form-control no-remove"  name="objectLayout" type="checkbox"  checked="checked" onchange="changeObjectLayout()" />
-																				<span></span>
-																			</label>
-																		
-																		</div>
-																	</div>
-																</div>
-																<div class="col-md-6 col-sm-6 col-xs-12">
-																	<button id="cleanJson" class="btn btn-circle btn-outline blue pull-right" name="create"  th:value="#{gen.createBtn}" onclick="cleanJSONEditor();" ><span th:text="#{crud.clean.json}"> clean registry</span></button>
-																</div>
-															</div>
-															<div class="row">
-																<label class="uppercase font-md">Output </label>
-																<textarea  id="output" name="output" class="element textarea extra-small form-control" style="width: 100%; height: 400px;"></textarea>
-															</div>	
-														</div>
-													</div>
-													<div class="row"> 
-														<hr></hr>							
-														<div class="form-actions">
-															<div class="pull-left">
-																<!-- CANCEL TO-DO: authentication and control -->
-																<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-															</div>
-															<div class="pull-right">																		
-																<button id="createBtn" type="button" class="btn btn-circle btn-outline blue " onclick="insert();" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
-																<span class="sep"></span>
-																<button id="updateBtn" type="button" class="btn btn-circle btn-outline btn-primary " disabled="true" onclick="update();" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
-															</div>			
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>									
-									</div>
-								</div>	
-							</div>	
-						
+					<div class="col-md-12 alert-zone">
+						<!-- ALERT ZONE -->
+						<div id="alertInsert" style="display:none;" class="alert alert-warning alert-dismissible">
+							<a href="#" class="close" onclick="$('#alertInsert').hide();" aria-label="close">&times;</a>
+							<label id="alertInsertlabel"></label>
+						</div>
+					</div>
+
 				</div>
-			</div> <!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->		
-	</div>
-	<!-- END MAIN PAGE WRAPPER -->
-	
-	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
-	
-	<div style="display: none">
-		<div th:fragment="fields" id="fields">
-			<script th:inline="javascript">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light">
+							<div class="portlet-title tabbable-line">
+								<div class="caption"></div>
+
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+
+								<ul id="mytabs" class="nav nav-tabs pull-left">
+									<li id="tab-table"  class="active"><a href="#tab_table" data-toggle="tab" aria-expanded="true" th:text="#{gen.search}" >SEARCH </a></li>
+									<li id="tab-form" class=""><a href="#tab_form" data-toggle="tab" aria-expanded="true" th:text="#{crud.record}" >RECORD </a></li>
+								</ul>
+								<div id="crear-query">
+									<div class="col-md-5 col-xs-12 pull-right" >
+										<div class="btn-group pull-right" >
+											<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn btn-circle btn-outline blue button_admin" onclick="toggleFindElements();"><span th:text="#{gen.search}">Search</span></button>
+											<button type="button" id="createBtn"  class="btn btn-circle btn-outline blue button_admin" onclick="cleanJSONEditor();" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+											<button	class="btn btn-circle btn-outline blue button_admin" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+										</div>
+									</div>
+									<div class="col-sm-12 col-md-12" style="display:none">
+										<!-- TABLA dt:table="true" dt:paginate="false" dt:sort="false" -->
+										<table id="camposConsultaSuscripcion" >
+											<tbody th:remove="all-but-first" >
+											<tr pages:paginate="10" class="odd">
+												<td>
+													<div id="checks" ></div>
+												</td>
+											</tr>
+											</tbody>
+										</table>
+										<!-- FINAL TABLA -->
+									</div>
+								</div>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_table">
+										<div class="row" id="create_query" style="display:none;">
+											<div class="col-md-6 col-xs-12">
+												<div  style="margin-top: 23px;">
+													<ul id="tree_menu">
+														<!-- WHERE PANEL -->
+														<li type="none" class="columnMine" style ="max-width: 50%;min-width: 50%;">
+															<ul id="where_ul" class="list-group "  style="height: 100px;">
+																<!-- LI principal , agrega elementos de condición al where, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																<li class="list-group-item panel-sofia2 bold uppercase" ><i class="fa fa-filter"></i> WHERE<span onclick="addCondition()" class="btn bg-grey-steel font-grey-mint btn-xs pull-right tooltips btn_filters" data-container="body" data-placement="top" th:data-original-title="#{crud.aggregate.fields.where}"><i class="fa fa-plus"></i></span></li>
+															</ul>
+														</li>
+														<!-- END WHERE PANEL -->
+
+
+														<!-- ORDERBY PANEL -->
+														<li type="none" class="columnMine" style ="max-width: 50%;min-width: 50%;">
+															<ul id="orderby_ul" class="list-group list-orderby"  style="height: 100px;">
+																<!-- LI principal , agrega orderby, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																<li class="list-group-item panel-sofia2 bold uppercase"><i class="fa fa-sort"></i> ORDER BY<span onclick="addOrderBy()" class="btn bg-grey-steel font-grey-mint btn-xs pull-right tooltips btn_filters" data-container="body" data-placement="top" th:data-original-title="#{crud.aggregate.fields.order}"><i class="fa fa-plus"></i></span></li>
+															</ul>
+														</li>
+														<!-- END ORDERBY PANEL -->
+													</ul>
+												</div>
+											</div>
+											<div class="col-md-2 col-sm-2 col-xs-12">
+												<div class="form-group">
+													<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasources.maxvalue} + ':'">Max register</span></label>
+													<input  id="maxvalues" type="number" min="1" max="5000" name="maxvalues" th:required="true"  value="100"  class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+												</div>
+											</div>
+											<div class="col-md-2 col-sm-2 col-xs-12">
+												<div class="form-group">
+													<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{crud.offset} + ':'">Offset</span></label>
+													<input  id="offset" type="number" min="1" max="5000" name="offset" th:required="true"  value="0"  class="form-control " th:placeholder="#{crud.offset}"  />
+												</div>
+											</div>
+											<div class="col-md-2 col-xs-12 pull-right" >
+												<div class="btn-group pull-right" style="margin-top: 23px;" >
+													<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn grey-mint  btn-outline sbold button_admin" onclick="findElements();"><i class="fa fa-search"></i> <span th:text="#{gen.search}">Search</span></button>
+													<button type="button" id="reset_ontology" name="reset_ontology" value="Reset" class="btn purple-plum btn-outline sbold button_admin" title="Reset" onclick="refreshFilters();"><i class="fa fa-refresh"></i>&nbsp;</button>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-12">
+												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">
+													<div>
+														<!-- DATATABLE DANDELION CONF.  -->
+														<table id="records" class="table table-hover table-striped table-condensed " dt:table="true" dt:paginationtype="full_numbers">
+															<thead>
+															<tr class="cabecera-tabla">
+																<th class="titulo-columnas" style="width:180px" th:text="#{ontology.identification}">Identification</th>
+																<th class="titulo-columnas" style="width:73px" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+																<th class="titulo-columnas" th:text="#{crud.record}">record</th>
+															</tr>
+															</thead>
+															<tbody th:remove="all-but-first">
+
+															</tbody>
+														</table>
+														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+														<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+															<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+																<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+															</a>
+															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+																<label class="toggle-vis" data-column="0" th:text="#{ontology.identification}"> identification </label>
+																<label class="toggle-vis" data-column="1" th:text="#{gen.options}" > Options</label>
+																<label class="toggle-vis" data-column="2" th:text="#{crud.record}"> record </label>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<!-- tab editor -->
+									<div class="tab-pane" id="tab_form">
+										<div class="row">
+											<div id="editor_holder" class=" col-md-8 col-sm-8 col-xs-12"></div>
+
+											<div class=" col-md-4 col-sm-4 col-xs-12"    style="margin-top: 20px;">
+												<div class="row">
+													<div class="col-md-6 col-sm-6 col-xs-12 ">
+														<!-- cleanJson -->
+
+														<div class="form-group">
+															<label class="" th:text="#{crud.objectLayout} + ':'">Show like grid</label>
+															<div class="mt-checkbox-list">
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{crud.objectLayout.info},data-title=#{crud.objectLayout}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{crud.grid} +'?'">Grid?</div>
+																	<input  id="objectLayout" class="form-control no-remove"  name="objectLayout" type="checkbox"  checked="checked" onchange="changeObjectLayout()" />
+																	<span></span>
+																</label>
+
+															</div>
+														</div>
+													</div>
+													<div class="col-md-6 col-sm-6 col-xs-12">
+														<button id="cleanJson" class="btn btn-circle btn-outline blue pull-right" name="create"  th:value="#{gen.createBtn}" onclick="cleanJSONEditor();" ><span th:text="#{crud.clean.json}"> clean registry</span></button>
+													</div>
+												</div>
+												<div class="row">
+													<label class="uppercase font-md">Output </label>
+													<textarea  id="output" name="output" class="element textarea extra-small form-control" style="width: 100%; height: 400px;"></textarea>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<hr></hr>
+											<div class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL TO-DO: authentication and control -->
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+												</div>
+												<div class="pull-right">
+													<button id="createBtn" type="button" class="btn btn-circle btn-outline blue " onclick="insert();" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+													<span class="sep"></span>
+													<button id="updateBtn" type="button" class="btn btn-circle btn-outline btn-primary " disabled="true" onclick="update();" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div> <!-- END CONTENT BODY -->
+	</div><!-- END CONTENT page-content-wrapper -->
+</div>
+<!-- END MAIN PAGE WRAPPER -->
+
+<!-- FOOTER-INCLUDE -->
+<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+<div style="display: none">
+	<div th:fragment="fields" id="fields">
+		<script th:inline="javascript">
 			//Map with field,type struct	
 			fields= [[${fields}]];
-			</script>			
-				<option th:each="field :${fields}" th:value="${field.key}" th:id="check + ${field.key}" th:text="${field.key}" th:type="${field.value}"/>
-		</div>
+			</script>
+		<option th:each="field :${fields}" th:value="${field.key}" th:id="check + ${field.key}" th:text="${field.key}" th:type="${field.value}"/>
 	</div>
-	
-	<!-- JSON OBJECTS MODAL -->
-	<!-- Modal -->
-	<div id="jsonModal" class="modal fade" role="dialog">
-		<div class="modal-dialog">
+</div>
 
-			<!-- Modal content-->
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal">&times;</button>
-					<h4 class="modal-title"><span th:text="#{gen.json}">JSON value for </span> <span id="jsonDatatTitle" class="bold"></span> </h4>
-				</div>
-				<div class="modal-body">
-					<pre id="jsonDataView"></pre>
-				</div>
-				<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> <span th:text="#{gen.closeBtn}">Close</span></button>
-				</div>
+<!-- JSON OBJECTS MODAL -->
+<!-- Modal -->
+<div id="jsonModal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title"><span th:text="#{gen.json}">JSON value for </span> <span id="jsonDatatTitle" class="bold"></span> </h4>
 			</div>
-
+			<div class="modal-body">
+				<pre id="jsonDataView"></pre>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> <span th:text="#{gen.closeBtn}">Close</span></button>
+			</div>
 		</div>
+
 	</div>
-	  <div id="dialog-execution-condition" style="display: none;" class="tabla_description" title="Condicion - WHERE">
-      <div>
-          <fieldset>
-              <label class="description"  th:text="#{crud.campos}">Campos</label>
-              <select class="element select small form-control" id="form_fields" name="typeCombo" style="width: 250px;"></select>
-          </fieldset>  
-      </div>
-      <div>
-          <fieldset>
-              <label class="description" th:text="#{crud.operador}">Operador</label>
-              <select class="element select small form-control" id="select_operator" name="typeCondicion" style="width: 250px;">
-                      <option name="mayor" value="mayor"> > </option>
-                      <option name="menor" value="menor"> &#60; </option>
-                      <option name="mayor-igual" value="mayor-igual"> >= </option>
-                      <option name="menor-igual" value="menor-igual"> &#60;= </option>
-                      <option name="igual" value="igual"> = </option>
-                      <option name="distinto" value="distinto"> != </option>
-              </select>
-          </fieldset>
-      </div>
-      <div id="cronExpresion">
-          <fieldset id="timer_capa"> 
-              <label class="description" for="temporizador">Condicion*</label>
-              <input id="form_condition" name="condition" class="element text form-control" type="text" value="" style="width: 250px;" /> 
-                                                              
-          </fieldset>
-      </div>
-  </div>							                    
-  <div id="dialog-execution-orderby" style="display: none;" class="tabla_description" title="ORDER BY">
-      <div>
-          <fieldset>
-              <label class="description" for="form_orderby_fields" th:text="#{crud.campos}">Campos</label>
-              <select class="element select small form-control" id="form_orderby_fields" name="typeCombo">
-                      
-              </select>
-          </fieldset> 
-          <fieldset>
-              <label class="description" for="form_order">Órden</label>
-              <select class="element select small form-control" id="form_order" name="typeCondicion" style="width: 270px;">
-                      <option name="asc" value="ASC"> ASC </option>
-                      <option name="desc" value="DESC"> DESC </option>
-              </select>
-          </fieldset> 
-      </div>
-  </div>
-	
-	
-	
-	
-	
-	
-	
-	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
-	
-	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
-	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"/>
-	
-	<script th:inline="javascript">	
+</div>
+<div id="dialog-execution-condition" style="display: none;" class="tabla_description" title="Condicion - WHERE">
+	<div>
+		<fieldset>
+			<label class="description"  th:text="#{crud.campos}">Campos</label>
+			<select class="element select small form-control" id="form_fields" name="typeCombo" style="width: 250px;"></select>
+		</fieldset>
+	</div>
+	<div>
+		<fieldset>
+			<label class="description" th:text="#{crud.operador}">Operador</label>
+			<select class="element select small form-control" id="select_operator" name="typeCondicion" style="width: 250px;">
+				<option name="mayor" value="mayor"> > </option>
+				<option name="menor" value="menor"> &#60; </option>
+				<option name="mayor-igual" value="mayor-igual"> >= </option>
+				<option name="menor-igual" value="menor-igual"> &#60;= </option>
+				<option name="igual" value="igual"> = </option>
+				<option name="distinto" value="distinto"> != </option>
+			</select>
+		</fieldset>
+	</div>
+	<div id="cronExpresion">
+		<fieldset id="timer_capa">
+			<label class="description" for="temporizador">Condicion*</label>
+			<input id="form_condition" name="condition" class="element text form-control" type="text" value="" style="width: 250px;" />
+
+		</fieldset>
+	</div>
+</div>
+<div id="dialog-execution-orderby" style="display: none;" class="tabla_description" title="ORDER BY">
+	<div>
+		<fieldset>
+			<label class="description" for="form_orderby_fields" th:text="#{crud.campos}">Campos</label>
+			<select class="element select small form-control" id="form_orderby_fields" name="typeCombo">
+
+			</select>
+		</fieldset>
+		<fieldset>
+			<label class="description" for="form_order">Órden</label>
+			<select class="element select small form-control" id="form_order" name="typeCondicion" style="width: 270px;">
+				<option name="asc" value="ASC"> ASC </option>
+				<option name="desc" value="DESC"> DESC </option>
+			</select>
+		</fieldset>
+	</div>
+</div>
+
+
+
+
+
+
+
+<!-- CORE CONTROLLERS -->
+<script th:src="@{/static/js/app.js}"/>
+<script th:src="@{/static/js/layout.js}"/>
+
+<!-- PLUGINS -->
+<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
+<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"/>
+
+<script th:inline="javascript">
 	
 	// TEMPLATE SEARCH FORM.
 	
@@ -404,42 +404,60 @@ var $output = document.getElementById('output');
 var $schema =[[${ontology.jsonSchema}]];	
 var $editor = document.getElementById('editor_holder');
 var $ontology = [[${ontology}]];
+var $uniqueId = [[${uniqueId}]];
 var $elementSelected;
 var $dataSetMapped; 
 var $query;
+
+var $conditions = 	{};
+var $ordersBy 	=	{};
+
+function addWhereExpression(index, column, operator, value){
+	$conditions[index] = {column:column,operator:operator,value:value,condition:'AND'};
+}
+
+function addOrderByExpression(index, column, order){
+	$ordersBy[index] = {column:column, order:order};
+}
+
+function removeExpression(index){
+	if(index in $conditions) delete $conditions[index];
+	if(index in $ordersBy) delete $ordersBy[index];
+}
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-		
+
 		//reloadJSONEditor();
 		changeObjectLayout();
-		
+
 		$('#output').on('change',function() {
 	        reloadJSONEditor(false,JSON.parse($output.value,null,2));
 	    });
-		
+
 		findElements();
 		getOntologyFields();
-		
+
 		$.each([ 3 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	
+
 	});
-	 
+
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
-		
+	$(window).load(function(){
+
 		$('#objectLayout').trigger('click');
-		
+
 	});
-	
-	//Select field disposition, available options grid or normal	
+
+	//Select field disposition, available options grid or normal
 	function changeObjectLayout(){
 		if(JSONEditor.defaults.options.object_layout==='grid'){
 			JSONEditor.defaults.options.object_layout='normal';
 		}else{
 		JSONEditor.defaults.options.object_layout='grid';
 		}
-		reloadJSONEditor(true);	
-	}	
+		reloadJSONEditor(true);
+	}
 
 
 	function cleanJSONEditor(){
@@ -465,17 +483,17 @@ var $query;
     window.jsoneditor = jsoneditor;
 
     // When the value of the editor changes, update the JSON output and validation message
-    jsoneditor.on('change',function() {    	
+    jsoneditor.on('change',function() {
         var json = jsoneditor.getValue();
         $output.value = JSON.stringify(json,null,2);
         //jsoneditor.validate();
     });
-    
+
     if(typeof new_value!== "undefined"){
     	  jsoneditor.setValue(new_value);
     	 // jsoneditor.validate();
     }
-    
+
 };
 
 	function toggleFindElements(){
@@ -485,30 +503,30 @@ var $query;
 
 	function findElements(){
 		createQuery();
-		
+
+		var params = createParametersMap();
+
 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
 		$.ajax({
-			url: '/controlpanel/crud/query',
+			url: '/controlpanel/crud/queryParams',
 			headers: {
 				[csrf_header]: csrf_value
 		    },
 			type: 'POST',
-			data: { 
-			ontologyID : $ontology.identification,
-			query : $query
-			},	           
-			success: function(dataSet) {	        
-		   
-				console.log("success findElements");                 
+			contentType: "application/json",
+			data: JSON.stringify(params),
+			success: function(dataSet) {
+
+				console.log("success findElements");
 				//hide create query
-			
+
 				var t = $('#records').DataTable();
-				t.clear();				
+				t.clear();
 				$dataSetMapped = map_IdFromDataSet(dataSet);
-				for(var i =0; i<$dataSetMapped.length;i++){				
-					var buttons = '<div class="grupo-iconos">'+				
+				for(var i =0; i<$dataSetMapped.length;i++){
+					var buttons = '<div class="grupo-iconos">'+
 					'<span   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" onclick="editRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="la la-book font-hg"></i></span>'+
 					'<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" onclick="deleteRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn}" ><i class="la la-trash font-hg"></i></span>'+
 					'</div>';
@@ -517,11 +535,11 @@ var $query;
 					if (text.length>140){
 						text = title.substring(0, 140)+"...";
 					}
-							
+
 					var recordText = createTableFromJson($dataSetMapped[i].data);
-					
+
 					t.row.add( [$dataSetMapped[i].id,buttons ,recordText ]);
-					
+
 				}
 				t.draw();
 				$('[data-toggle="tooltip"]').tooltip();
@@ -535,16 +553,16 @@ var $query;
 		delete data.contextData;
 		delete data.id;
 		var resultTitle = recursiveTitle(data,"");
-		var resultValue = recursiveValue(data,"");	
+		var resultValue = recursiveValue(data,"");
 		var theadContent = "";
-		var tbodyContent = "";	
+		var tbodyContent = "";
 		for(var i=0;i<resultTitle.length;i++){
 			theadContent=theadContent+"<th>"+resultTitle[i]+"</th>";
-			if (resultValue[i].length>140){		
+			if (resultValue[i].length>140){
 				tbodyContent=tbodyContent+"<td>"+resultValue[i].substring(0, 140)+"..."+"</td>";
 			}else{
 				tbodyContent=tbodyContent+"<td>"+resultValue[i]+"</td>";
-			}		
+			}
 		}
 		var tbody = "<tr>"+tbodyContent+"</tr>";
 		var thead = "<tr>"+theadContent+"</tr>";
@@ -559,7 +577,7 @@ var $query;
 		if(data !== null && Object.keys(data).length>0){
 			var keys = Object.keys(data);
 			for(var i=0;i<keys.length;i++){
-				if(typeof data[keys[i]] == "object"){		
+				if(typeof data[keys[i]] == "object"){
 					var res = recursiveTitle(data[keys[i]],stack+separator+keys[i]);
 					for(var j=0;j<res.length;j++){
 						result.push(res[j]);
@@ -584,7 +602,7 @@ var $query;
 					var res = recursiveValue(data[keys[i]],stack+separator+keys[i]);
 					for(var j=0;j<res.length;j++){
 						result.push(res[j]);
-					}	
+					}
 				}else{
 					result.push(data[keys[i]]);
 				}
@@ -598,9 +616,9 @@ var $query;
 
 	function findElementForId(id){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-		$elementSelected = id; 
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+		$elementSelected = id;
 		$("#updateBtn").removeAttr( "disabled" );
 		 $.ajax({
 		  url: '/controlpanel/crud/findById',
@@ -608,27 +626,27 @@ var $query;
 				[csrf_header]: csrf_value
 		    },
 		  type: 'POST',
-		  data: { 
+		  data: {
 		   ontologyID : $ontology.identification,
 		   oid:id
-				},	           
-		  success: function(dataSet) {			  
+				},
+		  success: function(dataSet) {
 				console.log("success findElementForId "+ id);
 				delete dataSet[0].contextData;
-				reloadJSONEditor(false,dataSet[0]);		
+				reloadJSONEditor(false,dataSet[0]);
 		  },
-		  error: function(data,status,er) { 
+		  error: function(data,status,er) {
 		  }
 	});
 	}
-	
+
 
 
 	function deleteRecord(id){
 		showConfirmDeleteDialog(id);
 	}
 
-	var showConfirmDeleteDialog = function(id){	
+	var showConfirmDeleteDialog = function(id){
 
 		//i18 labels
 		var close = headerReg.btnCancelar;
@@ -651,50 +669,65 @@ var $query;
 				close: {
 					text: close,
 					btnClass: 'btn btn-sm btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
+					action: function (){} //GENERIC CLOSE.
 				},
 				remove: {
 					text: remove,
 					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
-					action: function(){ 					
+					action: function(){
 						deleteForId(id);
-					}											
+					}
 				}
-				
+
 			}
 		});
-	}	
+	}
 
 
 
-	function deleteForId(id){	
+	function deleteForId(id){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
 		 $.ajax({
 		  url: '/controlpanel/crud/deleteById',
 		  headers: {
 				[csrf_header]: csrf_value
 		    },
 		  type: 'POST',
-		  data: { 
+		  data: {
 		   ontologyID : $ontology.identification,
 		   oid:id
-				},	           
+				},
 		  success: function(dataSet) {
-				console.log("success deleteForId "+ id);
-				findElements();
+			  	if(typeof dataSet != "undefined" ){
+					 if("error" in dataSet){
+						$('#alertInsert').show();
+						$('#alertInsertlabel').html( dataSet.error );
+						$("html, body").animate({ scrollTop: 0 }, "slow");
+					 }else if("exception" in dataSet) {
+						$('#alertInsert').show();
+						$('#alertInsertlabel').html( dataSet.error );
+						$("html, body").animate({ scrollTop: 0 }, "slow");
+					 }else{
+						 $('#alertInsert').hide();
+						 $('#alertInsertlabel').html("");
+						 console.log("success deleteForId "+ id);
+						 findElements();
+						 $("html, body").animate({ scrollTop: 0 }, "slow");
+					 }
+				}
 		  },
-		  error: function(data,status,er) { 
+		  error: function(data,status,er) {
 		  }
 	});
 	}
 
 
-	function insert(){	
+	function insert(){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
 		var jsonOutput = $output.value.replace(/\\n/g, '');
 		 $.ajax({
 			 url: '/controlpanel/crud/insert',
@@ -702,48 +735,66 @@ var $query;
 					[csrf_header]: csrf_value
 			    },
 			 type: 'POST',
-			 data: { 
+			 data: {
 			   ontologyID : $ontology.identification,
 			   body:jsonOutput
-					},	           
-			 success: function(dataSet) {    	 
+					},
+			 success: function(dataSet) {
 					console.log("success insert ");
 					findElements();
 					 $("html, body").animate({ scrollTop: 0 }, "slow");
 			 },
-			 error: function(data,status,er) { 
+			 error: function(data,status,er) {
 			 }
 		});
 	}
 
-function deleteForId(id){	
+function deleteForId(id){
 	var csrf_value = $("meta[name='_csrf']").attr("content");
-	var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-	
+	var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
 	 $.ajax({
 		url: '/controlpanel/crud/deleteById',
 		headers: {
 			[csrf_header]: csrf_value
 	    },
 		type: 'POST',
-		data: { 
+		data: {
 		ontologyID : $ontology.identification,
 		oid:id
-			},	           
+			},
 		success: function(dataSet) {
-			console.log("success deleteForId "+ id);
-			findElements();
+			if(typeof dataSet != "undefined" ){
+					 if(typeof dataSet != "undefined" ){
+						 if("error" in dataSet){
+							$('#alertInsert').show();
+							$('#alertInsertlabel').html( dataSet.error );
+							$("html, body").animate({ scrollTop: 0 }, "slow");
+						 }else if("exception" in dataSet) {
+							$('#alertInsert').show();
+							$('#alertInsertlabel').html( dataSet.error );
+							$("html, body").animate({ scrollTop: 0 }, "slow");
+						 }else{
+							 $('#alertInsert').hide();
+							 $('#alertInsertlabel').html("");
+							 console.log("success deleteForId "+ id);
+							 findElements();
+							 $("html, body").animate({ scrollTop: 0 }, "slow");
+						 }
+					}
+				}
 		},
-		error: function(data,status,er) { 
+		error: function(data,status,er) {
+			console.log("error deleting")
 		}
 	});
 }
 
 
-function insert(){	
+function insert(){
 	var csrf_value = $("meta[name='_csrf']").attr("content");
-	var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-	
+	var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
 	var jsonOutput = $output.value.replace(/\\n/g, '');
 	 $.ajax({
 		 url: '/controlpanel/crud/insert',
@@ -751,73 +802,72 @@ function insert(){
 				[csrf_header]: csrf_value
 		 },
 		 type: 'POST',
-		 data: { 
+		 data: {
 		   ontologyID : $ontology.identification,
 		   body:jsonOutput
-				},	           
-		 success: function(dataSet) {    	 
-			 
+				},
+		 success: function(dataSet) {
+
 			 if(typeof dataSet != "undefined" ){
-				 if(dataSet.includes('"error":')){
+				 if("error" in dataSet){
 					$('#alertInsert').show();
-					$('#alertInsertlabel').html( dataSet.substring(10,dataSet.length));
+					$('#alertInsertlabel').html( dataSet.error );
 					$("html, body").animate({ scrollTop: 0 }, "slow");
-				 }else if(dataSet.includes('"exception":')){
+				 }else if("exception" in dataSet) {
 					$('#alertInsert').show();
-					$('#alertInsertlabel').html( [[#{crud.exception.create}]]);
+					$('#alertInsertlabel').html( dataSet.error );
 					$("html, body").animate({ scrollTop: 0 }, "slow");
 				 }else{
 					 $('#alertInsert').hide();
 					 $('#alertInsertlabel').html("");
-					 console.log("success insert ");
 					 findElements();
 					 $("html, body").animate({ scrollTop: 0 }, "slow");
 				 }
 			 }
 		 },
-		 error: function(data,status,er) { 
-			 
+		 error: function(data,status,er) {
+
 		 }
 	});
 }
 
 
-function update(){	
+function update(){
 	var csrf_value = $("meta[name='_csrf']").attr("content");
-	var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-	
-	var jsonOutput = $output.value.replace(/\\n/g, '');	
+	var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+	var jsonOutput = $output.value.replace(/\\n/g, '');
 	 $.ajax({
 		 url: '/controlpanel/crud/update',
 		 headers: {
 				[csrf_header]: csrf_value
 		 },
 		 type: 'POST',
-		 data: { 
+		 data: {
 		   ontologyID : $ontology.identification,
 		   body:jsonOutput,
 		   oid:$elementSelected
-				},	           
-		 success: function(dataSet) { 
+				},
+		 success: function(dataSet) {
 			 if(typeof dataSet != "undefined" ){
-				 if(dataSet.includes('"error":')){
+				 if("error" in dataSet){
 					$('#alertInsert').show();
-					$('#alertInsertlabel').html( dataSet.substring(10,dataSet.length));
+					$('#alertInsertlabel').html( dataSet.error );
 					$("html, body").animate({ scrollTop: 0 }, "slow");
-				 }else if(dataSet.includes('"exception":')){
+				 }else if("exception" in dataSet) {
 					$('#alertInsert').show();
-					$('#alertInsertlabel').html( [[#{crud.exception.create}]]);
+					$('#alertInsertlabel').html( dataSet.error );
 					$("html, body").animate({ scrollTop: 0 }, "slow");
 				 }else{
 					 $('#alertInsert').hide();
 					 $('#alertInsertlabel').html("");
-					 console.log("success update ");
+					 console.log("success deleteForId "+ $elementSelected);
 					 findElements();
 					 $("html, body").animate({ scrollTop: 0 }, "slow");
 				 }
 			 }
 		 },
-		 error: function(data,status,er) { 
+		 error: function(data,status,er) {
 		 }
 	});
 }
@@ -835,39 +885,48 @@ function findDataSetMapped(id){
 
 
 function editRecord(id){
-	
 	findElementForId(id)
 	 $('#mytabs a[href="#tab_form"]').tab('show');
 }
 
-
-function map_IdFromDataSet(dataSet){	
+function map_IdFromDataSet(dataSet){
 	var newDataSet = [];
 	if(typeof dataSet!= "undefined" && dataSet.length>0){
-		for(var i =0; i<dataSet.length;i++){			
+		for(var i =0; i<dataSet.length;i++){
 			newDataSet[i]={};
+			if($uniqueId !== null) {
+				
+				if(typeof dataSet[i][$uniqueId] !=='undefined'){
+					newDataSet[i].id = dataSet[i][$uniqueId];
+				}else if (typeof dataSet[i].value[$uniqueId] !=='undefined'){
+					newDataSet[i].id = dataSet[i].value[$uniqueId];
+				}else{
+					newDataSet[i].id = undefined;
+				}			
+			} else {
+				newDataSet[i].id = undefined;
+			}
+			newDataSet[i].data = jQuery.extend(true, {}, dataSet[i]);
+
+			/*
 			if($ontology.datasource.toLowerCase().indexOf("elastic") > -1){
 				newDataSet[i].id = dataSet[i].id;
 				newDataSet[i].data = jQuery.extend(true, {}, dataSet[i]);
 			}else{
 				newDataSet[i].id = dataSet[i]._id;
 				newDataSet[i].data = jQuery.extend(true, {}, dataSet[i]);
-                //newDataSet[i].id = dataSet[i].value.id;
-                //newDataSet[i].data = jQuery.extend(true, {}, dataSet[i].value);
-
 			}
 			delete newDataSet[i].data._id;
-
+			*/
 		}
-
 	}
 	return newDataSet;
 }
 
-// MODAL WHERE 
+// MODAL WHERE
 	var indexCondition = 0;
 	function showDialogCondition(){
-		
+
 		var targetdb = "rtdb";
 		var comboFields=$('#fields').html();
 		var comboCondition=$('#select_operator').html();
@@ -888,23 +947,27 @@ function map_IdFromDataSet(dataSet){
 	            	var field = $("#conditionFields").val();
 	            	var fieldType = $("#conditionFields option:selected").attr("type")
 					var operator = $("#conditionOperator option:selected").text();
-					var condition = $("#condition").val();					
+					var condition = $("#condition").val();
 					var conditionTrimAndLowerCase = condition.trim().toLowerCase();
-					if (conditionTrimAndLowerCase !== "null"){						
-						var c = Number(condition);						
+
+					var tempCondition = (+condition) === (+condition) ? parseFloat(condition) : condition; // Used to save in addWhereExpression
+
+					if (conditionTrimAndLowerCase !== "null"){
+						var c = Number(condition);
 						if(fieldType=="string") {
 							condition = "'"+condition+"'";
 						}
 					}else{
-						condition = null;
+						tempCondition = condition = null;
 					}
-					if( operator == " < "){ operator=" &#60; "; }else if( operator == "<="){operator=" &#60;= "; }						
+
+					if( operator == " < "){ operator=" &#60; "; }else if( operator == "<="){operator=" &#60;= "; }
 					queryCondition = field + operator + condition;
 					var add = validateCondition(queryCondition);
-					if( add ){							
+					if( add ){
+						addWhereExpression('condition'+indexCondition, $.trim(field), $.trim(operator), tempCondition);
+
 		                where = '<li id="condition'+indexCondition+'" class="queryValues" ><div class="input-group"> <input type="text"   style="font-size: smaller; border-right: none;" condition="'+queryCondition+'"  class="form-control bold " value="'+ queryCondition +'"/> <span class="input-group-btn"> <button class="btn btn-default" style="padding-top: 9px; padding-bottom: 9px; border-left: none;border-right: 1px;border-top: 1px;border-bottom: 1px;" onclick="deleteCondition(\'condition'+indexCondition+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px;"></i></button></span></div></li>';
-						
-		              
 		                indexCondition++;
 						$("#where_ul").append(where);
 						createQuery();
@@ -928,6 +991,7 @@ function map_IdFromDataSet(dataSet){
 	});+]*/
 	};
 
+
 	var indexOrderby = 0;
 	// MODAL ORDERBY
 	function showDialogOrderBy(){
@@ -949,11 +1013,15 @@ function map_IdFromDataSet(dataSet){
 	            action: function () {
 	            	var field = $("#orderFields").val();
 					var order = $("#orderType").val();
-										
+
+
+
 					var add = validateOrderBy(field);
 					if(add){
+						addOrderByExpression('orderby'+indexOrderby, $.trim(field), $.trim(order));
+
 						var	orderby = '<li id="orderby'+indexOrderby+'" class="queryValues" ><div class="input-group"> <input type="text" readonly  style="font-size: smaller; border-right: none;" condition="'+field+' '+order+'"  class="form-control bold " value="'+field+' '+order+'"/> <span class="input-group-btn"> <button class="btn btn-default" style="padding-top: 9px; padding-bottom: 9px; border-left: none;border-right: 1px;border-top: 1px;border-bottom: 1px;" onclick="deleteCondition(\'orderby'+indexOrderby+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px;"></i></button></span></div></li>';
-						$("#orderby_ul").append(orderby);						
+						$("#orderby_ul").append(orderby);
 						createQuery();
 					}
 					indexOrderby++;
@@ -975,40 +1043,40 @@ function map_IdFromDataSet(dataSet){
 	    }
 	});+]*/
 	}
-	
-	function addCondition()	{ showDialogCondition(); }    
+
+	function addCondition()	{ showDialogCondition(); }
 	function addOrderBy()	{
 		var orderby 	= $('#orderby_ul li input:not(".panel-sofia2")');
 		if( orderby.length < 1){
-			showDialogOrderBy(); 
-		}	
+			showDialogOrderBy();
+		}
 	}
-	
+
 	function getOntologyFields() {
-		var ontologyIdentification = $ontology.identification;	
+		var ontologyIdentification = $ontology.identification;
 		try {
-			
+
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
-			
+
 			$.ajaxSetup({'headers': {
 				[csrf_header]: csrf_value
 		    }});
-			
+
 			$("#fields").load('/controlpanel/querytool/ontologyfields', { 'ontologyIdentification': ontologyIdentification}, function() {$('#fields #all').remove();$('#fields #selectFields').remove();});
 		}
 		catch(err) {
 			$('#fields #all').remove();
 			$('#fields #selectFields').remove();
 		}
-				
-	}		
+
+	}
 
 	// validate conditions before create query
 	function validateCondition(queryCondicion){
 		var conditions = document.getElementById('where_ul').getElementsByTagName("li");
 		var add=true;
-		
+
 		if(conditions.length > 0){
 			for( var i=0; i < conditions.length; i++){
 				if( conditions[i].getAttribute("name") == queryCondicion ){
@@ -1018,11 +1086,12 @@ function map_IdFromDataSet(dataSet){
 		}
 		return add;
 	}
+
 	// validate orderby  before create query
 	function validateOrderBy(queryOrderby){
 		var orders = $('#orderby_ul li input:not(".panel-sofia2")');
 		var add = true;
-		
+
 		if( orders.length > 0){
 			for(var i=0; i < orders.length; i++){
 				if( orders[i].getAttribute("name") == queryOrderby){
@@ -1032,20 +1101,29 @@ function map_IdFromDataSet(dataSet){
 		}
 		return add;
 	}
-	
+
 	function deleteCondition(id){
-		
-		$('#'+ id +'').remove();		
+		removeExpression(id);
+
+		$('#'+ id +'').remove();
 		createQuery();
 	}
 
 	function createQuery(){
-		
 		$query = createQuerySql();
-		}
-	
-	
-	
+		console.log(createParametersMap());
+	}
+
+	function createParametersMap(){
+		var data 			= 	{};
+		data.ontology 		= 	$ontology.identification;
+		data.limit 			= 	parseInt($('#maxvalues').val());
+		data.offset 		= 	parseInt($('#offset').val());
+		data.where 			= 	Object.keys($conditions).map(k => $conditions[k])
+		data.orderBy 		=	Object.keys($ordersBy).map(k => $ordersBy[k])
+		return data;
+	}
+
 	function createQuerySql(){
 		
 		// query elements initialization       
@@ -1119,8 +1197,6 @@ function map_IdFromDataSet(dataSet){
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 	
 	</script>
-	
-</body>
-</html> 
 
-  
+</body>
+</html>

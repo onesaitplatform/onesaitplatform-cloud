@@ -14,11 +14,15 @@ server: ## Config Web Server
    jetty.max-http-post-size: 20000000
       
 ldap:
-  url: ldap://localhost:10389/ 
-  base: ou=onesait,ou=system
+  url: ldap://localhost:10389/
+  base: ou=User,ou=onesait,ou=system
   username: uid=admin,ou=system
   password: secret
-  base-auth: ou=User,ou=onesait,ou=system
+  defaultRole: ROLE_USER
+  attributesMap:
+     userId: uid
+     mail: mail
+     cn: cn
 
 # all access to actuator endpoints without security
 management.security.enabled: false
@@ -26,6 +30,10 @@ management.endpoints.enabled: true
 
 onesaitplatform: #Config onesait Platform specific
    authentication:
+      configdb:
+        acl:
+          enabled: false
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
       twofa: 
         enabled: false
         purgatory_time_minutes: 5
@@ -42,18 +50,18 @@ onesaitplatform: #Config onesait Platform specific
             fullName: commonName
       saml:
         admin_user_id: administrator
-        idp_metadata: url.xml
-        entity_id: entityid
+        idp_metadata: https://adfs.axpoiberia.es/FederationMetadata/2007-06/FederationMetadata.xml
+        entity_id: com:axpo:adfs:test
         entity_url: https://localhost:8443/controlpanel
+        unauthorized_url: https://unauthorized.axpoiberia.es/
         jks:
-           uri: saml.jks
-           store_pass: pass
-           key_alias: pass
-           key_pass: keypass
-        context:
-           samlServerPort: 18000
-           samlIncludePort: false
-           samlScheme: http
+           uri: saml/axpotest.jks
+           store_pass: axpotest
+           key_alias: axpotest
+           key_pass: axpotest
+        context:           
+           samlIncludePort: true
+           samlScheme: https
            samlServerName: localhost
     
     
@@ -258,7 +266,9 @@ onesaitplatform: #Config onesait Platform specific
    password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    mailService:
       mailSupport: support@onesaitplatform.com
-   metrics.collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+   metrics:
+      collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+      enabled: true
    
 spring: ## General Config  
    application.name: onesaitplatform-control-panel
@@ -330,7 +340,7 @@ spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.con
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
 
         
-quartz:     
+quartz:      
    datasource:
       url: "@onesaitplatform.quartzURL@"
       #url: jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
@@ -393,6 +403,13 @@ cloud-gateway:
   user: operations
   password: operations
   url: https://development.onesaitplatform.com
+
+
+gravitee:
+  enable: true
+  clientId: onesait
+  clientSecret: admin
+  header-value: Gravitee-Server
     
 captcha:
   enable: false

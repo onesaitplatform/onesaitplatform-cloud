@@ -3,6 +3,7 @@ onesaitplatform:
       configdb: ${LOADCONFIGDB}
       mongodb: ${LOADMONGODB}
       elasticdb: ${LOADELASTICDB}
+      mailconfig: ${LOADMAILCONFIG}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS} 
@@ -16,10 +17,12 @@ onesaitplatform:
       url: ${ELASTICDBHOST}
       port: 9300
    server.name: ${SERVER_NAME}  
-   server.controlpanelservice: ${SERVER_NAME}    
+   server.controlpanelservice: ${SERVER_NAME}      
 spring:
    datasource:  
-      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      url: ${CONFIGDBURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}  
    data.mongodb:
       host: ${REALTIMEDBSERVERS}   
    elasticsearch.jest:

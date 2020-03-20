@@ -25,13 +25,13 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
 import com.minsait.onesait.platform.api.rest.api.fiql.ApiFIQL;
 import com.minsait.onesait.platform.api.service.api.ApiSecurityService;
 import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.config.model.User;
 
 @Component("apiRestServiceImpl")
@@ -149,7 +149,7 @@ public class APiRestServiceImpl implements ApiRestService {
 		if (apiRes != null) {
 			final Object[] params = { apiRes };
 			return Response.ok(params).build();
-		} 
+		}
 		return Response.serverError().build();
 
 	}

@@ -49,8 +49,8 @@ public class OntologyCategoryRepositoryIntegrationTest {
 		if (categories.isEmpty()) {
 			log.info("No ontology categories found..adding");
 			OntologyCategory category = new OntologyCategory();
-			category.setId(1);
-			category.setIdentificator("ontologias_categoria_cultura");
+			category.setId("MASTER-Ontology-Category-1");
+			category.setIdentification("ontologias_categoria_cultura");
 			category.setDescription("ontologias_categoria_cultura_desc");
 			this.repository.save(category);
 		}

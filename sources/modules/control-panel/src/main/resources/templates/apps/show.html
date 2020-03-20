@@ -104,7 +104,7 @@
 								</div>
 								<!-- SECCIONES DE LA APP TABS -->
 								<ul class="nav nav-tabs pull-left">
-									<li id="tab-datos" class="active"><a href="#tab_1" data-toggle="tab" aria-expanded="false">	<span class="" th:text="#{app.breadcrumb.show} + ' ' + ${app.appId}"> App Identification</span></a></li>
+									<li id="tab-datos" class="active"><a href="#tab_1" data-toggle="tab" aria-expanded="false">	<span class="" th:text="#{app.breadcrumb.show} + ' ' + ${app.identification}"> App Identification</span></a></li>
 									<li id="tab-autorizaciones" class=""><a href="#tab_2" data-toggle="tab" aria-expanded="true"><span class="" th:text="#{app.authorizations}">ASIGNACION DE USUARIOS </span></a></li>
 									<li id="tab-asociaciones" class=""><a href="#tab_3" data-toggle="tab" aria-expanded="true"><span class="" th:text="#{app.associations}" >ASOCIACIONES </span></a></li>						
 								</ul>
@@ -129,11 +129,13 @@
 										<form role="form" id="app_create_form"
 											th:object="${app}" method="post" class="form">
 											<!-- FORM ACTIONS FOR INSERT-->
-											<input th:if="${app.appId} == null" type="hidden" name="action" th:value="@{/apps/create}" />
+											<input th:if="${app.id} == null" type="hidden" name="action" th:value="@{/apps/create}" />
 
 											<!-- FORM ACTIONS FOR UPDATE -->
-											<input th:if="${app.appId} != null" type="hidden" name="action" th:value="@{/apps/update}" /> <input
-												th:if="${app.appId} != null" type="hidden" name="_method" value="PUT" />
+											<input th:if="${app.id} != null" type="hidden" name="action" th:value="@{/apps/update}" /> <input
+												th:if="${app.id} != null" type="hidden" name="_method" value="PUT" />
+
+											<input id="id" name="id" type="hidden" th:value="${app.id}"/>
 
 											<div class="form-body">
 												<!-- user, name and email -->
@@ -141,13 +143,7 @@
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label th:text="#{app.appId} + ':'">Identification</label>
-															<p id="identification"	class="form-control-static-block "	th:text="*{appId}">Identification</p>
-														</div>
-													</div>
-													<div class="col-md-4 col-sm-6 col-xs-12">
-														<div class="form-group">
-															<label th:text="#{app.name} + ':'">Name</label>
-															<p id="name" class="form-control-static-block "	th:text="*{name}">Name</p>
+															<p id="identification"	class="form-control-static-block "	th:text="*{identification}">Identification</p>
 														</div>
 													</div>
 													<div class="col-md-4 col-sm-6 col-xs-12">
@@ -156,16 +152,16 @@
 															<p id="name" class="form-control-static-block "	th:text="*{secret}">Secret</p>
 														</div>
 													</div>
-													<div class="col-md-8 col-sm-6 col-xs-12">
-														<div class="form-group">
-															<label th:text="#{app.description} + ':'">description</label>
-															<p class="form-control-static-block " th:text="*{description}">Description</p>
-														</div>
-													</div>
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label th:text="#{app.tokenValiditySeconds} + ':'">tokenValiditySeconds</label>
 															<p class="form-control-static-block " th:text="*{tokenValiditySeconds}">tokenValiditySeconds</p>
+														</div>
+													</div>
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{app.description} + ':'">description</label>
+															<p class="form-control-static-block " th:text="*{description}">Description</p>
 														</div>
 													</div>
 												</div>
@@ -239,7 +235,7 @@
 													<button id="editBtn" type="button"
 														class="btn btn-circle btn-outline blue" name="edit"
 														value="Edit"
-														th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.appId}/|} + '\');'">
+														th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'">
 														<span th:text="#{gen.editBtn}">
 															Edit </span>
 													</button>
@@ -470,8 +466,7 @@
 		 
 	 function deleteAppConfirmation (){
 		
-		var id = $("#identification").text();
-		console.log('deleteUserConfirmation() -> formId: '+ id);
+		var id = $("#id").val();
 		
 		// no Id no fun!
 		if ( !id ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO USER-FORM SELECTED!'}); return false; }

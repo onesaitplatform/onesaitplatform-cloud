@@ -123,13 +123,13 @@
 															<th class="titulo-columnas"> <span
 																th:text="#{app.appId}">Identification</span></th>
 															<th class="titulo-columnas"> <span
-																th:text="#{app.name}">Name</span></th>
-															<th class="titulo-columnas"> <span
 																th:text="#{app.description}">Description</span></th>
 															<th class="titulo-columnas"> <span
 																th:text="#{app.roles}">Roles</span></th>
 															<th class="titulo-columnas text-center"> <span
 																th:text="#{app.dateCreated}">Created At</span></th>
+																<th class="titulo-columnas text-center"> <span
+																th:text="#{app.dateUpdated}">Updated At</span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}">
 																	Options</span></th>
 														</tr>
@@ -138,10 +138,7 @@
 														<tr th:each="app : ${apps}" pages:paginate="10">
 															<!-- IDENTIFICATION -->
 															<td class="text-left no-wrap  internalId"
-																th:text="${app.appId}"></td>
-															<!-- NAME -->
-															<td class="text-left"
-																th:text="${app.name}"></td>
+																th:text="${app.identification}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-md"
 																th:text="${app.description}"></td>
@@ -155,6 +152,14 @@
 																<span th:text="${#dates.format(app.dateCreated,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center"
 																th:if="${app.dateCreated==null}" th:text="'---'"></td>
+																
+															<!-- DATE UPDATED -->
+															<td class="text-center"
+																th:if="${app.dateUpdated!=null}">
+																<span th:text="${#dates.format(app.dateUpdated,'YYYY/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(app.dateUpdated,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center"
+																th:if="${app.dateUpdated==null}" th:text="'---'"></td>	
 
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
@@ -164,7 +169,7 @@
 																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
 																		data-container="body" data-placement="bottom"
 																		th:data-original-title="#{gen.view}"
-																		th:onclick="'javascript:navigateUrl(\'' + @{|/apps/show/${app.appId}/|} + '\');'"><i
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/apps/show/${app.id}/|} + '\');'"><i
 																		class="la la-eye font-hg"></i></span>
 
 																	<!-- EDIT -->
@@ -173,18 +178,10 @@
 																		data-container="body" data-placement="bottom"
 																		th:title="#{gen.edit}"
 																		th:data-original-title="#{gen.edit}"
-																		th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.appId}/|} + '\');'"><i
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'"><i
 																		class="la la-edit font-hg"></i></span>
 													
-																	<!-- DELETE Not in this UI
-																	<button id="deleteBtn" type="button"
-																		class="btn btn-square btn-danger" name="delete"
-																		value="Remove"
-																		th:onclick="'deleteAppConfirmation(\'' + ${app.appId} + '\');'">
-																		<i class="la la-trash"></i> <span
-																			th:text="#{gen.deleteBtn}"> Delete </span>
-																	</button>
-																	-->
+																	<span th:if="${#authentication.name} == ${app.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteAppConfirmation(\'' + ${app.id} + '\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
 															</td>
 
@@ -219,6 +216,8 @@
 															class="toggle-vis" data-column="4"
 															th:text="#{app.dateCreated}"> Created At</label> <label
 															class="toggle-vis" data-column="5"
+															th:text="#{app.dateUpdated}"> Updated At</label> <label
+															class="toggle-vis" data-column="6"
 															th:text="#{gen.options}"> Options</label>
 													</div>
 
@@ -383,18 +382,58 @@
 			}
 		});
 	}
-		
 	
-	
-	var  deleteAppConfirmation = function (id){
-		console.log('deleteUserConfirmation() -> formId: '+ id);
+	var deleteAppConfirmation = function(idApp) {
+
+		// i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = [[#{app.delete.confirm}]];
+		var Title = headerReg.titleConfirm + ':';
+
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		
-		// no Id no fun!
-		if ( !id ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO USER-FORM SELECTED!'}); return false; }
-		
-		// call  Confirm 
-		showConfirmDeleteDialog(id);	
-	} 
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			icon : 'fa fa-warning',
+			title : Title,
+			theme : 'light',
+			columnClass : 'medium',
+			content : Content,
+			draggable : true,
+			dragWindowGap : 100,
+			backgroundDismiss : true,
+			closeIcon : true,
+			buttons : {
+				close : {
+					text : Close,
+					btnClass : 'btn btn-sm btn-circle btn-outline blue',
+					action : function() {
+					} // GENERIC CLOSE.
+				},
+				remove : {
+					text : Remove,
+					btnClass : 'btn btn-sm btn-circle btn-outline btn-primary',
+					action : function() {
+						console.log(idApp);
+						$.ajax({
+							url : '/controlpanel/apps/' + idApp,
+							headers: {
+								[csrf_header]: csrf_value
+						    },
+							type : 'DELETE',
+							success : function(result) {
+								console.log(result);
+								navigateUrl(result);
+							}
+						});
+					}
+				}
+				
+			}
+		});
+	}
 	
 	
 	var showConfirmDeleteDialog = function(id){	

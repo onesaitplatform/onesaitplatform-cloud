@@ -25,7 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -68,6 +70,7 @@ import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAccessDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
+import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
@@ -117,17 +120,24 @@ public class DashboardController {
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	private static final String DASHBOARD_STR = "dashboard";
 	private static final String DASHB_CREATE = "dashboards/create";
+	private static final String DASHB_EDIT = "dashboards/edit";
+	private static final String REDIRECT_DASHB_EDIT = "redirect:/dashboards/edit/";
 	private static final String REDIRECT_DASHB_CREATE = "redirect:/dashboards/create";
 	private static final String REDIRECT_DASHB_CREATE_SYNOPTIC = "redirect:/dashboards/createsynoptic";
-	private static final String CREDENTIALS_STR = "credentials";
+	private static final String REDIRECT_DASHB_LIST = "redirect:/dashboards/list/";
+
 	private static final String HEADERLIBS = "headerlibs";
 	private static final String EDITION = "edition";
 	private static final String IFRAME = "iframe";
 	private static final String SYNOPT = "synop";
+	private static final String IOTBROKERURL = "iotbrokerurl";
 	private static final String FIXED = "fixed";
 	private static final String ERROR_DASHBOARD_IMAGE = "Error generating Dashboard Image";
 	private static final String ERROR_DASHBOARD_PDF = "Error generating Dashboard PDF";
 	private static final String DATE_PATTERN = "_yyyy_MM_dd_HH_mm_ss";
+
+	@Value("${onesaitplatform.urls.iotbroker}")
+	private String IOTRBROKERSERVER;
 
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request,
@@ -196,11 +206,40 @@ public class DashboardController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
-
 		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardEditById(id, utils.getUserId()));
-
 		return DASHB_CREATE;
+	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@GetMapping(value = "/edit/{id}", produces = "text/html")
+	public String edit(Model model, @PathVariable("id") String id) {
+		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardEditById(id, utils.getUserId()));
+		return DASHB_EDIT;
+
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PutMapping(value = "/edit/{id}", produces = "text/html")
+	public String updateEditDashboardModel(Model model, @PathVariable("id") String id, @Valid Dashboard dashboard,
+			BindingResult bindingResult, RedirectAttributes redirect) {
+		if (bindingResult.hasErrors()) {
+			log.debug("Some DashboardConf properties missing");
+			utils.addRedirectMessage(DASHBOARD_VALIDATION_ERROR, redirect);
+			return REDIRECT_DASHB_EDIT;
+		}
+		try {
+			if (dashboardService.hasUserEditPermission(id, utils.getUserId())) {
+				dashboardService.saveDashboardModel(id, dashboard.getModel(), utils.getUserId());
+			} else {
+				throw new DashboardServiceException(
+						"Cannot update Dashboard that does not exist or don't have permission");
+			}
+			return REDIRECT_DASHB_LIST;
+
+		} catch (final DashboardServiceException e) {
+			utils.addRedirectException(e, redirect);
+			return "REDIRECT_DASHB_EDIT" + dashboard.getId();
+		}
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
@@ -282,7 +321,7 @@ public class DashboardController {
 				throw new DashboardServiceException(
 						"Cannot update Dashboard that does not exist or don't have permission");
 			}
-			return "redirect:/dashboards/list/";
+			return REDIRECT_DASHB_LIST;
 
 		} catch (final DashboardServiceException e) {
 			utils.addRedirectException(e, redirect);
@@ -353,7 +392,6 @@ public class DashboardController {
 	@GetMapping(value = "/editor/{id}", produces = "text/html")
 	public String editorDashboard(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardById(id, utils.getUserId()));
-		model.addAttribute(CREDENTIALS_STR, dashboardService.getCredentialsString(utils.getUserId()));
 		return "dashboards/editor";
 
 	}
@@ -369,13 +407,14 @@ public class DashboardController {
 		if (dashboardService.hasUserEditPermission(id, utils.getUserId())) {
 			final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 			model.addAttribute(DASHBOARD_STR, dashboard);
-			model.addAttribute(CREDENTIALS_STR, dashboardService.getCredentialsString(utils.getUserId()));
 			model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 			model.addAttribute(EDITION, true);
 			model.addAttribute(IFRAME, false);
 			model.addAttribute(SYNOPT,
 					dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
 
+			final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+			model.addAttribute(IOTBROKERURL, url);
 			return REDIRECT_DASHBOARDS_VIEW;
 		} else {
 			return REDIRECT_ERROR_403;
@@ -387,12 +426,13 @@ public class DashboardController {
 		if (dashboardService.hasUserViewPermission(id, utils.getUserId())) {
 			final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 			model.addAttribute(DASHBOARD_STR, dashboard);
-			model.addAttribute(CREDENTIALS_STR, dashboardService.getCredentialsString(utils.getUserId()));
 			model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 			model.addAttribute(EDITION, false);
 			model.addAttribute(IFRAME, false);
 			model.addAttribute(SYNOPT,
 					dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+			final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+			model.addAttribute(IOTBROKERURL, url);
 			request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
 			return REDIRECT_DASHBOARDS_VIEW;
 		} else {
@@ -436,7 +476,7 @@ public class DashboardController {
 		} catch (final RuntimeException e) {
 			utils.addRedirectException(e, ra);
 		}
-		return "redirect:/dashboards/list/";
+		return REDIRECT_DASHB_LIST;
 	}
 
 	@RequestMapping(value = "/{id}/getImage")
@@ -472,13 +512,13 @@ public class DashboardController {
 					final Dashboard dashboard = dashboardService.getDashboardById(id,
 							(String) info.getUserAuthentication().getPrincipal());
 					model.addAttribute(DASHBOARD_STR, dashboard);
-					model.addAttribute(CREDENTIALS_STR, dashboardService
-							.getCredentialsString((String) info.getUserAuthentication().getPrincipal()));
 					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 					model.addAttribute(EDITION, true);
 					model.addAttribute(IFRAME, true);
 					model.addAttribute(SYNOPT,
 							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+					model.addAttribute(IOTBROKERURL, url);
 					return REDIRECT_DASHBOARDS_VIEW;
 				} else {
 					return REDIRECT_ERROR_403;
@@ -563,13 +603,14 @@ public class DashboardController {
 					final Dashboard dashboard = dashboardService.getDashboardById(id,
 							(String) info.getUserAuthentication().getPrincipal());
 					model.addAttribute(DASHBOARD_STR, dashboard);
-					model.addAttribute(CREDENTIALS_STR, dashboardService
-							.getCredentialsString((String) info.getUserAuthentication().getPrincipal()));
+
 					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 					model.addAttribute(EDITION, false);
 					model.addAttribute(IFRAME, true);
 					model.addAttribute(SYNOPT,
 							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+					model.addAttribute(IOTBROKERURL, url);
 					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
 					return REDIRECT_DASHBOARDS_VIEW;
 				} else {
@@ -608,17 +649,28 @@ public class DashboardController {
 
 	@RequestMapping(value = "/importDashboard", method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<String> importDashboard(@RequestParam("name") String name,
-			@RequestParam("data") String data) {
+	public String importDashboard(@RequestBody DashboardExportDTO dashboardimportDTO) {
 		try {
-			return new ResponseEntity<>(
-					dashboardService.importDashboard(name, data, utils.getUserId(), utils.getCurrentUserOauthToken()),
-					HttpStatus.OK);
+			JSONObject response = new JSONObject();
+			String identification = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId())
+					.getIdentification();
+			response.put("status", HttpStatus.OK);
+			response.put("message", identification);
+			return response.toString();
+
 		} catch (final DashboardServiceException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			log.error("Cannot import dashboard: ", e);
+			JSONObject response = new JSONObject();
+			response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
+			response.put("message", e.getMessage());
+			return response.toString();
+
 		} catch (final Exception e) {
 			log.error("Cannot import dashboard: ", e);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			JSONObject response = new JSONObject();
+			response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
+			response.put("message", e.getMessage());
+			return response.toString();
 		}
 	}
 

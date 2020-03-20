@@ -52,7 +52,7 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public List<DataModel> getDataModelsByCriteria(String id, String name, String description) {
-		return dataModelRepository.findByIdOrNameOrDescription(id, name, description);
+		return dataModelRepository.findByIdOrIdentificationOrDescription(id, name, description);
 	}
 
 	@Override
@@ -62,20 +62,23 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public DataModel getDataModelByName(String dataModelName) {
-		return dataModelRepository.findByName(dataModelName).get(0);
+		return dataModelRepository.findByIdentification(dataModelName).get(0);
 	}
 
 	@Override
 	public boolean dataModelExists(DataModel datamodel) {
-		List<DataModel> datamodelList = dataModelRepository.findByName(datamodel.getName());
-		return !(datamodelList == null || datamodelList.isEmpty());
+		DataModel datamodelList = dataModelRepository.findDatamodelsByIdentification(datamodel.getIdentification());
+
+		if (datamodelList == null)
+			return false;
+		return true;
 	}
 
 	@Override
 	public void updateDataModel(DataModel datamodel) {
 		DataModel oldDataModel = this.dataModelRepository.findById(datamodel.getId());
 		if (oldDataModel != null) {
-			oldDataModel.setName(datamodel.getName());
+			oldDataModel.setIdentification(datamodel.getIdentification());
 			oldDataModel.setLabels(datamodel.getLabels());
 			oldDataModel.setType(datamodel.getType());
 			oldDataModel.setDescription(datamodel.getDescription());

@@ -14,13 +14,17 @@
  */
 package com.minsait.onesait.platform.config.services.migration;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,6 +34,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.persistence.EntityManager;
+import javax.persistence.ManyToOne;
 import javax.persistence.PersistenceContext;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.ManagedType;
@@ -41,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Propagation;
@@ -52,8 +58,13 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.MigrationData;
+import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.AuditableEntity;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.MigrationDataRepository;
+import com.minsait.onesait.platform.config.repository.ProjectRepository;
+import com.minsait.onesait.platform.config.repository.UserRepository;
 
 import avro.shaded.com.google.common.collect.Lists;
 import de.galan.verjson.core.IOReadException;
@@ -61,6 +72,7 @@ import de.galan.verjson.core.NamespaceMismatchException;
 import de.galan.verjson.core.Verjson;
 import de.galan.verjson.core.VersionNotSupportedException;
 import de.galan.verjson.step.ProcessStepException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -72,6 +84,12 @@ public class MigrationServiceImpl implements MigrationService {
 
 	@Autowired
 	private MigrationDataRepository repository;
+
+	@Autowired
+	private ProjectRepository projectRepository;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -90,6 +108,12 @@ public class MigrationServiceImpl implements MigrationService {
 	private static final String FIELDNAME_STR = "fieldName";
 	private static final String FIELDTYPE_STR = "fieldType";
 
+	@Getter
+	private MigrationErrors exportErrors = new MigrationErrors();
+
+	@Getter
+	private List<String> errors = new ArrayList<String>();
+
 	public MigrationServiceImpl() {
 		verjson = Verjson.create(DataFromDB.class, new ImportExportVersions());
 
@@ -101,10 +125,17 @@ public class MigrationServiceImpl implements MigrationService {
 	}
 
 	@Override
-	public ExportResult exportData(MigrationConfiguration config) throws IllegalAccessException {
+	public ExportResult exportData(MigrationConfiguration config, Boolean isProject) throws IllegalAccessException {
 		final DataFromDB data = new DataFromDB();
-		data.addObjects(config, entityManager);
-		return exportData(config);
+		HashMap processedInstances = new HashMap<String, String>();
+		MigrationErrors errors = new MigrationErrors();
+		if (isProject) {
+			errors = data.addObjectsProject(config, entityManager, processedInstances);
+		} else {
+			errors = data.addObjects(config, entityManager, processedInstances);
+		}
+		final ExportResult result = new ExportResult(data, errors);
+		return result;
 	}
 
 	@Override
@@ -122,7 +153,9 @@ public class MigrationServiceImpl implements MigrationService {
 	public LoadEntityResult loadData(MigrationConfiguration config, DataFromDB data)
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException {
 		final DataToDB dataToDB = new DataToDB();
+
 		return dataToDB.getEntitiesFromData(config, data, entityManager);
+
 	}
 
 	// Due to transactions, it has to be public because it has to be invoked using
@@ -139,17 +172,17 @@ public class MigrationServiceImpl implements MigrationService {
 		if (storedObj == null) {
 			Instance instance;
 			try {
-				instance = new Instance(clazz, id);
+				instance = new Instance(clazz, id, null, null);
 			} catch (final IllegalArgumentException e) {
-				instance = new Instance(clazz, null);
+				instance = new Instance(clazz, null, null, null);
 			}
 			return new MigrationError(instance, null, MigrationError.ErrorType.ERROR, "Error persisting entity");
 		} else {
 			Instance instance;
 			try {
-				instance = new Instance(clazz, id);
+				instance = new Instance(clazz, id, null, null);
 			} catch (final IllegalArgumentException e) {
-				instance = new Instance(storedObj.getClass(), null);
+				instance = new Instance(storedObj.getClass(), null, null, null);
 			}
 			return new MigrationError(instance, null, MigrationError.ErrorType.INFO, "Entity Persisted");
 		}
@@ -186,11 +219,38 @@ public class MigrationServiceImpl implements MigrationService {
 					doPersistData(entity, entityClazz, id, managedTypes);
 					log.debug("Entity to be persisted: " + id.toString());
 					try {
-						final MigrationError msg = selfReference.persistEntity(entity, id);
-						errors.addError(msg);
-						processedEntities.add(entity);
+
+						final EntityType<? extends Object> entityMetaModel = entityManager.getMetamodel()
+								.entity(entityClazz);
+						final Set<?> attributes = entityMetaModel.getDeclaredSingularAttributes();
+
+						for (final Object att : attributes) {
+							final SingularAttribute<Object, Object> singularAtt = (SingularAttribute<Object, Object>) att;
+							final String attName = singularAtt.getName();
+
+							final Field declaredField = entityClazz.getDeclaredField(attName);
+							if (declaredField.isAnnotationPresent(ManyToOne.class)) {
+								// First we have to persist the parent and then the child
+								final boolean accessible = declaredField.isAccessible();
+								declaredField.setAccessible(true);
+								final Object attObject = declaredField.get(entity);
+								declaredField.setAccessible(accessible);
+
+								if (entitiesForTheNextStep.contains(attObject)) {
+									log.debug("Entity needs the parent: {}", attName);
+									entitiesForTheNextStep.addLast(entity);
+								}
+							}
+
+						}
+						if (!entitiesForTheNextStep.contains(entity)) {
+							final MigrationError msg = selfReference.persistEntity(entity, id);
+							errors.addError(msg);
+							processedEntities.add(entity);
+						}
 					} catch (final javax.persistence.EntityNotFoundException e) {
 						entitiesForTheNextStep.addLast(entity);
+						log.debug("Entity not found: {}", e.getMessage());
 					}
 				}
 
@@ -272,16 +332,267 @@ public class MigrationServiceImpl implements MigrationService {
 		final MigrationConfiguration config = new MigrationConfiguration();
 		for (final ManagedType<?> managedType : managedTypes) {
 			final Class<?> javaType = managedType.getJavaType();
+			// Exclude table APP
 			final JpaRepository<?, Serializable> repository1 = MigrationUtils.getRepository(javaType, ctx);
 			if (repository1 != null) {
-				final List<?> entities = repository1.findAll();
-				for (final Object entity : entities) {
-					final Serializable id = MigrationUtils.getId(entity);
-					config.add(entity.getClass(), id);
+				try {
+					final List<?> entities = repository1.findAll();
+					for (final Object entity : entities) {
+						final Serializable id = MigrationUtils.getId(entity);
+						config.add(entity.getClass(), id, null, null);
+					}
+				} catch (Exception e) {
+					errors.add(javaType.toString());
+					log.warn("Table {} not exporting. {}", javaType, e);
 				}
 			}
 		}
-		return exportData(config);
+		return exportData(config, false);
+	}
+
+	@Override
+	public ExportResult exportUser(User user) throws IllegalArgumentException, IllegalAccessException {
+		Set<ManagedType<?>> managedTypes = entityManager.getMetamodel().getManagedTypes();
+		MigrationConfiguration config = new MigrationConfiguration();
+		final DataFromDB data = new DataFromDB();
+
+		HashMap visitedTypes = new HashMap<String, String>();
+		visitedTypes.put(OPResource.class.getCanonicalName(), OPResource.class.getCanonicalName());
+
+		for (ManagedType<?> managedType : managedTypes) {
+			Class<?> javaType = managedType.getJavaType();
+
+			if (null == visitedTypes.get(javaType.getCanonicalName())
+					&& !config.getBlacklist().contains(javaType.getCanonicalName())) {
+				visitedTypes.put(javaType.getCanonicalName(), javaType.getCanonicalName());
+
+				if (dependsOnUser(javaType, new HashMap<String, String>())) {
+					JpaRepository<?, Serializable> repository = MigrationUtils.getRepository(javaType, ctx);
+					if (repository != null) {
+						try {
+							List<?> entities = repository.findAll();
+							log.debug("*********** EXPORT:         " + javaType.getCanonicalName());
+							for (Object entity : entities) {
+
+								if (isCandidateForUser(entity, user, new HashMap<String, String>(), config)) {
+
+									trimEntity(entity, user, config, new HashMap<String, String>());
+
+									if (isOwnedByUser(entity, user, new HashMap<String, String>(), config)) {
+										log.debug("***********");
+										Serializable id = MigrationUtils.getId(entity);
+										config.add(entity.getClass(), id, null, null);
+									}
+								}
+							}
+						} catch (JpaSystemException e) {
+							log.warn("Class {} not exported. Error: {}", javaType.getName(), e.getMessage());
+						}
+					}
+				}
+			}
+		}
+
+		// Add user
+		Serializable id = MigrationUtils.getId(user);
+		config.addUser(user.getClass(), id);
+
+		ExportResult result = exportData(config, false);
+
+		return result;
+	}
+
+	@Override
+	public ExportResult exportUsers(List<String> users) throws IllegalArgumentException, IllegalAccessException {
+
+		MigrationConfiguration config = new MigrationConfiguration();
+
+		for (String userId : users) {
+			User user = userRepository.findByUserId(userId);
+
+			Serializable id = MigrationUtils.getId(user);
+			config.addUser(user.getClass(), id);
+		}
+
+		return exportData(config, false);
+	}
+
+	@Override
+	public ExportResult exportProject(String projectName) throws IllegalAccessException {
+		Project project = projectRepository.findByIdentification(projectName).get(0);
+		final MigrationConfiguration config = new MigrationConfiguration();
+
+		final Class<?> javaType = project.getClass();
+		try {
+			final Serializable id = project.getId();
+			config.addProject(project.getClass(), id, project.getIdentification());
+		} catch (Exception e) {
+			errors.add(javaType.toString());
+			log.warn("Project {} not exporting. {}", javaType, e);
+		}
+		return exportData(config, true);
+	}
+
+	private Object trimEntity(Object entity, User user, MigrationConfiguration config, HashMap visitedTypesForTrim) {
+		try {
+			if (null != entity) {
+				visitedTypesForTrim.put(entity.getClass().getCanonicalName(), entity.getClass().getCanonicalName());
+				for (Field field : entity.getClass().getDeclaredFields()) {
+					if (null == visitedTypesForTrim.get(field.getType().getCanonicalName())) {
+						if (AuditableEntity.class.isAssignableFrom(field.getType())) {
+							PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+							if (config.getTrimlist().contains(field.getType().getCanonicalName())) {
+								pd.getWriteMethod().invoke(entity, new Object[] { null });
+							} else {
+								pd.getWriteMethod().invoke(entity, trimEntity(pd.getReadMethod().invoke(entity), user,
+										config, visitedTypesForTrim));
+							}
+						} else if (Collection.class.isAssignableFrom(field.getType())) {
+							String className = ((Class) ((((java.lang.reflect.ParameterizedType) field.getGenericType())
+									.getActualTypeArguments())[0])).getCanonicalName();
+
+							PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+							if (config.getTrimlist().contains(className)) {
+								pd.getWriteMethod().invoke(entity, new Object[] { null });
+							} else {
+								Object fieldValue = pd.getReadMethod().invoke(entity);
+								if (null != fieldValue) {
+									Set<Serializable> newValues = new HashSet<Serializable>();
+									for (Object fieldcollection : ((Set<Object>) fieldValue)) {
+										if (isOwnedByUser(fieldcollection, user, visitedTypesForTrim, config)) {
+											newValues.add((Serializable) trimEntity(fieldcollection, user, config,
+													visitedTypesForTrim));
+										}
+									}
+									pd.getWriteMethod().invoke(entity, new Object[] { newValues });
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (IntrospectionException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return entity;
+	}
+
+	private boolean dependsOnUser(Class<?> javaType, HashMap<String, String> visitedTypes) {
+		boolean depends = false;
+		// The entity extends an user oriented class
+		if (OPResource.class.isAssignableFrom(javaType)) {
+			return true;
+		}
+		// For every attribute check
+		for (Field field : javaType.getDeclaredFields()) {
+			// If the attribute extends an user oriented class or is the user atribute
+			if (OPResource.class.isAssignableFrom(field.getType()) || field.getName().equals("user")) {
+				return true;
+				// If the attribute extends a model base class and not visited yet by
+				// introspection
+			} else if (AuditableEntity.class.isAssignableFrom(field.getType())
+					&& (null == visitedTypes.get(field.getType().getCanonicalName()))) {
+				visitedTypes.put(field.getType().getCanonicalName(), field.getType().getCanonicalName());
+				depends = (depends || dependsOnUser(field.getType(), visitedTypes));
+			}
+		}
+		return depends;
+	}
+
+	private boolean isCandidateForUser(Object entity, User user, HashMap<String, String> visitedTypes,
+			MigrationConfiguration config) {
+		boolean owned = true;
+		// The entity extends an user oriented class has to be its owner
+		try {
+			if (OPResource.class.isAssignableFrom(entity.getClass())) {
+				owned = ((null == entity.getClass().getMethod("getUser").invoke(entity))
+						|| entity.getClass().getMethod("getUser").invoke(entity).equals(user));
+			}
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+				| SecurityException e) {
+			log.debug("No getUser method for: " + entity.getClass().getCanonicalName());
+		}
+		if (owned) {
+			// For every attribute check if the related entities are owned by the same user
+			for (Field field : entity.getClass().getDeclaredFields()) {
+				// If the attribute extends an user oriented class or is the user atribute
+				// validate user
+				try {
+					if (field.getType().getCanonicalName().equals("com.minsait.onesait.platform.config.model.User")) {
+						PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+						owned = owned && pd.getReadMethod().invoke(entity).equals(user);
+					} else if (AuditableEntity.class.isAssignableFrom(field.getType())
+							&& (null == visitedTypes.get(field.getType().getCanonicalName()))
+							&& (!config.getWhitelist().contains(field.getType().getCanonicalName()))) {
+						PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+						Object fieldValue = pd.getReadMethod().invoke(entity);
+						visitedTypes.put(field.getType().getCanonicalName(), field.getType().getCanonicalName());
+						owned = (owned
+								&& (fieldValue == null || isCandidateForUser(fieldValue, user, visitedTypes, config)));
+					}
+				} catch (IntrospectionException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | SecurityException | NullPointerException e) {
+					owned = false;
+				}
+			}
+		}
+		return owned;
+	}
+
+	private boolean isOwnedByUser(Object entity, User user, HashMap<String, String> visitedTypes,
+			MigrationConfiguration config) {
+		boolean owned = true;
+		// The entity extends an user oriented class has to be its owner
+		try {
+			if (OPResource.class.isAssignableFrom(entity.getClass())) {
+				owned = entity.getClass().getMethod("getUser").invoke(entity).equals(user);
+			}
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+				| SecurityException e) {
+			log.debug("No getUser method for: " + entity.getClass().getCanonicalName());
+		}
+		if (owned) {
+			// For every attribute check if the related entities are owned by the same user
+			for (Field field : entity.getClass().getDeclaredFields()) {
+				// If the attribute extends an user oriented class or is the user atribute
+				// validate user
+				try {
+					if (field.getType().getCanonicalName().equals("com.minsait.onesait.platform.config.model.User")) {
+						PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+						owned = owned && pd.getReadMethod().invoke(entity).equals(user);
+					} else if (AuditableEntity.class.isAssignableFrom(field.getType())
+							&& (null == visitedTypes.get(field.getType().getCanonicalName()))
+							&& (!config.getWhitelist().contains(field.getType().getCanonicalName()))) {
+						PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+						Object fieldValue = pd.getReadMethod().invoke(entity);
+						visitedTypes.put(field.getType().getCanonicalName(), field.getType().getCanonicalName());
+						owned = (owned
+								&& (fieldValue == null || isOwnedByUser(fieldValue, user, visitedTypes, config)));
+					} else if (Collection.class.isAssignableFrom(field.getType())) {
+						PropertyDescriptor pd = new PropertyDescriptor(field.getName(), entity.getClass());
+						Object fieldValue = pd.getReadMethod().invoke(entity);
+
+						if ((null == visitedTypes.get(field.getType().getCanonicalName()))
+								&& (!config.getWhitelist().contains(field.getType().getCanonicalName()))) {
+							visitedTypes.put(field.getType().getCanonicalName(), field.getType().getCanonicalName());
+							if (null != fieldValue) {
+								for (Object fieldcollection : ((Set<Object>) fieldValue)) {
+									if (!config.getWhitelist()
+											.contains(fieldcollection.getClass().getCanonicalName())) {
+										owned = (owned && isOwnedByUser(fieldcollection, user, visitedTypes, config));
+									}
+								}
+							}
+						}
+					}
+				} catch (IntrospectionException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | SecurityException | NullPointerException e) {
+					owned = false;
+				}
+			}
+		}
+		return owned;
 	}
 
 	@Override
@@ -291,18 +602,78 @@ public class MigrationServiceImpl implements MigrationService {
 		for (final Class<?> clazz : classes) {
 			final Set<Serializable> instances = data.getInstances(clazz);
 			for (final Serializable id : instances) {
-				config.add(clazz, id);
+				config.add(clazz, id, null, null);
 			}
 		}
 		return config;
 	}
 
 	@Override
-	public MigrationErrors importData(MigrationConfiguration config, DataFromDB data)
+	public MigrationErrors importData(MigrationConfiguration config, DataFromDB data, Boolean isProjectLoad,
+			Boolean isUserLoad)
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException {
 
 		try {
-			return doImportData(config, data);
+
+			if (!isProjectLoad && !isUserLoad) {
+				return doImportData(config, data);
+			} else if (isProjectLoad) {
+				// If is a project: first we have to persist the resource entities and then the
+				// project itself to avoid persistence problems
+
+				MigrationConfiguration configAux = new MigrationConfiguration();
+				log.debug("Project loading: First the resources");
+				for (int i = 0; i < config.size(); i++) {
+					Instance inst = config.getInstance(i);
+					Class<?> clazz = inst.getClazz();
+					if (!clazz.getName().startsWith("com.minsait.onesait.platform.config.model.Project")) {
+						configAux.add(inst);
+					}
+				}
+
+				MigrationErrors errors = doImportData(configAux, data);
+
+				log.debug("Project loading: Second the project");
+				for (int i = 0; i < config.size(); i++) {
+					Instance inst = config.getInstance(i);
+					Class<?> clazz = inst.getClazz();
+					if (!clazz.getName().startsWith("com.minsait.onesait.platform.config.model.Project")) {
+						config.removeClazz(clazz);
+					}
+				}
+
+				errors.addAll(doImportData(config, data).getErrors());
+
+				return errors;
+			} else if (isUserLoad) {
+				// If is a user load: first we have to persist the user entity and then the
+				// other entities to avoid persistence problems
+
+				MigrationConfiguration configAux = new MigrationConfiguration();
+				log.debug("User loading: First the user");
+				for (int i = 0; i < config.size(); i++) {
+					Instance inst = config.getInstance(i);
+					Class<?> clazz = inst.getClazz();
+					if (clazz.getName().equals("com.minsait.onesait.platform.config.model.User")) {
+						configAux.addUser(inst.getClazz(), inst.getId());
+					}
+				}
+
+				MigrationErrors errors = doImportData(configAux, data);
+
+				log.debug("User loading: Second the rest of the entities");
+				for (int i = 0; i < config.size(); i++) {
+					Instance inst = config.getInstance(i);
+					Class<?> clazz = inst.getClazz();
+					if (clazz.getName().equals("com.minsait.onesait.platform.config.model.User")) {
+						config.removeClazz(clazz);
+					}
+				}
+
+				errors.addAll(doImportData(config, data).getErrors());
+
+				return errors;
+			}
 		} catch (final Exception ex) {
 			final MigrationErrors blockingErrors = new MigrationErrors();
 			final StringWriter stringWriter = new StringWriter();
@@ -314,6 +685,7 @@ public class MigrationServiceImpl implements MigrationService {
 			blockingErrors.addError(error);
 			return blockingErrors;
 		}
+		return null;
 	}
 
 	private MigrationErrors doImportData(MigrationConfiguration config, DataFromDB data)
@@ -365,7 +737,7 @@ public class MigrationServiceImpl implements MigrationService {
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException {
 
 		final MigrationConfiguration config = configImportAll(data);
-		return importData(config, data);
+		return importData(config, data, false, false);
 
 	}
 
@@ -502,7 +874,7 @@ public class MigrationServiceImpl implements MigrationService {
 		}
 
 		fileForImport.setUser(user);
-		fileForImport.setName(name);
+		fileForImport.setIdentification(name);
 		fileForImport.setDescription(description);
 		fileForImport.setFileName(fileName);
 		fileForImport.setFile(file);

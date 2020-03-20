@@ -16,17 +16,13 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-
-import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,26 +36,23 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppUser extends AuditableEntity {
+public class AppUser extends AppUserParent {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = -5195902973038606645L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Getter
-	private Long id;
-
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "ROLE", referencedColumnName = "ID", unique = false, nullable = false)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "ROLE", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
 	private AppRole role;
-
-	@OneToOne
-	@JoinColumn(name = "USER_ID", unique = false, nullable = false, insertable = true, updatable = true)
+	
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
 	private User user;

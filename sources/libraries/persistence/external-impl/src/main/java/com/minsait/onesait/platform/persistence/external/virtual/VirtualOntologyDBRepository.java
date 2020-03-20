@@ -14,14 +14,15 @@
  */
 package com.minsait.onesait.platform.persistence.external.virtual;
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 
 public interface VirtualOntologyDBRepository extends BasicOpsDBRepository {
 
-	
-	public List<String> getTables(String datasourceName);
+	List<String> getTables(String datasourceName);
 
 	/**
 	 * Returns the first element of the table. Used to generate document schemas.
@@ -29,10 +30,13 @@ public interface VirtualOntologyDBRepository extends BasicOpsDBRepository {
 	 * @param query
 	 * @return List<String>
 	 */
-	public List<String> getInstanceFromTable(String datasource, String query);
+	List<String> getInstanceFromTable(String datasource, String query);
 
-	public String executeQuery(String ontology, String query);
+	Map<String, Integer> getTableTypes(String datasource, String ontology) throws SQLException;
 
-	public List<String> getTableMetadata(String datasource, String collection);
+	String executeQuery(String ontology, String query);
+
+	String getTableMetadata(String datasource, String collection);
+
 
 }

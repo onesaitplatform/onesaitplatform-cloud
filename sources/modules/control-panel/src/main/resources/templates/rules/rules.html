@@ -102,7 +102,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">										
 										<!-- <button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button> -->																												
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER')" type="button" class="btn btn-circle btn-outline btn-primary" id="btn-rule-create"><span th:text="#{gen.create}">New </span></button>
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="btn-rule-create"><span th:text="#{gen.create}">New </span></button>
 									</div>										
 								</div>
 

@@ -26,10 +26,13 @@ public class AppCreateDTO  implements java.io.Serializable {
 
 	@Getter
 	@Setter
+	private String id;
+	@Getter
+	@Setter
 	private String appId;
 	@Getter
 	@Setter
-	private String name;
+	private String identification;
 	@Getter
 	@Setter
 	private String description;

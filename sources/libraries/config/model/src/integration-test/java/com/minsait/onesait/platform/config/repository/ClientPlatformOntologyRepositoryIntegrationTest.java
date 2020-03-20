@@ -36,7 +36,6 @@ import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.config.model.ClientConnection;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
-import com.minsait.onesait.platform.config.model.Device;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
@@ -91,7 +90,6 @@ public class ClientPlatformOntologyRepositoryIntegrationTest {
 		cp.setUser(user);
 		cp.setClientConnections(new HashSet<ClientConnection>());
 		cp.setClientPlatformOntologies(new HashSet<ClientPlatformOntology>());
-		cp.setDevices(new HashSet<Device>());
 		cp.setEncryptionKey("key");
 		cp.setTokens(new HashSet<Token>());
 

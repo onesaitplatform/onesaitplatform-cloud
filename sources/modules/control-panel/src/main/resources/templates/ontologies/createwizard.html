@@ -295,10 +295,10 @@
 																												<div class="list-toggle bg-blue-hoki font-grey-carrara uppercase"><span th:text="${datamodeltype}">DatamodelType</span></div>
 																											</a>
 																											<div class="panel-collapse collapse" aria-expanded="false"  th:id="'type-'+ ${datamodeltype}">
-																												<ul th:each="datamodel : ${dataModels}" th:id="${datamodel.name}" th:if="${datamodel.type} == ${datamodeltype}"  class="datamodel-template" >
+																												<ul th:each="datamodel : ${dataModels}" th:id="${datamodel.identification}" th:if="${datamodel.type} == ${datamodeltype}"  class="datamodel-template" >
 																													<li  class="mt-list-item datamodel-template"  onclick="OntologyCreateController.schemaToTable(this,'datamodel_properties');"  th:attr="data-model=${datamodel.id},data-schema=${datamodel.jsonSchema}">
 																														<div class="list-item-content" style="padding: 0 15px 0 10px;">
-																															<h3 class="uppercase" th:text="${datamodel.name}"></h3>
+																															<h3 class="uppercase" th:text="${datamodel.identification}"></h3>
 																															<p th:if="${datamodel.description}" lass="text-truncate-sm text-left" th:text="${datamodel.description}"></p>
 																														</div>
 
@@ -339,6 +339,7 @@
 																														<option value="geometry-multilinestring">geometry-multilinestring</option>
 																														<option value="geometry-multipolygon">geometry-multipolygon</option>
 																														<option value="file">file</option>
+																														<option value="date">date</option>
 																														<option value="timestamp-mongo">timestamp-mongo</option>
 																														<option value="timestamp">timestamp</option>
 																														<option value="array">array</option>

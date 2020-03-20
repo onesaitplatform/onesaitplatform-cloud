@@ -16,10 +16,15 @@ package com.minsait.onesait.platform.solver;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.FilterStt;
 import com.minsait.onesait.platform.dto.socket.ProjectStt;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 public interface SolverInterface {
-	
-	public String buildQueryAndSolve(String query, int maxreg , List<FilterStt> where, List<ProjectStt> project, List<String> group, String executeAs, String ontology);
+
+	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
+			List<String> group, String executeAs, String ontology)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
 }

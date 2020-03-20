@@ -1,16 +1,34 @@
 onesaitplatform: #Config onesait Platform specific
    environment.name: ${ENVIRONMENTNAME}
+   authentication:
+      configdb:
+        acl:
+          enabled: ${CONFIGDB_ACL_ENABLED}
+          list: ${CONFIGDB_ACL_LIST}
    
 spring: ## General Config  
   datasource: ## JPA Config
-    url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+    url: ${CONFIGDBURL}
+    username: ${CONFIGDBUSER}
+    password: ${CONFIGDBPASS} 
+    time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+    min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+    max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+    max-wait: ${DS_MAX_WAIT}
+    initial-size: ${DS_INITIAL_SIZE}
+    max-active: ${DS_MAX_ACTIVE}
+    max-idle: ${DS_MAX_IDLE}
+    min-idle: ${DS_MIN_IDLE}
+    removeAbandoned: ${DS_REMOVE_ABANDONED}
+    removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
+
 security:
   oauth2:
     client:
       clientId: ${CLIENTID}
       clientSecret: ${CLIENTSECRET}
-      accessTokenUri: https://${SERVER_NAME}/oauth-server/oauth/token
-      userAuthorizationUri: https://${SERVER_NAME}/oauth-server/oauth/authorize
+      accessTokenUri: https://${SERVER_NAME}/controlpanel/oauth/token
+      userAuthorizationUri: https://${SERVER_NAME}/controlpanel/oauth/authorize
     resource:
       userInfoUri: https://${SERVER_NAME}/oauth-server/user
 

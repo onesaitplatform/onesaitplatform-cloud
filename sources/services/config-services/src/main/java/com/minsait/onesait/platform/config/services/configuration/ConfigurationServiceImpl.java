@@ -28,6 +28,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import com.minsait.onesait.platform.config.components.AllConfiguration;
 import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
+import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.MailConfiguration;
 import com.minsait.onesait.platform.config.components.ModulesUrls;
@@ -234,6 +235,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		if (configuration == null)
 			return null;
 		return getAllConfigurationFromDBConfig(configuration).getMail();
+	}
+	
+	@Override
+	public GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment) {
+		final Configuration configuration = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, environment);
+		if (configuration == null)
+			return null;
+		return getAllConfigurationFromDBConfig(configuration).getGoogleanalytics();
 	}
 
 	@Override

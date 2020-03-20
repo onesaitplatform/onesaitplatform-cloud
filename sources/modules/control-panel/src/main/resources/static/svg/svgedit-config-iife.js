@@ -18380,7 +18380,8 @@
 
 
     var convertToGroup = this.convertToGroup = function (elem) {
-      if (!elem) {
+     
+    	if (!elem) {
         elem = selectedElements[0];
       }
 
@@ -21326,9 +21327,17 @@
 
       while (i--) {
         // clone each element and replace it within copiedElements
+    	var tempId = copiedElements[i].id; 
         elem = copiedElements[i] = drawing.copyElem(copiedElements[i]);
+        if(synConditions.has(tempId)){
+        	synConditions.set(elem.id,synConditions.get(tempId));
+  	  }
+  	 
+        
         (currentGroup || drawing.getCurrentLayer()).append(elem);
         batchCmd.addSubCommand(new InsertElementCommand$1(elem));
+        
+        
       }
 
       if (!batchCmd.isEmpty()) {
@@ -31224,7 +31233,7 @@
 	
     
 	
-	var applyChanges = function applyChanges(){
+	var applyChanges = function applyChanges(){		
 		if (selectedElement != null) {
 			var elementClass = selectedElement.getAttribute("class");
 			
@@ -31238,8 +31247,9 @@
 							colorOn:$("#indicator_color_on").val(),
 							colorOff:$("#indicator_color_off").val(),
 							cutValue:$("#indicator_value_cuttoff").val()
-						}
-				
+						},
+				    typeElement:selectedElement.nodeName,
+				    classTypeList:getClassTypeList(selectedElement.nodeName)
 			}
 			
 			//TODO:EVENTS
@@ -31295,6 +31305,106 @@
 		
 	}
 	
+	 function getClassTypeList(classType){
+		var list = [];
+		 if(typeof classType ==='undefined' || classType === null){
+			 return list;
+		 } 		 
+		 if(classType === 'rect'){
+			 list = ['indicator','progress_bar'];
+		 }else if(classType === 'text'){
+			 list = ['indicator','label'];
+		 }else if(classType === 'circle'){
+			 list = ['indicator'];
+		 }else if(classType === 'ellipse'){
+			 list = ['indicator'];
+		 }else if(classType === 'path'){
+			 list = ['indicator'];
+		 }else if(classType === 'image'){
+			 list = [];
+		 }
+		 return list;
+	 }
+	
+	var applyChangesExt = function applyChangesExt(){
+		
+		console.log("applyChangesExt");
+		if (selectedElement != null) {
+			var elementClass = synDataSourceElemPropertiesExt.synopticElement.classType;
+			console.log(synDataSourceElemPropertiesExt);
+			selectedElement.setAttribute("class",synDataSourceElemPropertiesExt.synopticElement.classType);			
+			var datasource = undefined;
+			if (synDataSourceElemPropertiesExt.gadgetDatasource != null &&  synDataSourceElemPropertiesExt.gadgetDatasource.identification != null){
+				datasource = synDataSourceElemPropertiesExt.gadgetDatasource.identification;
+			}
+			var color = {colorOn:'#00ff00',colorOff:'#ff0000',cutValue:''};
+			
+				if(synDataSourceElemPropertiesExt.synopticElement.color!=null){
+					color = {							
+						colorOn:synDataSourceElemPropertiesExt.synopticElement.color.colorOn,
+						colorOff:synDataSourceElemPropertiesExt.synopticElement.color.colorOff,
+						cutValue:synDataSourceElemPropertiesExt.synopticElement.color.cutValue
+					}
+				}
+			
+			
+			var condition = {
+				 identification: selectedElement.id,				
+				 datasource: datasource,
+		         field: "result",
+		         class:  elementClass,				
+		         color:color,
+				 typeElement:selectedElement.nodeName,
+				 synopticElement:synDataSourceElemPropertiesExt.synopticElement,
+				 synopticDatasource:synDataSourceElemPropertiesExt.gadgetDatasource,
+				 classTypeList:getClassTypeList(selectedElement.nodeName)
+			}
+		  
+				condition.events = {};
+			
+				//condition.events = synConditions.get(selectedElement.id).events;
+				if(typeof synDataSourceElemPropertiesExt.synopticElement.events !== 'undefined' && synDataSourceElemPropertiesExt.synopticElement.events !== null ){
+					for (var i = 0; i < synDataSourceElemPropertiesExt.synopticElement.events.length; i++) {
+						condition.events[synDataSourceElemPropertiesExt.synopticElement.events[i].trigger] = synDataSourceElemPropertiesExt.synopticElement.events[i].content;						
+					}					
+				}					
+
+			switch(elementClass){
+				case 'label':
+					condition.elementAttr = "setText"
+					condition.fieldAtt = "result";	
+					break;
+				case 'indicator':
+					condition.elementAttr = "fill";
+
+					break;
+				case 'progress_bar':
+					condition.condition={
+										minValue:parseFloat(synDataSourceElemPropertiesExt.synopticElement.condition.minValue),
+										maxValue:parseFloat(synDataSourceElemPropertiesExt.synopticElement.condition.maxValue),
+										type:synDataSourceElemPropertiesExt.synopticElement.condition.type
+									}
+					condition.fieldAtt = "result";
+					condition.elementAttr = (synDataSourceElemPropertiesExt.synopticElement.condition.type==="vertical")?"height":"width";
+					condition.condition.orgSize=$("#"+selectedElement.id).attr(condition.elementAttr);
+					break;
+				case 'button':
+				//	condition.value=$("#button_value").val();
+					break;
+				case 'switch':
+				//	condition.fieldAtt=$("#fieldSelectText").val();
+				//	condition.value='0';
+					break;
+				
+			}
+			synConditions.set(selectedElement.id,condition);
+		
+		}
+		
+		selectedElement.condition=condition;
+		$("#applyChangesButton").hide();
+		
+	}
 	
 	
 	
@@ -31312,20 +31422,38 @@
 		$('#svg_events_textarea').blur();
 	};
   	
-  	
-  	
+  	//Send information about element selected to parent
+  	var sendParentMessage = function(condition){
+  		var aggregationList = ['NONE','COUNT','SUM','MIN','MAX','AVG','LASTVALUE'];
+  		var eventsList = ['click','dblclick','mouseover','mouseout'];
+		var message = {synopticElement:{}};			 
+		if(typeof condition !=='undefined' && condition!==null ){
+			if(typeof condition.synopticDatasource!== 'undefined'){
+				message.refresh = condition.synopticDatasource.refresh;
+				message.ontology = condition.synopticDatasource.ontology.identification;				
+			}
+			if(typeof condition.synopticElement !== 'undefined'){
+				message.synopticElement = condition.synopticElement;
+			}
+			message.dataSource = condition.datasource;
+		}
+		message.synopticElement.id = selectedElement.id;
+		message.synopticElement.typeElement = selectedElement.nodeName;
+		message.synopticElement.classTypeList = getClassTypeList(selectedElement.nodeName);
+		message.synopticElement.aggregationList = aggregationList;
+		message.synopticElement.eventsList=eventsList;
+        var fullMessage = { "command": "getSynopticElementDataSource", "information": message };
+        parent.postMessage(fullMessage, "*");
+  	}
   	
     
-  	var updateTagType = function() {
-  		
+  	var updateTagType = function() {  		
   		loadDataSources();
   		if (selectedElement != null) {
   			var condition = synConditions.get(selectedElement.id);
   			var elementClass = selectedElement.getAttribute("class");
   			
-  			
-  			
-  			
+  			sendParentMessage(condition);  			
   			
   			//hide applichanges button
   			$('#applyChangesButton').hide();
@@ -31449,7 +31577,7 @@
 				break;
 			
 			
-			//Elementos sin clase
+			//Elements without class
 			default:
 				$('#ButtonAttributes').hide();
 				$('#ProgressBarAttributes').hide();
@@ -31686,9 +31814,12 @@
           use: []
         };
         var _elem = elem,
-            tagName = _elem.tagName; // if ($(elem).data('gsvg')) {
-        //   $('#g_panel').show();
-        // }
+            tagName = _elem.tagName;
+
+		
+       /* if ($(elem).data('gsvg')) {
+          $('#g_panel').show();
+         }*/
 
         var linkHref = null;
 
@@ -31768,7 +31899,7 @@
         menuItems[(tagName === 'g' || !multiselected ? 'dis' : 'en') + 'ableContextMenuItems']('#group'); // if (!Utils.isNullish(elem))
       } else if (multiselected) {
         $$b('#multiselected_panel').show();
-        menuItems.enableContextMenuItems('#group').disableContextMenuItems('#ungroup');
+        menuItems.enableContextMenuItems('#group');//.disableContextMenuItems('#ungroup');
       } else {
         menuItems.disableContextMenuItems('#delete,#cut,#copy,#group,#ungroup,#move_front,#move_up,#move_down,#move_back');
         updateTagType();
@@ -32572,6 +32703,7 @@
 
                       case 'input':
                         {
+                    	  
                           html = '<label' + contId + '>' + '<span id="' + tool.id + '_label">' + tool.label + ':</span>' + '<input id="' + tool.id + '" title="' + tool.title + '" size="' + (tool.size || '4') + '" value="' + (tool.defval || '') + '" type="text"/></label>'; // Creates the tool, hides & adds it, returns the select element
                           // Add to given tool.panel
 
@@ -33193,6 +33325,7 @@
       svgCanvas.setGroupTitle(this.value);
     });
     $$b('.attr_changer').change(function () {
+    	
       var attr = this.getAttribute('data-attr');
       var val = this.value;
       var valid = isValidUnit(attr, val, selectedElement);
@@ -34144,7 +34277,7 @@
                 _context9.next = 3;
                 return $$b.select('Select an image type for export: ', [// See http://kangax.github.io/jstests/toDataUrl_mime_type_test/ for a useful list of MIME types and browser support
                 // 'ICO', // Todo: Find a way to preserve transparency in SVG-Edit if not working presently and do full packaging for x-icon; then switch back to position after 'PNG'
-                'PNG', 'JPEG', 'BMP', 'WEBP', 'PDF'], function () {
+                'PNG', 'JPEG', 'BMP'], function () {
                   var sel = $$b(this);
 
                   if (sel.val() === 'JPEG' || sel.val() === 'WEBP') {
@@ -35315,9 +35448,15 @@
      */
 
     var changeSidePanelWidth = function changeSidePanelWidth(delta) {
+    	
       var rulerX = $$b('#ruler_x');
-      $$b('#sidepanels').width('+=' + delta);
-      $$b('#layerpanel').width('+=' + delta);
+      $$b('#sidepanels').width('+=' + delta);      
+      var tempCalc = $$b('#layerpanel').width()+delta;
+      if(tempCalc<0){
+    	  $$b('#layerpanel').width(0);
+      }else{
+    	  $$b('#layerpanel').width('+=' + delta);
+      }     
       rulerX.css('right', parseInt(rulerX.css('right')) + delta);
       workarea.css('right', parseInt(workarea.css('right')) + delta);
       svgCanvas.runExtensions('workareaResized');
@@ -35329,6 +35468,7 @@
 
 
     var resizeSidePanel = function resizeSidePanel(evt) {
+    	
       if (!allowmove) {
         return;
       }
@@ -35362,15 +35502,20 @@
 
 
     var toggleSidePanel = function toggleSidePanel(close) {
+    	
       var dpr = window.devicePixelRatio || 1;
       var w = $$b('#sidepanels').width();
       var isOpened = (dpr < 1 ? w : w / dpr) > 2;
-      var zoomAdjustedSidepanelWidth = (dpr < 1 ? 1 : dpr) * SIDEPANEL_OPENWIDTH;
+      //var zoomAdjustedSidepanelWidth = (dpr < 1 ? 1 : dpr) * SIDEPANEL_OPENWIDTH;
+      var zoomAdjustedSidepanelWidth =  SIDEPANEL_OPENWIDTH;
       var deltaX = (isOpened || close ? 0 : zoomAdjustedSidepanelWidth) - w;
       changeSidePanelWidth(deltaX);
     };
-
     $$b('#sidepanel_handle').mousedown(function (evt) {
+    	 toggleSidePanel();
+    });
+    
+   /* $$b('#sidepanel_handle').mousedown(function (evt) {
       sidedrag = evt.pageX;
       $$b(window).mousemove(resizeSidePanel);
       allowmove = false; // Silly hack for Chrome, which always runs mousemove right after mousedown
@@ -35390,7 +35535,7 @@
       sidedrag = -1;
       sidedragging = false;
       $$b('#svg_editor').unbind('mousemove', resizeSidePanel);
-    });
+    });*/
     populateLayers(); // function changeResolution (x,y) {
     //   const {zoom} = svgCanvas.getResolution();
     //   setResolution(x * zoom, y * zoom);
@@ -35527,7 +35672,12 @@
     		  evt: 'click',
     		  key: ['esc', false, false],
     		  hidekey: true
-      }, {
+      }, {sel: '#applyChangesButtonExt',
+		  fn: applyChangesExt, 
+		  evt: 'click',
+		  key: ['esc', false, false],
+		  hidekey: true
+  }, {
     	  sel: '#toolEventsEditor',
     	  fn: showEventsEditor,
     	  evt: 'click',
@@ -36062,6 +36212,7 @@
           // Make 'return' keypress trigger the change event
 
           $$b('.attr_changer, #image_url').bind('keydown', 'return', function (evt) {
+        	  
             $$b(this).change();
             evt.preventDefault();
           });
@@ -36352,7 +36503,7 @@
 
       enableOrDisableClipboard();
     });
-    window.addEventListener('beforeunload', function (e) {
+   /* window.addEventListener('beforeunload', function (e) {
       // Suppress warning if page is empty
       if (undoMgr.getUndoStackSize() === 0) {
         editor.showSaveWarning = false;
@@ -36367,7 +36518,7 @@
       }
 
       return true;
-    });
+    });*/
     /**
     * Expose the `uiStrings`.
     * @function module:SVGEditor.canvas.getUIStrings
@@ -37112,8 +37263,9 @@
   var synConditions = new Map();
   var synDatasources = new Map();
   var synLocalConditions = new Map();
+  var synDataSourceElemPropertiesExt = {};
   var editingevents = false;
-  
+   
   editor.setConditions = function (conditions){
 	  synConditions = conditions;
   };
@@ -37126,8 +37278,25 @@
   editor.getDatasources = function (){
 	  return synDatasources;
   };
+  editor.setDatasourceToElement = function (elementData){
+	  
+	  synDataSourceElemPropertiesExt=elementData;
+	  $('#applyChangesButtonExt').trigger( "click" );
+  };
+  editor.setIsIframe = function (iframeValue){	  
+	 
+	  if(iframeValue){
+		  $('button.tablinks.propertiessidenav').hide();
+	  }
+  };
+  
+  
   window.onload = function () { 
-	  $('body').removeClass('overlay_load_page'); 
+	  setTimeout(function(){  
+		  $('body').removeClass('overlay_load_page');
+		  $('#tool_corner').trigger( "mousedown" ); 
+		  }, 2);
+	  
   }
   /**
    * Opensaitplatform 

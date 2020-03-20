@@ -178,6 +178,9 @@ var getElements = function(type){
 	case "viewers":
 		insertData("/controlpanel/categorization/getViewers");
 		break;
+	case "reports":
+		insertData("/controlpanel/categorization/getReports");
+		break;
 	case "flows":
 		$.ajax({url : "/controlpanel/categorization/getFlows",
 			type : "GET",
@@ -265,6 +268,11 @@ var addElement = function() {
 		$("#treeField").jstree(true).set_icon(node, "flaticon-map-location");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/viewers/view/"+elementos[$("#selectElements").val()];
+		break;
+	case "reports":
+		$("#treeField").jstree(true).set_icon(node, "flaticon-graph");
+		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
+		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/reports/runReport/"+elementos[$("#selectElements").val()];
 		break;
 	default:
 		break;

@@ -15,8 +15,11 @@
 package com.minsait.onesait.platform.config.services.project;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,13 +35,16 @@ import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
+import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 
@@ -49,7 +55,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Autowired
 	private ProjectRepository projectRepository;
-
+	@Autowired
+	private ProjectResourceAccessRepository projectResourceAccessRepository;
 	@Autowired
 	private AppService appService;
 	@Autowired
@@ -61,8 +68,9 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Project createProject(ProjectDTO project) {
+
 		Project p = new Project();
-		p.setName(project.getName());
+		p.setIdentification(project.getIdentification());
 		p.setDescription(project.getDescription());
 		p.setType(project.getType());
 		p.setUser(project.getUser());
@@ -93,12 +101,25 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public List<Project> getAllProjects() {
-		return projectRepository.findAll();
+		List<Project> lproject = new LinkedList<Project>();
+		for (ProjectList plist: projectRepository.findAllForList()) {
+			lproject.add(EntitiesCast.castProjectList(plist, true));
+		}
+		return lproject;
 	}
 
 	@Override
 	public Project getById(String id) {
 		return projectRepository.findOne(id);
+	}
+
+	@Override
+	public Project getByName(String identification) {
+		List<Project> projects = projectRepository.findByIdentification(identification);
+		if (!projects.isEmpty())
+			return projects.get(0);
+		else
+			return null;
 	}
 
 	@Override
@@ -155,7 +176,7 @@ public class ProjectServiceImpl implements ProjectService {
 			if (o instanceof AppUser)
 				return ProjectUserDTO.builder().userId(((AppUser) o).getUser().getUserId())
 						.roleName(((AppUser) o).getRole().getName()).fullName(((AppUser) o).getUser().getFullName())
-						.realm(((AppUser) o).getRole().getApp().getAppId()).build();
+						.realm(((AppUser) o).getRole().getApp().getIdentification()).build();
 			else if (o instanceof User)
 				return ProjectUserDTO.builder().userId(((User) o).getUserId()).roleName(((User) o).getRole().getId())
 						.fullName(((User) o).getFullName()).build();
@@ -173,10 +194,22 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public List<Project> getProjectsForUser(String userId) {
-		final List<Project> projects = projectRepository.findAll();
+		
+		List<ProjectList> projectsList = projectRepository.findAllForList();
+		List<Project> projects = new LinkedList<Project>();
+		
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+			for(ProjectList pl: projectsList) {
+				projects.add(EntitiesCast.castProjectList(pl, true));
+			}
 			return projects;
+		}
+		else{
+			for(ProjectList pl: projectsList) {
+				projects.add(EntitiesCast.castProjectList(pl, false));
+			}
+		}
 		final List<Project> filteredProjects = projects.stream()
 				.filter(p -> p.getUser().equals(user) || p.getUsers().contains(user)).collect(Collectors.toList());
 		projects.forEach(p -> addAppRelatedProjects(p, filteredProjects, user));
@@ -242,11 +275,13 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void setRealm(String realmId, String projectId) {
-		final App app = appService.getByIdentification(realmId);
+		final App app = appService.getAppByIdentification(realmId);
 		if (app != null) {
 			final Project project = projectRepository.findOne(projectId);
-			if (!project.getUsers().isEmpty())
+			if (!project.getUsers().isEmpty()) {
+				removeUsersFromProject(project);
 				project.getUsers().clear();
+			}
 			project.setApp(app);
 			app.setProject(project);
 			projectRepository.save(project);
@@ -258,7 +293,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void unsetRealm(String realmId, String projectId) {
-		final App app = appService.getByIdentification(realmId);
+		final App app = appService.getAppByIdentification(realmId);
 		if (app != null) {
 			final Project project = projectRepository.findOne(projectId);
 			project.setApp(null);
@@ -307,6 +342,25 @@ public class ProjectServiceImpl implements ProjectService {
 			return project.getUsers().contains(user);
 	}
 
+	@Transactional
+	@Override
+	public Set<User> getUsersInProject(String projectId) {
+		final Project project = projectRepository.findOne(projectId);
+		if (project != null)
+			return project.getUsers().stream().collect(Collectors.toSet());
+		else
+			return new HashSet<>();
+	}
+
+	@Override
+	public Map<AppRole, Set<AppUser>> getAllRoleUsersInProject(Set<AppRole> projectRoles) {
+		Map<AppRole, Set<AppUser>> projectUserRoles = new HashMap<>();
+		for (AppRole rol : projectRoles) {
+			projectUserRoles.put(rol, rol.getAppUsers());
+		}
+		return projectUserRoles;
+	}
+
 	@Override
 	public Set<ProjectResourceAccess> getResourcesAccessesForUser(String projectId, String userId) {
 		final User user = userService.getUser(userId);
@@ -322,6 +376,28 @@ public class ProjectServiceImpl implements ProjectService {
 			return project.getProjectResourceAccesses().stream().filter(pra -> pra.getUser().equals(user))
 					.collect(Collectors.toSet());
 		}
+	}
+
+	@Override
+	public Set<ProjectResourceAccess> getResourcesAccessesForAppRole(String projectId, String name) {
+		final AppRole appRole = appService.findRole(name);
+		final Project project = projectRepository.findOne(projectId);
+
+		if (project.getApp() != null) {
+			return project.getProjectResourceAccesses().stream()
+					.filter(pra -> pra.getAppRole().getName().equals(appRole.getName())).collect(Collectors.toSet());
+		} else {
+			return new HashSet<>();
+		}
+	}
+
+	@Override
+	public Set<ProjectResourceAccess> getAllResourcesAccesses(String projectId) {
+		final Project project = projectRepository.findOne(projectId);
+		if (project != null)
+			return project.getProjectResourceAccesses().stream().collect(Collectors.toSet());
+		else
+			return new HashSet<>();
 	}
 
 	@Override
@@ -373,6 +449,35 @@ public class ProjectServiceImpl implements ProjectService {
 		final Project project = projectRepository.findOne(projectId);
 		final User user = userService.getUser(userId);
 		return (project.getUser().equals(user) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()));
+	}
+
+	@Override
+	@Transactional
+	public void deleteResourceFromProjects(String resourceId) {
+		final List<Project> projects = getProjectsWithResource(resourceId);
+		projects.forEach(
+				p -> p.getProjectResourceAccesses().removeIf(pra -> pra.getResource().getId().equals(resourceId)));
+		projectRepository.save(projects);
+
+	}
+
+	@Override
+	public List<Project> getProjectsWithResource(String resourceId) {
+		return projectResourceAccessRepository.findProjectsWithResourceId(resourceId);
+	}
+
+	@Transactional
+	@Override
+	public boolean isUserInProjectWithoutOwner(String userId, String projectId) {
+		final User user = userService.getUser(userId);
+		final Project project = projectRepository.findOne(projectId);
+		if (project.getApp() != null)
+			return project.getApp().getAppRoles().stream()
+					.map(ar -> ar.getAppUsers().stream().map(au -> au.getUser().equals(user))
+							.filter(Boolean::booleanValue).findFirst().orElse(false))
+					.filter(Boolean::booleanValue).findFirst().orElse(false);
+		else
+			return project.getUsers().contains(user);
 	}
 
 }

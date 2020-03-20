@@ -21,7 +21,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface LayerRepository extends JpaRepository<Layer, Long> {
+public interface LayerRepository extends JpaRepository<Layer, String> {
 
 	Layer findById(String id);
 

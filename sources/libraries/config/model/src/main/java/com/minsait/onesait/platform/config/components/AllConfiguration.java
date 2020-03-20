@@ -26,5 +26,6 @@ public class AllConfiguration {
 	private MailConfiguration mail;
 	private GlobalConfiguration onesaitplatform;
 	private JenkinsConfiguration jenkins;
+	private GoogleAnalyticsConfiguration googleanalytics;
 
 }

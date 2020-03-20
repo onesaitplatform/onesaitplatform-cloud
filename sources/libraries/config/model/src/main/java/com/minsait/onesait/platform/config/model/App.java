@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,23 +22,21 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.minsait.onesait.platform.config.model.base.AuditableEntity;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -45,71 +44,58 @@ import lombok.Setter;
 @Entity
 @Table(name = "APP")
 @Configurable
-public class App extends AuditableEntity {
+public class App extends AppParent {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 7199595602818161052L;
+	private static final long serialVersionUID = 2199595602818161052L;
 
-	@Id
-	@Column(name = "APP")
-	@Getter
-	@Setter
-	private String appId;
-
-	@Column(name = "NAME", length = 100, unique = true, nullable = false)
-	@NotNull
-	@Getter
-	@Setter
-	private String name;
-
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
-	@Getter
-	@Setter
-	private User user;
-
-	@Column(name = "DESCRIPTION", length = 255)
-	@Getter
-	@Setter
-	private String description;
-
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.MERGE, orphanRemoval = true)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private Set<AppRole> appRoles = new HashSet<>();
-
-	@JoinTable(name = "app_associated", joinColumns = {
-			@JoinColumn(name = "parent_app", referencedColumnName = "app", nullable = false) }, inverseJoinColumns = {
-					@JoinColumn(name = "child_app", referencedColumnName = "app", nullable = false) })
-	@ManyToMany(fetch = FetchType.LAZY)
-	@Getter
-	@Setter
-	private Set<App> childApps;
-
-	@OneToOne
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "PROJECT_ID")
 	@Getter
 	@Setter
 	private Project project;
-
-	@Column(name = "TOKEN_VALIDITY_SECONDS")
+	
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
-	private Integer tokenValiditySeconds;
+	@JsonIgnore
+	private Set<AppRole> appRoles = new HashSet<>();
 
-	@Column(name = "SECRET", length = 128)
+	@JoinTable(name = "app_associated", joinColumns = {
+			@JoinColumn(name = "parent_app", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
+					@JoinColumn(name = "child_app", referencedColumnName = "id", nullable = false) })
+	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private String secret;
+	@JsonIgnore
+	private Set<App> childApps;
+	
+	public App() {};
 
-	@Column(name = "user_extra_fields", nullable = true)
-	@Lob
-	@JsonRawValue
-	@Getter
-	@Setter
-	private String userExtraFields;
+	
+	public App(String id, String identification, String description, User user, String secret, String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
+		this.setId(id);
+		this.setIdentification(identification);
+		this.setDescription(description);
+		this.setUser(user);
+		this.setCreatedAt(createAt);
+		this.setUpdatedAt(updateAt);
+		this.setSecret(secret);
+		this.setUserExtraFields(user_extra_fields);
+		this.setTokenValiditySeconds(tokenValiditySeconds);
+		Set<AppRole> appRoles = new HashSet<AppRole>();
+		if(appRole != null) {
+			appRoles.add(appRole);
+		}
+		this.setAppRoles(appRoles);
+		
+		/*Set<App> childapps = new HashSet<App>();
+		if(childApp != null) {
+			childApps.add(new App(childApp));
+		}
+		this.setChildApps(childapps);*/
+	};
 }

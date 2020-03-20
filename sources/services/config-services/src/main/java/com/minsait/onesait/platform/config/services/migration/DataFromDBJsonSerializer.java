@@ -23,14 +23,17 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB>{
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
 
 	private static final long serialVersionUID = 1L;
 
 	public DataFromDBJsonSerializer() {
 		this(DataFromDB.class);
 	}
-	
+
 	protected DataFromDBJsonSerializer(Class<DataFromDB> t) {
 		super(t);
 	}
@@ -38,13 +41,14 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB>{
 	@Override
 	public void serialize(DataFromDB value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 		Set<Class<?>> classes = value.data.keySet();
-		
+
 		gen.writeStartObject();
 		gen.writeArrayFieldStart("allData");
 		for (Class<?> clazz : classes) {
 			gen.writeStartObject();
 			gen.writeStringField("class", clazz.getName());
 			gen.writeArrayFieldStart("instances");
+			log.debug("********* SERIALIZE			: " + clazz.getName());
 
 			Map<Serializable, Map<String, Object>> instance = value.data.get(clazz);
 			Set<Serializable> ids = instance.keySet();
@@ -54,8 +58,11 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB>{
 				gen.writeObjectFieldStart("data");
 				Map<String, Object> data = instance.get(id);
 				Set<String> fields = data.keySet();
-				for(String field : fields) {
+				log.debug("********* ID			: " + id);
+				for (String field : fields) {
+					log.debug("********* FIELD			: " + field);
 					Object object = data.get(field);
+					log.debug("                 value			: " + (object != null ? object.getClass() : null));
 					gen.writeObjectField(field, object);
 				}
 				gen.writeEndObject();
@@ -66,7 +73,7 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB>{
 		}
 		gen.writeEndArray();
 		gen.writeEndObject();
-		
+
 	}
 
 }

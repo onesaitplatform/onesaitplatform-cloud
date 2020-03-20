@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
+import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.config.repository.PropertyDigitalTwinTypeRepository;
@@ -300,4 +301,5 @@ public class DigitalTwinDeviceHelper {
 
 	}
 
+	
 }

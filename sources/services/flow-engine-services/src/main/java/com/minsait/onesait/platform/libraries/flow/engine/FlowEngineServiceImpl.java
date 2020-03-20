@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.libraries.flow.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -156,6 +158,31 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 			throw new FlowEngineServiceException("Unable to retrieve domains' status.", e);
 		}
 		return response;
+	}
+	
+	@Override
+	public void deployFlowengineDomain(String domain, String data) {
+		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+		try {
+
+			String domainRecord = "{'domain':'"+domain+"'}";
+			JSONArray jsonArray = new JSONArray(data);
+			JSONArray fullDeployment = new JSONArray();
+			fullDeployment.put(new JSONObject(domainRecord));
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject o = jsonArray.getJSONObject(i);
+				fullDeployment.put(o);
+			}
+			data = fullDeployment.toString();
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpEntity<String> newDomain = new HttpEntity<>(data, headers);
+			restTemplate.postForObject(restBaseUrl + "/deploy", newDomain, String.class);
+		} catch (Exception e) {
+			log.error("Unable to deploy domain " + domain);
+			throw new FlowEngineServiceException("Unable to deploy domain " + domain, e);
+		}
 	}
 
 }

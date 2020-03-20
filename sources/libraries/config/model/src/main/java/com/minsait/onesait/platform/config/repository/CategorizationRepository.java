@@ -21,10 +21,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Categorization;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface CategorizationRepository extends JpaRepository<Categorization, String> {
 	
 	Categorization findById(String id);
+	
+	List<Categorization> findByUser(User user);
 	
 	Categorization findByIdentification(String identification);
 	

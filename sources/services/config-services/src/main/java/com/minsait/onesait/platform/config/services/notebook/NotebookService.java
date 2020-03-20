@@ -69,6 +69,8 @@ public interface NotebookService {
 	
 	public Notebook getNotebook(String identification, String userId);
 
+	public Notebook getNotebookByZepId(String notebookZepId, String userId);
+	
 	public List<Notebook> getNotebooks(String userId);
 
 	public boolean hasUserPermissionForNotebook(String zeppelinId, String userId);
@@ -118,6 +120,8 @@ public interface NotebookService {
 	boolean isUserOwnerOfNotebook(String userId, Notebook notebook);
 
 	public void removeNotebookByIdZep(String idZep, String user);
+	
+	public void removeNotebookOnlyZeppelin(String idZep, String user);
 	
 	public ResponseEntity<String> restartInterpreter(String interpreterName, String notebookId, User user)
 			throws URISyntaxException, IOException;

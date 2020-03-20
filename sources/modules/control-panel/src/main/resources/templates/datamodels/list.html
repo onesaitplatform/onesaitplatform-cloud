@@ -150,17 +150,18 @@
 															<th id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="roleFilter" dt:filterCssClass="input-small" class="titulo-columnas" ><span th:text="#{datamodel.type}">Type</span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{datamodel.userId}" >Owner</span></th>
 															<th class="titulo-columnas" ><span th:text="#{datamodel.labels}">Labels </span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>																
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>																
 															<th class="titulo-columnas" ><span th:text="#{datamodel.jsonschema}">JSON Schema</span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}"> Options</span></th>															
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">														
 														<tr th:each="datamodel : ${dataModels}" pages:paginate="10">
-															<!-- IDENTIFICATION -->
+															<!-- ID -->
 															<td class="text-left no-wrap internalId" th:text="${datamodel.id}"></td>
-															<!-- NAME -->
-															<td class="text-left no-wrap" th:text="${datamodel.name}"></td>
+															<!-- IDENTIFICATION -->
+															<td class="text-left no-wrap" th:text="${datamodel.identification}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-sm" th:title="${datamodel.description}" th:text="${datamodel.description}"></td>
 															<!-- TYPE -->						
@@ -174,6 +175,9 @@
 															<!-- DATE --> 
 			 												<td class="text-center" th:if="${datamodel.createdAt!=null}"><span th:text="${#dates.format(datamodel.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datamodel.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${datamodel.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+			 												<td class="text-center" th:if="${datamodel.updatedAt!=null}"><span th:text="${#dates.format(datamodel.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datamodel.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${datamodel.updatedAt==null}" th:text="'---'"></td>
 															<!-- JSONSCHEMA -->
 															<td class="text-left text-truncate-sm" th:text="${datamodel.jsonSchema}" th:title="${datamodel.jsonSchema}"></td>		
 															<!-- OPTIONS -->
@@ -227,8 +231,9 @@
 														<label class="toggle-vis" data-column="3" th:text="#{datamodel.type}"> Type</label>
 														<label class="toggle-vis" data-column="4" th:text="#{datamodel.userId}"> Owner</label>
 														<label class="toggle-vis" data-column="5" th:text="#{datamodel.labels}"> Labels</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.created}">Created At</label>															
-														<label class="toggle-vis" data-column="7" th:text="#{datamodel.jsonschema}"> JSON Schema</label>														
+														<label class="toggle-vis" data-column="6" th:text="#{gen.created}">Created At</label>
+														<label class="toggle-vis" data-column="7" th:text="#{gen.updated}">Updated At</label>															
+														<label class="toggle-vis" data-column="8" th:text="#{datamodel.jsonschema}"> JSON Schema</label>														
 													</div>													
 												</div>											
 											</div>
@@ -418,7 +423,7 @@
 		handleSingleSelection('datamodels');
 		
 		// HIDE COLUMNS 4,5,6 (DETELEDAT,CREATEDAT,ACTIVE)		
-		$.each([ 0,2,7 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 0,2,8 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 				
 		
 	});

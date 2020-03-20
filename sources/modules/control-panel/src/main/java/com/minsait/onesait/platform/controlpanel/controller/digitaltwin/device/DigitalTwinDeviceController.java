@@ -223,4 +223,6 @@ public class DigitalTwinDeviceController {
 		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
 
+	
+
 }

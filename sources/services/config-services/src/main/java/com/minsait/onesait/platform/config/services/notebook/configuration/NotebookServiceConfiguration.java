@@ -32,7 +32,7 @@ public class NotebookServiceConfiguration {
 	private String zeppelinHostname;
 	@Value("${onesaitplatform.analytics.notebook.zeppelinPort:8080}")
 	private int zeppelinPort;
-	@Value("${onesaitplatform.analytics.notebook.zeppelinPathname:#{null}}")
+	@Value("${onesaitplatform.analytics.notebook.zeppelinPathname:}")
 	private String zeppelinPathname;
 	@Value("${onesaitplatform.analytics.notebook.shiroAdminUsername:#{null}}")
 	private String zeppelinShiroAdminUsername;

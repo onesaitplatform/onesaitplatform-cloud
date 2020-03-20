@@ -16,8 +16,11 @@ package com.minsait.onesait.platform.controlpanel.services.binaryrepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,7 +39,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
 import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
+import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
+import com.minsait.onesait.platform.config.repository.BinaryFileRepository;
+import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 @RestController
@@ -44,9 +53,18 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 public class BinaryRepositoryRestService {
 
 	@Autowired
+	private AppWebUtils utils;
+	@Autowired
+	private UserService userService;
+	@Autowired
+	private BinaryFileRepository binaryFileRepository;
+	@Autowired
 	private BinaryRepositoryLogicService binaryRepositoryLogicService;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+	
+	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
+	private String basePath;
 
 	@PostMapping("")
 	public ResponseEntity<?> addBinary(@RequestParam("file") MultipartFile file,
@@ -74,6 +92,31 @@ public class BinaryRepositoryRestService {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
+	}
+	
+	@GetMapping("/")
+	public ResponseEntity<?> getAll() {
+		List<BinaryFileSimpleDTO> binaryFiles;
+		User user = userService.getUser(utils.getUserId());
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+			binaryFiles = parseToDTO(binaryFileRepository.findAll(), user);
+		} else {
+			binaryFiles = parseToDTO(binaryFileRepository.findByUser(user), user);
+		}
+		return ResponseEntity.ok(binaryFiles);
+	}
+
+	private List<BinaryFileSimpleDTO> parseToDTO(List<BinaryFile> binaryFileList, User user) {
+		
+		List<BinaryFileSimpleDTO> binaryFileSimpleList = new ArrayList<>();
+		
+		for (BinaryFile binaryFile : binaryFileList) {
+			BinaryFileSimpleDTO binaryFileSimpleDTO = new BinaryFileSimpleDTO(binaryFile, basePath + "/files/");
+			binaryFileSimpleDTO.setOwned(binaryFile.getUser().equals(user));
+			binaryFileSimpleList.add(binaryFileSimpleDTO);
+		}
+		
+		return binaryFileSimpleList;
 	}
 
 	@GetMapping("/download/{id}")

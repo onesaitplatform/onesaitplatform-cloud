@@ -62,6 +62,7 @@ import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPlu
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
 import com.minsait.onesait.platform.iotbroker.processor.MessageProcessor;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -154,7 +155,7 @@ public class Rest extends WebMvcConfigurerAdapter {
 	public ResponseEntity<?> list(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature; ", required = true) @RequestParam(name = "query") String query,
+			@ApiParam(value = "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature ", required = true) @RequestParam(name = "query") String query,
 			@ApiParam(value = "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType) {
 
 		final SSAPMessage<SSAPBodyQueryMessage> request = new SSAPMessage<>();
@@ -233,9 +234,9 @@ public class Rest extends WebMvcConfigurerAdapter {
 		}
 	}
 
-	//Use put operation instad this one
+	// Use put operation instad this one
 	@Deprecated
-	@ApiOperation(value = "Updates a instance or instances of a ontology with a update query")	
+	@ApiOperation(value = "Updates a instance or instances of a ontology with a update query")
 	@RequestMapping(value = "/ontology/{ontology}/update", method = RequestMethod.GET)
 	public ResponseEntity<?> updateByQuery(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,

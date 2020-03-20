@@ -14,10 +14,31 @@
  */
 package com.minsait.onesait.platform.config.services.categorization;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.json.JSONArray;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Categorization;
+import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface CategorizationService {
+	
+	public Categorization getCategorizationById (String id);
+	
+	public Categorization getCategorizationByIdentification(String identification);
+	
+	public List<Categorization> getAllCategorizations ();
+	
+	public List<Categorization> getCategorizationsByUser (User user);
+	
+	public  List<Categorization> getActiveCategorizations (User user);
+	
+	public void activateByCategoryAndUser(String id, User user);
+	
+	public void deactivateByCategoryAndUser(String id, User user);
 	
 	public void deactivate(String id);
 	
@@ -25,10 +46,18 @@ public interface CategorizationService {
 	
 	public void createCategorization(String name, String json, User user);
 	
-	public void editCategorization(String id, String json);
+	public void updateCategorization(String id, String json);
+	
+	public void updateCategorization(Categorization categorizationMemory, String json);
 	
 	public void addAuthorization(Categorization categorization, User user, String accessType);
 	
 	public boolean hasUserPermission (User user, Categorization categorization);
+	
+	public void deteleConfiguration(String id);
+	
+	public JSONArray getNodesCategory (String categorizationJson, String pathCategorization) throws IOException;
+	
+	public JSONArray getCategoryNode (String categorizationJson, String nodeId) throws IOException;
 
 }

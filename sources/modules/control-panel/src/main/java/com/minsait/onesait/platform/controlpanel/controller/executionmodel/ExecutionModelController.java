@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONException;
@@ -33,6 +34,9 @@ import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.ModelExecution;
 import com.minsait.onesait.platform.config.services.model.ModelService;
 import com.minsait.onesait.platform.config.services.model.execution.ModelExecutionService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,11 +50,12 @@ public class ExecutionModelController {
 
 	@Autowired
 	private ModelService modelService;
+	
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
-	@Value("${onesaitplatform.dashboardengine.url}")
 	private String dashboardUrl;
 
-	@Value("${onesaitplatform.notebook.url}")
 	private String notebookUrl;
 
 	private static final String REDIRECT_MODELS_LIST = "redirect:/models/list";
@@ -60,6 +65,12 @@ public class ExecutionModelController {
 	private static final String PARAGRAPH_STR = "/paragraph/";
 	private static final String ERROR_PARSE_PARAM = "Error parsing parameters of execution model ";
 
+	@PostConstruct
+	public void init() {
+		notebookUrl = resourcesService.getUrl(Module.NOTEBOOK, ServiceUrl.URL);
+		dashboardUrl = resourcesService.getUrl(Module.DASHBOARDENGINE, ServiceUrl.EDIT);
+	}
+	
 	@GetMapping(value = "/list/{id}", produces = "text/html")
 	public String list(org.springframework.ui.Model model, @PathVariable("id") String id) {
 

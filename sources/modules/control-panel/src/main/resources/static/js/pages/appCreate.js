@@ -595,7 +595,7 @@ var AppCreateController = function() {
 
 	var deleteAppConfirmation = function() {
 
-		var idApp = $("#appId").val();
+		var idApp = $("#id").val();
 
 		// no Id no fun!
 		if (!idApp) {

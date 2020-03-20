@@ -15,7 +15,7 @@ security.basic.enabled: false
 #hawtio.offline: true
      
 onesaitplatform: #Config onesaitplatform specific
-   audit.global.notify: true
+   audit.global.notify: false
    apimanager:
       cacheable: false
    iotbroker.plugable:
@@ -100,6 +100,7 @@ onesaitplatform: #Config onesaitplatform specific
    router.notifications.pool:
       nodered: 50
       kafka: 50
+      rulesengine: 50
 
 spring: ## General Config  
    application.name: onesaitplatform-semantic-inf-broker

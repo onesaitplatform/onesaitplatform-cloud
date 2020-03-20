@@ -21,9 +21,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
 import javax.persistence.Table;
@@ -34,7 +32,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +40,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "DIGITAL_TWIN_TYPE")
-public class DigitalTwinType extends AuditableEntityWithUUID {
+public class DigitalTwinType extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
@@ -74,12 +72,6 @@ public class DigitalTwinType extends AuditableEntityWithUUID {
 	@Setter
 	private Set<DigitalTwinDevice> digitalTwinDevices = new HashSet<>();
 
-	@Column(name = "NAME", length = 50, unique = true, nullable = false)
-	@NotNull
-	@Getter
-	@Setter
-	private String name;
-
 	@Column(name = "TYPE", length = 50, nullable = false)
 	@NotNull
 	@Getter
@@ -107,21 +99,14 @@ public class DigitalTwinType extends AuditableEntityWithUUID {
 	@Setter
 	private String logic;
 
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User user;
-
 	public void setTypeEnum(DigitalTwinType.MainType type) {
 		this.type = type.toString();
 	}
 
 	@PostLoad
 	protected void trim() {
-		if (name != null) {
-			name = name.replaceAll(" ", "");
+		if (this.getIdentification() != null) {
+			this.setIdentification(this.getIdentification().replaceAll(" ", ""));
 		}
 	}
 
@@ -131,17 +116,17 @@ public class DigitalTwinType extends AuditableEntityWithUUID {
 			return true;
 		if (!(o instanceof DigitalTwinType))
 			return false;
-		return getName() != null && getName().equals(((DigitalTwinType) o).getId());
+		return getIdentification() != null && getIdentification().equals(((DigitalTwinType) o).getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return java.util.Objects.hash(getName());
+		return java.util.Objects.hash(getIdentification());
 	}
 
 	@Override
 	public String toString() {
-		return getName();
+		return getIdentification();
 	}
 
 }

@@ -14,10 +14,15 @@
  */
 package com.minsait.onesait.platform.persistence.mongodb.tools.sql;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import com.github.vincentrussell.query.mongodb.sql.converter.ParseException;
+import com.github.vincentrussell.query.mongodb.sql.converter.QueryConverter;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -31,6 +36,7 @@ public class Sql2NativeTool {
 
 	private static final String UPDATE = "update";
 	private static final String DELETE = "delete";
+	private static final String SELECT = "select";
 	private static final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 
 	private Sql2NativeTool() {
@@ -44,6 +50,9 @@ public class Sql2NativeTool {
 				return translateUpdate(replaceDoubleQuotes(query));
 			else if (query.trim().toLowerCase().startsWith(DELETE))
 				return translateDelete(replaceDoubleQuotes(query));
+			else if (query.trim().toLowerCase().startsWith(SELECT))
+				return translateSelect(query);
+
 		} catch (final JSQLParserException e) {
 			throw new DBPersistenceException("Invalid SQL syntax");
 		}
@@ -108,6 +117,18 @@ public class Sql2NativeTool {
 
 		mongoDbQuery.append("})");
 		return mongoDbQuery.toString();
+	}
+
+	private static String translateSelect(String query) {
+		try {
+			final QueryConverter queryConverter = new QueryConverter(query);
+			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			queryConverter.write(byteArrayOutputStream);
+			return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
+		} catch (final ParseException | IOException e) {
+			throw new DBPersistenceException(e.getMessage(), e);
+		}
+
 	}
 
 	private static String replaceDoubleQuotes(String query) {

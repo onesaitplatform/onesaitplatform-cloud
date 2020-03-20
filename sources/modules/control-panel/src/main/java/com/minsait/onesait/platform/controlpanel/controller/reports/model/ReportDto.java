@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.controller.reports.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,5 +54,9 @@ public class ReportDto implements Serializable {
 	private MultipartFile file;
 
 	private String dataSourceUrl;
+
+	private List<MultipartFile> additionalFiles;
+
+	private List<ReportResourceDTO> resources;
 
 }

@@ -14,7 +14,21 @@
  */
 package com.minsait.onesait.platform.persistence.external.virtual;
 
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
+
+
 public interface VirtualDatasourcesManager {
 
-	public VirtualDataSourceDescriptor getDataSourceDescriptor(String datasourceName);
+	VirtualDataSourceDescriptor getDataSourceDescriptor(final String datasourceName);
+
+	OntologyVirtualDatasource getDatasourceForOntology(String ontology);
+
+	String getDriverClassName(final VirtualDatasourceType type);
+
+	SQLHelper getOntologyHelper(final VirtualDatasourceType type);
+	
+	void setDatasourceDescriptor (String datasourceName);
+
 }

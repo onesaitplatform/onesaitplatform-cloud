@@ -43,4 +43,16 @@ public class ViewerDTO {
 	@Setter
 	private String js;
 
+	@Getter
+	@Setter
+	private String latitude;
+
+	@Getter
+	@Setter
+	private String longitude;
+
+	@Getter
+	@Setter
+	private String height;
+
 }

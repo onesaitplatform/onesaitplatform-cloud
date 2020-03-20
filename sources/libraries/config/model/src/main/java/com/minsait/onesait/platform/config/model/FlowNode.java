@@ -113,4 +113,16 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 		String domainId = getFlow().getFlowDomain().getIdentification();
 		return domainId + getPartialUrl();
 	}
+
+	@Override
+	public String getNotificationDomain() {
+		return getFlow().getFlowDomain().getIdentification();
+	}
+
+	@Override
+	public String getNotificationDomainUser() {
+		return getFlow().getFlowDomain().getUser().getUserId();
+	}
+
+
 }

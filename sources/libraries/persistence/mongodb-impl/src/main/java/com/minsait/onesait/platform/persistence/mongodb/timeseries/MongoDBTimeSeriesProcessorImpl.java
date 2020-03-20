@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -217,7 +216,8 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 	private Map<OntologyTimeSeriesProperty, Object> extractFields(List<OntologyTimeSeriesProperty> lProperties,
 			JSONObject oInstance) {
 		final Map<OntologyTimeSeriesProperty, Object> mFields = new HashMap<>();
-		lProperties.stream().filter(p -> p.getPropertyType() == PropertyType.SERIE_FIELD)
+		lProperties.stream()
+				.filter(p -> p.getPropertyType() == PropertyType.SERIE_FIELD && oInstance.has(p.getPropertyName()))
 				.forEach(p -> mFields.put(p, oInstance.get(p.getPropertyName())));
 
 		return mFields;

@@ -16,13 +16,15 @@ package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
+import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTOForList;
 
 public interface GadgetDatasourceService {
 
 	public List<GadgetDatasource> findAllDatasources();
 
-	public List<GadgetDatasource> findGadgetDatasourceWithIdentificationAndDescription(String identification,
+	public List<GadgetDatasourceForList> findGadgetDatasourceWithIdentificationAndDescription(String identification,
 			String description, String user);
 
 	public List<String> getAllIdentifications();
@@ -45,11 +47,13 @@ public interface GadgetDatasourceService {
 
 	public List<GadgetDatasource> getUserGadgetDatasources(String userId);
 
+	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId);
+
 	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user);
 
 	public GadgetDatasource getDatasourceByIdentification(String dsIdentification);
-	
-	public String getAccessType (String id, String userId);
-	
-	public String getElementsAssociated (String datasourceId);
+
+	public String getAccessType(String id, String userId);
+
+	public String getElementsAssociated(String datasourceId);
 }

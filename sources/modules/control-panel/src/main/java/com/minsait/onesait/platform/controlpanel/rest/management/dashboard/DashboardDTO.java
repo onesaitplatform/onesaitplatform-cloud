@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.dashboard;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
 
 import lombok.Builder;
@@ -76,6 +77,10 @@ public class DashboardDTO {
 	@Getter
 	@Setter
 	private boolean isPublic;
+
+	@Getter
+	@Setter
+	private DashboardType type;
 
 	@Getter
 	@Setter

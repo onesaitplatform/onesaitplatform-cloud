@@ -35,6 +35,18 @@
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
          <hudson.model.StringParameterDefinition>
+          <name>GIT_USER</name>
+          <description>Git User</description>
+          <defaultValue>{{GIT_USER}}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+         <hudson.model.StringParameterDefinition>
+          <name>GIT_TOKEN</name>
+          <description>Git Private token</description>
+          <defaultValue>{{GIT_TOKEN}}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+         <hudson.model.StringParameterDefinition>
           <name>GIT_BRANCHNAME</name>
           <description>compilation branch name</description>
           <defaultValue>master</defaultValue>
@@ -98,6 +110,12 @@
        string(name: &apos;GIT_URL&apos;, 
               defaultValue: &apos;{{GIT_REPOSITORY}}&apos;, 
               description: &apos;URL Git Repository&apos;)
+       string(name: &apos;GIT_USER&apos;, 
+              defaultValue: &apos;{{GIT_USER}}&apos;, 
+              description: &apos;URL Git user&apos;)
+       string(name: &apos;GIT_TOKEN&apos;, 
+              defaultValue: &apos;{{GIT_TOKEN}}&apos;, 
+              description: &apos;Git private tokeny&apos;)
        string(name: &apos;GIT_BRANCHNAME&apos;, 
               defaultValue: &apos;master&apos;, 
               description: &apos;compilation branch name&apos;)
@@ -118,7 +136,7 @@
    stages {
        stage(&apos;Fetching from repository&apos;) {  
         steps {  
-           sh &quot;/opt/gitlab/embedded/bin/git clone ${params.GIT_URL} ${env.BASEPATH}&quot;            
+           sh &quot;git clone \$(echo ${params.GIT_URL} | sed -e 's/:\\/\\//:\\/\\/${params.GIT_USER}:${params.GIT_TOKEN}@/') ${env.BASEPATH}&quot;            
         }          
        }
      

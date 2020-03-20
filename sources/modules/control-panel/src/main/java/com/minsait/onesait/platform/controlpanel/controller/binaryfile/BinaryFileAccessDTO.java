@@ -26,8 +26,8 @@ public class BinaryFileAccessDTO {
 		userId = binaryFileAccess.getUser().getUserId();
 		userFullName = binaryFileAccess.getUser().getFullName();
 		typeName = binaryFileAccess.getAccessType().name();
-		fileId = binaryFileAccess.getBinaryFile().getFileId();
-		fileIdentification = binaryFileAccess.getBinaryFile().getFileName();
+		fileId = binaryFileAccess.getBinaryFile().getId();
+		fileIdentification = binaryFileAccess.getBinaryFile().getIdentification();
 	}
 
 	@Getter

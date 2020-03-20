@@ -16,8 +16,13 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import javax.transaction.Transactional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.minsait.onesait.platform.config.dto.ProjectUserAccess;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
@@ -32,9 +37,18 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 
 	public int countByResource(OPResource resource);
 
+	@Transactional
+	public void deleteByResource(OPResource resource);
+
+	@Query("SELECT p FROM Project p INNER JOIN p.projectResourceAccesses pra WHERE pra.resource.id= :resourceId")
+	public List<Project> findProjectsWithResourceId(@Param("resourceId") String resourceId);
+
 	public List<ProjectResourceAccess> findByResource(OPResource resource);
 
 	public List<ProjectResourceAccess> findByUser(User user);
+	
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.ProjectUserAccess(pra.resource.id, pra.access ) FROM com.minsait.onesait.platform.config.model.ProjectResourceAccess as pra WHERE pra.user = :user and pra.resource.id in :resourceIdList")
+	public List<ProjectUserAccess> findUserAccessByUserAndResourceIds(@Param("user") User user, @Param("resourceIdList") List<String> resourceIdList);
 
 	public List<ProjectResourceAccess> findByAppRole(AppRole role);
 }

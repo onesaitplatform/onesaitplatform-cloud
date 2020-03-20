@@ -84,7 +84,7 @@ public class ApiManagerAuditProcessor {
 		final Ontology ontology = (Ontology) data.get(Constants.ONTOLOGY);
 		final String method = (String) data.get(Constants.METHOD);
 		final String query = (String) data.get(Constants.QUERY);
-		final String body = (String) data.get(Constants.BODY);
+		final byte[] body = (byte[]) data.get(Constants.BODY);
 		final User user = (User) data.get(Constants.USER);
 		final Api api = (Api) data.get(Constants.API);
 		final OperationType operationType = getAuditOperationFromMethod(method);
@@ -99,8 +99,9 @@ public class ApiManagerAuditProcessor {
 
 		return (ApiManagerAuditEvent.builder().id(UUID.randomUUID().toString()).module(Module.APIMANAGER)
 				.type(EventType.APIMANAGER).operationType(operation).resultOperation(ResultOperationType.SUCCESS)
-				.remoteAddress(remoteAddress).message(message).data(body).ontology(ontologyId).query(query)
-				.timeStamp(today.getTime()).user(userId).api(api != null ? api.getIdentification() : null)
+				.remoteAddress(remoteAddress).message(message).data(body == null ? null : new String(body))
+				.ontology(ontologyId).query(query).timeStamp(today.getTime()).user(userId)
+				.api(api != null ? api.getIdentification() : null)
 				.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).build());
 
 	}
@@ -145,7 +146,7 @@ public class ApiManagerAuditProcessor {
 				operationType = OperationType.DELETE;
 			}
 		}
-		log.debug("The audit operation from method {} is {} ",method,operationType);
+		log.debug("The audit operation from method {} is {} ", method, operationType);
 		return operationType;
 
 	}

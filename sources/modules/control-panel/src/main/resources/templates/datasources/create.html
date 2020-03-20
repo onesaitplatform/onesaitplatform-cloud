@@ -249,9 +249,9 @@
 													<div class="col-md-3 margin-bottom-20" id="div-datasource">								
 														<div class="form-group">	
 															<label class="control-label" th:text="#{gadgets.select.ontology}"> Select Ontology</label>									
-															<select class="selectpicker  select show-tick form-control" id="datasources" data-live-search="true" data-width="100%" onchange="selectOntology(this)" th:title="#{database.ontologies} +'...'"  >
+															<select class="selectpicker  select show-tick form-control" th:field="*{ontologyIdentification}" id="ontologyIdentification" data-live-search="true" data-width="100%" onchange="selectOntology(this)" th:title="#{database.ontologies} +'...'"  >
 																<option id="ontology" data-description="ontology" data-type="ontology" value="ontology" text="ontology"  ></option>														
-																<option th:each="ontology : ${ontologies}" th:id="${ontology.user}" th:data-description="${ontology.description}" data-type="ontology" th:value="${ontology.identification}" th:text="${ontology.identification}"   th:selected="${ontology.identification == datasourceOntologySelected}"></option>
+																<option th:each="ontology : ${ontologies}" th:id="${ontology.user}" th:data-description="${ontology.description}" data-type="ontology" th:value="${ontology}" th:text="${ontology.identification}"   th:selected="${ontology.identification == datasourceOntologySelected}"></option>
 															</select>
 														</div>
 													</div>				

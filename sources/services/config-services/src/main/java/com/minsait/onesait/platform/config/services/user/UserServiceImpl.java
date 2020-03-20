@@ -82,6 +82,28 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public boolean isUserAnalytics(User user) {
+		boolean result = false;
+		if (user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.name()))
+			result = true;
+		if (user.getRole().getRoleParent() != null
+				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_DATASCIENTIST.name()))
+			result = true;
+		return result;
+	}
+
+	@Override
+	public boolean isUserUser(User user) {
+		boolean result = false;
+		if (user.getRole().getId().equals(Role.Type.ROLE_USER.name()))
+			result = true;
+		if (user.getRole().getRoleParent() != null
+				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_USER.name()))
+			result = true;
+		return result;
+	}
+
+	@Override
 	public Token getToken(String token) {
 		return tokenRepository.findByTokenName(token);
 	}
@@ -151,7 +173,7 @@ public class UserServiceImpl implements UserService {
 		return users;
 
 	}
-	
+
 	@Override
 	public List<User> getDifferentUsersWithRole(User user, Type roleType) {
 		return userRepository.findUserByIdentificationAndRol(user.getUserId(), roleType.toString());
@@ -290,8 +312,13 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean emailExists(User user) {
-		final List<User> userEmails = userRepository.findByEmail(user.getEmail());
-		return (!userEmails.isEmpty());
+		return userRepository.countByEmail(user.getEmail()) > 0;
+	}
+
+	@Override
+	public boolean emailExists(String mail) {
+
+		return userRepository.countByEmail(mail) > 0;
 	}
 
 	@Override
@@ -318,6 +345,21 @@ public class UserServiceImpl implements UserService {
 		if (null != metricsManager) {
 			metricsManager.logControlPanelUserCreation(result);
 		}
+	}
+
+	@Override
+	public void activateUser(User user) {
+		user.setActive(true);
+		user.setDateDeleted(null);
+		userRepository.save(user);
+
+	}
+
+	@Override
+	public boolean canUserUpdateMail(String userId, String newMail) {
+		final List<User> resultSet = userRepository.findByEmail(newMail);
+		return resultSet.isEmpty() || resultSet.get(0).getUserId().equals(userId);
+
 	}
 
 }

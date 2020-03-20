@@ -27,6 +27,8 @@ public interface UserTokenService {
 	public UserToken getToken(User user);
 
 	public UserToken getTokenByToken(String token);
+	
+	public UserToken getTokenByUserAndToken(User user, String token);
 
 	public UserToken getTokenByID(String id);
 

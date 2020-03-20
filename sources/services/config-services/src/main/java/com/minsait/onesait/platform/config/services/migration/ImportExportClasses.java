@@ -37,4 +37,16 @@ public class ImportExportClasses {
 		return Sets.newHashSet(classes);
 	}
 
+	public Set<String> getWhiteList() {
+		return Sets.newHashSet(classes);
+	}
+
+	public Set<String> getTrimList() {
+		return Sets.newHashSet(classes);
+	}
+
+	public Set<String> getBlackProjectlist() {
+		return Sets.newHashSet(classes);
+	}
+
 }

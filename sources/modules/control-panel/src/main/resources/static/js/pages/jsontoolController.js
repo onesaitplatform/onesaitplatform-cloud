@@ -355,38 +355,36 @@ var JsonToolController = function(){
 							bytes += chunk.length;
 							
 							chunks.push(chunk);
-							if(offset < size){
+							if(offset < size) {
 								offset += chunk_size;
 								var blob = files[0].slice(offset , offset + chunk_size);
 								reader.readAsText(blob);	
-							}else{
-								var content = chunks.join("");
-								fileLoaded=x2js.xml_str2json(content);
-								//xml2json parses into object,  need to get array instances of this object
-								/*if(fileLoaded.length == null){
-									var foundJson = false;
-									while(!foundJson){
-										var key = Object.keys(fileLoaded);
-										fileLoaded = fileLoaded[key];
-										if(fileLoaded.length != null)
-											foundJson = true;
-										
-									}
-								}*/
-								//end
-								var tmpContent = findArrayNodeInJson(fileLoaded);
-								fileLoaded = tmpContent;
-								$('#progressBarModal').modal('hide');
-								printJson();
+
+								if (offset > size){
+									var content = chunks.join("");
+									fileLoaded=x2js.xml_str2json(content);
+									//xml2json parses into object,  need to get array instances of this object
+									/*if(fileLoaded.length == null){
+										var foundJson = false;
+										while(!foundJson){
+											var key = Object.keys(fileLoaded);
+											fileLoaded = fileLoaded[key];
+											if(fileLoaded.length != null)
+												foundJson = true;
+											
+										}
+									}*/
+									//end
+									var tmpContent = findArrayNodeInJson(fileLoaded);
+									fileLoaded = tmpContent;
+									printJson();
+								}
 								
-							
 							}
-							
 							
 						}
 						progressBarFileUpload(offset,size);
 					}	
-					
 
 			}else if (files[0].name.indexOf(".csv")!=-1){
 		
@@ -400,18 +398,22 @@ var JsonToolController = function(){
 							offset += chunk_size;
 							var blob = files[0].slice(offset , offset + chunk_size);
 							reader.readAsText(blob);	
-						}else{
-							var content = chunks.join("");//.replace(/\"/g, '');
-							try {
-								fileLoaded = csvTojs(content);
+							
+							if (offset > size){
+								var content = chunks.join("");//.replace(/\"/g, '');
+								try {
+									fileLoaded = csvTojs(content);
+								}
+								catch(err) {
+									$('#response').text(err);
+									$('#returnAction').modal("show");
+									return;
+								}
+								printJson();
 							}
-							catch(err) {
-								$('#response').text(err);
-								$('#returnAction').modal("show");
-								return;
-							}
-							printJson();
+							
 						}
+						
 						progressBarFileUpload(offset,size);
 					}
 				
@@ -434,10 +436,10 @@ var JsonToolController = function(){
 							offset += chunk_size;
 							var blob = files[0].slice(offset , offset + chunk_size);
 							reader.readAsText(blob);	
-						}else{
 							
-							var content = chunks.join("");
-					
+							if (offset > size){
+								var content = chunks.join("");
+								
 								try {
 									var jsonData = JSON.parse(content);	
 									fileLoaded = jsonData;
@@ -462,8 +464,8 @@ var JsonToolController = function(){
 									}
 								}							
 							
-							printJson();
-							
+							printJson();								
+							}						
 						}
 						progressBarFileUpload(offset,size);
 					}

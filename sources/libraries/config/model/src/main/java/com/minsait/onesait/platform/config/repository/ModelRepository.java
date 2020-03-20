@@ -24,7 +24,7 @@ import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface ModelRepository extends JpaRepository<Model, Long> {
+public interface ModelRepository extends JpaRepository<Model, String> {
 
 	Model findById(String id);
 

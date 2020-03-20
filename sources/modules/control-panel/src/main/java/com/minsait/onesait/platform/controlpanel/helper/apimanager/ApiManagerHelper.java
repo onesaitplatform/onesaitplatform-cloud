@@ -15,10 +15,8 @@
 package com.minsait.onesait.platform.controlpanel.helper.apimanager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,28 +25,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
 import com.minsait.onesait.platform.config.model.Api;
-import com.minsait.onesait.platform.config.model.ApiAuthentication;
-import com.minsait.onesait.platform.config.model.ApiAuthenticationAttribute;
-import com.minsait.onesait.platform.config.model.ApiAuthenticationParameter;
-import com.minsait.onesait.platform.config.model.ApiHeader;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
-import com.minsait.onesait.platform.config.repository.ApiAuthenticationRepository;
 import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.UserApiRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
-import com.minsait.onesait.platform.config.services.apimanager.authentication.AuthenticationJson;
-import com.minsait.onesait.platform.config.services.apimanager.operation.HeaderJson;
 import com.minsait.onesait.platform.config.services.apimanager.operation.OperationJson;
 import com.minsait.onesait.platform.config.services.apimanager.operation.QueryStringJson;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.apimanager.UserApiDTO;
@@ -70,8 +62,6 @@ public class ApiManagerHelper {
 	@Autowired
 	private ApiOperationRepository apiOperationRepository;
 	@Autowired
-	private ApiAuthenticationRepository apiAuthenticationRepository;
-	@Autowired
 	private UserTokenRepository userTokenRepository;
 	@Autowired
 	private ApiManagerService apiManagerService;
@@ -88,10 +78,13 @@ public class ApiManagerHelper {
 
 	private static final String API_SERVICES_STR = "apiServices";
 	private static final String API_SWAGGER_UI_STR = "apiSwaggerUI";
+	private static final String API_ENDPOINT_STR = "apiEndpoint";
 	private static final String USERS_STR = "users";
 	private static final String ENDPOINT_BASE_STR = "endpointBase";
 	private static final String OPERATIONS_STR = "operations";
 	private static final String CLIENTS_STR = "clients";
+	@Value("${gravitee.enable}")
+	private boolean graviteeOn;
 
 	// To populate the List Api Form
 	public void populateApiManagerListForm(Model uiModel) {
@@ -103,16 +96,17 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(USERS_STR, users);
 		uiModel.addAttribute("states", Api.ApiStates.values());
 		uiModel.addAttribute("auths", userApiRepository.findByUser(user));
+		uiModel.addAttribute("graviteeOn", graviteeOn);
 	}
 
 	// To populate the Create Api Form
 	public void populateApiManagerCreateForm(Model uiModel) {
-		Set<Ontology> ontologies;
+		List<OntologyDTO> ontologies;
 
-		ontologies = new LinkedHashSet<>(ontologyService.getAllOntologies(utils.getUserId()));
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
-
+		ontologies = ontologyService.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
+		
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
+		uiModel.addAttribute(API_ENDPOINT_STR,"");
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 
@@ -120,6 +114,7 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(OPERATIONS_STR, new ArrayList<String>());
 		uiModel.addAttribute("ontologies", ontologies);
 		uiModel.addAttribute("api", new Api());
+		uiModel.addAttribute("graviteeOn", graviteeOn);
 	}
 
 	// To populate de Api Create Form
@@ -130,17 +125,22 @@ public class ApiManagerHelper {
 
 		final Api api = apiRepository.findById(apiId);
 
-		final List<ApiAuthentication> apiAuthenticacion = apiAuthenticationRepository.findAllByApi(api);
-		final AuthenticationJson authenticacion = populateAuthenticationObject(apiAuthenticacion);
 		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
+		
+		if (api.getGraviteeId()==null) {
+			uiModel.addAttribute(API_ENDPOINT_STR, 
+					resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		} else {
+			uiModel.addAttribute(API_ENDPOINT_STR, 
+					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/").concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+		}
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
 				ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
-		uiModel.addAttribute("authenticacion", authenticacion);
 		uiModel.addAttribute(OPERATIONS_STR, operations);
 		uiModel.addAttribute("api", api);
 
@@ -167,50 +167,28 @@ public class ApiManagerHelper {
 		// POPULATE API TAB
 		final Api api = apiRepository.findById(apiId);
 
-		final List<ApiAuthentication> apiAuthenticacion = apiAuthenticationRepository.findAllByApi(api);
-		final AuthenticationJson authenticacion = populateAuthenticationObject(apiAuthenticacion);
 		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
-		uiModel.addAttribute("authenticacion", authenticacion);
 		uiModel.addAttribute(OPERATIONS_STR, operations);
+		
+		if (api.getGraviteeId()==null) {
+			uiModel.addAttribute(API_ENDPOINT_STR, 
+					resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		} else {
+			uiModel.addAttribute(API_ENDPOINT_STR, 
+					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/").concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+		}
+
 		uiModel.addAttribute("api", api);
 		if (apiManagerService.postProcess(api))
 			uiModel.addAttribute("postProcessFx", apiManagerService.getPostProccess(api));
 
 		// POPULATE AUTH TAB
 		uiModel.addAttribute(CLIENTS_STR, userApiRepository.findByApiId(apiId));
-	}
-
-	private AuthenticationJson populateAuthenticationObject(List<ApiAuthentication> apiAuthentications) {
-		if (apiAuthentications != null && !apiAuthentications.isEmpty()) {
-			final ApiAuthentication apiAuthentication = apiAuthentications.get(0);
-			final AuthenticationJson authenticacion = new AuthenticationJson();
-			authenticacion.setType(apiAuthentication.getType());
-			authenticacion.setDescription(apiAuthentication.getDescription());
-
-			final List<List<Map<String, String>>> paramList = new ArrayList<>();
-
-			for (final ApiAuthenticationParameter apiparam : apiAuthentication.getApiAuthenticationParameters()) {
-				final List<Map<String, String>> params = new ArrayList<>();
-
-				for (final ApiAuthenticationAttribute apiAttrib : apiparam.getApiautenticacionattribs()) {
-					final Map<String, String> attrib = new HashMap<>();
-					attrib.put("key", apiAttrib.getName());
-					attrib.put("value", apiAttrib.getValue());
-
-					params.add(attrib);
-				}
-				paramList.add(params);
-			}
-			authenticacion.setParams(paramList);
-
-			return authenticacion;
-		}
-		return null;
 	}
 
 	private static List<OperationJson> populateOperationsObject(List<ApiOperation> apiOperations) {
@@ -225,21 +203,6 @@ public class ApiManagerHelper {
 			operationJson.setPath(operation.getPath());
 			operationJson.setEndpoint(operation.getEndpoint());
 			operationJson.setPostprocess(operation.getPostProcess());
-
-			final List<HeaderJson> headers = new ArrayList<>();
-
-			for (final ApiHeader header : operation.getApiheaders()) {
-				final HeaderJson headerJson = new HeaderJson();
-				headerJson.setName(header.getName());
-				headerJson.setDescription(header.getHeader_description());
-				headerJson.setType(header.getHeader_type());
-				headerJson.setValue(header.getHeader_value());
-				headerJson.setCondition(header.getHeader_condition());
-
-				headers.add(headerJson);
-			}
-
-			operationJson.setHeaders(headers);
 
 			final List<QueryStringJson> queryStrings = new ArrayList<>();
 
@@ -275,7 +238,6 @@ public class ApiManagerHelper {
 		api.setDescription(apiMultipart.getDescription());
 		api.setCategory(Api.ApiCategories.valueOf(apiMultipart.getCategory()));
 		api.setOntology(apiMultipart.getOntology());
-		api.setEndpoint(apiMultipart.getEndpoint());
 		api.setEndpointExt(apiMultipart.getEndpointExt());
 		api.setMetaInf(apiMultipart.getMetaInf());
 		api.setImageType(apiMultipart.getImageType());
@@ -363,5 +325,4 @@ public class ApiManagerHelper {
 		model.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		model.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 	}
-
 }

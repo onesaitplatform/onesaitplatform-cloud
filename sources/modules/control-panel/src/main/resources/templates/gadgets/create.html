@@ -145,16 +145,19 @@
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
 									
 								</div>
-								<div class="pull-right">
-									<!-- CANCEL -->
-									<button th:if="${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
-									<span th:if="${iframe}" class="sep no-border"></span>
-									<!-- CREATE IFRAME-->
-									<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline blue" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
-									<!-- UPDATE IFRAME-->
-									<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline blue" name="update"> <span th:text="#{gen.editBtn}"> Edit</span></button>
+								<div class="form-actions">
+									  <div class="pull-right">
+										<!-- CANCEL -->
+										<button th:if="${iframe}" id="cancelBtn" type="button"  style="border-width: 0px !important;" class="btn btn-circle btn-outline blue " name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
+										
+									
+								  
+										<!-- CREATE IFRAME-->
+										<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+										<!-- UPDATE IFRAME-->
+										<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"> <span th:text="#{gen.editBtn}"> Edit</span></button>
+									</div>
 								</div>
-								
 								<div th:classappend="${iframe} ? hide : ''"  class="tools">
 									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
 									<a href="" id="toolFullScreen" class="fullscreen" data-original-title="" title=""> </a>
@@ -246,7 +249,13 @@
 									
 									<!-- NUEVA ZONA DE CONSULTA ##################################################################### -->
 									<!-- CREACIÓN DE CONSULTA -->
-									<div id="query-panel" class="col-md-12 hide ">									
+									<div id="query-panel" class="col-md-12 hide ">
+									<div id="alert-authorizations" class="alert alert-info">
+										 <i class="fa fa-info-circle"></i> <span th:text="#{gadgets.query.tool.info1}"> Define the datasource, for which it is necessary that you enter a valid query, in the query field you can use the wizard, by clicking the buttons next to SELECT, WHERE and ORDER BY.</span><br/> 
+										<span th:text="#{gadgets.query.tool.info2}"> You must also select a maximum of results for this query and a refresh time that indicates how often the query is made. </span><br/>
+										<span th:text="#{gadgets.query.tool.info3}"> Press EXECUTE QUERY to verify that the query returns the expected data.</span><br/>
+										<span th:text="#{gadgets.query.tool.info4}"> Press CONTINUE to continue.</span>
+										</div>									
 										<div class="panel panel-white no-shadow">
 											<div class="panel-heading panel-sofia2">
 												<h3 class="panel-title uppercase font-grey-mint"> <span th:text="#{database.queryonto}">Consultas sobre </span> <span id="query-ontologia" class="bold uppercase">ontología</span></h3>											
@@ -553,7 +562,7 @@
 												<div style="margin-top:20px" class="form-actions">
 													<div class="pull-left">
 														<!-- CANCEL -->														
-														<button th:if="!${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+														<button th:if="!${iframe}" id="cancelBtn" type="button"  style="border-width: 0px !important;" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 													</div>
 													
 													<div class="pull-right">														
@@ -737,11 +746,15 @@
 			if(gadgetCreateJson.iframe && gadgetCreateJson.type!=null){
 				showConfigAndMeasures(gadgetCreateJson.type);
 			}else{
+				var info = '<div id="alert-authorizations" class="alert alert-info ">'+
+				'<i class="fa fa-info-circle"></i> <span >'+ gadgetCreateJson.select_gadget_info +'</span>'+
+			    '</div>';
+				$("#icons").append(info);
 				$.each(gadget, function() {
 						var Type = this.type;
 						var Icon = this.icon;						
 						var html_markup = '';
-						html_markup = '<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">' +
+						html_markup ='<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">' +
 						'	<div class="portlet light bordered" id="' + Type + '" style="padding: 8px 16px 16px 16px;" >' +
 						'		<div class="portlet-title">' +
 						'			<div class="caption">' +						
@@ -766,6 +779,7 @@
 						'</div>';
 						$("#icons").append(html_markup);
 					})
+					
 				}
 		  }		
 	}
@@ -1464,8 +1478,8 @@
 		
 		
 		// SPECIFIC HTML GADGET CONFIGURATION FIELDS 
-		var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">Chart Legend</h4>';
-		gchtml += '<div class="row">';
+		var gchtml = '<h4 >Chart Legend</h4>';
+		    gchtml += '<div class="row">';
 			
 			// legend display
 			gchtml += '<div class="form-group col-md-2">';
@@ -2398,6 +2412,7 @@
 	"body_text_color" :[[#{gadgets.body.text.color}]],
 	"footer_text_color" :[[#{gadgets.footer.text.color}]],
 	"measures" :[[#{gadgets.measures}]],
+	"select_gadget_info":[[#{gadgets.select.gadget.info}]],
 	"map_config" :[[#{gadgets.map.config}]],
 	"marker_filter" :[[#{gadgets.marker.filter}]],
 	"json_marker" :[[#{gadgets.json.marker}]],

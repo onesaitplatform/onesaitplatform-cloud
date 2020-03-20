@@ -19,18 +19,18 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import com.minsait.onesait.platform.config.model.ClientConnection;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
-import com.minsait.onesait.platform.config.model.Device;
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.OAuthAccessToken;
@@ -41,10 +41,10 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.ClientConnectionRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
-import com.minsait.onesait.platform.config.repository.DeviceRepository;
-import com.minsait.onesait.platform.config.repository.DeviceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
@@ -69,6 +69,7 @@ import com.minsait.onesait.platform.config.services.exceptions.UserServiceExcept
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
+import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +89,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private TwitterListeningRepository twitterListeningRepository;
 	@Autowired
-	private DeviceSimulationRepository deviceSimulationRepository;
+	private ClientPlatformInstanceSimulationRepository deviceSimulationRepository;
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
@@ -114,7 +115,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private OntologyRestHeadersRepository ontologyRestHeaderRepository;
 	@Autowired
-	private DeviceRepository deviceRepository;
+	private ClientPlatformInstanceRepository deviceRepository;
 	@Autowired
 	private OPResourceRepository resourceRepository;
 	@Autowired
@@ -129,36 +130,73 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	private GadgetRepository gadgetRepository;
 	@Autowired
 	private OntologyTimeSeriesRepository ontologyTimeSeriesRepository;
+	@Autowired
+	private ProjectService projectService;
 
 	@Autowired
 	private QueryTemplateRepository queryTemplateRepository;
 
 	@Override
-	@Transactional
 	public void deleteOntology(String id, String userId) {
-		final User user = userService.getUser(userId);
-		final Ontology ontology = ontologyService.getOntologyById(id, userId);
-		if (resourceService.isResourceSharedInAnyProject(ontology))
-			throw new OPResourceServiceException(
-					"This Ontology is shared within a Project, revoke access from project prior to deleting");
+
 		try {
-
+			final User user = userService.getUser(userId);
+			final Ontology ontology = ontologyService.getOntologyById(id, userId);
+			if (resourceService.isResourceSharedInAnyProject(ontology))
+				throw new OPResourceServiceException(
+						"This Ontology is shared within a Project, revoke access from project prior to deleting");
 			if (ontologyService.hasUserPermisionForChangeOntology(user, ontology)) {
-				deleteClientPlatformOntologyRelations(ontology);
-				deleteOntologyApis(ontology);
+				if (clientPlatformOntologyRepository.findByOntology(ontology) != null) {
+					clientPlatformOntologyRepository.findByOntology(ontology).forEach(cpo -> {
+						final ClientPlatform client = cpo.getClientPlatform();
+						client.getClientPlatformOntologies().removeIf(r -> r.getOntology().equals(ontology));
+						clientPlatformOntologyRepository.deleteById(cpo.getId());
+					});
 
-				ontologyUserAccessRepository.deleteByOntology(ontology);
+				}
 
-				twitterListeningRepository.deleteByOntology(ontology);
+				if (!apiRepository.findByOntology(ontology).isEmpty()) {
+					apiRepository.findByOntology(ontology).forEach(a -> {
+						projectService.deleteResourceFromProjects(a.getId());
+						apiRepository.delete(a);
+					});
+				}
+				if (ontologyUserAccessRepository.findByOntology(ontology) != null) {
+					ontologyUserAccessRepository.deleteByOntology(ontology);
+				}
+				if (twitterListeningRepository.findByOntology(ontology) != null) {
+					twitterListeningRepository.deleteByOntology(ontology);
+				}
+				if (ontologyUserAccessRepository.findByOntology(ontology) != null) {
+					ontologyUserAccessRepository.deleteByOntology(ontology);
+				}
+				if (!twitterListeningRepository.findByOntology(ontology).isEmpty()) {
+					twitterListeningRepository.deleteByOntology(ontology);
+				}
+				if (!deviceSimulationRepository.findByOntology(ontology).isEmpty()) {
+					deviceSimulationRepository.deleteByOntology(ontology);
+				}
 
-				ontologyUserAccessRepository.deleteByOntology(ontology);
+				if (ontologyRestRepository.findByOntologyId(ontology) != null) {
+					ontologyRestHeaderRepository
+							.delete(ontologyRestRepository.findByOntologyId(ontology).getHeaderId());
+				}
+				if (ontologyRestRepository.findByOntologyId(ontology) != null) {
+					ontologyRestSecurityRepository
+							.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
+				}
 
-				twitterListeningRepository.deleteByOntology(ontology);
+				if (ontologyTimeSeriesRepository.findById(id) != null) {
+					final Ontology stats = ontologyRepository.findByIdentification(
+							ontologyTimeSeriesRepository.findById(id).getOntology().getIdentification() + "_stats");
+					if (stats != null) {
+						ontologyRepository.deleteById(stats.getId());
+					}
+				}
+				gadgetDatasourceRepository.findByOntology(ontology).forEach(g -> {
+					deleteGadgetDataSource(g.getId(), userId);
 
-				deviceSimulationRepository.deleteByOntology(ontology);
-				deleteOntologyRestComponents(ontology);
-
-				deleteOntologyTimeSeriesComponents(id);
+				});
 
 				ontologyRepository.deleteById(id);
 
@@ -166,46 +204,9 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 				throw new OntologyServiceException("You dont have rights to delete ontology");
 			}
 		} catch (final Exception e) {
-			log.error("Error", e);
 			throw e;
 		}
 
-	}
-
-	private void deleteOntologyTimeSeriesComponents(String id) {
-		if (ontologyTimeSeriesRepository.findById(id) != null) {
-			final Ontology stats = ontologyRepository.findByIdentification(
-					ontologyTimeSeriesRepository.findById(id).getOntology().getIdentification() + "_stats");
-			if (stats != null) {
-				ontologyRepository.deleteById(stats.getId());
-			}
-		}
-	}
-
-	private void deleteOntologyRestComponents(Ontology ontology) {
-		if (ontologyRestRepository.findByOntologyId(ontology) != null) {
-			ontologyRestHeaderRepository.delete(ontologyRestRepository.findByOntologyId(ontology).getHeaderId());
-		}
-		if (ontologyRestRepository.findByOntologyId(ontology) != null) {
-			ontologyRestSecurityRepository.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
-		}
-	}
-
-	private void deleteOntologyApis(Ontology ontology) {
-		if (!apiRepository.findByOntology(ontology).isEmpty()) {
-			apiRepository.findByOntology(ontology).forEach(a -> apiRepository.delete(a));
-		}
-	}
-
-	private void deleteClientPlatformOntologyRelations(Ontology ontology) {
-		if (clientPlatformOntologyRepository.findByOntology(ontology) != null) {
-			clientPlatformOntologyRepository.findByOntology(ontology).forEach(cpo -> {
-				final ClientPlatform client = cpo.getClientPlatform();
-				client.getClientPlatformOntologies().removeIf(r -> r.getOntology().equals(ontology));
-				clientPlatformOntologyRepository.deleteById(cpo.getId());
-			});
-
-		}
 	}
 
 	@Override
@@ -218,33 +219,35 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Transactional
 	public void deleteClient(String id) {
 		try {
+
 			final ClientPlatform client = clientPlatformRepository.findById(id);
 			final List<ClientPlatformOntology> cpf = clientPlatformOntologyRepository.findByClientPlatform(client);
-			if (!CollectionUtils.isEmpty(cpf)) {
-				for (final Iterator<ClientPlatformOntology> iterator = cpf.iterator(); iterator.hasNext();) {
-					final ClientPlatformOntology clientPlatformOntology = iterator.next();
+			if (cpf != null && cpf.size() > 0) {
+				for (final Iterator iterator = cpf.iterator(); iterator.hasNext();) {
+					final ClientPlatformOntology clientPlatformOntology = (ClientPlatformOntology) iterator.next();
 					clientPlatformOntologyRepository.delete(clientPlatformOntology);
 				}
+
 			}
 			final List<ClientConnection> cc = clientConnectionRepository.findByClientPlatform(client);
-			if (!CollectionUtils.isEmpty(cc)) {
+			if (cc != null && cc.size() > 0) {
 				for (final Iterator<ClientConnection> iterator = cc.iterator(); iterator.hasNext();) {
 					final ClientConnection clientConnection = iterator.next();
 					clientConnectionRepository.delete(clientConnection);
 				}
 			}
 
-			final List<Device> ld = deviceRepository.findByClientPlatform(client);
-			if (!CollectionUtils.isEmpty(ld)) {
-				for (final Iterator<Device> iterator = ld.iterator(); iterator.hasNext();) {
-					final Device device = iterator.next();
+			final List<ClientPlatformInstance> ld = deviceRepository.findByClientPlatform(client);
+			if (ld != null && ld.size() > 0) {
+				for (final Iterator<ClientPlatformInstance> iterator = ld.iterator(); iterator.hasNext();) {
+					final ClientPlatformInstance device = iterator.next();
 					deviceRepository.delete(device);
 				}
 			}
-			final List<DeviceSimulation> lds = deviceSimulationRepository.findByClientPlatform(client);
-			if (!CollectionUtils.isEmpty(lds)) {
-				for (final Iterator<DeviceSimulation> iterator = lds.iterator(); iterator.hasNext();) {
-					final DeviceSimulation deviceSim = iterator.next();
+			final List<ClientPlatformInstanceSimulation> lds = deviceSimulationRepository.findByClientPlatform(client);
+			if (lds != null && lds.size() > 0) {
+				for (final Iterator<ClientPlatformInstanceSimulation> iterator = lds.iterator(); iterator.hasNext();) {
+					final ClientPlatformInstanceSimulation deviceSim = iterator.next();
 					deviceSimulationRepository.delete(deviceSim);
 				}
 			}
@@ -261,10 +264,24 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	}
 
 	@Override
-	public void deleteToken(String id) {
+	@Transactional
+	public void deleteToken(Token token) {
 		try {
-			final Token token = tokenRepository.findById(id);
+			ClientPlatform cp = token.getClientPlatform();
+			
+			Set<Token> tokens = new HashSet<>();
+			
+			for (Token tokencp : cp.getTokens()) {
+				if (!tokencp.getId().equals(token.getId())){
+					tokens.add(tokencp);
+				}
+			}
+			
 			tokenRepository.delete(token);
+			
+			cp.setTokens(tokens);
+			clientPlatformRepository.save(cp);
+			
 		} catch (final Exception e) {
 			log.error("Error deleting Token", e);
 			throw new OntologyServiceException("Couldn't delete Token");
@@ -274,7 +291,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	@Transactional
-	public void deleteDeviceSimulation(DeviceSimulation simulation) {
+	public void deleteDeviceSimulation(ClientPlatformInstanceSimulation simulation) throws Exception {
 
 		try {
 			if (!simulation.isActive())
@@ -311,27 +328,23 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 					throw new OPResourceServiceException(
 							"This Datasource is shared within a Project, revoke access from project prior to deleting");
 
-				deleteGadgetMeasures(id);
+				// find measures with this datasource
+				final List<GadgetMeasure> list = gadgetMeasureRepository.findByDatasource(id);
+				if (list.size() > 0) {
+					final HashSet<String> map = new HashSet<>();
+					for (final GadgetMeasure gm : list) {
+						map.add(gm.getGadget().getId());
+					}
+					for (final String gadgetId : map) {
+						// Delete gadget for id
+						gadgetRepository.delete(gadgetId);
+					}
+
+				}
 				gadgetDatasourceRepository.delete(id);
 			} else {
 				throw new OntologyServiceException("Couldn't delete gadgetDataSource");
 			}
-		}
-	}
-
-	private void deleteGadgetMeasures(String id) {
-		// find measures with this datasource
-		final List<GadgetMeasure> list = gadgetMeasureRepository.findByDatasource(id);
-		if (!list.isEmpty()) {
-			final HashSet<String> map = new HashSet<>();
-			for (final GadgetMeasure gm : list) {
-				map.add(gm.getGadget().getId());
-			}
-			for (final String gadgetId : map) {
-				// Delete gadget for id
-				gadgetRepository.delete(gadgetId);
-			}
-
 		}
 	}
 
@@ -395,7 +408,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 		try {
 			final List<User> users = userRepository.findAll(userIds);
 
-			if (!CollectionUtils.isEmpty(users)) {
+			if (users != null && users.size() > 0) {
 				users.forEach(user -> {
 					user.setDateDeleted(new Date());
 					user.setActive(false);

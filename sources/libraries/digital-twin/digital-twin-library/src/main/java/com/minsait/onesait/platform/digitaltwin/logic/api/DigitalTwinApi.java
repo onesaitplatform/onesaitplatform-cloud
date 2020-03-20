@@ -19,7 +19,6 @@ import java.util.Iterator;
 
 import javax.annotation.PostConstruct;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,12 +89,12 @@ public class DigitalTwinApi implements DigitalTwinLogicAPI {
 			HashMap<String, Object> properties = new HashMap<String, Object>();
 			while (keys.hasNext()) {
 				String property = keys.next();
-				JSONArray jsonArrayProperties = jsonData.getJSONArray(property);
-				properties.put(property, jsonArrayProperties.toString());
+				Object value = jsonData.get(property);
+				properties.put(property, value.toString());
 			}
 			eventManager.updateShadow(properties);
 		} catch (JSONException e) {
-			log.error("Error parding data");
+			log.error("Error parsing data");
 		}
 	}
 

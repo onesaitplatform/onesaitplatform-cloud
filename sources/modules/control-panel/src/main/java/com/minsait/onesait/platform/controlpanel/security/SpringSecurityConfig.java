@@ -1,3 +1,4 @@
+
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
  * 2013-2019 SPAIN
@@ -35,11 +36,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.velocity.app.VelocityEngine;
+import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
 import org.opensaml.xml.parse.StaticBasicParserPool;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -54,6 +57,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.cas.ServiceProperties;
+import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -65,8 +70,11 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.saml.SAMLAuthenticationProvider;
 import org.springframework.security.saml.SAMLBootstrap;
 import org.springframework.security.saml.SAMLEntryPoint;
+import org.springframework.security.saml.SAMLLogoutFilter;
+import org.springframework.security.saml.SAMLLogoutProcessingFilter;
 import org.springframework.security.saml.SAMLProcessingFilter;
 import org.springframework.security.saml.context.SAMLContextProviderImpl;
+import org.springframework.security.saml.context.SAMLContextProviderLB;
 import org.springframework.security.saml.key.JKSKeyManager;
 import org.springframework.security.saml.key.KeyManager;
 import org.springframework.security.saml.log.SAMLDefaultLogger;
@@ -84,6 +92,8 @@ import org.springframework.security.saml.processor.SAMLProcessorImpl;
 import org.springframework.security.saml.storage.EmptyStorageFactory;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.security.saml.util.VelocityFactory;
+import org.springframework.security.saml.websso.SingleLogoutProfile;
+import org.springframework.security.saml.websso.SingleLogoutProfileImpl;
 import org.springframework.security.saml.websso.WebSSOProfile;
 import org.springframework.security.saml.websso.WebSSOProfileConsumer;
 import org.springframework.security.saml.websso.WebSSOProfileConsumerHoKImpl;
@@ -96,10 +106,13 @@ import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
@@ -110,6 +123,9 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.components.BeanUtil;
+import com.minsait.onesait.platform.controlpanel.interceptor.BearerTokenFilter;
+import com.minsait.onesait.platform.controlpanel.interceptor.XOpAPIKeyFilter;
 import com.minsait.onesait.platform.controlpanel.security.xss.XSSFilter;
 
 import lombok.extern.slf4j.Slf4j;
@@ -122,7 +138,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final String LOGIN_STR = "/login";
 	private static final String SAML = "saml";
+	private static final String CAS = "cas";
 	private static final String CONFIGDB = "configdb";
+
 	@Value("${onesaitplatform.authentication.provider}")
 	private String authProvider;
 	@Value("${onesaitplatform.authentication.saml.idp_metadata}")
@@ -131,6 +149,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private String entityId;
 	@Value("${onesaitplatform.authentication.saml.entity_url}")
 	private String entityUrl;
+	@Value("${onesaitplatform.authentication.saml.unauthorized_url:/}")
+	private String unauthorizedUrl;
 	@Value("${onesaitplatform.authentication.saml.jks.uri}")
 	private String samlJksUri;
 	@Value("${onesaitplatform.authentication.saml.jks.store_pass}")
@@ -139,9 +159,22 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private String samlJksKeyAlias;
 	@Value("${onesaitplatform.authentication.saml.jks.key_pass}")
 	private String samlJksKeyPass;
+	@Value("${onesaitplatform.authentication.saml.context.samlScheme}")
+	private String samlScheme;
+	@Value("${onesaitplatform.authentication.saml.context.samlServerName}")
+	private String samlServerName;
+	@Value("${onesaitplatform.authentication.saml.context.samlIncludePort}")
+	private boolean samlIncludePort;
+	@Value("${server.port}")
+	private int samlServerPort;
+	@Value("${server.contextPath}")
+	private String samlContextPath;
 
 	@Value("${csrf.enable}")
 	private boolean csrfOn;
+
+	@Autowired
+	private BeanUtil beanUtils;
 
 	@Bean
 	public FilterRegistrationBean corsFilterOauth() {
@@ -168,8 +201,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private LogoutSuccessHandler logoutSuccessHandler;
-	
 	@Autowired(required = false)
+	private SingleSignOutFilter singleSignOutFilter;
+	@Autowired(required = false)
+	@Qualifier("casLogoutFilter")
 	private LogoutFilter logoutFilter;
 
 	@Autowired
@@ -195,7 +230,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/dashboards.*", null),
 					new RegexRequestMatcher("^/virtualdatasources.*", null),
 					new RegexRequestMatcher("^/querytool.*", null), new RegexRequestMatcher("^/datasources.*", null),
-					new RegexRequestMatcher("^/gadgets.*", null), new RegexRequestMatcher("^/saml.*", null));
+					new RegexRequestMatcher("^/gadgets.*", null), new RegexRequestMatcher("^/saml.*", null),
+					new RegexRequestMatcher("^/bpm" + ".*", null), new RegexRequestMatcher("^/oauth" + ".*", null),
+					new RegexRequestMatcher("^/users/register", null),
+					new RegexRequestMatcher("^/users/reset-password", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -218,12 +256,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http.headers().frameOptions().disable();
 		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico").permitAll()
-				.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/users/register")
-				.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+				.antMatchers("/api/applications", "/api/applications/").permitAll()
+				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token").permitAll()
+				.antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 				.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
 				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
-
+				.antMatchers("/nodered/auth/**/**").permitAll()
 				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
 						"/dashboards/viewiframe/**", "/viewers/view/**", "/gadgets/**", "/viewers/**",
 						"/datasources/**", "/v2/api-docs/", "/v2/api-docs/**", "/swagger-resources/",
@@ -231,10 +270,12 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 						"/swagger-ui.html", "/layer/**")
 
 				.permitAll();
-		if (!authProvider.equalsIgnoreCase(CONFIGDB))
-			http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
-		else
-			http.formLogin().successHandler(successHandler).permitAll();
+
+		// This line deactivates login page when using SAML or other Auth Provider
+		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
+		// http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
+
+		http.formLogin().successHandler(successHandler).permitAll();
 		http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
 				.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
 				.antMatchers("/management", "/management/**").permitAll()
@@ -248,11 +289,16 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionRegistry(sessionRegistry()).and().sessionFixation().none().and().exceptionHandling()
 				.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint);
 
+		if (authProvider.equalsIgnoreCase(CAS))
+			http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
+					LogoutFilter.class);
 		if (authProvider.equalsIgnoreCase(SAML)) {
 			http.addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class).addFilterAfter(samlFilter(),
 					BasicAuthenticationFilter.class);
 
 		}
+		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class);
 
 	}
 
@@ -338,6 +384,17 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected AuthenticationManager authenticationManager() throws Exception {
 		return new ProviderManager(Arrays.asList(authenticationProvider));
+	}
+
+	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "cas")
+	public CasAuthenticationFilter casAuthenticationFilter(ServiceProperties sP) throws Exception {
+		final CasAuthenticationFilter filter = new CasAuthenticationFilter();
+		filter.setServiceProperties(sP);
+		filter.setAuthenticationManager(authenticationManager());
+		filter.setAuthenticationSuccessHandler(successHandler);
+		return filter;
 	}
 
 	@Bean
@@ -433,7 +490,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 				if (fis != null)
 					fis.close();
 			} catch (final Exception e2) {
-			    log.error("" + e2);
+				log.error("" + e2);
 			}
 		}
 	}
@@ -502,8 +559,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Bean
 	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
 	public SAMLContextProviderImpl contextProvider() {
-		final SAMLContextProviderImpl context = new SAMLContextProviderImpl();
+		final SAMLContextProviderLB context = new SAMLContextProviderLB();
 		context.setStorageFactory(new EmptyStorageFactory());
+		context.setScheme(samlScheme);
+		context.setServerName(samlServerName);
+		context.setIncludeServerPortInRequestURL(samlIncludePort);
+		context.setServerPort(samlServerPort);
+		context.setContextPath(samlContextPath);
 		return context;
 	}
 
@@ -545,18 +607,71 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	public FilterChainProxy samlFilter() {
 		final List<SecurityFilterChain> chains = new ArrayList<>();
 		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/login/**"), samlEntryPoint()));
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/logout/**"), samlLogoutFilter()));
 		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/metadata/**"),
 				metadataDisplayFilter()));
 		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SSO/**"),
 				samlWebSSOProcessingFilter()));
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SingleLogout/**"),
+				samlLogoutProcessingFilter()));
 
 		return new FilterChainProxy(chains);
 	}
 
 	@Bean
 	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLLogoutProcessingFilter samlLogoutProcessingFilter() {
+		return new SAMLLogoutProcessingFilter(logoutSuccessHandler, logoutHandler());
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SecurityContextLogoutHandler logoutHandler() {
+		final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+		logoutHandler.setInvalidateHttpSession(true);
+		logoutHandler.setClearAuthentication(true);
+		return logoutHandler;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public FilterRegistrationBean logoutSamlFilter() {
+		final FilterRegistrationBean registration = new FilterRegistrationBean();
+		registration.setFilter(new OncePerRequestFilter() {
+
+			@Override
+			protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+					FilterChain filterChain) throws ServletException, IOException {
+				response.sendRedirect("/controlpanel/saml/logout");
+			}
+
+		});
+		registration.addUrlPatterns("/logout");
+		registration.setName("logoutSamlFilter");
+		registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+		return registration;
+
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SingleLogoutProfile logoutprofile() {
+		return new SingleLogoutProfileImpl();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLLogoutFilter samlLogoutFilter() {
+		return new SAMLLogoutFilter(logoutSuccessHandler, new LogoutHandler[] { logoutHandler() },
+				new LogoutHandler[] { logoutHandler() });
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
 	public SimpleUrlAuthenticationFailureHandler authenticationFailureHandler() {
-		return new SimpleUrlAuthenticationFailureHandler();
+		final SimpleUrlAuthenticationFailureHandler authHandler = new SimpleUrlAuthenticationFailureHandler();
+		authHandler.setDefaultFailureUrl(unauthorizedUrl);
+		return authHandler;
 	}
 
 	@Bean
@@ -573,7 +688,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		final SAMLProcessingFilter samlWebSSOProcessingFilter = new SAMLProcessingFilter();
 		samlWebSSOProcessingFilter
 				.setAuthenticationManager(new ProviderManager(Arrays.asList(samlAuthenticationProvider())));
-		samlWebSSOProcessingFilter.setAuthenticationSuccessHandler(successRedirectHandler());
+		samlWebSSOProcessingFilter.setAuthenticationSuccessHandler(successHandler);
 		samlWebSSOProcessingFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
 		return samlWebSSOProcessingFilter;
 	}

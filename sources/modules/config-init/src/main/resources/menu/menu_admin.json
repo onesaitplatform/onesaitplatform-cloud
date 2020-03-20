@@ -50,6 +50,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/scalability/index.html"
+				},
+				{
+					"title": {
+						"EN": "Kafka Monitoring",
+						"ES": "Monitorización de Kafka"
+					},
+					"icon": "",
+					"url": "/controlpanel/kafka/monitoring/list"
 				}
 			]
 		},
@@ -143,6 +151,14 @@
 				},
 				{
 					"title": {
+						"EN": "Microservices Management",
+						"ES": "Gestión de microservicios"
+					},
+					"icon": "",
+					"url": "/controlpanel/microservices/list"
+				},
+				{
+					"title": {
 						"EN": "Categorizations Management",
 						"ES": "Gestión de categorizaciones"
 					},
@@ -156,6 +172,22 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/caches/list"
+				},
+				{
+					"title": {
+						"EN": "BPM Management",
+						"ES": "Gestión de BPM"
+					},
+					"icon": "",
+					"url": "/controlpanel/bpm/list"
+				},
+				{
+					"title": {
+						"EN": "Dashboard Styles Management",
+						"ES": "Gestión Estilos Dashboards"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboardconf/list"
 				}
 			]
 		},

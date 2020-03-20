@@ -23,7 +23,7 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.ParameterModel;
 
-public interface ParameterModelRepository extends JpaRepository<ParameterModel, Long> {
+public interface ParameterModelRepository extends JpaRepository<ParameterModel, String> {
 
 	ParameterModel findById(String id);
 

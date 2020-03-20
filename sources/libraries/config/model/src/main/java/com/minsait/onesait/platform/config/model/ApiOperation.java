@@ -60,12 +60,6 @@ public class ApiOperation extends AuditableEntityWithUUID {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
-	private Set<ApiHeader> apiheaders;
-
-	@OneToMany(mappedBy = "apiOperation", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
 	private Set<ApiQueryParameter> apiqueryparameters;
 
 	@Column(name = "IDENTIFICATION", length = 50, nullable = false)
