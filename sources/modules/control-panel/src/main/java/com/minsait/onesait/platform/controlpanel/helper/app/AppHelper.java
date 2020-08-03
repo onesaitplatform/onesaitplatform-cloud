@@ -57,10 +57,10 @@ public class AppHelper {
 
 	@Autowired
 	private AppService appService;
-	
+
 	@Autowired
 	UserService userService;
-	
+
 	@Autowired
 	private ProjectService projectService;
 
@@ -73,11 +73,12 @@ public class AppHelper {
 		if (apps != null && !apps.isEmpty()) {
 			for (final App app : apps) {
 				final AppDTO appDTO = new AppDTO();
-				appDTO.setAppId(app.getAppId());
+				appDTO.setId(app.getId());
 				appDTO.setDateCreated(app.getCreatedAt());
+				appDTO.setDateUpdated(app.getUpdatedAt());
 				appDTO.setDescription(app.getDescription());
-				appDTO.setName(app.getName());
-
+				appDTO.setIdentification(app.getIdentification());
+				appDTO.setUser(app.getUser().getUserId());
 				if (app.getAppRoles() != null && !app.getAppRoles().isEmpty()) {
 					final List<String> list = new ArrayList<>();
 					for (final AppRole appRole : app.getAppRoles()) {
@@ -104,8 +105,7 @@ public class AppHelper {
 
 	public App dto2app(AppCreateDTO app) throws IOException {
 		final App napp = new App();
-		napp.setAppId(app.getAppId());
-		napp.setName(app.getName());
+		napp.setIdentification(app.getIdentification());
 		napp.setUser(userService.getUser(utils.getUserId()));
 		napp.setSecret(app.getSecret());
 		napp.setDescription(app.getDescription());
@@ -122,16 +122,15 @@ public class AppHelper {
 	public void populateAppShow(Model model, App app) {
 
 		final AppCreateDTO appDTO = new AppCreateDTO();
-		appDTO.setAppId(app.getAppId());
-		appDTO.setName(app.getName());
+		appDTO.setId(app.getId());
+		appDTO.setIdentification(app.getIdentification());
 		appDTO.setSecret(app.getSecret());
 		appDTO.setDescription(app.getDescription());
 		appDTO.setTokenValiditySeconds(app.getTokenValiditySeconds());
 
-		
 		final List<AppAssociatedCreateDTO> associations = new ArrayList<>();
 		final List<UserAppCreateDTO> usersList = new ArrayList<>();
-		
+
 		if (app.getAppRoles() != null && !app.getAppRoles().isEmpty()) {
 			copyRoleList(appDTO, app, usersList);
 		}
@@ -142,9 +141,9 @@ public class AppHelper {
 					for (final AppRole childRole : role.getChildRoles()) {
 						final AppAssociatedCreateDTO associatedAppDTO = new AppAssociatedCreateDTO();
 						associatedAppDTO.setId(role.getName() + ':' + childRole.getName());
-						associatedAppDTO.setFatherAppId(app.getAppId());
+						associatedAppDTO.setFatherAppId(app.getIdentification());
 						associatedAppDTO.setFatherRoleName(role.getName());
-						associatedAppDTO.setChildAppId(childRole.getApp().getAppId());
+						associatedAppDTO.setChildAppId(childRole.getApp().getIdentification());
 						associatedAppDTO.setChildRoleName(childRole.getName());
 						associations.add(associatedAppDTO);
 					}
@@ -158,9 +157,9 @@ public class AppHelper {
 		model.addAttribute("roles", app.getAppRoles());
 		model.addAttribute("authorizations", usersList);
 		model.addAttribute("associations", associations);
-		
+
 	}
-	
+
 	private void copyRoleList(AppCreateDTO appDTO, App app, List<UserAppCreateDTO> usersList) {
 		final List<String> rolesList = new ArrayList<>();
 		for (final AppRole appRole : app.getAppRoles()) {
@@ -209,15 +208,15 @@ public class AppHelper {
 
 	public void populateAppUpdate(Model model, App app, User sessionUser, String ldapBaseDn, boolean ldapActive) {
 		final AppCreateDTO appDTO = new AppCreateDTO();
-		appDTO.setAppId(app.getAppId());
-		appDTO.setName(app.getName());
+		appDTO.setId(app.getId());
+		appDTO.setIdentification(app.getIdentification());
 		appDTO.setSecret(app.getSecret());
 		appDTO.setDescription(app.getDescription());
 		appDTO.setTokenValiditySeconds(app.getTokenValiditySeconds());
 
 		final List<AppAssociatedCreateDTO> appsAssociatedList = new ArrayList<>();
 		final List<UserAppCreateDTO> usersList = new ArrayList<>();
-		
+
 		if (app.getAppRoles() != null && !app.getAppRoles().isEmpty()) {
 			copyRoleList(appDTO, app, usersList);
 		}
@@ -243,9 +242,8 @@ public class AppHelper {
 				// Quitamos del 'select' de apps hijas: la propia app y las apps que ya tienen
 				// apps hijas
 				appsToChoose = appService.getAppsByUser(sessionUser.getUserId(), null).stream()
-						.filter(appToSelect -> ((!appToSelect.getAppId().equals(app.getAppId()))
-								&& (appToSelect.getChildApps() == null
-										|| appToSelect.getChildApps().isEmpty())))
+						.filter(appToSelect -> ((!appToSelect.getIdentification().equals(app.getIdentification()))
+								&& (appToSelect.getChildApps() == null || appToSelect.getChildApps().isEmpty())))
 						.collect(Collectors.toList());
 			}
 		}
@@ -253,20 +251,19 @@ public class AppHelper {
 			model.addAttribute("project", app.getProject());
 		} else {
 			model.addAttribute("project", new Project());
-			model.addAttribute("app", appDTO);
-			model.addAttribute("roles", app.getAppRoles());
-			model.addAttribute("users", users);
-			model.addAttribute("appsChild", appsToChoose);
-			model.addAttribute("authorizations", usersList);
-			model.addAttribute("associations", appsAssociatedList);
-			model.addAttribute("ldapEnabled", ldapActive);
-			model.addAttribute("baseDn", ldapBaseDn);
-			model.addAttribute("projectTypes", Project.ProjectType.values());
-			model.addAttribute("projects",
-				projectService.getAllProjects().stream()
-						.filter(p -> p.getApp() == null && CollectionUtils.isEmpty(p.getUsers()))
-						.collect(Collectors.toList()));
 		}
+		model.addAttribute("app", appDTO);
+		model.addAttribute("roles", app.getAppRoles());
+		model.addAttribute("users", users);
+		model.addAttribute("appsChild", appsToChoose);
+		model.addAttribute("authorizations", usersList);
+		model.addAttribute("associations", appsAssociatedList);
+		model.addAttribute("ldapEnabled", ldapActive);
+		model.addAttribute("baseDn", ldapBaseDn);
+		model.addAttribute("projectTypes", Project.ProjectType.values());
+		model.addAttribute("projects", projectService.getAllProjects().stream()
+				.filter(p -> p.getApp() == null && CollectionUtils.isEmpty(p.getUsers())).collect(Collectors.toList()));
+
 	}
 
 	private void asociateFatherRoles(List<AppAssociatedCreateDTO> appsAssociatedList, App app) {
@@ -275,8 +272,8 @@ public class AppHelper {
 				if (role.getChildRoles() != null && role.getChildRoles().contains(appRole)) {
 					final AppAssociatedCreateDTO appAssociatedDTO = new AppAssociatedCreateDTO();
 					appAssociatedDTO.setId(role.getName() + ':' + appRole.getName());
-					appAssociatedDTO.setFatherAppId(role.getApp().getAppId());
-					appAssociatedDTO.setChildAppId(app.getAppId());
+					appAssociatedDTO.setFatherAppId(role.getApp().getIdentification());
+					appAssociatedDTO.setChildAppId(app.getIdentification());
 					appAssociatedDTO.setFatherRoleName(role.getName());
 					appAssociatedDTO.setChildRoleName(appRole.getName());
 					appsAssociatedList.add(appAssociatedDTO);
@@ -291,8 +288,8 @@ public class AppHelper {
 				for (final AppRole childAppRole : fatherAppRole.getChildRoles()) {
 					final AppAssociatedCreateDTO appAssociatedDTO = new AppAssociatedCreateDTO();
 					appAssociatedDTO.setId(fatherAppRole.getName() + ':' + childAppRole.getName());
-					appAssociatedDTO.setFatherAppId(app.getAppId());
-					appAssociatedDTO.setChildAppId(childAppRole.getApp().getAppId());
+					appAssociatedDTO.setFatherAppId(app.getIdentification());
+					appAssociatedDTO.setChildAppId(childAppRole.getApp().getIdentification());
 					appAssociatedDTO.setFatherRoleName(fatherAppRole.getName());
 					appAssociatedDTO.setChildRoleName(childAppRole.getName());
 					appsAssociatedList.add(appAssociatedDTO);

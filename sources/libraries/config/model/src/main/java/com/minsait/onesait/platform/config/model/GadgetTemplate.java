@@ -18,6 +18,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -29,7 +30,8 @@ import lombok.Setter;
 
 @Configurable
 @Entity
-@Table(name = "GADGET_TEMPLATE")
+@Table(name = "GADGET_TEMPLATE", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
+		"IDENTIFICATION" }))
 
 public class GadgetTemplate extends OPResource {
 

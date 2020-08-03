@@ -93,6 +93,7 @@ public class NotebookServiceImpl implements NotebookService {
 	private static final String POST_ERROR = "Exception in POST in creation POST";
 	private static final String POST2_ERROR = "Exception in POST in creation POST: ";
 	private static final String POST_EXECUTING_ERROR = "Exception executing creation POST, status code: ";
+	private static final String POST_EXECUTING_DELETE_ERROR = "Exception executing delete notebook, status code: ";
 	private static final String NAME_STR = "{'name': '";
 	private static final String API_NOTEBOOK_STR = "/api/notebook/";
 	private static final String DUPLICATE_NOTEBOOK_NAME = "Error duplicate notebook name";
@@ -459,6 +460,27 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 	
 	@Override
+	public void removeNotebookOnlyZeppelin(String idZep, String user){
+		ResponseEntity<String> responseEntity;
+		try {
+			responseEntity = sendHttp(API_NOTEBOOK_STR + idZep, HttpMethod.DELETE, "");
+		} catch (final URISyntaxException e) {
+			log.error("The URI of the endpoint is invalid in delete notebook");
+			throw new NotebookServiceException("The URI of the endpoint is invalid in delete notebook: " + e);
+		}catch (final IOException e) {
+			log.error(POST_ERROR);
+			throw new NotebookServiceException("Exception in POST in delete notebook: ", e);
+		}
+		
+		final int statusCode = responseEntity.getStatusCodeValue();
+
+		if (statusCode != 200) {
+			log.error(POST_EXECUTING_DELETE_ERROR + statusCode);
+			throw new NotebookServiceException(POST_EXECUTING_DELETE_ERROR + statusCode);
+		}
+	}
+	
+	@Override
 	public void removeNotebook(String id, String user) {
 		ResponseEntity<String> responseEntity;
 		final Notebook nt = notebookRepository.findByIdentification(id);
@@ -486,8 +508,8 @@ public class NotebookServiceImpl implements NotebookService {
 			final int statusCode = responseEntity.getStatusCodeValue();
 
 			if (statusCode != 200) {
-				log.error("Exception executing delete notebook, status code: " + statusCode);
-				throw new NotebookServiceException("Exception executing delete notebook, status code: " + statusCode);
+				log.error(POST_EXECUTING_DELETE_ERROR + statusCode);
+				throw new NotebookServiceException(POST_EXECUTING_DELETE_ERROR + statusCode);
 			}
 			
 			for (NotebookUserAccess nua: notebookUserAccessRepository.findByNotebook(nt)) {
@@ -581,6 +603,16 @@ public class NotebookServiceImpl implements NotebookService {
 	@Override
 	public Notebook getNotebook(String identification, String userId) {
 		final Notebook nt = notebookRepository.findByIdentification(identification);
+		if (hasUserPermissionInNotebook(nt, userId)) {
+			return nt;
+		} else {
+			return null;
+		}
+	}
+	
+	@Override
+	public Notebook getNotebookByZepId(String notebookZepId, String userId) {
+		final Notebook nt = notebookRepository.findByIdzep(notebookZepId);
 		if (hasUserPermissionInNotebook(nt, userId)) {
 			return nt;
 		} else {

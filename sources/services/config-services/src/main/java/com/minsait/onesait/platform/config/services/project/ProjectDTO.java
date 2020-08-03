@@ -23,7 +23,7 @@ import lombok.Data;
 public class ProjectDTO {
 	private String id;
 	private ProjectType type;
-	private String name;
+	private String identification;
 	private String description;
 	private User user;
 

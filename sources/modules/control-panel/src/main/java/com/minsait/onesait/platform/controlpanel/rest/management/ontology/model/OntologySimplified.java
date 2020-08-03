@@ -146,7 +146,7 @@ public class OntologySimplified implements Comparable<OntologySimplified> {
 		this.allowsCreateTopic = ontology.isAllowsCreateTopic();
 		this.createdAt = ontology.getCreatedAt().toString();
 		this.updatedAt = ontology.getUpdatedAt().toString();
-		this.template = ontology.getDataModel().getName();
+		this.template = ontology.getDataModel().getIdentification();
 		this.templateCategory = ontology.getDataModel().getType();
 	}
 

@@ -74,6 +74,11 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	}
 
 	@Override
+	public GadgetTemplate getGadgetTemplateByIdentification(String identification) {
+		return this.gadgetTemplateRepository.findByIdentification(identification);
+	}
+
+	@Override
 	public boolean hasUserPermission(String id, String userId) {
 		User user = userRepository.findByUserId(userId);
 		if (user.getRole().getId().equals(ADMINISTRATOR)) {
@@ -92,7 +97,11 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Override
 	public void createGadgetTemplate(GadgetTemplate gadgettemplate) {
-		gadgetTemplateRepository.save(gadgettemplate);
+		try {
+			gadgetTemplateRepository.save(gadgettemplate);
+		} catch (Exception e) {
+			throw new GadgetTemplateServiceException("Can not save gadgetTemplate");
+		}
 
 	}
 
@@ -103,7 +112,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 			if (gadgetTemplate != null) {
 				this.gadgetTemplateRepository.delete(gadgetTemplate);
 			} else
-				throw new GadgetTemplateServiceException("Cannot delete gadgetTemplate that does not exist");
+				throw new GadgetTemplateServiceException("Can not delete gadgetTemplate that does not exist");
 		}
 
 	}

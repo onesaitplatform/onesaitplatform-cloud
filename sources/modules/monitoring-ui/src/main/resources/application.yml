@@ -17,6 +17,10 @@ onesaitplatform: #Config onesait Platform specific
    environment.name: local
    authentication:
       provider: configdb
+      configdb:
+        acl:
+          enabled: false
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
    reminder:
       periodInMins: 3
       eachInMs: 300000

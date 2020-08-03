@@ -150,6 +150,7 @@
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -162,6 +163,9 @@
 															<!-- DATE -->
 															<td class="text-center" th:if="${category.createdAt!=null}"><span th:text="${#dates.format(category.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${category.createdAt==null}" th:text="${category.createdAt}"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${category.updatedAt!=null}"><span th:text="${#dates.format(category.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${category.updatedAt==null}" th:text="${category.updatedAt}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">

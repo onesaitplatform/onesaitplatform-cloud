@@ -22,5 +22,7 @@ public class FlowEngine {
 	private String base;
 
 	private String advice;
+	
+	private String proxyurl;
 
 }

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -31,15 +32,18 @@ import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 
 public interface OntologyService {
-	
+
 	static final String QUERY_SQL = "SQL";
 	static final String QUERY_NATIVE = "NATIVE";
 	static final String DATAMODEL_DEFAULT_NAME = "EmptyBase";
-	static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";	
+	static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";
 
 	List<Ontology> getAllOntologies(String sessionUserId);
+
+	List<OntologyForList> getOntologiesForListByUserId(String sessionUserId);
 
 	List<Ontology> getOntologiesByUserId(String sessionUserId);
 
@@ -48,11 +52,12 @@ public interface OntologyService {
 	List<Ontology> getOntologiesWithDescriptionAndIdentification(String sessionUserId, String identification,
 			String description);
 
+	List<OntologyForList> getOntologiesForListWithDescriptionAndIdentification(String sessionUserId,
+			String identification, String description);
+
 	List<Ontology> getOntologiesByUserIdAndDataModel(String sessionUserId, String datamodel);
 
 	List<Ontology> getOntologiesByUserIdAndType(String sessionUserId, String type);
-
-	List<String> getAllIdentificationsByUser(String userId);
 
 	Ontology getOntologyById(String ontologyId, String sessionUserId);
 
@@ -116,11 +121,9 @@ public interface OntologyService {
 
 	void updateOntologyUserAccess(String userAccessId, String typeName, String sessionUserId);
 
-	Map<String, String> getOntologyFieldsQueryTool(String identification, String sessionUserId)
-			throws IOException;
+	Map<String, String> getOntologyFieldsQueryTool(String identification, String sessionUserId) throws IOException;
 
-	Map<String, String> getOntologyFields(String identification, String sessionUserId)
-			throws IOException;
+	Map<String, String> getOntologyFields(String identification, String sessionUserId) throws IOException;
 
 	List<Ontology.RtdbDatasource> getDatasources();
 
@@ -150,13 +153,22 @@ public interface OntologyService {
 
 	List<String> getPublicDatasourcesRelationals();
 
-	void executeKPI(String user, String query, String ontology, String context)
-			throws Exception;
+	Map<String, String> executeKPI(String user, String query, String ontology, String context) throws Exception;
 
 	public boolean existsOntology(String identificacion);
 
 	Ontology getOntologyByIdentification(String identification);
-	
+
 	public String getOntologyFromQuery(String query);
+
+	boolean hasEncryptionEnabled(String ontology);
+
+	List<String> getAllIdentificationsByUser(String userId);
+
+	List<OntologyDTO> getAllOntologiesForListWithProjectsAccess(String sessionUserId);
+
+	List<OntologyDTO> getAllOntologiesForList(String sessionUserId, String identification, String description);
+
+	List<OntologyDTO> getOntologiesForListByUser(String sessionUserId, String identification, String description);
 
 }

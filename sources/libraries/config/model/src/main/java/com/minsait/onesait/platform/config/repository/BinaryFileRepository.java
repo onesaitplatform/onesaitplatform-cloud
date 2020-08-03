@@ -27,23 +27,21 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface BinaryFileRepository extends JpaRepository<BinaryFile, String> {
 
-	@Query("select bf from BinaryFile as bf WHERE (bf.owner=:user OR bf.isPublic=TRUE OR bf.fileId IN (SELECT bfa.binaryFile.fileId FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) AND bf.fileId=:fileId ORDER BY bf.fileName ASC")
-	BinaryFile findByUserAndFileId(@Param("user") User user, @Param("fileId") String fileId);
+	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) AND bf.id=:id ORDER BY bf.fileName ASC")
+	BinaryFile findByUserAndId(@Param("user") User user, @Param("id") String id);
 
-	@Query("select bf from BinaryFile as bf WHERE (bf.owner=:user OR bf.isPublic=TRUE OR bf.fileId IN (SELECT bfa.binaryFile.fileId FROM BinaryFileAccess AS bfa WHERE (bfa.user=:user AND bfa.accessType=1))) AND bf.fileId=:fileId ORDER BY bf.fileName ASC")
-	BinaryFile findByUserAndFileIdWrite(@Param("user") User user, @Param("fileId") String fileId);
+	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE (bfa.user=:user AND bfa.accessType=1))) AND bf.id=:id ORDER BY bf.fileName ASC")
+	BinaryFile findByUserAndIdWrite(@Param("user") User user, @Param("id") String id);
 
-	@Query("select bf from BinaryFile as bf WHERE (bf.owner=:user OR bf.isPublic=TRUE OR bf.fileId IN (SELECT bfa.binaryFile.fileId FROM BinaryFileAccess AS bfa WHERE (bfa.user=:user AND bfa.accessType=0))) AND bf.fileId=:fileId ORDER BY bf.fileName ASC")
-	BinaryFile findByUserAndFileIdRead(@Param("user") User user, @Param("fileId") String fileId);
+	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE (bfa.user=:user AND bfa.accessType=0))) AND bf.id=:id ORDER BY bf.fileName ASC")
+	BinaryFile findByUserAndIdRead(@Param("user") User user, @Param("id") String id);
 
-	@Query("select bf from BinaryFile as bf WHERE (bf.owner=:user OR bf.isPublic=TRUE OR bf.fileId IN (SELECT bfa.binaryFile.fileId FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) ORDER BY bf.fileName ASC")
+	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) ORDER BY bf.fileName ASC")
 	List<BinaryFile> findByUser(@Param("user") User user);
 
-	BinaryFile findByOwnerAndFileId(User owner, String fileId);
-
-	BinaryFile findByFileId(String fileId);
+	BinaryFile findById(String id);
 
 	@Transactional
-	void deleteByFileId(String fileId);
+	void deleteById(String id);
 
 }

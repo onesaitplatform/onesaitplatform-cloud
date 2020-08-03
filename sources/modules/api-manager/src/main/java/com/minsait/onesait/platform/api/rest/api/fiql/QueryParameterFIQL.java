@@ -21,8 +21,8 @@ import java.util.Set;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiQueryParameterDTO;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiQueryParameterDTO;
 
 public final class QueryParameterFIQL {
 

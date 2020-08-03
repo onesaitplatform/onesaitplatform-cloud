@@ -15,6 +15,8 @@
 package com.minsait.onesait.platform.solver;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +24,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.FilterStt;
 import com.minsait.onesait.platform.dto.socket.ProjectStt;
-import com.minsait.onesait.platform.persistence.external.virtual.helper.OracleVirtualOntologyHelper;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
+import com.minsait.onesait.platform.persistence.services.util.QueryParsers;
 
 @Component
 @Qualifier("OracleSolver")
@@ -35,9 +41,10 @@ public class SolverOracleImpl implements SolverInterface {
 
 	@Autowired
 	QueryToolService qts;
-	
+
 	@Autowired
-	private OracleVirtualOntologyHelper oracleVirtualOntologyHelper;
+	@Qualifier("OracleHelper")
+	private SQLHelper sqlHelper;
 
 	private static String filterSeparator = " and ";
 	private static String solvedQueryPrefix = "Solved.";
@@ -46,7 +53,8 @@ public class SolverOracleImpl implements SolverInterface {
 
 	@Override
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group, String executeAs, String ontology) {
+			List<String> group, String executeAs, String ontology)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		String processedQuery;
 		String trimQuery = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
 		trimQuery = trimQuery.trim().replaceAll(" +", " ");
@@ -72,6 +80,8 @@ public class SolverOracleImpl implements SolverInterface {
 	private String buildFromSimpleQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
 			List<String> group) {
 		StringBuilder sb = new StringBuilder();
+		// delete as from query
+		query = filterAS(query);
 
 		if (where != null && where.size() != 0) {
 			// Get real project from query
@@ -100,12 +110,19 @@ public class SolverOracleImpl implements SolverInterface {
 			if (indexWhere < query.length()) {
 				sb.append(query.substring(indexWhere));
 			}
-			
-		}
-		else {
+
+		} else {
 			sb.append(query);
 		}
-		return oracleVirtualOntologyHelper.addLimit(sb.toString(), maxreg);
+		return sqlHelper.addLimit(sb.toString(), maxreg);
+	}
+
+	private String filterAS(String query) {
+		query = query.replaceAll(" as ", "\\ ");
+		query = query.replaceAll(" AS ", "\\ ");
+		query = query.replaceAll(" As ", "\\ ");
+
+		return query;
 	}
 
 	private String[] getRealProject(String query) {
@@ -130,7 +147,7 @@ public class SolverOracleImpl implements SolverInterface {
 		sb.append(" ) Solved ");
 		sb.append(buildWhere(where, solvedQueryPrefix, true, new String[0]));
 		sb.append(buildGroup(group));
-		return oracleVirtualOntologyHelper.addLimit(sb.toString(), maxreg);
+		return sqlHelper.addLimit(sb.toString(), maxreg);
 	}
 
 	private String buildProject(List<ProjectStt> projections) {
@@ -162,13 +179,53 @@ public class SolverOracleImpl implements SolverInterface {
 				sb.append(" ");
 				sb.append(f.getOp());
 				sb.append(" ");
-				sb.append(isFilterOverString(f)?(f.getExp().replaceFirst(stringDEBoundsChar, stringLocalBoundsChar)).replaceFirst(".$", stringLocalBoundsChar):f.getExp());
+				sb.append(appendExp(f));
 				sb.append(filterSeparator);
 			}
 			return sb.substring(0, sb.length() - filterSeparator.length());
 		}
 	}
-	
+
+	private String appendExp(FilterStt f) {
+		String exp = isFilterOverString(f) ? (f.getExp().replaceFirst(stringDEBoundsChar, stringLocalBoundsChar))
+				.replaceFirst(".$", stringLocalBoundsChar) : f.getExp();
+
+		if (QueryParsers.hasNowFunction(exp)) {
+			exp = QueryParsers.parseFunctionNow(exp);
+			exp = makeTimeStamp(exp);
+		} else {
+			exp = mapperTimestamp_TO_Timestamp(exp);
+		}
+		return exp;
+	}
+
+	private String mapperTimestamp_TO_Timestamp(String exp) {
+		int asindex = exp.toLowerCase().indexOf("timestamp");
+		if (asindex != -1) {
+			String date = exp.substring(exp.indexOf("(") + 1, exp.indexOf(")"));
+			exp = makeTimeStamp(date);
+		} else if (isDate(exp.replace("'", ""))) {
+			exp = makeTimeStamp(exp);
+		}
+
+		return exp;
+	}
+
+	public boolean isDate(String date) {
+		if (date == null || date.trim().length() < 5) {
+			return false;
+		}
+		Pattern p = Pattern.compile(
+				"^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))([T\\s]((([01]\\d|2[0-3])((:?)[0-5]\\d)?|24\\:?00)([\\.,]\\d+(?!:))?)?(\\17[0-5]\\d([\\.,]\\d+)?)?([zZ]|([\\+-])([01]\\d|2[0-3]):?([0-5]\\d)?)?)?)?$");
+		Matcher m = p.matcher(date);
+		return m.matches();
+	}
+
+	private String makeTimeStamp(String date) {
+
+		return "TO_TIMESTAMP(" + date + ",'YYYY-MM-DD\"T\"HH24:MI:SS.ff3\"Z\"')";
+	}
+
 	private boolean isFilterOverString(FilterStt f) {
 		return f.getExp().startsWith(stringDEBoundsChar) && f.getExp().endsWith(stringDEBoundsChar);
 	}

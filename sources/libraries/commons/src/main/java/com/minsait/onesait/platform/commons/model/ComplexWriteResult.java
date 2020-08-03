@@ -22,17 +22,26 @@ package com.minsait.onesait.platform.commons.model;
 
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class ComplexWriteResult {
 
-	@Getter
-	@Setter
 	private ComplexWriteResultType type;
-
-	@Getter
-	@Setter
 	private List<? extends DBResult> data;
 
+	public ComplexWriteResultType getType() {
+		return type;
+	}
+
+	public ComplexWriteResult setType(final ComplexWriteResultType type) {
+		this.type = type;
+		return this;
+	}
+
+	public List<? extends DBResult> getData() {
+		return data;
+	}
+
+	public ComplexWriteResult setData(final List<? extends DBResult> data) {
+		this.data = data;
+		return this;
+	}
 }

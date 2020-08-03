@@ -52,7 +52,7 @@ public class Viewer extends OPResource {
 	@Setter
 	private String description;
 
-	@ManyToMany(cascade = { CascadeType.ALL}, mappedBy = "viewers", fetch = FetchType.EAGER)
+	@ManyToMany(cascade = { CascadeType.PERSIST }, mappedBy = "viewers", fetch = FetchType.EAGER)
 	@Getter
 	@Setter
 	@JsonIgnore
@@ -78,20 +78,38 @@ public class Viewer extends OPResource {
 	@Getter
 	@Setter
 	private String js;
-	
-	@Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Viewer))
-            return false;
-        final Viewer that = (Viewer) o;
-        return this.getIdentification() != null && this.getIdentification().equals(that.getIdentification());
-    }
 
-    @Override
-    public int hashCode() {
-        return java.util.Objects.hash(this.getIdentification());
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof Viewer))
+			return false;
+		final Viewer that = (Viewer) o;
+		return this.getIdentification() != null && this.getIdentification().equals(that.getIdentification());
+	}
+
+	@Override
+	public int hashCode() {
+		return java.util.Objects.hash(this.getIdentification());
+	}
+
+	@Column(name = "LATITUDE", length = 50, nullable = false)
+	@NotNull
+	@Getter
+	@Setter
+	private String latitude;
+
+	@Column(name = "LONGITUDE", length = 50, nullable = false)
+	@NotNull
+	@Getter
+	@Setter
+	private String longitude;
+
+	@Column(name = "HEIGHT", length = 50, nullable = false)
+	@NotNull
+	@Getter
+	@Setter
+	private String height;
 
 }

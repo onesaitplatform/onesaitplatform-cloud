@@ -38,6 +38,7 @@ import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
@@ -112,6 +113,9 @@ public class AdviceServiceImpl
 	public OperationResultModel execute(NotificationCompositeModel input) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		if (input.getHeaderAuthKey()!=null && !input.getHeaderAuthKey().isEmpty()){
+			headers.set(input.getHeaderAuthKey(), input.getHeaderAuthValue());
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		HttpEntity<String> domainToStart;
 		try {

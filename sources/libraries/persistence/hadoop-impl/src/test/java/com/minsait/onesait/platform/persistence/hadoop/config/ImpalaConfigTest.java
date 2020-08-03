@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImpalaConfigTest {
 
-	@Value("${sofia2.database.impala.url}")
+	@Value("${onesaitplatform.database.impala.url}")
 	private String url;
 
 	@Bean(name = NameBeanConst.IMPALA_DATASOURCE_BEAN_NAME)

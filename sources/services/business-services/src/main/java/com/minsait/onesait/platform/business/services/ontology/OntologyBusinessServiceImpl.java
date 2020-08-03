@@ -249,7 +249,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public List<String> getRelationalSchema(String datasource, String collection) {
+	public String getRelationalSchema(String datasource, String collection) {
 		return virtualRepo.getTableMetadata(datasource, collection);
 	}
 

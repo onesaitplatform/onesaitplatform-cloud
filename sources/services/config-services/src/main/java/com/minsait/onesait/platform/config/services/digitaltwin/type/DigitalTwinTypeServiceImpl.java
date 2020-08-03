@@ -144,10 +144,10 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 	@Override
 	public List<String> getAllIdentifications() {
-		final List<DigitalTwinType> digitalTypes = digitalTwinTypeRepo.findAllByOrderByNameAsc();
-		final List<String> identifications = new ArrayList<>();
-		for (final DigitalTwinType type : digitalTypes) {
-			identifications.add(type.getName());
+		List<DigitalTwinType> digitalTypes = this.digitalTwinTypeRepo.findAllByOrderByIdentificationAsc();
+		List<String> identifications = new ArrayList<String>();
+		for (DigitalTwinType type : digitalTypes) {
+			identifications.add(type.getIdentification());
 		}
 		return identifications;
 	}
@@ -159,7 +159,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 	@Override
 	public void createDigitalTwinType(DigitalTwinType digitalTwinType, HttpServletRequest httpServletRequest) {
-		if (digitalTwinTypeRepo.findByName(digitalTwinType.getName()) == null) {
+		if (digitalTwinTypeRepo.findByIdentification(digitalTwinType.getIdentification()) == null) {
 			try {
 
 				final String[] properties = httpServletRequest.getParameterValues(PROP_STR);
@@ -213,7 +213,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 		} else {
 			throw new DigitalTwinServiceException(
-					"Digital Twin Type with identification: " + digitalTwinType.getName() + " exists");
+					"Digital Twin Type with identification: " + digitalTwinType.getIdentification() + " exists");
 		}
 	}
 
@@ -289,7 +289,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 			createDigitalTwinType(digitalTwinType, httpServletRequest);
 			createOntologyForShadow(digitalTwinType, httpServletRequest);
 		} else {
-			log.error("DigitalTwinType with identification:" + digitalTwinType.getName()
+			log.error("DigitalTwinType with identification:" + digitalTwinType.getIdentification()
 					+ "don't exist in data base to update.");
 		}
 
@@ -318,7 +318,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 		try {
 			json.put("$schema", "http://json-schema.org/draft-04/schema#");
 			json.put("tittle",
-					TWIN_PROP_STR + type.getName().substring(0, 1).toUpperCase() + type.getName().substring(1));
+					TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
 			json.put("type", "object");
 
 			final JSONObject propertiesBis = new JSONObject();
@@ -347,16 +347,16 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 			json.put("additionalProperties", true);
 
 			Ontology ontology = ontologyRepo.findByIdentification(
-					TWIN_PROP_STR + type.getName().substring(0, 1).toUpperCase() + type.getName().substring(1));
-			final OntologyConfiguration config = new OntologyConfiguration(httpServletRequest);
+					TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
+			OntologyConfiguration config = new OntologyConfiguration(httpServletRequest);
 
 			if (ontology == null) {
 				ontology = new Ontology();
 				ontology.setActive(true);
-				ontology.setDataModel(dataModelRepo.findByName("EmptyBase").get(0));
+				ontology.setDataModel(dataModelRepo.findDatamodelsByIdentification("EmptyBase"));
 				ontology.setDescription("Shadow of the Digital Twin type");
 				ontology.setIdentification(
-						TWIN_PROP_STR + type.getName().substring(0, 1).toUpperCase() + type.getName().substring(1));
+						TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
 				ontology.setJsonSchema(json.toString());
 				ontology.setPublic(false);
 				ontology.setUser(type.getUser());
@@ -369,8 +369,8 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 				ontologyService.updateOntology(ontology, type.getUser().getUserId(), config);
 			}
 
-		} catch (final JSONException e) {
-			log.error("Error creating the ontology for the shadow od the Digital Twin Type " + type.getName(), e);
+		} catch (JSONException e) {
+			log.error("Error creating the ontology for the shadow od the Digital Twin Type " + type.getIdentification(), e);
 		}
 
 	}

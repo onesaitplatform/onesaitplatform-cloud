@@ -29,8 +29,6 @@ import org.springframework.boot.test.context.TestComponent;
 import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
-import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiCategories;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
@@ -42,6 +40,7 @@ import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,39 +65,31 @@ public class APIUtils {
 	@Autowired
 	private ApiRepository apiRepository;
 	@Autowired
-	private ApiServiceRest apiService;
-	@Autowired
 	private OntologyRepository ontologyRepository;
 	@Autowired
 	private UserTokenRepository tokenRepository;
 	@Autowired
 	private ObjectMapper mapper;
 
-	@Transactional
-	public Api createAPITest(User user, ApiType type) throws IOException {
+	public ApiDTO readInternalAPIDTO(User user) throws IOException {
+		final ApiDTO api = mapper.readValue(loadFromResources(API_JSON), ApiDTO.class);
+		api.setOntologyId(createTestOntology(user).getId());
+		return api;
+	}
+
+	public Api createExternalAPI(User user, ApiType type) {
 		final Api apiTest = new Api();
-		if (type.equals(ApiType.INTERNAL_ONTOLOGY)) {
-			final ApiDTO api = mapper.readValue(loadFromResources(API_JSON), ApiDTO.class);
-			api.setOntologyId(createTestOntology(user).getId());
-			apiService.createApi(api, getUserToken(user));
-			return apiService.findApi(api.getIdentification(), getUserToken(user));
-		}
-		if (type.equals(ApiType.EXTERNAL_FROM_JSON)) {
-			apiTest.setIdentification(API_IDENTIFICATION_EXTERNAL);
-			apiTest.setUser(user);
-			apiTest.setApiType(type);
-			apiTest.setCategory(ApiCategories.ALL);
-			apiTest.setDescription("Test api");
-			apiTest.setEndpoint("");
-			apiTest.setNumversion(1);
-			apiTest.setState(ApiStates.CREATED);
+		apiTest.setIdentification(API_IDENTIFICATION_EXTERNAL);
+		apiTest.setUser(user);
+		apiTest.setApiType(type);
+		apiTest.setCategory(ApiCategories.ALL);
+		apiTest.setDescription("Test api");
+		apiTest.setNumversion(1);
+		apiTest.setState(ApiStates.CREATED);
 
-			apiTest.setSwaggerJson(loadFromResources(SWAGGER_JSON));
+		apiTest.setSwaggerJson(loadFromResources(SWAGGER_JSON));
 
-			return apiRepository.save(apiTest);
-		}
-
-		return apiTest;
+		return apiRepository.save(apiTest);
 	}
 
 	@Transactional
@@ -108,11 +99,12 @@ public class APIUtils {
 			ontologyRepository.delete(api.getOntology());
 	}
 
+	@Transactional
 	private Ontology createTestOntology(User user) {
 		final Ontology sensorTag = new Ontology();
 		sensorTag.setIdentification(SENSOR_TAG);
 		sensorTag.setUser(user);
-		sensorTag.setDataModel(dataModelRepository.findByName(EMPTY_BASE).get(0));
+		sensorTag.setDataModel(dataModelRepository.findByIdentification(EMPTY_BASE).get(0));
 		sensorTag.setJsonSchema(loadFromResources(SENSOR_TAG_SCHEMA_FILE));
 		sensorTag.setActive(true);
 		sensorTag.setMetainf("");

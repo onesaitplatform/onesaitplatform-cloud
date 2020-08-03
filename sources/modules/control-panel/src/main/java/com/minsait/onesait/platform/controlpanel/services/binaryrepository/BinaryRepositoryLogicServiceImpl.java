@@ -34,7 +34,10 @@ import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicService {
 
 	private static final String DONT_HAVE_ACCESS = "You don't have access to this resource";
@@ -69,17 +72,18 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 		// if file then id is path
 		if (repository.equals(RepositoryType.FILE)) {
 			binaryFile.setPath(path);
-			binaryFile.setFileId(randomUUID);
-		} else {
-			binaryFile.setFileId(id);
-		}
+			binaryFile.setId(id);
+		} else
+			binaryFile.setId(id);
+		// Till UI is implemented
+		binaryFile.setIdentification(file.getName());
 		binaryFile.setRepository(repository);
 		binaryFile.setMetadata(metadata);
 		binaryFile.setMime(file.getContentType());
 		binaryFile.setFileExtension(FilenameUtils.getExtension(file.getOriginalFilename()));
-		binaryFile.setOwner(userService.getUser(webUtils.getUserId()));
-		binaryFileService.createBinaryile(binaryFile);
-		return binaryFile.getFileId();
+		binaryFile.setUser(userService.getUser(webUtils.getUserId()));
+		binaryFileService.createBinaryFile(binaryFile);
+		return binaryFile.getId();
 
 	}
 
@@ -98,8 +102,17 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 	@Override
 	public void removeBinary(String fileId) throws BinaryRepositoryException {
 		if (binaryFileService.hasUserPermissionWrite(fileId, userService.getUser(webUtils.getUserId()))) {
-			binaryRepositoryFactory.getInstance(binaryFileService.getFile(fileId).getRepository()).removeBinary(fileId);
-			binaryFileService.deleteFile(fileId);
+			try {
+				final BinaryFile file = binaryFileService.getFile(fileId);
+				binaryFileService.deleteFile(fileId);
+				binaryRepositoryFactory.getInstance(file.getRepository()).removeBinary(fileId);
+			} catch (final BinaryRepositoryException e) {
+				throw e;
+			} catch (final Exception e) {
+				log.error("Binary file may be associated to a report, please remove from report");
+				throw new BinaryRepositoryException(
+						"Binary file may be associated to a report, please remove from report");
+			}
 		} else {
 			throw new BinaryRepositoryException(DONT_HAVE_ACCESS);
 		}

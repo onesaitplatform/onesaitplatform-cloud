@@ -1,8 +1,7 @@
-FROM maven:3.5.3-jdk-8-alpine
+FROM onesaitplatform/baseimage:latest
 
 # metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="cache-server"	
+LABEL platform.image.name="cache-server"	
 
 ADD *-exec.jar app.jar
 
@@ -32,9 +31,8 @@ EXPOSE 20001 5701
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
-    SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

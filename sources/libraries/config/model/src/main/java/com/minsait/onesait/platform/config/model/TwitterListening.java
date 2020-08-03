@@ -27,7 +27,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +35,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "TWITTER_LISTENING")
 @Configurable
-public class TwitterListening extends AuditableEntityWithUUID {
+public class TwitterListening extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
@@ -45,13 +45,6 @@ public class TwitterListening extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private Ontology ontology;
-
-	@ManyToOne
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@Getter
-	@Setter
-	private User user;
 
 	@ManyToOne
 	@JoinColumn(name = "CONFIGURATION_ID", referencedColumnName = "ID")
@@ -66,12 +59,6 @@ public class TwitterListening extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private Token token;
-
-	@Column(name = "IDENTIFICATOR", length = 50, nullable = false)
-	@NotNull
-	@Getter
-	@Setter
-	private String identificator;
 
 	@Column(name = "DATE_FROM", length = 100, nullable = false)
 	@NotNull

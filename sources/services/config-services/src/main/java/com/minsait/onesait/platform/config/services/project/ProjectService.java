@@ -15,12 +15,15 @@
 package com.minsait.onesait.platform.config.services.project;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
 public interface ProjectService {
@@ -59,6 +62,8 @@ public interface ProjectService {
 
 	public Set<ProjectResourceAccess> getResourcesAccessesForUser(String projectId, String userId);
 
+	public Set<ProjectResourceAccess> getResourcesAccessesForAppRole(String projectId, String name);
+
 	public Set<OPResource> getResourcesForProjectAndUser(String projectId, String userId);
 
 	public Set<OPResource> getResourcesForUser(String userId);
@@ -68,5 +73,19 @@ public interface ProjectService {
 	public Set<AppRole> getProjectRoles(String projectId);
 
 	public boolean isUserAuthorized(String projectId, String userId);
+
+	public Project getByName(String identification);
+
+	public void deleteResourceFromProjects(String resourceId);
+
+	public List<Project> getProjectsWithResource(String resourceId);
+
+	public Set<ProjectResourceAccess> getAllResourcesAccesses(String projectId);
+
+	public Set<User> getUsersInProject(String projectId);
+
+	public Map<AppRole, Set<AppUser>> getAllRoleUsersInProject(Set<AppRole> projectRoles);
+
+	boolean isUserInProjectWithoutOwner(String userId, String projectId);
 
 }

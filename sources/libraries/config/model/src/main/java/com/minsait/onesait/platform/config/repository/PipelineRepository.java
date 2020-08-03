@@ -28,6 +28,8 @@ public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 	List<Pipeline> findAll();
 
 	Pipeline findByIdentification(String pipelineId);
+	
+	Pipeline findById(String id);
 
 	List<Pipeline> findByUser(User user);
 

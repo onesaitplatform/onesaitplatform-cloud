@@ -28,15 +28,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.model.Themes;
 import com.minsait.onesait.platform.config.model.Themes.editItems;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ThemesRepository;
+import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
 import com.minsait.onesait.platform.controlpanel.security.twofactorauth.TwoFactorAuthService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,11 +53,13 @@ public class DefaultController {
 	private AppWebUtils utils;
 
 	private static final String CAS = "cas";
-	private static final String SAML = "saml";
 
 	@Autowired
 	private ThemesRepository themesRepository;
 
+	@Autowired
+	private ConfigurationService configurationService;
+	
 	@Autowired
 	private LoginManagementController loginController;
 
@@ -61,7 +68,7 @@ public class DefaultController {
 
 	@Value("${captcha.token}")
 	private String captchaToken;
-
+	
 	@Value("${onesaitplatform.password.pattern}")
 	private String passwordPattern;
 
@@ -72,7 +79,7 @@ public class DefaultController {
 
 	private static final String PASS_CONSTANT = "passwordPattern";
 
-	@Autowired(required=false)
+	@Autowired(required = false)
 	private TwoFactorAuthService twoFactorAuthService;
 
 	@GetMapping("/")
@@ -106,18 +113,21 @@ public class DefaultController {
 
 	@GetMapping("/login")
 	public String login(Model model) {
+		GoogleAnalyticsConfiguration configuration = configurationService.getGoogleAnalyticsConfiguration("default");
 		readThemes(model);
 		model.addAttribute(USERS_CONSTANT, new User());
 		model.addAttribute("captchaToken", captchaToken);
 		model.addAttribute("captchaEnable", captchaOn);
+		model.addAttribute("googleAnalyticsToken", configuration.getTrackingid());
+		model.addAttribute("googleAnalyticsEnable", configuration.isEnable());
 		model.addAttribute(PASS_CONSTANT, passwordPattern);
-		if (provider.equals(CAS) || provider.equals(SAML))
+		if (provider.equals(CAS))
 			return "redirect:/";
 		else
 			return "login";
 	}
 
-	@GetMapping("/error")
+	@RequestMapping(value = { "/error" }, method = { RequestMethod.POST, RequestMethod.GET })
 	public String error() {
 		return "error/500";
 	}

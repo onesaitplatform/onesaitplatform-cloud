@@ -66,6 +66,7 @@ import com.minsait.onesait.platform.config.services.client.dto.TokensRequest;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.ClientPlatformServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
@@ -136,18 +137,21 @@ public class ClientPlatformController {
 
 	private void populateClientList(Model model, List<ClientPlatform> clients) {
 
-		final List<DeviceDTO> devicesDTO = new ArrayList<>();
+		final List<DeviceDTO> devicesDTO = new ArrayList<DeviceDTO>();
 
 		if (clients != null && !clients.isEmpty()) {
 			for (final ClientPlatform client : clients) {
 				final DeviceDTO deviceDTO = new DeviceDTO();
 				deviceDTO.setUser(client.getUser().getUserId());
 				deviceDTO.setDateCreated(client.getCreatedAt());
+				deviceDTO.setDateUpdated(client.getUpdatedAt());
 				deviceDTO.setDescription(client.getDescription());
 				deviceDTO.setId(client.getId());
 				deviceDTO.setIdentification(client.getIdentification());
+
 				if (client.getClientPlatformOntologies() != null && !client.getClientPlatformOntologies().isEmpty()) {
 					final List<String> list = new ArrayList<>();
+
 					for (final ClientPlatformOntology cpo : client.getClientPlatformOntologies()) {
 						list.add(cpo.getOntology().getIdentification());
 					}
@@ -202,10 +206,10 @@ public class ClientPlatformController {
 
 		createInitalTokenToJson(deviceDTO);
 		model.addAttribute(DEVICE_STR, deviceDTO);
-		final List<Ontology> ontologies = ontologyService
-				.getOntologiesWithDescriptionAndIdentification(utils.getUserId(), null, null);
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
+		final List<OntologyDTO> ontologies = ontologyService
+				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
+
 		return "devices/create";
 	}
 
@@ -298,15 +302,15 @@ public class ClientPlatformController {
 	private void mapOntologiesToJson(Model model, ClientPlatform device, DeviceCreateDTO deviceDTO) {
 		final ObjectMapper mapper = new ObjectMapper();
 		final ArrayNode arrayNode = mapper.createArrayNode();
-		final List<Ontology> ontologies = ontologyService.getOntologiesByUserId(utils.getUserId());
-		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
+		final List<OntologyDTO> ontologies = ontologyService
+				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		for (final ClientPlatformOntology cpo : device.getClientPlatformOntologies()) {
 			final ObjectNode on = mapper.createObjectNode();
 			on.put("id", cpo.getOntology().getIdentification());
 			on.put("access", cpo.getAccess().name());
 
-			for (final Iterator<Ontology> iterator = ontologies.iterator(); iterator.hasNext();) {
-				final Ontology ontology = iterator.next();
+			for (final Iterator<OntologyDTO> iterator = ontologies.iterator(); iterator.hasNext();) {
+				final OntologyDTO ontology = iterator.next();
 				if (ontology.getIdentification().equals(cpo.getOntology().getIdentification())) {
 					iterator.remove();
 					break;
@@ -324,6 +328,7 @@ public class ClientPlatformController {
 	}
 
 	private void mapTokensToJson(ClientPlatform device, DeviceCreateDTO deviceDTO) {
+
 		final ObjectMapper mapper = new ObjectMapper();
 		final ArrayNode arrayNode = mapper.createArrayNode();
 		for (final Token token : device.getTokens()) {
@@ -436,7 +441,7 @@ public class ClientPlatformController {
 			if (!clientPlatformService.hasUserManageAccess(token.getClientPlatform().getId(), utils.getUserId())) {
 				response.setOk(false);
 			} else {
-				entityDeletionService.deleteToken(token.getId());
+				entityDeletionService.deleteToken(token);
 				response.setOk(true);
 			}
 		} catch (final Exception e) {

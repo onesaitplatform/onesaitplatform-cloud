@@ -52,11 +52,12 @@ public class BinaryFileRepositoryIntegrationTest {
 	@Before
 	public void setUp() {
 		file = new BinaryFile();
-		file.setFileId("1");
+		file.setId("1");
+		file.setIdentification("example.pdf");
 		file.setMime("application/pdf");
 		file.setFileName("example.pdf");
 		file.setPublic(false);
-		file.setOwner(userRepo.findByUserId("developer"));
+		file.setUser(userRepo.findByUserId("developer"));
 
 		file.setFileExtension("pdf");
 

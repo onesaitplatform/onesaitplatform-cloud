@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.minsait.onesait.platform.config.model.NotificationEntity;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.flownode.FlowNodeService;
+import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -45,6 +46,9 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 	@Autowired
 	IntegrationResourcesService resourcesService;
 
+	@Autowired
+	private NoderedAuthenticationService noderedAthService;
+
 	private static final String INSERT_STR = "INSERT";
 
 	static final ImmutableMap<String, String> HTTP_METHOD_TO_NODE_METHOD = new ImmutableMap.Builder<String, String>()
@@ -62,7 +66,7 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 					HTTP_METHOD_TO_NODE_METHOD.get(messageType) != null ? HTTP_METHOD_TO_NODE_METHOD.get(messageType)
 							: messageType);
 		} catch (Exception e) {
-		    log.error("" + e);
+			log.error("" + e);
 		}
 
 		if (listNotifications != null) {
@@ -70,6 +74,9 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 			for (NotificationEntity notificationEntity : listNotifications) {
 				AdviceNotificationModel advice = new AdviceNotificationModel();
 				advice.setEntityId(notificationEntity.getNotificationEntityId());
+				advice.setUrlAuthkey("X-OP-NODEKey");
+				advice.setUrlAuthValue(noderedAthService.getNoderedAuthAccessToken(
+						notificationEntity.getNotificationDomainUser(), notificationEntity.getNotificationDomain()));
 				advice.setUrl(baseUrl + "/" + notificationEntity.getNotificationUrl());
 				model.add(advice);
 			}

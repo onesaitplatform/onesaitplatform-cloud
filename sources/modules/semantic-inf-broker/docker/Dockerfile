@@ -1,8 +1,7 @@
-FROM maven:3.5.3-jdk-8-alpine
+FROM onesaitplatform/baseimage:latest
 
 # metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="router"	
+LABEL platform.image.name="semantic-inf-broker"	
 
 ADD *-exec.jar app.jar
 
@@ -25,25 +24,24 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /usr/local
     
 VOLUME ["/tmp", "/var/log/platform-logs"]
-    
-USER onesait
 
 EXPOSE 20000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
-    SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
-	REALTIMEDBUSEAUTH=true \
-	REALTIMEDBUSER=platformadmin \
-	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
+    REALTIMEDBUSEAUTH=true \
+    REALTIMEDBUSER=platformadmin \
+    REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
@@ -52,22 +50,30 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+UnlockExperimentalVMOptions -XX:+Us
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     ENABLEHADOOP=false \
-	HDFSURL=hdfs://127.0.0.1:8020 \
-	HDFSPATH=/user/hdfs \
-	HIVEURL=jdbc:hive2://localhost:10000/default \
-	HIVEUSERNAME=cloudera-scm \
-	HIVEPASSWORD=cloudera-scm \
-	HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
-	IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
-	KUDUNUMREPLICAS=1 \
-	KUDUURL=localhost:7051 \
-	INCLUDEKUDUTABLENAME=false \
+    HDFSURL=hdfs://127.0.0.1:8020 \
+    HDFSPATH=/user/hdfs \
+    HIVEURL=jdbc:hive2://localhost:10000/default \
+    HIVEUSERNAME=cloudera-scm \
+    HIVEPASSWORD=cloudera-scm \
+    HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
+    IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
+    KUDUNUMREPLICAS=1 \
+    KUDUURL=localhost:7051 \
+    INCLUDEKUDUTABLENAME=false \
     MAXCONN=100 \
     MAXCONNROUTE=100 \
     TIMESERIES_TIMEZONE=UTC \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
-    OP_LOG_LEVEL=INFO
+    OP_LOG_LEVEL=INFO \
+    NOTIFICATION_POOL_NODERED=50 \
+    NOTIFICATION_POOL_KAFKA=50 \
+    NOTIFICATION_POOL_RULESENGINE=50 
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
+
+USER onesait
+
+ENTRYPOINT ["docker-entrypoint.sh"]

@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
@@ -236,7 +237,7 @@ public class ProjectController {
 		if (!projectService.isUserAuthorized(projectId, utils.getUserId())
 				&& !projectService.isUserInProject(utils.getUserId(), projectId))
 			return ERROR_403;
-		model.addAttribute("resourcesMatch", getAllResourcesDTO(identification, resource));
+		model.addAttribute("resourcesMatch", getAllResourcesDTO2(identification, resource));
 		populateResourcesModal(model, projectId);
 		return "project/fragments/resources-modal";
 	}
@@ -306,11 +307,10 @@ public class ProjectController {
 				resourceService.insertAuthorizations(accesses);
 
 			} else {
-				resourceService
-						.createUpdateAuthorization(ProjectResourceAccess.builder().access(authorization.getAccess())
-								.appRole(appService.findRole(Long.parseLong(authorization.getAuthorizing())))
-								.resource(resourceService.getResourceById(authorization.getResource())).project(project)
-								.build());
+				resourceService.createUpdateAuthorization(ProjectResourceAccess.builder()
+						.access(authorization.getAccess()).appRole(appService.findRole(authorization.getAuthorizing()))
+						.resource(resourceService.getResourceById(authorization.getResource())).project(project)
+						.build());
 			}
 		} else {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
@@ -352,7 +352,7 @@ public class ProjectController {
 				} else {
 					resourceService
 							.createUpdateAuthorization(ProjectResourceAccess.builder().access(authorization.getAccess())
-									.appRole(appService.findRole(Long.parseLong(authorization.getAuthorizing())))
+									.appRole(appService.findRole(authorization.getAuthorizing()))
 									.resource(resourceService.getResourceById(authorization.getResource()))
 									.project(project).build());
 				}
@@ -441,16 +441,40 @@ public class ProjectController {
 		if (type.name().equals(OPResource.Resources.API.toString())) {
 			type_resource = type.name();
 			return resources.stream().filter(r -> r.getClass().getSimpleName().equalsIgnoreCase(type_resource))
-					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification() + " - V" + ((Api) r).getNumversion())
+					.map(r -> ProjectResourceDTO.builder().id(r.getId())
+							.identification(r.getIdentification() + " - V" + ((Api) r).getNumversion())
 							.type(r.getClass().getSimpleName()).build())
-					.collect(Collectors.toList());	
+					.collect(Collectors.toList());
 		} else {
 			if (type.name().equals("DATAFLOW")) {
 				type_resource = "PIPELINE";
 			} else {
 				type_resource = type.name();
-			}		
+			}
 			return resources.stream().filter(r -> r.getClass().getSimpleName().equalsIgnoreCase(type_resource))
+					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification())
+							.type(r.getClass().getSimpleName()).build())
+					.collect(Collectors.toList());
+		}
+	}
+
+	private List<ProjectResourceDTO> getAllResourcesDTO2(String identification, Resources type) {
+
+		String type_resource;
+		if (type.name().equals("DATAFLOW"))
+			type_resource = "PIPELINE";
+		else
+			type_resource = type.name();
+		final Collection<OPResource> resources2 = resourceService.getResourcesByType(utils.getUserId(), type_resource);
+
+		if (type_resource.equals("API")) {
+			return resources2.stream().filter(r -> r.getIdentification().contains(identification))
+					.map(r -> ProjectResourceDTO.builder().id(r.getId())
+							.identification(r.getIdentification() + " - V" + ((Api) r).getNumversion())
+							.type(r.getClass().getSimpleName()).build())
+					.collect(Collectors.toList());
+		} else {
+			return resources2.stream().filter(r -> r.getIdentification().contains(identification))
 					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification())
 							.type(r.getClass().getSimpleName()).build())
 					.collect(Collectors.toList());

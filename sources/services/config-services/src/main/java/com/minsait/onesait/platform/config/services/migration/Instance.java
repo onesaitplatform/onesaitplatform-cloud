@@ -18,14 +18,18 @@ import java.io.Serializable;
 
 public class Instance {
 
-	public static final Instance NO_INSTANCE = new Instance(Instance.class, "");
+	public static final Instance NO_INSTANCE = new Instance(Instance.class, "", null, null);
 
 	private final Class<?> clazz;
 	private final Serializable id;
+	private final Serializable identification;
+	private final Serializable version;
 
-	public Instance(Class<?> clazz, Serializable id) {
+	public Instance(Class<?> clazz, Serializable id, Serializable identification, Serializable version) {
 		this.clazz = clazz;
 		this.id = id;
+		this.identification = identification;
+		this.version = version;
 	}
 
 	public Class<?> getClazz() {
@@ -34,6 +38,14 @@ public class Instance {
 
 	public Serializable getId() {
 		return id;
+	}
+
+	public Serializable getIdentification() {
+		return identification;
+	}
+
+	public Serializable getVersion() {
+		return version;
 	}
 
 	@Override

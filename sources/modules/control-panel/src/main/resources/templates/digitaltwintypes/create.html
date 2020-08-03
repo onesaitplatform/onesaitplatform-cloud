@@ -94,7 +94,7 @@
 								<div class="caption">
 									<!-- FORM TITLE -->
 											<span th:if="${digitaltwintype?.id} == null" class="caption-subject " th:text="#{digitaltwintype.template.create}"> New Digital Twin Type</span>
-											<span th:if="${digitaltwintype?.id} != null" class="caption-subject " th:text="#{digitaltwintype.template.update} + ' ' + ${digitaltwintype.name}"> Update Digital Twin Type </span>
+											<span th:if="${digitaltwintype?.id} != null" class="caption-subject " th:text="#{digitaltwintype.template.update} + ' ' + ${digitaltwintype.identification}"> Update Digital Twin Type </span>
 								</div>
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
@@ -145,7 +145,7 @@
 																	<label class="" th:text="#{gen.name} + ':'">Name</label><span class="required"> (*)</span>
 																	<div class="input-icon ">
 																		<i class="fa fa-credit-card"></i>
-																		<input th:tabindex="1" id="identification" type="text"   th:required="true"  maxlength="50" th:field="*{name}" class="form-control "  th:placeholder="#{gen.name}"/>
+																		<input th:tabindex="1" id="identification" type="text"   th:required="true"  maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.name}"/>
 																	</div>
 																</div>
 															</div>

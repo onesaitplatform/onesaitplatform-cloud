@@ -16,18 +16,14 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +31,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "DATA_MODEL")
 @Configurable
-public class DataModel extends AuditableEntityWithUUID {
+public class DataModel extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
@@ -44,13 +40,6 @@ public class DataModel extends AuditableEntityWithUUID {
 		FIRMWARE_DATA_MODEL, SYSTEM_ONTOLOGY
 	}
 
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User user;
-
 	@Column(name = "JSON_SCHEMA", nullable = false)
 	@NotNull
 	@Lob
@@ -58,12 +47,6 @@ public class DataModel extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String jsonSchema;
-
-	@Column(name = "NAME", length = 45, unique = true, nullable = false)
-	@NotNull
-	@Setter
-	@Getter
-	private String name;
 
 	@Column(name = "TYPE", length = 45, nullable = false)
 	@NotNull

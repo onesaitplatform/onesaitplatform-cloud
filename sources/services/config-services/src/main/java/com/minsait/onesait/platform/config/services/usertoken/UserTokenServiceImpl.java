@@ -56,6 +56,11 @@ public class UserTokenServiceImpl implements UserTokenService {
 	public UserToken getTokenByToken(String token) {
 		return this.userTokenRepository.findByToken(token);
 	}
+	
+	@Override
+	public UserToken getTokenByUserAndToken(User user, String token) {
+		return userTokenRepository.findByUserAndToken(user, token);
+	}
 
 	@Override
 	public void deactivateToken(UserToken userToken, boolean active) {

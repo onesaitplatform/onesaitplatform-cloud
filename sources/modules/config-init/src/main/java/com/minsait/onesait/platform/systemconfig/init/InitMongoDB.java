@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -51,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.init.mongodb")
 @RunWith(SpringRunner.class)
+@Order(2)
 @SpringBootTest
 public class InitMongoDB {
 
@@ -257,7 +259,7 @@ public class InitMongoDB {
 				ontology.setUser(getUserAdministrator());
 				ontology.setAllowsCypherFields(false);
 
-				dataModels = dataModelRepository.findByName(EMPTYBASE_STR);
+				dataModels = dataModelRepository.findByIdentification(EMPTYBASE_STR);
 				if (!dataModels.isEmpty()) {
 					ontology.setDataModel(dataModels.get(0));
 				}
@@ -286,7 +288,7 @@ public class InitMongoDB {
 				ontology.setUser(getUserAdministrator());
 				ontology.setAllowsCypherFields(false);
 
-				dataModels = dataModelRepository.findByName(EMPTYBASE_STR);
+				dataModels = dataModelRepository.findByIdentification(EMPTYBASE_STR);
 				if (!dataModels.isEmpty()) {
 					ontology.setDataModel(dataModels.get(0));
 				}
@@ -296,20 +298,20 @@ public class InitMongoDB {
 				basicOps.insert(CAS_SERVICE_REGISTRY, "",
 						replaceEnvironment(loadFromResources(dataSet), controlpanelService));
 			} catch (final Exception e) {
-			    log.error("" + e);
+				log.error("" + e);
 			}
 			try {
 				dataSet = "cas/oauthService.json";
 				basicOps.insert(CAS_SERVICE_REGISTRY, "", loadFromResources(dataSet));
 			} catch (final Exception e) {
-			    log.error("" + e);
+				log.error("" + e);
 			}
 			try {
 				dataSet = "cas/samlService.json";
 				basicOps.insert(CAS_SERVICE_REGISTRY, "",
 						replaceEnvironment(loadFromResources(dataSet), controlpanelService));
 			} catch (final Exception e) {
-			    log.error("" + e);
+				log.error("" + e);
 			}
 
 		} catch (final Exception e) {
@@ -343,7 +345,7 @@ public class InitMongoDB {
 				ontology.setMetainf(RESTAURANTS_STR);
 				ontology.setActive(true);
 				ontology.setRtdbClean(true);
-				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
+				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
 				ontology.setRtdbToHdb(true);
 				ontology.setPublic(true);
 				ontology.setUser(getUserDeveloper());
@@ -381,7 +383,7 @@ public class InitMongoDB {
 
 				ontology.setId("MASTER-Ontology-27");
 				ontology.setDescription("Ontology to store georeferenced data about supermarkets in Las Palmas");
-				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
+				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
 				ontology.setIdentification("supermarkets");
 				ontology.setMetainf("gis");
 				ontology.setActive(true);
@@ -429,7 +431,7 @@ public class InitMongoDB {
 				ontology.setActive(true);
 				ontology.setMetainf(HELSINKI_POP);
 				ontology.setRtdbClean(true);
-				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
+				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
 				ontology.setRtdbToHdb(true);
 				ontology.setPublic(false);
 				ontology.setUser(getUserDeveloper());
@@ -556,8 +558,8 @@ public class InitMongoDB {
 				ontology.setMetainf(ANDROID_IOT_FRAME);
 				ontology.setActive(true);
 				ontology.setRtdbClean(true);
-				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
-				ontology.setJsonSchema(loadFromResources(SCHEMA_STR));
+				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
+				ontology.setJsonSchema(loadFromResources("examples/Restaurants-schema.json"));
 				ontology.setRtdbToHdb(true);
 				ontology.setPublic(false);
 				ontology.setUser(getUserDeveloper());
@@ -592,7 +594,7 @@ public class InitMongoDB {
 			ticket.setRtdbClean(true);
 			ticket.setRtdbToHdb(true);
 			ticket.setPublic(true);
-			ticket.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
+			ticket.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
 			ticket.setUser(getUserDeveloper());
 			ticket.setAllowsCypherFields(false);
 			ontologyRepository.save(ticket);

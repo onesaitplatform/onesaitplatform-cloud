@@ -106,7 +106,7 @@ public class ApiManagerAuditProcessorTest {
 		data.put(Constants.REMOTE_ADDRESS, REMOTE_ADDRESS);
 		data.put(Constants.ONTOLOGY, getOntologyTest());
 		data.put(Constants.METHOD, ApiOperation.Type.POST.name());
-		data.put(Constants.BODY, body);
+		data.put(Constants.BODY, body.getBytes());
 		data.put(Constants.USER, getUserTest());
 		data.put(Constants.API, getApiTest());
 

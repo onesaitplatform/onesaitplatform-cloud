@@ -105,7 +105,7 @@ public class DigitalTwinDisplayController {
 				devices = this.deviceService.getDigitalTwinDevicesIdsByUser(utils.getUserId());
 				List<DigitalTwinType> lTypes = this.typeService.getDigitalTwinTypesByUserId(utils.getUserId());
 				for (DigitalTwinType t : lTypes) {
-					types.add(t.getName());
+					types.add(t.getIdentification());
 				}
 			} else if (device.equalsIgnoreCase("all")) {
 				devices = this.deviceService.getDigitalTwinDevicesIdsByUserAndTypeId(utils.getUserId(), type);

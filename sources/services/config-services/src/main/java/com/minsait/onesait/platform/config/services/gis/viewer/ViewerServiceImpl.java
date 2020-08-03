@@ -21,10 +21,12 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.BaseLayer;
+import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.BaseLayerRepository;
+import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.ViewerRepository;
 import com.minsait.onesait.platform.config.services.exceptions.ViewerServiceException;
@@ -38,6 +40,9 @@ public class ViewerServiceImpl implements ViewerService {
 
 	@Autowired
 	private ViewerRepository viewerRepository;
+
+	@Autowired
+	private LayerRepository layerRepository;
 
 	@Autowired
 	OntologyRepository ontologyRepository;
@@ -117,6 +122,12 @@ public class ViewerServiceImpl implements ViewerService {
 
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				|| viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
+
+			for (Layer layer : viewer.getLayers()) {
+				layer.getViewers().remove(viewer);
+				layerRepository.save(layer);
+			}
+
 			viewerRepository.delete(viewer);
 		} else {
 			throw new ViewerServiceException("The user is not authorized");

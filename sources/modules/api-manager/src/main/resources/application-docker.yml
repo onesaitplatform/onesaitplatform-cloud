@@ -1,4 +1,9 @@
 onesaitplatform:
+   authentication:
+      configdb:
+        acl:
+          enabled: ${CONFIGDB_ACL_ENABLED}
+          list: ${CONFIGDB_ACL_LIST}
    database.mongodb:   
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/ 
    database.elasticsearch:
@@ -9,11 +14,25 @@ onesaitplatform:
    audit.global.notify: ${AUDITGLOBALNOTIFY} 
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}   
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   metrics.collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
+   metrics:
+      collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
+      enabled: ${ENABLE_METRICS}
            
 spring:
    datasource:  
-      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      url: ${CONFIGDBURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
    boot.admin: #Spring Boot Admin Config    
       url: http://monitoringuiservice:18100/monitoring
       client.service-url: http://apimanagerservice:${server.port}${server.contextPath}/

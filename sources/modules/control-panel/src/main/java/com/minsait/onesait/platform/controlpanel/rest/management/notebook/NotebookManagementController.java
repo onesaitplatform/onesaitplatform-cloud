@@ -47,10 +47,10 @@ import com.minsait.onesait.platform.config.model.NotebookUserAccess;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException.Error;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.NotebookOpsRestServices;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.model.NotebookUserAccessSimplified;
@@ -73,13 +73,13 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 	private static final String MSG_USER_NOT_ALLOWED = "User with id %s is not authorized";
 	private static final String MSG_INTERNAL_SERVER_ERROR = "Internal server error";
 	private static final String MSG_DUPLICATE_NOTEBOOK_IDENT = "Duplicated notebook identification";
-		
+
 	@Autowired
 	private NotebookService notebookService;
 	@Autowired
 	private NotebookRepository notebookRepository;
 	@Autowired
-	private UserRepository userRepository;
+	private UserService userService;
 	@Autowired
 	private AppWebUtils utils;
 
@@ -282,7 +282,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		List<Notebook> notebooks;
 		final JSONObject notebooksInfo = new JSONObject();
 		final String userId = utils.getUserId();
-		final User user = userRepository.findByUserId(userId);
+		final User user = userService.getUser(userId);
 
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			notebooks = notebookRepository.findAll();
@@ -294,15 +294,16 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				notebooks.stream().forEach(n -> notebooksInfo.put(n.getIdzep(), n.getIdentification()));
 				return new ResponseEntity<>(notebooksInfo.toString(), HttpStatus.OK);
 			} else {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_NONE_NOTEBOOK_FOUND), HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_NONE_NOTEBOOK_FOUND),
+						HttpStatus.NOT_FOUND);
 			}
 
 		} catch (final Exception e) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_INTERNAL_SERVER_ERROR),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
-	
 
 	@ApiOperation(value = "Export notebook by identification or id")
 	@GetMapping(value = "/export/{notebookId}")
@@ -320,11 +321,15 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				return new ResponseEntity<>(notebookJson.toString().getBytes(StandardCharsets.UTF_8), headers,
 						HttpStatus.OK);
 			} catch (final Exception e) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>(
+						String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+						HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
-		return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", String.format(MSG_USER_NOT_ALLOWED, userId)), HttpStatus.UNAUTHORIZED);
+		return new ResponseEntity<>(
+				String.format(MSG_ERROR_JSON_RESPONSE, "", String.format(MSG_USER_NOT_ALLOWED, userId)),
+				HttpStatus.UNAUTHORIZED);
 
 	}
 
@@ -334,7 +339,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		List<Notebook> notebooks;
 		final JsonArray notebooksArray = new JsonArray();
 		final String userId = utils.getUserId();
-		final User user = userRepository.findByUserId(userId);
+		final User user = userService.getUser(userId);
 
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			notebooks = notebookRepository.findAll();
@@ -346,21 +351,25 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 			if (!notebooks.isEmpty()) {
 				for (int i = 0; i < notebooks.size(); i++) {
 					final Notebook n = notebooks.get(i);
-					JsonObject notebookJson = new JsonParser().parse(notebookService.exportNotebook(n.getIdzep(), userId).toString()).getAsJsonObject();
+					JsonObject notebookJson = new JsonParser()
+							.parse(notebookService.exportNotebook(n.getIdzep(), userId).toString()).getAsJsonObject();
 					notebooksArray.add(notebookJson);
 				}
 				return new ResponseEntity<>(notebooksArray.toString().getBytes(Charset.forName("UTF-8")), headers,
 						HttpStatus.OK);
 			} else {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_NONE_NOTEBOOK_FOUND), HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_NONE_NOTEBOOK_FOUND),
+						HttpStatus.NOT_FOUND);
 			}
 
 		} catch (final Exception e) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(
+					String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
-	
+
 	private JsonObject importNotebookResponse(Notebook note) {
 		final JsonObject jsonResponse = new JsonObject();
 		jsonResponse.addProperty("id", note.getIdzep());
@@ -368,7 +377,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		jsonResponse.addProperty("msg", "Successfully imported");
 		return jsonResponse;
 	}
-	
+
 	private JsonObject importNotebookResponse(String notebookId, String notebookName, String msg) {
 		final JsonObject jsonResponse = new JsonObject();
 		jsonResponse.addProperty("id", notebookId);
@@ -384,30 +393,37 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 			@ApiParam(value = "Overwrite notebook if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
 			@ApiParam(value = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
 			@ApiParam(value = "Input parameters") @RequestBody(required = true) String data) {
-		
+
 		final String userId = utils.getUserId();
 		final boolean authorized = notebookService.hasUserPermissionCreateNotebook(userId);
 
 		if (authorized) {
 			try {
-				final Notebook note = notebookService.importNotebook(notebookName, data, userId, overwrite, importAuthorizations);
+				final Notebook note = notebookService.importNotebook(notebookName, data, userId, overwrite,
+						importAuthorizations);
 				return new ResponseEntity<>(importNotebookResponse(note).toString(), HttpStatus.OK);
-			} catch(NotebookServiceException e) {
+			} catch (NotebookServiceException e) {
 				if (e.getError().name().equals(Error.DUPLICATE_NOTEBOOK_NAME.toString())) {
-					return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_DUPLICATE_NOTEBOOK_IDENT), HttpStatus.CONFLICT);
+					return new ResponseEntity<>(
+							String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_DUPLICATE_NOTEBOOK_IDENT),
+							HttpStatus.CONFLICT);
 				} else if (e.getError().name().equals(Error.PERMISSION_DENIED.toString())) {
-					return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), String.format(MSG_USER_NOT_ALLOWED, userId)), HttpStatus.UNAUTHORIZED);
+					return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(),
+							String.format(MSG_USER_NOT_ALLOWED, userId)), HttpStatus.UNAUTHORIZED);
 				}
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_BAD_REQUEST), HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_BAD_REQUEST),
+						HttpStatus.BAD_REQUEST);
 			} catch (final Exception e) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>(
+						String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+						HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 
 	}
-	
+
 	@ApiOperation(value = "Import jupyter notebook")
 	@PostMapping(value = "/import/jupyter/{notebookName}")
 	public ResponseEntity<?> importJupyterNotebook(
@@ -424,7 +440,9 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				final Notebook note = notebookService.importNotebookFromJupyter(notebookName, data, userId);
 				return new ResponseEntity<>(importNotebookResponse(note).toString(), HttpStatus.OK);
 			} catch (final Exception e) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>(
+						String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+						HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
@@ -464,7 +482,9 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				}
 				return new ResponseEntity<>(importedNotebooksResponse.toString(), HttpStatus.OK);
 			} catch (final Exception e) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>(
+						String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+						HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
@@ -476,110 +496,113 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 			final JsonObject currentNotebook, final String notebookName, final String notebookId) {
 		JsonObject noteResponse;
 		try {
-			final Notebook note = notebookService.importNotebook(notebookName, currentNotebook.toString(),
-					userId, overwrite, importAuthorizations);
+			final Notebook note = notebookService.importNotebook(notebookName, currentNotebook.toString(), userId,
+					overwrite, importAuthorizations);
 			noteResponse = importNotebookResponse(note);
 		} catch (final Exception e) {
-			noteResponse = importNotebookResponse(notebookId, notebookName, "Error importing notebook: " + e.getMessage());
+			noteResponse = importNotebookResponse(notebookId, notebookName,
+					"Error importing notebook: " + e.getMessage());
 		}
 		return noteResponse;
 	}
-	
+
 	@ApiOperation(value = "Restart global interpreter")
 	@GetMapping(value = "/restart/{interpreterName}")
 	public ResponseEntity<?> restartInterpreter(
 			@ApiParam(value = "Interpreter Name", required = true) @PathVariable(name = "interpreterName") String interpreterName) {
-		
+
 		final String userId = utils.getUserId();
-		final User user = userRepository.findByUserId(userId);
+		final User user = userService.getUser(userId);
 
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			try {
 				return notebookService.restartInterpreter(interpreterName, "");
 			} catch (final Exception e) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>(
+						String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+						HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-				
+
 	}
-	
+
 	@ApiOperation(value = "Restart interpreter of a notebook by identification or id")
 	@GetMapping(value = "/restart/{interpreterName}/notebook/{notebookId}")
 	public ResponseEntity<?> restartInterpreter(
 			@ApiParam(value = "Interpreter Name", required = true) @PathVariable(name = "interpreterName") String interpreterName,
 			@ApiParam(value = "Notebook Id", required = true) @PathVariable(name = "notebookId") String notebookId) {
-		
+
 		final String userId = utils.getUserId();
 		Notebook nt = notebookService.getNotebook(notebookId);
-		final User user = userRepository.findByUserId(userId);
+		final User user = userService.getUser(userId);
 		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
 				JSONObject body = new JSONObject();
 				body.put("noteId", nt.getIdzep());
-				
+
 				return notebookService.restartInterpreter(interpreterName, body.toString(), user);
 			} catch (final Exception e) {
 				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
-		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);			
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
-	
+
 	@ApiOperation(value = "Restart all interpreters of a notebook by identification or id")
 	@GetMapping(value = "/restart/notebook/{notebookId}")
 	public ResponseEntity<?> restartInterpreters(
 			@ApiParam(value = "Notebook Id", required = true) @PathVariable(name = "notebookId") String notebookId) {
-		
+
 		final String userId = utils.getUserId();
 		Notebook nt = notebookService.getNotebook(notebookId);
-		final User user = userRepository.findByUserId(userId);
+		final User user = userService.getUser(userId);
 		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
 				JSONObject body = new JSONObject();
 				body.put("noteId", nt.getIdzep());
-				
+
 				return notebookService.restartAllInterpretersNotebook(nt.getIdzep(), body.toString(), user);
 			} catch (final Exception e) {
 				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
-		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);			
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
-	
+
 	@ApiOperation(value = "Get users access to notebook by identification or id")
 	@GetMapping(value = "/{notebookId}/authorizations/")
-	public ResponseEntity<?> getNotebookAuthorizations(
-			@PathVariable(name = "notebookId") String notebookId) {
-	
+	public ResponseEntity<?> getNotebookAuthorizations(@PathVariable(name = "notebookId") String notebookId) {
+
 		try {
 			final Notebook notebook = notebookService.getNotebook(notebookId);
-					
+
 			if (notebook == null) {
 				return new ResponseEntity<>(String.format(MSG_NOTEBOOK_NOT_FOUND, notebookId), HttpStatus.BAD_REQUEST);
 			}
 
 			final String userId = utils.getUserId();
-			final User user = userRepository.findByUserId(userId);
+			final User user = userService.getUser(userId);
 			if (user == null) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
-			
-			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || notebookService.isUserOwnerOfNotebook(user, notebook))) {
+
+			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
-			
+
 			JSONArray responseInfo = new JSONArray();
-						
+
 			List<NotebookUserAccess> userAccesses = notebookService.getUserAccess(notebook.getIdzep());
-			
+
 			Iterator<NotebookUserAccess> i1 = userAccesses.iterator();
 			while (i1.hasNext()) {
 				NotebookUserAccessSimplified currentUserAccess = new NotebookUserAccessSimplified(i1.next());
@@ -588,105 +611,105 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				jsonAccess.put("accessType", currentUserAccess.getAccessType());
 				responseInfo.put(jsonAccess);
 			}
-				
+
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
 		} catch (Exception exception) {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@ApiOperation(value = "Create users access to notebook by identification or id")
 	@PostMapping(value = "/{notebookId}/authorizations/")
-	public ResponseEntity<?> createNotebookAuthorizations(
-			@PathVariable(name = "notebookId") String notebookId, 
+	public ResponseEntity<?> createNotebookAuthorizations(@PathVariable(name = "notebookId") String notebookId,
 			@Valid @RequestBody List<NotebookUserAccessSimplified> notebookAccess, Errors errors) {
-	
+
 		if (errors.hasErrors())
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
-		
+
 		try {
 			final Notebook notebook = notebookService.getNotebook(notebookId);
-					
+
 			if (notebook == null) {
 				return new ResponseEntity<>(String.format(MSG_NOTEBOOK_NOT_FOUND, notebookId), HttpStatus.BAD_REQUEST);
 			}
 
 			final String userId = utils.getUserId();
-			final User user = userRepository.findByUserId(userId);
+			final User user = userService.getUser(userId);
 			if (user == null) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
-			
-			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || notebookService.isUserOwnerOfNotebook(user, notebook))) {
+
+			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
-			
+
 			JSONObject responseInfo = new JSONObject();
 			List<String> userIds = new ArrayList<>();
 			List<String> accessTypes = new ArrayList<>();
-			for (NotebookUserAccessSimplified notebookUserAcc: notebookAccess) {
+			for (NotebookUserAccessSimplified notebookUserAcc : notebookAccess) {
 				userIds.add(notebookUserAcc.getUserId());
 				accessTypes.add(notebookUserAcc.getAccessType().toUpperCase());
 			}
-			
+
 			List<String> created = notebookService.createUserAccess(notebook.getIdzep(), userIds, accessTypes);
-			
+
 			Iterator<String> i1 = userIds.iterator();
 			Iterator<String> i2 = created.iterator();
 			while (i1.hasNext() && i2.hasNext()) {
 				responseInfo.put(i1.next(), i2.next());
 			}
-				
+
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
 		} catch (Exception exception) {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@ApiOperation(value = "Delete users access to notebook by identification or id")
 	@DeleteMapping(value = "/{notebookId}/authorizations/")
-	public ResponseEntity<?> deleteNotebookAuthorizations(
-			@PathVariable(name = "notebookId") String notebookId, 
+	public ResponseEntity<?> deleteNotebookAuthorizations(@PathVariable(name = "notebookId") String notebookId,
 			@Valid @RequestBody List<NotebookUserAccessSimplified> notebookAccess, Errors errors) {
-	
+
 		if (errors.hasErrors())
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
-		
+
 		try {
 			final Notebook notebook = notebookService.getNotebook(notebookId);
-					
+
 			if (notebook == null) {
 				return new ResponseEntity<>(String.format(MSG_NOTEBOOK_NOT_FOUND, notebookId), HttpStatus.BAD_REQUEST);
 			}
 
 			final String userId = utils.getUserId();
-			final User user = userRepository.findByUserId(userId);
+			final User user = userService.getUser(userId);
 			if (user == null) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
-			
-			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || notebookService.isUserOwnerOfNotebook(user, notebook))) {
+
+			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
-			
+
 			JSONObject responseInfo = new JSONObject();
 			List<String> userIds = new ArrayList<>();
 			List<String> accessTypes = new ArrayList<>();
-			for (NotebookUserAccessSimplified notebookUserAcc: notebookAccess) {
+			for (NotebookUserAccessSimplified notebookUserAcc : notebookAccess) {
 				userIds.add(notebookUserAcc.getUserId());
 				accessTypes.add(notebookUserAcc.getAccessType().toUpperCase());
 			}
-			
+
 			List<String> deleted = notebookService.deleteUserAccess(notebookId, userIds, accessTypes);
-			
+
 			Iterator<String> i1 = userIds.iterator();
 			Iterator<String> i2 = deleted.iterator();
 			while (i1.hasNext() && i2.hasNext()) {
 				responseInfo.put(i1.next(), i2.next());
 			}
-				
+
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
 		} catch (Exception exception) {

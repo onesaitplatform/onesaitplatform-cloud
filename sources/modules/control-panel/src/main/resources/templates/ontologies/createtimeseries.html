@@ -1087,10 +1087,6 @@
 		{
 			schema = schema + "\"" + tnames[i] + "\",";
 		}
-		for(i=0;fnames.length>i;i++)
-		{
-			schema = schema + "\"" + fnames[i] + "\",";
-		}
 		schema = schema.substring(0,schema.length-1);
 		schema = schema + "] }, \"description\": \"" + $('#description').val() + "\",\"additionalProperties\": true}";
 		return schema;

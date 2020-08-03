@@ -22,9 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.FilterStt;
 import com.minsait.onesait.platform.dto.socket.ProjectStt;
-import com.minsait.onesait.platform.persistence.external.virtual.helper.SQLServerVirtualOntologyHelper;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 
 @Component
@@ -35,9 +38,10 @@ public class SolverSQLServerImpl implements SolverInterface {
 
 	@Autowired
 	QueryToolService qts;
-	
+
 	@Autowired
-	private SQLServerVirtualOntologyHelper sqlServerVirtualOntologyHelper;
+	@Qualifier("SQLServerHelper")
+	private SQLHelper sqlHelper;
 
 	private static final String FROM = " from ";
 	private static final String FILTER_SEPARATOR = " AND ";
@@ -47,7 +51,8 @@ public class SolverSQLServerImpl implements SolverInterface {
 
 	@Override
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group, String executeAs, String ontology) {
+			List<String> group, String executeAs, String ontology)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		String processedQuery;
 		String trimQuery = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t|;", " ");
 		trimQuery = trimQuery.trim().replaceAll(" +", " ");
@@ -66,14 +71,14 @@ public class SolverSQLServerImpl implements SolverInterface {
 				&& query.indexOf("outer join") == -1 && query.indexOf("full join") == -1;
 	}
 
-
-	private String buildFromSimpleQuery(final String query, final int maxreg, final List<FilterStt> where, final List<String> group) {
+	private String buildFromSimpleQuery(final String query, final int maxreg, final List<FilterStt> where,
+			final List<String> group) {
 		final StringBuilder sb = new StringBuilder();
 		if (where != null && !where.isEmpty()) {
 			final String[] realproject = getRealProject(query);
 			final String elsWhere = buildWhere(where, "", false, realproject);
 			final int indexWhere = query.toLowerCase().lastIndexOf("where ");
-			
+
 			if (indexWhere == -1) {
 				writeWhereNotFound(query, sb, indexWhere);
 				sb.append(" where  " + elsWhere + " ");
@@ -81,41 +86,44 @@ public class SolverSQLServerImpl implements SolverInterface {
 				final int finalIndexWhere = indexWhere + 6;
 				sb.append(query.substring(0, finalIndexWhere));
 				sb.append(elsWhere + " " + FILTER_SEPARATOR + " ");
-				
-				if (indexWhere < query.length()) sb.append(query.substring(finalIndexWhere));
+
+				if (indexWhere < query.length())
+					sb.append(query.substring(finalIndexWhere));
 			}
-		} else sb.append(query);
-		
-		return sqlServerVirtualOntologyHelper.addLimit(sb.toString(), maxreg);
+		} else
+			sb.append(query);
+
+		return sqlHelper.addLimit(sb.toString(), maxreg);
 	}
 
 	private void writeWhereNotFound(final String query, final StringBuilder sb, final int indexWhere) {
 		final int indexGroup = query.toLowerCase().lastIndexOf("group by ");
 		final int indexOrder = query.toLowerCase().lastIndexOf("order by ");
-		
+
 		if (indexGroup == -1) {
 			final int finalIndex = indexOrder != -1 ? indexOrder : query.length();
 			sb.append(query.substring(0, finalIndex));
-			if (indexWhere < query.length()) sb.append(query.substring(finalIndex));
+			if (indexWhere < query.length())
+				sb.append(query.substring(finalIndex));
 		} else {
 			sb.append(query.substring(0, indexGroup));
-			if (indexWhere < query.length()) sb.append(query.substring(indexGroup));
+			if (indexWhere < query.length())
+				sb.append(query.substring(indexGroup));
 		}
 	}
 
 	private String[] getRealProject(String query) {
 		String[] lsrealproject;
-		
-		if(query.toLowerCase().indexOf("select top",0) != -1) {
-			lsrealproject = query
-					.substring(query.toLowerCase().indexOf(')') + 1, query.toLowerCase().indexOf(FROM))
+
+		if (query.toLowerCase().indexOf("select top", 0) != -1) {
+			lsrealproject = query.substring(query.toLowerCase().indexOf(')') + 1, query.toLowerCase().indexOf(FROM))
 					.split(",");
 		} else {
 			lsrealproject = query
 					.substring(query.toLowerCase().indexOf("select ") + 7, query.toLowerCase().indexOf(FROM))
 					.split(",");
 		}
-		
+
 		for (int i = 0; i < lsrealproject.length; i++) {
 			lsrealproject[i] = lsrealproject[i].trim();
 		}
@@ -134,7 +142,7 @@ public class SolverSQLServerImpl implements SolverInterface {
 		sb.append(" ) as Solved ");
 		sb.append(buildWhere(where, SOLVED_QUERY_PREFIX, true, new String[0]));
 		sb.append(buildGroup(group));
-		return sqlServerVirtualOntologyHelper.addLimit(sb.toString(), maxreg);
+		return sqlHelper.addLimit(sb.toString(), maxreg);
 	}
 
 	private String buildProject(List<ProjectStt> projections) {
@@ -166,13 +174,15 @@ public class SolverSQLServerImpl implements SolverInterface {
 				sb.append(" ");
 				sb.append(f.getOp());
 				sb.append(" ");
-				sb.append(isFilterOverString(f)?(f.getExp().replaceFirst(STRING_DEBOUND_CHAR, STRING_LOCAL_BOUNDS_CHAR)).replaceFirst(".$", STRING_LOCAL_BOUNDS_CHAR):f.getExp());
+				sb.append(
+						isFilterOverString(f) ? (f.getExp().replaceFirst(STRING_DEBOUND_CHAR, STRING_LOCAL_BOUNDS_CHAR))
+								.replaceFirst(".$", STRING_LOCAL_BOUNDS_CHAR) : f.getExp());
 				sb.append(FILTER_SEPARATOR);
 			}
 			return sb.substring(0, sb.length() - FILTER_SEPARATOR.length());
 		}
 	}
-	
+
 	private boolean isFilterOverString(FilterStt f) {
 		return f.getExp().startsWith(STRING_DEBOUND_CHAR) && f.getExp().endsWith(STRING_DEBOUND_CHAR);
 	}

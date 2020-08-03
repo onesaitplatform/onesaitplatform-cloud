@@ -147,7 +147,9 @@ onesaitplatform: #Config onesait Platform specific
         delay.millis: 10000
         
   iotbroker.devices.perclient.max: 20
-  metrics.collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+  metrics:
+        collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+        enabled: true
         
 ## LOGGING CONF
 logging:

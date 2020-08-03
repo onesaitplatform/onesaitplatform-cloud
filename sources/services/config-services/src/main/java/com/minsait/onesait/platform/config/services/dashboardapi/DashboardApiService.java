@@ -18,4 +18,7 @@ public interface DashboardApiService {
 	public String createGadget(String json, String userId);
 
 	public String updateGadget(String json, String userId);
+
+	public String setSynopticElementDataSource(String json, String userId);
+
 }

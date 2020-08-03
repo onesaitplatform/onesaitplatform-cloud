@@ -34,6 +34,8 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
+import com.minsait.onesait.platform.config.model.base.OPResource;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -96,21 +98,74 @@ public class DataToDB {
 			log.debug("Loading class from file: " + clazz.getName() + " id: " + id);
 
 			if (!entities.exist(clazz, id)) {
-				Object dbInstance = em.find(clazz, id);
-				if (dbInstance != null) {
-					allErrors.addError(new MigrationError(new Instance(clazz, id), null, MigrationError.ErrorType.WARN,
-							"The entity is already in the database, nothing was done"));
-				} else {
-					MigrationErrors entityErrors = new MigrationErrors();
-					EntityCache visited = new EntityCache();
-					Object instance = getEntityFromData(clazz, id, data, em, entityErrors, visited, config);
-					allErrors.addErrors(entityErrors);
-					if (instance instanceof MigrationError) {
-						entitiesWithErrors.add(clazz, id, (MigrationError) instance);
+				if (OPResource.class.isAssignableFrom(clazz)
+						|| clazz.getName().equals("com.minsait.onesait.platform.config.model.Project")) {
+					List<Object> result = new ArrayList<>();
+					if (!clazz.getSimpleName().equals("Api") && !clazz.getName()
+							.equals("com.minsait.onesait.platform.config.model.ProjectResourceAccess")) {
+						result = em
+								.createQuery("SELECT c FROM " + clazz.getSimpleName()
+										+ " c WHERE c.identification = :identification")
+								.setParameter("identification", inst.getIdentification()).getResultList();
 					} else {
-						entities.add(clazz, id, instance);
+						result = em
+								.createQuery("SELECT c FROM " + clazz.getSimpleName()
+										+ " c WHERE c.identification = :identification AND c.numversion = :numversion")
+								.setParameter("identification", inst.getIdentification())
+								.setParameter("numversion", inst.getVersion()).getResultList();
+					}
+
+					if (result.isEmpty()) {
+						Object dbInstance = em.find(clazz, id);
+						if (dbInstance != null) {
+							allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
+									MigrationError.ErrorType.WARN,
+									"The entity is already in the database, nothing was done"));
+						} else {
+							MigrationErrors entityErrors = new MigrationErrors();
+							EntityCache visited = new EntityCache();
+							Object instance = getEntityFromData(clazz, id, data, em, entityErrors, visited, config);
+							allErrors.addErrors(entityErrors);
+							if (instance instanceof MigrationError) {
+								entitiesWithErrors.add(clazz, id, instance);
+							} else {
+								entities.add(clazz, id, instance);
+							}
+						}
+					} else {
+						allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
+								MigrationError.ErrorType.WARN,
+								"The entity is already in the database, nothing was done"));
+					}
+				} else {
+					List<Object> result = new ArrayList<>();
+					result = em.createQuery("SELECT c FROM " + clazz.getSimpleName() + " c WHERE c.id = :id")
+							.setParameter("id", inst.getId()).getResultList();
+
+					if (result.isEmpty()) {
+						Object dbInstance = em.find(clazz, id);
+						if (dbInstance != null) {
+							allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
+									MigrationError.ErrorType.WARN,
+									"The entity is already in the database, nothing was done"));
+						} else {
+							MigrationErrors entityErrors = new MigrationErrors();
+							EntityCache visited = new EntityCache();
+							Object instance = getEntityFromData(clazz, id, data, em, entityErrors, visited, config);
+							allErrors.addErrors(entityErrors);
+							if (instance instanceof MigrationError) {
+								entitiesWithErrors.add(clazz, id, instance);
+							} else {
+								entities.add(clazz, id, instance);
+							}
+						}
+					} else {
+						allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
+								MigrationError.ErrorType.WARN,
+								"The entity is already in the database, nothing was done"));
 					}
 				}
+
 			}
 		}
 
@@ -136,7 +191,7 @@ public class DataToDB {
 			Map<String, Field> allFields = MigrationUtils.getAllFields(clazz);
 			Set<String> unOrderedFields = instanceData.keySet();
 			List<String> orderedFields = orderFields(unOrderedFields, allFields, em);
-			Instance rootInstance = new Instance(clazz, id);
+			Instance rootInstance = new Instance(clazz, id, null, null);
 			for (String fieldName : orderedFields) {
 				Field field = allFields.get(fieldName);
 				if (!Modifier.isFinal(field.getModifiers())) {
@@ -146,7 +201,7 @@ public class DataToDB {
 							data, em, errors, newVisited, config, rootInstance);
 					if (value instanceof MigrationError) {
 						MigrationError errorReturned = (MigrationError) value;
-						Instance instanceThatNeedsIt = new Instance(clazz, id);
+						Instance instanceThatNeedsIt = new Instance(clazz, id, null, null);
 						MigrationError migrationError = new MigrationError(instanceThatNeedsIt,
 								errorReturned.getNeededInstance(), MigrationError.ErrorType.ERROR,
 								"The instance depends on a non available entity");
@@ -167,12 +222,14 @@ public class DataToDB {
 		LinkedList<String> orderedFields = new LinkedList<>();
 		for (String fieldName : fields) {
 			Field field = allFields.get(fieldName);
-			if (Collection.class.isAssignableFrom(field.getType())) {
-				orderedFields.addLast(fieldName);
-			} else if (MigrationUtils.isManagedEntity(em, field.getType())) {
-				orderedFields.addLast(fieldName);
-			} else {
-				orderedFields.addFirst(fieldName);
+			if (field != null) {
+				if (Collection.class.isAssignableFrom(field.getType())) {
+					orderedFields.addLast(fieldName);
+				} else if (MigrationUtils.isManagedEntity(em, field.getType())) {
+					orderedFields.addLast(fieldName);
+				} else {
+					orderedFields.addFirst(fieldName);
+				}
 			}
 		}
 
@@ -214,7 +271,7 @@ public class DataToDB {
 							if (!config.contains(fieldType, sValue) && !entities.exist(fieldType, sValue)
 									&& !entitiesWithErrors.exist(fieldType, sValue)) {
 
-								Instance instance = new Instance(fieldType, sValue);
+								Instance instance = new Instance(fieldType, sValue, null, null);
 								config.add(instance);
 
 								MigrationError error = new MigrationError(rootInstance, instance,
@@ -224,7 +281,7 @@ public class DataToDB {
 							}
 							return entityFromData;
 						} else {
-							Instance instance = new Instance(fieldType, sValue);
+							Instance instance = new Instance(fieldType, sValue, null, null);
 							MigrationError error = new MigrationError(null, instance, MigrationError.ErrorType.ERROR,
 									"Mandatory entity");
 							errors.addError(error);

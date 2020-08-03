@@ -44,8 +44,8 @@ import lombok.Setter;
 public abstract class OPResource extends AuditableEntity {
 
 	public enum Resources {
-		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, NOTEBOOK, ONTOLOGY, DATAFLOW,
-		GADGETDATASOURCE
+		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, NOTEBOOK, ONTOLOGY,
+		DATAFLOW
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -81,21 +81,20 @@ public abstract class OPResource extends AuditableEntity {
 
 		final OPResource that = (OPResource) obj;
 		if (that instanceof Api && (getIdentification() != null && ((Api) this).getNumversion() != null)) {
-			return (getIdentification().equals(that.getIdentification()) 
+			return (getIdentification().equals(that.getIdentification())
 					&& ((Api) this).getNumversion().equals(((Api) that).getNumversion()));
-		} 
+		}
 		if (getIdentification() != null)
 			return getIdentification().equals(that.getIdentification());
 		return false;
 	}
 
-	
 	@Override
 	public int hashCode() {
 		if (this instanceof Api) {
 			return java.util.Objects.hash(this.getIdentification(), ((Api) this).getNumversion());
 		}
-		
+
 		return java.util.Objects.hash(getIdentification());
-	}	
+	}
 }

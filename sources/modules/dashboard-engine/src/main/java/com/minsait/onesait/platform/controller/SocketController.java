@@ -25,8 +25,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.InputMessage;
 import com.minsait.onesait.platform.dto.socket.OutputMessage;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.service.SolverService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +46,8 @@ public class SocketController {
 
 	@CrossOrigin
 	@MessageMapping("/dsengine/solver/{id}")
-	public void response(@DestinationVariable("id") Long id, SimpMessageHeaderAccessor headerAccessor,
-			InputMessage msg) {
+	public void response(@DestinationVariable("id") Long id, SimpMessageHeaderAccessor headerAccessor, InputMessage msg)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 
 		long startTime = System.currentTimeMillis();
 
@@ -58,7 +61,7 @@ public class SocketController {
 				+ (System.currentTimeMillis() - startTime) / 1000f + "(s)");
 
 		OutputMessage out = new OutputMessage(dataSolved,
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()));
+				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()), startTime);
 
 		simpMessagingTemplate.convertAndSend("/dsengine/broker/" + id, out);
 	}

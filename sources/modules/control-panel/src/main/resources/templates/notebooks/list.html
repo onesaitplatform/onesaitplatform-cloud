@@ -472,6 +472,7 @@
 															<th class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -484,9 +485,12 @@
 															<!-- PUBLIC -->
 															<td class="text-center" th:if="${notebook.public}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success  font-hg"></i></td>
 															<td class="text-center" th:if="${!notebook.public}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>
-															<!-- DATE --> 
-															<td class="text-center" th:if="${notebook.createdAt!=null}" th:text="${#dates.format(notebook.createdAt,'dd/MM/YYYY')}"></td>
-															<td class="text-center" th:if="${notebook.createdAt==null}" th:text="${notebook.createdAt}"></td>
+															<!-- DATE -->
+															<td class="text-center" th:if="${notebook.createdAt!=null}"><span th:text="${#dates.format(notebook.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(notebook.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${notebook.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${notebook.updatedAt!=null}"><span th:text="${#dates.format(notebook.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(notebook.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${notebook.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">

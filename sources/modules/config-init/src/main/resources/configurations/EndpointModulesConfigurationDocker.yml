@@ -14,8 +14,9 @@ onesaitplatform:
       base:
       advice:
     flowEngine:
-      base: https://${SERVER_NAME}/flowengine/
+      base: http://flowengineservice:20100/flowengine/admin
       advice: http://flowengineservice:5050/
+      proxyurl: https://${SERVER_NAME}/nodered/
     routerStandAlone:
       base: https://routerservice:20000/router
       advice: http://routerservice:20000/router/router/advice/
@@ -29,10 +30,23 @@ onesaitplatform:
       swaggerUI: https://${SERVER_NAME}/api-manager/swagger-ui.html?url=
       swaggerUIManagement: https://${SERVER_NAME}/api-manager/services/management/api-docs?url=/api-manager/services/management/swagger.json
       swaggerJson: https://${SERVER_NAME}/api-manager/services/management/swagger/
+    notebook:
+      url: https://${SERVER_NAME}/controlpanel/notebooks/app/
     monitoringUI:
       base: https://${SERVER_NAME}/monitoring
       embedded: https://${SERVER_NAME}/monitoring/indexNoHeader.html
+    gravitee:      
+      ui: https://${SERVER_NAME}/gravitee/ui/#!
+      management: https://${SERVER_NAME}/gravitee/management
+      gateway: https://${SERVER_NAME}/gravitee/gateway
     rulesEngine:
       base: https://${SERVER_NAME}/rules-engine
       advice: http://rules-engine-service:20200/rules-engine/advice
+    bpmEngine:
+      base: https://${SERVER_NAME}/bpm-engine
+      deployment: https://${SERVER_NAME}/bpm-engine/rest/deployment/create
+    dashboardEngine:
+      edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
+      view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
+      onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
 

@@ -14,13 +14,16 @@
  */
 package com.minsait.onesait.platform.persistence.external.virtual;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
+import com.minsait.onesait.platform.commons.model.*;
+import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
+import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
 import org.apache.commons.lang.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,180 +31,117 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
-import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
-import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.external.exception.NotSupportedOperationException;
-import com.minsait.onesait.platform.persistence.external.exception.SGDBNotSupportedException;
-import com.minsait.onesait.platform.persistence.external.virtual.helper.VirtualOntologyHelper;
 import com.minsait.onesait.platform.persistence.external.virtual.parser.JSONResultsetExtractor;
-import com.minsait.onesait.platform.persistence.external.virtual.parser.JsonRelationalHelper;
 import com.minsait.onesait.platform.persistence.models.ErrorResult;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component("VirtualOntologyOpsDBRepository")
+@Component("VirtualRelationalOntologyOpsDBRepository")
 @Lazy
 @Slf4j
 public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntologyDBRepository {
 
 	private static final String NOT_SUPPORTED_OPERATION = "Operation not supported for Virtual Ontologies";
-	private static final String WHERE_STR = " WHERE ";
 	private static final String SELECT_FROM = "SELECT * FROM ";
 	private static final String ONTOLOGY_NOTNULLEMPTY = "Ontology can't be null or empty";
-	private static final String VIRTUAL_ONTOLOGY_NOTFOUND = "Virtual ontology not found";
 	private static final String NOT_IMPLEMENTED_METHOD = "Not implemented method";
 	private static final String QUERY_NOTNULLEMPTY = "Query can't be null or empty";
 	private static final String OFFSET_GREATERTHANZERO = "Offset must be greater or equals to 0";
-	private static final String VIRTUAL_ONTOLOGY_QUERY_ERROR = "Error querying on virtual ontology";
+	private static final String NO_UNIQUE_ID = "Virtual ontology does not have an unique id registered";
 
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
 
 	@Autowired
+	@Qualifier("VirtualDatasourcesManagerImpl")
 	private VirtualDatasourcesManager virtualDatasourcesManager;
 
 	@Autowired
-	@Qualifier("OracleVirtualOntologyHelper")
-	private VirtualOntologyHelper oracleVirtualOntologyHelper;
+	private SQLGenerator sqlGenerator;
 
-	@Autowired
-	@Qualifier("MysqlVirtualOntologyHelper")
-	private VirtualOntologyHelper mysqlVirtualOntologyHelper;
-
-	@Autowired
-	@Qualifier("MariaDBVirtualOntologyHelper")
-	private VirtualOntologyHelper mariaVirtualOntologyHelper;
-
-	@Autowired
-	@Qualifier("PostgreSQLVirtualOntologyHelper")
-	private VirtualOntologyHelper postgreVirtualOntologyHelper;
-
-	@Autowired
-	@Qualifier("SQLServerVirtualOntologyHelper")
-	private VirtualOntologyHelper sqlserverVirtualOntologyHelper;
-
-	@Autowired
-	@Qualifier("ImpalaVirtualOntologyHelper")
-	private VirtualOntologyHelper impalaVirtualOntologyHelper;
-
-	@Autowired
-	@Qualifier("HiveVirtualOntologyHelper")
-	private VirtualOntologyHelper hiveVirtualOntologyHelper;
-
-	@Autowired
-	private JsonRelationalHelper jsonRelationalHelper;
-
-	private VirtualOntologyHelper getOntologyHelper(VirtualDatasourceType type) {
-		switch (type) {
-		case ORACLE:
-			return oracleVirtualOntologyHelper;
-		case MYSQL:
-			return mysqlVirtualOntologyHelper;
-		case MARIADB:
-			return mariaVirtualOntologyHelper;
-		case POSTGRESQL:
-			return postgreVirtualOntologyHelper;
-		case SQLSERVER:
-			return sqlserverVirtualOntologyHelper;
-		case IMPALA:
-			return impalaVirtualOntologyHelper;
-		case HIVE:
-			return hiveVirtualOntologyHelper;
-		default:
-			throw new SGDBNotSupportedException("Not supported SGDB: " + type);
-		}
-	}
-
-	private OntologyVirtualDatasource getDatasourceForOntology(String ontology) {
+	private JdbcTemplate getJdbTemplate(final String ontology) {
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			OntologyVirtualDatasource ontologyDatasource = this.ontologyVirtualRepository
-					.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
-			Assert.notNull(ontologyDatasource, "Datasource not found for virtual ontology: " + ontology);
-			return ontologyDatasource;
-		} catch (Exception e) {
-			throw new DBPersistenceException("Datasource not found for virtual ontology: " + ontology, e);
-		}
-	}
 
-	private JdbcTemplate getJdbTemplate(String ontology) {
-		try {
-			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			String datasourceName = this.getDatasourceForOntology(ontology).getDatasourceName();
-
-			VirtualDataSourceDescriptor datasource = this.virtualDatasourcesManager
-					.getDataSourceDescriptor(datasourceName);
-
-			return new JdbcTemplate(datasource.getDatasource());
-
-		} catch (Exception e) {
+			final String dataSourceName = virtualDatasourcesManager.getDatasourceForOntology(ontology).getDatasourceName();
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager.getDataSourceDescriptor(dataSourceName);
+			return new JdbcTemplate(dataSource.getDatasource());
+		} catch (final Exception e) {
 			throw new DBPersistenceException("JdbcTemplate not found for virtual ontology: " + ontology, e);
 		}
 	}
 
 	@Override
-	public List<String> getTables(String datasourceName) {
+	public List<String> getTables(final String datasourceName) {
 		try {
 			Assert.hasLength(datasourceName, "Datasource name can't be null or empty");
-			VirtualDataSourceDescriptor datasource = this.virtualDatasourcesManager
+
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
 					.getDataSourceDescriptor(datasourceName);
-			JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource.getDatasource());
-			VirtualOntologyHelper helper = getOntologyHelper(datasource.getVirtualDatasourceType());
-			return jdbcTemplate.queryForList(helper.getAllTablesStatement(), String.class);
-		} catch (Exception e) {
+			final SQLHelper helper = virtualDatasourcesManager
+					.getOntologyHelper(dataSource.getVirtualDatasourceType());
+			return new JdbcTemplate(dataSource.getDatasource())
+					.queryForList(helper.getAllTablesStatement(), String.class);
+		} catch (final Exception e) {
 			log.error("Error listing tables from user in external database", e);
 			throw new DBPersistenceException("Error listing tables from user in external database", e);
 		}
 	}
 
 	@Override
-	public String insert(String ontology, String schema, String instance) {
-		try {
-			String statement = jsonRelationalHelper.getInsertStatement(ontology, instance);
-			JdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-			jdbcTemplate.update(statement);
-			String objectId = this.ontologyVirtualRepository
-					.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
-			Assert.hasLength(objectId, VIRTUAL_ONTOLOGY_NOTFOUND);
-			JSONObject json = new JSONObject(instance);
-			return json.get(objectId).toString();
-		} catch (Exception e) {
-			log.error("Error inserting data", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					"Error inserting data into virtual ontology");
+	public String insert(final String ontology, final String schema, final String instance) {
+		final List<DBResult> result = this.insertOperation(ontology, schema, Collections.singletonList(instance));
+		if(result.isEmpty()){
+			return "No rows were affected";
+		} else {
+			return result.get(0).getId() != null ? result.get(0).getId()  : "1";
 		}
 	}
 
 	@Override
-	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
-			boolean includeIds) {
+	public ComplexWriteResult insertBulk(final String ontology, final String schema, final List<String> instances,
+										 final boolean order, final boolean includeIds){
+		final List<DBResult> result = this.insertOperation(ontology, schema, instances);
+		return new ComplexWriteResult()
+				.setData(result)
+				.setType(ComplexWriteResultType.BULK);
+	}
+
+	private List<DBResult> insertOperation(final String ontology, final String schema, final List<String> instances){
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(schema, "Schema can't be null or empty");
 			Assert.notEmpty(instances, "Instances can't be null or empty");
 
-			List<ErrorResult> errorList = new ArrayList<>();
-			try {
-				for (String instance : instances)
-					this.insert(ontology, schema, instance);
-			} catch (DBPersistenceException e) {
-				errorList.addAll(e.getErrorsResult());
-			}
+			final String statement = sqlGenerator.buildInsert()
+					.setOntology(ontology)
+					.setValuesAndColumnsForJson(instances)
+					.generate();
 
-			if (!errorList.isEmpty()) {
-				throw new DBPersistenceException(errorList, "Error inserting bulk data into virtual ontology");
+			final JdbcTemplate jdbTemplate = getJdbTemplate(ontology);
+			final GeneratedKeyHolder holder = new GeneratedKeyHolder();
+			final int affected = jdbTemplate.update(connection -> connection.prepareStatement(statement), holder);
+			final List<Map<String, Object>> keyList = holder.getKeyList();
+
+			if(!keyList.isEmpty()) {
+				return IntStream.range(0, affected)
+						.mapToObj(index -> Long.parseLong(String.valueOf(keyList.get(index).get("insert_id"))) )
+						.map( id -> new DBResult().setId(String.valueOf(id)).setOk(true) )
+						.collect(Collectors.toList());
 			} else {
-				return new ComplexWriteResult();
+				return IntStream.range(0, affected)
+						.mapToObj(index -> new DBResult().setOk(true))
+						.collect(Collectors.toList());
 			}
-
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error inserting bulk data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error inserting bulk data on virtual ontology");
@@ -209,15 +149,15 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public MultiDocumentOperationResult updateNative(String ontology, String updateStmt, boolean includeIds) {
+	public MultiDocumentOperationResult updateNative(final String ontology, final String updateStmt, final boolean includeIds) {
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(updateStmt, "Statement can't be null or empty");
-			JdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
-			result.setCount(jdbcTemplate.update(updateStmt.replaceAll(";", "")));
+
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			result.setCount(getJdbTemplate(ontology).update(updateStmt.replaceAll(";", "")));
 			return result;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error updating data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error updating data on virtual ontology");
@@ -225,18 +165,19 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public MultiDocumentOperationResult updateNative(String collection, String query, String data, boolean includeIds) {
+	public MultiDocumentOperationResult updateNative(final String ontology, final String query, final String data, final boolean includeIds) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD, new NotImplementedException(NOT_SUPPORTED_OPERATION));
 	}
 
 	@Override
-	public MultiDocumentOperationResult deleteNative(String collection, String query, boolean includeIds) {
+	public MultiDocumentOperationResult deleteNative(final String ontology, final String query, final boolean includeIds) {
 		try {
-			Assert.hasLength(collection, "Collection can't be null or empty");
+			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			JdbcTemplate jdbcTemplate = getJdbTemplate(collection);
-			int updated = jdbcTemplate.update(query.replaceAll(";", ""));
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+
+			final JdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
+			final int updated = jdbcTemplate.update(query.replaceAll(";", ""));
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(updated);
 			return result;
 		} catch (Exception e) {
@@ -247,16 +188,24 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public List<String> queryNative(String ontology, String query) {
+	public List<String> queryNative(final String ontology, final String query) {
+		return this.queryNative(ontology, query, 0, virtualDatasourcesManager.getDatasourceForOntology(ontology).getQueryLimit());
+	}
+
+	@Override
+	public List<String> queryNative(final String ontology, final String query, final int offset, final int limit) {
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			OntologyVirtualDatasource datasource = getDatasourceForOntology(ontology);
-			VirtualOntologyHelper helper = getOntologyHelper(datasource.getSgdb());
-			query = helper.addLimit(query, datasource.getQueryLimit());
-			JdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-			return jdbcTemplate.query(query.replaceAll(";", ""), new JSONResultsetExtractor(query));
-		} catch (Exception e) {
+			Assert.isTrue(offset >= 0, OFFSET_GREATERTHANZERO);
+			Assert.isTrue(limit >= 1, "Limit must be greater or equals to 1");
+
+			final OntologyVirtualDatasource dataSource = virtualDatasourcesManager.getDatasourceForOntology(ontology);
+			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getSgdb());
+			final String finalQuery = helper.addLimit(query, Math.min(limit, dataSource.getQueryLimit()), offset);
+			final JdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
+			return jdbcTemplate.query(finalQuery.replaceAll(";", ""), new JSONResultsetExtractor(finalQuery));
+		} catch (final Exception e) {
 			log.error("Error querying data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error querying data on virtual ontology");
@@ -264,104 +213,49 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public List<String> queryNative(String ontology, String query, int offset, int limit) {
-		try {
-			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			Assert.isTrue(offset >= 0, OFFSET_GREATERTHANZERO);
-			Assert.isTrue(limit >= 1, "Limit must be greater or equals to 1");
-			OntologyVirtualDatasource datasource = getDatasourceForOntology(ontology);
-			VirtualOntologyHelper helper = getOntologyHelper(datasource.getSgdb());
-			query = helper.addLimit(query, Math.min(limit, datasource.getQueryLimit()), offset);
-			JdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-			return jdbcTemplate.query(query.replaceAll(";", ""), new JSONResultsetExtractor(query));
-		} catch (Exception e) {
-			log.error("Error querying data", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					"Error querying data on virtual ontology");
-		}
+	public String queryNativeAsJson(final String ontology, final String query) {
+		return queryNativeAsJson(ontology, query, 0, virtualDatasourcesManager.getDatasourceForOntology(ontology).getQueryLimit());
 	}
 
 	@Override
-	public String queryNativeAsJson(String ontology, String query) {
-		try {
-			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			List<String> result = this.queryNative(ontology, query);
-			JSONArray jsonResult = new JSONArray();
-			for (String instance : result) {
-				JSONObject obj = new JSONObject(instance);
-				jsonResult.put(obj);
-			}
-			return jsonResult.toString();
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
-			log.error("Error queryNativeAsJson", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					VIRTUAL_ONTOLOGY_QUERY_ERROR);
+	public String queryNativeAsJson(final String ontology, final String originalQuery, final int offset, final int limit) {
+		final List<String> result = this.queryNative(ontology, originalQuery, offset, limit);
+		final JSONArray jsonResult = new JSONArray();
+		for (final String instance : result) {
+			final JSONObject obj = new JSONObject(instance);
+			jsonResult.put(obj);
 		}
+		return jsonResult.toString();
 	}
 
 	@Override
-	public String queryNativeAsJson(String ontology, String query, int offset, int limit) {
-		try {
-			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			Assert.isTrue(offset >= 0, OFFSET_GREATERTHANZERO);
-			Assert.isTrue(limit >= 1, "Limit must be greater or equals to 1");
-			List<String> result = this.queryNative(ontology, query, offset, limit);
-			JSONArray jsonResult = new JSONArray();
-			for (String instance : result) {
-				JSONObject obj = new JSONObject(instance);
-				jsonResult.put(obj);
-			}
-			return jsonResult.toString();
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
-			log.error("Error queryNativeAsJson", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					VIRTUAL_ONTOLOGY_QUERY_ERROR);
-		}
-	}
-
-	@Override
-	public String findById(String ontology, String objectId) {
+	public String findById(final String ontology, final String objectId) {
+		final String objId;
+		final String query;
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(objectId, QUERY_NOTNULLEMPTY);
-			String objId = this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
-			Assert.hasLength(objectId, VIRTUAL_ONTOLOGY_NOTFOUND);
-			return this.queryNativeAsJson(ontology, SELECT_FROM + ontology + WHERE_STR + objId + " = " + objectId);
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
+			objId = this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+			Assert.hasLength(objId, NO_UNIQUE_ID);
+
+			query = sqlGenerator.buildSelect()
+					.setOntology(ontology)
+					.setLimit(1)
+					.setWhere(Collections.singletonList(new WhereStatement(objId, "=", objectId)))
+					.generate();
+
+		} catch (final Exception e) {
 			log.error("Error finding by id", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error finding by id on virtual ontology");
 		}
+
+		return this.queryNativeAsJson(ontology, query);
 	}
 
 	@Override
-	public String querySQLAsJson(String ontology, String query) {
-		try {
-			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			List<String> result = this.queryNative(ontology, query);
-			JSONArray jsonResult = new JSONArray();
-			for (String instance : result) {
-				JSONObject obj = new JSONObject(instance);
-				jsonResult.put(obj);
-			}
-			return jsonResult.toString();
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
-			log.error(VIRTUAL_ONTOLOGY_QUERY_ERROR, e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					VIRTUAL_ONTOLOGY_QUERY_ERROR);
-		}
+	public String querySQLAsJson(final String ontology, final String query) {
+		return queryNativeAsJson(ontology, query);
 	}
 
 	@Override
@@ -370,26 +264,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public String querySQLAsJson(String ontology, String query, int offset) {
-		try {
-			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
-			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			Assert.isTrue(offset >= 0, OFFSET_GREATERTHANZERO);
-			List<String> result = this.queryNative(ontology, query, offset,
-					getDatasourceForOntology(ontology).getQueryLimit());
-			JSONArray jsonResult = new JSONArray();
-			for (String instance : result) {
-				JSONObject obj = new JSONObject(instance);
-				jsonResult.put(obj);
-			}
-			return jsonResult.toString();
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
-			log.error("Error inserting data", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					VIRTUAL_ONTOLOGY_QUERY_ERROR);
-		}
+	public String querySQLAsJson(final String ontology, final String query, final int offset) {
+		return queryNativeAsJson(ontology, query, offset, virtualDatasourcesManager.getDatasourceForOntology(ontology).getQueryLimit());
 	}
 
 	@Override
@@ -418,146 +294,179 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public long count(String ontology) {
-		JSONArray result = new JSONArray(this.queryNativeAsJson(ontology, "SELECT COUNT(*) FROM " + ontology));
-		Iterator<String> itr = result.getJSONObject(0).keys();
-		String key = itr.next();
-		return result.getJSONObject(0).getLong(key);
+	public long count(final String ontology) {
+		return this.countNative(ontology, "SELECT COUNT(*) FROM " + ontology);
 	}
 
 	@Override
-	public MultiDocumentOperationResult delete(String ontology, boolean includeIds) {
+	public MultiDocumentOperationResult delete(final String ontology, final boolean includeIds) {
 		return this.deleteNative(ontology, "DELETE FROM " + ontology, includeIds);
 	}
 
 	@Override
-	public long countNative(String collectionName, String query) {
-		JSONArray result = new JSONArray(this.queryNativeAsJson(collectionName, query));
-		Iterator<String> itr = result.getJSONObject(0).keys();
-		String key = itr.next();
+	public long countNative(final String ontology, final String query) {
+		final JSONArray result = new JSONArray(this.queryNativeAsJson(ontology, query));
+		final Iterator<String> itr = result.getJSONObject(0).keys();
+		final String key = itr.next();
 		return result.getJSONObject(0).getLong(key);
 	}
 
 	@Override
-	public MultiDocumentOperationResult deleteNativeById(String ontologyName, String objectId) {
-		String objId;
+	public MultiDocumentOperationResult deleteNativeById(final String ontology, final String objectId) {
+		final String column;
+		final String query;
 		try {
-			Assert.hasLength(ontologyName, "Ontology name can't be null or empty");
-			Assert.hasLength(objectId, "ObjectID can't be null or empty");
-			objId = this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontologyName);
-			Assert.hasLength(objId, VIRTUAL_ONTOLOGY_NOTFOUND);
-			return this.deleteNative(ontologyName, "DELETE FROM " + ontologyName + WHERE_STR + objId + " = " + objectId,
-					false);
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
+			column = this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+			Assert.hasLength(column, NO_UNIQUE_ID);
+
+			query = sqlGenerator.buildDelete()
+					.setOntology(ontology)
+					.setWhere(Collections.singletonList(new WhereStatement(column, "=", objectId)))
+					.generate();
+		} catch (final Exception e) {
 			log.error("Error removing data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error removing data on virtual ontology");
 		}
+		return this.deleteNative(ontology, query, false);
 	}
 
 	@Override
-	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(String ontologyName, String objectId,
-			String body) {
-		String objId;
+	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(final String ontology, final String uniqueId, final String body) {
+		final String objId;
+		final String statement;
 		try {
-			Assert.hasLength(ontologyName, "Ontology name can't be null or empty");
-			Assert.hasLength(objectId, "ObjectID can't be null or empty");
+			Assert.hasLength(ontology, "Ontology name can't be null or empty");
+			Assert.hasLength(uniqueId, "Unique ID can't be null or empty");
 			Assert.hasLength(body, "Body can't be null or empty");
-			objId = this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontologyName);
-			Assert.hasLength(objId, VIRTUAL_ONTOLOGY_NOTFOUND);
-			return this.updateNative(ontologyName,
-					"UPDATE " + ontologyName + " SET " + body + WHERE_STR + objId + " = " + objectId, false);
-		} catch (DBPersistenceException e) {
-			throw e;
-		} catch (Exception e) {
+			objId = this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+			Assert.hasLength(objId, NO_UNIQUE_ID);
+
+			statement = sqlGenerator.buildUpdate()
+					.setOntology(ontology)
+					.setWhere(Collections.singletonList(new WhereStatement(objId, "=", uniqueId)))
+					.setValuesForJson(body)
+					.generate();
+		}  catch (final Exception e) {
 			log.error("Error updating data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error updating data on virtual ontology");
 		}
+		return this.updateNative(ontology, statement,false);
 	}
 
 	@Override
-	public List<String> getInstanceFromTable(String datasource, String query) {
+	public List<String> getInstanceFromTable(final String datasource, final String query) {
 		try {
 			Assert.hasLength(datasource, "Datasource can't be null or empty");
 			Assert.hasLength(query, QUERY_NOTNULLEMPTY);
-			query = getStatementFromJson(query);
 
-			VirtualDataSourceDescriptor sourceDescriptor = this.virtualDatasourcesManager
+			final String finalQuery = getStatementFromJson(query);
+			final VirtualDataSourceDescriptor sourceDescriptor = this.virtualDatasourcesManager
 					.getDataSourceDescriptor(datasource);
 
 			if (log.isDebugEnabled())
-				log.debug("Query requested: {}", query);
-			query = getOntologyHelper(sourceDescriptor.getVirtualDatasourceType()).addLimit(query,
+				log.debug("Query requested: {}", finalQuery);
+
+			final String limitedQuery = virtualDatasourcesManager.getOntologyHelper(sourceDescriptor.getVirtualDatasourceType()).addLimit(query,
 					sourceDescriptor.getQueryLimit());
+			final JdbcTemplate jdbcTemplate = new JdbcTemplate(sourceDescriptor.getDatasource());
 
-			JdbcTemplate jdbcTemplate = new JdbcTemplate(sourceDescriptor.getDatasource());
-
-			return jdbcTemplate.query(query.replaceAll(";", ""), new JSONResultsetExtractor(query));
-		} catch (Exception e) {
+			return jdbcTemplate.query(limitedQuery.replaceAll(";", ""), new JSONResultsetExtractor(limitedQuery));
+		} catch (final Exception e) {
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error getting instance data on virtual ontology");
 		}
 	}
 
 	@Override
-	public List<String> getTableMetadata(String datasource, String collection) {
-		java.sql.Connection conn = null;
+	public String getTableMetadata(final String datasource, final String ontology) {
 		try {
 			Assert.hasLength(datasource, "Datasource can't be null or empty");
-			Assert.hasLength(collection, "Collection can't be null or empty");
-			JSONObject json = new JSONObject();
-			List<String> list = new LinkedList<>();
+			Assert.hasLength(ontology, "Collection can't be null or empty");
 
-			conn = this.virtualDatasourcesManager.getDataSourceDescriptor(datasource).getDatasource().getConnection();
-			DatabaseMetaData dbmeta = conn.getMetaData();
-			ResultSet rs = dbmeta.getColumns(null, null, collection, null);
-			while (rs.next())
-				json.put(rs.getString("COLUMN_NAME"),
-						this.extractResultSetRowField(rs, rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE")));
-			list.add(json.toString());
-			return list;
-		} catch (Exception e) {
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
+			final HashMap<String,Object> map = new HashMap<>(this.getTableTypes(datasource, ontology));
+			for (final Map.Entry<String, Object> entry : map.entrySet()) {
+				entry.setValue(this.getSQLTypeForTableType((Integer) entry.getValue()));
+			}
+
+			return new JSONObject(map).toString();
+		} catch (final Exception exception) {
+			throw new DBPersistenceException(exception, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, exception.getMessage()),
 					"Error getting meta data on virtual ontology");
+		}
+	}
+
+	@Override
+	public Map<String, Integer> getTableTypes(final String datasource, final String ontology) {
+		final Map<String, Integer> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		java.sql.Connection conn = null;
+		try {
+			conn = this.virtualDatasourcesManager.getDataSourceDescriptor(datasource).getDatasource().getConnection();
+			final DatabaseMetaData dbmeta = conn.getMetaData();
+			final ResultSet rs = dbmeta.getColumns(null, null, ontology, null);
+			while (rs.next()) {
+				map.put(rs.getString("COLUMN_NAME"), rs.getInt("DATA_TYPE"));
+			}
+			return map;
+		} catch (final SQLException e) {
+			throw new GenericRuntimeOPException("Error getting table metadata", e);
 		} finally {
 			try {
-				if (conn != null)
-					conn.close();
-			} catch (Exception e2) {
+				if (conn != null) conn.close();
+			} catch (final Exception e2) {
+				throw new GenericRuntimeOPException("Error closing connection when getting table metadata", e2);
 			}
 		}
 	}
 
-	private Object extractResultSetRowField(ResultSet rs, String columnName, int rowType) {
-		switch (rowType) {
-		case java.sql.Types.BOOLEAN:
-			return true;
-		case java.sql.Types.NUMERIC:
-		case java.sql.Types.BIGINT:
-		case java.sql.Types.INTEGER:
-		case java.sql.Types.SMALLINT:
-		case java.sql.Types.TINYINT:
-		case java.sql.Types.DOUBLE:
-		case java.sql.Types.FLOAT:
-		case java.sql.Types.TIMESTAMP:
-		case java.sql.Types.TIMESTAMP_WITH_TIMEZONE:
-		case java.sql.Types.DECIMAL:
-		case java.sql.Types.BIT:
-		case java.sql.Types.BINARY:
-		case java.sql.Types.ROWID:
-			return 1;
-		case java.sql.Types.VARCHAR:
-		case java.sql.Types.NVARCHAR:
-		case java.sql.Types.DATE:
-		case java.sql.Types.TIME:
-		case java.sql.Types.TIME_WITH_TIMEZONE:
-		case java.sql.Types.CLOB:
-		case java.sql.Types.BLOB:
-		default:
-			return "String";
+	private Object getSQLTypeForTableType(final Integer type) {
+		switch (type) {
+			case Types.NULL:
+				return null;
+			case Types.BOOLEAN:
+				return Boolean.TRUE;
+			case Types.BIT:
+			case Types.INTEGER:
+			case Types.SMALLINT:
+			case Types.TINYINT:
+			case Types.ROWID:
+			case Types.BIGINT:
+				return 1;
+			case Types.NUMERIC:
+			case Types.DECIMAL:
+			case Types.DOUBLE:
+			case Types.FLOAT:
+			case Types.REAL:
+				return 1.1;
+			case Types.CHAR:
+			case Types.VARCHAR:
+			case Types.LONGVARCHAR:
+			case Types.NCHAR:
+			case Types.NVARCHAR:
+			case Types.LONGNVARCHAR:
+			case Types.TIMESTAMP:
+			case Types.TIMESTAMP_WITH_TIMEZONE:
+			case Types.DATE:
+			case Types.TIME:
+			case Types.TIME_WITH_TIMEZONE:
+			case Types.SQLXML:
+			case Types.BINARY:
+			case Types.VARBINARY:
+			case Types.LONGVARBINARY:
+			case Types.CLOB:
+			case Types.NCLOB:
+			case Types.BLOB:
+			case Types.STRUCT:
+			case Types.REF_CURSOR:
+			case Types.REF:
+			case Types.DATALINK:
+			case Types.DISTINCT:
+			case Types.JAVA_OBJECT:
+			case Types.OTHER:
+			case Types.ARRAY:
+			default:
+				return "string";
 		}
 	}
 
@@ -572,7 +481,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public String executeQuery(String ontology, String query) {
+	public String executeQuery(final String ontology, final String query) {
 		if (query.toUpperCase().startsWith("SELECT")) {
 			return this.queryNativeAsJson(ontology, query);
 		} else if (query.toUpperCase().startsWith("UPDATE")) {
@@ -587,3 +496,4 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 }
+

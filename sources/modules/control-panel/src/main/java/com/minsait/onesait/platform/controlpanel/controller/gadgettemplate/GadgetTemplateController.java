@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -47,7 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 public class GadgetTemplateController {
 
 	private static final String GADGET_TEMPLATE = "gadgetTemplate";
-	
+	private static final String MESSAGE = "message";
+
 	@Autowired
 	private GadgetTemplateService gadgetTemplateService;
 
@@ -75,16 +77,34 @@ public class GadgetTemplateController {
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PostMapping(value = "/create", produces = "text/html")
-	public String saveGadget(@Valid GadgetTemplate gadgetTemplate, BindingResult bindingResult, Model uiModel,
+	public String saveGadget(@Valid GadgetTemplate gadgetTemplate, BindingResult bindingResult, Model model,
 			HttpServletRequest httpServletRequest, RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some gadgetTemplate properties missing");
-			utils.addRedirectMessage("gadgets.validation.error", redirect);
-			return "redirect:/gadgettemplates/create";
+			gadgetTemplate.setId(null);
+			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
+			model.addAttribute(MESSAGE, utils.getMessage("gadgets.validation.error", ""));
+			return "gadgettemplates/create";
 		}
-
+		GadgetTemplate gt = this.gadgetTemplateService
+				.getGadgetTemplateByIdentification(gadgetTemplate.getIdentification());
+		if (gt != null) {
+			gadgetTemplate.setId(null);
+			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
+			model.addAttribute(MESSAGE, utils.getMessage("dashboardConf.validation.error.identifier", ""));
+			return "gadgettemplates/create";
+		}
 		gadgetTemplate.setUser(this.userService.getUser(this.utils.getUserId()));
-		this.gadgetTemplateService.createGadgetTemplate(gadgetTemplate);
+		try {
+			this.gadgetTemplateService.createGadgetTemplate(gadgetTemplate);
+
+		} catch (GadgetTemplateServiceException e) {
+			utils.addRedirectMessage("gadgets.validation.error", redirect);
+			gadgetTemplate.setId(null);
+			model.addAttribute(MESSAGE, utils.getMessage("gadgets.validation.error", ""));
+			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
+			return "gadgettemplates/create";
+		}
 
 		return REDIRECT_GADGET_TEMP_LIST;
 
@@ -96,14 +116,14 @@ public class GadgetTemplateController {
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
 		return "gadgettemplates/create";
 	}
-	
+
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/view/{gadgetTemplateId}", produces = "text/html")
 	public String showGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
 		return "gadgettemplates/show";
 	}
-	
+
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/gadgetViewer", produces = "text/html")
 	public String showGadgetViewer(Model model) {

@@ -22,8 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.dto.socket.FilterStt;
 import com.minsait.onesait.platform.dto.socket.ProjectStt;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 
 @Component
@@ -43,7 +46,8 @@ public class SolverQuasarImpl implements SolverInterface {
 
 	@Override
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group, String executeAs, String ontology) {
+			List<String> group, String executeAs, String ontology)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		String processedQuery;
 		String trimQuery = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
 		trimQuery = trimQuery.trim().replaceAll(" +", " ");

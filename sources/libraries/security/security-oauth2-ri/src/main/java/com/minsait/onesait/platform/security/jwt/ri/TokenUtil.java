@@ -45,6 +45,7 @@ public class TokenUtil {
 	private AppUserRepository userRepo;
 	
 	private static final String PRINCIPAL = "principal";
+	private static final String USER_NAME = "user_name";
 	private static final String NAME = "name";
 
 	public String[] extractAndDecodeHeader(String header) throws IOException {
@@ -88,6 +89,10 @@ public class TokenUtil {
 
 		if (token.getAdditionalInformation().containsKey(NAME)) {
 			response.put(NAME, token.getAdditionalInformation().get(NAME));
+		}
+		
+		if (token.getAdditionalInformation().containsKey(NAME)) {
+			response.put(USER_NAME, token.getAdditionalInformation().get(NAME));
 		}
 		
 		if (token.getAdditionalInformation().containsKey(PRINCIPAL)) {
@@ -171,7 +176,7 @@ public class TokenUtil {
 		Map<String, Set<String>> retorno = new HashMap<>();
 
 		role.getChildRoles().forEach(childRole -> {
-			String appId = childRole.getApp().getAppId();
+			String appId = childRole.getApp().getIdentification();
 			if (!retorno.containsKey(appId))
 				retorno.put(appId, new HashSet<>());
 			retorno.get(appId).add(childRole.getName());
@@ -181,7 +186,7 @@ public class TokenUtil {
 	}
 
 	public List<AppRole> getAppRoles(String userId, String clientId){
-    	List<AppUser> roles = userRepo.findByUserId(userId, clientId);
+    	List<AppUser> roles = userRepo.findByUserAndIdentification(userId, clientId);
         return roles.stream().map(AppUser::getRole).collect(Collectors.toList());
     }
 

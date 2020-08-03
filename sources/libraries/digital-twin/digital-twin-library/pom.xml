@@ -5,11 +5,11 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>1.0.0-ce</version>
+		<version>1.1.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>		
 	<artifactId>onesaitplatform-digital-twin-library</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.6</version>
 	<packaging>jar</packaging>
 
 	<name>digital-twin-library</name>
@@ -42,7 +42,7 @@
 		<!-- LOMBOK -->
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
+			<version>1.16.20</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>

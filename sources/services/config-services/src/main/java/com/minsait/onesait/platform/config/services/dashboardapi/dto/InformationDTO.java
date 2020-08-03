@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.config.services.dashboardapi.dto;
 
 import java.util.ArrayList;
 
+import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +26,10 @@ public class InformationDTO {
 	@Getter
 	@Setter
 	private String dashboard;
+
+	@Getter
+	@Setter
+	private DashboardType dashboardType;
 
 	@Getter
 	@Setter
@@ -66,6 +72,10 @@ public class InformationDTO {
 
 	@Getter
 	@Setter
+	private GadgetConfDTO gadgetConf;
+
+	@Getter
+	@Setter
 	private ArrayList<MeasureDTO> columns;
 
 	@Getter
@@ -91,5 +101,9 @@ public class InformationDTO {
 	@Getter
 	@Setter
 	private String[] assetsID;
+
+	@Getter
+	@Setter
+	private SynopticElementDTO synopticElement;
 
 }

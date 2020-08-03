@@ -28,7 +28,9 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
-import com.minsait.onesait.platform.api.service.Constants;
+import com.minsait.onesait.platform.api.service.ApiServiceInterface;
+import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
@@ -38,31 +40,34 @@ public class ValidBodyRule extends DefaultRuleBase {
 
 	@Priority
 	public int getPriority() {
-		return 2;
+		return 3;
 	}
 
 	@Condition
 	public boolean existsRequest(Facts facts) {
-		Map<String, Object> data = facts.get(RuleManager.FACTS);
-		Object body = data.get(Constants.BODY);
-		return body != null;
+		final Map<String, Object> data = facts.get(RuleManager.FACTS);
+		final Object body = data.get(ApiServiceInterface.BODY);
+		final Api api = (Api) data.get(ApiServiceInterface.API);
+		return (body != null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY));
 	}
 
 	@Action
 	public void setFirstDerivedData(Facts facts) {
-		Map<String, Object> data = facts.get(RuleManager.FACTS);
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> data = (Map<String, Object>) facts.get(RuleManager.FACTS);
 
-		String body = (String) data.get(Constants.BODY);
+		final byte[] requestBody = (byte[]) data.get(ApiServiceInterface.BODY);
+		final String body = new String(requestBody);
 
 		if (!"".equals(body)) {
-			boolean valid = isValidJSON(body);
-			boolean validMongo = isValidJSONtoMongo(body);
+			final boolean valid = isValidJSON(body);
+			final boolean validMongo = isValidJSONtoMongo(body);
 
 			if (valid && validMongo) {
 
-				String bodyDepured = depureJSON(body);
+				final String bodyDepured = depureJSON(body);
 				if (bodyDepured != null)
-					data.put(Constants.BODY, bodyDepured);
+					data.put(ApiServiceInterface.BODY, bodyDepured.getBytes());
 			}
 
 			else
@@ -72,9 +77,9 @@ public class ValidBodyRule extends DefaultRuleBase {
 	}
 
 	public boolean isValidJSON(String toTestStr) {
-		JSONObject jsonObj = toJSONObject(toTestStr);
-		JSONArray jsonArray = toJSONArray(toTestStr);
-		
+		final JSONObject jsonObj = toJSONObject(toTestStr);
+		final JSONArray jsonArray = toJSONArray(toTestStr);
+
 		return (jsonObj != null || jsonArray != null);
 	}
 
@@ -82,7 +87,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 		JSONObject jsonObj = null;
 		try {
 			jsonObj = new JSONObject(input);
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			return null;
 		}
 		return jsonObj;
@@ -92,7 +97,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 		JSONArray jsonObj = null;
 		try {
 			jsonObj = new JSONArray(input);
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			return null;
 		}
 		return jsonObj;
@@ -100,10 +105,10 @@ public class ValidBodyRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			DBObject dbObject = (DBObject) JSON.parse(body);
-			
+			final DBObject dbObject = (DBObject) JSON.parse(body);
+
 			return dbObject != null;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return false;
 		}
 	}
@@ -117,7 +122,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 			else {
 				return dbObject.toString();
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return null;
 		}
 

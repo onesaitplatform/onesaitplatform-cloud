@@ -25,6 +25,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
@@ -89,6 +90,10 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	// key="findAllByOrderByIdentificationAsc")
 	List<Ontology> findAllByOrderByIdentificationAsc();
 
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic, o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ " FROM Ontology AS o ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologyForListOrderByIdentificationAsc();
+
 	List<Ontology> findByUserOrderByIdentificationAsc(User user);
 
 	List<Ontology> findByDescriptionContaining(String description);
@@ -108,6 +113,12 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 
 	List<Ontology> findByIdentificationContainingAndDescriptionContainingAndActiveTrue(String identification,
 			String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o " + "WHERE "
+			+ "o.identification like %:identification% AND o.description like %:description% ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologyForListByIdentificationContainingAndDescriptionContainingAndActiveTrue(
+			String identification, String description);
 
 	List<Ontology> findByIdentificationContainingAndDescriptionContainingAndActiveTrueOrderByIdentificationAsc(
 			String identification, String description);
@@ -138,6 +149,9 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@Query("SELECT o FROM Ontology AS o WHERE (o.user=:user OR o.isPublic=TRUE OR o.id IN (SELECT uo.ontology.id FROM OntologyUserAccess AS uo WHERE uo.user=:user)) AND o.active=true ORDER BY o.identification ASC")
 	List<Ontology> findByUserAndOntologyUserAccessAndAllPermissions(@Param("user") User user);
 
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) FROM Ontology AS o WHERE (o.user=:user OR o.isPublic=TRUE OR o.id IN (SELECT uo.ontology.id FROM OntologyUserAccess AS uo WHERE uo.user=:user)) AND o.active=true ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologyForListByUserAndOntologyUserAccessAndAllPermissions(@Param("user") User user);
+
 	@Query("SELECT o FROM Ontology AS o WHERE (o.user=:user OR o.isPublic=TRUE OR o.id IN (SELECT uo.ontology.id FROM OntologyUserAccess AS uo WHERE uo.user=:user)) ORDER BY o.identification ASC")
 	List<Ontology> findByUserAndAccess(@Param("user") User user);
 
@@ -147,16 +161,46 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	List<Ontology> findByUserAndPermissionsANDIdentificationAndDescription(@Param("user") User user,
 			@Param("identification") String identification, @Param("description") String description);
 
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
+			+ "o.id IN (SELECT uo.ontology.id " + "FROM OntologyUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "(o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByUserAndPermissionsANDIdentificationAndDescription(
+			@Param("user") User user, @Param("identification") String identification,
+			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o " + "WHERE (o.user=:user OR " + "o.id IN (SELECT uo.ontology.id "
+			+ "FROM OntologyUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "(o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByUserAndPermissionsANDIdentificationAndDescriptionNoPublic(
+			@Param("user") User user, @Param("identification") String identification,
+			@Param("description") String description);
+
 	@Query("SELECT o " + "FROM Ontology AS o "
 			+ "WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
 	List<Ontology> findByIdentificationLikeAndDescriptionLike(@Param("identification") String identification,
 			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o "
+			+ "WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByIdentificationLikeAndDescriptionLike(
+			@Param("identification") String identification, @Param("description") String description);
 
 	@Query("SELECT o " + "FROM Ontology AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
 			+ "o.id IN (SELECT uo.ontology.id " + "FROM OntologyUserAccess AS uo " + "WHERE uo.user=:user)) AND "
 			+ "(o.identification like %:identification% AND o.description like %:description%) AND o.active=true ORDER BY o.identification ASC")
 	List<Ontology> findByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(@Param("user") User user,
 			@Param("identification") String identification, @Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
+			+ "o.id IN (SELECT uo.ontology.id " + "FROM OntologyUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "(o.identification like %:identification% AND o.description like %:description%) AND o.active=true ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologyForListByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(
+			@Param("user") User user, @Param("identification") String identification,
+			@Param("description") String description);
 
 	@Query("SELECT o FROM Ontology AS o WHERE o.isPublic=TRUE OR o.user=:user OR o.id IN (SELECT uo.ontology.id FROM OntologyUserAccess AS uo WHERE uo.user=:user AND (uo.ontologyUserAccessType='ALL' OR uo.ontologyUserAccessType='QUERY')) AND o.active=true ORDER BY o.identification ASC")
 	List<Ontology> findByUserAndOntologyUserAccessAndPermissionsQuery(@Param("user") User user);

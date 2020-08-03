@@ -76,9 +76,9 @@
 						<li><a th:href="@{/apps/list}"> <span
 								th:text="#{app.breadcrumb.prev}">apps</span></a><i
 							class="fa fa-angle-right"></i></li>
-						<li><span th:if="${app.appId} == null"
+						<li><span th:if="${app.id} == null"
 							th:text="#{app.breadcrumb.create}">Create App</span> <span
-							th:if="${app.appId} != null"
+							th:if="${app.id} != null"
 							th:text="#{app.breadcrumb.update}">Update App</span></li>
 					</ul>
 				</div>
@@ -108,18 +108,18 @@
 										<a href="#tab_1" data-toggle="tab" aria-expanded="false">
 																		
 											<!-- FORM TITLE -->
-											<span th:if="${app.appId} == null"
+											<span th:if="${app.id} == null"
 											class=" "
 											th:text="#{app.create}"> New App</span> <span
-											th:if="${app.appId} != null"
+											th:if="${app.id} != null"
 											class=" "
-											th:text="#{app.update} + ' ' + ${app.name}">
+											th:text="#{app.update} + ' ' + ${app.identification}">
 											Update App</span>
 										</a>
 									</li>																	
-									<li id="tab-autorizaciones" class=""><a href="#tab_2" data-toggle="tab" th:classappend="${app?.appId} == null ? disabled : ''" aria-expanded="true"><span class="" th:text="#{app.authorizations}" >ASIGNACION DE USUARIOS </span></a></li>
-									<li id="tab-asociaciones" class=""><a href="#tab_3" data-toggle="tab" th:classappend="|${app?.appId == null ? 'disabled1' : ''} ${#lists.isEmpty(appsChild) ? 'disabled2' : ''}|" aria-expanded="true"><span class="" th:text="#{app.associations}" >ASOCIACIONES </span></a></li>
-									<li id="tab-projects" class=""><a href="#tab_4" data-toggle="tab" th:classappend="${app?.appId} == null ? disabled : ''" aria-expanded="true"><span class="" th:text="#{app.projects}" >PROJECTS </span></a></li>
+									<li id="tab-autorizaciones" class=""><a href="#tab_2" data-toggle="tab" th:classappend="${app?.id} == null ? disabled : ''" aria-expanded="true"><span class="" th:text="#{app.authorizations}" >ASIGNACION DE USUARIOS </span></a></li>
+									<li id="tab-asociaciones" class=""><a href="#tab_3" data-toggle="tab" th:classappend="|${app?.id == null ? 'disabled1' : ''} ${#lists.isEmpty(appsChild) ? 'disabled2' : ''}|" aria-expanded="true"><span class="" th:text="#{app.associations}" >ASOCIACIONES </span></a></li>
+									<li id="tab-projects" class=""><a href="#tab_4" data-toggle="tab" th:classappend="${app?.id} == null ? disabled : ''" aria-expanded="true"><span class="" th:text="#{app.projects}" >PROJECTS </span></a></li>
 								</ul>
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
@@ -142,15 +142,15 @@
 										<form role="form" id="app_create_form"
 											th:object="${app}" method="post" class="form">
 											<!-- FORM ACTIONS FOR INSERT-->
-											<input th:if="${app.appId} == null" type="hidden"
+											<input th:if="${app.id} == null" type="hidden"
 												name="action" th:value="@{/apps/create}" />
 
 											<!-- FORM ACTIONS FOR UPDATE -->
-											<input th:if="${app.appId} != null" type="hidden"
+											<input th:if="${app.id} != null" type="hidden"
 												name="action" th:value="@{/apps/update}" /> <input
-												th:if="${app.appId} != null" type="hidden" name="_method"
+												th:if="${app.id} != null" type="hidden" name="_method"
 												value="PUT" />
-
+											<input id="id" name="id" type="hidden" th:value="${app.id}"/>
 
 											<div class="form-body">
 												<!-- user, name and email -->
@@ -161,28 +161,13 @@
 																class="required"> (*)</span>
 															<div class="input-icon ">
 																<i class="fa fa-credit-card"></i> <input
-																	id="appId" type="text" name="id" pattern="[a-zA-Z0-9_]{5,}"
+																	id="identification" type="text" name="id" pattern="[a-zA-Z0-9_]{5,}"
 																	th:required="true" maxlength="50"
-																	th:field="*{appId}" class="form-control "
+																	th:field="*{identification}" class="form-control "
 																	th:placeholder="#{app.appId}"
-																	th:readonly="*{appId}"
+																	th:readonly="*{identification}"
 																	th:title="#{app.errorpattern}"
-																	th:classappend="${app.appId} ? no-remove : ''" />
-															</div>
-														</div>
-													</div>
-													<div class="col-md-4 col-sm-4 col-xs-12">
-														<div class="form-group">
-															<label th:text="#{app.name} + ':'">Name</label><span
-																class="required"> (*)</span>
-															<div class="input-icon ">
-																<i class="fa fa-credit-card"></i> <input
-																	id="name" type="text" name="name" pattern="[a-zA-Z0-9_]{5,}"
-																	th:required="true" maxlength="50"
-																	th:field="*{name}" class="form-control "
-																	th:placeholder="#{app.name}"
-																	th:title="#{app.errorpattern}"
-																	th:classappend="${app.name} ? no-remove : ''" />
+																	th:classappend="${app.identification} ? no-remove : ''" />
 															</div>
 														</div>
 													</div>
@@ -200,20 +185,6 @@
 															</div>
 														</div>
 													</div>
-													<div class="col-md-8 col-sm-6 col-xs-12">
-														<div class="form-group">
-															<label th:text="#{app.description} + ':'">description</label><span
-																class="required"> (*)</span>
-															<div class="input-icon ">
-																<i class="fa fa-credit-card"></i> <input
-																	id="description" type="text" name="description"
-																	th:required="true" maxlength="50"
-																	th:field="*{description}" class="form-control "
-																	th:placeholder="#{app.description}"
-																	th:classappend="${app.description} ? no-remove : ''" />
-															</div>
-														</div>
-													</div>
 													<div class="col-md-4 col-sm-4 col-xs-12">
 														<div class="form-group">
 															<label th:text="#{app.tokenValiditySeconds} + ':'">tokenValiditySeconds</label>
@@ -224,6 +195,20 @@
 																	th:field="*{tokenValiditySeconds}" class="form-control "
 																	th:placeholder="#{app.tokenValiditySeconds}"
 																	th:classappend="${app.tokenValiditySeconds} ? no-remove : ''" />
+															</div>
+														</div>
+													</div>
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{app.description} + ':'">description</label><span
+																class="required"> (*)</span>
+															<div class="input-icon ">
+																<i class="fa fa-credit-card"></i> <input
+																	id="description" type="text" name="description"
+																	th:required="true" maxlength="255"
+																	th:field="*{description}" class="form-control "
+																	th:placeholder="#{app.description}"
+																	th:classappend="${app.description} ? no-remove : ''" />
 															</div>
 														</div>
 													</div>
@@ -342,22 +327,22 @@
 													<span th:text="#{gen.resetBtn}"> Reset</span>
 													</button>
 													
-													<span th:if="${app.appId} != null" class="sep no-border"></span>
+													<span th:if="${app.id} != null" class="sep no-border"></span>
 
 													<!-- REMOVE -->
-													<button th:if="${app.appId} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete" value="Remove" th:onclick="'AppCreateController.deleteAppConfirmation();'">
+													<button th:if="${app.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete" value="Remove" th:onclick="'AppCreateController.deleteAppConfirmation();'">
 													<span th:text="#{gen.deleteBtn}"> Delete </span>
 													</button>
 													
 													<span class="sep"></span>
 													
 													<!-- CREATE -->
-													<button th:if="${app.appId} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary"
+													<button th:if="${app.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary"
 														name="create" th:value="#{gen.createBtn}"><span th:text="#{gen.createBtn}"> New</span>
 													</button>
 
 													<!-- UPDATE -->
-													<button th:if="${app.appId} != null" id="updateBtn"	type="submit" class="btn btn-circle btn-outline btn-primary"
+													<button th:if="${app.id} != null" id="updateBtn"	type="submit" class="btn btn-circle btn-outline btn-primary"
 														name="update" th:value="#{gen.editBtn}"><span th:text="#{gen.editBtn}">	Edit</span>
 													</button>
 
@@ -455,7 +440,7 @@
 											<div class="col-md-4 col-sm-6 col-xs-12">
 											<!-- APP SELECTION -->
 												<div class="form-group">
-													<label class="control-label" th:text="#{appfather.roles} + ' ' + ${app.appId} + ':'">Roles from</label>
+													<label class="control-label" th:text="#{appfather.roles} + ' ' + ${app.identification} + ':'">Roles from</label>
 													<select id="rolesFatherApp" class="selectpicker form-control" data-live-search="true" data-width="100%" >
 														<option value="" th:text="#{app.rolefatherselect}"> Select Role...</option>
 														<option th:each="roleFather :${roles}" th:value="${roleFather.id}" th:text="${roleFather.name}" ></option>														
@@ -463,7 +448,7 @@
 												</div>
 												<div class="form-group">
 													<label class="control-label" th:text="#{appchild.name} + ':'">Apps</label>
-													<select id="childApps" class="selectpicker form-control" data-live-search="true" data-width="100%" >			<option value="" th:text="#{app.appchildselect}"> Select App...</option>								<option th:each="appChild :${appsChild}" th:value="${appChild.appId}" th:text="${appChild.appId}" ></option>
+													<select id="childApps" class="selectpicker form-control" data-live-search="true" data-width="100%" >			<option value="" th:text="#{app.appchildselect}"> Select App...</option>								<option th:each="appChild :${appsChild}" th:value="${appChild.id}" th:text="${appChild.identification}" ></option>
 													</select>
 												</div>
 												<div class="form-group" style="display: none;" id="selectRolesChildApp">
@@ -518,7 +503,7 @@
 														<div class="form-group">
 															<select name="existingProject" th:if="*{id == null}" id="projects-combo" class="selectpicker form-control" data-live-search="true" data-width="100%" >
 																<option value="" th:text="#{project.select}"> Select...</option>
-																<option th:each="p :${projects}" th:value="${p.id}" th:text="${p.name}" ></option>
+																<option th:each="p :${projects}" th:value="${p.id}" th:text="${p.identification}" ></option>
 															</select>
 														</div>
 													</div>
@@ -534,7 +519,7 @@
 														<div class="form-group">
 															<label class="" th:text="#{project.name} + ':'">Name</label><span th:if="!*{id}" class="required"> *</span>
 															<div class="input-icon">
-																<input id="project-name" type="text" th:readonly="*{name}"  maxlength="50" th:field="*{name}" class="form-control"  th:placeholder="#{project.name}"/>
+																<input id="project-name" type="text" th:readonly="*{identification}"  maxlength="50" th:field="*{identification}" class="form-control"  th:placeholder="#{project.name}"/>
 															</div>
 														</div>
 													</div>
@@ -556,7 +541,7 @@
 															<input th:if="*{type}" id="project-type" type="text" th:readonly="*{type}" th:required="true" maxlength="50" th:field="*{type}" class="form-control"  th:placeholder="#{project.type}"/>
 														</div>
 													</div>
-													<input name="appId" type="hidden" th:value="${app.appId}"/>
+													<input name="appId" type="hidden" th:value="${app.id}"/>
 												</div>
 											</div>
 											<div class="form-actions" >
@@ -630,8 +615,8 @@
 		"validation_dates" : [[#{app.valid.dateDeleted}]],
 		"close" : [[#{gen.closeBtn}]],		
 		"language" : currentLanguage,
-		"actionMode" : [[${app.appId}]],
-		"appId": [[${app?.appId}]],
+		"actionMode" : [[${app.id}]],
+		"appId": [[${app?.id}]],
 		"authorizations" : [[${authorizations}]],
 		"associations" : [[${associations}]],
 		"fieldEmpty":[[#{app.roles.fieldEmpty}]],

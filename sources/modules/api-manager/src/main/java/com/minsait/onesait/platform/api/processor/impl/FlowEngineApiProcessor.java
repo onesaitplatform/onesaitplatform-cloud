@@ -16,12 +16,16 @@ package com.minsait.onesait.platform.api.processor.impl;
 
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +33,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -38,7 +43,7 @@ import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
 import com.minsait.onesait.platform.api.processor.ApiProcessor;
 import com.minsait.onesait.platform.api.processor.ScriptProcessorFactory;
 import com.minsait.onesait.platform.api.processor.utils.ApiProcessorUtils;
-import com.minsait.onesait.platform.api.service.Constants;
+import com.minsait.onesait.platform.api.service.ApiServiceInterface;
 import com.minsait.onesait.platform.api.service.api.ApiManagerService;
 import com.minsait.onesait.platform.api.service.impl.ApiServiceImpl.ChainProcessingStatus;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -46,7 +51,10 @@ import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
+import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
+import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
 
+import io.swagger.models.Swagger;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -58,6 +66,11 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	@Autowired
 	private com.minsait.onesait.platform.config.services.apimanager.ApiManagerService apiManagerServiceConfig;
 
+	@Autowired
+	private NoderedAuthenticationService noderedAuthService;
+	@Autowired
+	private FlowDomainService domainService;
+	
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	@Autowired
@@ -66,8 +79,8 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	@Override
 	@ApiManagerAuditable
 	public Map<String, Object> process(Map<String, Object> data) throws GenericOPException {
-		proxyHttp(data);
-		postProcess(data);
+		data = proxyHttp(data);
+		data = postProcess(data);
 		return data;
 	}
 
@@ -76,31 +89,61 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 		return Collections.singletonList(ApiType.NODE_RED);
 	}
 
-	private void proxyHttp(Map<String, Object> data) {
-		final String method = (String) data.get(Constants.METHOD);
-		final String pathInfo = (String) data.get(Constants.PATH_INFO);
+	private Map<String, Object> proxyHttp(Map<String, Object> data) {
+		final String method = (String) data.get(ApiServiceInterface.METHOD);
+		final String pathInfo = (String) data.get(ApiServiceInterface.PATH_INFO);
 		final String pathOperation = apiManagerService.getOperationPath(pathInfo);
-		final String body = (String) data.get(Constants.BODY);
-		final Api api = (Api) data.get(Constants.API);
+		/*final byte[] requestBody = (byte[]) data.get(ApiServiceInterface.BODY);
+		final String body = new String(requestBody);*/
+		final byte[] body = (byte[]) data.get(ApiServiceInterface.BODY);
+		final Api api = (Api) data.get(ApiServiceInterface.API);
 
 		@SuppressWarnings("unchecked")
-		final Map<String, String[]> queryParams = (Map<String, String[]>) data.get(Constants.QUERY_PARAMS);
-
+		final Map<String, String[]> queryParamsOrig = (Map<String, String[]>) data.get(ApiServiceInterface.QUERY_PARAMS);
+		//we did not check whether the original query had params, even if not expected
+		final Map<String, String[]> formDataParams = (Map<String, String[]>) data.get(ApiServiceInterface.FORM_PARAMETER_MAP);
+		
+		final Map<String, String[]> queryParams = new HashMap<>();
+		boolean pathParamsDefined=false;
+		
+		for(Entry<String,String[]> entry: queryParamsOrig.entrySet()){
+			String queryParamName = entry.getKey();
+			if( formDataParams != null && formDataParams.get(queryParamName)==null){
+				pathParamsDefined = true;
+			}
+			queryParams.put(entry.getKey(), entry.getValue());
+		}
+		
 		final ApiOperation operation = apiManagerService.getFlowEngineApiOperation(pathInfo, api, method, queryParams);
 
-		final HttpServletRequest request = (HttpServletRequest) data.get(Constants.REQUEST);
+		final HttpServletRequest request = (HttpServletRequest) data.get(ApiServiceInterface.REQUEST);
 
-		String nodeId = operation.getEndpoint().substring(0, operation.getEndpoint().indexOf('/', 1));
+		final String nodeId = operation.getEndpoint().substring(0, operation.getEndpoint().indexOf('/', 1));
 		String url = api.getEndpointExt() + nodeId + pathOperation;
-		url = addExtraQueryParameters(url, queryParams);
-		// TO-DO headers?
-		String result = "";
+		if (pathParamsDefined)
+			url = addExtraQueryParameters(url, pathInfo, queryParams);
+		
+		byte[] result = null;
 		final HttpHeaders headers = new HttpHeaders();
 		// add the headers
 		addHeaders(headers, request);
-		final HttpEntity<String> entity = new HttpEntity<>(body, headers);
+		//add NodeRED auth (HTTP IN middleware)
+		String[] endpointParts = api.getEndpointExt().split("/");
+		String domain = endpointParts[endpointParts.length - 1];
+		String user = domainService.getFlowDomainByIdentification(domain).getUser().getUserId();
+		headers.set("X-OP-NODEKey", noderedAuthService.getNoderedAuthAccessToken(user, domain));
+		
+		final HttpEntity<?> entity;
+		
+		if (ServletFileUpload.isMultipartContent(request))
+			entity = new HttpEntity<>(addParameters(request, data), headers);
+		else {
+			url = addExtraQueryParameters(url, pathInfo, queryParams);
+			entity = new HttpEntity<>(body, headers);
+		}
+		//final HttpEntity<String> entity = new HttpEntity<>(body, headers);
 		try {
-			switch (method) {
+			/*switch (method) {
 			case "GET":
 				result = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
 				break;
@@ -116,52 +159,86 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 			default:
 				break;
 
+			}*/
+			switch (method) {
+				case "GET":
+					result = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class).getBody();
+					break;
+				case "POST":
+					result = restTemplate.exchange(url, HttpMethod.POST, entity, byte[].class).getBody();
+					break;
+				case "PUT":
+					result = restTemplate.exchange(url, HttpMethod.PUT, entity, byte[].class).getBody();
+					break;
+				case "DELETE":
+					result = restTemplate.exchange(url, HttpMethod.DELETE, entity, byte[].class).getBody();
+					break;
+				default:
+					break;
 			}
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
-			data.put(Constants.STATUS, ChainProcessingStatus.STOP);
+			data.put(ApiServiceInterface.STATUS, ChainProcessingStatus.STOP);
 
-			data.put(Constants.HTTP_RESPONSE_CODE, e.getStatusCode());
+			data.put(ApiServiceInterface.HTTP_RESPONSE_CODE, e.getStatusCode());
 
-			data.put(Constants.REASON, e.getResponseBodyAsString());
+			data.put(ApiServiceInterface.REASON, e.getResponseBodyAsString());
 
 			throw e;
 		}
 
-		data.put(Constants.OUTPUT, result);
+		data.put(ApiServiceInterface.OUTPUT, result);
+		return data;
 	}
 
-	private void postProcess(Map<String, Object> data) {
-		final Api api = (Api) data.get(Constants.API);
-		final String method = (String) data.get(Constants.METHOD);
+	private Map<String, Object> postProcess(Map<String, Object> data) {
+		final Api api = (Api) data.get(ApiServiceInterface.API);
+		final String method = (String) data.get(ApiServiceInterface.METHOD);
 		if (apiManagerServiceConfig.postProcess(api) && method.equalsIgnoreCase("get")) {
 			final String postProcess = apiManagerServiceConfig.getPostProccess(api);
 			if (!StringUtils.isEmpty(postProcess)) {
 				try {
-					Object result = scriptEngine.invokeScript(postProcess, data.get(Constants.OUTPUT));
-					data.put(Constants.OUTPUT, result);
+					final Object result = scriptEngine.invokeScript(postProcess, data.get(ApiServiceInterface.OUTPUT));
+					data.put(ApiServiceInterface.OUTPUT, result);
 				} catch (final ScriptException e) {
 					log.error("Execution logic for postprocess error", e);
-					data.put(Constants.STATUS, ChainProcessingStatus.STOP);
-					data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
+					data.put(ApiServiceInterface.STATUS, ChainProcessingStatus.STOP);
+					data.put(ApiServiceInterface.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
 					final String messageError = ApiProcessorUtils.generateErrorMessage(
 							"ERROR from Scripting Post Process", "Execution logic for Postprocess error",
 							e.getCause().getMessage());
-					data.put(Constants.REASON, messageError);
+					data.put(ApiServiceInterface.REASON, messageError);
 
 				} catch (final Exception e) {
-					data.put(Constants.STATUS, ChainProcessingStatus.STOP);
-					data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
+					data.put(ApiServiceInterface.STATUS, ChainProcessingStatus.STOP);
+					data.put(ApiServiceInterface.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
 					final String messageError = ApiProcessorUtils.generateErrorMessage(
 							"ERROR from Scripting Post Process", "Exception detected", e.getCause().getMessage());
-					data.put(Constants.REASON, messageError);
+					data.put(ApiServiceInterface.REASON, messageError);
 				}
 			}
 		}
+
+		return data;
 	}
 
-	private String addExtraQueryParameters(String url, Map<String, String[]> queryParams) {
-		final StringBuilder sb = new StringBuilder(url);
+	private String getUrl(Swagger swagger, String pathInfo) {
+		String scheme = ApiServiceInterface.HTTPS.toLowerCase();
+		if (!swagger.getSchemes().stream().map(s -> s.name()).collect(Collectors.toList())
+				.contains(ApiServiceInterface.HTTPS))
+			scheme = ApiServiceInterface.HTTP.toLowerCase();
+		final String url = scheme + "://" + swagger.getHost() + swagger.getBasePath();
+		final String apiIdentifier = apiManagerService.getApiIdentifier(pathInfo);
+		final String swaggerPath = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length(),
+				pathInfo.length() - 1);
+		return url.concat(swaggerPath);
+	}
+
+	private String addExtraQueryParameters(String url, String pathInfo, Map<String, String[]> queryParams) {
+		if (url.substring(url.length()-1,url.length()).equals("/"))
+			url = url.substring(0, url.length()-1);
+		
+		StringBuilder sb = new StringBuilder(url);
 		if (queryParams.size() > 0) {
 			sb.append("?");
 			queryParams.entrySet().forEach(e -> {
@@ -174,10 +251,10 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	}
 
 	private HttpHeaders addHeaders(HttpHeaders headers, HttpServletRequest request) {
-		Enumeration<String> headerNames = request.getHeaderNames();
+		final Enumeration<String> headerNames = request.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
-			String headerName = headerNames.nextElement();
-			String headerValue = request.getHeader(headerName);
+			final String headerName = headerNames.nextElement();
+			final String headerValue = request.getHeader(headerName);
 			headers.add(headerName, headerValue);
 		}
 		final String contentType = request.getContentType();
@@ -186,6 +263,11 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 		else
 			headers.setContentType(MediaType.valueOf(contentType));
 		return headers;
+	}
+
+	@SuppressWarnings("unchecked")
+	private MultiValueMap<String, Object> addParameters(HttpServletRequest request, Map<String, Object> data) {
+		return (MultiValueMap<String, Object>) data.get(ApiServiceInterface.FORM_PARAMETER_MAP);
 	}
 
 }

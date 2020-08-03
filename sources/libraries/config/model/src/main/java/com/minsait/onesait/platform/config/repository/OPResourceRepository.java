@@ -28,6 +28,8 @@ public interface OPResourceRepository extends JpaRepository<OPResource, String> 
 
 	List<OPResource> findByIdentificationContainingIgnoreCase(String identification);
 
+	List<OPResource> findByIdentification(String identification);
+
 	List<OPResource> findByIdentificationContainingIgnoreCaseAndUser(String identification, User user);
 
 	List<OPResource> findByUser(User user);

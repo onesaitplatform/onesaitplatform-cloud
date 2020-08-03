@@ -6,9 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-
-		<version>1.0.0-ce</version>
-
+		<version>1.1.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-api-manager</artifactId>
@@ -19,10 +17,10 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<version.cxf>3.2.2</version.cxf>
+		<version.cxf>3.2.10</version.cxf>
 		<version.easyrules>3.1.0</version.easyrules>
-		<version.swaggerui>3.12.1</version.swaggerui>
-		<!-- version.prometheus>0.2.0</version.prometheus-->
+		<version.swaggerui>3.23.8</version.swaggerui>
+		<!-- version.prometheus>0.2.0</version.prometheus -->
 		<elasticsearch.version>6.2.3</elasticsearch.version>
 		<version.hawtio>1.5.10</version.hawtio>
 		<version.commons-fileupload>1.4</version.commons-fileupload>
@@ -78,18 +76,24 @@
 			<artifactId>onesaitplatform-audit</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
 			<version>${onesaitplatform.version}</version>
-		</dependency>	
-		
+		</dependency>
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-metrics-input</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>	
+		
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-nodered-auth-services</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -142,7 +146,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -154,8 +157,14 @@
 
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-service-description-swagger</artifactId>
+			<artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
 			<version>${version.cxf}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-jaxrs</artifactId>
+			<version>1.5.21</version>
 		</dependency>
 
 		<dependency>
@@ -178,22 +187,21 @@
 
 		<!-- CORE LIBS FOR API MANAGER -->
 		<dependency>
+			<groupId>io.swagger.parser.v3</groupId>
+			<artifactId>swagger-parser</artifactId>
+			<version>2.0.14</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>2.0.9</version>
+		</dependency>
+		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>swagger-ui</artifactId>
 			<version>${version.swaggerui}</version>
 		</dependency>
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-parser</artifactId>
-			<version>1.0.40</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>io.swagger</groupId>
-    		<artifactId>swagger-annotations</artifactId>
-    		<version>1.5.21</version>
-		</dependency>
-		
 
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -292,13 +300,6 @@
 			<version>${version.commons-fileupload}</version>
 		</dependency>
 
-		<!--for Java>8-->
-		<dependency>
-		  <groupId>com.sun.xml.ws</groupId>
-		  <artifactId>jaxws-ri</artifactId>
-		  <version>2.3.0</version>
-		  <type>pom</type>
-		</dependency>
 
 	</dependencies>
 

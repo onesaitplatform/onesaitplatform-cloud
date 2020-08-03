@@ -24,6 +24,12 @@ buildImage()
 	rm $1/docker/*.jar
 }
 
+buildBaseImage()
+{
+	echo "Platform Base JRE image generation with Docker CLI: "
+	docker build -t $USERNAME/baseimage:$1 .
+}
+
 buildImageSB2()
 {
 	echo "Docker image generation for onesaitplatform module: "$2
@@ -131,6 +137,11 @@ homepath=$PWD
 #####################################################
 # Open Platform Module image generation
 #####################################################
+
+if [[ "$PLATFORM_BASE_IMAGE" = true && "$(docker images -q $USERNAME/baseimage 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/platform-base-image
+	buildBaseImage $BASEIMAGE_TAG
+fi
 	
 if [[ "$MODULE_CONTROLPANEL" = true && "$(docker images -q $USERNAME/controlpanel 2> /dev/null)" == "" ]]; then
 	buildImage $homepath/../../../../sources/modules/control-panel controlpanel $MODULE_TAG
@@ -196,7 +207,8 @@ echo "Docker images successfully generated!"
 
 if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
     echo "Pushing images to Docker Hub registry"
-		
+    
+	pushImage2Registry baseimage $BASEIMAGE_TAG	
 	pushImage2Registry controlpanel $MODULE_TAG 
 	pushImage2Registry iotbroker $MODULE_TAG 
 	pushImage2Registry apimanager $MODULE_TAG 

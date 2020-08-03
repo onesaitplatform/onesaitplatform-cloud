@@ -16,6 +16,8 @@
 -->
 <html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
     <head>
+    	<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
         <meta http-equiv="Content-Language" th:content="${lang}"/>
@@ -91,7 +93,7 @@
                 <!-- MAIN ROW -->
                 <div class="row">
                     <div class="col-md-12">                     
-                        <div class="portlet light bordered">
+                        <div id="migrationPortlet" class="portlet light bordered">
                             <div class="portlet-title tabbable-line">
                                 <div class="caption">
                                     
@@ -119,6 +121,12 @@
                                             </div>
                                             <div class="col-md-12">                                     
                                                 <form th:action="@{/migration/loadimport}" role="form" id="import_form_file" th:object="${importData}" method="post" class="form" enctype="multipart/form-data">                                                    
+                                                    <div class="alert alert-info alert-dismissable">
+														<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+														<i class="fa fa-info-circle"></i>
+														<span th:text="#{migration.import.info}"> info.</span>
+													</div>	
+                                                    
                                                     <div id="contentForm" th:style="${(classNames == null OR classNames.size() == 0) AND errors == null} ? 'display:block' : 'display:none'" class="margin-bottom-10">
 									                    <input id="content" name="content" class="btn btn-default" type="file" style="width:100%" th:field="*{content}" onchange="loadContentId();"/>
 									                </div>
@@ -186,12 +194,77 @@
                                     <div class="tab-pane " id="tab_2">
                                     <!-- export -->
                                         <div class="row">
-                                            <div class="col-md-12">                                                                                    
-                                                <button type="button" class="btn grey-mint btn-outline sbold"
-		                                            onclick="location.href='../migration/export'">
-		                                        <i class="flaticon-share"></i> 
-		                                        <span th:text="#{migration.exportData}">Export Data</span>
-		                                        </button>   
+											<div class="col-md-12 col-xs-12">					
+												<div class="input-group">
+												<label class="" th:text="#{migration.option} + ':'">Select an option</label>
+													<div class="col-md-12 col-sm-6 col-xs-12">
+													
+														<div id="options" >
+															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+																<input type="radio" id="all"  name="export" value="all"/><p class="bold" style="display:inline;  padding-left: 10px" th:attr="data-content=#{migration.export.info}" th:text="#{migration.export.all}">Export all</p>
+																<div class="alert alert-info alert-dismissable">
+																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																	<i class="fa fa-info-circle"></i>
+																	<span th:text="#{migration.export.info.all}"> info.</span>
+																</div>	
+															</div>
+															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+																<input type="radio" id="user"  name="export" value="user" th:attr="data-content=#{migration.export.info}"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.user}">Export by user</p>
+																<div class="alert alert-info alert-dismissable">
+																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																	<i class="fa fa-info-circle"></i>
+																	<span th:text="#{migration.export.info.user}"> info.</span>
+																</div>	
+																<div class="col-md-12">
+																	<label th:text="#{migration.user}" > Select user </label>
+																	<select  id="userId" class="form-control" name="userId"  disabled="disabled">
+					                                					<option th:each="user:${users}" th:value="${user.userId}" th:text="${user.userId}"></option>
+								                  					</select>
+																</div>
+															</div>
+															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+																<input type="radio" id="project"  name="export" value="project"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.project}">Export project</p>
+																<div class="alert alert-info alert-dismissable">
+																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																	<i class="fa fa-info-circle"></i>
+																	<span th:text="#{migration.export.info.project}"> info.</span>
+																</div>	
+																<div class="col-md-12">
+								                  					<label th:text="#{migration.project}" > Select project </label>
+								                  					<select  id="projects" class="form-control" name="project" disabled="disabled">
+					                                					<option th:each="project:${projects}" th:value="${project.identification}" th:text="${project.identification}"></option>
+								                  					</select>
+																</div>
+															</div>
+															<div class="col-md-3 col-sm-6 col-xs-12">
+																<input type="radio" id="userAux"  name="export" value="userAux"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.user.option}">Export user</p>
+																<div class="alert alert-info alert-dismissable">
+																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																	<i class="fa fa-info-circle"></i>
+																	<span th:text="#{migration.export.info.user.option}"> info.</span>
+																</div>	
+																<div class="col-md-12">
+								                  					<label th:text="#{migration.users}" > Select users </label>
+								                  					<select  id="users" class="form-control" name="project" disabled="disabled" multiple="multiple">
+					                                					<option th:each="user:${users}" th:value="${user.userId}" th:text="${user.userId}"></option>
+								                  					</select>
+																</div>
+															</div>
+														</div>
+													</div>
+				                  				</div>	
+					                  		</div>
+					                  		<div class="col-md-12 col-xs-12">
+				                  				<div class="input-group">
+	                                                <button type="button" class="btn grey-mint btn-outline sbold"
+			                                            onclick="exportData()">
+			                                        <i class="flaticon-share"></i> 
+			                                        <span th:text="#{migration.exportData}">Export Data</span>
+			                                        </button>   
+												</div>
+											</div>
+										
+                                            <div class="col-md-12 col-xs-12">                                                                                    
 		                                        <button type="button" class="btn grey-mint btn-outline sbold"
 		                                            onclick="location.href='../migration/exportSchema'">
 		                                        <i class="flaticon-share"></i>
@@ -259,6 +332,9 @@
     <script th:src="@{/static/vendor/ace/mode-json.js}"/>
     <script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
     
+    <!-- BLOCKUI -->
+	<script th:src="@{/static/vendor/blockUI.js}"/>
+    
     <!-- BEAUTIFIER -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-css.js"></script>
@@ -268,7 +344,6 @@
         
     <!-- MAIN INIT -->
     <script  th:inline="javascript">
-    
     function loadContentId(){
         var filename = $('#content')[0].files[0]['name'];
         $('#contentId').val(filename);
@@ -279,12 +354,70 @@
         $('#contentIdSchema').val(filenameSchema);
     };
     
+    function exportData(){
+    	var url;
+		if($('#all').is(":checked")){
+			url = "/controlpanel/migration/export";
+		}else if($('#user').is(":checked")){
+			url = "/controlpanel/migration/exportUser/" + $("#userId").val();
+		}else if($('#project').is(":checked")){
+			url = "/controlpanel/migration/exportProject/" + $("#projects").val();
+		}else if($('#userAux').is(":checked")){
+			url = "/controlpanel/migration/exportUsers/" + $("#users").val();
+		}
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		App.blockUI({target:"div#migrationPortlet",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Exporting data..."});
+    	$.ajax({
+            type: 'get',
+            url: url,
+            headers: {
+				[csrf_header]: csrf_value
+		    },
+            success: function () {
+            	var a = document.createElement('A');
+		    	a.href = url;
+		    	a.download = url;
+		    	document.body.appendChild(a);
+		    	a.click();
+		    	document.body.removeChild(a);
+		    	App.unblockUI("div#migrationPortlet");	
+            },
+            error: function(xhr){
+            	$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: xhr.responseText});
+    			return false;
+            }
+        });
+	
+    };
+    
     $(document).ready(function () {
         $("#import_form_file").submit(function () {
             $("loadbtn").attr("disabled", true);
             $("importbtn").attr("disabled", true);
             return true;
         });
+    });
+    
+    $('input[type="radio"]').on('click change', function(e) {
+    	var option = $('input[name=export]:checked').val();
+    	if(option == "user"){
+    		$("#userId").removeAttr("disabled");
+    		$("#projects").attr("disabled", "disabled");
+    		$("#users").attr("disabled", "disabled");
+    	}else if(option == "project"){
+    		$("#projects").removeAttr("disabled", "disabled");
+    		$("#userId").attr("disabled", "disabled");
+    		$("#users").attr("disabled", "disabled");
+    	}else if(option == "all"){
+    		$("#userId").attr("disabled", "disabled");
+    		$("#projects").attr("disabled", "disabled");
+    		$("#users").attr("disabled", "disabled");
+    	}else if(option == "userAux"){
+    		$("#userId").attr("disabled", "disabled");
+    		$("#projects").attr("disabled", "disabled");
+    		$("#users").removeAttr("disabled");
+    	}
     });
     
     function toggleSelection(source){
@@ -325,6 +458,7 @@
 	   //$('a[href="' + window.location.hash + '"]').click()
 	   
    });
+
    </script>   
 
 </body>

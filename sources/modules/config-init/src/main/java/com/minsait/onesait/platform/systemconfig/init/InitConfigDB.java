@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -50,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
@@ -57,7 +57,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.ui.Model;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.commons.OSDetector;
@@ -66,7 +65,9 @@ import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.BaseLayer;
+import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
@@ -75,7 +76,6 @@ import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
 import com.minsait.onesait.platform.config.model.DataModel;
-import com.minsait.onesait.platform.config.model.DeviceSimulation;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
@@ -100,6 +100,7 @@ import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Rollback;
+import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
@@ -107,7 +108,9 @@ import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 import com.minsait.onesait.platform.config.repository.BaseLayerRepository;
+import com.minsait.onesait.platform.config.repository.CategoryRepository;
 import com.minsait.onesait.platform.config.repository.ClientConnectionRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
@@ -116,7 +119,6 @@ import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.DashboardUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
-import com.minsait.onesait.platform.config.repository.DeviceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.config.repository.DigitalTwinTypeRepository;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
@@ -140,6 +142,7 @@ import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.PipelineUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.RollbackRepository;
+import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
@@ -154,6 +157,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.init.configdb")
 @RunWith(SpringRunner.class)
+@Order(1)
 @SpringBootTest
 public class InitConfigDB {
 
@@ -272,7 +276,7 @@ public class InitConfigDB {
 	PipelineRepository pipelineRepository;
 
 	@Autowired
-	DeviceSimulationRepository simulationRepository;
+	ClientPlatformInstanceSimulationRepository simulationRepository;
 
 	@Autowired
 	OntologyVirtualDatasourceRepository ontologyVirtualDataSourceRepository;
@@ -316,8 +320,20 @@ public class InitConfigDB {
 	@Autowired
 	private OntologyTimeSeriesWindowRepository ontologyTimeSeriesWindowRepository;
 
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private SubcategoryRepository subcategoryRepository;
+
 	@Value("${onesaitplatform.server.name:localhost}")
 	private String serverName;
+
+	@Value("${onesaitplatform.init.mailconfig}")
+	private boolean loadMailConfig;
+
+	@Value("${onesaitplatform.init.database.mongodb.servers:realtimedb:27017}")
+	private String rtdbServers;
 
 	private static final String DATAMODEL_EMPTY_BASE = "EmptyBase";
 
@@ -483,6 +499,16 @@ public class InitConfigDB {
 			initRealms();
 			log.info("OK initRealms");
 
+			initCategories();
+			log.info("OK Categories");
+
+			// init_OntologyVirtualDatasource();
+			// log.info(" OK init_OntologyVirtualDatasource");
+			// init_realms();
+
+			// initWebProject();
+			// log.info("OK initWebProject");
+
 			initWebProject();
 			log.info("OK initWebProject");
 		}
@@ -532,11 +558,12 @@ public class InitConfigDB {
 
 	private void initRealms() {
 
-		if (appRepository.findOne("GovConsole") == null) {
+		if (appRepository.findOne("MASTER-Realm-1") == null) {
 			final App app = new App();
-			app.setAppId("GovConsole");
-			app.setName("Governance console realm");
+			app.setId("MASTER-Realm-1");
+			app.setIdentification("GovConsole");
 			app.setDescription("This is a realm provided for the governance console");
+			app.setUser(getUserDeveloper());
 			AppRole role = new AppRole();
 			role.setApp(app);
 			role.setDescription("Front-end developer");
@@ -587,9 +614,9 @@ public class InitConfigDB {
 	}
 
 	private void initSimulations() {
-		DeviceSimulation simulation = simulationRepository.findById("MASTER-DeviceSimulation-1");
+		ClientPlatformInstanceSimulation simulation = simulationRepository.findById("MASTER-DeviceSimulation-1");
 		if (simulation == null) {
-			simulation = new DeviceSimulation();
+			simulation = new ClientPlatformInstanceSimulation();
 			simulation.setId("MASTER-DeviceSimulation-1");
 			simulation.setActive(false);
 			simulation.setCron("0/5 * * ? * * *");
@@ -711,17 +738,12 @@ public class InitConfigDB {
 			config.setType(Configuration.Type.MAIL);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
-			config.setYmlConfig(loadFromResources("configurations/MailConfiguration.yml"));
+			if (loadMailConfig)
+				config.setYmlConfig(loadFromResources("configurations/MailConfiguration.yml"));
+			else
+				config.setYmlConfig(loadFromResources("configurations/MailConfigurationDefault.yml"));
 			configurationRepository.save(config);
-			//
-			config = new Configuration();
-			config.setId("MASTER-Configuration-7");
-			config.setType(Configuration.Type.GITLAB);
-			config.setUser(getUserAdministrator());
-			config.setEnvironment(DEFAULT);
-			config.setSuffix("");
-			config.setYmlConfig(loadFromResources("configurations/GitlabConfiguration.yml"));
-			configurationRepository.save(config);
+
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-8");
@@ -730,16 +752,7 @@ public class InitConfigDB {
 			config.setEnvironment(DEFAULT);
 			config.setYmlConfig(loadFromResources("configurations/MonitoringConfiguration.yml"));
 			configurationRepository.save(config);
-			//
-			config = new Configuration();
-			config.setId("MASTER-Configuration-9");
-			config.setType(Configuration.Type.RANCHER);
-			config.setSuffix("");
-			config.setUser(getUserAdministrator());
-			config.setEnvironment(DEFAULT);
-			config.setDescription("Rancher configuration");
-			config.setYmlConfig(loadFromResources("configurations/RancherConfiguration.yml"));
-			configurationRepository.save(config);
+
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-10");
@@ -789,22 +802,13 @@ public class InitConfigDB {
 			config.setId("MASTER-Configuration-14");
 			config.setType(Type.OPEN_PLATFORM);
 			config.setUser(getUserAdministrator());
-			config.setYmlConfig(loadFromResources("configurations/OpenPlatformConfiguration_docker.yml"));
+			config.setYmlConfig(
+					replaceRTDBServers(loadFromResources("configurations/OpenPlatformConfiguration_docker.yml")));
+
 			configurationRepository.save(config);
 		}
-		config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.JENKINS, DEFAULT, "jenkins");
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription("Jenkins default configuration");
-			config.setEnvironment(DEFAULT);
-			config.setId("MASTER-Configuration-15");
-			config.setType(Type.JENKINS);
-			config.setUser(getUserAdministrator());
-			config.setSuffix("jenkins");
-			config.setYmlConfig(loadFromResources("configurations/JenkinsConfiguration.yml"));
-			configurationRepository.save(config);
-		}
-		config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.DOCKER, DEFAULT, MICROSERVICE_STR);
+
+		config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.DOCKER, "default", "microservice");
 		if (config == null) {
 			config = new Configuration();
 			config.setDescription(MICROSERVICE_STR);
@@ -840,6 +844,16 @@ public class InitConfigDB {
 			config.setUser(getUserAdministrator());
 			config.setSuffix("ML_MODEL_ARCHETYPE");
 			config.setYmlConfig(loadFromResources("configurations/JenkinsXMLTemplateML.xml"));
+			configurationRepository.save(config);
+		}
+		config = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, DEFAULT);
+		if (config == null) {
+			config = new Configuration();
+			config.setId("MASTER-Configuration-19");
+			config.setType(Configuration.Type.GOOGLE_ANALYTICS);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setYmlConfig(loadFromResources("configurations/GoogleAnalyticsConfiguration.yml"));
 			configurationRepository.save(config);
 		}
 
@@ -1121,6 +1135,16 @@ public class InitConfigDB {
 		}
 	}
 
+	private String replaceRTDBServers(String yamlSt) {
+		try {
+			return yamlSt.replace("${REALTIMEDBSERVERS}", rtdbServers);
+		} catch (final Exception e) {
+			log.error("Error replacing RTDB servers: " + rtdbServers + ".On endpoint configuration file");
+			log.error(e.getMessage());
+			return null;
+		}
+	}
+
 	public void initDashboardConf() {
 		log.info("init DashboardConf");
 		final List<DashboardConf> dashboardsConf = dashboardConfRepository.findAll();
@@ -1177,6 +1201,32 @@ public class InitConfigDB {
 			dashboardConfSynoptic.setDescription("Fixed style");
 			dashboardConfRepository.save(dashboardConfSynoptic);
 		}
+		if (!dashboardConfRepository.exists("MASTER-DashboardConf-5")) {
+			final DashboardConf dashboardConfNoTitleEcharts = new DashboardConf();
+			final String notitleechartsSchema = "{\"header\":{\"title\":\"\",\"enable\":false,\"height\":0,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fixed\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":20,\"maxCols\":100,\"minRows\":20,\"maxRows\":100,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":4,\"defaultItemRows\":4,\"fixedColWidth\":250,\"fixedRowHeight\":250,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
+			dashboardConfNoTitleEcharts.setId("MASTER-DashboardConf-5");
+			dashboardConfNoTitleEcharts.setIdentification("notitleechartsfixed");
+			dashboardConfNoTitleEcharts.setModel(notitleechartsSchema);
+			dashboardConfNoTitleEcharts.setHeaderlibs(" <!-- ECHARTS -->\r\n"
+					+ "    <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/echarts/4.2.1/echarts.common.min.js\"></script>\r\n"
+					+ "    <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/echarts/4.2.1/echarts.min.js\"></script>\r\n"
+					+ "    <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/echarts/4.2.1/extension/bmap.min.js\"></script>\r\n"
+					+ "    <script type=\"text/javascript\" src=\"https://cdnjs.cloudflare.com/ajax/libs/echarts/4.2.1/extension/dataTool.min.js\"></script>\r\n"
+					+ " 	<!-- ECHARTS -->\r\n" + "    <!-- DATA TABLE -->\r\n"
+					+ "    <link rel=\"stylesheet\" href=\"https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css\"/>\r\n"
+					+ "    <link rel=\"stylesheet\" href=\"https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css\"/>\r\n"
+					+ "    <link rel=\"stylesheet\" href=\"https://cdn.datatables.net/buttons/1.5.6/css/buttons.dataTables.min.css\"/>\r\n"
+					+ " 	<script type=\"text/javascript\" src=\"https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js\"></script>\r\n"
+					+ "	<script type=\"text/javascript\" src=\"https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js\"></script>\r\n"
+					+ "	<script type=\"text/javascript\" src=\"https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js\"></script>\r\n"
+					+ "	<script type=\"text/javascript\" src=\"https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js\"></script>\r\n"
+					+ "    <script type=\"text/javascript\" src=\"https://cdn.datatables.net/buttons/1.5.6/js/buttons.colVis.min.js\"></script>\r\n"
+					+ "     <!-- DATA TABLE -->");
+			dashboardConfNoTitleEcharts
+					.setDescription("No title style with ECharts libraries, and Datatable libraries");
+			dashboardConfRepository.save(dashboardConfNoTitleEcharts);
+		}
+
 	}
 
 	public void initDashboard() {
@@ -1283,7 +1333,7 @@ public class InitConfigDB {
 			log.info("No DataModels ...");
 			DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-1");
-			dataModel.setName("Alarm");
+			dataModel.setIdentification("Alarm");
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Alarm.json"));
 			dataModel.setDescription("Base Alarm: assetId, timestamp, severity, source, details and status..");
@@ -1293,7 +1343,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-2");
-			dataModel.setName("Audit");
+			dataModel.setIdentification("Audit");
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Audit.json"));
 			dataModel.setDescription("Base Audit");
@@ -1303,7 +1353,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-3");
-			dataModel.setName("DeviceLog");
+			dataModel.setIdentification("DeviceLog");
 			dataModel.setTypeEnum(DataModel.MainType.SYSTEM_ONTOLOGY);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_DeviceLog.json"));
 			dataModel.setDescription("Data model for device logging");
@@ -1313,7 +1363,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-4");
-			dataModel.setName("Device");
+			dataModel.setIdentification("Device");
 			dataModel.setTypeEnum(DataModel.MainType.IOT);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Device.json"));
 			dataModel.setDescription("Base Device");
@@ -1323,7 +1373,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-5");
-			dataModel.setName(DATAMODEL_EMPTY_BASE);
+			dataModel.setIdentification(DATAMODEL_EMPTY_BASE);
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_EmptyBase.json"));
 			dataModel.setDescription("Base DataModel");
@@ -1333,7 +1383,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-6");
-			dataModel.setName("Feed");
+			dataModel.setIdentification("Feed");
 			dataModel.setTypeEnum(DataModel.MainType.IOT);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Feed.json"));
 			dataModel.setDescription("Base Feed");
@@ -1343,7 +1393,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-7");
-			dataModel.setName("Twitter");
+			dataModel.setIdentification("Twitter");
 			dataModel.setTypeEnum(DataModel.MainType.SOCIAL_MEDIA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Twitter.json"));
 			dataModel.setDescription("Twitter DataModel");
@@ -1353,7 +1403,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-8");
-			dataModel.setName("BasicSensor");
+			dataModel.setIdentification("BasicSensor");
 			dataModel.setTypeEnum(DataModel.MainType.IOT);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_BasicSensor.json"));
 			dataModel.setDescription("DataModel for sensor sending measures for an assetId");
@@ -1363,7 +1413,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-9");
-			dataModel.setName("GSMA-AirQualityObserved");
+			dataModel.setIdentification("GSMA-AirQualityObserved");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-AirQualityObserved.json"));
 			dataModel.setDescription("An observation of air quality conditions at a certain place and time");
@@ -1373,7 +1423,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-10");
-			dataModel.setName("GSMA-AirQualityStation");
+			dataModel.setIdentification("GSMA-AirQualityStation");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-AirQualityStation.json"));
 			dataModel.setDescription("Air Quality Station observing quality conditions at a certain place and time");
@@ -1383,7 +1433,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-11");
-			dataModel.setName("GSMA-AirQualityThreshold");
+			dataModel.setIdentification("GSMA-AirQualityThreshold");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-AirQualityThreshold.json"));
 			dataModel.setDescription(
@@ -1394,7 +1444,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-12");
-			dataModel.setName("GSMA-Device");
+			dataModel.setIdentification("GSMA-Device");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-Device.json"));
 			dataModel.setDescription(
@@ -1405,7 +1455,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-13");
-			dataModel.setName("GSMA-KPI");
+			dataModel.setIdentification("GSMA-KPI");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-KPI.json"));
 			dataModel.setDescription(
@@ -1416,7 +1466,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-14");
-			dataModel.setName("GSMA-OffstreetParking");
+			dataModel.setIdentification("GSMA-OffstreetParking");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-OffstreetParking.json"));
 			dataModel.setDescription(
@@ -1427,7 +1477,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-15");
-			dataModel.setName("GSMA-Road");
+			dataModel.setIdentification("GSMA-Road");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-Road.json"));
 			dataModel.setDescription("Contains a harmonised geographic and contextual description of a road.");
@@ -1437,7 +1487,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-16");
-			dataModel.setName("GSMA-StreetLight");
+			dataModel.setIdentification("GSMA-StreetLight");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-StreetLight.json"));
 			dataModel.setDescription("GSMA Model that represents an urban streetlight");
@@ -1448,7 +1498,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-17");
-			dataModel.setName("GSMA-Vehicle");
+			dataModel.setIdentification("GSMA-Vehicle");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-Vehicle.json"));
 			dataModel.setDescription("A harmonised description of a Vehicle");
@@ -1458,7 +1508,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-18");
-			dataModel.setName("GSMA-WasteContainer");
+			dataModel.setIdentification("GSMA-WasteContainer");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-WasteContainer.json"));
 			dataModel.setDescription("GSMA WasteContainer");
@@ -1468,7 +1518,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-19");
-			dataModel.setName("GSMA-WeatherObserved");
+			dataModel.setIdentification("GSMA-WeatherObserved");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-WeatherObserved.json"));
 			dataModel.setDescription("An observation of weather conditions at a certain place and time.");
@@ -1478,7 +1528,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-20");
-			dataModel.setName("GSMA-WeatherStation");
+			dataModel.setIdentification("GSMA-WeatherStation");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-WeatherStation.json"));
 			dataModel.setDescription("GSMA Weather Station Model");
@@ -1488,7 +1538,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-21");
-			dataModel.setName("Request");
+			dataModel.setIdentification("Request");
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Request.json"));
 			dataModel.setDescription("Request for something.");
@@ -1498,7 +1548,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-22");
-			dataModel.setName("Response");
+			dataModel.setIdentification("Response");
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Response.json"));
 			dataModel.setDescription("Response for a request.");
@@ -1508,7 +1558,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-23");
-			dataModel.setName("MobileElement");
+			dataModel.setIdentification("MobileElement");
 			dataModel.setTypeEnum(DataModel.MainType.IOT);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_MobileElement.json"));
 			dataModel.setDescription("Generic Mobile Element representation.");
@@ -1518,7 +1568,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-24");
-			dataModel.setName("Log");
+			dataModel.setIdentification("Log");
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Log.json"));
 			dataModel.setDescription("Log representation.");
@@ -1528,7 +1578,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-25");
-			dataModel.setName("Issue");
+			dataModel.setIdentification("Issue");
 			dataModel.setTypeEnum(DataModel.MainType.GENERAL);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Issue.json"));
 			dataModel.setDescription("Issue representation.");
@@ -1538,7 +1588,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-26");
-			dataModel.setName("AuditPlatform");
+			dataModel.setIdentification("AuditPlatform");
 			dataModel.setTypeEnum(DataModel.MainType.SYSTEM_ONTOLOGY);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_AuditPlatform.json"));
 			dataModel.setDescription("System Ontology. Auditory of operations between user and Platform.");
@@ -1550,7 +1600,7 @@ public class InitConfigDB {
 		if (dataModelRepository.findById("MASTER-DataModel-27") == null) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-27");
-			dataModel.setName("VideoResult");
+			dataModel.setIdentification("VideoResult");
 			dataModel.setTypeEnum(DataModel.MainType.IOT);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_VideoResult.json"));
 			dataModel.setDescription("Ontology for Video Broker Processor results.");
@@ -1562,7 +1612,7 @@ public class InitConfigDB {
 		if (dataModelRepository.findById("MASTER-DataModel-28") == null) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-28");
-			dataModel.setName("AssetType");
+			dataModel.setIdentification("AssetType");
 			dataModel.setTypeEnum(DataModel.MainType.SMART_CITIES);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_AssetType.json"));
 			dataModel.setDescription("Ontology for Asset inventory");
@@ -1573,7 +1623,7 @@ public class InitConfigDB {
 		if (dataModelRepository.findById("MASTER-DataModel-29") == null) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-29");
-			dataModel.setName("GSMA-BikeStation");
+			dataModel.setIdentification("GSMA-BikeStation");
 			dataModel.setTypeEnum(DataModel.MainType.GSMA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_GSMA-BikeStation.json"));
 			dataModel.setDescription("GSMA-BikeStation");
@@ -1585,7 +1635,7 @@ public class InitConfigDB {
 		if (dataModelRepository.findById("MASTER-DataModel-30") == null) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-30");
-			dataModel.setName(TIMESERIE_STR);
+			dataModel.setIdentification(TIMESERIE_STR);
 			dataModel.setTypeEnum(DataModel.MainType.IOT);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_TimeSerie.json"));
 			dataModel.setDescription("Ontology for TimeSerie");
@@ -2676,8 +2726,8 @@ public class InitConfigDB {
 		if (categories.isEmpty()) {
 			log.info("No ontology categories found..adding");
 			final OntologyCategory category = new OntologyCategory();
-			category.setId(1);
-			category.setIdentificator("ontologias_categoria_cultura");
+			category.setId("MASTER-Ontology-Categorty-1");
+			category.setIdentification("ontologias_categoria_cultura");
 			category.setDescription("ontologias_categoria_cultura_desc");
 			ontologyCategoryRepository.save(category);
 		}
@@ -2708,8 +2758,9 @@ public class InitConfigDB {
 
 		if (ontologyRepository.findByIdentification(ONTOLOGY_MASTER) == null) {
 			ontology.setId("MASTER-Ontology-1");
-			ontology.setDataModel(dataModelRepository.findByName(DATAMODEL_EMPTY_BASE).get(0));
-			ontology.setJsonSchema(dataModelRepository.findByName(DATAMODEL_EMPTY_BASE).get(0).getJsonSchema());
+			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
+			ontology.setJsonSchema(
+					dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0).getJsonSchema());
 			ontology.setIdentification(ONTOLOGY_MASTER);
 			ontology.setDescription("Ontology created as Master Data");
 			ontology.setMetainf(ONTOLOGY_MASTER);
@@ -2732,8 +2783,7 @@ public class InitConfigDB {
 			ontology.setRtdbClean(false);
 			ontology.setRtdbToHdb(false);
 			ontology.setPublic(false);
-
-			ontology.setDataModel(dataModelRepository.findByName(DATAMODEL_EMPTY_BASE).get(0));
+			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 			ontologyService.createOntology(ontology, null);
@@ -2749,8 +2799,7 @@ public class InitConfigDB {
 			ontology.setRtdbClean(false);
 			ontology.setRtdbToHdb(false);
 			ontology.setPublic(false);
-
-			ontology.setDataModel(dataModelRepository.findByName(DATAMODEL_EMPTY_BASE).get(0));
+			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontologyService.createOntology(ontology, null);
@@ -2769,7 +2818,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2790,7 +2839,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2810,7 +2859,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2830,8 +2879,8 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2850,8 +2899,8 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2871,7 +2920,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2890,8 +2939,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2912,8 +2960,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(RtdbDatasource.DIGITAL_TWIN);
-
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2935,7 +2982,7 @@ public class InitConfigDB {
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(RtdbDatasource.DIGITAL_TWIN);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2955,7 +3002,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2975,7 +3022,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -2995,7 +3043,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3018,7 +3067,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
-			dataModels = dataModelRepository.findByName(TIMESERIE_STR);
+			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3082,7 +3131,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
-			dataModels = dataModelRepository.findByName(TIMESERIE_STR);
+			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3142,7 +3191,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
-			dataModels = dataModelRepository.findByName(TIMESERIE_STR);
+			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3210,7 +3259,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
-			dataModels = dataModelRepository.findByName(TIMESERIE_STR);
+			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3274,7 +3323,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
-			dataModels = dataModelRepository.findByName(TIMESERIE_STR);
+			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3391,7 +3440,7 @@ public class InitConfigDB {
 	private void initViewers() {
 		final Viewer viewer = new Viewer();
 
-		if (viewerRepository.findById("MASTER-Viewer-01") == null) {
+		if (viewerRepository.findByIdentification("MASTER-Viewer-01").isEmpty()) {
 			viewer.setId("MASTER-Viewer-01");
 			viewer.setIdentification("LasPalmasViewer");
 			viewer.setDescription("Viewer tutorial example of Las Palmas");
@@ -3406,6 +3455,9 @@ public class InitConfigDB {
 
 			viewer.setUser(getUserDeveloper());
 			viewer.setJs(loadFromResources("examples/viewer.html"));
+			viewer.setLatitude("28.134");
+			viewer.setLongitude("-15.434");
+			viewer.setHeight("4500");
 
 			layer01.getViewers().add(viewer);
 			layer02.getViewers().add(viewer);
@@ -3433,7 +3485,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3454,7 +3507,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3475,7 +3529,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3496,7 +3551,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3517,7 +3573,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3543,7 +3600,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3564,7 +3622,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3585,7 +3644,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3606,7 +3666,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3627,7 +3688,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3648,7 +3709,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3669,7 +3731,8 @@ public class InitConfigDB {
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
 
-			dataModels = dataModelRepository.findByName(DATAMODEL_EMPTY_BASE);
+			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
+
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3688,17 +3751,17 @@ public class InitConfigDB {
 		if (types.isEmpty()) {
 			log.info("No user access types found...adding");
 			OntologyUserAccessType type = new OntologyUserAccessType();
-			type.setId(1);
+			type.setId("MASTER-Ontology-User-Access-Type-1");
 			type.setName("ALL");
 			type.setDescription(allPermissions);
 			ontologyUserAccessTypeRepository.save(type);
 			type = new OntologyUserAccessType();
-			type.setId(2);
+			type.setId("MASTER-Ontology-User-Access-Type-2");
 			type.setName("QUERY");
 			type.setDescription(allPermissions);
 			ontologyUserAccessTypeRepository.save(type);
 			type = new OntologyUserAccessType();
-			type.setId(3);
+			type.setId("MASTER-Ontology-User-Access-Type-3");
 			type.setName("INSERT");
 			type.setDescription(allPermissions);
 			ontologyUserAccessTypeRepository.save(type);
@@ -3713,12 +3776,12 @@ public class InitConfigDB {
 		if (types.isEmpty()) {
 			log.info("No user access types found...adding");
 			DashboardUserAccessType type = new DashboardUserAccessType();
-			type.setId(1);
+			type.setId("MASTER-Dashboard-User-Access-Type-1");
 			type.setName("EDIT");
 			type.setDescription("view and edit access");
 			dashboardUserAccessTypeRepository.save(type);
 			type = new DashboardUserAccessType();
-			type.setId(2);
+			type.setId("MASTER-Dashboard-User-Access-Type-2");
 			type.setName("VIEW");
 			type.setDescription("view access");
 			dashboardUserAccessTypeRepository.save(type);
@@ -3872,7 +3935,6 @@ public class InitConfigDB {
 				type = new User();
 				type.setUserId(ADMINISTRATOR);
 				type.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
-										
 				type.setFullName("A Administrator of the Platform");
 				type.setEmail("administrator@onesaitplatform.com");
 				type.setActive(true);
@@ -4346,7 +4408,7 @@ public class InitConfigDB {
 			ontology.setMetainf(REST_STR);
 			ontology.setActive(true);
 			ontology.setRtdbClean(true);
-			ontology.setDataModel(dataModelRepository.findByName(DATAMODEL_EMPTY_BASE).get(0));
+			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
 			ontology.setRtdbToHdb(true);
 			ontology.setPublic(true);
 			ontology.setUser(getUserDeveloper());
@@ -4359,14 +4421,14 @@ public class InitConfigDB {
 
 		log.info("init WebProject");
 
-		if (webProjectRepository.findByIdentification("Cesium") == null) {
+		if (webProjectRepository.findByIdentification(CESIUM) == null) {
 
-			this.loadWebProyect();
+			loadWebProyect();
 
-			WebProject webProject = new WebProject();
+			final WebProject webProject = new WebProject();
 
 			webProject.setDescription("Stand Alone Library of Cesium 1.60 nad CesiumHeatMap");
-			webProject.setIdentification("Cesium");
+			webProject.setIdentification(CESIUM);
 			webProject.setUser(getUserDeveloper());
 			webProject.setMainFile("Cesium1.60/Cesium.js");
 
@@ -4376,17 +4438,35 @@ public class InitConfigDB {
 
 	}
 
+	private void initCategories() {
+		log.info("init Categories");
+
+		if (categoryRepository.findAll().isEmpty()) {
+			final Category category = new Category();
+			category.setIdentification("GeneralCategory");
+			category.setDescription("General Category Description");
+			categoryRepository.save(category);
+
+			final Subcategory subcategory = new Subcategory();
+			subcategory.setIdentification("GeneralSubcategory");
+			subcategory.setDescription("General Subcategory Description");
+			subcategory.setCategory(category);
+			subcategoryRepository.save(subcategory);
+		}
+	}
+
 	private void loadWebProyect() {
 		try {
-			
-			MultipartFile file = new MockMultipartFile("file", "cesium.zip", MediaType.APPLICATION_OCTET_STREAM_VALUE,
+
+			final MultipartFile file = new MockMultipartFile("file", "cesium.zip",
+					MediaType.APPLICATION_OCTET_STREAM_VALUE,
 					Model.class.getClassLoader().getResourceAsStream("cesium/cesium.zip"));
 
 			uploadFileToFolder(file, rootFolder + "cesium/");
 			unzipFile(rootFolder + "cesium/", file.getOriginalFilename());
-		} catch (FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			log.error("File not found 'cesium/cesium.zip'. {}", e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Error reading file 'cesium/cesium.zip' {}", e);
 		}
 

@@ -24,7 +24,7 @@ import org.json.JSONException;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 
 public interface ApiServiceInterface {
-	
+
 	public static final String HTTPS = "HTTPS";
 	public static final String HTTP = "HTTP";
 	public static final String HTTP_RESPONSE_CODE = "http_response_code";
@@ -72,11 +72,11 @@ public interface ApiServiceInterface {
 	public static final String QUERY_PARAMS = "QUERY_PARAMS";
 	public static final String HEADERS = "HEADERS";
 	public static final String REQUEST = "REQUEST";
-	
-	public static final String CONTEXT_USER = "$context.userId";	
+
+	public static final String CONTEXT_USER = "$context.userId";
 
 	public Map<String, Object> processRequestData(HttpServletRequest request, HttpServletResponse response,
-			String requestBody) throws GenericOPException;
+			byte[] requestBody) throws GenericOPException;
 
 	public Map<String, Object> processLogic(Map<String, Object> data) throws GenericOPException;
 

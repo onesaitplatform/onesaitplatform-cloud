@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -72,15 +73,15 @@ public class UserManagementController {
 
 	@ApiOperation(value = "Get user by id")
 	@GetMapping("/{id}")
-	@ApiResponses(@ApiResponse(response = UserSimplified.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(response = UserAmplified.class, code = 200, message = "OK"))
 	public ResponseEntity<?> get(
 			@ApiParam(value = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			if (userService.getUser(userId) == null)
-				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			return new ResponseEntity<>(new UserAmplified(userService.getUser(userId)), HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
 
@@ -92,7 +93,7 @@ public class UserManagementController {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			log.info("User to be deleted: " + userId);
 			if (userService.getUser(userId) == null)
-				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			if (!hardDelete) {
 				utils.deactivateSessions(userId);
 				userService.deleteUser(userId);
@@ -110,7 +111,7 @@ public class UserManagementController {
 
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
 
@@ -123,7 +124,7 @@ public class UserManagementController {
 			for (final UserId userId : userIds) {
 				if (!isUserAdminOrSameAsRequest(userId.getId())) {
 					log.error("Cannot delete admin user from database: " + userId.getId());
-					return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+					return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 				}
 				userCollection.add(userId.getId());
 			}
@@ -137,7 +138,7 @@ public class UserManagementController {
 
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (final Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -150,7 +151,7 @@ public class UserManagementController {
 			userService.getAllActiveUsers().forEach(u -> users.add(new UserSimplified(u)));
 			return new ResponseEntity<>(users, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
 
@@ -164,6 +165,12 @@ public class UserManagementController {
 
 			if (!utils.paswordValidation(user.getPassword())) {
 				return new ResponseEntity<>("Password format is not valid", HttpStatus.BAD_REQUEST);
+			}
+			if (userService.getUser(user.getUsername()) != null) {
+				return new ResponseEntity<>("User already exists", HttpStatus.CONFLICT);
+			}
+			if (userService.emailExists(user.getMail())) {
+				return new ResponseEntity<>("Mail already taken", HttpStatus.UNPROCESSABLE_ENTITY);
 			}
 
 			final User userDb = new User();
@@ -186,7 +193,7 @@ public class UserManagementController {
 			}
 
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
 
@@ -198,12 +205,14 @@ public class UserManagementController {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		if (isUserAdminOrSameAsRequest(user.getUsername())) {
 			if (userService.getUser(user.getUsername()) == null)
-				return new ResponseEntity<>(USER_STR + user.getUsername() + DOES_NOT_EXIST, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(USER_STR + user.getUsername() + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			if (!userService.canUserUpdateMail(user.getUsername(), user.getMail())) {
+				return new ResponseEntity<>("Mail already taken", HttpStatus.UNPROCESSABLE_ENTITY);
+			}
 			final User userDb = new User();
 			userDb.setUserId(user.getUsername());
 			userDb.setActive(true);
 			userDb.setFullName(user.getFullName());
-			userDb.setPassword(user.getPassword());
 			userDb.setEmail(user.getMail());
 			userDb.setAvatar(user.getAvatar());
 			if (!StringUtils.isEmpty(user.getExtraFields()))
@@ -212,9 +221,10 @@ public class UserManagementController {
 			userDb.setRole(userService.getUserRoleById((user.getRole())));
 
 			try {
-				if (!StringUtils.isEmpty(user.getPassword()) && utils.paswordValidation(user.getPassword()))
+				if (!StringUtils.isEmpty(user.getPassword()) && utils.paswordValidation(user.getPassword())) {
+					userDb.setPassword(user.getPassword());
 					userService.updatePassword(userDb);
-				else if (!StringUtils.isEmpty(user.getPassword()))
+				} else if (!StringUtils.isEmpty(user.getPassword()))
 					throw new UserServiceException("New password format is not valid");
 				userService.updateUser(userDb);
 				return new ResponseEntity<>(HttpStatus.OK);
@@ -223,7 +233,33 @@ public class UserManagementController {
 			}
 
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+	}
+
+	@ApiOperation(value = "Update an existing user")
+	@PatchMapping
+	public ResponseEntity<?> patch(@ApiParam(value = "User", required = true) @RequestBody UserSimplified user,
+			Errors errors) {
+		if (errors.hasErrors())
+			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		if (isUserAdminOrSameAsRequest(user.getUsername())) {
+			if (userService.getUser(user.getUsername()) == null)
+				return new ResponseEntity<>(USER_STR + user.getUsername() + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			try {
+				final User u = patchExistingAttributes(userService.getUser(user.getUsername()), user);
+
+				if (!userService.canUserUpdateMail(user.getUsername(), u.getEmail())) {
+					return new ResponseEntity<>("Mail already taken", HttpStatus.UNPROCESSABLE_ENTITY);
+				}
+				userService.updateUser(u);
+				return new ResponseEntity<>(HttpStatus.OK);
+			} catch (final UserServiceException e) {
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+
+		} else {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
 
@@ -236,13 +272,27 @@ public class UserManagementController {
 		return new ResponseEntity<>(rolesId, HttpStatus.OK);
 	}
 
+	@ApiOperation("Activates user")
+	@PostMapping("/activate/{userId}")
+	public ResponseEntity<String> activate(@PathVariable("userId") String userId) {
+		if (isUserAdminOrSameAsRequest(userId)) {
+			if (userService.getUser(userId) == null)
+				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			userService.activateUser(userService.getUser(userId));
+		} else {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	@ApiOperation("Changes a password")
 	@PostMapping("/{userId}/change-password")
 	public ResponseEntity<?> changePassword(@ApiParam("User id") @PathVariable("userId") String userId,
 			@ApiParam(value = "Password", required = true) @Valid @RequestBody String password) {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			if (userService.getUser(userId) == null)
-				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			if (!StringUtils.isEmpty(password) && utils.paswordValidation(password)) {
 				final User user = userService.getUser(userId);
 				user.setPassword(password);
@@ -259,6 +309,28 @@ public class UserManagementController {
 
 	private boolean isUserAdminOrSameAsRequest(String userId) {
 		return (utils.getUserId().equals(userId) || utils.isAdministrator());
+	}
+
+	private User patchExistingAttributes(User user, UserSimplified dto) {
+		user.setUserId(dto.getUsername());
+		user.setActive(true);
+		if (!StringUtils.isEmpty(dto.getFullName()))
+			user.setFullName(dto.getFullName());
+		if (!StringUtils.isEmpty(dto.getMail()))
+			user.setEmail(dto.getMail());
+		if (!StringUtils.isEmpty(dto.getMail()))
+			user.setAvatar(dto.getAvatar());
+		if (!StringUtils.isEmpty(dto.getExtraFields()))
+			user.setExtraFields(dto.getExtraFields());
+		if (!StringUtils.isEmpty(dto.getRole()))
+			user.setRole(userService.getUserRoleById((dto.getRole())));
+		if (!StringUtils.isEmpty(dto.getPassword()) && utils.paswordValidation(dto.getPassword())) {
+			user.setPassword(dto.getPassword());
+			userService.updatePassword(user);
+		} else if (!StringUtils.isEmpty(dto.getPassword())) {
+			throw new UserServiceException("New password format is not valid");
+		}
+		return user;
 	}
 
 }

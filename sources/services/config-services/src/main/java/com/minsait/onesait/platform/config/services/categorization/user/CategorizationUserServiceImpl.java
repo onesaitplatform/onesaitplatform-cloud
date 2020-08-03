@@ -19,6 +19,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.model.Categorization;
 import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
@@ -36,6 +37,16 @@ public class CategorizationUserServiceImpl implements CategorizationUserService 
 			return categorizationUserRepository.findAllOwner();
 		}
 		return categorizationUserRepository.findByUserAndAuth(user);
+	}
+
+	@Override
+	public CategorizationUser findByCategorizationAndUser(Categorization categorization, User user) {
+		return categorizationUserRepository.findByUserAndCategorization(user, categorization);
+	}
+
+	@Override
+	public void deleteCategorizationUser(CategorizationUser categorizationUser) {
+		categorizationUserRepository.delete(categorizationUser);
 	}
 
 }

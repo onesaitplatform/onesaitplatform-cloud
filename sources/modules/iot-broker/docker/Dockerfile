@@ -1,8 +1,7 @@
-FROM openjdk:8-jre-alpine
+FROM onesaitplatform/baseimage:latest
 
 # metadata
-LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="iotbroker"	
+LABEL platform.image.name="iotbroker"	
 
 ADD *-exec.jar app.jar
 
@@ -32,13 +31,14 @@ EXPOSE 19000 1883 8883
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms2G -Xmx2G -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
-    SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
-    CONFIGDBSERVERS=configdb:3306 \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
@@ -50,6 +50,9 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms2G -Xmx2G -XX:+UnlockExperimentalVMOptions -XX:+Us
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
-    OP_LOG_LEVEL=INFO
+    OP_LOG_LEVEL=INFO \
+    MAX_DEVICES_PER_CLIENT=0 \
+    ENABLE_METRICS=true
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar
+
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

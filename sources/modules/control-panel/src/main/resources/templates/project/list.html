@@ -147,6 +147,8 @@
 																th:text="#{marketasset.webproject}">Webproject </span></th>
 															<th class="titulo-columnas text-center"><span
 																th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center"><span
+																th:text="#{gen.updated}"> Updated At </span></th>
 															<th class="titulo-columnas text-center"
 																dt:sortable="false"><span th:text="#{gen.options}">
 																	Options</span></th>
@@ -155,7 +157,7 @@
 													<tbody th:remove="all-but-first">
 														<tr th:each="p : ${projects}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left " th:text="${p.name}"></td>
+															<td class="text-left " th:text="${p.identification}"></td>
 															<!-- USER -->
 															<td class="text-center " th:text="${p.user.userId}"></td>
 															<!-- TYPE -->
@@ -166,7 +168,7 @@
 																th:title="${p.description}" th:text="${p.description}"></td>
 															<!-- REALM -->
 															<td class="text-center text-truncate-sm"
-																th:if="${p.app != null}" th:text="${p.app.name}"></td>
+																th:if="${p.app != null}" th:text="${p.app.identification}"></td>
 															<td class="text-center text-truncate-sm"
 																th:if="${p.app == null}"><span th:text="0" style="display:none" ></span><i
 																class="la la-times-circle-o text-danger  font-hg"></i></td>
@@ -182,6 +184,12 @@
 															<span th:text="${#dates.format(p.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
 															<span th:text="${#dates.format(p.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${p.createdAt==null}"
+																th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${p.updatedAt!=null}">
+															<span th:text="${#dates.format(p.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(p.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${p.updatedAt==null}"
 																th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
@@ -251,9 +259,11 @@
 															class="toggle-vis" th:text="#{marketasset.webproject}"
 															data-column="5"> Web project</label> <label
 															class="toggle-vis" th:text="#{gen.created}"
-															data-column="6"> Created at</label> <label
+															data-column="6"> Created at</label><label
+															class="toggle-vis" th:text="#{gen.updated}"
+															data-column="7"> Updated at</label> <label
 															class="toggle-vis" th:text="#{gen.options}"
-															data-column="7"> Options</label>
+															data-column="8"> Options</label>
 													</div>
 												</div>
 											</div>

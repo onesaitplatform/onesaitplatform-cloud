@@ -1,5 +1,9 @@
 onesaitplatform:
    authentication:
+      configdb:
+        acl:
+          enabled: ${CONFIGDB_ACL_ENABLED}
+          list: ${CONFIGDB_ACL_LIST}
       twofa: 
         enabled: ${TWOFA_ENABLED}
       provider: ${AUTH_PROVIDER}
@@ -16,14 +20,14 @@ onesaitplatform:
         idp_metadata: ${IDP_METADATA}
         entity_id: ${ENTITY_ID}
         entity_url: ${ENTITY_URL}
+        unauthorized_url: ${SAML_UNAUTHORIZED_URL}
         jks:
            uri: ${JKS_URI}
            store_pass: ${JKS_PASS}
            key_alias: ${KEY_ALIAS}
            key_pass: ${KEY_PASS}
         context:
-           samlServerPort: 80
-           samlIncludePort: false
+           samlIncludePort: ${SAML_INCLUDE_PORT}
            samlScheme: ${SAML_SCHEME}
            samlServerName: ${SAML_SERVER_NAME}
    dashboardengine:
@@ -117,11 +121,36 @@ onesaitplatform:
    password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   metrics.collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
+   metrics:
+      collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
+      enabled: ${ENABLE_METRICS}
+ldap:
+  url: ${LDAP_URL}
+  base: ${LDAP_BASE_DN}
+  username: ${LDAP_ADMIN_DN}
+  password: ${LDAP_ADMIN_PASSWORD}
+  defaultRole: ${LDAP_DEFAULT_ROLE}
+  attributesMap:
+     userId: ${LDAP_USERID_ATT}
+     mail: ${LDAP_MAIL_ATT}
+     cn: ${LDAP_CN_ATT}
+
       
 spring:
-   datasource:  
-      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+   datasource:    
+      url: ${CONFIGDBURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS} 
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
    boot.admin: #Spring Boot Admin Config    
       url: http://monitoringuiservice:18100/monitoring    
       client.service-url: http://controlpanelservice:${server.port}${server.contextPath}/ 
@@ -135,6 +164,11 @@ quartz:
 ## LOGGING CONF
 logging:
    path: /var/log/platform-logs
+
+gravitee:
+  enable: ${GRAVITEE_ON}
+  clientId: ${GRAVITEE_CLIENTID}
+  clientSecret: ${GRAVITEE_CLIENTSECRET}
 
 cloud-gateway:
   url: ${CLOUD_GATEWAY}

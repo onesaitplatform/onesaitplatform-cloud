@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- AUTO-GENERATED FROM svg-editor-es.html; DO NOT EDIT; use build-html.js to build -->
-<html>
+<html sytle="overflow-y: hidden !important;">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
@@ -73,7 +73,7 @@
 
     <title>SVG-edit</title>
 </head>
-<body class="overlay_load_page">
+<body class="overlay_load_page" style="overflow: hidden !important;">
 
 <div id="svg_container" style="visibility: hidden;">
 <div id="svg_editor" role="main">
@@ -120,12 +120,12 @@
           <div></div>
           New Image (N)
         </li>
-          <li id="tool_open" >
+        <!--   <li id="tool_open" >
           <div id="fileinputs" >          
             <div></div>
           </div>
           Open SVG
-        </li> 
+        </li>  -->
         <li id="tool_import" >
           <div id="fileinputs_import"  >
             <div></div>
@@ -306,6 +306,7 @@
 			</fieldset>
 	<div class="toolbar_button">
     	<button id="applyChangesButton" class="button_apply" style="display:none;">Apply</button>
+    	<button id="applyChangesButtonExt" class="button_apply" style="display:none;">Apply</button>
     </div>
 </div>
 <!-- PROPERTIES -->
@@ -550,7 +551,7 @@
 								</tr>
 								<tr>
 									<td>
-									<label id="idLabel" title="Identify the element">
+									<label style="display:none" id="idLabel" title="Identify the element">
 								         		 <span>id:</span>
 								         		 <input  id="elem_id" class="attr_changer"
 								          	  data-attr="id" size="10" type="text" readonly="true"/>
@@ -590,19 +591,23 @@
 										</div>
 									</td>
 								</tr>
+								
+							</table>
+							<table >
 								<tr>
 									<td>
-										<div id="xy_panel" class="toolset">
-											<label> x: <input id="selected_x"
+							<div id="xy_panel" class="toolset">										
+											<label>  <span>x:</span> <input id="selected_x"
 												class="attr_changer" title="Change X coordinate" size="3"
 												data-attr="x" />
-											</label> <label> y: <input id="selected_y"
+											</label> <label> <span>y:</span><input id="selected_y"
 												class="attr_changer" title="Change Y coordinate" size="3"
 												data-attr="y" />
 											</label>
 										</div>
-									</td>
+												</td>
 								</tr>
+								
 							</table>
 						</div>
     <!-- Buttons when multiple elements are selected -->

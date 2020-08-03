@@ -193,29 +193,54 @@
 		genDelete: [[#{gen.deleteBtn}]],
 		genView:  [[#{gen.view}]]
 	};
-	
 	$(document).ready(function() {
-		var oTable = $('.datatable');
-
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#tenants').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
+			}
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+	});
+	
+	$(window).load(function() {
+		var oTable = $('#domains').DataTable();
+		oTable.page.len(10);
+		$('#domains').on('draw.dt', function () {
+			RuleDomain.List.initCompleteCallback();
+		} );
 		//oTable.destroy();
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		// FILTERING COLUMNS INIT
+		$('#filtering').appendTo($('#tenants > thead'));
+		$('#filtering').removeClass('hide');
+		
+		// RESET ALL FILTERS BTN
+		$('#clearFilters').on('click', function(){			
+			yadcf.exResetAllFilters(oTable);		
+		});	
+		
+		
+		// ADJUST CSS FOR DATATABLE FILTERS 
+		var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
+		var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
+		filters.addClass('input-small font-sm');
+		filtersResets.addClass('hide');				
+		
 					
-		$('.datatable').DataTable( {
-	        dom: 'Bfrtip',
-	        buttons: [
-	            {
-	                extend: 'alert',
-	                text: 'My button 1'
-	            },
-	            {
-	                extend: 'alert',
-	                text: 'My button 2'
-	            },
-	            {
-	                extend: 'alert',
-	                text: 'My button 3'
-	            }
-	        ]
-	    } );
+		
 	});
 	
 	</script>

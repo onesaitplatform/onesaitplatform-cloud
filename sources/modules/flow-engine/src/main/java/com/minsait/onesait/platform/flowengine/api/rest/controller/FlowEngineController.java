@@ -18,7 +18,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomainStatus;
+import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineNodeService;
 import com.minsait.onesait.platform.flowengine.nodered.communication.NodeRedAdminClient;
 
 @RestController
@@ -36,6 +39,8 @@ public class FlowEngineController {
 
 	@Autowired
 	private NodeRedAdminClient nodeRedClientAdmin;
+	@Autowired
+	private FlowEngineNodeService flowEngineNodeService;
 
 	@RequestMapping(value = "/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String stopFlowEngine() {
@@ -87,5 +92,10 @@ public class FlowEngineController {
 	@RequestMapping(value = "/sync", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String synchronizeMF(@RequestBody List<FlowEngineDomainStatus> domainList) {
 		return nodeRedClientAdmin.synchronizeMF(domainList);
+	}
+	
+	@PostMapping(value = "/deploy", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public @ResponseBody ResponseEntity<String> externalDeployment(@RequestBody String json) {
+		return flowEngineNodeService.deploymentNotification(json);
 	}
 }

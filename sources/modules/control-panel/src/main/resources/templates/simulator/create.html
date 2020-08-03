@@ -166,7 +166,7 @@
 																<div class="form-group">
 																<label class="control-label" th:text="#{simulation.select.tokens} + ':'">Tokens</label>
 																<th:block th:if="${simulation?.id != null}">
-																	<input th:name="token" type="text" id="tokens" readonly="true" th:required="true" class="form-control" th:value="${simulation.token.token}"/>															
+																	<input th:name="token" type="text" id="tokens" readonly="true" th:required="true" class="form-control" th:value="${simulation.token.tokenName}"/>															
 																</th:block>
 																<th:block th:if="${simulation == null}">																
 																		<select th:name="token"  id="tokens" th:required="true"  data-width="100%" data-live-search="true" class="select form-control" th:title="#{simulation.tokens}"  >

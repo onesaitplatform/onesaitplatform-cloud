@@ -147,7 +147,7 @@
 															 <label class="control-label"  th:text="#{gadgettemplates.identification} + ':'">Identification</label><span class="required"> (*)</span>
 															<div class="input-icon ">
 																<i class="fa fa-credit-card"></i>
-																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gadgettemplates.identification}" />
+																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{id}" th:placeholder="#{gadgettemplates.identification}" />
 															</div>
 														</div>
 													</div>	
@@ -155,7 +155,7 @@
 														<div class="form-group">
 															<label class="control-label"  th:text="#{gadgettemplates.description} + ':'">Description</label><span class="required"> (*)</span>
 																														
-																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{description}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
+																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{id}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
 															
 														</div>
 													</div>		
@@ -242,7 +242,7 @@
 													<span class="sep"></span>
 													
 													<!-- CREATE -->
-													<button th:if="${gadgetTemplate.identification} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary " name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+													<button th:if="${gadgetTemplate.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary " name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 													<!-- UPDATE -->
 													<button th:if="${gadgetTemplate.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-outline btn-primary " name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
 													

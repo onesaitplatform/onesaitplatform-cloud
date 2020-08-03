@@ -24,30 +24,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.ApiHeaderDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.ApiQueryParameterDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.AutenticacionAtribDTO;
-import com.minsait.onesait.platform.api.rest.api.dto.OperacionDTO;
 import com.minsait.onesait.platform.api.rest.api.fiql.ApiFIQL;
-import com.minsait.onesait.platform.api.rest.api.fiql.HeaderFIQL;
 import com.minsait.onesait.platform.api.rest.api.fiql.OperationFIQL;
 import com.minsait.onesait.platform.api.rest.api.fiql.QueryParameterFIQL;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
-import com.minsait.onesait.platform.config.model.ApiHeader;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.model.UserToken;
-import com.minsait.onesait.platform.config.repository.ApiHeaderRepository;
 import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
 import com.minsait.onesait.platform.config.repository.ApiQueryParameterRepository;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.UserApiRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
+import com.minsait.onesait.platform.config.services.apimanager.dto.ApiQueryParameterDTO;
+import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -63,9 +58,6 @@ public class ApiServiceRest {
 
 	@Autowired
 	private ApiOperationRepository apiOperationRepository;
-
-	@Autowired
-	private ApiHeaderRepository apiHeaderRepository;
 
 	@Autowired
 	private ApiQueryParameterRepository apiQueryParameterRepository;
@@ -202,12 +194,9 @@ public class ApiServiceRest {
 		}
 
 		api.setUser(user);
-		api.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE) + "server/api/v"
-				+ api.getNumversion() + "/" + api.getIdentification());
 		api.setState(Api.ApiStates.CREATED);
 		apiRepository.saveAndFlush(api);
 		createOperations(apiDTO.getOperations(), api);
-		createAutenticacion(apiDTO.getAuthentication(), api);
 	}
 
 	public void updateApi(ApiDTO apiDTO, String token) {
@@ -215,13 +204,12 @@ public class ApiServiceRest {
 			final User user = apiSecurityService.getUserByApiToken(token);
 			final Api api = apiFIQL.copyProperties(apiDTO, user);
 
-			Api apiUpdate = apiRepository
-					.findByIdentificationAndNumversion(api.getIdentification(), api.getNumversion());
+			Api apiUpdate = apiRepository.findByIdentificationAndNumversion(api.getIdentification(),
+					api.getNumversion());
 			if (apiSecurityService.authorized(api, token)) {
 				apiUpdate = apiFIQL.copyProperties(apiUpdate, api);
 				apiRepository.saveAndFlush(apiUpdate);
 				updateOperaciones(apiDTO.getOperations(), apiUpdate);
-				updateAutenticacion(apiDTO.getAuthentication(), apiUpdate);
 
 			} else {
 				throw new AuthorizationServiceException(NOT_ALLOWED_OPERATIONS);
@@ -235,8 +223,8 @@ public class ApiServiceRest {
 		try {
 			final User user = apiSecurityService.getUserByApiToken(token);
 			final Api api = apiFIQL.copyProperties(apiDTO, user);
-			final Api apiDelete = apiRepository
-					.findByIdentificationAndNumversion(api.getIdentification(), api.getNumversion());
+			final Api apiDelete = apiRepository.findByIdentificationAndNumversion(api.getIdentification(),
+					api.getNumversion());
 			if (apiSecurityService.authorized(apiDelete, token)) {
 				removeOperations(apiDelete);
 				apiRepository.delete(apiDelete);
@@ -274,8 +262,6 @@ public class ApiServiceRest {
 			operacion.setIdentification(operacionDTO.getIdentification());
 			operacion.setApi(api);
 			apiOperationRepository.saveAndFlush(operacion);
-			if (operacionDTO.getHeaders() != null)
-				createHeaders(operacion, operacionDTO.getHeaders());
 			if (operacionDTO.getQueryParams() != null)
 				createQueryParams(operacion, operacionDTO.getQueryParams());
 		}
@@ -293,14 +279,6 @@ public class ApiServiceRest {
 		}
 	}
 
-	private void createHeaders(ApiOperation operacion, List<ApiHeaderDTO> list) {
-		for (final ApiHeaderDTO headerDTO : list) {
-			final ApiHeader apiHeader = HeaderFIQL.copyProperties(headerDTO);
-			apiHeader.setApiOperation(operacion);
-			apiHeaderRepository.saveAndFlush(apiHeader);
-		}
-	}
-
 	private void createQueryParams(ApiOperation operacion, List<ApiQueryParameterDTO> list) {
 		for (final ApiQueryParameterDTO queryParamDTO : list) {
 			final ApiQueryParameter apiQueryParam = QueryParameterFIQL.copyProperties(queryParamDTO);
@@ -309,22 +287,6 @@ public class ApiServiceRest {
 			apiQueryParameterRepository.saveAndFlush(apiQueryParam);
 
 		}
-	}
-
-	private void createAutenticacion(ArrayList<AutenticacionAtribDTO> autenticacionDTO, Api api) {
-		if (autenticacionDTO != null && !autenticacionDTO.isEmpty()) {
-			for (final AutenticacionAtribDTO atribDTO : autenticacionDTO) {
-				final UserApi autparametroatrib = new UserApi();
-				autparametroatrib.setApi(api);
-				autparametroatrib.setUser(userRepository.findByUserId(atribDTO.getUser()));
-				userApiRepository.saveAndFlush(autparametroatrib);
-			}
-		}
-	}
-
-	private void updateAutenticacion(ArrayList<AutenticacionAtribDTO> autenticacionDTO, Api apiUpdate) {
-		createAutenticacion(autenticacionDTO, apiUpdate);
-
 	}
 
 	public UserApi findApiSuscriptions(String identificacionApi, String tokenUsuario) {
@@ -365,8 +327,7 @@ public class ApiServiceRest {
 	private boolean authorizedOrSuscriptor(Api api, String tokenUsuario, String suscriptor) {
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 
-		return (apiSecurityService.isAdmin(user) 
-				|| user.getUserId().equals(api.getUser().getUserId())
+		return (apiSecurityService.isAdmin(user) || user.getUserId().equals(api.getUser().getUserId())
 				|| user.getUserId().equals(suscriptor));
 	}
 

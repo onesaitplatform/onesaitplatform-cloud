@@ -49,7 +49,7 @@ public class OntologyUserAccessTypeRepositoryIntegrationTest {
 		if (types.isEmpty()) {
 			log.info("No user access types found...adding");
 			OntologyUserAccessType type = new OntologyUserAccessType();
-			type.setId(1);
+			type.setId("MASTER-Ontology-User-Access-Type-1");
 			type.setName("ALL");
 			type.setDescription("Todos los permisos");
 			this.repository.save(type);

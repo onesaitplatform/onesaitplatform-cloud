@@ -159,7 +159,7 @@ public class VideoBrokerController {
 		model.addAttribute("processors", Processor.values());
 		model.addAttribute("ontologies",
 				ontologyService.getOntologiesByUserId(utils.getUserId()).stream()
-						.filter(o -> o.getDataModel().getName().equals(VideoBrokerServiceImpl.VIDEO_RESULT_DATA_MODEL))
+						.filter(o -> o.getDataModel().getIdentification().equals(VideoBrokerServiceImpl.VIDEO_RESULT_DATA_MODEL))
 						.collect(Collectors.toList()));
 	}
 

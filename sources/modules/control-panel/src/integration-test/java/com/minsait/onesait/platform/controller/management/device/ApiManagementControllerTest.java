@@ -73,13 +73,28 @@ public class ApiManagementControllerTest {
 	ApiRepository apiRepository;
 	@Autowired
 	UserApiRepository userApiRepository;
+	
+	
+	final private static String DEVELOPER_NAME = "developer";
+	final private static String API_DEVELOPER_NAME = "RestaurantsApiDev";
+	final private static String API_DEVELOPER_DESC = "Api for testing user developer";
+	final private static ApiStates API_DEVELOPER_STATE = ApiStates.CREATED;
+	final private static boolean API_DEVELOPER_IS_PUBLIC = false;
+	
+	final private static String DATAVIEWER_NAME = "dataviewer";
+	final private static String API_DATAVIEWER_NAME = "RestaurantsApiView";
+	final private static String API_DATAVIEWER_DESC = "Api for testing user dataviewer";
+	final private static ApiStates API_DATAVIEWER_STATE = ApiStates.CREATED;
+	final private static boolean API_DATAVIEWER_IS_PUBLIC = false;
+	
+	final private static String ANALYTICS_NAME = "analytics";
 
 	@Before
 	public void setUp() throws Exception {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		String response = mvc
-				.perform(MockMvcRequestBuilders.post("/api-ops/login").contentType(MediaType.APPLICATION_JSON)
-						.content("{\"password\":\"Changed!\",\"username\":\"developer\"}"))
+				.perform(MockMvcRequestBuilders.post("/api/login").contentType(MediaType.APPLICATION_JSON)
+						.content("{\"password\":\"Changed2019!\",\"username\":\"developer\"}"))
 				.andReturn().getResponse().getContentAsString();
 		JsonNode responseJson = this.mapper.readValue(response, JsonNode.class);
 		this.oAuthHeader = "Bearer " + responseJson.get("access_token").asText();
@@ -87,26 +102,26 @@ public class ApiManagementControllerTest {
 
 		this.apiDeveloper = new Api();
 		apiDeveloper.setSsl_certificate(false);
-		apiDeveloper.setIdentification("Api get tickets");
-		apiDeveloper.setDescription("Api for testing");
-		apiDeveloper.setState(ApiStates.CREATED);
-		apiDeveloper.setPublic(false);
-		apiDeveloper.setUser(this.userService.getUser("developer"));
+		apiDeveloper.setIdentification(API_DEVELOPER_NAME);
+		apiDeveloper.setDescription(API_DEVELOPER_DESC);
+		apiDeveloper.setState(API_DEVELOPER_STATE);
+		apiDeveloper.setPublic(API_DEVELOPER_IS_PUBLIC);
+		apiDeveloper.setUser(this.userService.getUser(DEVELOPER_NAME));
 
 		this.apiDataViewer = new Api();
 		apiDataViewer.setSsl_certificate(false);
-		apiDataViewer.setIdentification("Api get tickets");
-		apiDataViewer.setDescription("Api for testing");
-		apiDataViewer.setState(ApiStates.CREATED);
-		apiDataViewer.setPublic(false);
-		apiDataViewer.setUser(this.userService.getUser("dataviewer"));
+		apiDataViewer.setIdentification(API_DATAVIEWER_NAME);
+		apiDataViewer.setDescription(API_DATAVIEWER_DESC);
+		apiDataViewer.setState(API_DATAVIEWER_STATE);
+		apiDataViewer.setPublic(API_DATAVIEWER_IS_PUBLIC);
+		apiDataViewer.setUser(this.userService.getUser(DATAVIEWER_NAME));
 
 		this.apiDeveloper = this.apiRepository.save(apiDeveloper);
 		this.apiDataViewer = this.apiRepository.save(apiDataViewer);
 
 		this.userApi = new UserApi();
 		userApi.setApi(apiDeveloper);
-		userApi.setUser(this.userService.getUser("dataviewer"));
+		userApi.setUser(this.userService.getUser(DATAVIEWER_NAME));
 		this.userApi = this.userApiRepository.save(userApi);
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -128,10 +143,10 @@ public class ApiManagementControllerTest {
 	@Test
 	public void user_triesToChangeItsApiAuthorizations_andGetsOk() throws Exception {
 		mvc.perform(MockMvcRequestBuilders
-				.post("/management/authorize/api/" + this.apiDeveloper.getId() + "/user/analytics")
+				.post("/api/apis/authorize/api/" + this.apiDeveloper.getId() + "/user/" + ANALYTICS_NAME)
 				.header("Authorization", this.oAuthHeader)).andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
 		mvc.perform(MockMvcRequestBuilders
-				.post("/management/deauthorize/api/" + this.apiDeveloper.getId() + "/user/analytics")
+				.post("/management/deauthorize/api/" + this.apiDeveloper.getId() + "/user/"  + ANALYTICS_NAME)
 				.header("Authorization", this.oAuthHeader)).andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
 
 	}
@@ -139,8 +154,33 @@ public class ApiManagementControllerTest {
 	@Test
 	public void user_triesToChangeOthersApiAuthorizations_andGetsKo() throws Exception {
 		mvc.perform(MockMvcRequestBuilders
-				.post("/management/authorize/api/" + this.apiDataViewer.getId() + "/user/analytics")
+				.post("/api/apis/authorize/api/" + this.apiDataViewer.getId() + "/user/" + ANALYTICS_NAME)
 				.header("Authorization", this.oAuthHeader))
 				.andExpect(MockMvcResultMatchers.status().is4xxClientError());
 	}
+	
+	@Test
+	public void user_triesToGetAllApis_andGetsOk() throws Exception {
+		mvc.perform(MockMvcRequestBuilders
+				.get("/api/apis")
+				.header("Authorization", this.oAuthHeader))
+				.andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+	}
+	
+	@Test
+	public void user_triesToGetAiByIdentification_andGetsOk() throws Exception {
+		mvc.perform(MockMvcRequestBuilders
+				.get("/api/apis/" + API_DEVELOPER_NAME)
+				.header("Authorization", this.oAuthHeader))
+				.andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+	}
+	
+	@Test
+	public void user_triesToGetAiByIdentification_andGetsKo() throws Exception {
+		mvc.perform(MockMvcRequestBuilders
+				.get("/api/apis/" + API_DATAVIEWER_NAME)
+				.header("Authorization", this.oAuthHeader))
+				.andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+	}
+	
 }

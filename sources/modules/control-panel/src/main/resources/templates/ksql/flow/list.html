@@ -158,6 +158,7 @@
 															<th class="titulo-columnas" th:text="#{ksql.flow.description}">Description</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ksql.flow.userId}" >Owner</span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ksql.flow.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ksql.flow.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -172,6 +173,9 @@
 															<!-- DATE -->
 															<td class="text-center" th:if="${ksqlFlow.createdAt!=null}"><span th:text="${#dates.format(ksqlFlow.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${ksqlFlow.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-center" th:if="${ksqlFlow.updatedAt!=null}"><span th:text="${#dates.format(ksqlFlow.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${ksqlFlow.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -198,7 +202,8 @@
 														<label class="toggle-vis" data-column="1" th:text="#{ksql.flow.description}"> Description</label>
 														<label class="toggle-vis" data-column="2" th:text="#{ksql.flow.userId}"> Owner </label>
 														<label class="toggle-vis" data-column="3" th:text="#{ksql.flow.createdAt}"> Created At</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.options}" > Options</label>															
+														<label class="toggle-vis" data-column="4" th:text="#{ksql.flow.updatedAt}"> Updated At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}" > Options</label>															
 													</div>
 												</div>												
 											</div>

@@ -72,10 +72,14 @@ public class InitialFactsRule {
 		final String jwtToken = rUtil.extractJWTToken(request);
 
 		final String method = request.getMethod();
-		String pathInfo = request.getServletPath().substring(ApiManagerEntryPoint.ENTRY_POINT_SERVLET_URI.length());
-		if (!pathInfo.endsWith("/")) {
-			pathInfo = pathInfo.concat("/");
-		}
+		final String pathInfo = request.getServletPath()
+				.substring(ApiManagerEntryPoint.ENTRY_POINT_SERVLET_URI.length());
+		// if (!pathInfo.endsWith("/")) {
+		// TO-DO revisar que esto no rompe nada
+		// Esto no hace falta para nada, y fastidia operaciones que se tengan que
+		// distinguir por un / al final
+		// pathInfo = pathInfo.concat("/");
+		// }
 
 		final String queryDb = Optional.ofNullable(rUtil.getValueFromRequest(Constants.FILTER_PARAM, request))
 				.orElse("");

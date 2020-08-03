@@ -17,22 +17,19 @@ package com.minsait.onesait.platform.controlpanel.controller.apimanager;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import com.minsait.onesait.platform.config.model.ApiHeader;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 public class ApiOperationDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	public ApiOperationDTO() {
-
-	}
 
 	public ApiOperationDTO(ApiOperation apiOp) {
 		this.identification = apiOp.getIdentification();
@@ -41,12 +38,7 @@ public class ApiOperationDTO implements Serializable {
 		this.endpoint = apiOp.getEndpoint();
 		this.path = apiOp.getPath();
 		this.postProcess = apiOp.getPostProcess();
-		this.headers = new ArrayList<>();
 		this.queryParams = new ArrayList<>();
-		for (ApiHeader apiheader : apiOp.getApiheaders()) {
-			ApiHeaderDTO apiheaderDTO = new ApiHeaderDTO(apiheader);
-			this.headers.add(apiheaderDTO);
-		}
 		for (ApiQueryParameter apiQueryParam : apiOp.getApiqueryparameters()) {
 			ApiQueryParameterDTO apiQueryParameterDTO = new ApiQueryParameterDTO(apiQueryParam);
 			this.queryParams.add(apiQueryParameterDTO);
@@ -77,11 +69,6 @@ public class ApiOperationDTO implements Serializable {
 	@Getter
 	@Setter
 	private String path;
-
-	@ApiModelProperty(value = "Headers de la Operacion")
-	@Getter
-	@Setter
-	private ArrayList<ApiHeaderDTO> headers;
 
 	@ApiModelProperty(value = "QueryParams de la Operacion")
 	@Getter

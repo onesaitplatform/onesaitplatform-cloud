@@ -51,14 +51,14 @@ public class Realm extends RealmCreate {
 		app.getAppRoles().forEach(r -> 
 			r.getChildRoles()
 					.forEach(cr -> associations.add(new RealmAssociation(r.getName().concat(":").concat(cr.getName()),
-							realmId, r.getName(), cr.getApp().getAppId(), cr.getName())))
+							identification, r.getName(), cr.getApp().getIdentification(), cr.getName())))
 		);
 
 		app.getAppRoles().forEach(r -> 
 			allRoles.forEach(role -> {
 				if (role.getChildRoles() != null && role.getChildRoles().contains(r)) {
 					associations.add(new RealmAssociation(role.getName().concat(":").concat(r.getName()),
-							role.getApp().getAppId(), role.getName(), realmId, r.getName()));
+							role.getApp().getIdentification(), role.getName(), identification, r.getName()));
 				}
 			})
 		);

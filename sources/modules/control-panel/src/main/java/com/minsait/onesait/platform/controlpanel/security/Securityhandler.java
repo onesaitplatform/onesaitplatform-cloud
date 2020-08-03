@@ -15,6 +15,9 @@
 package com.minsait.onesait.platform.controlpanel.security;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -22,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,6 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Securityhandler implements AuthenticationSuccessHandler {
 
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
+	private static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
 	private static final String URI_CONTROLPANEL = "/controlpanel";
 	private static final String URI_MAIN = "/main";
 	private static final String URI_VERIFY = "/verify";
@@ -91,7 +97,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				// we do not forget to clean this attribute from session
 				session.removeAttribute(BLOCK_PRIOR_LOGIN);
 				// then we redirect
-				response.sendRedirect(request.getContextPath() + redirectUrl.replace(URI_CONTROLPANEL, ""));
+				response.sendRedirect(request.getContextPath() + redirectUrl.replace(URI_CONTROLPANEL, "")
+						.concat(getEncodedParametersFromPreviousRequest(session)));
 			} else {
 				response.sendRedirect(request.getContextPath() + URI_MAIN);
 			}
@@ -165,6 +172,21 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 		filter.setName("preVerifiedUsersFilter");
 		filter.setOrder(Ordered.LOWEST_PRECEDENCE);
 		return filter;
+	}
+
+	// added for oauth flows
+	@SuppressWarnings("unchecked")
+	private String getEncodedParametersFromPreviousRequest(HttpSession session) {
+		try {
+			final Map<String, String[]> params = (Map<String, String[]>) session.getAttribute(BLOCK_PRIOR_LOGIN_PARAMS);
+			if (params.isEmpty())
+				return "";
+			return "?" + URLEncodedUtils.format(params.entrySet().stream()
+					.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
+					StandardCharsets.UTF_8);
+		} catch (final Exception e) {
+			return "";
+		}
 	}
 
 }

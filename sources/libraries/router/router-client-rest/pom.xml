@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>1.0.0-ce</version>
+		<version>1.1.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-router-client-rest</artifactId>
@@ -22,12 +22,6 @@
 
 
 	<dependencies>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-			<optional>true</optional>
-		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-client-base</artifactId>
