@@ -31,7 +31,7 @@ If you want a more technical detail you can read our [Architectural Guides](http
 
 ## Getting started with the platform 
 
-The best way yo start with Onesait Platform is accesing our [Developer Portal](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/45842643/Platform+Guides) where you can find a complete set of guides and tutorials.
+The best way to start with Onesait Platform is accesing our [Developer Portal](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/45842643/Platform+Guides) where you can find a complete set of guides and tutorials.
 
 For the quick start you can start watching one of the [Introductory Videos](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/31424597/Introductory+Videos)
 or perhaps you prefer to work with the Platform, then follow our [Getting Started Guide](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/33179/Getting+Started)
@@ -41,7 +41,7 @@ or perhaps you prefer to work with the Platform, then follow our [Getting Starte
 
 Having trouble with onesait Platform? We’d like to help!
 
-* Check the reference documentation, especially the [Platform Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/45842643/Platform+Guides), they provide solutions to the most common questions.
+* Check the reference documentation, especially the [Platform Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/229867544/Documentation), they provide solutions to the most common questions.
 * Learn more about the platform in our [Confluence Developer Portal]( https://onesaitplatform.online)
 * Report bugs of the platform at [onesait Platform GitHub](https://github.com/onesaitplatform)
 
