@@ -1,3 +1,12 @@
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      
+
+
+
 onesaitplatform: #Config onesait Platform specific
    environment.name: ${ENVIRONMENTNAME}
    authentication:
@@ -5,12 +14,12 @@ onesaitplatform: #Config onesait Platform specific
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
           list: ${CONFIGDB_ACL_LIST}
-   
-spring: ## General Config  
+
+spring: ## General Config
   datasource: ## JPA Config
-    url: ${CONFIGDBURL}
+    url: ${CONFIGDBURL}${DBADDPROPS}
     username: ${CONFIGDBUSER}
-    password: ${CONFIGDBPASS} 
+    password: ${CONFIGDBPASS}
     time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
     min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
     max-wait-millis: ${DS_MAX_WAIT_MILLIS}
@@ -25,6 +34,8 @@ spring: ## General Config
 security:
   oauth2:
     client:
+      useCurrentUri: ${OAUTH_USE_DEFAULT_URI}
+      preEstablishedRedirectUri: https://${SERVER_NAME}/${server.contextPath}/login/oauth
       clientId: ${CLIENTID}
       clientSecret: ${CLIENTSECRET}
       accessTokenUri: https://${SERVER_NAME}/controlpanel/oauth/token
@@ -34,4 +45,4 @@ security:
 
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs 
+   path: /var/log/platform-logs

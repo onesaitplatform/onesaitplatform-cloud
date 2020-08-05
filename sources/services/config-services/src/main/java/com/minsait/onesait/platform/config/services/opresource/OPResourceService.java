@@ -20,8 +20,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
@@ -39,8 +40,9 @@ public interface OPResourceService {
 	public boolean hasAccess(String userId, String resourceId, ResourceAccessType access);
 
 	public ResourceAccessType getResourceAccess(String userId, String resourceId);
-	
-	public Map<String,ResourceAccessType> getResourcesAccessMapByUserAndResourceIdList(User user, List<String> resourceIdList);
+
+	public Map<String, ResourceAccessType> getResourcesAccessMapByUserAndResourceIdList(User user,
+			List<String> resourceIdList);
 
 	public void insertAuthorizations(Set<ProjectResourceAccess> accesses);
 
@@ -58,7 +60,7 @@ public interface OPResourceService {
 	List<String> deleteAuthorizations(String projectName, List<String> userIds, List<String> resources,
 			List<String> versions, List<String> resourceTypes, List<String> resourceAccessTypes, String currentUser);
 
-	void deleteUserAccess(ProjectResourceAccess projectUserAcc);
+	void deleteUserAccess(ProjectResourceAccess projectUserAcc, Project project);
 
 	void deleteUserAccess(String projectResourceAccessId);
 
@@ -71,4 +73,5 @@ public interface OPResourceService {
 			String currentUser);
 
 	public Collection<OPResource> getResourcesByType(String userId, String type);
+
 }

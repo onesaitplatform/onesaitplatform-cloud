@@ -25,16 +25,16 @@ angular
         templateUrl: 'app/home/packageManager/package_manager.tpl.html',
         controller: 'PackageManagerController',
         resolve: {
-          myVar: function(authService) {
+          myVar: ["authService", function(authService) {
             return authService.init();
-          }
+          }]
         },
         data: {
           authorizedRoles: ['admin']
         }
       });
   }])
-  .controller('PackageManagerController', function ($scope, $rootScope, $routeParams, $q, $modal, $location,
+  .controller('PackageManagerController', ["$scope", "$rootScope", "$routeParams", "$q", "$modal", "$location", "pipelineService", "api", "configuration", "pipelineConstant", "Analytics", function ($scope, $rootScope, $routeParams, $q, $modal, $location,
                                                     pipelineService, api, configuration, pipelineConstant, Analytics) {
     $location.search('auth_token', null);
     $location.search('auth_user', null);
@@ -492,4 +492,4 @@ angular
       }, function () {
       });
     };
-  });
+  }]);

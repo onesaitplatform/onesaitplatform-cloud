@@ -25,9 +25,9 @@ angular
         templateUrl: 'common/administration/sdcConfiguration/sdcConfiguration.tpl.html',
         controller: 'SDCConfigurationController',
         resolve: {
-          myVar: function(authService) {
+          myVar: ["authService", function(authService) {
             return authService.init();
-          }
+          }]
         },
         data: {
           authorizedRoles: ['admin', 'creator', 'manager']
@@ -35,7 +35,7 @@ angular
       }
     );
   }])
-  .controller('SDCConfigurationController', function ($scope, $rootScope, $q, Analytics, configuration, _) {
+  .controller('SDCConfigurationController', ["$scope", "$rootScope", "$q", "Analytics", "configuration", "_", function ($scope, $rootScope, $q, Analytics, configuration, _) {
     angular.extend($scope, {
       initDefer: undefined,
       configKeys: [],
@@ -50,4 +50,4 @@ angular
       $scope.configKeys = _.keys($scope.sdcConfiguration);
       $scope.configKeys.sort();
     });
-  });
+  }]);

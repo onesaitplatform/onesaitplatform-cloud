@@ -61,7 +61,7 @@ public class DashboardConfController {
 		return this.dashboardConfService.getAllIdentifications();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
@@ -73,14 +73,14 @@ public class DashboardConfController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createDashboardConf(Model model) {
 		model.addAttribute(DASHBOARD_CONF, new DashboardConf());
 		return "dashboardconf/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/create", produces = "text/html")
 	public String saveDashboardConf(@Valid DashboardConf dashboardConf, BindingResult bindingResult, Model model,
 			HttpServletRequest httpServletRequest, RedirectAttributes redirect) {
@@ -114,28 +114,28 @@ public class DashboardConfController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDashboardConf(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_CONF, this.dashboardConfService.getDashboardConfById(id));
 		return "dashboardconf/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/view/{id}", produces = "text/html")
 	public String showDashboardConf(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_CONF, this.dashboardConfService.getDashboardConfById(id));
 		return "dashboardconf/show";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		this.dashboardConfService.deleteDashboardConf(id);
 		return REDIRECT_DASHBOARD_CONF_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDashboardConf(Model model, @PathVariable("id") String id, @Valid DashboardConf dashboardConf,
 			BindingResult bindingResult, RedirectAttributes redirect) {

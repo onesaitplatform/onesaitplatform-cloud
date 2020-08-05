@@ -53,7 +53,19 @@ angular.module('dataCollectorApp')
 
     // Reload the page when the server is down.
     $httpProvider.interceptors.push(["$q", "$rootScope", function($q, $rootScope) {
-      return {
+      return { 
+        request: function(config) {
+          // OnesaitPlatform headers
+          var loc = window.location.pathname;
+          if(loc.indexOf("/pipeline/") != -1 || loc.indexOf("/logs/") != -1) {
+            var parts = loc.split("/");
+            var partsLength = parts.length;
+            var dataflowId = parts[partsLength-1] == '' ? parts[partsLength-2] : parts[partsLength-1];
+            config.headers['X-Streamsets-ID'] = dataflowId;
+          }
+
+          return config;
+        },
         response: function(response) {
           return response;
         },
@@ -127,10 +139,6 @@ angular.module('dataCollectorApp')
     };
 
     $http.defaults.headers.common['X-Requested-By'] = 'Data Collector' ;
-
-    //Add header with Dataflow ID
-    var dataflowId= loc.pathname.split("/")[loc.pathname.split("/").length-1] == '' ? loc.pathname.split("/")[loc.pathname.split("/").length-2] : loc.pathname.split("/")[loc.pathname.split("/").length-1]; 
-    $http.defaults.headers.common['X-Streamsets-ID'] = dataflowId ;
 
     $rootScope.pipelineConstant = pipelineConstant;
     $rootScope.$storage = $localStorage.$default({

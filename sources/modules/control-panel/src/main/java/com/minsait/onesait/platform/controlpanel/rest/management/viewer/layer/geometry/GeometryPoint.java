@@ -26,9 +26,7 @@ public class GeometryPoint extends Geometry {
 	private Double[] coordinates;
 
 	public GeometryPoint() {
-		super();
 		this.coordinates = new Double[2];
-		this.type = GeometryType.POINT;
 	}
 
 	@Override

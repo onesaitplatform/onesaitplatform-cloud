@@ -22,7 +22,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
-@SpringBootApplication(scanBasePackages = "com.minsait.onesait.platform")
+@SpringBootApplication(scanBasePackages = "com.minsait.onesait")
 public class DashboardEngineApplication extends WebMvcConfigurerAdapter {
 
 	public static void main(String[] args) {

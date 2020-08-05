@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ontology",
+    "type": "object",
+    "required": [
+        "ontology"
+    ],
+    "properties": {
+        "ontology": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel ontology",
+        "type": "object",
+        "properties": {
+            "value1": {
+                "type": "string"
+            },
+            "value2": {
+                "type": "array",
+                "items": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        "required": [
+            "value1",
+            "value2"
+        ]
+    },
+    "description": "testing",
+    "additionalProperties": true
+}

@@ -125,6 +125,10 @@ public class DevicesManagementController {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		}
+		
+		if (!clientPlatformCreate.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+		    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+		}
 
 		// Get Ontologies
 		final User user = userService.getUserByIdentification(utils.getUserId());

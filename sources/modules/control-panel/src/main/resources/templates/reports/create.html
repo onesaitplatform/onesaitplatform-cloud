@@ -168,7 +168,7 @@
 														<div class="form-group">
 															<label th:text="#{binaryfiles.file}">File</label><span class="required"> (*)</span>
 															<!-- <input id="file" class="btn btn-default" type="file" th:field="*{file}" style="width:100%"/> -->
-											 				<button id="btn-report-upload" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+											 				<button style="width:100%" id="btn-report-upload" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
 										      				<input id="btn-report-upload-file" class="form-group button_text hide" type="file" accept=".jrxml,.jasper" name="file"  />
 														</div>
 													</div>
@@ -177,16 +177,17 @@
 													<div class="col-md-3 col-sm-6 col-xs-12 pull-right">
 														<div class="form-group">
 															<label th:text="#{binaryfiles.resources}">Resources</label>
-															<button id="btn-report-upload-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+															<button style="width:100%" id="btn-report-upload-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
 										      				<input id="btn-report-upload-file-resources" class="form-group button_text hide" type="file" accept="*" name="additionalFiles" multiple="multiple" />
-														
+															<hr style="border-top: 0px;"/>
+															<button th:if="*{id}" style="width:100%" id="btn-report-add-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select.existing}"></span></button>
 														</div>
 													</div>
 												</div>
 												
 												<!-- TABS REPORTS -->
 												<div th:if="${report.id} == null" th:include="fragments/report-create :: #reportCreateFragment"></div>
-												<div th:if="${report.id} != null" th:include="fragments/report-edit :: #reportEditFragment"></div>
+												<div id="reportResources" th:if="${report.id} != null" th:include="fragments/report-edit :: #reportEditFragment" th:fragment="reportResources"></div>
 												<!-- // TABS REPORTS -->
 																						
 												<!-- FORM BUTTONS -->
@@ -253,6 +254,55 @@
 			</div>
 		</div>
 	</div><!-- // Modal error -->
+	<!-- Modal RESOURCES -->
+	<div id="modal-add-resources" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-sm">
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"></button>
+					<h4 class="modal-title" th:text="#{reports.existing.resources}"></h4>
+				</div>				
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-12 col-sm-6 col-xs-12">
+						<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+							<div class="form-group">
+								
+									
+								<div id="resources-div" class="margin-bottom-20 hide">
+									<table class="table" id="resources" data-loaded="false">
+										<thead>
+											<tr class="cabecera-tabla" role="row" >
+												<th class="titulo-columnas hide" >ID</th>
+												<th class="titulo-columnas" th:text="#{reports.existing.resource}">Resource</th>
+												<th class="titulo-columnas" th:text="#{binaryfiles.user}">User</th>
+												<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr class="resources-model">
+												<td  class="hide"><input type="text" name="ids[]" readonly="readonly"   class="form-control hide"/></td>
+												<td><input type="text" name="resources[]" readonly="readonly"   class="form-control"/></td>
+												<td><input type="text" name="users[]" readonly="readonly"   class="form-control"/></td>
+												<td width="150px" class="no-wrap text-center">																	
+													<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="Report.Create.addResource(this)"><i class="fa fa-add"></i> <span th:text="#{gen.add}">Add</span></button>
+												</td>			
+											</tr>
+										</tbody>														
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>							      
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+				</div>
+			</div>
+		</div>
+	</div><!-- // Modal RESOURCES -->
+	
 		
 	<!-- PLUGINS -->
 	<script	th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
@@ -271,6 +321,9 @@
 	<!-- TEMPLATE CONTROLLER -->
 	<script th:src="@{/static/js/pages/reports/create.js}" />
 	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"/>
 	<script th:src="@{/static/js/layout.js}"/>	
@@ -280,6 +333,7 @@
 		
 		var currentLanguage = [[${lang}]];
 		var validateTemplate = [[#{reports.validation.template}]];
+		var reportId =[[${report.id}]]
 		
 	//]]>
 	</script>

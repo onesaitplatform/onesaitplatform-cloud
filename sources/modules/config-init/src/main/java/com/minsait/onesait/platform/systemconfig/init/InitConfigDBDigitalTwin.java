@@ -85,7 +85,7 @@ public class InitConfigDBDigitalTwin {
 			device = new DigitalTwinDevice();
 			device.setId("MASTER-DigitalTwinDevice-2");
 			device.setContextPath("/sensehat");
-			device.setDigitalKey("f0e50f5f8c754204a4ac601f29775c15");
+			device.setDigitalKey("f0e50f5f8c754204a4ac601f29765c15");
 			device.setIdentification("SensehatHelsinki");
 			device.setIntrface("eth0");
 			device.setIpv6(false);

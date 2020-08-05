@@ -112,6 +112,13 @@
                                 
                             </div>
                             <div class="portlet-body" style="display: block; height: auto;">
+                            	<div class="pull-right">                                                                                    
+	                                  <button type="button" class="btn grey-mint btn-outline sbold"
+	                                      onclick="location.href='../migration/cleanCache'">
+	                                  <i class="flaticon-share"></i>
+	                                  <span text="Clean Cache">Clean Cache</span>
+	                                  </button>                                                                              
+                                 </div>
                                 
                                 <div class="tab-content">
                                     <div class="tab-pane active" id="tab_1">
@@ -121,12 +128,7 @@
                                             </div>
                                             <div class="col-md-12">                                     
                                                 <form th:action="@{/migration/loadimport}" role="form" id="import_form_file" th:object="${importData}" method="post" class="form" enctype="multipart/form-data">                                                    
-                                                    <div class="alert alert-info alert-dismissable">
-														<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-														<i class="fa fa-info-circle"></i>
-														<span th:text="#{migration.import.info}"> info.</span>
-													</div>	
-                                                    
+                                                   
                                                     <div id="contentForm" th:style="${(classNames == null OR classNames.size() == 0) AND errors == null} ? 'display:block' : 'display:none'" class="margin-bottom-10">
 									                    <input id="content" name="content" class="btn btn-default" type="file" style="width:100%" th:field="*{content}" onchange="loadContentId();"/>
 									                </div>
@@ -145,8 +147,8 @@
 		                                                    </thead>
 		                                                    <tbody th:remove="all-but-first">                       
 		                                                        <tr th:each="className : ${classNames}">
-		                                                            <td ><input type="checkbox" th:field="*{classes}" th:value="${className}" checked="checked"></input></td>
-		                                                            <td class="text-left" data-th-text="${className}"></td>		                                                                                                                                                  
+		                                                            <td style="width: 10;"><input type="checkbox" th:field="*{classes}" th:value="${className.clazz}" checked="checked"></input></td>
+		                                                            <td class="text-left" data-th-text="${className.clazzName}"></td>		                                                                                                                                                  
 		                                                        </tr>
 		                                                    </tbody>
 		                                                </table>		                                                
@@ -155,14 +157,21 @@
 	                                                <div th:style="${(classNames == null OR classNames.size() == 0) AND errors == null} ? 'display:block' : 'display:none'">
 	                                                  <button id="loadbtn"   type="submit" class="btn grey-mint btn-outline sbold" name="action" value="load"><i class="la la-check"></i> <span th:text="#{migration.load}">Load</span></button>
 	                                                </div>
-	                                                <div th:style="${classNames != null AND classNames.size() > 0} ? 'display:block' : 'display:none'">
-	                                                  <button id="importbtn" type="submit" class="btn grey-mint btn-outline sbold" name="action" value="import"><i class="la la-check"></i> <span th:text="#{migration.import}">Import</span></button>
+	                                                <div class="col-md-12" th:style="${classNames != null AND classNames.size() > 0} ? 'display:block' : 'display:none'">
+	                                                	
+	                                                	<button id="importbtn" type="submit" class="col-md-1 btn grey-mint btn-outline sbold" name="action" value="import"><i class="la la-check"></i> <span th:text="#{migration.import}">Import</span></button>
+	                                                	
+														<div class="col-md-3">
+															<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{migration.import.override.info},data-title=#{migration.import.override}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{migration.import.override} +'?'">Override?</div>
+																<input  id="override" class="form-control no-remove"  name="public" type="checkbox" th:field="*{override}" />
+																<span></span><!-- necesario por estilos. -->
+															</label>
+														</div>
 	                                                </div>
 	                                                <div th:style="${errors != null} ? 'display:block' : 'display:none'">
                                                       <button id="returnShow" type="button" class="btn grey-mint btn-outline sbold" name="go" value="show" th:onclick="'javascript:navigateUrl(\'' + @{|/migration/show|} + '\');'"><i class="la la-check"></i> <span th:text="#{migration.return}">Return</span></button>
                                                     </div> 
                                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
-                                                
                                                 
                                                 <!-- This is to show the output of the import process -->                          
                                                 <table th:style="*{errors != null AND errors.size() > 0} ? 'display:block' : 'display:none'" id="msgTable" class="table table-hover table-striped">     
@@ -172,8 +181,10 @@
                                                             <th class="col-md-3 titulo-columnas"> <span th:text="#{migration.message}">Message</span></th>
                                                             <th class="col-md-1 titulo-columnas"> <span th:text="#{migration.class}">Class of Entity Processed</span></th>
                                                             <th class="col-md-1 titulo-columnas"> <span th:text="#{migration.id}">Id of Entity Processed</span></th>
+                                                            <th class="col-md-1 titulo-columnas"> <span th:text="#{migration.identification}">Identification of Entity Processed</span></th>
                                                             <th class="col-md-3 titulo-columnas"> <span th:text="#{migration.dependencyClass}">Class of Dependent Entity</span></th>
-                                                            <th class="col-md-1 titulo-columnas"> <span th:text="#{migration.dependency}">Entity that is needed</span></th>                                      
+                                                            <th class="col-md-1 titulo-columnas"> <span th:text="#{migration.dependency}">Entity that is needed</span></th>  
+                                                            <th class="col-md-1 titulo-columnas"> <span th:text="#{migration.dependency.identification}">Identification of Entity that is needed</span></th>                                    
                                                         </tr>
                                                     </thead>
                                                     <tbody th:remove="all-but-first">                       
@@ -182,8 +193,10 @@
 	                                                        <td class="text-left" data-th-text="${error.msg}"></td>
 	                                                        <td class="text-left text-truncate-xxs" th:title="${error.processedInstance?.clazz?.getName()}" data-th-text="${error.processedInstance?.clazz?.getName()?.substring(error.processedInstance?.clazz?.getName()?.lastIndexOf('.'))}"></td>
 	                                                        <td class="text-left" data-th-text="${error.processedInstance?.id}"></td>
+	                                                        <td class="text-left" data-th-text="${error.processedInstance?.identification}"></td>
 	                                                        <td class="text-left text-truncate-xxs" th:title="${error.neededInstance?.clazz?.getName()}" data-th-text="${error.neededInstance?.clazz?.getName()?.substring(error.neededInstance?.clazz?.getName()?.lastIndexOf('.'))}"></td>
-	                                                        <td class="text-left" data-th-text="${error.neededInstance?.id}"></td>                                                        
+	                                                        <td class="text-left" data-th-text="${error.neededInstance?.id}"></td>       
+	                                                        <td class="text-left" data-th-text="${error.neededInstance?.identification}"></td>                                                   
 	                                                    </tr>
                                                     </tbody>
                                                 </table>
@@ -250,11 +263,35 @@
 								                  					</select>
 																</div>
 															</div>
+															<div class="col-md-3 col-sm-6 col-xs-12">
+																<input type="radio" id="mongo"  name="export" value="mongo"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.mongo}">Export Mongo Data</p>
+																<div class="alert alert-info alert-dismissable">
+																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																	<i class="fa fa-info-circle"></i>
+																	<span th:text="#{migration.export.mongo.info}"> info.</span>
+																</div>
+																<div class="col-md-12">
+								                  					<label th:text="#{migration.export.mongo.ontology}" > Select ontologies </label>
+								                  					<select  id="ontologies" class="form-control" name="ontologies" disabled="disabled" multiple="multiple">
+					                                					<option th:each="ontology:${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}"></option>
+								                  					</select>
+																</div>
+																<div class="col-md-12">
+																	<div class="form-group">
+																		<label class="" th:text="#{migration.export.mongo.user} + ':'">User</label><span class="required"> *</span>
+																		<input th:tabindex="1" disabled="disabled" id="userMongo" name="userMongo" type="text"   th:required="true" maxlength="50" class="form-control "  th:placeholder="#{migration.export.mongo.user}"/>
+																	</div>
+																	<div class="form-group">
+																		<label class="" th:text="#{migration.export.mongo.password} + ':'">Password</label><span class="required"> *</span>
+																		<input id="passwordMongo" disabled="disabled" name="passwordMongo" type="password" th:required="true"  maxlength="50" class="form-control " th:placeholder="#{migration.export.mongo.password}"/>
+																	</div>
+																</div>
+															</div>
 														</div>
 													</div>
 				                  				</div>	
 					                  		</div>
-					                  		<div class="col-md-12 col-xs-12">
+					                  		<div class="col-md-1 col-xs-12">
 				                  				<div class="input-group">
 	                                                <button type="button" class="btn grey-mint btn-outline sbold"
 			                                            onclick="exportData()">
@@ -264,7 +301,7 @@
 												</div>
 											</div>
 										
-                                            <div class="col-md-12 col-xs-12">                                                                                    
+                                            <div class="col-md-1 col-xs-12">                                                                                    
 		                                        <button type="button" class="btn grey-mint btn-outline sbold"
 		                                            onclick="location.href='../migration/exportSchema'">
 		                                        <i class="flaticon-share"></i>
@@ -356,20 +393,35 @@
     
     function exportData(){
     	var url;
+    	var type;
+    	var data = {};
+		App.blockUI({target:"div#migrationPortlet",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Exporting data..."});
 		if($('#all').is(":checked")){
 			url = "/controlpanel/migration/export";
+			type = 'get';
+			exportt(url, type);
 		}else if($('#user').is(":checked")){
 			url = "/controlpanel/migration/exportUser/" + $("#userId").val();
+			type = 'get';
+			exportt(url, type);
 		}else if($('#project').is(":checked")){
 			url = "/controlpanel/migration/exportProject/" + $("#projects").val();
+			type = 'get';
+			exportt(url, type);
 		}else if($('#userAux').is(":checked")){
 			url = "/controlpanel/migration/exportUsers/" + $("#users").val();
+			type = 'get';
+			exportt(url, type);
+		}else if($('#mongo').is(":checked")){
+			exportMongo();
 		}
-		var csrf_value = $("meta[name='_csrf']").attr("content");
+    };
+    
+    function exportt(url, type){
+    	var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		App.blockUI({target:"div#migrationPortlet",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Exporting data..."});
     	$.ajax({
-            type: 'get',
+            type: type,
             url: url,
             headers: {
 				[csrf_header]: csrf_value
@@ -388,8 +440,65 @@
     			return false;
             }
         });
-	
-    };
+    }
+    
+    function exportMongo(){
+    	var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+    	url = "/controlpanel/migration/exportMongo/" + $("#ontologies").val();
+		type = 'post';
+		var data={'userMongo': $("#userMongo").val(), 'passwordMongo': $("#passwordMongo").val()};
+		
+		 var xhr = new XMLHttpRequest();
+	        xhr.open('POST', url, true);
+	        xhr.responseType = 'arraybuffer';
+	        xhr.onload = function () {
+	          if (this.status === 200) {
+	            var filename = "";
+	            var disposition = xhr.getResponseHeader('Content-Disposition');
+	            if (disposition) {
+	            	if(disposition.indexOf('attachment') !== -1){
+	            		 var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+	   	              var matches = filenameRegex.exec(disposition);
+	   	              if (matches !== null) {
+	   	            	  if(matches[1]){
+	   	                		filename = matches[1].replace(/['"]/g, '');
+	   	            	  }
+	   	              }
+	            	}
+	            }
+	            var type = xhr.getResponseHeader('Content-Type');
+
+	            var blob = new Blob([this.response], { type: type });
+
+	            var URL = window.URL || window.webkitURL;
+	            var downloadUrl = URL.createObjectURL(blob);
+
+	            if (filename) {
+	              // use HTML5 a[download] attribute to specify filename
+	              var a = document.createElement("a");
+	              // safari doesn't support this yet
+	              if (typeof a.download === 'undefined') {
+	                window.location = downloadUrl;
+	              } else {
+	                a.href = downloadUrl;
+	                a.download = filename;
+	                document.body.appendChild(a);
+	                a.click();
+	              }
+	            } else {
+	              window.location = downloadUrl;
+	            }
+
+	            setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+	          }
+	        };
+	        xhr.setRequestHeader('Content-type', 'application/json');
+	        xhr.setRequestHeader('X-Requested-By', 'Data Collector');
+	        xhr.setRequestHeader(csrf_header, csrf_value);
+	        xhr.send(JSON.stringify(data));
+	        App.unblockUI("div#migrationPortlet");
+    }
     
     $(document).ready(function () {
         $("#import_form_file").submit(function () {
@@ -405,18 +514,37 @@
     		$("#userId").removeAttr("disabled");
     		$("#projects").attr("disabled", "disabled");
     		$("#users").attr("disabled", "disabled");
+    		$("#ontologies").attr("disabled", "disabled");
+    		$("#userMongo").attr("disabled", "disabled");
+    		$("#passwordMongo").attr("disabled", "disabled");
     	}else if(option == "project"){
     		$("#projects").removeAttr("disabled", "disabled");
     		$("#userId").attr("disabled", "disabled");
     		$("#users").attr("disabled", "disabled");
+    		$("#ontologies").attr("disabled", "disabled");
+    		$("#userMongo").attr("disabled", "disabled");
+    		$("#passwordMongo").attr("disabled", "disabled");
     	}else if(option == "all"){
     		$("#userId").attr("disabled", "disabled");
     		$("#projects").attr("disabled", "disabled");
     		$("#users").attr("disabled", "disabled");
+    		$("#ontologies").attr("disabled", "disabled");
+    		$("#userMongo").attr("disabled", "disabled");
+    		$("#passwordMongo").attr("disabled", "disabled");
     	}else if(option == "userAux"){
     		$("#userId").attr("disabled", "disabled");
     		$("#projects").attr("disabled", "disabled");
+    		$("#ontologies").attr("disabled", "disabled");
+    		$("#userMongo").attr("disabled", "disabled");
+    		$("#passwordMongo").attr("disabled", "disabled");
     		$("#users").removeAttr("disabled");
+    	}else if(option == "mongo"){
+    		$("#userId").attr("disabled", "disabled");
+    		$("#projects").attr("disabled", "disabled");
+    		$("#users").attr("disabled", "disabled");
+    		$("#ontologies").removeAttr("disabled");
+    		$("#userMongo").removeAttr("disabled");
+    		$("#passwordMongo").removeAttr("disabled");
     	}
     });
     

@@ -59,7 +59,7 @@ public class Ontology extends OPResource {
 
 	public enum RtdbDatasource {
 
-		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL
+		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB
 	}
 
 	public enum RtdbToHdbStorage {
@@ -67,11 +67,13 @@ public class Ontology extends OPResource {
 	}
 
 	public enum RtdbCleanLapse {
-		ONE_DAY(24l * 60l * 60l * 1000l), TWO_DAYS(2 * 24l * 60l * 60l * 1000l), THREE_DAYS(3 * 24 * 60l * 60l * 1000l),
-		FIVE_DAYS(5 * 24 * 60l * 60l * 1000l), ONE_WEEK(7 * 24 * 60l * 60l * 1000l),
-		TWO_WEEKS(2 * 7 * 24 * 60l * 60l * 1000l), ONE_MONTH(4 * 7 * 24 * 60l * 60l * 1000l),
-		THREE_MONTHS(3 * 4 * 7 * 24 * 60l * 60l * 1000l), SIX_MONTHS(6 * 4 * 7 * 24 * 60l * 60l * 1000l),
-		ONE_YEAR(12 * 4 * 7 * 24 * 60l * 60l * 1000l), NEVER(0);
+		ONE_DAY(24l * 60l * 60l * 1000l), TWO_DAYS(2 * 24l * 60l * 60l * 1000l), THREE_DAYS(
+				3 * 24 * 60l * 60l * 1000l), FIVE_DAYS(5 * 24 * 60l * 60l * 1000l), ONE_WEEK(
+						7 * 24 * 60l * 60l * 1000l), TWO_WEEKS(2 * 7 * 24 * 60l * 60l * 1000l), ONE_MONTH(
+								4 * 7 * 24 * 60l * 60l * 1000l), THREE_MONTHS(
+										3 * 4 * 7 * 24 * 60l * 60l * 1000l), SIX_MONTHS(
+												6 * 4 * 7 * 24 * 60l * 60l * 1000l), ONE_YEAR(
+														12 * 4 * 7 * 24 * 60l * 60l * 1000l), NEVER(0);
 
 		private final long milliseconds;
 
@@ -169,13 +171,13 @@ public class Ontology extends OPResource {
 	@Setter
 	private Set<OntologyUserAccess> ontologyUserAccesses = new HashSet<>();
 
-	@OneToOne(mappedBy = "ontology", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "ontology", fetch = FetchType.EAGER)
 	@JsonManagedReference
 	@Getter
 	@Setter
 	private OntologyKPI ontologyKPI;
 
-	@OneToOne(mappedBy = "ontology", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "ontology", fetch = FetchType.EAGER)
 	@JsonManagedReference
 	@Getter
 	@Setter
@@ -204,6 +206,22 @@ public class Ontology extends OPResource {
 	@Getter
 	@Setter
 	private String topic;
+
+	@Column(name = "ALLOW_CREATE_NOTIFICATION_TOPIC", nullable = false, columnDefinition = "BIT")
+	@NotNull
+	@Getter
+	@Setter
+	private boolean allowsCreateNotificationTopic;
+
+	@Column(name = "NOTIFICATION_TOPIC", length = 256)
+	@Getter
+	@Setter
+	private String notificationTopic;
+
+	@Column(name = "PARTITION_KEY", length = 256, nullable = true)
+	@Getter
+	@Setter
+	private String partitionKey;
 
 	public void addOntologyUserAccess(OntologyUserAccess ontologyUserAccess) {
 		ontologyUserAccess.setOntology(this);

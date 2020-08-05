@@ -18,6 +18,7 @@ import java.util.Calendar;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.listener.EntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +40,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "TOKEN")
 @Configurable
+@EntityListeners(EntityListener.class)
 public class Token extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
@@ -74,7 +77,7 @@ public class Token extends AuditableEntityWithUUID {
 			return true;
 		if (!(o instanceof Token))
 			return false;
-		Token that = (Token) o;
+		final Token that = (Token) o;
 		return getClientPlatform() != null
 				&& getClientPlatform().getIdentification().equals(that.getClientPlatform().getIdentification())
 				&& getTokenName() != null && getTokenName().equals(that.getTokenName());

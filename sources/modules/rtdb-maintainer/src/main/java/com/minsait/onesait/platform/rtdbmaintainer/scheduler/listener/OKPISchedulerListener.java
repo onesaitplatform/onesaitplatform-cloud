@@ -39,12 +39,6 @@ public class OKPISchedulerListener extends SchedulerListenerSupport {
 	@Override
 	public void triggerFinalized(Trigger trigger) {
 		log.info("job finalized");
-		/*
-		 * DeviceSimulation simulation = this.deviceSimulationService
-		 * .getSimulationByJobName(trigger.getJobKey().getName());
-		 * 
-		 * persistenceService.disconnectDeviceRest(simulation.getClientPlatform().
-		 * getIdentification());
-		 */
+
 	}
 }

@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
@@ -48,7 +49,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 	public boolean existsRequest(Facts facts) {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Object body = data.get(ApiServiceInterface.BODY);
-		return (body != null);
+		return body != null;
 	}
 
 	@Action
@@ -68,7 +69,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 				} catch (final Exception e) {
 
 					stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE : " + e.getMessage(),
-							DefaultRuleBase.ReasonType.GENERAL);
+							DefaultRuleBase.ReasonType.GENERAL, HttpStatus.BAD_REQUEST);
 				}
 
 			}
@@ -117,9 +118,9 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 		DBObject dbObject = null;
 		try {
 			dbObject = (DBObject) JSON.parse(body);
-			if (dbObject == null)
+			if (dbObject == null) {
 				return null;
-			else {
+			} else {
 				return dbObject.toString();
 			}
 		} catch (final Exception e) {

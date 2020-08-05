@@ -21,7 +21,7 @@
  */
 angular
   .module('dataCollectorApp.home')
-  .controller('LibraryController', function ($scope, $timeout) {
+  .controller('LibraryController', ["$scope", "$timeout", function ($scope, $timeout) {
     var DEBOUNCE_LIMIT = 300; // Meaning for +300 raw pipeline labels,
     var DEBOUNCE_TIME = 500; // debounce label filter for 500ms
 
@@ -268,4 +268,4 @@ angular
       $scope.rawPipelineLabels = rawPipelineLabels;
       $scope.pipelineLabels = parsePipelineLabels();
     });
-  });
+  }]);

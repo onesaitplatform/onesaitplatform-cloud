@@ -16,9 +16,9 @@ package com.minsait.onesait.platform.router.service.app.service.crud;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,7 +79,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 	@Autowired
 	private ObjectMapper mapper;
-	
+
 	@Autowired
 	private IntegrationResourcesService resourcesServices;
 
@@ -118,16 +118,19 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
 					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, false);
-					final ComplexWriteResult data = virtualRepo.insertBulk(ontologyName, ontology.getJsonSchema(), processedData, true, true);
+					final ComplexWriteResult data = virtualRepo.insertBulk(ontologyName, processedData, true, true);
 					final List<? extends DBResult> results = data.getData();
 					final InsertResult insertResult = new InsertResult();
 					final MultiDocumentOperationResult insertResultData = new MultiDocumentOperationResult();
 					final ArrayList<String> idList = new ArrayList<>();
 
-					if (!results.isEmpty() && results.get(0).getId() != null) {
+					if (!results.isEmpty()) {
 						results.stream()
 								.map(DBResult::getId)
-								.forEach( id -> idList.add(id));
+								.map(Optional::ofNullable)
+								.filter(Optional::isPresent)
+								.map(Optional::get)
+								.forEach(idList::add);
 					}
 
 					insertResultData.setCount(results.size());
@@ -139,8 +142,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, true);
 
-					final ComplexWriteResult data = basicOpsService.insertBulk(ontologyName, ontology.getJsonSchema(),
-							processedData, true, true);
+					final ComplexWriteResult data = basicOpsService.insertBulk(ontologyName, processedData, true, true);
 
 					final InsertResult insertResult = new InsertResult();
 
@@ -156,7 +158,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							final List<String> lIds = new ArrayList<>();
 							for (final DBResult inserted : results) {
 								if (inserted.isOk()) {
-									lIds.add(((BulkWriteResult) inserted).getId());
+									lIds.add(inserted.getId());
 								} else {
 									throw new GenericOPException(inserted.getErrorMessage());
 								}
@@ -249,13 +251,19 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			final RtdbDatasource rtdbDatasource = ontologyRepository.findByIdentification(ontologyName).getRtdbDatasource();
 			if (method.equalsIgnoreCase("PUT") || method.equalsIgnoreCase(OperationModel.OperationType.UPDATE.name())) {
 				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
-					if (objectId != null && objectId.length() > 0) {
-						output = String.valueOf(virtualRepo.updateNativeByObjectIdAndBodyData(ontologyName, objectId, body));
+					final MultiDocumentOperationResult operationResult;
+					if (objectId != null && !objectId.isEmpty()) {
+						operationResult = virtualRepo.updateNativeByObjectIdAndBodyData(ontologyName, objectId, body);
 					} else {
-						output = String.valueOf(virtualRepo.updateNative(ontologyName, body, includeIds));
+						operationResult = virtualRepo.updateNative(ontologyName, body, includeIds);
+					}
+					if(operationResult.getCount() == 0) {
+						output = "[]"; // It needs to return an empty array as the methods from non relational ontology
+					} else {
+						output = body;
 					}
 				} else {
-					if (objectId != null && objectId.length() > 0) {
+					if (objectId != null && !objectId.isEmpty()) {
 						final String processedBody = ontologyDataService.preProcessUpdateData(operationModel);
 						basicOpsService.updateNativeByObjectIdAndBodyData(ontologyName, objectId, processedBody);
 						final String query;
@@ -270,7 +278,6 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						else {//generic _id search no explicit return of oid (inside data)
 							output = basicOpsService.findById(ontologyName, objectId);
 						}
-						
 					} else {
 						switch (operationModel.getQueryType()){
 							case SQL:
@@ -409,7 +416,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						// OUTPUT = queryToolService.querySQLAsJson(ontologyName, QUERY, 0);
 						OUTPUT = (!nullString(CLIENTPLATFORM))
 								? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName, BODY,
-										0)
+								0)
 								: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
 					} else if (QUERY_TYPE.equalsIgnoreCase(QueryType.NATIVE.name())) {
 						if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
@@ -418,7 +425,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							// OUTPUT = queryToolService.queryNativeAsJson(ontologyName, QUERY, 0,0);
 							OUTPUT = (!nullString(CLIENTPLATFORM))
 									? queryToolService.queryNativeAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
-											BODY, 0, getMaxRegisters())
+									BODY, 0, getMaxRegisters())
 									: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0, getMaxRegisters());
 						}
 					} else {
@@ -488,12 +495,12 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 		return insert(model);
 	}
 
-	private String getQueryForOid(String ontology, String oid) {
-		return "select c,_id from ".concat(ontology).concat(" as c where _id=OID(\"").concat(oid).concat("\")");
-	}
-	
 	private String getQueryForId(String ontology, String oid) {
 		return "select c,_id from ".concat(ontology).concat(" as c where _id=\"").concat(oid).concat("\"");
+	}
+
+	private String getQueryForOid(String ontology, String oid) {
+		return "select c,_id from ".concat(ontology).concat(" as c where _id=OID(\"").concat(oid).concat("\")");
 	}
 
 	private int getMaxRegisters() {

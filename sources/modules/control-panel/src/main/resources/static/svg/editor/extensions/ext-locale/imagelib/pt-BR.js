@@ -11,9 +11,9 @@ export default {
   ],
   imgLibs: [
     {
-      name: 'Demo library (local)',
+      name: 'library',
       url: '{path}imagelib/index{modularVersion}.html',
-      description: 'Demonstration library for SVG-edit on this server'
+      description: 'Image library on this server'
     },
     {
       name: 'IAN Symbol Libraries',

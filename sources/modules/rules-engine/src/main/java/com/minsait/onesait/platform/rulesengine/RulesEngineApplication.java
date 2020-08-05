@@ -14,19 +14,31 @@
  */
 package com.minsait.onesait.platform.rulesengine;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableCaching
 @EnableAsync
-public class RulesEngineApplication {
+public class RulesEngineApplication extends WebMvcConfigurerAdapter {
 
 	public static void main(String[] args) {
 		SpringApplication.run(RulesEngineApplication.class, args);
 	}
+
+	@Autowired
+	private MultitenancyInterceptor multitenancyInterceptor;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(multitenancyInterceptor);
+	}
+
 }

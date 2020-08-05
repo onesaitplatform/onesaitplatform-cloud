@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RulesConfigurationController', function ($rootScope, $scope, pipelineService) {
+  .controller('RulesConfigurationController', ["$rootScope", "$scope", "pipelineService", function ($rootScope, $scope, pipelineService) {
     angular.extend($scope, {
       pipelineRulesConfigDefinition: pipelineService.getPipelineRulesConfigDefinition(),
       detailPaneConfig: $scope.pipelineRules,
@@ -204,4 +204,4 @@ angular
     });
 
 
-  });
+  }]);

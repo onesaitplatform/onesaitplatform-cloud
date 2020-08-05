@@ -19,6 +19,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,6 +27,8 @@ import com.minsait.onesait.platform.config.dto.ProjectUserAccess;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -46,9 +49,59 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	public List<ProjectResourceAccess> findByResource(OPResource resource);
 
 	public List<ProjectResourceAccess> findByUser(User user);
-	
+
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.ProjectUserAccess(pra.resource.id, pra.access ) FROM com.minsait.onesait.platform.config.model.ProjectResourceAccess as pra WHERE pra.user = :user and pra.resource.id in :resourceIdList")
-	public List<ProjectUserAccess> findUserAccessByUserAndResourceIds(@Param("user") User user, @Param("resourceIdList") List<String> resourceIdList);
+	public List<ProjectUserAccess> findUserAccessByUserAndResourceIds(@Param("user") User user,
+			@Param("resourceIdList") List<String> resourceIdList);
 
 	public List<ProjectResourceAccess> findByAppRole(AppRole role);
+
+	@Query("SELECT pra FROM ProjectResourceAccess pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"
+			+ " AND (pra.resource.id= :resourceId AND pra.access= :accessType)")
+	public List<ProjectResourceAccess> findByUserIdAndResourceIdAndAccessType(@Param("userId") String userId,
+			@Param("resourceId") String resourceId, @Param("accessType") ResourceAccessType accessType);
+
+	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"
+			+ " AND (pra.resource.identification= :identification)")
+	public List<ProjectResourceAccessList> findByUserIdAndResourceId(@Param("userId") String userId,
+			@Param("identification") String identification);
+
+	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )")
+	public List<ProjectResourceAccessList> findByUserId(@Param("userId") String userId);
+
+	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"
+			+ " AND (pra.resource.id= :resourceId)")
+	public List<ProjectResourceAccessList> findByUserIdAndResourceIdentification(@Param("userId") String userId,
+			@Param("resourceId") String resourceId);
+
+	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"
+			+ " AND (pra.resource.id= :resourceId)")
+	public List<ProjectResourceAccessList> findByUserIdAndResourceIdAndAccessView(@Param("userId") String userId,
+			@Param("resourceId") String resourceId);
+
+	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"
+			+ " AND (pra.resource.id= :resourceId AND pra.access='MANAGE')")
+	public List<ProjectResourceAccessList> findByUserIdAndResourceIdAndAcessManage(@Param("userId") String userId,
+			@Param("resourceId") String resourceId);
+
+	@Query("SELECT prar FROM ProjectResourceAccess prar LEFT JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId "
+			+ " AND prar.resource.id= :resourceId AND prar.access= :accessType")
+	public List<ProjectResourceAccess> findByUserIdInRoleAndResourceIdAndAccessType(@Param("userId") String userId,
+			@Param("resourceId") String resourceId, @Param("accessType") ResourceAccessType accessType);
+
+	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE pra.project.id= :projectId AND pra.resource.id= :resourceId AND pra.user.userId= :userId")
+	public ProjectResourceAccessList findByResourceListAndProjectAndUserId(@Param("resourceId") String resourceId,
+			@Param("projectId") String projectId, @Param("userId") String userId);
+
+	@Transactional
+	@Modifying
+	@Query("delete from ProjectResourceAccess p where p.id = :id")
+	void deleteById(@Param("id") String id);
+
 }

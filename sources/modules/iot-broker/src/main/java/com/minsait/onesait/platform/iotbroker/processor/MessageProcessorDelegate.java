@@ -34,7 +34,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;
 import com.minsait.onesait.platform.comms.protocol.json.Exception.SSAPParseException;
 import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.audit.aop.IotBrokerAuditable;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthenticationException;
@@ -45,6 +44,8 @@ import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.log.interceptor.aop.LogInterceptable;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,7 +96,7 @@ public class MessageProcessorDelegate implements MessageProcessor {
 			final MessageTypeProcessor processor = proxyProcesor(message);
 
 			processor.validateMessage(message);
-			response = processor.process(message);
+			response = processor.process(message, info);
 
 			if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
 				response.setDirection(SSAPMessageDirection.RESPONSE);
@@ -147,6 +148,7 @@ public class MessageProcessorDelegate implements MessageProcessor {
 							Source.IOTBROKER, metricsStatus);
 				}
 			});
+			MultitenancyContextHolder.clear();
 		}
 		return response;
 	}

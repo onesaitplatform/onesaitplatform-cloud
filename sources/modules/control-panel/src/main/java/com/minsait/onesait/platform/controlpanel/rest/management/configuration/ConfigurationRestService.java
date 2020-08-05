@@ -51,7 +51,7 @@ import io.swagger.annotations.ApiResponses;
 @ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
 		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 @RequestMapping("/api/configurations")
-@PreAuthorize("!hasRole('ROLE_USER')")
+@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 public class ConfigurationRestService {
 
 	@Autowired
@@ -161,7 +161,7 @@ public class ConfigurationRestService {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@ApiOperation("Delete configuration")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@ApiParam("ID") @PathVariable(value = "id", required = true) String id) {

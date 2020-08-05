@@ -52,6 +52,7 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardSimpl
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.CommandDTO;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.UpdateCommandDTO;
+import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
 import com.minsait.onesait.platform.controlpanel.rest.management.dashboard.fiql.DashboardFIQL;
@@ -100,6 +101,7 @@ public class DashboardManagementRestController {
 
 	private static final String PATH = "/dashboard";
 	private static final String CONSTANT_DASHBOARD_NOT_FOUND = "\"Dashboard not found\"";
+	private static final String CONSTANT_DASHBOARD_NOT_FOUND_OR_UNAUTHORIZED = "\"Dashboard not found or unauthorized\"";
 
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = DashboardDTO[].class))
 	@ApiOperation(value = "Get dashboards")
@@ -187,8 +189,13 @@ public class DashboardManagementRestController {
 	public ResponseEntity<?> create(
 			@ApiParam(value = "CommandDTO", required = true) @Valid @RequestBody CommandDTO commandDTO, Errors errors) {
 		try {
-
 			final DashboardCreateDTO dashboardCreateDTO = dashboardFIQL.fromCommandToDashboardCreate(commandDTO, null);
+
+			if (!dashboardCreateDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+						HttpStatus.BAD_REQUEST);
+			}
+
 			String dashboardId = dashboardService.createNewDashboard(dashboardCreateDTO, utils.getUserId());
 
 			final Dashboard dashboardCreated = dashboardService.getDashboardById(dashboardId, utils.getUserId());
@@ -304,47 +311,32 @@ public class DashboardManagementRestController {
 	@GetMapping("/export/{id}")
 	public ResponseEntity<?> exportDashboard(
 			@ApiParam(value = "dashboard id", required = true) @PathVariable("id") String dashboardId) {
-		Dashboard dashboard = dashboardService.getDashboardById(dashboardId, utils.getUserId());
-		if (dashboard == null) {
-			return new ResponseEntity<>(CONSTANT_DASHBOARD_NOT_FOUND, HttpStatus.OK);
+		DashboardExportDTO dashboardExportDTO;
+		try {
+			dashboardExportDTO = dashboardService.exportDashboardDTO(dashboardId, utils.getUserId());
+		} catch (DashboardServiceException e) {
+			switch (e.getErrorType()) {
+			case NOT_FOUND:
+				return new ResponseEntity<>(CONSTANT_DASHBOARD_NOT_FOUND_OR_UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+			default:
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+
 		}
-
-		CategoryRelation categoryRelationship = categoryRelationService.getByIdType(dashboard.getId());
-		String categoryIdentification = null;
-		String subCategoryIdentification = null;
-		if (categoryRelationship != null) {
-			Category category = categoryService.getCategoryByIdentification(categoryRelationship.getCategory());
-			Subcategory subcategory = subCategoryService.getSubcategoryById(categoryRelationship.getSubcategory());
-			categoryIdentification = category.getIdentification();
-			subCategoryIdentification = subcategory.getIdentification();
-		}
-
-		final int ngadgets = dashboardService.getNumGadgets(dashboard);
-
-		final List<DashboardUserAccess> dashaccesses = dashboardService.getDashboardUserAccesses(dashboard);
-		final List<DashboardUserAccessDTO> dashAuths = dashboardFIQL.dashAuthstoDTO(dashaccesses);
-
-		DashboardExportDTO dashboardDTO = DashboardExportDTO.builder().identification(dashboard.getIdentification())
-				.user(dashboard.getUser().getUserId()).category(categoryIdentification)
-				.subcategory(subCategoryIdentification).nGadgets(ngadgets).headerlibs(dashboard.getHeaderlibs())
-				.createdAt(dashboard.getCreatedAt()).description(dashboard.getDescription())
-				.modifiedAt(dashboard.getUpdatedAt()).dashboardAuths(dashAuths).model(dashboard.getModel())
-				.type(dashboard.getType()).build();
-
-		final DashboardExportDTO dashWGadgets = dashboardService.addGadgets(dashboardDTO);
-
-		return new ResponseEntity<>(dashWGadgets, HttpStatus.OK);
+		return new ResponseEntity<>(dashboardExportDTO, HttpStatus.OK);
 	}
 
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = DashboardDTO.class))
 	@ApiOperation(value = "Import dashboard")
 	@PostMapping("/import")
 	public ResponseEntity<?> importDashboard(
+			@ApiParam(value = "Overwrite Dashboard if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@ApiParam(value = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
 			@ApiParam(value = "DashboardDTO", required = true) @Valid @RequestBody DashboardExportDTO dashboardimportDTO,
 			Errors errors) {
 
 		DashboardImportResponsetDTO dashboardResutl = dashboardService.importDashboard(dashboardimportDTO,
-				utils.getUserId());
+				utils.getUserId(), overwrite, importAuthorizations);
 		dashboardResutl.setIdentification(dashboardimportDTO.getIdentification());
 		if (dashboardResutl.getId() != null) {
 			return new ResponseEntity<>(dashboardResutl, HttpStatus.OK);

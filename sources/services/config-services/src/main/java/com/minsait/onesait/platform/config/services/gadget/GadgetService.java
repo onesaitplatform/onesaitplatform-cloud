@@ -56,4 +56,8 @@ public interface GadgetService {
 	
 	public boolean hasUserViewPermission(String id, String userId);
 
+	public Gadget getGadgetByIdentification(String userID, String gadgetIdentification);
+
+	public List<String> getGadgetTypes();
+
 }

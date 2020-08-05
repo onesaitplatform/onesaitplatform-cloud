@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import com.github.vincentrussell.query.mongodb.sql.converter.ParseException;
@@ -38,6 +39,7 @@ public class Sql2NativeTool {
 	private static final String DELETE = "delete";
 	private static final String SELECT = "select";
 	private static final CCJSqlParserManager parserManager = new CCJSqlParserManager();
+	private static final Pattern offsetlimitPattern = Pattern.compile("[ ]+offset[ ]+(\\d+)[ ]+limit[ ]+(\\d+)[ ]*",Pattern.CASE_INSENSITIVE);
 
 	private Sql2NativeTool() {
 		throw new IllegalStateException("Utility class");
@@ -52,12 +54,23 @@ public class Sql2NativeTool {
 				return translateDelete(replaceDoubleQuotes(query));
 			else if (query.trim().toLowerCase().startsWith(SELECT))
 				return translateSelect(query);
-
 		} catch (final JSQLParserException e) {
 			throw new DBPersistenceException("Invalid SQL syntax");
 		}
 
 		throw new DBPersistenceException("Unsupported SQL operation");
+	}
+
+	private static String translateSelect(String query) {
+		try {
+			final QueryConverter queryConverter = new QueryConverter.Builder().sqlString(preprocessQuery(query)).build();
+			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			queryConverter.write(byteArrayOutputStream);
+			return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
+		} catch (final ParseException | IOException e) {
+			throw new DBPersistenceException(e.getMessage(), e);
+		}
+
 	}
 
 	private static String translateUpdate(String query) throws JSQLParserException {
@@ -66,12 +79,14 @@ public class Sql2NativeTool {
 		final List<Column> columns = statement.getColumns();
 		final List<Expression> expressions = statement.getExpressions();
 
-		mongoDbQuery.append("db.".concat(statement.getTables().get(0).getFullyQualifiedName()).concat(".update({"));
+		mongoDbQuery.append("db.".concat(statement.getTables().get(0).getFullyQualifiedName()).concat(".update("));
 		final Expression where = statement.getWhere();
-		if (null != where)
+		if (null != where) {
 			where.accept(new WhereExpressionVisitorAdapter(mongoDbQuery, false, 0, false, 0));
-		removeIfLastCharacterIsComma(mongoDbQuery);
-		mongoDbQuery.append("},{");
+			removeIfLastCharacterIsComma(mongoDbQuery);
+			mongoDbQuery.append(",{");
+		} else
+			mongoDbQuery.append("{},{");
 
 		// for special ops such as $push define variable
 		// currently we only support $push operations
@@ -108,28 +123,23 @@ public class Sql2NativeTool {
 		final StringBuilder mongoDbQuery = new StringBuilder();
 
 		final Delete statement = (Delete) parserManager.parse(new StringReader(query));
-		mongoDbQuery.append("db.".concat(statement.getTable().getFullyQualifiedName()).concat(".remove({"));
+		mongoDbQuery.append("db.".concat(statement.getTable().getFullyQualifiedName()).concat(".remove("));
 		final Expression where = statement.getWhere();
-		if (null != where)
+		if (null != where) {
 			where.accept(new WhereExpressionVisitorAdapter(mongoDbQuery, false, 0, false, 0));
+			removeIfLastCharacterIsComma(mongoDbQuery);
+			mongoDbQuery.append(")");
+		} else
+			mongoDbQuery.append("{})");
 
-		removeIfLastCharacterIsComma(mongoDbQuery);
-
-		mongoDbQuery.append("})");
 		return mongoDbQuery.toString();
 	}
-
-	private static String translateSelect(String query) {
-		try {
-			final QueryConverter queryConverter = new QueryConverter(query);
-			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			queryConverter.write(byteArrayOutputStream);
-			return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
-		} catch (final ParseException | IOException e) {
-			throw new DBPersistenceException(e.getMessage(), e);
-		}
-
+	
+	//For legacy compatibility: change "offset limit" query to "limit offset" 
+	private static String preprocessQuery(String sql) {
+		return offsetlimitPattern.matcher(sql.replaceAll("[\n\t]", "")).replaceAll(" limit $2 offset $1 ");
 	}
+
 
 	private static String replaceDoubleQuotes(String query) {
 		return query.replaceAll("(?<!\\\\)\"", "'");

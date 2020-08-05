@@ -14,18 +14,78 @@
  */
 package com.minsait.onesait.platform.persistence.elasticsearch;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.ShardSearchFailure;
+import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
 public class ElasticSearchUtil {
+    
+    private ElasticSearchUtil() {
+        
+    }
+    
+    private static final String QUERY_ERROR = "Query Error:";
+    
+    public static String parseSearchResultFailures(SearchResponse res) {
+        if (res == null) {
+            return "null";
+        } else if (res.getFailedShards() > 0) {
+            final ShardSearchFailure[] shardFailures = res.getShardFailures();
+            StringBuilder reasonBuilder = new StringBuilder();
+            for (ShardSearchFailure failure : shardFailures) {
+                final String reason = failure.reason();
+                log.info("Status: " + failure.status()
+                        + " - Search failed on shard: " + reason);
+                reasonBuilder.append(reason);
+            }
+            return reasonBuilder.toString();
+        }
+        return "";
+    }
+    
+    public static List<String> processSearchResponseToStringList(SearchResponse searchResponse) {
+        if (searchResponse != null && searchResponse.status().equals( RestStatus.OK)) {
+            SearchHits hits = searchResponse.getHits(); 
+            SearchHit[] searchHits = hits.getHits();
+            List<String> result = new ArrayList<>();
+            for (SearchHit hit : searchHits) {
+                result.add(hit.getSourceAsString());
+            }
+            
+            return result;
+            
+        } else {
+            String msg = ElasticSearchUtil.parseSearchResultFailures(searchResponse);
+            log.error("Error in findQueryDataAsJson:" + msg);
+            return Arrays.asList(QUERY_ERROR + msg);
+        }
+    }
+    
+    public static String processSearchResponseToJson(SearchResponse searchResponse) {
+        if (searchResponse != null && searchResponse.status().equals( RestStatus.OK)) {
+            return parseElastiSearchResult(searchResponse.toString(), true);
+        } else {
+            String msg = ElasticSearchUtil.parseSearchResultFailures(searchResponse);
+            log.error("Error in findQueryDataAsJson:" + msg);
+            return QUERY_ERROR + msg;
+        }
+    }
 
-	public String parseElastiSearchResult(String response, boolean addId) throws JSONException {
+	public static String parseElastiSearchResult(String response, boolean addId) throws JSONException {
 
 		JSONArray hitsArray = null;
 		JSONObject hits = null;
@@ -41,12 +101,13 @@ public class ElasticSearchUtil {
 
 		try {
 
-
-			aggregations = json.getJSONObject("aggregations");
-			try {
-				return aggregations.getJSONObject("gender").getJSONArray("buckets").toString();
-			} catch (final JSONException e) {
-				return aggregations.toString();
+			aggregations = json.optJSONObject("aggregations");
+			if (aggregations != null) {
+    			try {
+    				return aggregations.getJSONObject("gender").getJSONArray("buckets").toString();
+    			} catch (final JSONException e) {
+    				return aggregations.toString();
+    			}
 			}
 		} catch (final JSONException e) {
 		    log.error("" + e);
@@ -64,7 +125,17 @@ public class ElasticSearchUtil {
 		}
 
 		return jsonArray.toString();
-
 	}
+	
+
+    public static Map<String, String> processUpdateStatement(String updateStmt) {
+        JSONObject json = new JSONObject(updateStmt);
+        JSONObject script = json.getJSONObject("script");
+        JSONObject query = json.getJSONObject("query");        
+        Map<String, String> stmt = new HashMap<>();
+        stmt.put("source_script", script.getString("source"));
+        stmt.put("query", query.toString());
+        return stmt;
+    }
 
 }

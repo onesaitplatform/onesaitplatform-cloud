@@ -16,14 +16,17 @@ package com.minsait.onesait.platform.controlpanel.controller;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.support.RequestContextUtils;
 
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.model.Themes;
@@ -38,10 +42,10 @@ import com.minsait.onesait.platform.config.model.Themes.editItems;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ThemesRepository;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
-import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
 import com.minsait.onesait.platform.controlpanel.security.twofactorauth.TwoFactorAuthService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,28 +63,35 @@ public class DefaultController {
 
 	@Autowired
 	private ConfigurationService configurationService;
-	
-	@Autowired
-	private LoginManagementController loginController;
 
 	@Value("${captcha.enable}")
 	private boolean captchaOn;
 
 	@Value("${captcha.token}")
 	private String captchaToken;
-	
+
 	@Value("${onesaitplatform.password.pattern}")
 	private String passwordPattern;
 
 	@Value("${onesaitplatform.authentication.provider}")
 	private String provider;
 
+	@Value("${splash.enable}")
+	private boolean splashEnable;
+
+	@Value("${splash.everyXHours}")
+	private int everyXHours;
+
 	private static final String USERS_CONSTANT = "users";
 
 	private static final String PASS_CONSTANT = "passwordPattern";
+	private static final String LOGIN_LOCALE = "login_locale";
 
 	@Autowired(required = false)
 	private TwoFactorAuthService twoFactorAuthService;
+
+	@Autowired
+	private MultitenancyService multitenancyService;
 
 	@GetMapping("/")
 	public String base() {
@@ -106,14 +117,32 @@ public class DefaultController {
 		}
 	}
 
+	@PreAuthorize("hasRole('ROLE_PREVERIFIED_TENANT_USER')")
+	@GetMapping("/promote")
+	public String promote(Authentication auth, HttpServletRequest request, Model model) {
+		final List<Vertical> verticals = multitenancyService.getVerticals(auth.getName());
+		model.addAttribute("verticals", verticals);
+		return "multitenancy/promote";
+	}
+
+	@PreAuthorize("hasRole('ROLE_PREVERIFIED_TENANT_USER')")
+	@PostMapping("/promote")
+	public String promoteRoleVertical(Authentication auth, HttpServletRequest request,
+			@RequestParam("vertical") String vertical) {
+		multitenancyService.promoteRole(vertical, auth);
+		utils.renewOauth2AccessToken(request, SecurityContextHolder.getContext().getAuthentication());
+		return "redirect:/main";
+	}
+
 	@GetMapping("/home")
 	public String home() {
 		return "home";
 	}
 
 	@GetMapping("/login")
-	public String login(Model model) {
-		GoogleAnalyticsConfiguration configuration = configurationService.getGoogleAnalyticsConfiguration("default");
+	public String login(HttpServletRequest request, HttpServletResponse response, Model model) {
+		final GoogleAnalyticsConfiguration configuration = configurationService
+				.getGoogleAnalyticsConfiguration("default");
 		readThemes(model);
 		model.addAttribute(USERS_CONSTANT, new User());
 		model.addAttribute("captchaToken", captchaToken);
@@ -121,6 +150,14 @@ public class DefaultController {
 		model.addAttribute("googleAnalyticsToken", configuration.getTrackingid());
 		model.addAttribute("googleAnalyticsEnable", configuration.isEnable());
 		model.addAttribute(PASS_CONSTANT, passwordPattern);
+		model.addAttribute("splashEnable", splashEnable);
+		model.addAttribute("everyXHours", everyXHours);
+
+		String locale = (String) request.getSession().getAttribute(LOGIN_LOCALE);
+		if (locale != null) {
+			RequestContextUtils.getLocaleResolver(request).setLocale(request, response, Locale.forLanguageTag(locale));
+			request.getSession().removeAttribute(LOGIN_LOCALE);
+		}
 		if (provider.equals(CAS))
 			return "redirect:/";
 		else
@@ -151,11 +188,25 @@ public class DefaultController {
 		return "error/404";
 	}
 
+	@GetMapping("/blocked")
+	public String blocked(Model model) {
+		model.addAttribute(USERS_CONSTANT, new User());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
+		return "blocked";
+	}
+
+	@GetMapping("/loginerror")
+	public String loginerror(Model model) {
+		model.addAttribute(USERS_CONSTANT, new User());
+		model.addAttribute(PASS_CONSTANT, passwordPattern);
+		return "loginerror";
+	}
+
 	@PreAuthorize("hasRole('ROLE_PREVERIFIED_ADMINISTRATOR')")
 	@PostMapping("/verify")
 	public String verify(Authentication auth, @RequestParam("code") String code, HttpServletRequest request) {
 
-		if (twoFactorAuthService.verify(auth.getPrincipal().toString(), code)) {
+		if (twoFactorAuthService.verify(auth.getName(), code)) {
 			twoFactorAuthService.promoteToRealRole(auth);
 			// request.getSession().setAttribute("oauthToken",
 			// loginController.postLoginOauthNopass(auth));

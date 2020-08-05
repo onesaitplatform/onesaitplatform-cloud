@@ -19,6 +19,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -37,7 +38,7 @@ import io.swagger.annotations.ApiResponses;
 public interface SwaggerGeneratorService {
 
 	/**
-	 * 
+	 *
 	 * @deprecated
 	 */
 	@GET
@@ -59,6 +60,7 @@ public interface SwaggerGeneratorService {
 			@ApiResponse(code = 501, message = "Internal Server Error") })
 	public Response getApiWithoutToken(
 			@PathParam("version") @ApiParam(name = "version", required = true) String version,
-			@PathParam("identification") @ApiParam(name = "identification", required = true) String identificacion)
+			@PathParam("identification") @ApiParam(name = "identification", required = true) String identificacion,
+			@QueryParam("vertical") @ApiParam(name = "vertical", required = false) String vertical)
 			throws GenericOPException;
 }

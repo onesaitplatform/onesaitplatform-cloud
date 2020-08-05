@@ -182,7 +182,8 @@ var DashboardsCreateController = function() {
             	    $('#description_aux').val( $('#description').val());             	    
             	    $('#authorizations_aux').val(JSON.stringify(tableToObj( document.getElementById('dashboard_autthorizations') )));            	
             	    $('#checkboxPublic_aux').val( $('#checkboxPublic').prop('checked'));  
-            	    $('#headerlibs_aux').val( myCodeMirror.getValue());          
+            	    $('#headerlibs_aux').val( myCodeMirror.getValue());
+            	    $('#i18n_aux').val($('#i18n').val());
             	   
             	    $( "#image_aux" ).remove();
             	    var x = $("#image"),
@@ -197,9 +198,6 @@ var DashboardsCreateController = function() {
 					error1.hide();					
 					formAux.submit();		
             	}else{
-            		
-            	
-            	
             	    var formAux = $('#dashboard_aux_create_form');           
             	    $('#category').val($('#categories_select').val());
             	    $('#subcategory').val($('#subcategories').val());
@@ -208,7 +206,8 @@ var DashboardsCreateController = function() {
             	    $('#description_aux').val( $('#description').val());             	    
             	    $('#authorizations_aux').val(JSON.stringify(tableToObj( document.getElementById('dashboard_autthorizations') )));            	
             	    $('#checkboxPublic_aux').val( $('#checkboxPublic').prop('checked')); 
-            	    $('#headerlibs_aux').val( myCodeMirror.getValue());    
+            	    $('#headerlibs_aux').val( myCodeMirror.getValue());
+            	    $('#i18n_aux').val($('#i18n').val());
             	    $( "#image_aux" ).remove();
             	    var x = $("#image"),
             	      y = x.clone();
@@ -267,8 +266,6 @@ var DashboardsCreateController = function() {
 	         }
 	    }
 	
-	
-	 
 	// INIT CODEMIRROR
 		
 			logControl ? console.log('handleCodeMirror() on -> headerlibs') : '';
@@ -298,6 +295,9 @@ var DashboardsCreateController = function() {
 		// INIT() CONTROLLER INIT CALLS
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+			
 			/*EDITION MODE*/
 			/*Hide dimensions*/
 			

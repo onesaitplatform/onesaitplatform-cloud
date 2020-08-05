@@ -242,6 +242,10 @@
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
+	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	
 	function navigateUrl(url){  window.location.href = url;	}
 	$(function () {
 		  $('[data-toggle="tooltip"]').tooltip()

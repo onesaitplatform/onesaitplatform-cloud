@@ -14,6 +14,11 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.rules;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.minsait.onesait.platform.config.model.DroolsRule;
+
+import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,13 +28,22 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(Include.NON_NULL)
 public class RuleDTO {
 
 	private String id;
 	private String inputOntology;
-	private String type;
+	private String outputOntology;
+	private DroolsRule.Type type;
+	@ApiParam(format = "URL UTF-8 ENCODED DRL CODE")
 	private String drl;
 	private String identification;
 	private boolean active;
 
+	public static RuleDTO convert(DroolsRule r) {
+		return RuleDTO.builder().id(r.getId()).drl(r.getDRL()).type(r.getType())
+				.inputOntology(r.getSourceOntology() != null ? r.getSourceOntology().getIdentification() : null)
+				.outputOntology(r.getTargetOntology() != null ? r.getTargetOntology().getIdentification() : null)
+				.identification(r.getIdentification()).active(r.isActive()).build();
+	}
 }

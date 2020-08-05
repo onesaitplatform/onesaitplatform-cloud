@@ -25,16 +25,16 @@ angular
         templateUrl: 'app/home/pipelineHome/pipelineHome.tpl.html',
         controller: 'PipelineHomeController',
         resolve: {
-          myVar: function(authService) {
+          myVar: ["authService", function(authService) {
             return authService.init();
-          }
+          }]
         },
         data: {
           authorizedRoles: ['admin', 'creator', 'manager', 'guest']
         }
       });
   }])
-  .controller('PipelineHomeController', function (
+  .controller('PipelineHomeController', ["$scope", "$rootScope", "$routeParams", "$timeout", "api", "configuration", "_", "$q", "$modal", "$localStorage", "pipelineService", "pipelineConstant", "visibilityBroadcaster", "$translate", "contextHelpService", "$location", "authService", "userRoles", "Analytics", function (
     $scope, $rootScope, $routeParams, $timeout, api, configuration, _, $q, $modal, $localStorage, pipelineService,
     pipelineConstant, visibilityBroadcaster, $translate, contextHelpService, $location, authService, userRoles,
     Analytics
@@ -2264,4 +2264,4 @@ angular
       $scope.redo();
     });
 
-  });
+  }]);

@@ -23,7 +23,8 @@
 	<!-- MAIN SCRIPTS  -->
 	<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
 	<script th:src="@{/static/vendor/jquery-confirm/jquery-confirm.js}"/>
-	<script th:src="@{/static/vendor/bootstrap/bootstrap.js}"/>
+	<script th:src="@{/static/vendor/bootstrap/bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js}"/>	
 	
 	<!-- HEADER CONTROLLER JS -->
 	<script th:src="@{/static/js/pages/header.js}"/>	
@@ -37,7 +38,7 @@
 			</div>
 			<a id="imagen" th:href="@{/}"></a>
 			<span class="text-logo-s4c  hide" onclick="location.href='/controlpanel'" th:text="#{name.apptitle}">Onesait Platform</span>
-			<span class="text-logo-panel hide" onclick="location.href='/controlpanel'" th:text="#{name.appsubtitle}">CONTROL PANEL</span>			
+			<span class="text-logo-panel hide" onclick="location.href='/controlpanel'" th:text="#{name.appsubtitle}">CONTROL PANEL</span>
 		</div>
 		<!-- END LOGO -->
 		
@@ -80,7 +81,8 @@
 				<!-- END {REST} -->
 							
 				<!-- BEGIN SEARCH CONFLUENCE -->
-
+				
+			
 				<li class="dropdown dropdown-user-toggler">
 					<a class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{head.search}" style="padding-right:10px !important" onclick="javascript:$('#confluenceSearch').modal('show');"><span><i class="icon-magnifier" ></i></span></a>														
 
@@ -182,7 +184,12 @@
 						<i class="icon-logout"></i> <span class="hidden-sm hidden-xs" style="position: relative;top: -2px;">Admin.</span>
 					</a>
 				</li> -->
-				<!-- END QUICK SIDEBAR TOGGLER -->						
+				<!-- END QUICK SIDEBAR TOGGLER -->	
+					<li sec:authorize="isAuthenticated()" th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"  class="dropdown dropdown-user-toggler">
+					<a href="#" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{multitenancy.vertical}+': ' +${#strings.toUpperCase(#authentication.getPrincipal().getVertical())}" style="padding-right:8px !important;">
+						<span class="text-logo-panel" th:text="${#strings.toUpperCase(#authentication.getPrincipal().getVertical())}">Vertical</span>														
+					</a>
+				</li>					
 			</ul>
 		</div>
 		<!-- END TOP NAVIGATION MENU -->
@@ -241,6 +248,7 @@
 			"errores": errores,
 			"informacion": informacion,
 			"btnEliminar": [[#{gen.deleteBtn}]],
+			"btnEditar": [[#{gen.editBtn}]],
 			"btnCancelar": [[#{gen.closeBtn}]],
 			"btnClose": [[#{gen.closeBtn}]],
 			"titleConfirm":[[#{gen.confirmTitle}]],
@@ -254,9 +262,11 @@
 			"virtualDatasourceConfirm":[[#{datasource.delete.confirm}]],
 			"digitalTwinDeviceConfirm":[[#{digitaltwindevice.delete.confirm}]],
 			"viewerConfirm" : [[#{viewer.delete.info}]],
+			"subscriptionConfirm" : [[#{subscription.delete.info}]],
 			"genericConfirm":[[#{dialog.confirm.delete.text}]],
 			"configurationConfirm":[[#{configuration.del.confirm}]],
 			"gadgetDatasourceConfirm":[[#{datasources.del.confirm}]],
+			"gadgetDatasourceGadgetWarningConfirm":[[#{datasources.gadget.warning}]],
 			"gadgetConfirm":[[#{gadget.del.confirm}]],
 			"dashboardConfConfirm":[[#{dashboardConf.del.confirm}]],
 			"dashboardConfirm":[[#{dashboards.del.confirm}]],

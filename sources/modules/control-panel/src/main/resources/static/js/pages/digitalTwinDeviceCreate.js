@@ -141,6 +141,9 @@ var DigitalTwinCreateController = function() {
 	var handleCodeMirror = function () {
 		logControl ? console.log('handleCodeMirror() on -> logicEditor') : '';	
 		
+		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+		
         var myTextArea = document.getElementById('logicEditor');
         var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
         	mode: "text/javascript",

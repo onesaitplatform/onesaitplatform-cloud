@@ -36,8 +36,8 @@ public class DataModelServiceImpl implements DataModelService {
 	}
 
 	@Override
-	public void createDataModel(DataModel dataModel) {
-		dataModelRepository.save(dataModel);
+	public DataModel createDataModel(DataModel dataModel) {
+		return dataModelRepository.save(dataModel);
 	}
 
 	@Override
@@ -67,11 +67,7 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public boolean dataModelExists(DataModel datamodel) {
-		DataModel datamodelList = dataModelRepository.findDatamodelsByIdentification(datamodel.getIdentification());
-
-		if (datamodelList == null)
-			return false;
-		return true;
+		return dataModelRepository.findDatamodelsByIdentification(datamodel.getIdentification()) != null;
 	}
 
 	@Override

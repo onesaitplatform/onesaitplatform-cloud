@@ -225,6 +225,9 @@
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" />
 	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	
 	<!-- JSON EDITOR -->	
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
 	
@@ -246,6 +249,9 @@
 	<script type="text/javascript" th:inline="javascript">
 	
 	// MAIN WHEN LOAD
+	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 	
 	//<![CDATA[
 		

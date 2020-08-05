@@ -117,7 +117,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				 */
 				final long countCollection = mongoDbConnector.count(database, collection, "{}");
 				if (countCollection > 0) {
-					log.error(CREATE_TABLE_ONTOLOGY, "The collection already exists and has records", collection);
+					log.error("The collection {} already exists and has records", collection);
 					throw new DBPersistenceException("The collection already exists and has records");
 				}
 			}
@@ -184,18 +184,16 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				throw new DBPersistenceException("Query bad formed:" + pquery
 						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})");
 			}
-			List<String> keyElements= getElements(pquery);
+			final List<String> keyElements = getElements(pquery);
 			try {
-				indexKeys = objectMapper.readValue(keyElements.get(0),
-						new TypeReference<Map<String, ?>>() {
-						});
+				indexKeys = objectMapper.readValue(keyElements.get(0), new TypeReference<Map<String, ?>>() {
+				});
 				if (keyElements.size() == 2) {
-					indexOptions = objectMapper.readValue(keyElements.get(1),
-							IndexOptions.class);
-				}					
+					indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
+				}
 			} catch (final IOException e) {
-				log.error("Invalid index key or index options. Sentence = {}, cause = {}, errorMessage = {}.",
-						sentence, e.getCause(), e.getMessage());
+				log.error("Invalid index key or index options. Sentence = {}, cause = {}, errorMessage = {}.", sentence,
+						e.getCause(), e.getMessage());
 				throw new DBPersistenceException("Invalid index key or index options", e);
 			}
 			mongoDbConnector.createIndex(database, collection, new MongoDbIndex(indexKeys, indexOptions));
@@ -205,9 +203,9 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			throw new DBPersistenceException(e);
 		}
 	}
-	
-	private List<String> getElements(String query){
-		List<String> elements = new ArrayList<>();
+
+	private List<String> getElements(String query) {
+		final List<String> elements = new ArrayList<>();
 		StringBuilder element = new StringBuilder();
 		int i = 0;
 		int openKeys = 0;
@@ -229,7 +227,8 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				if (c == ',') {
 					comma++;
 				} else if (c != ' ' && c != '\n' && c != '\t') {
-					String errorMessage = String.format("Query malformed, error on character in position %s. Query: %s",i,query);
+					final String errorMessage = String
+							.format("Query malformed, error on character in position %s. Query: %s", i, query);
 					log.error(errorMessage);
 					throw new DBPersistenceException(errorMessage);
 				}
@@ -237,10 +236,11 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				element.append(c);
 			}
 		}
-		if (elements.size() > 2 || comma != elements.size()-1) {
-			String errorMessage = String.format("createIndex({keys},{options}) structure malformed on query: %s",query);
+		if (elements.size() > 2 || comma != elements.size() - 1) {
+			final String errorMessage = String.format("createIndex({keys},{options}) structure malformed on query: %s",
+					query);
 			log.error(errorMessage);
-			throw new DBPersistenceException(errorMessage);	
+			throw new DBPersistenceException(errorMessage);
 		}
 		return elements;
 	}
@@ -425,7 +425,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				}
 				builder.toString();
 				log.info("Mongoexport command {}", pb.command());
-				log.info("Cmd mongoexport output: {} ",builder.toString());
+				log.info("Cmd mongoexport output: {} ", builder.toString());
 				log.info("Created export file for ontology {} at {}", ontology, path);
 			} catch (IOException | InterruptedException e) {
 				log.error("Could not execute command {}", e.getMessage());

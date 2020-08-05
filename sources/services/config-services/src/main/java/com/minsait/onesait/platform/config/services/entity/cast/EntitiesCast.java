@@ -17,20 +17,14 @@ package com.minsait.onesait.platform.config.services.entity.cast;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.minsait.onesait.platform.config.model.App;
-import com.minsait.onesait.platform.config.model.AppList;
-import com.minsait.onesait.platform.config.model.AppRole;
-import com.minsait.onesait.platform.config.model.AppRoleList;
-import com.minsait.onesait.platform.config.model.AppUser;
-import com.minsait.onesait.platform.config.model.AppUserList;
-import com.minsait.onesait.platform.config.model.Project;
-import com.minsait.onesait.platform.config.model.ProjectList;
+import com.minsait.onesait.platform.config.model.*;
 
 public final class EntitiesCast {
-	public static AppUser castAppUserList(AppUserList aul) {
+	public static AppUser castAppUserList(AppUserList aul, AppRole ar) {
 		AppUser au = new AppUser();
 		au.setId(aul.getId());
 		au.setUser(aul.getUser());
+		au.setRole(ar);
 		return au;
 	}
 	
@@ -39,14 +33,15 @@ public final class EntitiesCast {
 			AppRole ar = new AppRole();
 			ar.setApp(null);
 			Set<AppUser> sau = new HashSet<AppUser>();
-			for(AppUserList aul : arl.getAppUsers()) {
-				sau.add(castAppUserList(aul));
-			}
+			ar.setDescription(arl.getDescription());
 			ar.setAppUsers(sau);
 			ar.setCreatedAt(arl.getCreatedAt());
 			ar.setCreatedAt(arl.getUpdatedAt());
 			ar.setName(arl.getName());
 			ar.setId(arl.getId());
+			for(AppUserList aul : arl.getAppUsers()) {
+				sau.add(castAppUserList(aul, ar));
+			}
 			return ar;
 		}
 		else {
@@ -62,7 +57,9 @@ public final class EntitiesCast {
 			app.setDescription(al.getDescription());
 			app.setCreatedAt(al.getCreatedAt());
 			app.setUpdatedAt(al.getUpdatedAt());
-			app.setUpdatedAt(al.getUpdatedAt());
+			app.setTokenValiditySeconds(al.getTokenValiditySeconds());
+			app.setSecret(al.getSecret());
+			app.setUserExtraFields(al.getUserExtraFields());
 			app.setUser(al.getUser());
 			Set<AppRole> sar = new HashSet<AppRole>();
 			if(!onlyApp) {
@@ -99,6 +96,22 @@ public final class EntitiesCast {
 			p.setUsers(pl.getUsers());
 			p.setType(pl.getType());
 			p.setWebProject(pl.getWebProject());
+			return p;
+		}
+		else {
+			return null;
+		}
+	}
+
+	public static ProjectResourceAccess castProjectResourceAccessList(ProjectResourceAccessList pral) {
+		if(pral !=null) {
+			ProjectResourceAccess p = new ProjectResourceAccess();
+			p.setId(pral.getId());
+			p.setProject(pral.getProject());
+			p.setProject(pral.getProject());
+			p.setUser(pral.getUser());
+			p.setResource(pral.getResource());
+			p.setAccess(pral.getAccess());
 			return p;
 		}
 		else {

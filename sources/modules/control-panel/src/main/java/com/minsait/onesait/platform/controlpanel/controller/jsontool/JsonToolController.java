@@ -31,13 +31,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
@@ -58,24 +55,22 @@ public class JsonToolController {
 	private OntologyService ontologyService;
 	@Autowired
 	private OntologyBusinessService ontologyBusinessService;
-	@Autowired
-	private DataModelService dataModelService;
+
 	@Autowired
 	private AppWebUtils utils;
-	@Autowired
-	private UserService userService;
+
 	@Autowired
 	private RouterService routerService;
 
+	@Autowired
+	private JsonToolUtils jsonToolUtils;
+
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	private static final String DATAMODEL_DEFAULT_NAME = "EmptyBase";
-	private static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";
 	private static final String PATH_PROPERTIES = "properties";
-	private static final String DEFAULT_META_INF = "imported,json";
 
 	@GetMapping("tools")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String show(Model model) {
 		model.addAttribute("datasources", ontologyService.getDatasources());
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
@@ -87,15 +82,9 @@ public class JsonToolController {
 			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource)
 			throws IOException {
 
-		final Ontology ontology = new Ontology();
-		ontology.setJsonSchema(completeSchema(schema, ontologyIdentification, ontologyDescription).toString());
-		ontology.setIdentification(ontologyIdentification);
-		ontology.setActive(true);
-		ontology.setDataModel(dataModelService.getDataModelByName(DATAMODEL_DEFAULT_NAME));
-		ontology.setDescription(ontologyDescription);
-		ontology.setUser(userService.getUser(utils.getUserId()));
-		ontology.setMetainf(DEFAULT_META_INF);
-		ontology.setRtdbDatasource(Ontology.RtdbDatasource.valueOf(datasource));
+		final Ontology ontology = jsonToolUtils.createOntology(ontologyIdentification, ontologyDescription,
+				Ontology.RtdbDatasource.valueOf(datasource), schema);
+
 		try {
 			ontologyBusinessService.createOntology(ontology, ontology.getUser().getUserId(), null);
 		} catch (final Exception e) {
@@ -107,7 +96,7 @@ public class JsonToolController {
 	}
 
 	@PostMapping("importbulkdata")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public @ResponseBody String importBulkData(Model model, @RequestBody JsonInsertDTO insertDTO) {
 		final ObjectMapper objMapper = new ObjectMapper();
 		try {
@@ -157,7 +146,7 @@ public class JsonToolController {
 	}
 
 	@PostMapping("/getParentNodeOfSchema")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public @ResponseBody String parentNode(@RequestParam String id) throws IOException {
 		final Ontology ontology = ontologyService.getOntologyByIdentification(id, utils.getUserId());
 		if (ontology != null) {
@@ -171,15 +160,4 @@ public class JsonToolController {
 		return "";
 	}
 
-	public JsonNode completeSchema(String schema, String identification, String description) throws IOException {
-		final JsonNode schemaSubTree = mapper.readTree(schema);
-		((ObjectNode) schemaSubTree).put("type", "object");
-		((ObjectNode) schemaSubTree).put("description", "Info " + identification);
-
-		((ObjectNode) schemaSubTree).put("$schema", SCHEMA_DRAFT_VERSION);
-		((ObjectNode) schemaSubTree).put("title", identification);
-
-		((ObjectNode) schemaSubTree).put("additionalProperties", true);
-		return schemaSubTree;
-	}
 }

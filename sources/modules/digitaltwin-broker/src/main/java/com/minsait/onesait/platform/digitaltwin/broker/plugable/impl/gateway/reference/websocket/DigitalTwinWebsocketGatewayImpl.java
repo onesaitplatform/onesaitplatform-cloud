@@ -35,24 +35,23 @@ public class DigitalTwinWebsocketGatewayImpl implements DigitalTwinWebsocketGate
 	@Autowired
 	private EventProcessor eventProcessor;
 
-
 	@Override
 	@MessageMapping("/custom")
 	public void custom(String message, MessageHeaders messageHeaders) {
 		try {
 
-			String apiKey = ((List) (((Map) messageHeaders.get("nativeHeaders")).get("Authorization"))).get(0)
+			final String apiKey = ((List) (((Map) messageHeaders.get("nativeHeaders")).get("Authorization"))).get(0)
 					.toString();
-			JSONObject objMessage = new JSONObject(message);
+			final JSONObject objMessage = new JSONObject(message);
 			eventProcessor.custom(apiKey, objMessage);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error", e);
 		}
 	}
 
 	@Override
-	public void notifyActionMessage(JSONObject message) {
-		//not neccesary
+	public void notifyActionMessage(String apiKey, JSONObject message) {
+		// not neccesary
 	}
 
 }

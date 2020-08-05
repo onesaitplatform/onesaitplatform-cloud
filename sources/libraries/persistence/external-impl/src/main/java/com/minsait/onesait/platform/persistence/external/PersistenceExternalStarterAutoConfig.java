@@ -16,11 +16,10 @@ package com.minsait.onesait.platform.persistence.external;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration(value = "autoconfigExternalApi")
 @ComponentScan(basePackages = "com.minsait.onesait.platform")
-@EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
+
 public class PersistenceExternalStarterAutoConfig {
 
 }

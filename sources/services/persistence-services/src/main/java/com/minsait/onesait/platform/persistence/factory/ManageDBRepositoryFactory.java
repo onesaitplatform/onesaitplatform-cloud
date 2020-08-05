@@ -21,7 +21,9 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchManageDBRepository;
+import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyManageDBRepository;
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoNativeManageDBRepository;
@@ -32,8 +34,14 @@ public class ManageDBRepositoryFactory {
 	@Autowired
 	private MongoNativeManageDBRepository mongoManage;
 
-	@Autowired
+	@Autowired(required = false)
 	private ElasticSearchManageDBRepository elasticManage;
+
+	@Autowired
+	private CosmosDBManageDBRepository cosmosDB;
+
+	@Autowired
+	private VirtualRelationalOntologyManageDBRepository relationalManager;
 
 	@Autowired(required = false)
 	@Qualifier(NameBeanConst.KUDU_MANAGE_DB_REPO_BEAN_NAME)
@@ -43,8 +51,8 @@ public class ManageDBRepositoryFactory {
 	private OntologyRepository ontologyRepository;
 
 	public ManageDBRepository getInstance(String ontologyId) {
-		Ontology ds = ontologyRepository.findByIdentification(ontologyId);
-		RtdbDatasource dataSource = ds.getRtdbDatasource();
+		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
+		final RtdbDatasource dataSource = ds.getRtdbDatasource();
 		return getInstance(dataSource);
 	}
 
@@ -55,6 +63,10 @@ public class ManageDBRepositoryFactory {
 			return elasticManage;
 		else if (dataSource.equals(RtdbDatasource.KUDU)) {
 			return kuduManageDBRepository;
+		} else if (dataSource.equals(RtdbDatasource.VIRTUAL)) {
+			return relationalManager;
+		} else if (RtdbDatasource.COSMOS_DB.equals(dataSource)) {
+			return cosmosDB;
 		} else
 			return mongoManage;
 	}

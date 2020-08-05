@@ -18,28 +18,28 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.minsait.onesait.platform.config.model.WebProject;
-
 public interface WebProjectService {
 
-	List<WebProject> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
+	List<WebProjectDTO> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
 			String description);
 
 	List<String> getWebProjectsIdentifications(String userId);
 
 	List<String> getAllIdentifications();
 
-	void createWebProject(WebProject webProject, String userId);
+	void createWebProject(WebProjectDTO webProject, String userId);
 
-	void updateWebProject(WebProject webProject, String userId);
+	void updateWebProject(WebProjectDTO webProject, String userId);
 
-	WebProject getWebProjectById(String webProjectId, String userId);
+	WebProjectDTO getWebProjectById(String webProjectId, String userId);
+
+	WebProjectDTO getWebProjectByName(String name, String userId);
 
 	void deleteWebProjectById(String webProjectId, String userId);
 
 	void uploadZip(MultipartFile file, String userId);
 
-	void deleteWebProject(WebProject webProject, String userId);
+	void deleteWebProject(String webProjectId, String userId);
 
 	boolean webProjectExists(String identification);
 

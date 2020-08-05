@@ -73,7 +73,7 @@ public class MarketAssetController {
 	private static final String API_UPDATE_ERROR = "api.update.error";
 
 	@GetMapping(value = "/create", produces = "text/html")
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public String createForm(Model model) {
 
 		marketAssetHelper.populateMarketAssetCreateForm(model);
@@ -82,7 +82,7 @@ public class MarketAssetController {
 	}
 
 	@GetMapping(value = "/update/{id}")
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public String updateForm(@PathVariable("id") String id, Model model) {
 
 		try {
@@ -122,7 +122,7 @@ public class MarketAssetController {
 	}
 
 	@PostMapping(value = "/create")
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public String create(MarketAssetMultipart marketAssetMultipart, BindingResult bindingResult,
 			MultipartHttpServletRequest request, RedirectAttributes redirect) {
 
@@ -146,7 +146,7 @@ public class MarketAssetController {
 	}
 
 	@PostMapping(value = "/update/{id}")
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	public String update(@PathVariable("id") String id, MarketAssetMultipart marketAssetMultipart,
 			MultipartHttpServletRequest request, BindingResult bindingResult, RedirectAttributes redirect) {
 
@@ -167,7 +167,7 @@ public class MarketAssetController {
 		}
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping(value = "/delete/{id}", produces = "text/html")
 	public String delete(Model model, @PathVariable("id") String id) {
 
@@ -277,7 +277,7 @@ public class MarketAssetController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/updateState/{id}/{state}")
 	public @ResponseBody String updateState(@PathVariable("id") String id, @PathVariable("state") String state,
 			@RequestBody String reasonData) {

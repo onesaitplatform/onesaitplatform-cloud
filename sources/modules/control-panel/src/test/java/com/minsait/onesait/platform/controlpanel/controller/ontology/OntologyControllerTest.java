@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.controller.ontology;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,6 +42,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
@@ -57,6 +59,8 @@ public class OntologyControllerTest {
 
 	@Mock
 	private OntologyService ontologyService;
+	@Mock
+    private OntologyBusinessService ontologyBusinessService;
 	@Mock
 	private AppWebUtils utils;
 	@Mock
@@ -82,7 +86,7 @@ public class OntologyControllerTest {
 		final String sessionUserId = "userOntology";
 
 		given(ontologyService.getOntologyById(ontology.getId(), sessionUserId)).willReturn(ontology);
-		doThrow(new RuntimeException()).when(entityDeletionService).deleteOntology(ontology.getId(), sessionUserId);
+		doThrow(new RuntimeException()).when(ontologyBusinessService).deleteOntology(ontology.getId(), sessionUserId);
 
 		given(utils.getUserId()).willReturn(sessionUserId);
 		given(utils.isAdministrator()).willReturn(false);
@@ -93,13 +97,14 @@ public class OntologyControllerTest {
 
 	@Test
 	public void given_OneOntology_When_CorrectParamentersAreSentToDelete_Then_TheOntologyIsDeleted() throws Exception {
-		final Ontology ontology = ontologyCreator("ontologyId", "userOntology");
-
-		final String sessionUserId = "userOntology";
+	    final String sessionUserId = "userOntology";
+	    final Ontology ontology = ontologyCreator("ontologyId", sessionUserId);
+		
+	    given(utils.getUserId()).willReturn(sessionUserId);
+        given(utils.isAdministrator()).willReturn(false);
+	    
 		given(ontologyService.getOntologyById(ontology.getId(), sessionUserId)).willReturn(ontology);
-
-		given(utils.getUserId()).willReturn(sessionUserId);
-		given(utils.isAdministrator()).willReturn(false);
+		doNothing().when(ontologyBusinessService).deleteOntology(ontology.getId(), sessionUserId);
 
 		mockMvc.perform(delete("/ontologies/" + ontology.getId())).andExpect(redirectedUrl("/ontologies/list"));
 	}

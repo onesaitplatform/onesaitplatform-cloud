@@ -65,13 +65,13 @@
 			if(compile == null)
 				if($('#selector_dbs').val()=="CONFIGDB")
 					{
-						$("#Canvasrespuesta").load('/controlpanel/querytool/queryconfigdb', { 'query': $("#querySql").val(), 'tableName': $("#selector_tables").val()},function(response){
+						$("#Canvasrespuesta").load('/controlpanel/querytool/queryconfigdb', { 'query': getMonacoValue(), 'tableName': $("#selector_tables").val()},function(response){
 						callbackQuery(response);
 						});	
 					}
 				else
 				{
-					$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': $("#querySql").val(), 'queryType': $("#typeQuery").val(), 'ontologyIdentification': $("#selector_ontologias").val()},function(response){
+					$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': getMonacoValue(), 'queryType': $("#typeQuery").val(), 'ontologyIdentification': $("#selector_ontologias").val()},function(response){
 						callbackQuery(response);
 					});	
 				}
@@ -79,13 +79,13 @@
 			{
 				if($('#selector_dbs').val()=="CONFIGDB")
 				{
-					$("#Canvasrespuesta").load('/controlpanel/querytool/compileconfigdb', { 'query': $("#querySql").val(), 'tableName': $("#selector_tables").val()},function(response){
+					$("#Canvasrespuesta").load('/controlpanel/querytool/compileconfigdb', { 'query': getMonacoValue(), 'tableName': $("#selector_tables").val()},function(response){
 						callbackQuery(response);
 						});	
 				}
 				else
 				{
-					$("#Canvasrespuesta").load('/controlpanel/querytool/compile', { 'query': $("#querySql").val(), 'queryType': $("#typeQuery").val(), 'ontologyIdentification': $("#selector_ontologias").val()},function(response){
+					$("#Canvasrespuesta").load('/controlpanel/querytool/compile', { 'query': getMonacoValue(), 'queryType': $("#typeQuery").val(), 'ontologyIdentification': $("#selector_ontologias").val()},function(response){
 						callbackQuery(response);
 					});	
 				}
@@ -136,7 +136,7 @@
 		
 		function historicalQuerys(){
 			
-			var newQuery = $("#querySql").val();
+			var newQuery = getMonacoValue();
 			var maxSize = 10;
 			
 			if(!isQueryExist(newQuery, maxSize)){
@@ -184,9 +184,8 @@
 		function historicalSelected(){
 			var selected = document.getElementById("historicalQuery");
 			localStorage.setItem("selectedOptionHistorical", selected.value);
-			document.getElementById("querySql").value = selected.value; 
-			document.getElementById("historicalQuery").value = selected.value;
-			
+			setMonacoValue(selected.value);
+			document.getElementById("historicalQuery").value = selected.value;			
 		}
 		var rtdb;
 		function getRtdbFromOntology(){
@@ -560,23 +559,25 @@
 											<!-- END QUERY ASSEMBLER -->										
 											</div>
 											
-											<div class="panel-footer bg-white"> 
+											<div class="panel-footer bg-white">
 												<div class="row">
-													<div class="col-md-5 col-sm-5 col-xs-12" id="divHistorical">
+													<div class="col-sm-12 col-md-9">
+														<label class="control-label" th:text="#{querytool.query}">Query: </label>
+														 <div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>						
+													</div>	
+													<div class="col-sm-12 col-md-3">
+													<div id="divHistorical">
 														<label class="control-label" th:text="#{querytool.historical.query}" >Historical: </label>
 															<select class=" show-tick form-control" id="historicalQuery" placeholder="" onchange="historicalSelected()">
 															</select>
-													</div>	
-													<div class="col-md-5 col-sm-5 col-xs-12">
-														<label class="control-label" th:text="#{querytool.query}">Query: </label>
-														 <textarea  id="querySql" class="element textarea extra-small form-control" style="33px;" ></textarea> <!-- action="changeTextArea()"></textarea>-->
-														
-													</div>											
-													<div class="col-md-2 col-sm-2 col-xs-12 querytool-actionbuttons-container" style="text-align: left;  padding: 0px;  margin-top: 42px;" >
-														<button type="button" class="btn btn-sm btn-outline btn-circle btn-primary" onclick="getQueryExecutedFragment()" id="executeQuery" > <span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
-														<button id="button-compile" sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST') or hasAuthority('ROLE_ANALYTICS')" type="button" class="btn btn-sm btn-outline btn-circle btn-primary" onclick="getQueryExecutedFragment('compile')" > <span th:text="#{database.compileQuery}">Compilar Query</span> </button>
+													</div>												
+													<div style="padding: 0px; margin: 5px;">
+														<button type="button" class="btn btn-sm btn-outline btn-circle btn-primary" style="display:none; margin: 5px;" onclick="monacoFormat()" id="monacoFormat" > <span th:text="#{database.beautify}">Beautify</span> </button>
+														<button id="button-compile" sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST') or hasAuthority('ROLE_ANALYTICS')" type="button" class="btn btn-sm btn-outline btn-circle btn-primary" style="margin: 5px" onclick="getQueryExecutedFragment('compile')" > <span th:text="#{database.compileQuery}">Compilar Query</span> </button>
+														<button type="button" class="btn btn-sm btn-outline btn-circle btn-primary" style="margin: 5px" onclick="getQueryExecutedFragment()" id="executeQuery" > <span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
 													</div>
-												</div>
+												</div>											
+												</div> 
 											</div>
 										</div>								
 									</div>
@@ -775,7 +776,7 @@
 	<script th:src="@{/static/js/app.js}"/>
 	<script th:src="@{/static/js/layout.js}"/>
 	
-	<!-- DATABASE PLUGINS TO-DO -->
+	<!-- DATABASE PLUGINS TO-DO -->		
 
 	
 	<!-- PLUGINS -->
@@ -786,14 +787,42 @@
 	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
 	<script th:src="@{/static/vendor/json/jsonToTable.js}"/>
 	
-	
-		
 	<!-- TEMPLATE CONTROLLER  -->	
 	<!-- <script th:src="@{/static/js/pages/databaseShow.js}"/> -->
 	
 
 	<script th:inline="javascript"> 
 	//<![CDATA[		
+		
+		//Functions to manage Monaco Editor
+		var codeEditor;		
+		var setMonacoValue = function (value){
+			if (codeEditor){
+				codeEditor.setValue(value);
+			}
+		}
+		var getMonacoValue = function (){
+			if (codeEditor){
+				return codeEditor.getValue();
+			}
+		}
+		var changeMonacoLenguage = function (queryType){
+			if (codeEditor){
+				switch (queryType){
+				case 'sql':
+					monaco.editor.setModelLanguage(codeEditor.getModel(), 'sql');
+					break;
+				case 'native':
+					monaco.editor.setModelLanguage(codeEditor.getModel(), 'javascript');
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		var monacoFormat = function (){
+			codeEditor.getAction('editor.action.formatDocument').run();
+		}
 		
 		var showLog = 1; // global var control console messages
 		var bdtrType, bdtrDWR, haspermission; 
@@ -823,6 +852,10 @@
 				$('#result-panel').addClass("hide");
 				$('#pulse').addClass("hide");
 				$('#button-compile').addClass("hide");
+				if ($('#typeQuery').val() == 'native'){
+					$('#typeQuery').val('sql'); 
+					cambioConsulta();
+				}
 			}
 			else
 			{
@@ -836,12 +869,16 @@
 		}
 		
 	   //	FUNCTION TO LAUNCH QUERY ASSEMBLY PANEL [ SELECT, WHERE, GROUP, ORDERBY ]
-		function cambioConsulta(){		
-		   
+		function cambioConsulta(){
+		   changeMonacoLenguage($('#typeQuery').val());
 			if($('#button-compile').length != 0){
-				if($('#typeQuery').val() == 'sql'){ $('#button-compile').show(); }
-			else
-				$('#button-compile').hide();		  		 
+				if($('#typeQuery').val() == 'sql'){
+					$('#button-compile').show();
+					$('#monacoFormat').hide();
+				} else{
+					$('#button-compile').hide();
+					$('#monacoFormat').show();					
+				}
 			}
 		   
 			$('.panel-tools').removeClass('hide');
@@ -895,8 +932,8 @@
 			   showLog ? console.log('cambioConsulta() -> comboBDTR -> ' +comboBDTR.value+ ' length: ' + comboBDTR.length) : '';
 			   
 			   if(comboBDTR.length > 0){  	   
-				   $('#querySql').val('select * from '+ comboBDTR.value +' as c limit 3;');           	  
-				   showLog ?  console.log('INICIAL  cambioConsulta() -> querySql -> ' + $('#querySql').val()) : '';		   
+				   setMonacoValue('select * from '+ comboBDTR.value +' as c limit 3;');           	  
+				   showLog ?  console.log('INICIAL  cambioConsulta() -> querySql -> ' + getMonacoValue()) : '';		   
 			   }
 
 			   $('#contenedor-tabla-outside1').addClass('in');
@@ -927,23 +964,23 @@
 			   showLog ? console.log('OPCION: ' + opcion + ' queryKP: ' + queryKp + ' BDTR: ' + bdtrType + ' RTDB: ' + rtdb) : '';
 			   if 	   ((opcion == "sql")     && ( queryKp != "null")) { 
 				   $('#querySql').innerHTML =  queryKp;  
-				   $('#querySql').val(queryKp); }
+				   setMonacoValue(queryKp); }
 			   else if (( opcion == "native") && ( queryKp  != "null")){ 
 				   $('#querySql').innerHTML =  "" ; 
-			   	   $('#querySql').val(""); }
+			   	   setMonacoValue(""); }
 			   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE11") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){
 				   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";  
 				   console.log(rtdb)
-				   $('#querySql').val("db." + ontologia_base +".find().limit(3)"); }
+				   setMonacoValue("db." + ontologia_base +".find().limit(3)"); }
 			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE" || rtdb=="ORACLE11" )){
 				   $('#querySql').innerHTML =  "SELECT * FROM " + ontologia_base +" where ROWNUM <= 3"; 
-				   $('#querySql').val("SELECT * FROM " + ontologia_base +" where ROWNUM <= 3"); }
+				   setMonacoValue("SELECT * FROM " + ontologia_base +" where ROWNUM <= 3"); }
 			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="SQLSERVER") ){ 
 				   $('#querySql').innerHTML =  "SELECT TOP (3) * FROM " + ontologia_base;
-				   $('#querySql').val("SELECT TOP (3) * FROM " + ontologia_base); }
+				   setMonacoValue("SELECT TOP (3) * FROM " + ontologia_base); }
 			   else if (( opcion == "sql") && (queryKp == "null") && (bdtrType == "rtdb") || (rtdb=="MYSQL") || (rtdb=="MARIADB") || (rtdb=="POSTGRESQL")){ 
 				   $('#querySql').innerHTML =  "SELECT * FROM " + ontologia_base +" AS c LIMIT 3"; 
-				   $('#querySql').val("SELECT * FROM " + ontologia_base +" LIMIT 3"); }
+				   setMonacoValue("SELECT * FROM " + ontologia_base +" LIMIT 3"); }
 			  
 			   if( document.getElementById("enviar_consulta_descarga") ){ document.getElementById("enviar_consulta_descarga").style.display = ''; }
 		   }
@@ -953,16 +990,18 @@
 		function cambioConsulta2(){
 			
 			   if($('#button-compile').length != 0){
-				  	 if($('#typeQuery').val() == 'sql')
-					  	 $('#button-compile').show();
-				  	 else
+				  	 if($('#typeQuery').val() == 'sql'){
+				  		$('#button-compile').show();
+				  		$('#monacoFormat').hide();
+				  	 }					  	 
+				  	 else{
 				  		$('#button-compile').hide();
-				  		 
+				  		$('#monacoFormat').show();
+				  	 }				  		
 				   }
 							
 				//Load fields 
 				getTableColumns();
-								
 				
 			   $('#query-panel').removeClass('hide');
 					
@@ -988,8 +1027,8 @@
 					   showLog ? console.log('cambioConsulta2() -> comboBDTR -> ' +comboBDTR.value+ ' length: ' + comboBDTR.length) : '';
 					   
 					   if(comboBDTR.length > 0){  	   
-						   $('#querySql').val('select * from '+ comboBDTR.value +' as c limit 3;');           	  
-						   showLog ?  console.log('INICIAL  cambioConsulta2() -> querySql -> ' + $('#querySql').val()) : '';		   
+						   setMonacoValue('select * from '+ comboBDTR.value +' as c limit 3;');           	  
+						   showLog ?  console.log('INICIAL  cambioConsulta2() -> querySql -> ' + getMonacoValue()) : '';		   
 					   }
 
 					   $('#contenedor-tabla-outside1').addClass('in');
@@ -1118,7 +1157,7 @@
 				queryHistory.remove(0);
 			}
 			var option=document.createElement("option");
-			option.text = $('#querySql').val();
+			option.text = getMonacoValue();
 			option.className = "QueryOption";
 			try {
 				  queryHistory.add(option,queryHistory.options[null]);
@@ -1130,8 +1169,8 @@
 		function cargaConsulta(){
 			var combo = document.getElementById('queryHistory');
 			var queryCombo = combo.options[combo.selectedIndex].value;
-			$('#querySql').val("");
-			$('#querySql').val(queryCombo);
+			setMonacoValue("");
+			setMonacoValue(queryCombo);
 	   }  
 		
 
@@ -1152,35 +1191,35 @@
 				}
 				else{
 					var opcion = comboTypeQuery.options[comboTypeQuery.selectedIndex].value;
-					/* if(opcion == "sql"){ $('#querySql').val("select * from "+ ontologia +" limit 3"); }
-					else if( opcion == "native" ){ $('#querySql').val("db."+ ontologia +".find().limit(3);"); } */
+					/* if(opcion == "sql"){ setMonacoValue("select * from "+ ontologia +" limit 3"); }
+					else if( opcion == "native" ){ setMonacoValue("db."+ ontologia +".find().limit(3);"); } */
 					
 					 if ( $('#selector_ontologias').val() != '' ){ ontologia_base = $('#selector_ontologias').val(); }
 					   showLog ? console.log('OPCION: ' + opcion + ' queryKP: ' + queryKp + ' BDTR: ' + bdtrType + ' RTDB: ' + rtdb) : '';
 					   
 					   if 	   ((opcion == "sql")     && ( queryKp != "null")) { 
 						   $('#querySql').innerHTML =  queryKp;  
-						   $('#querySql').val(queryKp); 
+						   setMonacoValue(queryKp); 
 						   }
 					   else if (( opcion == "native") && ( queryKp  != "null")){ 
 						   $('#querySql').innerHTML =  "" ; 
-						   $('#querySql').val(""); 
+						   setMonacoValue(""); 
 						}
 						   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE11") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){
 							   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";
-							   $('#querySql').val("db." + ontologia_base +".find().limit(3)");
+							   setMonacoValue("db." + ontologia_base +".find().limit(3)");
 						}
 					   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE" || rtdb=="ORACLE11")){
 						   $('#querySql').innerHTML =  "SELECT * from " + ontologia_base +" WHERE ROWNUM <= 3"; 
-						   $('#querySql').val("SELECT * FROM " + ontologia_base +" WHERE ROWNUM <= 3"); 
+						   setMonacoValue("SELECT * FROM " + ontologia_base +" WHERE ROWNUM <= 3"); 
 						}
 					   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="SQLSERVER")){ 
 						   $('#querySql').innerHTML =  "SELECT TOP (3) * FROM " + ontologia_base;
-						   $('#querySql').val("SELECT TOP (3) * FROM " + ontologia_base); 
+						   setMonacoValue("SELECT TOP (3) * FROM " + ontologia_base); 
 						}
 					   else if (( opcion == "sql") && (queryKp == "null") && (bdtrType == "rtdb") || (rtdb=="MYSQL") || (rtdb=="MARIADB") || (rtdb=="POSTGRESQL")){ 
 						   $('#querySql').innerHTML =  "SELECT * FROM " + ontologia_base +" AS c LIMIT 3"; 
-						   $('#querySql').val("SELECT * FROM " + ontologia_base +" AS c LIMIT 3"); 
+						   setMonacoValue("SELECT * FROM " + ontologia_base +" AS c LIMIT 3"); 
 						}					
 				}
 				$("#groupBy_time_ul").hide();
@@ -1190,7 +1229,6 @@
 
 				$("#from_ul").append(from);
 			}
-			
 					 
 			// mostramos el panel de consultas. 
 			if ($('#query-panel').hasClass('hide')){ $('#query-panel').toggleClass('hide');  } 
@@ -1536,7 +1574,7 @@
 					dstOntology = dstOntology.toLowerCase();
 				}
 				var innerJoin='SELECT * FROM '+ dstOntology + ' as o1 INNER JOIN ' + srcOntology + ' as o2  ON o1.' + dstAtt + '=o2.' + srcAtt;
-				$('#querySql').val(innerJoin);
+				setMonacoValue(innerJoin);
 			}
 			
 		}
@@ -1623,9 +1661,9 @@
 				var opcion 			= comboTypeQuery.options[comboTypeQuery.selectedIndex].value;					
 				
 				// SQL-RELATIONALORACLE
-				if( opcion == "sql" || rtdb == "ORACLE" || rtdb == "ORACLE11" || rtdb == "MYSQL" ){ showLog ? console.log('createQuery()->createQuerySql'): ''; $('#querySql').val(createQuerySql()); }
+				if( opcion == "sql" || rtdb == "ORACLE" || rtdb == "ORACLE11" || rtdb == "MYSQL" ){ showLog ? console.log('createQuery()->createQuerySql'): ''; setMonacoValue(createQuerySql()); }
 				// NATIVE 
-				else if(opcion == "native"){ showLog ? console.log('createQuery()->createQueryNativeNo'): ''; $('#querySql').val(createQueryNative()); }			
+				else if(opcion == "native"){ showLog ? console.log('createQuery()->createQueryNativeNo'): ''; setMonacoValue(createQueryNative()); }			
 			}
 		};
 		
@@ -1957,11 +1995,19 @@
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>	
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>	
+	
+	<!-- MONACO EDITOR -->
+	<script>	 
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
+	</script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
-	
+	/*<![CDATA[*/		
 	var bdtrType = 'rtdb'; // by default 
 	var currentLanguage = [[${lang}]];	
 	
@@ -1977,9 +2023,7 @@
 	
 	<!-- SCRIPT LOAD -->
 	$(document).ready(function(){
-		
-		
-		// HANDLE UTILITIES 
+		// HANDLE UTILITIES 		
 		
 
 		//	SPINNER OFFSET INIT
@@ -2011,7 +2055,7 @@
 		// INIT QUERY STRING		
 		var combo = document.getElementById('selector_ontologias');
 		if(combo.length > 0){	       
-			$('#querySql').val("select * from "+ combo.value +" as c limit 3");        	
+			setMonacoValue("select * from "+ combo.value +" as c limit 3");        	
 			showLog ? console.log('init combo ontologias: ' + combo.length) : '';
 			cambioConsulta();
 		}
@@ -2057,14 +2101,28 @@
 		});
 		//Refresh page and reset localStorage.clickount
 		$(window).unload(function(){
-			  localStorage.clickcount = 0;
-			  localStorage.clear();
-			});
+			  var clicks = localStorage.getItem('clickcount');
+			  if(clicks != null){
+				  for(var j=1;j<=3;j++){
+					  localStorage.removeItem("Option_"+j);
+			  	  }
+				  localStorage.removeItem('clickcount');
+				  localStorage.removeItem('selectedOptionHistorical');
+			  } 
+			});	
+
+	});	
+	$(window).load(function(){
+		var htmlelement = document.getElementById('querySql');
+		codeEditor = monaco.editor.create(htmlelement, {
+		       language: 'sql', 
+		       scrollBeyondLastLine: false,	 
+		       theme: "vs-dark",	 
+		       automaticLayout: true	 
+		});
 		
-		
-	});		
-	
-	
-	</script>	
+	});
+	/*]]>*/
+	</script>		
 </body>
 </html>

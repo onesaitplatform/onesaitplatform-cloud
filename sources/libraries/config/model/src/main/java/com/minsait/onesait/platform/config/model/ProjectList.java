@@ -14,15 +14,24 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.Project.ProjectType;
 
 import lombok.Getter;
@@ -35,15 +44,22 @@ public class ProjectList extends ProjectParent {
 
 	private static final long serialVersionUID = 1L;
 
+	@Fetch(FetchMode.JOIN)
+	@ManyToMany(cascade = { CascadeType.PERSIST }, mappedBy = "projects", fetch = FetchType.EAGER)
+	@Getter
+	@Setter
+	@JsonIgnore
+	private Set<User> users = new HashSet<>();
+
 	@Column(name = "TYPE")
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private ProjectType type;
-	
+
 	@OneToOne(mappedBy = "project")
 	@Getter
 	@Setter
 	private AppList app;
-	
+
 }

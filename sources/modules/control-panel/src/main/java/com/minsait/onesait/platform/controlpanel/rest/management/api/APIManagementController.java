@@ -64,7 +64,9 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Api(value = "APIs management", tags = { "APIs management service" })
 @RestController
 @RequestMapping("api/apis")
@@ -72,20 +74,28 @@ public class APIManagementController {
 
 	@Autowired
 	ClientPlatformService clientPlatformService;
+
 	@Autowired
 	ApiManagerService apiManagerService;
+
 	@Autowired
 	UserService userService;
+
 	@Autowired
 	UserTokenService userTokenService;
+
 	@Autowired
 	OntologyService ontologyService;
+
 	@Autowired
 	IntegrationResourcesService resourcesService;
+
 	@Autowired
 	AppWebUtils utils;
+
 	@Autowired
 	JWTService jwtService;
+
 	@Autowired
 	ApiDTOConverter apiDTOConverter;
 
@@ -94,6 +104,7 @@ public class APIManagementController {
 	private static final String ERROR_USER_ACCESS_NOT_FOUND = "User access not found";
 	private static final String ERROR_MISSING_ONTOLOGY = "Missing Ontology";
 	private static final String ERROR_MISSING_API_IDENTIFICATION = "Missing Api identification";
+	private static final String ERROR_API_IDENTIFICATION_FORMAT = "Identification Error: Use alphanumeric characters and '-', '_'";
 	private static final String ERROR_MISSING_OPERATIONS = "Missing operations";
 	private static final String ERROR_API_INVALID_STATE = "Api state not valid";
 	private static final String EMPTY_RESPONSE_APIS = "{\"apis\" : \"\"}";
@@ -306,7 +317,20 @@ public class APIManagementController {
 		} else {
 			return new ResponseEntity<>("{\"userToken\" : \"\"}", HttpStatus.OK);
 		}
+	}
 
+	@ApiOperation(value = "Get username for api by user token")
+	@GetMapping(value = "/api/username/{token}")
+	public ResponseEntity<String> getApiUsernameByToken(
+			@ApiParam(value = "Token Id ", required = true) @PathVariable("token") String token) {
+		String username = null;
+		try {
+			username = userService.getUserByToken(token).getUserId();
+		} catch (NullPointerException e) {
+			return new ResponseEntity<>("The token \"" + token + "\" does not belong to any user.",
+					HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>("{\"username\" : \"" + username + "\"}", HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "Get user tokens for api")
@@ -435,6 +459,11 @@ public class APIManagementController {
 		}
 		try {
 			// build api from body
+			if (!apiBody.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+				throw new ApiManagerServiceException(ApiManagerServiceException.Error.API_IDENTIFICATION_FORMAT_ERROR,
+						ERROR_API_IDENTIFICATION_FORMAT);
+			}
+
 			com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user, ApiStates.CREATED);
 			List<com.minsait.onesait.platform.config.model.ApiOperation> operations;
 			if (apiBody.getOperations() == null) {
@@ -561,11 +590,7 @@ public class APIManagementController {
 			usersapi = apiManagerService.getUserApiByApiId(api.getId());
 		}
 
-		if (api.getGraviteeId()==null) {
-			return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
-		} else {
-			return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY));
-		}
+		return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 	}
 
 	@ApiOperation(value = "Export api by identification or id")

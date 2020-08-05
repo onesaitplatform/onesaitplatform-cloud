@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.rest;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,15 +30,12 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
 
-	@Value("${onesaitplatform.digitaltwin.broker.rest.swaggerhost:localhost}")
-	private String host;
-
 	@Bean
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
 				.apis(RequestHandlerSelectors.basePackage(
 						"com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.rest"))
-				.paths(PathSelectors.any()).build().host(host).apiInfo(apiInfo());
+				.paths(PathSelectors.any()).build().apiInfo(apiInfo());
 	}
 
 	private ApiInfo apiInfo() {

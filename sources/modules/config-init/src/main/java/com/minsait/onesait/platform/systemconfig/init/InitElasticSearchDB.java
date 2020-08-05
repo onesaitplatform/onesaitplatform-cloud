@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -45,6 +44,7 @@ import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESInsertService;
 import com.minsait.onesait.platform.persistence.services.ManageDBPersistenceServiceFacade;
+import com.minsait.onesait.platform.persistence.util.ElasticSearchFileUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +52,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.init.elasticdb")
 @RunWith(SpringRunner.class)
-@Order(3)
 @SpringBootTest
 public class InitElasticSearchDB {
 
@@ -146,15 +145,15 @@ public class InitElasticSearchDB {
 					+ "          \"address\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          },"
 					+ "          \"state\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          }" + "       }" + "   }"
 					+ "}";
-			connector.createType(INDEX_NAME, INDEX_NAME, dataMapping);
+			connector.prepareIndex(INDEX_NAME, dataMapping);
 
-			final List<String> list = ESInsertService.readLines(
+			final List<String> list = ElasticSearchFileUtil.readLines(
 					new File(getClass().getClassLoader().getResource("examples/Accounts-dataset.json").getFile()));
 
 			final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
 					.collect(Collectors.toList());
 
-			sSInsertService.load(INDEX_NAME, INDEX_NAME, result, ontologyService
+			sSInsertService.bulkInsert(INDEX_NAME, result, ontologyService
 					.getOntologyByIdentification(ACCOUNTS_STR, getUserDeveloper().getUserId()).getJsonSchema());
 
 		} catch (final Exception e) {
@@ -211,7 +210,7 @@ public class InitElasticSearchDB {
 	public void createPostOperationsUser(User user, String collectionAuditName) {
 
 		if (ontologyService.getOntologyByIdentification(collectionAuditName, user.getUserId()) == null) {
-			DataModel dataModel = datamodelRepository.findByIdentification("AuditPlatform").get(0);
+			final DataModel dataModel = datamodelRepository.findByIdentification("AuditPlatform").get(0);
 			final Ontology ontology = new Ontology();
 
 			ontology.setJsonSchema(dataModel.getJsonSchema());

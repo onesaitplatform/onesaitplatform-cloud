@@ -22,6 +22,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,10 +39,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.http.HttpHeaders;
 
 import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
+import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -59,7 +60,7 @@ public class WebProjectController {
 	private AppWebUtils utils;
 
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
-	private String rootWWW = "";
+	private String rootWWW;
 
 	private static final String WEBPROJ_CREATE = "webprojects/create";
 	private static final String REDIRECT_WEBPROJ_CREATE = "redirect:/webprojects/create";
@@ -71,7 +72,7 @@ public class WebProjectController {
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
 
-		final List<WebProject> webprojects = webProjectService
+		final List<WebProjectDTO> webprojects = webProjectService
 				.getWebProjectsWithDescriptionAndIdentification(utils.getUserId(), identification, description);
 		model.addAttribute("webprojects", webprojects);
 		model.addAttribute("rootWWW", rootWWW);
@@ -86,16 +87,15 @@ public class WebProjectController {
 
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public String create(Model model, @Valid WebProject webProject, BindingResult bindingResult) {
+	public String create(Model model) {
 
-		if (bindingResult.hasErrors())
-			model.addAttribute("webproject", new WebProject());
+		model.addAttribute("webproject", new WebProject());
 		return WEBPROJ_CREATE;
 	}
 
 	@PostMapping(value = "/create")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public String createWebProject(Model model, @Valid WebProject webProject, BindingResult bindingResult,
+	public String createWebProject(Model model, @Valid WebProjectDTO webProject, BindingResult bindingResult,
 			RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some web project properties missing");
@@ -123,7 +123,7 @@ public class WebProjectController {
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String update(Model model, @PathVariable("id") String id) {
-		final WebProject webProject = webProjectService.getWebProjectById(id, utils.getUserId());
+		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 
 		if (webProject != null) {
 			model.addAttribute("webproject", webProject);
@@ -135,7 +135,7 @@ public class WebProjectController {
 
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public String updateWebProject(Model model, @PathVariable("id") String id, @Valid WebProject webProject,
+	public String updateWebProject(Model model, @PathVariable("id") String id, @Valid WebProjectDTO webProject,
 			BindingResult bindingResult, RedirectAttributes redirect) {
 
 		if (bindingResult.hasErrors()) {
@@ -158,10 +158,10 @@ public class WebProjectController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String deleteWebProject(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
-		final WebProject webProject = webProjectService.getWebProjectById(id, utils.getUserId());
+		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 		if (webProject != null) {
 			try {
-				webProjectService.deleteWebProject(webProject, utils.getUserId());
+				webProjectService.deleteWebProject(id, utils.getUserId());
 			} catch (final WebProjectServiceException e) {
 				log.error("Cannot update web project because of: " + e);
 				utils.addRedirectMessage("webproject.delete.error", redirect);
@@ -193,31 +193,32 @@ public class WebProjectController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@GetMapping(value = "/downloadZip/{id}", produces = "application/zip")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public ResponseEntity<?> downloadZip(@PathVariable("id") String id) {
-				
-		final WebProject webProject;
+
+		final WebProjectDTO webProject;
 		final byte[] zipFile;
-		
+
 		try {
 			webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 			if (webProject == null) {
 				return new ResponseEntity<>("Web Project does not exist", HttpStatus.FORBIDDEN);
 			}
-		} catch (WebProjectServiceException e) {
+		} catch (final WebProjectServiceException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED); // unauthorized
-		}		
-		
+		}
+
 		try {
 			zipFile = webProjectService.downloadZip(webProject.getIdentification(), utils.getUserId());
-		} catch (WebProjectServiceException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST); 
+		} catch (final WebProjectServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		
+
 		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.CONTENT_DISPOSITION,  "attachment; filename=\"" + webProject.getIdentification() + ".zip\"");
+		headers.add(HttpHeaders.CONTENT_DISPOSITION,
+				"attachment; filename=\"" + webProject.getIdentification() + ".zip\"");
 
 		return new ResponseEntity<>(zipFile, headers, HttpStatus.OK);
 	}

@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.controller;
 
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
@@ -111,14 +114,14 @@ public class FlowEngineNodeServicesController {
 	public @ResponseBody String submitQuery(@RequestBody FlowEngineQueryRequest queryRequest)
 			throws JsonProcessingException, NotFoundException {
 		return flowEngineNodeService.submitQuery(queryRequest.getOntology(), queryRequest.getQueryType(),
-				queryRequest.getQuery(), queryRequest.getAuthentication());
+				queryRequest.getQuery(), queryRequest.getDomainName());
 	}
 
 	@PostMapping(value = "/user/insert", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitInsert(@RequestBody FlowEngineInsertRequest insertRequest)
 			throws JsonProcessingException, NotFoundException {
 		return flowEngineNodeService.submitInsert(insertRequest.getOntology(), insertRequest.getData(),
-				insertRequest.getAuthentication());
+				insertRequest.getDomainName());
 	}
 
 	@GetMapping(value = "/user/digital_twin_ypes", produces = { "application/javascript", "application/json" })
@@ -146,16 +149,14 @@ public class FlowEngineNodeServicesController {
 		return null;
 	}
 
-	@GetMapping(value = "/user/notebooks", produces = { "application/javascript",
-			"application/json" })
+	@GetMapping(value = "/user/notebooks", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String getNotebooksByUser(@RequestParam String authentication,
 			@RequestParam("callback") String callbackName) throws JsonProcessingException {
 		String response = mapper.writeValueAsString(flowEngineNodeService.getNotebooksByUser(authentication));
 		return callbackName + "(" + response + ")";
 	}
 
-	@GetMapping(value = "/user/notebooks/paragraphs", produces = {
-			"application/javascript", "application/json" })
+	@GetMapping(value = "/user/notebooks/paragraphs", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String getNotebookParagraphByUser(@RequestParam String authentication,
 			@RequestParam String notebookZeId, @RequestParam("callback") String callbackName)
 			throws JsonProcessingException {
@@ -167,6 +168,31 @@ public class FlowEngineNodeServicesController {
 	@PostMapping(value = "/user/notebooks/run", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> runNotebook(@RequestBody NotebookInvokeDTO notebookInvocationData) {
 		return flowEngineNodeService.invokeNotebook(notebookInvocationData);
+	}
+
+	@GetMapping(value = "/user/dataflows", produces = { "application/javascript", "application/json" })
+	public @ResponseBody String getDataflowsByUser(@RequestParam String authentication,
+			@RequestParam("callback") String callbackName) throws JsonProcessingException {
+		String response = mapper.writeValueAsString(flowEngineNodeService.getPipelinesByUser(authentication));
+		return callbackName + "(" + response + ")";
+	}
+
+	@PostMapping(value = "/user/dataflow/status", produces = { "application/javascript", "application/json" })
+	public @ResponseBody ResponseEntity<String> getDataflowStatus(@RequestBody DataflowDTO dataflowData) {
+		return flowEngineNodeService.getPipelineStatus(dataflowData.getDomainName(),
+				dataflowData.getDataflowIdentification());
+	}
+
+	@PostMapping(value = "/user/dataflow/start", produces = { "application/javascript", "application/json" })
+	public @ResponseBody ResponseEntity<String> startDataflow(@RequestBody DataflowDTO dataflowData) {
+		return flowEngineNodeService.startDataflow(dataflowData.getDomainName(),
+				dataflowData.getDataflowIdentification(), dataflowData.getParameters(), dataflowData.getResetOrigin());
+	}
+
+	@PostMapping(value = "/user/dataflow/stop", produces = { "application/javascript", "application/json" })
+	public @ResponseBody ResponseEntity<String> stopDataflow(@RequestBody DataflowDTO dataflowData) {
+		return flowEngineNodeService.stopDataflow(dataflowData.getDomainName(),
+				dataflowData.getDataflowIdentification());
 	}
 
 }

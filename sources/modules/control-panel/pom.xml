@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>1.1.0-ce</version>
+		<version>2.0.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-controlpanel</artifactId>
@@ -21,12 +21,19 @@
 	</properties>
 
 	<dependencies>
-		<!-- DISABLED FOR THE MOMENT <dependency> <groupId>com.ibm.runtimetools</groupId> 
-			<artifactId>javametrics-spring</artifactId> <version>1.2.1</version> </dependency> 
-			<dependency> <groupId>com.ibm.runtimetools</groupId> <artifactId>javametrics-agent</artifactId> 
-			<version>1.2.1</version> </dependency> <dependency> <groupId>org.glassfish</groupId> 
+		<!-- DISABLED FOR THE MOMENT <dependency> <groupId>com.ibm.runtimetools</groupId>
+			<artifactId>javametrics-spring</artifactId> <version>1.2.1</version> </dependency>
+			<dependency> <groupId>com.ibm.runtimetools</groupId> <artifactId>javametrics-agent</artifactId>
+			<version>1.2.1</version> </dependency> <dependency> <groupId>org.glassfish</groupId>
 			<artifactId>javax.json</artifactId> <version>1.0.4</version> </dependency> -->
 
+		<!-- To overwrite MySQL version-->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.driver.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>${controlpanel.theme}</artifactId>
@@ -38,8 +45,8 @@
 			<artifactId>onesaitplatform-business-services</artifactId>
 			<version>${onesaitplatform.version}</version>
 			<exclusions>
-				<exclusion>
-					<groupId>javax.mail</groupId>
+		        <exclusion>
+		        	<groupId>javax.mail</groupId>
 					<artifactId>mailapi</artifactId>
 				</exclusion>
 			</exclusions>
@@ -74,11 +81,8 @@
 			<artifactId>onesaitplatform-security-ldap-ri</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-flow-engine-services</artifactId>
-			<version>${onesaitplatform.version}</version>
-		</dependency>
+		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-flow-engine-services</artifactId>
+			<version>${onesaitplatform.version}</version> </dependency> -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-client-rest</artifactId>
@@ -87,9 +91,16 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-java-client</artifactId>
+			<exclusions>
+				
+				<exclusion>
+					<groupId>commons-io</groupId>
+					<artifactId>commons-io</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		
-		
+
+
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -114,7 +125,7 @@
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-metrics-input</artifactId>
@@ -123,8 +134,14 @@
 					<groupId>commons-io</groupId>
 					<artifactId>commons-io</artifactId>
 				</exclusion>
+				
 			</exclusions>
 			<version>${onesaitplatform.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -136,28 +153,18 @@
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
-			<!-- <exclusions>
-				<exclusion>
-					<groupId>io.swagger</groupId>
-					<artifactId>swagger-models</artifactId>
-				</exclusion>
-			</exclusions>
-			 -->
+			<!-- <exclusions> <exclusion> <groupId>io.swagger</groupId> <artifactId>swagger-models</artifactId>
+				</exclusion> </exclusions> -->
 		</dependency>
 
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger</groupId>
@@ -297,16 +304,9 @@
 
 		<!-- CACHE -->
 		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-client</artifactId>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-cache</artifactId>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.hazelcast</groupId>
@@ -344,7 +344,7 @@
 			<artifactId>jaspersoft-webservices-dataadapter</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.eclipse.jdt.core.compiler</groupId> <artifactId>ecj</artifactId> 
+		<!-- <dependency> <groupId>org.eclipse.jdt.core.compiler</groupId> <artifactId>ecj</artifactId>
 			<version>4.6.1</version> </dependency> -->
 
 		<dependency>
@@ -353,17 +353,6 @@
 			<version>2.1.7</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>fluent-hc</artifactId>
-			<version>4.3.6</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.jaspersoft.adapter.webservice</groupId>
-			<artifactId>jaspersoft-webservices-dataadapter</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -387,19 +376,8 @@
 			<artifactId>tika-core</artifactId>
 		</dependency>
 
-		<!-- Zookeeper SPI -->
-		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-test</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-x-discovery</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-zookeeper</artifactId>
-		</dependency>
+
+
 
 
 		<!-- JENKINS -->
@@ -411,7 +389,9 @@
 		<dependency>
 			<groupId>com.cdancy</groupId>
 			<artifactId>jenkins-rest</artifactId>
-			<version>0.0.14</version>
+			<version>0.0.25</version>
+			<classifier>all</classifier>
+
 			<exclusions>
 				<exclusion>
 					<groupId>com.google.code.gson</groupId>

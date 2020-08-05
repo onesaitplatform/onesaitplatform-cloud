@@ -65,8 +65,9 @@ public class GatewayNotifierDelegate implements GatewayNotifier {
 	}
 
 	@Override
-	public void notify(SSAPMessage<SSAPBodyIndicationMessage> indication) {
-		executor.submit(() -> subscriptions.values().stream().forEach(s -> s.accept(indication)));
+	public void notify(String notifierGW, SSAPMessage<SSAPBodyIndicationMessage> indication) {
+		executor.submit(() -> subscriptions.entrySet().stream().filter(x -> x.getKey().equals(notifierGW)).forEach(s -> s.getValue().accept(indication)));
+		//executor.submit(() -> subscriptions.values().stream().forEach(s -> s.accept(indication)));
 	}
 
 	@Override

@@ -36,7 +36,7 @@ public interface MigrationService {
 	public DataFromDB getDataFromJson(String json)
 			throws VersionNotSupportedException, NamespaceMismatchException, ProcessStepException, IOReadException;
 
-	public LoadEntityResult loadData(MigrationConfiguration config, DataFromDB readData)
+	public LoadEntityResult loadData(MigrationConfiguration config, DataFromDB readData, Boolean override)
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException;
 
 	public void persistData(List<Object> entities, MigrationErrors errors)
@@ -56,7 +56,7 @@ public interface MigrationService {
 			SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException;
 
 	public MigrationErrors importData(MigrationConfiguration config, DataFromDB data, Boolean isProjectLoad,
-			Boolean isUserLoad)
+			Boolean isUserLoad, Boolean override)
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException;
 
 	MigrationError persistEntity(Object entity, Serializable id);

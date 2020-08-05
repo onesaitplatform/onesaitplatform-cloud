@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.hibernate.jpa.event.internal.jpa.EntityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +36,7 @@ import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.model.AppUser;
+import com.minsait.onesait.platform.config.model.AppUserList;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
@@ -72,8 +73,8 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public List<App> getAllApps() {
-		List<App> appCastList = new ArrayList<App>();
-		for(AppList appList : appRepository.findAllList()) {
+		final List<App> appCastList = new ArrayList<>();
+		for (final AppList appList : appRepository.findAllList()) {
 			appCastList.add(EntitiesCast.castAppList(appList, false));
 		}
 		return appCastList;
@@ -94,19 +95,20 @@ public class AppServiceImpl implements AppService {
 	@Transactional
 	@Override
 	public List<App> getAppsByUser(String sessionUserId, String identification) {
-		List<App> apps = new LinkedList<>();
+		final List<App> apps = new LinkedList<>();
 		List<AppList> appsList;
 		final User sessionUser = userService.getUser(sessionUserId);
 
 		identification = identification == null ? "" : identification;
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+
+		if (userService.isUserAdministrator(sessionUser)) {
 			appsList = appRepository.findByIdentificationLike(identification);
 		} else {
 			appsList = appRepository.findByUserANDIdentification(sessionUser, identification);
 		}
-		for(AppList al: appsList) {
-			apps.add(EntitiesCast.castAppList(al,false));
+		for (final AppList al : appsList) {
+			apps.add(EntitiesCast.castAppList(al, false));
 		}
 		return apps;
 
@@ -147,30 +149,7 @@ public class AppServiceImpl implements AppService {
 		app.setIdentification(appDTO.getIdentification());
 		app.setDescription(appDTO.getDescription());
 
-		for (final AppRole role : app.getAppRoles()) {
-			for (final AppRole appRole : getAllRoles()) {
-				if (appRole.getChildRoles() != null && appRole.getChildRoles().contains(role)) {
-					appRole.getChildRoles().remove(role);
-					appRoleRepository.save(appRole);
-				}
-			}
-			if (app.getProject() != null) {
-				final Project project = app.getProject();
-				project.getProjectResourceAccesses()
-						.removeIf(pra -> pra.getAppRole() != null && pra.getAppRole().equals(role));
-				projectService.updateProject(project);
-			}
-		}
-
-		app.getAppRoles().clear();
-
-		for (final App application : getAllApps()) {
-			if (application.getChildApps() != null && application.getChildApps().contains(app)) {
-				application.getChildApps().remove(app);
-				appRepository.save(application);
-			}
-		}
-
+	
 		app.getChildApps().clear();
 
 		updateAppRoles(app, appDTO);
@@ -182,13 +161,19 @@ public class AppServiceImpl implements AppService {
 	private void updateAppRoles(App app, AppCreateDTO appDTO) {
 		final ObjectMapper mapper = new ObjectMapper();
 		try {
-			app.getAppRoles().addAll(
-					new HashSet<AppRole>(mapper.readValue(appDTO.getRoles(), new TypeReference<List<AppRole>>() {
-					})));
+			final HashSet<AppRole> roles = new HashSet<>(
+					mapper.readValue(appDTO.getRoles(), new TypeReference<List<AppRole>>() {
+					}));
+			app.getAppRoles().removeIf(
+					r -> !roles.stream().map(AppRole::getName).collect(Collectors.toList()).contains(r.getName()));
+			app.getAppRoles().addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRole::getName)
+					.collect(Collectors.toList()).contains(r.getName())).collect(Collectors.toSet()));
 			for (final AppRole role : app.getAppRoles()) {
-				role.setApp(app);
-				role.setAppUsers(new HashSet<>());
-				appRoleRepository.save(role);
+				if (role.getApp() == null) {
+					role.setApp(app);
+					role.setAppUsers(new HashSet<>());
+					appRoleRepository.save(role);
+				}
 			}
 			final Set<UserAppCreateDTO> users = new HashSet<>(
 					mapper.readValue(appDTO.getUsers(), new TypeReference<List<UserAppCreateDTO>>() {
@@ -201,13 +186,17 @@ public class AppServiceImpl implements AppService {
 				for (final UserAppCreateDTO user : users) {
 					if (user.getUser() != null && user.getRoleName() != null && !user.getUser().equals("")
 							&& !user.getRoleName().equals("")) {
-						final User usuario = userService.getUserByIdentification(user.getUser());
+						final User usuario = new User();
+						usuario.setUserId(user.getUser());
 						final AppRole rol = findRole(app, user.getRoleName());
-						final AppUser appUser = new AppUser();
-						appUser.setUser(usuario);
-						appUser.setRole(rol);
-						if (rol != null && rol.getAppUsers() != null) {
-							rol.getAppUsers().add(appUser);
+						if (!rol.getAppUsers().stream().map(au -> au.getUser().getUserId()).collect(Collectors.toList())
+								.contains(usuario.getUserId())) {
+							final AppUser appUser = new AppUser();
+							appUser.setUser(usuario);
+							appUser.setRole(rol);
+							if (rol != null && rol.getAppUsers() != null) {
+								rol.getAppUsers().add(appUser);
+							}
 						}
 					}
 				}
@@ -366,12 +355,12 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public void deleteUserAccess(String appUserId) {
-		final AppUser appUser = appUserRepository.findOne(appUserId);
-		final AppRole appRole = appRoleRepository.findOne(appUser.getRole().getId());
-		if (appRole.getAppUsers().contains(appUser)) {
-			appRole.getAppUsers().remove(appUser);
+		try {
+			appUserRepository.deleteByQuery(appUserId);
+
+		} catch (Exception e) {
+			log.error("Error deleting user from Realm", e);
 		}
-		appRoleRepository.save(appRole);
 	}
 
 	@Override
@@ -492,15 +481,14 @@ public class AppServiceImpl implements AppService {
 	@Override
 	@Transactional
 	public Realm getRealmByAppIdentification(String appId) {
-		App app = appRepository.findOne(appId);
+		final App app = appRepository.findOne(appId);
 		final List<AppRole> allRoles = getAllRoles();
-		return new Realm(app, allRoles);
+		return new Realm(appUserRepository, app, allRoles);
 	}
 
 	@Override
 	public boolean isUserInApp(String userId, String realmId) {
-		List<AppUser> listUser = appUserRepository.findByUserAndIdentification(userId, realmId);
+		final List<AppUserList> listUser = appUserRepository.findAppUserListByUserAndIdentification(userId, realmId);
 		return !(listUser == null || listUser.isEmpty());
 	}
-	
 }

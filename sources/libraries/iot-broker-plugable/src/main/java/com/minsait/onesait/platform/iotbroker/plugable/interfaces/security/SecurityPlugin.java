@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.iotbroker.plugable.interfaces.security;
 import java.util.Optional;
 
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface SecurityPlugin {
 	public Optional<IoTSession> authenticate(String token, String clientPlatform, String clientPlatformInstance,

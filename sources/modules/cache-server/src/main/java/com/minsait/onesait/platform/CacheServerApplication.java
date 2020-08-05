@@ -45,7 +45,7 @@ import de.codecentric.boot.admin.client.config.SpringBootAdminClientAutoConfigur
 		JolokiaAutoConfiguration.class, MetricExportAutoConfiguration.class, MetricFilterAutoConfiguration.class,
 		PublicMetricsAutoConfiguration.class, ServerPropertiesAutoConfiguration.class,
 		SpringBootAdminClientAutoConfiguration.class, TraceWebFilterAutoConfiguration.class })
-@ComponentScan(basePackages = "com.minsait.onesait.platform.cacheserver.config")
+@ComponentScan(basePackages = "com.minsait.onesait.platform.cache")
 public class CacheServerApplication {
 
 	public static void main(String[] args) {

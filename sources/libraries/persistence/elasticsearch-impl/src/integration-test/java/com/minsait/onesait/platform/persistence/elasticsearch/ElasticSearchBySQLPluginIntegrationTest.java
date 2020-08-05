@@ -34,6 +34,7 @@ import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESInsertService;
 import com.minsait.onesait.platform.persistence.elasticsearch.sql.connector.ElasticSearchSQLDbHttpImpl;
+import com.minsait.onesait.platform.persistence.util.ElasticSearchFileUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,8 +47,6 @@ public class ElasticSearchBySQLPluginIntegrationTest {
 
 	private final static String TEST_INDEX_ACCOUNT = "account";
 
-	private static boolean init = false;
-
 	@Autowired
 	private ElasticSearchSQLDbHttpImpl httpConnector;
 
@@ -58,39 +57,32 @@ public class ElasticSearchBySQLPluginIntegrationTest {
 	@Autowired
 	private ESInsertService sSInsertService;
 
-	private String dataMapping = "{  \"" + TEST_INDEX_ACCOUNT + "\": {" + " \"properties\": {\n"
-			+ "          \"gender\": {\n" + "            \"type\": \"text\",\n" + "            \"fielddata\": true\n"
-			+ "          }," + "          \"address\": {\n" + "            \"type\": \"text\",\n"
-			+ "            \"fielddata\": true\n" + "          }," + "          \"state\": {\n"
-			+ "            \"type\": \"text\",\n" + "            \"fielddata\": true\n" + "          }" + "       }"
-			+ "   }" + "}";
+	private String dataMapping = "{\"properties\": {\"gender\": {\"type\": \"text\",\"fielddata\": true }, \"address\": {\"type\": \"text\", \"fielddata\": true }, \"state\": {\"type\": \"text\", \"fielddata\": true}}}";
 
 	@Before
 	public void setUp() throws Exception {
-		if (!init) {
-			connector.deleteIndex(TEST_INDEX_ACCOUNT);
-			connector.createIndex(TEST_INDEX_ACCOUNT);
-			connector.createType(TEST_INDEX_ACCOUNT, TEST_INDEX_ACCOUNT, dataMapping);
+		
+		connector.createIndex(TEST_INDEX_ACCOUNT);
+		connector.prepareIndex(TEST_INDEX_ACCOUNT, dataMapping);
 
-			// final String jsonPath = "src/test/resources/accounts.json";
+		// final String jsonPath = "src/test/resources/accounts.json";
 
-			final List<String> list = ESInsertService
-					.readLines(new File(this.getClass().getClassLoader().getResource("accounts.json").toURI()));
+		final List<String> list = ElasticSearchFileUtil
+				.readLines(new File(this.getClass().getClassLoader().getResource("accounts.json").toURI()));
 
-			final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
-					.collect(Collectors.toList());
+		final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
+				.collect(Collectors.toList());
 
-			sSInsertService.load(TEST_INDEX_ACCOUNT, TEST_INDEX_ACCOUNT, result, dataMapping);
+		sSInsertService.bulkInsert(TEST_INDEX_ACCOUNT, result, dataMapping);
 
-			Thread.sleep(5000);
-			init = true;
-		}
+		Thread.sleep(5000);
+
 	}
 
 	@After
 	public void tearDown() {
 		log.info("teardown process...");
-
+		connector.deleteIndex(TEST_INDEX_ACCOUNT);
 	}
 
 	@Test

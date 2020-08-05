@@ -47,6 +47,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.minsait.onesait.platform.oauthserver.audit.aop.OauthServerAuditable;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -188,9 +190,9 @@ public class TokenController {
 		}
 	}
 
+	@OauthServerAuditable
 	@RequestMapping(method = RequestMethod.POST, value = "/openplatform-oauth/revoke_token")
 	@ResponseBody
-
 	public Map<String, ?> revokeAccesToken(@RequestHeader(value = "Authorization") String authorization,
 			@RequestParam("token") String value) {
 		final Map<String, Object> response = new HashMap<>();
@@ -207,11 +209,20 @@ public class TokenController {
 			appId = tokens[0];
 			appSecret = tokens[1];
 
-			final ClientDetails clientId = clientDetailsService.loadClientByClientId(appId);
+			try {
+				final ClientDetails clientId = clientDetailsService.loadClientByClientId(appId);
+				
+				log.info("Entering Access Info Token with Tokenid = {} ", value);
 
-			log.info("Entering Access Info Token with Tokenid = {} ", value);
+				if (!clientId.getClientSecret().equals(appSecret)) {
+					response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
+					response.put(OAuth2Exception.DESCRIPTION, value);
 
-			if (!clientId.getClientSecret().equals(appSecret)) {
+					log.info(REVOKE_ERROR_RESPONSE,OAuth2Exception.ACCESS_DENIED);
+
+					return response;
+				}
+			} catch (Exception e) {
 				response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
 				response.put(OAuth2Exception.DESCRIPTION, value);
 
@@ -219,7 +230,7 @@ public class TokenController {
 
 				return response;
 			}
-
+			
 			final OAuth2Authentication authentication = customTokenService.loadAuthentication(value);
 			final OAuth2AccessToken token = customTokenService.getAccessToken(authentication);
 
@@ -248,9 +259,9 @@ public class TokenController {
 		}
 	}
 
+	@OauthServerAuditable
 	@RequestMapping(method = RequestMethod.POST, value = "/openplatform-oauth/check_token")
 	@ResponseBody
-
 	public Map<String, Object> accessInfo(@RequestHeader(value = "Authorization") String authorization,
 			@RequestParam("token") String value) {
 		final Map<String, Object> response = new HashMap<>();

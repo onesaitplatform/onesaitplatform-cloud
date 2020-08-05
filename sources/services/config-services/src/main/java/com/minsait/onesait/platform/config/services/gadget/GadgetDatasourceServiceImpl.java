@@ -15,6 +15,9 @@
 package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -24,15 +27,18 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.GadgetMeasure;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
+import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTOForList;
 import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,17 +46,28 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
+	private static final String LIMIT_UPPERCASE = "LIMIT ";
+	private static final String LIMIT_LOWERCASE = "limit ";
+	private static final String PLUS_CHARACTER = " +";
+	private static final String FROM_UPPERCASE = "FROM ";
+	private static final String FROM_LOWERCASE = "from ";
+	private static final String CLOSE_PARENTHESIS = ")";
+	private static final String OPEN_PARENTHESIS = "(";
+	private static final String BLANK_CHARACTER = " ";
 	@Autowired
 	private GadgetDatasourceRepository gadgetDatasourceRepository;
+	@Autowired
+	private GadgetMeasureRepository gadgetMeasureRepository;
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
 	private OPResourceService resourceService;
 	@Autowired
+	private UserService userService;
+	@Autowired
 	private ProjectService projectService;
 	@Autowired
 	SecurityService securityService;
-	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
 
 	@Override
 	public List<GadgetDatasource> findAllDatasources() {
@@ -68,7 +85,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		List<GadgetDatasourceForList> datasources;
 		final User user = userRepository.findByUserId(userId);
 
-		if (user.getRole().getId().equals(GadgetServiceImpl.ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			datasources = gadgetDatasourceRepository
 					.findForListByIdentificationContainingAndDescriptionContaining(identification, description);
 		} else {
@@ -81,7 +98,13 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public List<String> getAllIdentifications() {
-		return gadgetDatasourceRepository.findIdentificationByOrderByIdentificationAsc();
+		final List<GadgetDatasource> datasources = gadgetDatasourceRepository.findAllByOrderByIdentificationAsc();
+		final List<String> names = new ArrayList<>();
+		for (final GadgetDatasource datasource : datasources) {
+			names.add(datasource.getIdentification());
+
+		}
+		return names;
 	}
 
 	@Override
@@ -91,11 +114,19 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public GadgetDatasource createGadgetDatasource(GadgetDatasource gadgetDatasource) {
+		if (gadgetDatasource.getOntology() == null) {
+			throw new GadgetDatasourceServiceException("Ontology is a field required.");
+		}
+		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())){
+			throw new GadgetDatasourceServiceException(
+					"The query: "+gadgetDatasource.getQuery()+" is not for the ontology selected: "+gadgetDatasource.getOntology().getIdentification()) ;
+		}
 		if (!gadgetDatasourceExists(gadgetDatasource)) {
 			log.debug("Gadget datasource no exist, creating...");
 			return gadgetDatasourceRepository.save(gadgetDatasource);
 		} else {
-			throw new GadgetDatasourceServiceException("Gadget Datasource already exists in Database");
+			throw new GadgetDatasourceServiceException(
+					"GadgetDatasource with identification: " + gadgetDatasource.getIdentification() + " exist");
 		}
 	}
 
@@ -107,6 +138,13 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public void updateGadgetDatasource(GadgetDatasource gadgetDatasource) {
+		if (gadgetDatasource.getOntology() == null) {
+			throw new GadgetDatasourceServiceException("Ontology is a field required.");
+		}
+		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())){
+			throw new GadgetDatasourceServiceException(
+					"The query: "+gadgetDatasource.getQuery()+" is not for the ontology selected: "+gadgetDatasource.getOntology().getIdentification()) ;
+		}
 		if (gadgetDatasourceExists(gadgetDatasource)) {
 			final GadgetDatasource gadgetDatasourceDB = gadgetDatasourceRepository.findById(gadgetDatasource.getId());
 			gadgetDatasourceDB.setConfig(gadgetDatasource.getConfig());
@@ -139,7 +177,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Override
 	public boolean hasUserPermission(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (gadgetDatasourceRepository.findById(id).getUser().getUserId().equals(userId)) {
 			return true;
@@ -156,7 +194,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Override
 	public String getAccessType(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
-		if (user.getRole().getId().equals(ADMINISTRATOR)
+		if (userService.isUserAdministrator(user)
 				|| gadgetDatasourceRepository.findById(id).getUser().getUserId().equals(userId)
 				|| resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE)) {
 			return ResourceAccessType.MANAGE.toString();
@@ -174,7 +212,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Override
 	public List<GadgetDatasource> getUserGadgetDatasources(String userId) {
 		final User user = userRepository.findByUserId(userId);
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			return gadgetDatasourceRepository.findAllByOrderByIdentificationAsc();
 		} else {
 			final List<GadgetDatasource> result = gadgetDatasourceRepository.findByUserOrderByIdentificationAsc(user);
@@ -187,7 +225,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		List<GadgetDatasourceForList> datasourcesForList = new ArrayList<>();
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		
+		if (userService.isUserAdministrator(user)) {
 			datasourcesForList = gadgetDatasourceRepository.findAllForListByOrderByIdentificationAsc();
 		} else {
 			datasourcesForList = gadgetDatasourceRepository.findForListByUserOrderByIdentificationAsc(user);
@@ -222,7 +261,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user) {
 		final String query = gadgetDatasourceRepository.findById(datasourceId).getQuery();
 
-		final int i = query.toLowerCase().lastIndexOf("limit ");
+		final int i = query.toLowerCase().lastIndexOf(LIMIT_LOWERCASE);
 		if (i == -1) {// Add limit add the end
 			return query + " limit 1";
 		} else {
@@ -233,6 +272,12 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Override
 	public GadgetDatasource getDatasourceByIdentification(String dsIdentification) {
 		return gadgetDatasourceRepository.findByIdentification(dsIdentification);
+	}
+
+	@Override
+	public boolean isGroupDatasourceById(String id) {
+		GadgetDatasource datasource = gadgetDatasourceRepository.findById(id);
+		return datasource.getQuery().toLowerCase().indexOf(" group by ") != -1;
 	}
 
 	@Override
@@ -251,6 +296,75 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		}
 
 		return elements.toString();
+	}
+
+	@Override
+	public String getOntologyFromDatasource(String datasource) {
+		datasource = datasource.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", BLANK_CHARACTER);
+		datasource = datasource.trim().replaceAll(PLUS_CHARACTER, BLANK_CHARACTER);
+		String[] list = datasource.split(FROM_LOWERCASE);
+		if (list.length == 1) {
+			list = datasource.split(FROM_UPPERCASE);
+		}
+		if (list.length > 1) {
+			for (int i = 1; i < list.length; i++) {
+				if (!list[i].startsWith(OPEN_PARENTHESIS)) {
+					int indexOf = list[i].toLowerCase().indexOf(BLANK_CHARACTER, 0);
+					int indexOfCloseBracket = list[i].toLowerCase().indexOf(CLOSE_PARENTHESIS, 0);
+					indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf) ? indexOfCloseBracket
+							: indexOf;
+					if (indexOf == -1) {
+						indexOf = list[i].length();
+					}
+					return list[i].substring(0, indexOf).trim();
+				}
+			}
+		} else {
+			return "";
+		}
+		return "";
+	}
+
+	@Override
+	public String getMaxValuesFromQuery(String query) {
+		query = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", BLANK_CHARACTER);
+		query = query.trim().replaceAll(PLUS_CHARACTER, BLANK_CHARACTER);
+		String[] list = query.split(LIMIT_LOWERCASE);
+		if (list.length == 1) {
+			list = query.split(LIMIT_UPPERCASE);
+		}
+		if (list.length > 1) {
+			return list[1].trim();
+
+		}
+		return null;
+	}
+	
+	private Boolean isOntologyOnQuery (String ontology, String query) {
+		query = query.replace("\n", "");		
+		while (query.contains("  ")) {
+			query = query.replace("  ", " ");
+		}
+		
+		if (query.toLowerCase().indexOf("from ") == -1 && query.toLowerCase().indexOf("update ") == -1
+				&& query.toLowerCase().indexOf("join ") == -1)
+			return false;
+		else if (query.toLowerCase().indexOf("from " + ontology.toLowerCase()) == -1
+				&& query.toLowerCase().indexOf("update " + ontology.toLowerCase()) == -1
+				&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1)
+			return false;
+		
+		return true;
+	}
+
+	@Override
+	public List<Object> getGadgetsUsingDatasource(String id) {
+		List<GadgetMeasure> gadgetMeasureList = gadgetMeasureRepository.findByDatasource(id);
+		HashMap<String, String> gadgetsIdentification = new HashMap<>();
+		for (GadgetMeasure gadgetMeasure : gadgetMeasureList) {
+			gadgetsIdentification.put(gadgetMeasure.getGadget().getIdentification(), gadgetMeasure.getGadget().getIdentification());
+		}
+		return Arrays.asList(gadgetsIdentification.keySet().toArray());
 	}
 
 }

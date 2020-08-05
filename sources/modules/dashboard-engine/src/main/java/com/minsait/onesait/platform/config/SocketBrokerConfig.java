@@ -67,6 +67,9 @@ public class SocketBrokerConfig extends AbstractWebSocketMessageBrokerConfigurer
 	@Value("${onesaitplatform.dashboardengine.protocol.ws.LoggingPeriod:30000}")
 	private int loggingPeriod;
 	
+	@Value("${onesaitplatform.dashboardengine.server.heartbeat:2000}")
+    private long serverHeartbeatTime;
+	
 	@Autowired
 	private WebSocketMessageBrokerStats webSocketMessageBrokerStats;
 
@@ -84,7 +87,7 @@ public class SocketBrokerConfig extends AbstractWebSocketMessageBrokerConfigurer
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/dsengine/solver").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/dsengine/solver").setAllowedOrigins("*").withSockJS().setHeartbeatTime(serverHeartbeatTime);
     }
     
 	@Override

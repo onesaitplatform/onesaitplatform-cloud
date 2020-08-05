@@ -15,8 +15,11 @@
 package com.minsait.onesait.platform.filter;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -24,6 +27,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,11 +38,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.GenericFilterBean;
 
+import com.microsoft.sqlserver.jdbc.StringUtils;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.security.token.TokenResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -49,29 +60,42 @@ public class CustomFilter extends GenericFilterBean {
 	private static final String AUTH_HEADER_KEY = "Authorization";
 	private static final String AUTH_HEADER_VALUE_PREFIX = "Bearer "; // with trailing space to separate token
 	private static final String AUTH_VALUE_ANONYMOUS = "anonymous";
+	private static final String VERTICAL_PARAMETER = "vertical";
 
-	private String onesaitPlatformTokenAuth;
+	private static final String TENANT_PARAMETER = "tenant";
 
-	public CustomFilter(String onesaitPlatformTokenAuth) {
+	private static final String REFERER = "Referer";
+
+	private final String onesaitPlatformTokenAuth;
+	private final UserDetailsService userDetailsService;
+
+	private final MultitenancyService multitenancyService;
+
+	public CustomFilter(String onesaitPlatformTokenAuth, UserDetailsService userDetailsService,
+			MultitenancyService multitenancyService) {
 		super();
 		this.onesaitPlatformTokenAuth = onesaitPlatformTokenAuth;
+		this.userDetailsService = userDetailsService;
+		this.multitenancyService = multitenancyService;
 	}
 
 	@Override
 	public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse,
 			final FilterChain filterChain) throws IOException, ServletException {
-		HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
-
+		final HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+		// Multitenancy
+		setMultitenantContext();
 		try {
-			String jwt = getBearerToken(httpRequest);
+			final String jwt = getBearerToken(httpRequest);
 			if (jwt != null && !jwt.isEmpty()) {
-				TokenResponse details = validateToken(jwt);
+				final TokenResponse details = validateToken(jwt);
 				generateSecurityContextAuthentication(details);
 				log.info("Logged in using JWT");
 
 				return;
 			} else {
 				if (isAnonymous(httpRequest)) {
+					setMultitenantContext(httpRequest);
 					generateSecurityContextAuthenticationAnonymous();
 				} else {
 					log.info("No JWT provided, continue chain or user-pass");
@@ -83,12 +107,21 @@ public class CustomFilter extends GenericFilterBean {
 		}
 	}
 
+	private void setMultitenantContext(HttpServletRequest httpRequest) {
+		final String referer = httpRequest.getHeader(REFERER);
+		Optional.ofNullable(extractParamFromReferer(referer, VERTICAL_PARAMETER)).ifPresent(s -> multitenancyService
+				.getVertical(s).ifPresent(v -> MultitenancyContextHolder.setVerticalSchema(v.getSchema())));
+		Optional.ofNullable(extractParamFromReferer(referer, TENANT_PARAMETER))
+				.ifPresent(s -> MultitenancyContextHolder.setTenantName(s));
+
+	}
+
 	/**
 	 * Get the bearer token from the HTTP request. The token is in the HTTP request
 	 * "Authorization" header in the form of: "Bearer [token]"
 	 */
 	private String getBearerToken(HttpServletRequest request) {
-		String authHeader = request.getHeader(AUTH_HEADER_KEY);
+		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
 		if (authHeader != null && authHeader.startsWith(AUTH_HEADER_VALUE_PREFIX)) {
 			return authHeader.substring(AUTH_HEADER_VALUE_PREFIX.length());
 		}
@@ -96,7 +129,7 @@ public class CustomFilter extends GenericFilterBean {
 	}
 
 	private boolean isAnonymous(HttpServletRequest request) {
-		String authHeader = request.getHeader(AUTH_HEADER_KEY);
+		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
 		if (authHeader != null && authHeader.equals(AUTH_VALUE_ANONYMOUS)) {
 			return true;
 		}
@@ -104,28 +137,60 @@ public class CustomFilter extends GenericFilterBean {
 	}
 
 	private TokenResponse validateToken(String token) {
-		RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-		HttpHeaders headers = new HttpHeaders();
+		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		HttpEntity<String> entity = new HttpEntity<String>(token, headers);
-		TokenResponse response = restTemplate.postForObject(onesaitPlatformTokenAuth, entity, TokenResponse.class);
+		final HttpEntity<String> entity = new HttpEntity<>(token, headers);
+		final TokenResponse response = restTemplate.postForObject(onesaitPlatformTokenAuth, entity,
+				TokenResponse.class);
 		return response;
 	}
 
 	private void generateSecurityContextAuthentication(TokenResponse details) {
-		List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-		grantedAuthorities.add(new SimpleGrantedAuthority(details.getAuthorities().get(0)));
-		Authentication auth = new UsernamePasswordAuthenticationToken(details.getPrincipal(), details.getAccess_token(),
-				grantedAuthorities);
+
+		final UserDetails user = userDetailsService.loadUserByUsername(details.getPrincipal());
+		final Authentication auth = new UsernamePasswordAuthenticationToken(user, details.getAccess_token(),
+				user.getAuthorities());
 		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 
 	private void generateSecurityContextAuthenticationAnonymous() {
-		List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+		final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 		grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-		Authentication auth = new UsernamePasswordAuthenticationToken(AUTH_VALUE_ANONYMOUS, AUTH_VALUE_ANONYMOUS,
+		final UserPrincipal user = new UserPrincipal(AUTH_VALUE_ANONYMOUS, AUTH_VALUE_ANONYMOUS, grantedAuthorities,
+				MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName());
+		final Authentication auth = new UsernamePasswordAuthenticationToken(user, AUTH_VALUE_ANONYMOUS,
 				grantedAuthorities);
 		SecurityContextHolder.getContext().setAuthentication(auth);
+	}
+
+	private void setMultitenantContext() {
+		final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && !auth.getPrincipal().equals(AUTH_VALUE_ANONYMOUS)) {
+			MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
+			MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
+		}
+	}
+
+	private String extractParamFromReferer(String referer, String parameter) {
+		if (!StringUtils.isEmpty(referer) && referer.indexOf(VERTICAL_PARAMETER) != -1) {
+			final URI uri = URI.create(referer);
+			final String query = uri.getQuery();
+			final List<NameValuePair> queryMap = new ArrayList<>();
+			final String[] params = query.split(Pattern.quote("&"));
+			for (final String param : params) {
+				final String[] chunks = param.split(Pattern.quote("="));
+				final String name = chunks[0];
+				String value = null;
+				if (chunks.length > 1) {
+					value = chunks[1];
+				}
+				queryMap.add(new BasicNameValuePair(name, value));
+			}
+			return queryMap.stream().filter(e -> e.getName().equals(parameter)).map(NameValuePair::getValue).findFirst()
+					.orElse(null);
+		}
+		return null;
 	}
 }

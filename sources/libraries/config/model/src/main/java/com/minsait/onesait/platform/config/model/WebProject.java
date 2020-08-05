@@ -14,10 +14,10 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Configurable;
@@ -29,11 +29,11 @@ import lombok.Setter;
 
 @Configurable
 @Entity
-@Table(name = "WEB_PROJECT")
+@Table(name = "WEB_PROJECT", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
 public class WebProject extends OPResource {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Column(name = "DESCRIPTION", length = 250, nullable = false)
 	@NotNull
 	@Getter

@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.minsait.onesait.platform</groupId>
 	<artifactId>onesaitplatform-parent</artifactId>
-	<version>1.1.0-ce</version>
+	<version>2.0.0-ce</version>
 	<packaging>pom</packaging>
 
 	<name>onesaitplatform-parent</name>
 	<description>onesait Platform is the Digital Platform of Minsait, aka Open Platform</description>
 
 	<properties>
-		<onesaitplatform.version>1.1.0-ce</onesaitplatform.version>
+		<onesaitplatform.version>2.0.0-ce</onesaitplatform.version>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -34,17 +34,17 @@
 		<project.organization.name>minsait by Indra</project.organization.name>
 		<project.website>https://onesaitplatform.com</project.website>
 		<freemarket.version>2.3.21</freemarket.version>
-		<elasticsearch.version>6.2.3</elasticsearch.version>
+		<elasticsearch.version>7.5.1</elasticsearch.version>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
 		<jsqlparser.version>1.3</jsqlparser.version>
-		<sql-to-mongo.version>1.11</sql-to-mongo.version>
+		<sql-to-mongo.version>1.13_jsql13</sql-to-mongo.version>
 		<mongo-driver.version>3.12.0</mongo-driver.version>
 		<mockito.version>2.22.0</mockito.version>
 		<tika.version>1.20</tika.version>
 		<onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false&amp;autoReconnect=true</onesaitplatform.quartzURL>
-		<onesaitplatform.client.version>1.3.0</onesaitplatform.client.version>
+		<onesaitplatform.client.version>1.4.1-RELEASE</onesaitplatform.client.version>
 		<hazelcast.zookeeper.version>3.6.3</hazelcast.zookeeper.version>
 		<hazelcast.version>3.12</hazelcast.version>
 		<curator.version>2.13.0</curator.version>
@@ -56,8 +56,10 @@
 		<jaspersoft.ws.version>1.0.1-SNAPSHOT</jaspersoft.ws.version>
 		<postgresql.version>42.2.8</postgresql.version>
 		<mariadb.version>2.4.3</mariadb.version>
-		<sqlserver.version>7.4.1.jre8</sqlserver.version>
+		<sqlserver.version>7.4.1.jre8</sqlserver.version>		
+		<mysql.driver.version>8.0.18</mysql.driver.version>
 		<oracle.version>11.2.0.4</oracle.version>
+		<guava.version>18.0</guava.version>
 	</properties>
 
 	<dependencyManagement>
@@ -245,7 +247,12 @@
 		</repository>
 		<repository>
 			<id>central Maven</id>
-			<url>https://repo1.maven.org/maven2/</url>
+			<url>https://repo1.maven.org</url>
+			<!-- TEMPORAL <url>https://central.maven.org/maven2/</url> -->
+		</repository>
+		<repository>
+			<id>jcenter</id>
+			<url>https://jcenter.bintray.com/</url>
 		</repository>
 	</repositories>
 
@@ -254,12 +261,14 @@
 		<!--LIBRARIES -->
 		<module>libraries/commons</module>
 		<module>libraries/audit</module>
+		<module>libraries/cache</module>
 
 		<!--SECURITY -->
 		<module>libraries/security/security-ui-ri</module>
 		<module>libraries/security/security-ldap-ri</module>
 		<module>libraries/security/security-oauth2-ri</module>
 		<module>libraries/security/kafka-login</module>
+		<module>libraries/security/security-dashboard-engine</module>
 		<module>services/nodered-auth-services</module>
 
 		<!--PERSISTENCE -->
@@ -268,6 +277,7 @@
 		<module>libraries/persistence/elasticsearch-impl</module>
 		<module>libraries/persistence/hadoop-impl</module>
 		<module>libraries/persistence/external-impl</module>
+		<module>libraries/persistence/cosmosdb-impl</module>
 
 		<!--DIGITAL TWIN -->
 		<module>libraries/digital-twin/digital-twin-library</module>
@@ -320,9 +330,8 @@
 		<module>modules/digitaltwin-broker</module>
 		<module>modules/rtdb-maintainer</module>
 		<module>modules/rules-engine</module>
-
-		<!-- TESTING -->
-		<module>libraries/integration-testing</module>
+		<module>modules/rest-planner</module>
+		<module>modules/report-engine</module>
 
 		<!--<module>modules/scripting-engine</module -->
 		<!--<module>modules/streaming-twitter</module> -->
@@ -342,6 +351,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.2.7.RELEASE</version>
 			</plugin>
 
 			<plugin>
@@ -448,6 +458,7 @@
 					<argLine>${surefireArgLine}</argLine>
 					<skipTests>${skip.unit.tests}</skipTests>
 					<excludedGroups>com.minsait.onesait.platform.commons.testing.IntegrationTest</excludedGroups>
+					<useSystemClassLoader>false</useSystemClassLoader>
 				</configuration>
 			</plugin>
 			<plugin>

@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.rulesengine.service.impl;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -29,6 +28,7 @@ import org.springframework.util.StringUtils;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.services.drools.DroolsRuleService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -50,7 +50,7 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 
 	private static final String GLOBAL_IDENTIFIER_INPUT = "input";
 	private static final String GLOBAL_IDENTIFIER_OUTPUT = "output";
-	private static final String TEMP_JAR_PREFIX = "temp";
+	public static final String TEMP_JAR_PREFIX = "temp";
 
 	@Autowired
 	private RouterService routerService;
@@ -75,9 +75,11 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 
 	@Override
 	@Async
-	public List<Future<String>> executeRulesAsync(String ontology, String jsonInput) {
+	public List<Future<String>> executeRulesAsync(String ontology, String jsonInput, String vertical, String tenant) {
+		MultitenancyContextHolder.setTenantName(tenant);
+		MultitenancyContextHolder.setVerticalSchema(vertical);
 		final List<DroolsRule> rules = droolsRuleService.getRulesForInputOntology(ontology);
-		return rules.stream().map(dr -> {
+		final List<Future<String>> results = rules.stream().map(dr -> {
 			final String output = executeRules(ontology, jsonInput, dr.getUser().getUserId());
 
 			if (StringUtils.isEmpty(output) || output.equals("{}"))
@@ -96,15 +98,23 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 			return new AsyncResult<>(output);
 
 		}).collect(Collectors.toList());
+		MultitenancyContextHolder.clear();
+		return results;
 
 	}
 
 	@Override
 	public String executeRestRule(String ruleIdentification, String jsonInput) throws GenericOPException {
-		final DroolsRule rule = droolsRuleService.getRule(ruleIdentification);
-		final String randomUUID = UUID.randomUUID().toString();
-		kieServicesManager.initializeRuleEngineDomain(TEMP_JAR_PREFIX + randomUUID, rule);
-		final KieSession session = kieServicesManager.getKieSession(TEMP_JAR_PREFIX + randomUUID);
+
+		KieSession session;
+		try {
+			session = kieServicesManager.getKieSession(TEMP_JAR_PREFIX + ruleIdentification);
+		} catch (Exception e) {
+			final DroolsRule rule = droolsRuleService.getRule(ruleIdentification);
+			kieServicesManager.initializeRuleEngineDomain(TEMP_JAR_PREFIX + ruleIdentification, rule);
+			session = kieServicesManager.getKieSession(TEMP_JAR_PREFIX + ruleIdentification);
+		}
+
 		final OntologyJsonWrapper input = new OntologyJsonWrapper(jsonInput);
 		session.setGlobal(GLOBAL_IDENTIFIER_INPUT, input);
 		final OntologyJsonWrapper output = new OntologyJsonWrapper();
@@ -117,8 +127,6 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 		} catch (final Exception e) {
 			log.error("Could not execute rule", e);
 			throw new GenericOPException(e);
-		} finally {
-			kieServicesManager.removeServices(TEMP_JAR_PREFIX + randomUUID);
 		}
 
 	}

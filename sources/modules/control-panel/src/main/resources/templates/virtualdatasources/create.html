@@ -140,7 +140,16 @@
 																		</div>	
 																	</div>
 																</div>	
-																<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="col-md-3 col-sm-3 col-xs-12">
+																	<div class="form-group">
+																		<label class="" th:text="#{datasource.domain} + ':'">Domain</label>
+																		<div class="input-icon ">
+																			<i class="la la-database"></i>
+																			<input th:tabindex="1" th:readonly="${datasource?.id} != null" id="domain" type="text" th:field="*{datasourceDomain}" class="form-control"  th:placeholder="#{datasource.domain}"/>
+																		</div>	
+																	</div>
+																</div>
+																<div class="col-md-5 col-sm-4 col-xs-12">
 																	<div class="form-group">
 																		<label class="" th:text="#{datasource.connection.url} + ':'">URL Connection</label><span class="required"> (*)</span>
 																		<div class="input-icon ">
@@ -164,19 +173,19 @@
 																</div>																	
 																<div class="col-md-3 col-sm-6 col-xs-12">
 																	<div class="form-group">
-																		<label class="" th:text="#{datasource.user} + ':'">User</label><span class="required"> (*)</span>
+																		<label class="" th:text="#{datasource.user} + ':'">User</label>
 																		<div class="input-icon ">
 																			<i class="la la-user"></i>
-																			<input th:tabindex="1" id="user" type="text"  th:required="true"  maxlength="50" th:field="*{user}" class="form-control "  th:placeholder="#{datasource.user}"/>
+																			<input th:tabindex="1" id="user" type="text"   maxlength="50" th:field="*{user}" class="form-control "  th:placeholder="#{datasource.user}"/>
 																		</div>	
 																	</div>
 																</div>		
 																<div class="col-md-3 col-sm-6 col-xs-12">
 																	<div class="form-group">
-																		<label class="" th:text="#{datasource.credentials} + ':'">Credentials</label><span class="required"> (*)</span>
+																		<label class="" th:text="#{datasource.credentials} + ':'">Credentials</label>
 																		<div class="input-icon ">
 																			<i class="la la-user"></i>
-																			<input th:tabindex="1" id="credentials" type="password"  th:required="true"  maxlength="50" th:field="*{credentials}" class="form-control "  th:placeholder="#{datasource.credentials}" />
+																			<input th:tabindex="1" id="credentials" type="password" maxlength="50" th:field="*{credentials}" class="form-control "  th:placeholder="#{datasource.credentials}" />
 																		</div>	
 																	</div>
 																</div>	
@@ -185,7 +194,8 @@
 																		<label class="" th:text="#{datasource.public} + ':'">Public</label>
 																		<div class="mt-checkbox-list">
 																			<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{datasource.public.help},data-title=#{datasource.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{datasource.public} +'?'">Public?</div>
-																				<input  id="public" class="form-control no-remove"  name="public" type="checkbox" th:field="*{public}"  />
+																				<input th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="public" class="form-control no-remove"  name="public" type="checkbox" th:field="*{public}"  />
+																				<input th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="public" class="form-control no-remove"  name="public" type="checkbox" th:field="*{public}" th:disabled="${fieldDisabled}"/>
 																				<span></span><!-- necesario por estilos. -->
 																			</label>
 																		</div>
@@ -230,7 +240,6 @@
 														<div class="form-actions">
 															<div class="pull-left">
 																<!-- CANCEL TO-DO: authentication and control -->
-																<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 																<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 															</div>
 															<div class="pull-right">
@@ -307,6 +316,9 @@
 	
 			
 	var currentLanguage = [[${lang}]];	
+	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 	
 	function navigateUrl(url){
 		window.location.href = url; 

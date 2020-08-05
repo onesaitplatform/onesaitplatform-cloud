@@ -449,7 +449,7 @@ var ApiCreateController = function() {
 		$(".nav-tabs a[href='#tab_2']").on("click", function(e) {
 		  if ($(this).hasClass("disabled")) {
 			e.preventDefault();
-			$.alert({title: 'INFO!', theme: 'light', content: 'CREATE ONTOLOGY THEN GIVE AUTHORIZATIONS!'});
+			$.alert({title: 'INFO!', theme: 'light', content: 'CREATE API THEN GIVE AUTHORIZATIONS!'});
 			return false;
 		  }
 		});
@@ -476,6 +476,9 @@ var ApiCreateController = function() {
 			var f = new Date();         
 			today = (currentLanguage == 'es') ? ('0' + (f.getDate())).slice(-2) + "/" + ('0' + (f.getMonth()+1)).slice(-2) + "/" + f.getFullYear() : ('0' + (f.getMonth()+1)).slice(-2) + "/" + ('0' + (f.getDate())).slice(-2) + "/" + f.getFullYear();
 			$('#datecreated').datepicker('update',today);
+			
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 		}
 		// EDIT MODE ACTION 
 		else {

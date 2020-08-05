@@ -25,16 +25,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
+import com.minsait.onesait.platform.business.services.audit.AuditService;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
-import com.minsait.onesait.platform.persistence.services.QueryToolService;
-import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,70 +41,45 @@ import lombok.extern.slf4j.Slf4j;
 public class AuditController {
 
 	@Autowired
-	private QueryToolService queryToolService;
-	@Autowired
-	private OntologyService ontologyServie;
-	@Autowired
 	private AppWebUtils utils;
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private AuditService auditService;
 
 	@GetMapping("show")
 	public String show(Model model) {
 
 		final List<OperationType> operations = Arrays.asList(OperationType.values());
+		final List<Module> modulesnames = Arrays.asList(Module.values());
+		final List<ResultOperationType> resultevent = Arrays.asList(ResultOperationType.values());
 		final List<User> users = userService.getAllActiveUsers();
 		model.addAttribute("operations", operations);
+		model.addAttribute("modulesnames", modulesnames);
+		model.addAttribute("resultevent", resultevent);
 		model.addAttribute("userRole", utils.getRole());
 		model.addAttribute("users", users);
 		return "audit/show";
 	}
 
 	@PostMapping("executeQuery")
-	public String query(Model model, @RequestParam String offset, @RequestParam String operation, String user) {
-
-		String result = "main";
+	public String query(Model model, @RequestParam String resultType, @RequestParam String modulesname, @RequestParam String operation,
+			@RequestParam String offset, @RequestParam (required = false, name = "user") String user) {
 		String userQuery;
 		if (utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 			userQuery = user;
 		} else {
 			userQuery = utils.getUserId();
 		}
-
 		try {
-
-			try {
-				final String queryResult = getResultForQuery(userQuery, operation, offset);
-				model.addAttribute("queryResult", queryResult);
-			} catch (final Exception e) {
-				log.error("Error getting audit of user {}", utils.getUserId());
-			}
-
-			result = "audit/show :: query";
-
+			final String queryResult = auditService.getUserAuditData(resultType, modulesname, operation, offset, userQuery);
+			model.addAttribute("queryResult", queryResult);
 		} catch (final Exception e) {
-			model.addAttribute("queryResult",
-					utils.getMessage("querytool.query.native.error", "Error malformed query"));
+			log.error("Error getting audit of user {}", utils.getUserId());
 		}
-		return result;
+		return ("audit/show :: query");
 	}
 
-	private String getResultForQuery(String user, String operation, String offset)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-
-		final String collection = ServiceUtils.getAuditCollectionName(user);
-
-		String query = "select message, user, formatedTimeStamp, module, ontology, operationType, data from "
-				+ collection;
-
-		if (!operation.equalsIgnoreCase("all")) {
-			query += " where operationType = \"" + operation + "\"";
-		}
-
-		query += " order by timeStamp desc limit " + Integer.parseInt(offset);
-
-		return queryToolService.querySQLAsJson(utils.getUserId(), collection, query, 0);
-
-	}
 }

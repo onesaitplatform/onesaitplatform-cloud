@@ -159,17 +159,17 @@
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${webproject.identification}"></td>
 															<!-- USER -->
-															<td class="text-left " th:text="${webproject.user.userId}"></td>
+															<td class="text-left " th:text="${webproject.userId}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-sm" th:title="${webproject.description}" th:text="${webproject.description}"></td>
 															<!-- URL -->
 															<td class="text-left text-primary" th:text="${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile}"></td>
 															<!-- DATE -->
-															<td class="text-center" th:if="${webproject.createdAt!=null}"><span th:text="${#dates.format(webproject.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(webproject.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${webproject.createdAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${webproject.created!=null}"><span th:text="${webproject.created}" ></span></td>
+															<td class="text-center" th:if="${webproject.created==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-center" th:if="${webproject.updatedAt!=null}"><span th:text="${#dates.format(webproject.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(webproject.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${webproject.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${webproject.updated!=null}"><span th:text="${webproject.updated}" ></span></td>
+															<td class="text-center" th:if="${webproject.updated==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -177,15 +177,15 @@
 																	<span  th:title="#{gen.view}" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:window.open(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  th:if="(${#authentication.name} == ${webproject.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/webprojects/update/${webproject.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
+																	<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/webprojects/update/${webproject.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
 																	
 																	<!-- DOWNLOAD -->
-																	<span  th:if="(${#authentication.name} == ${webproject.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.download}" th:data-original-title="#{gen.download}" th:onclick="'downloadZip(\'' + @{|/webprojects/downloadZip/${webproject.id}/|} + '\');'"><i class="la la-download font-hg"></i></span>																	
+																	<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.download}" th:data-original-title="#{gen.download}" th:onclick="'downloadZip(\'' + @{|/webprojects/downloadZip/${webproject.id}/|} + '\');'"><i class="la la-download font-hg"></i></span>																	
 																	
 																	<!-- COPY URL -->
 																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.copy}" th:data-original-title="#{binaryfiles.copy}" th:onclick="'copyURL(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-link font-hg"></i></span>
 																	<!-- DELETE -->
-																    <span th:if="${#authentication.name} == ${webproject.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteWebProject(\'' + ${webproject.id} + '\');'"><i class="la la-trash font-hg"></i></span>
+																    <span th:if="${#authentication.name} == ${webproject.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteWebProject(\'' + ${webproject.id} + '\');'"><i class="la la-trash font-hg"></i></span>
 																
 																</div>
 															</td>

@@ -114,6 +114,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.session.InvalidSessionStrategy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -123,10 +124,11 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.components.BeanUtil;
 import com.minsait.onesait.platform.controlpanel.interceptor.BearerTokenFilter;
+import com.minsait.onesait.platform.controlpanel.interceptor.MicrosoftTeamsTokenFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.XOpAPIKeyFilter;
 import com.minsait.onesait.platform.controlpanel.security.xss.XSSFilter;
+import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -136,7 +138,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private static final String LOGIN_STR = "/login";
+	public static final String LOGIN_STR = "/login";
+	public static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
+	public static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
+
 	private static final String SAML = "saml";
 	private static final String CAS = "cas";
 	private static final String CONFIGDB = "configdb";
@@ -173,9 +178,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${csrf.enable}")
 	private boolean csrfOn;
 
-	@Autowired
-	private BeanUtil beanUtils;
-
 	@Bean
 	public FilterRegistrationBean corsFilterOauth() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -200,6 +202,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private AuthenticationProvider authenticationProvider;
 
 	@Autowired
+	private ConfigDBDetailsService detailsService;
+
+	@Autowired
 	private LogoutSuccessHandler logoutSuccessHandler;
 	@Autowired(required = false)
 	private SingleSignOutFilter singleSignOutFilter;
@@ -211,7 +216,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private Securityhandler successHandler;
 
 	@Autowired
+	private SecurityFailureHandler failureHandler;
+
+	@Autowired
 	private AuthenticationEntryPoint authenticationEntryPoint;
+
+	@Autowired
+	private InvalidSessionStrategy invalidSessionStrategy;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
@@ -227,12 +238,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/api.*", null), new RegexRequestMatcher("^/layer.*", null),
 					new RegexRequestMatcher("^/binary-repository.*", null),
 					new RegexRequestMatcher("^/dataflow.*", null), new RegexRequestMatcher("^/notebooks.*", null),
-					new RegexRequestMatcher("^/dashboards.*", null),
+					new RegexRequestMatcher("^/dashboards.*", null), new RegexRequestMatcher("^/viewers.*", null),
 					new RegexRequestMatcher("^/virtualdatasources.*", null),
 					new RegexRequestMatcher("^/querytool.*", null), new RegexRequestMatcher("^/datasources.*", null),
 					new RegexRequestMatcher("^/gadgets.*", null), new RegexRequestMatcher("^/saml.*", null),
-					new RegexRequestMatcher("^/bpm" + ".*", null), new RegexRequestMatcher("^/oauth" + ".*", null),
-					new RegexRequestMatcher("^/users/register", null),
+					new RegexRequestMatcher("^/oauth" + ".*", null), new RegexRequestMatcher("^/users/register", null),
 					new RegexRequestMatcher("^/users/reset-password", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
@@ -255,7 +265,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().requireCsrfProtectionMatcher(csrfRequestMatcher);
 
 		http.headers().frameOptions().disable();
-		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico").permitAll()
+		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
 				.antMatchers("/api/applications", "/api/applications/").permitAll()
 				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token").permitAll()
 				.antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
@@ -264,18 +274,18 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
 				.antMatchers("/nodered/auth/**/**").permitAll()
 				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
-						"/dashboards/viewiframe/**", "/viewers/view/**", "/gadgets/**", "/viewers/**",
-						"/datasources/**", "/v2/api-docs/", "/v2/api-docs/**", "/swagger-resources/",
+						"/dashboards/viewiframe/**", "/viewers/view/**", "/viewers/viewiframe/**", "/gadgets/**",
+						"/viewers/**", "/datasources/**", "/v2/api-docs/", "/v2/api-docs/**", "/swagger-resources/",
 						"/swagger-resources/**", "/users/validateNewUser/**", "/users/validateResetPassword/**",
-						"/swagger-ui.html", "/layer/**")
+						"/swagger-ui.html", "/layer/**", "/notebooks/app/**")
 
 				.permitAll();
 
 		// This line deactivates login page when using SAML or other Auth Provider
 		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
 		// http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
-
-		http.formLogin().successHandler(successHandler).permitAll();
+		http.x509().subjectPrincipalRegex("CN=(.*?)(?:,|$)").userDetailsService(detailsService);
+		http.formLogin().successHandler(successHandler).failureHandler(failureHandler).permitAll();
 		http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
 				.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
 				.antMatchers("/management", "/management/**").permitAll()
@@ -289,16 +299,19 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionRegistry(sessionRegistry()).and().sessionFixation().none().and().exceptionHandling()
 				.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint);
 
-		if (authProvider.equalsIgnoreCase(CAS))
+		if (authProvider.equalsIgnoreCase(CAS)) {
 			http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
 					LogoutFilter.class);
+		}
 		if (authProvider.equalsIgnoreCase(SAML)) {
 			http.addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class).addFilterAfter(samlFilter(),
 					BasicAuthenticationFilter.class);
 
 		}
 		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
-				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class);
+				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
+		http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
 
 	}
 
@@ -315,14 +328,17 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	public FilterRegistrationBean sameOriginConfigurationFilter() {
+	public FilterRegistrationBean sameOriginConfigurationFilter(
+			@Value("${onesaitplatform.secure.x-frame-options:true}") boolean xFrameOptions) {
 		final FilterRegistrationBean registration = new FilterRegistrationBean();
 		registration.setFilter(new OncePerRequestFilter() {
 
 			@Override
 			protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 					FilterChain filterChain) throws ServletException, IOException {
-				response.setHeader("X-Frame-Options", "SAMEORIGIN");
+				if (xFrameOptions) {
+					response.setHeader("X-Frame-Options", "SAMEORIGIN");
+				}
 				filterChain.doFilter(request, response);
 			}
 
@@ -336,7 +352,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 						|| path.startsWith("/gadgets/getGadgetMeasuresByGadgetId")
 						|| path.startsWith("/gadgets/updateiframe/") || path.startsWith("/gadgets/createiframe/")
 						|| path.startsWith("/gadgets/getGadgetConfigById/")
-						|| path.startsWith("/datasources/getDatasourceById/") || path.startsWith("/viewers/view/");
+						|| path.startsWith("/datasources/getDatasourceById/") || path.startsWith("/viewers/view/")
+						|| path.startsWith("/viewers/viewiframe/");
 
 			}
 		});
@@ -474,8 +491,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 			final KeyStore ks = KeyStore.getInstance("JKS");
 			final String storePass = samlJksStorePass;
 			File file = new File(samlJksUri);
-			if (!file.exists())
+			if (!file.exists()) {
 				file = new File(getClass().getClassLoader().getResource(samlJksUri).getFile());
+			}
 			fis = new FileInputStream(file);
 			ks.load(fis, storePass.toCharArray());
 			final Map<String, String> passwords = new HashMap<>();
@@ -487,8 +505,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 			throw new GenericOPException(e);
 		} finally {
 			try {
-				if (fis != null)
+				if (fis != null) {
 					fis.close();
+				}
 			} catch (final Exception e2) {
 				log.error("" + e2);
 			}

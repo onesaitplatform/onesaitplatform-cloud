@@ -52,15 +52,6 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 
 	private static final String ERROR_QUERYSQLASJSON = "Error querySQLAsJson:";
 
-	private boolean useQuasar() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-quasar")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
-		}
-	}
-
 	private void checkQueryIs4Ontology(String ontology, String query, boolean sql) throws GenericOPException {
 		query = query.replace("\n", "");
 		while (query.contains("  ")) {
@@ -68,18 +59,21 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 		}
 		if (sql) {
 			if (query.toLowerCase().indexOf("from ") == -1 && query.toLowerCase().indexOf("update ") == -1
-					&& query.toLowerCase().indexOf("join ") == -1)
+					&& query.toLowerCase().indexOf("join ") == -1) {
 				throw new QueryNativeFormatException("Malformed SQL Query");
-			else if (query.toLowerCase().indexOf("from " + ontology.toLowerCase()) == -1
+			} else if (query.toLowerCase().indexOf("from " + ontology.toLowerCase()) == -1
 					&& query.toLowerCase().indexOf("update " + ontology.toLowerCase()) == -1
-					&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1)
+					&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1) {
 				throw new GenericOPException("The query '" + query + "' is not for the ontology selected: " + ontology);
+			}
 		} else {
-			if (query.indexOf("db.") == -1)
+			if (query.indexOf("db.") == -1) {
 				return;
-			if (query.indexOf("." + ontology + ".") == -1)
+			}
+			if (query.indexOf("." + ontology + ".") == -1) {
 				throw new DBPersistenceException(
 						"The query " + query + " is not for the ontology selected:" + ontology);
+			}
 		}
 	}
 
@@ -106,7 +100,7 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 			} else if (query.indexOf(".getIndexes(") != -1) {
 				return manageRepo.getIndexes(ontology);
 			} else if (query.indexOf(".insert(") != -1) {
-				return "Inserted row with id:" + mongoRepo.insert(ontology, "", queryContent);
+				return "Inserted row with id:" + mongoRepo.insert(ontology, queryContent);
 			} else if (query.indexOf(".update(") != -1) {
 				return mongoRepo.updateNative(ontology, queryContent, false).toString();
 			} else if (query.indexOf(".remove(") != -1) {
@@ -144,16 +138,42 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 		try {
 			checkQueryIs4Ontology(ontology, query, true);
 			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
-					|| (query.trim().toLowerCase().startsWith("select") && !useQuasar()))
-				return this.queryNativeAsJson(ontology, Sql2NativeTool.translateSql(query));
-			else
+					|| query.trim().toLowerCase().startsWith("select") && !useQuasar()) {
+				return surroundNativeWithValueNode(
+						this.queryNativeAsJson(ontology, Sql2NativeTool.translateSql(query)));
+			} else {
 				return mongoRepo.querySQLAsJson(ontology, query, offset);
+			}
 		} catch (final DBPersistenceException e) {
 			log.error(ERROR_QUERYSQLASJSON + e.getMessage(), e);
 			throw e;
 		} catch (final Exception e) {
 			log.error(ERROR_QUERYSQLASJSON + e.getMessage());
 			throw new DBPersistenceException(e);
+		}
+	}
+
+	// Surround with value like {"value":nativeValue} when return type is not json
+	// or jsonarray
+	private String surroundNativeWithValueNode(String resultQuery) {
+		if (!resultQuery.isEmpty()) {
+			final String firstChar = resultQuery.trim().substring(0, 1);
+			if (firstChar.equals("[") || firstChar.equals("{")) {// fast check
+				return resultQuery;
+			} else {
+				return "[{\"value\":" + resultQuery + "}]";
+			}
+		} else {
+			return resultQuery;
+		}
+	}
+
+	private boolean useQuasar() {
+		try {
+			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+					.get("mongodb-use-quasar")).booleanValue();
+		} catch (final RuntimeException e) {
+			return true;
 		}
 	}
 

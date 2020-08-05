@@ -33,8 +33,9 @@ import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulatio
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
-import com.minsait.onesait.platform.config.model.OAuthAccessToken;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyKPI;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.TwitterListening;
 import com.minsait.onesait.platform.config.model.User;
@@ -48,9 +49,8 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
-import com.minsait.onesait.platform.config.repository.OAuthAccessTokenRepository;
-import com.minsait.onesait.platform.config.repository.OAuthRefreshTokenRepository;
 import com.minsait.onesait.platform.config.repository.OPResourceRepository;
+import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestHeadersRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestRepository;
@@ -67,10 +67,14 @@ import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceEx
 import com.minsait.onesait.platform.config.services.exceptions.QueryTemplateServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
+import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
+import com.minsait.onesait.platform.multitenant.config.repository.OAuthAccessTokenRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.OAuthRefreshTokenRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -107,8 +111,6 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
 	@Autowired
-	private TokenRepository tokenRepository;
-	@Autowired
 	private OntologyRestRepository ontologyRestRepository;
 	@Autowired
 	private OntologyRestSecurityRepository ontologyRestSecurityRepository;
@@ -131,10 +133,17 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private OntologyTimeSeriesRepository ontologyTimeSeriesRepository;
 	@Autowired
+	private TokenRepository tokenRepository;
+	@Autowired
 	private ProjectService projectService;
 
 	@Autowired
 	private QueryTemplateRepository queryTemplateRepository;
+	@Autowired
+	private KafkaAuthorizationService kafkaAuthorizationService;
+
+	@Autowired
+	private OntologyKPIRepository kpiRepository;
 
 	@Override
 	public void deleteOntology(String id, String userId) {
@@ -151,6 +160,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 						final ClientPlatform client = cpo.getClientPlatform();
 						client.getClientPlatformOntologies().removeIf(r -> r.getOntology().equals(ontology));
 						clientPlatformOntologyRepository.deleteById(cpo.getId());
+						kafkaAuthorizationService.removeAclToOntologyClient(cpo);
 					});
 
 				}
@@ -186,17 +196,27 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 							.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
 				}
 
-				if (ontologyTimeSeriesRepository.findById(id) != null) {
-					final Ontology stats = ontologyRepository.findByIdentification(
-							ontologyTimeSeriesRepository.findById(id).getOntology().getIdentification() + "_stats");
-					if (stats != null) {
-						ontologyRepository.deleteById(stats.getId());
-					}
-				}
 				gadgetDatasourceRepository.findByOntology(ontology).forEach(g -> {
 					deleteGadgetDataSource(g.getId(), userId);
 
 				});
+
+				List<OntologyKPI> kpi = kpiRepository.findByOntology(ontology);
+
+				if (!kpi.isEmpty()) {
+					kpiRepository.delete(kpi);
+				}
+
+				List<OntologyTimeSeries> timeSeries = ontologyTimeSeriesRepository.findByOntology(ontology);
+
+				if (!timeSeries.isEmpty()) {
+					ontologyTimeSeriesRepository.delete(timeSeries);
+					final Ontology stats = ontologyRepository
+							.findByIdentification(timeSeries.get(0).getOntology().getIdentification() + "_stats");
+					if (stats != null) {
+						ontologyRepository.deleteById(stats.getId());
+					}
+				}
 
 				ontologyRepository.deleteById(id);
 
@@ -223,9 +243,10 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 			final ClientPlatform client = clientPlatformRepository.findById(id);
 			final List<ClientPlatformOntology> cpf = clientPlatformOntologyRepository.findByClientPlatform(client);
 			if (cpf != null && cpf.size() > 0) {
-				for (final Iterator iterator = cpf.iterator(); iterator.hasNext();) {
+				for (final Iterator<ClientPlatformOntology> iterator = cpf.iterator(); iterator.hasNext();) {
 					final ClientPlatformOntology clientPlatformOntology = (ClientPlatformOntology) iterator.next();
 					clientPlatformOntologyRepository.delete(clientPlatformOntology);
+					kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
 				}
 
 			}
@@ -268,11 +289,11 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	public void deleteToken(Token token) {
 		try {
 			ClientPlatform cp = token.getClientPlatform();
-			
+
 			Set<Token> tokens = new HashSet<>();
-			
+
 			for (Token tokencp : cp.getTokens()) {
-				if (!tokencp.getId().equals(token.getId())){
+				if (!tokencp.getId().equals(token.getId())) {
 					tokens.add(tokencp);
 				}
 			}
@@ -281,7 +302,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 			
 			cp.setTokens(tokens);
 			clientPlatformRepository.save(cp);
-			
+
 		} catch (final Exception e) {
 			log.error("Error deleting Token", e);
 			throw new OntologyServiceException("Couldn't delete Token");

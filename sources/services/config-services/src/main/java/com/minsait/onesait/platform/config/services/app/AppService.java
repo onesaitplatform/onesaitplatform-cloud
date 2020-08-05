@@ -34,7 +34,7 @@ public interface AppService {
 
 	public void createApp(App app);
 
-	public App getById(String identification);
+	public App getById(String id);
 
 	public void updateApp(AppCreateDTO appDTO);
 

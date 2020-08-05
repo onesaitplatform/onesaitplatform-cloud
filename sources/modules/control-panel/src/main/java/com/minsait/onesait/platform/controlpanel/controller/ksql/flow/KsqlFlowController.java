@@ -46,6 +46,9 @@ import com.minsait.onesait.platform.config.services.ksql.flow.KsqlFlowService;
 import com.minsait.onesait.platform.config.services.ksql.relation.KsqlRelationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.controller.ksql.flow.dto.KsqlFlowDTO;
+import com.minsait.onesait.platform.controlpanel.controller.ksql.flow.dto.KsqlRelationFIQL;
+import com.minsait.onesait.platform.controlpanel.controller.ksql.flow.dto.OntologyJsonSchemaDto;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -65,12 +68,14 @@ public class KsqlFlowController {
 	private KsqlRelationService ksqlRelationService;
 	@Autowired
 	private OntologyService ontologyService;
+	@Autowired
+	private KsqlRelationFIQL ksqlRelationFIQL;
 
 	private static final String KSQL_FLOW_VALIDATION_ERROR = "ksql.flow.validation.error";
 	private static final String REDIRECT_KSQL_FLOW_LIST = "redirect:/ksql/flow/list";
 	private static final String KSQL_FLOW= "ksqlFlow";
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
@@ -82,13 +87,13 @@ public class KsqlFlowController {
 		return "ksql/flow/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		return this.ksqlFlowService.getAllIdentifications();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createForm(Model model) {
 		KsqlFlow ksqlFlow = new KsqlFlow();
@@ -98,7 +103,7 @@ public class KsqlFlowController {
 		return "ksql/flow/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = { "/create" })
 	public String create(Model model, @Valid KsqlFlowDTO ksqlFlowDTO, BindingResult bindingResult,
 			RedirectAttributes redirect) {
@@ -124,7 +129,7 @@ public class KsqlFlowController {
 		return REDIRECT_KSQL_FLOW_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/check/{ksqlflowIdentification}")
 	public @ResponseBody boolean checkAvailableDomainIdentifier(
 			@PathVariable(value = "ksqlflowIdentification") String identification) {
@@ -132,7 +137,7 @@ public class KsqlFlowController {
 		return ksqlFlowService.identificationIsAvailable(userService.getUser(utils.getUserId()), identification);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{ksqlFlowId}", produces = "text/html")
 	public String updateForm(Model model, @PathVariable(value = "ksqlFlowId") String id,
 			@RequestParam(required = false, name = "relationIdentification") String relationIdentification,
@@ -146,7 +151,7 @@ public class KsqlFlowController {
 			// Relations Info
 			List<KsqlRelation> ksqlRelations = ksqlRelationService.getKsqlRelationsWithFlowIdDescriptionAndIdentification(
 					userService.getUser(utils.getUserId()), id, relationIdentification, relationDescription);
-			model.addAttribute("ksqlRelations", ksqlRelations);
+			model.addAttribute("ksqlRelations", ksqlRelationFIQL.toKsqlRelationDTO(ksqlRelations));
 			// Available Ontologies Info
 			List<Ontology> ontologies = ontologyService.getOntologiesByUserId(ksqlFlow.getUser().getUserId());
 			List<OntologyJsonSchemaDto> ontologiesDto = new ArrayList<>();
@@ -166,7 +171,7 @@ public class KsqlFlowController {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		KsqlFlow flow = this.ksqlFlowService.getKsqlFlowWithId(id);
@@ -185,7 +190,7 @@ public class KsqlFlowController {
 		return REDIRECT_KSQL_FLOW_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}")
 	public String updateFlow(Model model, @PathVariable("id") String id, @Valid KsqlFlowDTO ksqlFlow,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -203,7 +208,7 @@ public class KsqlFlowController {
 		return REDIRECT_KSQL_FLOW_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/show/{ksqlFlowId}", produces = "text/html")
 	public String show(Model model, @PathVariable(value = "ksqlFlowId") String id,
 			@RequestParam(required = false, name = "relationIdentification") String relationIdentification,
@@ -216,7 +221,7 @@ public class KsqlFlowController {
 			// Relations Info
 			List<KsqlRelation> ksqlRelations = ksqlRelationService.getKsqlRelationsWithFlowIdDescriptionAndIdentification(
 					userService.getUser(utils.getUserId()), id, relationIdentification, relationDescription);
-			model.addAttribute("ksqlRelations", ksqlRelations);
+			model.addAttribute("ksqlRelations", ksqlRelationFIQL.toKsqlRelationDTO(ksqlRelations));
 			// Available Ontologies Info
 			List<Ontology> ontologies = ontologyService.getOntologiesByUserId(utils.getUserId());
 			List<OntologyJsonSchemaDto> ontologiesDto = new ArrayList<>();

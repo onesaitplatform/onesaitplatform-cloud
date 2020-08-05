@@ -120,4 +120,13 @@ public class DeployRequestRecord {
 	@Getter
 	@Setter
 	private ArrayList<Map<String,String>> multipartElements;
+	@Getter
+	@Setter
+	private Boolean retryAfterError;
+	@Getter
+	@Setter
+	private Boolean discardNotifAfterElapsedTime;
+	@Getter
+	@Setter
+	private Integer notificationRetryTimeout;
 }

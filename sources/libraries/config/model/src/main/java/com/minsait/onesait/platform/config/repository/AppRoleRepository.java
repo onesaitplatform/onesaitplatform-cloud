@@ -14,9 +14,17 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppRoleList;
 
 public interface AppRoleRepository extends JpaRepository<AppRole, String> {
+
+	@Query("SELECT arl FROM AppRoleList arl WHERE id IN (SELECT roles.id FROM AppRole ar JOIN ar.childRoles roles WHERE ar.id= :id )")
+	List<AppRoleList> findChildAppRoleListById(@Param("id") String id);
 }

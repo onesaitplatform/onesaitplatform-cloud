@@ -21,7 +21,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class InsertStatement implements SQLStatement {
 	@NotNull
@@ -55,44 +54,27 @@ public class InsertStatement implements SQLStatement {
 		return columns;
 	}
 
-	public InsertStatement setColumns(final List<String> columns) {
-		if(columns != null && !columns.isEmpty()){
-			this.columns = columns;
-			return this;
-		} else {
-			throw new IllegalArgumentException("Columns can't be null or empty");
-		}
-	}
+	public InsertStatement setValuesAndColumnsForInstances(final List<String> instances){
+		final JsonParser jsonParser = new JsonParser();
+		final List<Map<String, String>> valuesList = new ArrayList<>();
 
-	public InsertStatement setValuesAndColumnsForJson(final List<String> instances){
-		final String finalInstances = instances
-				.stream()
-				.collect(Collectors.joining(",","[","]"));
-		return setValuesAndColumnsForJson(finalInstances);
-	}
+		if(instances != null && !instances.isEmpty()) {
+			// It assumes the documents structure is always the same, so it gets the first one to create the columns
+			columns = generateSQLColumns(jsonParser.parse(instances.get(0)).getAsJsonObject());
 
-	public InsertStatement setValuesAndColumnsForJson(final String json) {
-		if(json != null && !json.isEmpty()){
-			final JsonElement jsonElement = new JsonParser().parse(json);
-			if(jsonElement.isJsonObject()) {
-				columns = generateSQLColumns(jsonElement.getAsJsonObject());
-			} else if(jsonElement.isJsonArray()
-					&& jsonElement.getAsJsonArray().size() > 0
-					&& jsonElement.getAsJsonArray().get(0).isJsonObject()) {
-				final JsonArray jsonArray = jsonElement.getAsJsonArray();
-				columns = StreamSupport.stream(jsonArray.spliterator(),false)
-						.map(JsonElement::getAsJsonObject)
-						.map(this::generateSQLColumns)
-						.flatMap(List::stream)
-						.distinct()
-						.collect(Collectors.toList());
-			} else {
-				throw new IllegalArgumentException("The json is not an object nor an array of objects");
+			for (String instance : instances) {
+				final JsonObject jsonInstance = jsonParser.parse(instance).getAsJsonObject();
+				final LinkedHashMap<String, String> mapValues = new LinkedHashMap<>();
+				for (Map.Entry<String, JsonElement> entry : jsonInstance.entrySet()) {
+					mapValues.put(entry.getKey(), this.getValueForJsonElement(entry.getValue()));
+				}
+				valuesList.add(mapValues);
 			}
-			values = generateSQLValues(jsonElement, columns);
+
+			values = valuesList;
 			return this;
 		} else {
-			throw new IllegalArgumentException("The json string can't be null or empty");
+			throw new IllegalArgumentException("Instance list can't be null or empty");
 		}
 	}
 
@@ -100,64 +82,10 @@ public class InsertStatement implements SQLStatement {
 		return values;
 	}
 
-	private Map<String, String> setSingleValues(final Map<String, String> values, final Map<String,String> baseMap) {
-		for (Map.Entry<String, String> entry : values.entrySet()) {
-			baseMap.putIfAbsent(entry.getKey(), entry.getValue());
-		}
-		return baseMap;
-	}
-
-	public InsertStatement setValues(final List<Map<String, String>> values) {
-		if(columns == null || columns.isEmpty()) {
-			throw new IllegalStateException("Set columns first, they are needed to create the values in proper order");
-		} else {
-			if(values != null && !values.isEmpty()) {
-				final Map<String, String> baseMap = new LinkedHashMap<>();
-				columns.forEach(column -> baseMap.put(column, null));
-
-				this.values = values.stream()
-						.map( value -> this.setSingleValues(value, new LinkedHashMap<>(baseMap)))
-						.collect(Collectors.toList());
-				return this;
-			} else {
-				throw new IllegalArgumentException("Values can't be null or empty");
-			}
-		}
-	}
-
 	private List<String> generateSQLColumns(final JsonObject jsonObject) {
 		return jsonObject.entrySet().stream()
 				.map(Map.Entry::getKey)
 				.collect(Collectors.toList());
-	}
-
-	private List<Map<String, String>> generateSQLValues(final JsonElement jsonElement, final List<String> columns){
-		final Map<String, String> baseMap = new LinkedHashMap<>();
-		columns.forEach(column -> baseMap.put(column, null));
-
-		if(jsonElement.isJsonObject()){
-			return Collections.singletonList(getValuesForJsonObject(jsonElement.getAsJsonObject(), baseMap));
-		} else if(jsonElement.isJsonArray()){
-			final JsonArray array = jsonElement.getAsJsonArray();
-			final List<Map<String, String>> valuesList = new ArrayList<>();
-			for (final JsonElement element : array) {
-				if(element.isJsonObject()) {
-					valuesList.add(this.getValuesForJsonObject(element.getAsJsonObject(), new LinkedHashMap<>(baseMap)));
-				} else {
-					throw new IllegalArgumentException("Nested elements in json array are not objects");
-				}
-			}
-			return valuesList;
-		} else {
-			throw new IllegalArgumentException("Json element is not an object or array");
-		}
-	}
-
-	private Map<String, String> getValuesForJsonObject(final JsonObject jsonObject, final Map<String,String> baseMap){
-		for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-			baseMap.putIfAbsent(entry.getKey(), this.getValueForJsonElement(entry.getValue()));
-		}
-		return baseMap;
 	}
 
 	private String getValueForJsonElement(JsonElement jsonElement){
@@ -178,9 +106,9 @@ public class InsertStatement implements SQLStatement {
 	}
 
 	@Override
-	public String generate() {
+	public PreparedStatement generate(boolean withParams) {
 		if(sqlGenerator != null) {
-			return sqlGenerator.generate(this);
+			return sqlGenerator.generate(this, withParams);
 		} else {
 			throw new IllegalStateException("SQL Generator service is not set, use SQLGenerator instance to generate or build the statement instead");
 		}

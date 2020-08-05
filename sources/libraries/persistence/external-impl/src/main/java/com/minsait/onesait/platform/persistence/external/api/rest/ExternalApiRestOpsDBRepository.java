@@ -78,7 +78,7 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	private ObjectMapper mapper;
 
 	@Override
-	public String insert(String ontology, String schema, String instance) {
+	public String insert(String ontology, String instance) {
 		OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
 
 		// try to find default UpdateById operation
@@ -108,10 +108,9 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	}
 
 	@Override
-	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
-			boolean includeIds) {
+	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
 		for (String instance : instances) {
-			this.insert(ontology, schema, instance);
+			this.insert(ontology, instance);
 		}
 		return new ComplexWriteResult();
 	}
@@ -541,4 +540,45 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		return headers;
 	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String ontology, String updateStmt)
+			throws DBPersistenceException {
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String collection, String query, String data)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
 }

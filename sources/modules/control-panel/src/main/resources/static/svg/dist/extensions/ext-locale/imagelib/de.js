@@ -11,9 +11,9 @@ var svgEditorExtensionLocale_imagelib_de = (function () {
       title: 'Bilder-Bibliothek'
     }],
     imgLibs: [{
-      name: 'Demo library (local)',
+      name: 'library',
       url: '{path}imagelib/index{modularVersion}.html',
-      description: 'Demonstration library for SVG-edit on this server'
+      description: 'library images on this server'
     }, {
       name: 'IAN Symbol Libraries',
       url: 'https://ian.umces.edu/symbols/catalog/svgedit/album_chooser.php?svgedit=3',

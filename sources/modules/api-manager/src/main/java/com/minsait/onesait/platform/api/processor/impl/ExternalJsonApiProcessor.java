@@ -14,11 +14,15 @@
  */
 package com.minsait.onesait.platform.api.processor.impl;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,11 +34,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
@@ -58,8 +65,10 @@ import io.swagger.models.Swagger;
 import io.swagger.models.parameters.HeaderParameter;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,6 +84,12 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 	@Autowired
 	private OpenAPIUtils openAPIUtils;
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
+	@PostConstruct
+	private void setUp() {
+		restTemplate.getMessageConverters().removeIf(c -> c instanceof StringHttpMessageConverter);
+		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+	}
 
 	@Autowired
 	private ScriptProcessorFactory scriptEngine;
@@ -129,7 +144,6 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			if (ServletFileUpload.isMultipartContent(request))
 				entity = new HttpEntity<>(addParameters(request, data), headers);
 			else {
-				url = addExtraQueryParameters(url, queryParams);
 				entity = new HttpEntity<>(body, headers);
 			}
 			switch (method) {
@@ -158,6 +172,15 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			data.put(Constants.REASON, e.getResponseBodyAsString());
 
 			throw e;
+		} catch (final ResourceAccessException e) {
+			log.error("Error: accessing resource ", e);
+			data.put(Constants.STATUS, ChainProcessingStatus.STOP);
+
+			data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
+
+			data.put(Constants.REASON, e.getMessage());
+			throw e;
+
 		} catch (final Exception e) {
 			log.error("Error buildigin request to external endpoint : {},   {}", url, e);
 			data.put(Constants.STATUS, ChainProcessingStatus.STOP);
@@ -226,7 +249,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			sb.append("?");
 			queryParams.entrySet().forEach(e -> {
 				final String param = e.getKey() + "=" + String.join("", e.getValue());
-				sb.append(param).append("&&");
+				sb.append(param).append("&");
 			});
 		}
 		return sb.toString();
@@ -253,17 +276,28 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
 			openAPI.getPaths().entrySet().forEach(e -> {
 				final PathItem path = e.getValue();
+				final List<Parameter> parameters = path.getParameters() == null ? new ArrayList<>()
+						: path.getParameters();
 				path.readOperationsMap().entrySet().forEach(op -> {
 					final io.swagger.v3.oas.models.Operation operation = op.getValue();
-					if (operation.getParameters() != null) {
-						operation.getParameters().stream()
-								.filter(p -> p instanceof io.swagger.v3.oas.models.parameters.HeaderParameter)
-								.forEach(p -> {
-									final String header = request.getHeader(p.getName());
-									if (!StringUtils.isEmpty(header) && !headers.containsKey(p.getName()))
-										headers.add(p.getName(), header);
-								});
-					}
+					if (operation.getParameters() != null)
+						parameters.addAll(operation.getParameters());
+					final Map<String, Components> cacheExternalReferences = new HashMap<>();
+					parameters.stream().forEach(p -> {
+						String name = null;
+						if (p.get$ref() != null) {
+							name = getHeaderNameFromRef(openAPI, p, cacheExternalReferences);
+						} else {
+							if (p instanceof io.swagger.v3.oas.models.parameters.HeaderParameter)
+								name = p.getName();
+						}
+						if (!StringUtils.isEmpty(name)) {
+							final String header = request.getHeader(name);
+							if (!StringUtils.isEmpty(header) && !headers.containsKey(name))
+								headers.add(name, header);
+						}
+					});
+
 				});
 			});
 		}
@@ -273,6 +307,43 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 		else
 			headers.setContentType(MediaType.valueOf(contentType));
 		return headers;
+	}
+
+	private String getHeaderNameFromRef(OpenAPI openAPI, Parameter p, Map<String, Components> cacheExternalReferences) {
+		final String ref = p.get$ref();
+		if (ref.startsWith("#")) {
+			final Parameter parameter = openAPI.getComponents().getParameters().get(getParameterComponent(ref));
+			if (parameter instanceof io.swagger.v3.oas.models.parameters.HeaderParameter)
+				return parameter.getName();
+		} else {
+			// Is an http reference -> download yaml and get component.
+			final String[] splitedRef = ref.split("#");
+			final String url = splitedRef[0];
+			if (cacheExternalReferences.get(url) != null) {
+				final Parameter parameter = cacheExternalReferences.get(url).getParameters()
+						.get(getParameterComponent(splitedRef[1]));
+				if (parameter instanceof io.swagger.v3.oas.models.parameters.HeaderParameter)
+					return parameter.getName();
+			}
+			final ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+			final OpenAPIParser openAPIParser = new OpenAPIParser();
+			final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(response.getBody(), null, null);
+			final OpenAPI yaml = swaggerParseResult.getOpenAPI();
+
+			final Parameter parameter = yaml.getComponents().getParameters().get(getParameterComponent(splitedRef[1]));
+			if (parameter instanceof io.swagger.v3.oas.models.parameters.HeaderParameter) {
+				cacheExternalReferences.put(url, yaml.getComponents());
+				return parameter.getName();
+			}
+
+		}
+		return null;
+
+	}
+
+	private String getParameterComponent(String ref) {
+		final String[] paths = ref.split("/");
+		return paths[paths.length - 1];
 	}
 
 	private String getServerUrl(OpenAPI openAPI, String pathInfo) {

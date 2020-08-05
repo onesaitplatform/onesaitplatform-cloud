@@ -23,6 +23,7 @@ import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
+import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyRestOperation;
@@ -30,9 +31,11 @@ import com.minsait.onesait.platform.config.model.OntologyRestOperationParam;
 import com.minsait.onesait.platform.config.model.OntologyRestSecurity;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 
 public interface OntologyService {
 
@@ -58,6 +61,8 @@ public interface OntologyService {
 	List<Ontology> getOntologiesByUserIdAndDataModel(String sessionUserId, String datamodel);
 
 	List<Ontology> getOntologiesByUserIdAndType(String sessionUserId, String type);
+
+	List<String> getAllIdentificationsByUser(String userId);
 
 	Ontology getOntologyById(String ontologyId, String sessionUserId);
 
@@ -143,7 +148,7 @@ public interface OntologyService {
 
 	List<DataModelDTO> getEmptyBaseDataModel();
 
-	List<String> getDatasourcesRelationals();
+	List<VirtualDatasourceDTO> getDatasourcesRelationals();
 
 	OntologyVirtual getOntologyVirtualByOntologyId(Ontology ontology);
 
@@ -151,7 +156,9 @@ public interface OntologyService {
 
 	void checkOntologySchema(String schema);
 
-	List<String> getPublicDatasourcesRelationals();
+	List<VirtualDatasourceDTO> getPublicOrOwnedDatasourcesRelationals(String sessionUserId);
+
+	OntologyVirtualDatasource getOntologyVirtualDatasourceByName(String datasourceName);
 
 	Map<String, String> executeKPI(String user, String query, String ontology, String context) throws Exception;
 
@@ -163,12 +170,17 @@ public interface OntologyService {
 
 	boolean hasEncryptionEnabled(String ontology);
 
-	List<String> getAllIdentificationsByUser(String userId);
+	List<OntologyKPI> getOntologyKpisByOntology(Ontology ontology);
 
 	List<OntologyDTO> getAllOntologiesForListWithProjectsAccess(String sessionUserId);
 
 	List<OntologyDTO> getAllOntologiesForList(String sessionUserId, String identification, String description);
 
 	List<OntologyDTO> getOntologiesForListByUser(String sessionUserId, String identification, String description);
+
+	List<OntologyDTO> getOntologiesForListByUserPropietary(String sessionUserId, String identification,
+			String description);
+
+	List<Ontology> getOntologiesByOwner(String sessionUserId);
 
 }

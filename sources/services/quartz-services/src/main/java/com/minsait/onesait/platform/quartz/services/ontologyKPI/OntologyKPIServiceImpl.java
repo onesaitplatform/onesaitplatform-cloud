@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.scheduler.SchedulerType;
 import com.minsait.onesait.platform.scheduler.scheduler.bean.TaskInfo;
 import com.minsait.onesait.platform.scheduler.scheduler.bean.TaskOperation;
@@ -39,7 +41,7 @@ public class OntologyKPIServiceImpl implements OntologyKPIService {
 
 	@Autowired
 	private OntologyKPIRepository ontologyKPIRepository;
-
+	
 	@Autowired
 	private TaskService taskService;
 
@@ -49,7 +51,7 @@ public class OntologyKPIServiceImpl implements OntologyKPIService {
 		if (jobName != null && oKPI.isActive()) {
 			final TaskOperation operation = new TaskOperation();
 			operation.setJobName(jobName);
-			if(taskService.unscheduled(operation)) {
+			if (taskService.unscheduled(operation)) {
 				oKPI.setActive(false);
 				oKPI.setJobName(null);
 				ontologyKPIRepository.save(oKPI);
@@ -73,60 +75,64 @@ public class OntologyKPIServiceImpl implements OntologyKPIService {
 	@Override
 	public JsonNode organizeRootNodeIfExist(String schema) throws IOException {
 
-		ObjectMapper mapper = new ObjectMapper();
+		final ObjectMapper mapper = new ObjectMapper();
 		final JsonNode schemaSubTree = mapper.readTree(schema);
 		boolean find = Boolean.FALSE;
-		for (Iterator<Entry<String, JsonNode>> elements = schemaSubTree.fields(); elements.hasNext();) {
-			Entry<String, JsonNode> e = elements.next();
+		for (final Iterator<Entry<String, JsonNode>> elements = schemaSubTree.fields(); elements.hasNext();) {
+			final Entry<String, JsonNode> e = elements.next();
 			if (e.getKey().equals("properties")) {
 				e.getValue().fields();
-				for (Iterator<Entry<String, JsonNode>> properties = e.getValue().fields(); properties.hasNext();) {
-					Entry<String, JsonNode> prop = properties.next();
-					String field = prop.getKey();
+				for (final Iterator<Entry<String, JsonNode>> properties = e.getValue().fields(); properties
+						.hasNext();) {
+					final Entry<String, JsonNode> prop = properties.next();
+					final String field = prop.getKey();
 					if (!field.toUpperCase().equals(field) && Character.isUpperCase(field.charAt(0))) {
-					    ((ObjectNode) schemaSubTree).set("datos", prop.getValue());
-						String newString = "{\"type\": \"string\",\"$ref\": \"#/datos\"}";
-						JsonNode newNode = mapper.readTree(newString);
+						((ObjectNode) schemaSubTree).set("datos", prop.getValue());
+						final String newString = "{\"type\": \"string\",\"$ref\": \"#/datos\"}";
+						final JsonNode newNode = mapper.readTree(newString);
 						prop.setValue(newNode);
 						find = Boolean.TRUE;
-                        break;
-                    }
-                    if (find) {
-                        break;
-                    }
+						break;
+					}
+					if (find) {
+						break;
+					}
 				}
 			}
 		}
 		return schemaSubTree;
 	}
-	
-	@Override
-    public void scheduleKpi(OntologyKPI oKPI) {
-        if (!oKPI.isActive()) {
-            final TaskInfo task = new TaskInfo();
-            task.setSchedulerType(SchedulerType.OKPI);
 
-            final Map<String, Object> jobContext = new HashMap<>();
-            jobContext.put("id", oKPI.getId());
-            jobContext.put("ontology", oKPI.getOntology().getIdentification());
-            jobContext.put("query", oKPI.getQuery());
-            jobContext.put("userId", oKPI.getUser().getUserId());
-            jobContext.put("postProcess", oKPI.getPostProcess());
-            task.setJobName("Ontology KPI");
-            task.setData(jobContext);
-            if (oKPI.getDateFrom() != null) {
-                task.setStartAt(oKPI.getDateFrom());
-            }
-            if (oKPI.getDateTo() != null) {
-                task.setEndAt(oKPI.getDateTo());
-            }
-            task.setSingleton(false);
-            task.setCronExpression(oKPI.getCron());
-            task.setUsername(oKPI.getUser().getUserId());
-            final ScheduleResponseInfo response = taskService.addJob(task);
-            oKPI.setActive(response.isSuccess());
-            oKPI.setJobName(response.getJobName());
-            ontologyKPIRepository.save(oKPI);
-        }
-    }
+	@Override
+	public void scheduleKpi(OntologyKPI oKPI) {
+		if (!oKPI.isActive()) {
+			final TaskInfo task = new TaskInfo();
+			task.setSchedulerType(SchedulerType.OKPI);
+
+			final Map<String, Object> jobContext = new HashMap<>();
+			jobContext.put("id", oKPI.getId());
+			jobContext.put("ontology", oKPI.getOntology().getIdentification());
+			jobContext.put("query", oKPI.getQuery());
+			jobContext.put("userId", oKPI.getUser().getUserId());
+			jobContext.put("postProcess", oKPI.getPostProcess());
+			jobContext.put(Tenant2SchemaMapper.VERTICAL_SCHEMA_KEY_STRING,
+					MultitenancyContextHolder.getVerticalSchema());
+			jobContext.put(Tenant2SchemaMapper.TENANT_KEY_STRING, MultitenancyContextHolder.getTenantName());
+			task.setJobName("Ontology KPI");
+			task.setData(jobContext);
+			if (oKPI.getDateFrom() != null) {
+				task.setStartAt(oKPI.getDateFrom());
+			}
+			if (oKPI.getDateTo() != null) {
+				task.setEndAt(oKPI.getDateTo());
+			}
+			task.setSingleton(false);
+			task.setCronExpression(oKPI.getCron());
+			task.setUsername(oKPI.getUser().getUserId());
+			final ScheduleResponseInfo response = taskService.addJob(task);
+			oKPI.setActive(response.isSuccess());
+			oKPI.setJobName(response.getJobName());
+			ontologyKPIRepository.save(oKPI);
+		}
+	}
 }

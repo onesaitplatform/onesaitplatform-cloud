@@ -23,6 +23,8 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import com.minsait.onesait.platform.config.model.*;
+import org.apache.commons.lang.time.StopWatch;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +39,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.minsait.onesait.platform.config.model.App;
-import com.minsait.onesait.platform.config.model.AppRole;
-import com.minsait.onesait.platform.config.model.AppUser;
-import com.minsait.onesait.platform.config.model.Project;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.Role;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectDTO;
@@ -200,6 +195,10 @@ public class ProjectManagementController {
 			if (projectDTO.getIdentification().equals("") || projectDTO.getDescription().equals("")) {
 				return new ResponseEntity<>(String.format("Missing input data"), HttpStatus.BAD_REQUEST);
 			}
+			
+			if (!projectDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+			    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+			}			
 
 			ProjectDTO projDTO = new ProjectDTO();
 			projDTO.setDescription(projectDTO.getDescription());
@@ -794,7 +793,7 @@ public class ProjectManagementController {
 			@RequestHeader("Authorization") String authorization) {
 
 		try {
-			final Project project = projectService.getByName(projectId);
+			final ProjectList project = projectService.getByNameForList(projectId);
 
 			if (project == null) {
 				return new ResponseEntity<>(String.format("Project not found with id %s", projectId),
@@ -940,7 +939,8 @@ public class ProjectManagementController {
 			@RequestHeader("Authorization") String authorization) {
 
 		try {
-			final Project project = projectService.getByName(projectId);
+
+			final ProjectList project = projectService.getByNameForList(projectId);
 
 			if (project == null) {
 				return new ResponseEntity<>(String.format("Project not found with id %s", projectId),

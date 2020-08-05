@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.service;
 
+import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
 
@@ -22,6 +23,8 @@ public interface FlowEngineValidationNodeService {
 	User validateUserCredentials(String userId, String credentials);
 
 	User validateUser(String userId);
+	
+	FlowDomain validateDomain(String domainName);
 
 	DecodedAuthentication decodeAuth(String authentication);
 }

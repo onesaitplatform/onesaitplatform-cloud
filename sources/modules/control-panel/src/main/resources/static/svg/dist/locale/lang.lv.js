@@ -23,7 +23,7 @@ var svgEditorLang_lv = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: 'Noklikšķiniet, lai mainītu aizpildījuma krāsu, shift-click to mainīt stroke krāsa',
       zoom_level: 'Pārmaiņu mērogu',
-      panel_drag: 'Drag left/right to resize side panel',
+      panel_drag: 'Click to show hide',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -83,7 +82,7 @@ public class DigitalTwinDeviceController {
 		return digitalTwinDeviceService.getAllIdentifications();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		model.addAttribute("digitaltwindevice", new DigitalTwinDevice());
@@ -92,26 +91,26 @@ public class DigitalTwinDeviceController {
 		return "digitaltwindevices/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list")
 	public String list(Model model) {
 		model.addAttribute("digitalTwinDevices", digitalTwinDeviceService.getAllByUserId(utils.getUserId()));
 		return "digitaltwindevices/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/generateToken")
 	public @ResponseBody String generateToken() {
 		return digitalTwinDeviceService.generateToken();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/getLogicFromType/{type}")
 	public @ResponseBody String getLogicFromType(@PathVariable("type") String type) {
 		return digitalTwinDeviceService.getLogicFromType(type);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/create")
 	@Transactional
 	public String createDigitalTwinDevice(Model model, @Valid DigitalTwinDevice digitalTwinDevice,
@@ -134,7 +133,7 @@ public class DigitalTwinDeviceController {
 		return REDIRECT_DIGITAL_TWIN_DEV_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/show/{id}")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDeviceById(id);
@@ -151,7 +150,7 @@ public class DigitalTwinDeviceController {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		if (!digitalTwinDeviceService.hasUserEditAccess(id, utils.getUserId()))
@@ -161,7 +160,7 @@ public class DigitalTwinDeviceController {
 		return "digitaltwindevices/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDigitalTwinDevice(Model model, @PathVariable("id") String id,
 			@Valid DigitalTwinDevice digitalTwinDevice, BindingResult bindingResult, RedirectAttributes redirect,
@@ -187,7 +186,7 @@ public class DigitalTwinDeviceController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	@Transactional
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
@@ -222,7 +221,5 @@ public class DigitalTwinDeviceController {
 		final InputStreamResource isr = new InputStreamResource(new FileInputStream(zipFile));
 		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
-
-	
 
 }

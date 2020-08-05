@@ -1,10 +1,20 @@
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
+edge.base.url: {EDGE_BASE_URL}  
 onesaitplatform:
+   multitenancy:
+      enabled: ${MULTITENANCY_ENABLED}
    authentication:
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
           list: ${CONFIGDB_ACL_LIST}
-      twofa: 
+      twofa:
         enabled: ${TWOFA_ENABLED}
       provider: ${AUTH_PROVIDER}
       cas:
@@ -40,12 +50,12 @@ onesaitplatform:
       url: https://${SERVER_NAME}/controlpanel
    database.mongodb:
       database: ${REALTIMEDBNAME}
-      servers: ${REALTIMEDBSERVERS} 
-      authenticationDatabase: ${REALTIMEDBAUTHDB}               
+      servers: ${REALTIMEDBSERVERS}
+      authenticationDatabase: ${REALTIMEDBAUTHDB}
       useAuth: ${REALTIMEDBUSEAUTH}
       username: ${REALTIMEDBUSER}
       password: ${REALTIMEDBPASS}
-      writeConcern: ${REALTIMEDBWRITECONCERN}    
+      writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
    database.hadoop.enabled: ${ENABLEHADOOP}
    database.hdfs:
@@ -71,21 +81,18 @@ onesaitplatform:
         operationTimeout: ${KUDUCLIENTOPTIMEOUT}
         adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
         socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
-   database.elasticsearch:
-      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-      url: ${ELASTICDBHOST}
-      port: 9300
+   database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
    urls:
-    iotbroker: https://${SERVER_NAME}           
+    iotbroker: https://${SERVER_NAME}
    flowengine:
     services:
       request.timeout.ms: 5000
-      baseurl: http://flowengineservice:20100/flowengine/admin   
+      baseurl: http://flowengineservice:20100/flowengine/admin
       proxyurl: https://${SERVER_NAME}/nodered/
     port:
       domain:
         min: ${FLOW_DOMAIN_MIN_PORT}
-        max: ${FLOW_DOMAIN_MAX_PORT} 
+        max: ${FLOW_DOMAIN_MAX_PORT}
    dashboard:
      themeonesait.css: https://${SERVER_NAME}/controlpanel/static/vendor/onesait-ds/lib/theme-onesait/index.css
      themeonesait.js: https://${SERVER_NAME}/controlpanel/static/vendor/onesait-ds/lib/index.js
@@ -98,49 +105,68 @@ onesaitplatform:
       kafka:
         enable: ${KAFKAENABLED}
         host: ${KAFKAHOST}
-        port: ${KAFKAPORT}  
+        port: ${KAFKAPORT}
         user: admin
-        password: admin-secret 
+        password: admin-secret
         partitions: 10
         replication: 1
    analytics.notebook:
       zeppelinHostname: zeppelin
+      platformAuth: ${NOTEBOOKPLATFORMAUTH} 
    analytics.dataflow:
       streamsetsHostname: streamsets
       version: ${STREAMSETS_SDC_VERSION}
-   router.alternativeURL: http://routerservice:20000/router/router/           
+   router.alternativeURL: http://routerservice:20000/router/router/
    kafka.burrow.monitoring:
       host.url : http://kafkamonitoringservice:18400
    ksql.server.url: ${KSQLSERVER}
    kafka.ksql.enable: ${KSQLENABLE}
    audit:
-      global.notify: ${AUDITGLOBALNOTIFY}   
+      global.notify: ${AUDITGLOBALNOTIFY}
+   restPlanner:
+      checkSSL: ${RESTPLANNER_CHECKSSL}
    user.registry.validation.url: https://${SERVER_NAME}/controlpanel/users/validateNewUser/
    user.reset.validation.url: http://${SERVER_NAME}/controlpanel/users/validateResetPassword/
    secure.cookie: true
+   secure.x-frame-options: ${SECURE_XFRAMEOPTIONS}
    password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+   queryTool:
+      allowedOperations: ${QUERY_TOOL_ALLOWED_OPERATIONS}
    metrics:
       collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
       enabled: ${ENABLE_METRICS}
 ldap:
   url: ${LDAP_URL}
   base: ${LDAP_BASE_DN}
+  ignorepartialresult: ${LDAP_IGNORE_PARTIAL_RESULT}
   username: ${LDAP_ADMIN_DN}
   password: ${LDAP_ADMIN_PASSWORD}
   defaultRole: ${LDAP_DEFAULT_ROLE}
+  platformRolesGroup:
+      administrator: ${LDAP_ADMINISTRATOR_DN}
+      datascientist: ${LDAP_ANALYTICS_DN}
+      dataviewer: ${LDAP_DATAVIEWER_DN}
+      developer: ${LDAP_DEVELOPER_DN}
+      devops: ${LDAP_DEVOPS_DN}
+      operations: ${LDAP_OPERATIONS_DN}
+      partner: ${LDAP_PARTNER_DN}
+      platformAdmin: ${LDAP_PLATFORM_ADMIN_DN}
+      sysAdmin:  ${LDAP_SYS_ADMIN_DN}
+      user:  ${LDAP_USER_DN}
   attributesMap:
      userId: ${LDAP_USERID_ATT}
      mail: ${LDAP_MAIL_ATT}
      cn: ${LDAP_CN_ATT}
+     groupOfNames: ${LDAP_GROUP_OF_NAMES_ATT}
+  rolesmemberattribute: ${LDAP_ROLES_MEMBER_ATT}
 
-      
 spring:
-   datasource:    
-      url: ${CONFIGDBURL}
+   datasource:
+      url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS} 
+      password: ${CONFIGDBPASS}
       time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
       min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
       max-wait-millis: ${DS_MAX_WAIT_MILLIS}
@@ -151,24 +177,23 @@ spring:
       min-idle: ${DS_MIN_IDLE}
       removeAbandoned: ${DS_REMOVE_ABANDONED}
       removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
-   boot.admin: #Spring Boot Admin Config    
-      url: http://monitoringuiservice:18100/monitoring    
-      client.service-url: http://controlpanelservice:${server.port}${server.contextPath}/ 
+   boot.admin: #Spring Boot Admin Config
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://controlpanelservice:${server.port}${server.contextPath}/
+   http:
+      multipart:
+         max-file-size: ${HTTP_MAX_FILE_SIZE}
+         max-request-size: ${HTTP_MAX_REQUEST_SIZE}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
 quartz:
     datasource:
-      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      url: ${SCHEDULERDBBURL}${DBADDPROPS}
 ## LOGGING CONF
 logging:
    path: /var/log/platform-logs
-
-gravitee:
-  enable: ${GRAVITEE_ON}
-  clientId: ${GRAVITEE_CLIENTID}
-  clientSecret: ${GRAVITEE_CLIENTSECRET}
 
 cloud-gateway:
   url: ${CLOUD_GATEWAY}
@@ -176,6 +201,14 @@ cloud-gateway:
 captcha:
   enable: ${CAPTCHA_ON}
   token: ${CAPTCHA_TOKEN}
+
+splash:
+  enable: ${SPLASH_ON}  
+  everyXHours: ${SPLASH_EVERYXHOURS}
+
+dynamic-load-balancer:
+  enable: ${DYNAMIC_LOADBALANCER_ENABLED}
+  url: ${DYNAMIC_LOADBALANCER_ENDPOINT}
 
 csrf:
   enable: ${CSRF_ON}

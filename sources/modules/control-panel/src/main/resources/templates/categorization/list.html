@@ -222,13 +222,22 @@
 														<label class="toggle-vis"
 															th:text="#{gen.created}" data-column="1"> Created At</label>
 														<label class="toggle-vis"
-														th:text="#{consolemenu.updated}" data-column="2"> Updated At</label>
-														<label class="toggle-vis"
-														th:text="#{gen.active}" data-column="3">Active</label>
-														<label class="toggle-vis"
-														th:text="#{categorization.authorization}" data-column="4">Authorization</label>
-														<label class="toggle-vis"
-															th:text="#{gen.options}" data-column="5"> Options</label>
+															th:text="#{consolemenu.updated}" data-column="2"> Updated At</label>														
+														<label th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"
+															class="toggle-vis"
+															th:text="#{gen.active}" data-column="3">Active</label>
+														<label th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"
+															class="toggle-vis"
+															th:text="#{categorization.authorization}" data-column="4">Authorization</label>
+														<label th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"
+															class="toggle-vis"
+															th:text="#{gen.options}" data-column="5"> Options</label>															
+														<label th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"
+															class="toggle-vis"
+															th:text="#{categorization.authorization}" data-column="3">Authorization</label>
+														<label th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"
+															class="toggle-vis"
+															th:text="#{gen.options}" data-column="4"> Options</label>
 													</div>
 												</div>
 											</div>

@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.rulesengine.drools;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +27,7 @@ import org.kie.api.KieServices;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.ReleaseId;
 import org.kie.api.builder.Results;
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.io.ResourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.services.drools.DroolsRuleService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
+import com.minsait.onesait.platform.rulesengine.service.impl.RulesEngineServiceImpl;
 
 @Service
 @EnableScheduling
@@ -52,6 +57,10 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 	@Autowired
 	private DroolsRuleService droolsRuleService;
+	@Autowired
+	private MultitenancyService masterUserService;
+
+	private Map<String, KieContainer> cacheKieContainer;
 
 	private KieServices getNewKieServices(String user) {
 		if (kieServicesMap.get(user) != null)
@@ -68,21 +77,33 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 	@PostConstruct
 	void loadRules() {
-		final List<DroolsRuleDomain> activeDomains = droolsRuleService.getActiveDomains();
-		activeDomains.forEach(rd -> initializeRuleEngineDomain(rd.getUser().getUserId()));
+		cacheKieContainer = new ConcurrentHashMap<>();
+		masterUserService.getAllVerticals().forEach(v -> {
+			MultitenancyContextHolder.setVerticalSchema(v.getSchema());
+			final List<DroolsRuleDomain> activeDomains = droolsRuleService.getActiveDomains();
+			activeDomains.forEach(rd -> initializeRuleEngineDomain(rd.getUser().getUserId()));
+			MultitenancyContextHolder.clear();
+		});
+
 	}
 
 	@Scheduled(fixedDelay = 120000)
 	private void synchronizeDomains() {
-		final List<String> activeDomainUsers = droolsRuleService.getActiveDomains().stream()
-				.map(d -> d.getUser().getUserId()).collect(Collectors.toList());
-		activeDomainUsers.forEach(u -> {
-			if (!kieServicesMap.containsKey(u)) {
-				initializeRuleEngineDomain(u);
-			}
+		final List<String> allUsers = new ArrayList<>();
+		masterUserService.getAllVerticals().forEach(v -> {
+			MultitenancyContextHolder.setVerticalSchema(v.getSchema());
+			final List<String> activeDomainUsers = droolsRuleService.getActiveDomains().stream()
+					.map(d -> d.getUser().getUserId()).collect(Collectors.toList());
+			allUsers.addAll(activeDomainUsers);
+			activeDomainUsers.forEach(u -> {
+				if (!kieServicesMap.containsKey(u)) {
+					initializeRuleEngineDomain(u);
+				}
 
+			});
+			MultitenancyContextHolder.clear();
 		});
-		kieServicesMap.entrySet().removeIf(e -> !activeDomainUsers.contains(e.getKey()));
+		kieServicesMap.entrySet().removeIf(e -> !allUsers.contains(e.getKey()));
 	}
 
 	@Override
@@ -117,7 +138,7 @@ public class KieServicesManagerImpl implements KieServicesManager {
 	public void removeServices(String user) {
 		kieServicesMap.remove(user);
 		fileSystems.remove(user);
-
+		cacheKieContainer.remove(user);
 	}
 
 	@Override
@@ -125,7 +146,14 @@ public class KieServicesManagerImpl implements KieServicesManager {
 		if (kieServicesMap.get(user) == null)
 			throw new GenericRuntimeOPException("User does not have any binded kie services");
 		final KieServices ks = kieServicesMap.get(user);
-		return ks.newKieContainer(getReleaseId(user)).newKieSession();
+
+		if (cacheKieContainer.containsKey(user)) {
+			return cacheKieContainer.get(user).newKieSession();
+		} else {
+			final KieContainer container = ks.newKieContainer(getReleaseId(user));
+			cacheKieContainer.put(user, container);
+			return container.newKieSession();
+		}
 
 	}
 
@@ -148,6 +176,7 @@ public class KieServicesManagerImpl implements KieServicesManager {
 		kfs.delete(PATH_TO_RULES + user + "/" + ruleName + ".drl");
 		final KieServices ks = kieServicesMap.get(user);
 		ks.newKieBuilder(kfs).buildAll();
+		cacheKieContainer.remove(user);
 	}
 
 	@Override
@@ -167,6 +196,7 @@ public class KieServicesManagerImpl implements KieServicesManager {
 	@Override
 	public Results updateRule(String user, String ruleName, String drl) {
 		removeRule(user, ruleName);
+		removeServices(RulesEngineServiceImpl.TEMP_JAR_PREFIX + ruleName);
 		return addRule(user, drl, ruleName);
 	}
 }

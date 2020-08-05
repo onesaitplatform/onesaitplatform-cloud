@@ -811,7 +811,10 @@ var OntologyCreateController = function() {
 			if(this.value == "KUDU"){
 				$("#kuduProps").removeClass("hidden");
 			}
-			else{
+			else if(this.value == "COSMOS_DB"){
+				$(".cosmosProps").removeClass("hidden");
+			}else{
+				$(".cosmosProps").addClass("hidden");
 				$("#kuduProps").addClass("hidden");
 			}
 		});
@@ -1522,7 +1525,10 @@ var OntologyCreateController = function() {
 			initTemplateElements();
 			dataModeltemplateCounters();
 			mountReferenceInitialTable();
-			
+			//TAGSINPUT MAX TAGS
+			$('#partitionkey').tagsinput({
+				  maxTags: 1
+			});
 			// SET DEFAULT DATAMODEL TO EMPTYBASE
 			$('#datamodelid').val($('#EmptyBase li').attr('data-model'));
 

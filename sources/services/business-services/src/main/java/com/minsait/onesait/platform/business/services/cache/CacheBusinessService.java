@@ -51,4 +51,6 @@ public interface CacheBusinessService {
     
     public void deleteCacheById(String identification);
 
+	public List<Cache> getByIdentificationLikeOrderByIdentification(String identification);
+
 }

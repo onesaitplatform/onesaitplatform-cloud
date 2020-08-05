@@ -156,7 +156,8 @@
 													<div class="col-md-6 col-sm-6 col-xs-12">
 														<div class="form-group" >
 															<label class="control-label" th:text="#{datamodel.labels} + ':'" >Labels</label><span class="required"> *</span>															
-															<input data-msg="Tags for the device" th:tabindex="3" data-role="tagsinput" class="form-control tagsinput" id="datamodelLabel" name="datamodelLabel" type="text"  maxlength="100" th:field="*{labels}" th:required="true"  />
+															<input data-msg="Tags for the device" th:tabindex="3" data-role="tagsinput" class="form-control tagsinput" id="datamodelLabel" name="datamodelLabel" type="text"  maxlength="100" th:field="*{labels}" th:required="true" ></input>
+															<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
 														</div>
 													</div>												
 													
@@ -172,6 +173,7 @@
 														<div class="form-group">
 															<label class="control-label"><span th:text="#{datamodel.jsonschema} + ':'">Data Model Schema</span></label><span class="required"> *</span>														
 															<textarea id="jsonSchemaDatamodel" name="jsonSchemaDatamodel" th:required="true" th:field="*{jsonSchema}" class="form-control" rows="5" data-min-rows='5'></textarea>
+															<span id="jsonerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
 														</div>
 														<div class="clearfix"></div>
 													</div>
@@ -191,15 +193,14 @@
 													<span class="sep no-border"></span>
 													
 													<!-- REMOVE -->
-													<button th:if="${datamodel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'dataModelCreateController.deleteDataModel(\'' + ${dataModel?.identification} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<button th:if="${datamodel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'dataModelCreateController.deleteDataModel(\'' + ${datamodel?.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 													
 													<span class="sep"></span>
 													
 													<!-- CREATE--> 
-													<button th:if="${datamodel.identification} == null" id="createBtn" class="btn btn-circle btn-outline btn-primary"  name="create"><span th:text="#{gen.createBtn}"> New</span></button>
-													
+													<button th:if="${datamodel.identification} == null" type="submit" id="createBtn" class="btn btn-circle btn-outline btn-primary"  name="create"><span th:text="#{gen.createBtn}"> New</span></button>													
 													<!-- UPDATE -->
-													<button th:if="${datamodel.identification} != null" id="updateBtn" class="btn btn-circle btn-outline btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+													<button th:if="${datamodel.identification} != null" type="submit" id="updateBtn" class="btn btn-circle btn-outline btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 													
 												</div>
 											</div>
@@ -250,7 +251,8 @@
 	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 	
-
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
 		
 	<!-- TEMPLATE CONTROLLER  -->	
 	<script th:src="@{/static/js/pages/dataModelCreate.js}"/>

@@ -23,11 +23,16 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.beans.factory.annotation.Configurable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -38,11 +43,18 @@ import lombok.Setter;
 public class Project extends ProjectParent {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	public enum ProjectType {
 		ENGINE, THINGS, INTELLIGENCE
 	}
-	
+
+	@Fetch(FetchMode.JOIN)
+	@ManyToMany(cascade = { CascadeType.PERSIST }, mappedBy = "projects", fetch = FetchType.EAGER)
+	@Getter
+	@Setter
+	@JsonIgnore
+	private Set<User> users = new HashSet<>();
+
 	@Column(name = "TYPE")
 	@Enumerated(EnumType.STRING)
 	@Getter
@@ -53,10 +65,10 @@ public class Project extends ProjectParent {
 	@Getter
 	@Setter
 	private Set<ProjectResourceAccess> projectResourceAccesses = new HashSet<>();
-	
+
 	@OneToOne(mappedBy = "project")
 	@Getter
 	@Setter
 	private App app;
-	
+
 }

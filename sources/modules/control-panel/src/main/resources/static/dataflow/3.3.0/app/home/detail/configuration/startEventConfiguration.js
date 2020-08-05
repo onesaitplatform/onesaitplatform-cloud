@@ -18,9 +18,9 @@
  */
 angular
   .module('dataCollectorApp.home')
-  .controller('StartEventConfigurationController', function ($scope) {
+  .controller('StartEventConfigurationController', ["$scope", function ($scope) {
     $scope.detailPaneConfig = $scope.startEventStageConfig;
     $scope.$watch('startEventStageConfig', function() {
       $scope.detailPaneConfig = $scope.startEventStageConfig;
     });
-  });
+  }]);

@@ -1,31 +1,33 @@
 FROM onesaitplatform/baseimage:latest
 
 # Metadata
-LABEL platform.image.name="dashboard"	 
+LABEL platform.image.name="dashboard"
 
 ADD *-exec.jar app.jar
 
-# Timezone 
-RUN apk add --no-cache tzdata
+# Timezone
+RUN apk add --no-cache tzdata \
+    bash
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \
-	mkdir ./target
-	
+    mkdir /application
+
+WORKDIR /application    
+RUN unzip /app.jar &&\
+	rm /app.jar
+
 # create onesait platform user/group
-RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
 RUN chown -R onesait:onesait /usr/local && \
-    chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait ./target && \    
-    chown onesait:onesait app.jar && \
-    chmod -R 777 ./target && \
+    chown -R onesait:onesait /var/log/platform-logs && \   
+    chown -R onesait:onesait /application && \ 
     chmod -R 777 /var/log && \
-    chmod -R 777 /usr/local
-    
-VOLUME ["/tmp", "/var/log/platform-logs"]    
-  
-USER onesait
+    chmod -R 777 /usr/local &&\
+    chmod -R 777 /application
+
+VOLUME ["/tmp", "/var/log/platform-logs"]
 
 EXPOSE 18300
 
@@ -34,32 +36,35 @@ EXPOSE 18300
 ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
-	REALTIMEDBUSEAUTH=true \
-	REALTIMEDBUSER=platformadmin \
-	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \ 
-    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \      
-    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+	  REALTIMEDBUSEAUTH=true \
+	  REALTIMEDBUSER=platformadmin \
+	  REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
+    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
+		CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+		CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
-    DBADDPROPS="" \  
+    DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
-    ELASTICDBPORT=9200 \ 
-    AUDITGLOBALNOTIFY=false \    
+    ELASTICDBPORT=9200 \
+    AUDITGLOBALNOTIFY=false \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     ENABLEHADOOP=false \
-	HDFSURL=hdfs://127.0.0.1:8020 \
-	HDFSPATH=/user/hdfs \
-	HIVEURL=jdbc:hive2://localhost:10000/default \
-	HIVEUSERNAME=cloudera-scm \
-	HIVEPASSWORD=cloudera-scm \
-	HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
-	IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
-	KUDUNUMREPLICAS=1 \
-	KUDUURL=localhost:7051 \
-	INCLUDEKUDUTABLENAME=false \
+	  HDFSURL=hdfs://127.0.0.1:8020 \
+	  HDFSPATH=/user/hdfs \
+	  HIVEURL=jdbc:hive2://localhost:10000/default \
+	  HIVEUSERNAME=cloudera-scm \
+	  HIVEPASSWORD=cloudera-scm \
+	  HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
+	  IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
+	  KUDUNUMREPLICAS=1 \
+	  KUDUURL=localhost:7051 \
+	  INCLUDEKUDUTABLENAME=false \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
@@ -79,6 +84,7 @@ ENV SERVER_NAME=localhost \
     SAML_INCLUDE_PORT=18300 \
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
+    ELASTICSEARCH_ENABLED=false \
     WSINBOUNDCHANNELCOREPOOL=40 \
     WSINBOUNDCHANNELMAXPOOL=40 \
     WSINBOUNDCHANNELQUEUESIZE= \
@@ -89,6 +95,12 @@ ENV SERVER_NAME=localhost \
     WSBROKERCHANNELMAXPOOL=40 \
     WSBROKERCHANNELQUEUESIZE= \
     WSCACHELIMIT=1024 \
-    WSLOGGINGPERIOD=30000 
+    WSLOGGINGPERIOD=30000
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar
+COPY docker-entrypoint.sh /usr/local/bin/
+
+RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh
+
+USER onesait
+
+ENTRYPOINT ["docker-entrypoint.sh"]

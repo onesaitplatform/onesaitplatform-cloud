@@ -32,6 +32,7 @@ import javax.persistence.EntityManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,8 +42,9 @@ public class DataFromDB {
 	Map<Class<?>, Map<Serializable, Map<String, Object>>> data = new HashMap<>();
 
 	private final static String AUDIT_PREFIX = "Audit_";
-	private static final String APP = "com.minsait.onesait.platform.config.model.App";
-	private static final String APP_ROLE = "com.minsait.onesait.platform.config.model.AppRole";
+	private static final String OP_RESOURCES = "com.minsait.onesait.platform.config.model.base.OPResource";
+	private static final String PROJECT_EXPORT = "com.minsait.onesait.platform.config.model.ProjectExport";
+	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
 
 	public DataFromDB() {
 
@@ -69,7 +71,31 @@ public class DataFromDB {
 	}
 
 	public Map<String, Object> getInstanceData(Class<?> clazz, Serializable id) {
+		if (clazz.getName().equals(OP_RESOURCES)) {
+			for (Map.Entry<Class<?>, Map<Serializable, Map<String, Object>>> entry : data.entrySet()) {
+				if (OPResource.class.isAssignableFrom(entry.getKey())) {
+					Map<Serializable, Map<String, Object>> dataForClass = entry.getValue();
+					if (dataForClass.containsKey(id)) {
+						return dataForClass.get(id);
+					}
+				}
+			}
+		}
 		return data.get(clazz).get(id);
+	}
+
+	public Class<?> getOPResourceClass(Class<?> clazz, Serializable id) {
+		if (clazz.getName().equals(OP_RESOURCES)) {
+			for (Map.Entry<Class<?>, Map<Serializable, Map<String, Object>>> entry : data.entrySet()) {
+				if (OPResource.class.isAssignableFrom(entry.getKey())) {
+					Map<Serializable, Map<String, Object>> dataForClass = entry.getValue();
+					if (dataForClass.containsKey(id)) {
+						return entry.getKey();
+					}
+				}
+			}
+		}
+		return clazz;
 	}
 
 	void addInstance(Class<?> clazz, Serializable id, Map<String, Object> instanceData) {
@@ -100,6 +126,7 @@ public class DataFromDB {
 						errors.addError(new MigrationError(instanceToExport, null, MigrationError.ErrorType.ERROR,
 								"The entity does not exist"));
 					} else {
+						instanceToExport = new Instance(type, id, MigrationUtils.getIdentificationField(entity), null);
 						try {
 							boolean insert = specificChecks(type, entity, errors, instanceToExport);
 							if (insert) {
@@ -134,7 +161,7 @@ public class DataFromDB {
 	}
 
 	public MigrationErrors addObjectsProject(MigrationConfiguration config, EntityManager em,
-			HashMap<Serializable, Serializable> processedInstances)
+			HashMap<Serializable, Serializable> processedInstances, Serializable projectId)
 			throws IllegalArgumentException, IllegalAccessException {
 		MigrationErrors errors = new MigrationErrors();
 
@@ -154,12 +181,13 @@ public class DataFromDB {
 						errors.addError(new MigrationError(instanceToExport, null, MigrationError.ErrorType.ERROR,
 								"The entity does not exist"));
 					} else {
+						instanceToExport = new Instance(type, id, MigrationUtils.getIdentificationField(entity), null);
 						try {
 							boolean insert = specificChecks(type, entity, errors, instanceToExport);
 							if (insert) {
 								if (processedInstances.get(id) == null) {
 									processedInstances.put(id, id);
-									Set<Instance> notFoundInstances = addEntityProject(entity, id, em);
+									Set<Instance> notFoundInstances = addEntityProject(entity, id, em, projectId);
 									MigrationConfiguration newConfig = new MigrationConfiguration();
 
 									for (Instance instanceNotFound : notFoundInstances) {
@@ -173,7 +201,7 @@ public class DataFromDB {
 									// that it is stored, then they are removed.
 									errors.removeRequired(instanceToExport);
 									MigrationErrors additionalErrors = addObjectsProject(newConfig, em,
-											processedInstances);
+											processedInstances, projectId);
 									errors.addErrors(additionalErrors);
 								}
 							}
@@ -234,19 +262,18 @@ public class DataFromDB {
 
 			for (Field field : fields.values()) {
 				Object value = processField(field, o, notFoundData);
-				// TODO if the field is final, it has to be exported and, in the
-				// import phase, has to be checked if it is the same value. If different,
-				// the import phase has to indicate a warning.
-				// if(!Modifier.isFinal(field.getModifiers()))
-
-				attrs.put(field.getName(), value);
-
+				if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
+						&& !value.toString().equals("[]")) {
+					attrs.put(field.getName(), new ArrayList<>());
+				} else {
+					attrs.put(field.getName(), value);
+				}
 			}
 		}
 		return notFoundData;
 	}
 
-	public Set<Instance> addEntityProject(Object o, Serializable id, EntityManager em)
+	public Set<Instance> addEntityProject(Object o, Serializable id, EntityManager em, Serializable projectId)
 			throws IllegalArgumentException, IllegalAccessException {
 		Set<Instance> notFoundData = new HashSet<>();
 
@@ -258,6 +285,8 @@ public class DataFromDB {
 			// If the type of object does not exist is created
 			if (!data.containsKey(clazz)) {
 				data.put(clazz, new HashMap<Serializable, Map<String, Object>>());
+			} else if (clazz.getCanonicalName().equals(PROJECT_EXPORT) && data.containsKey(clazz)) {
+				return notFoundData;
 			}
 
 			Map<Serializable, Map<String, Object>> obj = data.get(clazz);
@@ -269,12 +298,9 @@ public class DataFromDB {
 
 			for (Field field : fields.values()) {
 				Object value = processField(field, o, notFoundData);
-				// TODO if the field is final, it has to be exported and, in the
-				// import phase, has to be checked if it is the same value. If different,
-				// the import phase has to indicate a warning.
-				// if(!Modifier.isFinal(field.getModifiers()))
-				if (field.getType().getName().equals(APP) || field.getType().getName().equals(APP_ROLE)) {
-					attrs.put(field.getName(), null);
+				if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
+						&& !value.toString().equals("[" + projectId.toString() + "]")) {
+					attrs.put(field.getName(), new ArrayList<>());
 				} else {
 					attrs.put(field.getName(), value);
 				}
@@ -333,7 +359,8 @@ public class DataFromDB {
 			if (idField != null) {
 				dataToReturn = idField;
 				if (!isDataStored(field.getType(), idField)) {
-					notFoundData.add(new Instance(field.getType(), idField, null, null));
+					notFoundData.add(
+							new Instance(field.getType(), idField, MigrationUtils.getIdentificationField(obj), null));
 				}
 			} else {
 				if (Collection.class.isAssignableFrom(field.getType())) {
@@ -343,7 +370,8 @@ public class DataFromDB {
 						Serializable memberId = MigrationUtils.getId(member);
 						if (memberId != null) {
 							dataCollection.add(memberId);
-							notFoundData.add(new Instance(member.getClass(), memberId, null, null));
+							notFoundData.add(new Instance(member.getClass(), memberId,
+									MigrationUtils.getIdentificationField(member), null));
 						} else {
 							dataCollection.add(member);
 						}
@@ -375,9 +403,18 @@ public class DataFromDB {
 	}
 
 	public boolean isDataStored(Class<?> clazz, Serializable id) {
-		if (data.containsKey(clazz)) {
+		if (!clazz.getName().equals(OP_RESOURCES) && data.containsKey(clazz)) {
 			Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
 			return dataForClass.containsKey(id);
+		} else if (clazz.getName().equals(OP_RESOURCES)) {
+			for (Map.Entry<Class<?>, Map<Serializable, Map<String, Object>>> entry : data.entrySet()) {
+				if (OPResource.class.isAssignableFrom(entry.getKey())) {
+					Map<Serializable, Map<String, Object>> dataForClass = entry.getValue();
+					if (dataForClass.containsKey(id)) {
+						return true;
+					}
+				}
+			}
 		}
 
 		return false;

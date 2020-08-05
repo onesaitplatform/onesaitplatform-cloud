@@ -47,6 +47,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
 import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
+import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.comms.protocol.binary.BinarySizeException;
 import com.minsait.onesait.platform.config.model.BinaryFile;
@@ -54,7 +55,6 @@ import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.BinaryFileAccess;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +76,7 @@ public class BinaryFileController {
 	private static final String REDIRECT_FILES_LIST = "redirect:/files/list";
 
 	@GetMapping("list")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER','ROLE_USER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	@Transactional
 	public String list(Model model) {
 		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId()));
@@ -96,7 +96,7 @@ public class BinaryFileController {
 	}
 
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String addBinary(@RequestParam("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
 			@RequestParam(value = "repository", required = false) RepositoryType repository,

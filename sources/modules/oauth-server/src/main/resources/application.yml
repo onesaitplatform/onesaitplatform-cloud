@@ -10,18 +10,52 @@ server: ## Config Web Server
 ldap:
   url: ldap://localhost:10389/
   base: ou=User,ou=onesait,ou=system
+  ignorepartialresult: true
   username: uid=admin,ou=system
   password: secret
   defaultRole: ROLE_USER
+  platformRolesGroup:
+      administrator: CN=sf2rcAdministrador,OU=AppSofia2,OU=AppSmart,DC=aytologd 
+      datascientist: CN=sf2rAnalitycs,OU=AppSofia2,OU=AppSmart,DC=aytologd
+      dataviewer:
+      developer: CN=sf2rcColaborador,OU=AppSofia2,OU=AppSmart,DC=aytologd
+      devops:
+      operations:
+      partner:
+      platformAdmin:
+      sysAdmin: CN=sf2rSysAdmin,OU=AppSofia2,OU=AppSmart,DC=aytologd
+      user: CN=sf2rUsuario,OU=AppSofia2,OU=AppSmart,DC=aytologd
   attributesMap:
      userId: uid
      mail: mail
      cn: cn
+     groupOfNames: groupOfNames
+  rolesmemberattribute: member
+  
 # all access to actuator endpoints without security
 management.security.enabled: false
 #security.basic.enabled: false
-
+master: 
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 50
+      initial-size: 15
+      max-idle: 15
+      min-idle: 5
+      removeAbandoned: true
 onesaitplatform:
+   multitenancy:
+      enabled: false
    audit.global.notify: true
    locale.default: en
    authentication:
@@ -55,13 +89,14 @@ spring: ## General Config
       client.metadata.user.name: ${spring.boot.admin.username}
       client.metadata.user.password: $spring.boot.admin.password} 
    datasource: ## JPA Config
-      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       driver-class-name: com.mysql.jdbc.Driver      
       test-while-idle: true
       test-on-borrow: true
-      validation-query: SELECT 1      
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
       # Number of ms to wait before throwing an exception if no connection is available.
       max-wait: 10000
       # Maximum number of active connections that can be allocated from this pool at the same time.
@@ -71,6 +106,7 @@ spring: ## General Config
       min-idle: 10
       
    jpa:
+      open-in-view: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       # Hibernate ddl auto (create, create-drop, validate, update)
@@ -95,6 +131,7 @@ logging:
    file: ${spring.application.name}
    level:
       com.minsait: INFO
+      org.springframework.security: DEBUG
       
       
 ## OAUTH    

@@ -9,16 +9,36 @@ server:
    port: 19000
    contextPath: /iot-broker
    jetty.max-http-post-size: 20000000   
+   
+master: 
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
 spring:
   application.name: onesaitplatform-iot-broker
   datasource:
-    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
     username: root
     password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
     driver-class-name: com.mysql.jdbc.Driver
     # Validate the connection before borrowing it from the pool.
     test-on-borrow: true
     validation-query: SELECT 1
+    validationQueryTimeout: 5
     test-while-idle: true
     test-on-return: false
     time-between-eviction-runs-millis: 5000
@@ -34,16 +54,17 @@ spring:
     removeAbandoned: true
       
   jpa:
+      open-in-view: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-      hibernate.ddl-auto: validate
+      hibernate.ddl-auto: none
       # Hibernate ddl auto (create, create-drop, validate, update
       properties:
         hibernate:
           #temp.use_jdbc_metadata_defaults: false
           format_sql: false
           show_sql: false
-          ddl-auto: validate
+          ddl-auto: none
           
           #cache:
            # use_second_level_cache: false
@@ -90,12 +111,16 @@ onesaitplatform: #Config onesait Platform specific
         max-total-connections: 100
         default-keep-alive-time-millis: 20000
         close-idle-connection-wait-time-secs: 30
-  
+  notifications.pool.subscription.attemps: 2
   iotbroker.audit.enabled: true
   iotbroker.plugable:
     gateway:
       stomp:
         enable: true
+        pool: 200
+        attemps: 2
+        attemps_interval: 5
+        subscription_topic: /topic/subscription
       moquette:
         enable: true
         port: 1883
@@ -106,6 +131,7 @@ onesaitplatform: #Config onesait Platform specific
         subscription_topic: /topic/subscription
         command_topic: /topic/command
         inbound_topic: /queue/message
+        maxBytesInMessage: 8092
         ssl:
           enable: true
           port: 8883
@@ -115,7 +141,6 @@ onesaitplatform: #Config onesait Platform specific
         
       rest:
         enable: true
-        swaggerhost: localhost:19000    
       kafka:
         enable: true
         host: localhost

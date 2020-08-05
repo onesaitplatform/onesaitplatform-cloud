@@ -51,15 +51,15 @@ import lombok.extern.slf4j.Slf4j;
 @TestPropertySource(properties = { "spring.config.location=classpath:application-integration-test.yml" })
 @Slf4j
 public class QuerySQLMongoDBIntegrationTest {
-	
+
 	@TestConfiguration
-    static class ContextConfiguration {
+	static class ContextConfiguration {
 		@Bean("dataHubRest")
 		public RestTemplate restTemplate() throws GenericOPException {
 			final RestTemplate rt = new RestTemplate();
 			return rt;
 		}
-    }
+	}
 
 	@Autowired
 	QueryAsTextMongoDBImpl queryTool;
@@ -73,24 +73,26 @@ public class QuerySQLMongoDBIntegrationTest {
 
 	@Autowired
 	MongoTemplate nativeTemplate;
-	
+
 	private static final String ONT_NAME = "contextData";
 	private static final String DATABASE = "onesaitplatform_rtdb";
 
 	String refOid = "";
 
 	@Before
-	public void setUp() throws Exception{
-		log.warn("This Integration Test needs MongoDB RTDB, ConfigDB and Quasar started and correctly configured with ConfigInit Module");
+	public void setUp() throws Exception {
+		log.warn(
+				"This Integration Test needs MongoDB RTDB, ConfigDB and Quasar started and correctly configured with ConfigInit Module");
 		if (!connect.collectionExists(DATABASE, ONT_NAME))
 			connect.createCollection(DATABASE, ONT_NAME);
 		// 1º
 		ContextData data = ContextData
-				.builder("user", UUID.randomUUID().toString(), UUID.randomUUID().toString(), System.currentTimeMillis(), "Testing")
+				.builder("user", UUID.randomUUID().toString(), UUID.randomUUID().toString(), System.currentTimeMillis(),
+						"Testing")
 				.clientConnection(UUID.randomUUID().toString()).deviceTemplate(UUID.randomUUID().toString())
 				.device(UUID.randomUUID().toString()).clientSession(UUID.randomUUID().toString()).build();
 		ObjectMapper mapper = new ObjectMapper();
-		refOid = repository.insert(ONT_NAME, "", mapper.writeValueAsString(data));
+		refOid = repository.insert(ONT_NAME, mapper.writeValueAsString(data));
 		// 2º
 		data = ContextData
 				.builder("admin", UUID.randomUUID().toString(), UUID.randomUUID().toString(),
@@ -98,7 +100,7 @@ public class QuerySQLMongoDBIntegrationTest {
 				.clientConnection(UUID.randomUUID().toString()).deviceTemplate(UUID.randomUUID().toString())
 				.device(UUID.randomUUID().toString()).clientSession(UUID.randomUUID().toString()).build();
 		mapper = new ObjectMapper();
-		refOid = repository.insert(ONT_NAME, "", mapper.writeValueAsString(data));
+		refOid = repository.insert(ONT_NAME, mapper.writeValueAsString(data));
 		// 3º
 		data = ContextData
 				.builder("other", UUID.randomUUID().toString(), UUID.randomUUID().toString(),
@@ -106,7 +108,7 @@ public class QuerySQLMongoDBIntegrationTest {
 				.clientConnection(UUID.randomUUID().toString()).deviceTemplate(UUID.randomUUID().toString())
 				.device(UUID.randomUUID().toString()).clientSession(UUID.randomUUID().toString()).build();
 		mapper = new ObjectMapper();
-		refOid = repository.insert(ONT_NAME, "", mapper.writeValueAsString(data));
+		refOid = repository.insert(ONT_NAME, mapper.writeValueAsString(data));
 	}
 
 	@After
@@ -114,11 +116,10 @@ public class QuerySQLMongoDBIntegrationTest {
 		connect.dropCollection(DATABASE, ONT_NAME);
 	}
 
-
 	@Test
 	public void test1_QuerySQLWithLimit() {
 		try {
-			String json = queryTool.querySQLAsJson(ONT_NAME, "select * from "+ ONT_NAME + " limit 2", 0);
+			String json = queryTool.querySQLAsJson(ONT_NAME, "select * from " + ONT_NAME + " limit 2", 0);
 			Assert.assertTrue(json.indexOf("user") != -1);
 		} catch (Exception e) {
 			Assert.fail("Error test1_QueryNativeLimit" + e.getMessage());
@@ -154,6 +155,5 @@ public class QuerySQLMongoDBIntegrationTest {
 			Assert.fail("Error test8_QueryNativeFindUser" + e.getMessage());
 		}
 	}
-
 
 }

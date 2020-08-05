@@ -47,6 +47,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.security.PasswordPatternMatcher;
 import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.repository.RoleRepository;
+import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -62,14 +64,21 @@ public class AppWebUtils {
 	private SessionRegistry sessionRegistry;
 
 	@Autowired
+	private LoginManagementController controller;
+
+	@Autowired
 	private PasswordPatternMatcher passwordPatternMatcher;
 
 	private static final String MESSAGE_STR = "message";
 	private static final String INFO_MESSAGE_STR = "info";
 	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
+	public static final String IDENTIFICATION_PATERN = "[a-zA-Z0-9_-]*";
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+
+	@Autowired
+	private RoleRepository roleRepository;
 
 	private Tika tika = null;
 
@@ -100,7 +109,17 @@ public class AppWebUtils {
 	}
 
 	public boolean isAdministrator() {
-		return (getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString()));
+		Role role = roleRepository.findById(getRole());
+		return ((role != null)
+				&& ((role.getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) || (role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))));
+	}
+
+	public boolean isPlatformAdmin() {
+		Role role = roleRepository.findById(getRole());
+		return ((role != null)
+				&& ((role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) || (role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))));
 	}
 
 	public boolean isAuthenticated() {
@@ -109,11 +128,16 @@ public class AppWebUtils {
 	}
 
 	public boolean isUser() {
-		return (getRole().equals(Role.Type.ROLE_USER.toString()));
+		Role role = roleRepository.findById(getRole());
+		return ((role != null) && ((role.getId().equals(Role.Type.ROLE_USER.name()))
+				|| (role.getRoleParent() != null && role.getRoleParent().getId().equals(Role.Type.ROLE_USER.name()))));
 	}
 
 	public boolean isDataViewer() {
-		return (getRole().equals(Role.Type.ROLE_DATAVIEWER.toString()));
+		Role role = roleRepository.findById(getRole());
+		return ((role != null)
+				&& ((role.getId().equals(Role.Type.ROLE_DATAVIEWER.name())) || (role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_DATAVIEWER.name()))));
 	}
 
 	public void addRedirectMessage(String messageKey, RedirectAttributes redirect) {
@@ -151,10 +175,18 @@ public class AppWebUtils {
 
 	public String getCurrentUserOauthToken() {
 		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-		if (request.isPresent())
-			return ((String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT));
-		else
+
+		if (request.isPresent()) {
+			String token = ((String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT));
+			if (null != token) {
+				return token;
+			} else if (null != request.get().getHeader("Authorization")) {
+				return request.get().getHeader("Authorization").substring("Bearer ".length());
+			} else
+				return null;
+		} else {
 			throw new GenericRuntimeOPException("No request currently active");
+		}
 	}
 
 	private static Optional<HttpServletRequest> getCurrentHttpRequest() {
@@ -223,6 +255,7 @@ public class AppWebUtils {
 			final boolean isForbidden = Arrays.stream(arrayMimeTypes).parallel().anyMatch(contentType::contains);
 			if (!isForbidden) {
 				// check additional by extension
+
 			}
 			return isForbidden;
 
@@ -246,5 +279,9 @@ public class AppWebUtils {
 			log.error("No allowed extensions stated on Global Configuration, update your database");
 			return new ArrayList<>();
 		}
+	}
+
+	public void renewOauth2AccessToken(HttpServletRequest request, Authentication authentication) {
+		request.getSession().setAttribute("oauthToken", (controller.postLoginOauthNopass(authentication).getValue()));
 	}
 }

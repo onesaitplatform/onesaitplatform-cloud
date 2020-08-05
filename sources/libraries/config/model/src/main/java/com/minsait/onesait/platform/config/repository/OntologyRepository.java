@@ -116,9 +116,9 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
 			+ "FROM Ontology AS o " + "WHERE "
-			+ "o.identification like %:identification% AND o.description like %:description% ORDER BY o.identification ASC")
-	List<OntologyForList> findOntologyForListByIdentificationContainingAndDescriptionContainingAndActiveTrue(
-			String identification, String description);
+			+ "o.identification like %:identification% AND o.description like %:description% AND o.active=true ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologyForListByIdentificationContainingAndDescriptionContaining(
+			@Param("identification") String identification, @Param("description") String description);
 
 	List<Ontology> findByIdentificationContainingAndDescriptionContainingAndActiveTrueOrderByIdentificationAsc(
 			String identification, String description);
@@ -176,6 +176,10 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	List<OntologyForList> findOntologiesForListByUserAndPermissionsANDIdentificationAndDescriptionNoPublic(
 			@Param("user") User user, @Param("identification") String identification,
 			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o " + "WHERE o.user=:user ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByUser(@Param("user") User user);
 
 	@Query("SELECT o " + "FROM Ontology AS o "
 			+ "WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")

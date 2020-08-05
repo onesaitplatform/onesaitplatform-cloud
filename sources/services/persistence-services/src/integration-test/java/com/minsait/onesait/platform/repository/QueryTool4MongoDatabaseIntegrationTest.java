@@ -54,10 +54,11 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryTool4MongoDatabaseIntegrationTest {
 
 	private static final String ONTOLOGY_NAME = "OntologyTest" + System.currentTimeMillis();
-	private static final String JSON_TEST = "{" + "\"name\":\"Jack\"," + "\"job\":\"Administrator\"," + "\"location\":\"Spain\"" + "}";
-	private static final String JSON_TEST_UPDATE = "{" + "\"name\":\"John\"," + "\"job\":\"Developer\"," + "\"location\":\"France\"" + "}";
+	private static final String JSON_TEST = "{" + "\"name\":\"Jack\"," + "\"job\":\"Administrator\","
+			+ "\"location\":\"Spain\"" + "}";
+	private static final String JSON_TEST_UPDATE = "{" + "\"name\":\"John\"," + "\"job\":\"Developer\","
+			+ "\"location\":\"France\"" + "}";
 	private static final String SQL_TEST = "select * from ";
-
 
 	private static User userAdministrator = null;
 
@@ -84,7 +85,6 @@ public class QueryTool4MongoDatabaseIntegrationTest {
 	@Autowired
 	UserRepository userCDBRepository;
 
-
 	private User getUserAdministrator() {
 		if (userAdministrator == null)
 			userAdministrator = this.userCDBRepository.findByUserId("administrator");
@@ -102,7 +102,7 @@ public class QueryTool4MongoDatabaseIntegrationTest {
 			Ontology ontology = new Ontology();
 			ontology.setJsonSchema("{}");
 			ontology.setIdentification(ONTOLOGY_NAME);
-			ontology.setDescription("Description 4 "+ONTOLOGY_NAME);
+			ontology.setDescription("Description 4 " + ONTOLOGY_NAME);
 			ontology.setActive(true);
 			ontology.setRtdbClean(true);
 			ontology.setRtdbToHdb(true);
@@ -117,7 +117,7 @@ public class QueryTool4MongoDatabaseIntegrationTest {
 
 			manageMongo.createTable4Ontology(ONTOLOGY_NAME, "{}", null);
 
-			String idMongo = repositoryMongo.insert(ONTOLOGY_NAME, ontology.getJsonSchema(), JSON_TEST);
+			String idMongo = repositoryMongo.insert(ONTOLOGY_NAME, JSON_TEST);
 			log.info("Returned Mongo inserted object with id " + idMongo);
 
 			Thread.sleep(5000);
@@ -160,10 +160,10 @@ public class QueryTool4MongoDatabaseIntegrationTest {
 	@Test
 	public void testSQLSelectAllOnTestOntology() {
 		try {
-			String sql = SQL_TEST + " " + ONTOLOGY_NAME ;
+			String sql = SQL_TEST + " " + ONTOLOGY_NAME;
 			String outpoutSQL2 = repositoryMongo.querySQLAsJson(ONTOLOGY_NAME, sql);
 			JSONArray jsonObj2 = new JSONArray(outpoutSQL2);
-			Assert.assertTrue(jsonObj2.length()>0);
+			Assert.assertTrue(jsonObj2.length() > 0);
 		} catch (Exception e) {
 			Assert.fail("testSQLSelectAllOnTestOntology failure. " + e);
 		}

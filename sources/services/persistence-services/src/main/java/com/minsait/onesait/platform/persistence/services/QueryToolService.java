@@ -45,4 +45,5 @@ public interface QueryToolService {
 
 	List<String> querySQLtoConfigDB(String query);
 
+	List<String> updateSQLtoConfigDB(String query);
 }

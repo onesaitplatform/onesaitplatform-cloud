@@ -75,13 +75,13 @@ public class KsqlRelationController {
 	private static final String KSQL_SYNTAX_ERROR = "KSQL Syntax error. Please check KSQL Statemet.";
 	private static final String NEW_LINE = ". \\n";
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		return this.ksqlRelationService.getAllIdentifications();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = {
 			"/create" }, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<String> create(@RequestBody KsqlResourceDTO ksqlResourceDTO) {
@@ -130,7 +130,7 @@ public class KsqlRelationController {
 		return new ResponseEntity<>(MSG_STR + success + "\"}", HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public @ResponseBody ResponseEntity<String> delete(Model model, @PathVariable("id") String id,
 			RedirectAttributes redirect) {
@@ -160,7 +160,7 @@ public class KsqlRelationController {
 		return new ResponseEntity<>(MSG_STR + success + "\"}", HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String getRelations(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "flowId") String flowId) {
@@ -177,7 +177,7 @@ public class KsqlRelationController {
 		return "redirect:/ksql/flow/update/" + flowId + "#ksqlRelations";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}")
 	public @ResponseBody ResponseEntity<String> updateFlow(Model model, @PathVariable("id") String id,
 			@RequestBody KsqlResourceDTO ksqlResourceDTO, BindingResult bindingResult, RedirectAttributes redirect) {

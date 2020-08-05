@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -85,7 +87,7 @@ public class GadgetDatasourceController {
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_TRUE_STR = "{\"error\":\"true\"}";
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
@@ -117,7 +119,7 @@ public class GadgetDatasourceController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createGadget(Model model) {
 		model.addAttribute(DATASOURCE_STR, new GadgetDatasourceDTO());
@@ -151,7 +153,7 @@ public class GadgetDatasourceController {
 	 * REDIRECT_DATAS_CREATE; } return REDIRECT_DATAS_LIST; }
 	 */
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = { "/create" })
 	public String createDataSource(Model model, @Valid GadgetDatasourceDTO gadgetDatasourceDTO,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -175,7 +177,7 @@ public class GadgetDatasourceController {
 					gadgetDatasourceDTO.getOntologyIdentification(), this.utils.getUserId()));
 			if (gadgetDatasourceDTO.getOntologyIdentification() == null
 					|| gadgetDatasourceDTO.getOntologyIdentification().trim().length() == 0) {
-				String ontology = getOntologyFromDatasource(gadgetDatasource.getQuery());
+				String ontology = gadgetDatasourceService.getOntologyFromDatasource(gadgetDatasource.getQuery());
 				Ontology onto;
 				if (ontology.length() > 0) {
 					onto = ontologyService.getOntologyByIdentification(ontology, this.utils.getUserId());
@@ -187,13 +189,13 @@ public class GadgetDatasourceController {
 			this.gadgetDatasourceService.createGadgetDatasource(gadgetDatasource);
 		} catch (GadgetDatasourceServiceException e) {
 			log.error("Cannot create gadget datasource. {}", e.getMessage());
-			utils.addRedirectMessage("datasources.create.error", redirect);
+			utils.addRedirectException(e, redirect);
 			return REDIRECT_DATAS_CREATE;
 		}
 		return REDIRECT_DATAS_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		GadgetDatasource gadgetDatasource = this.gadgetDatasourceService.getGadgetDatasourceById(id);
@@ -237,7 +239,7 @@ public class GadgetDatasourceController {
 		return null;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateGadgetDatasource(Model model, @PathVariable("id") String id,
 			@Valid GadgetDatasourceDTO gadgetDatasourceDTO, BindingResult bindingResult, RedirectAttributes redirect) {
@@ -257,7 +259,7 @@ public class GadgetDatasourceController {
 			gd.setDescription(gadgetDatasourceDTO.getDescription());
 			// If ontology not selected get from query
 			if (gadgetDatasourceDTO.getOntologyIdentification() == null) {
-				String ontology = getOntologyFromDatasource(gadgetDatasourceDTO.getQuery());
+				String ontology = gadgetDatasourceService.getOntologyFromDatasource(gadgetDatasourceDTO.getQuery());
 				Ontology onto;
 				if (ontology.length() > 0) {
 					onto = ontologyService.getOntologyByIdentification(ontology, this.utils.getUserId());
@@ -273,13 +275,13 @@ public class GadgetDatasourceController {
 			this.gadgetDatasourceService.updateGadgetDatasource(gd);
 		} catch (GadgetDatasourceServiceException e) {
 			log.error("Cannot update gadget datasource. {}", e.getMessage());
-			utils.addRedirectMessage("datasources.update.error", redirect);
-			return REDIRECT_DATAS_CREATE;
+			utils.addRedirectException(e, redirect);
+			return "redirect:/datasources/update/" + id;
 		}
 		return REDIRECT_DATAS_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		try {
@@ -288,6 +290,11 @@ public class GadgetDatasourceController {
 			utils.addRedirectException(e, redirect);
 		}
 		return REDIRECT_DATAS_LIST;
+	}
+	
+	@GetMapping(value = "/getGadgetsUsingDatasource/{id}", produces = "application/json")
+	public @ResponseBody List<Object> getGadgetsUsingDatasource(@PathVariable("id") String id) {
+		return this.gadgetDatasourceService.getGadgetsUsingDatasource(id);
 	}
 
 	@GetMapping(value = "/getUserGadgetDatasources", produces = "application/json")
@@ -309,6 +316,17 @@ public class GadgetDatasourceController {
 			return null;
 		}
 	}
+	
+	@GetMapping(value = "/isGroupDatasourceById/{id}", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<Boolean> isGroupDatasourceByIdentification(@PathVariable("id") String id) {
+		boolean isGroup = this.gadgetDatasourceService.isGroupDatasourceById(id);
+		if (this.gadgetDatasourceService.hasUserPermission(id, utils.getUserId())) {
+			return new ResponseEntity<>(isGroup,HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+	}
 
 	@GetMapping(value = "/getSampleDatasource/{id}", produces = "application/json")
 	public @ResponseBody String getSampleDatasource(@PathVariable("id") String datasourceId)
@@ -316,7 +334,7 @@ public class GadgetDatasourceController {
 		if (gadgetDatasourceService.hasUserViewPermission(datasourceId, this.utils.getUserId())) {
 			GadgetDatasource gd = this.gadgetDatasourceService.getGadgetDatasourceById(datasourceId);
 			String query = gd.getQuery();
-			String ontology = getOntologyFromDatasource(query);
+			String ontology = gadgetDatasourceService.getOntologyFromDatasource(query);
 			Ontology o = ontologyService.getOntologyByIdentification(ontology, utils.getUserId());
 			String sampleQuery = this.gadgetDatasourceService.getSampleQueryGadgetDatasourceById(datasourceId, ontology,
 					utils.getUserId());
@@ -379,7 +397,7 @@ public class GadgetDatasourceController {
 			gd.setMaxvalues(gadgetDatasource.getMaxvalues());
 			gd.setRefresh(gadgetDatasource.getRefresh());
 			gd.setQuery(gadgetDatasource.getQuery());
-			String ontology = getOntologyFromDatasource(gadgetDatasource.getQuery());
+			String ontology = gadgetDatasourceService.getOntologyFromDatasource(gadgetDatasource.getQuery());
 			Ontology onto;
 			if (ontology.length() > 0) {
 				onto = ontologyService.getOntologyByIdentification(ontology, this.utils.getUserId());
@@ -397,7 +415,7 @@ public class GadgetDatasourceController {
 		return "{\"id\":\"" + gadgetDatasource.getId() + "\"}";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/show/{id}", produces = "text/html")
 	public String show(Model model, @PathVariable("id") String id) {
 		GadgetDatasource gadgetDatasource = this.gadgetDatasourceService.getGadgetDatasourceById(id);
@@ -416,32 +434,6 @@ public class GadgetDatasourceController {
 		} else {
 			return "error/404";
 		}
-	}
-
-	private static String getOntologyFromDatasource(String datasource) {
-		datasource = datasource.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
-		datasource = datasource.trim().replaceAll(" +", " ");
-		String[] list = datasource.split("from ");
-		if (list.length == 1) {
-			list = datasource.split("FROM ");
-		}
-		if (list.length > 1) {
-			for (int i = 1; i < list.length; i++) {
-				if (!list[i].startsWith("(")) {
-					int indexOf = list[i].toLowerCase().indexOf(' ', 0);
-					int indexOfCloseBracket = list[i].toLowerCase().indexOf(')', 0);
-					indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf) ? indexOfCloseBracket
-							: indexOf;
-					if (indexOf == -1) {
-						indexOf = list[i].length();
-					}
-					return list[i].substring(0, indexOf).trim();
-				}
-			}
-		} else {
-			return "";
-		}
-		return "";
 	}
 
 	private List<OntologyDTO> getOntologiesDTO() {

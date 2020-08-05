@@ -31,5 +31,11 @@ public interface OntologyVirtualRepository extends JpaRepository<OntologyVirtual
 	@Query("SELECT ov.objectId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
 	String findOntologyVirtualObjectIdByOntologyIdentification(@Param("ontologyId") String ontologyId);
 
+	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
+	OntologyVirtual findOntologyVirtualByOntologyIdentification(@Param("ontologyId") String ontologyId);
+	
 	OntologyVirtual findByOntologyId(Ontology ontology);
+
+	@Query("SELECT ov.ontologyId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
+	Ontology findOntology(@Param("ontologyId") String ontologyId);
 }

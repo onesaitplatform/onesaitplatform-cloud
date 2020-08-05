@@ -80,4 +80,6 @@ public interface TaskService {
 	 */
 	
 	boolean checkExists(TaskOperation operation);
+
+	boolean unscheduledFromAnonymous(TaskOperation operation);
 }

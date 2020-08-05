@@ -32,15 +32,16 @@ import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
-import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
+import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
+import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,29 +50,29 @@ import lombok.extern.slf4j.Slf4j;
 public class UnsubscribeProcessor implements MessageTypeProcessor {
 
 	@Autowired
-	private RouterSuscriptionService routerService;
+	private RouterService routerService;
 	@Autowired
 	SecurityPluginManager securityPluginManager;
 	@Autowired
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = (SSAPMessage<SSAPBodyUnsubscribeMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
 		response.setBody(new SSAPBodyReturnMessage());
 
 		final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
 
-		final SuscriptionModel model = new SuscriptionModel();
+		final SubscriptionModel model = new SubscriptionModel();
 		model.setSuscriptionId(unsubscribeMessage.getBody().getSubscriptionId());
-		model.setOperationType(SuscriptionModel.OperationType.UNSUSCRIBE);
+		model.setOperationType(SubscriptionModel.OperationType.UNSUBSCRIBE);
 		model.setSessionKey(unsubscribeMessage.getSessionKey());
 		session.ifPresent(s -> model.setUser(s.getUserID()));
 
 		OperationResultModel routerResponse = null;
 		try {
-			routerResponse = routerService.unSuscribe(model);
+			routerResponse = routerService.unsubscribe(model);
 		} catch (final Exception e1) {
 			log.error("Error in process:" + e1.getMessage());
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR, e1.getMessage());

@@ -44,7 +44,7 @@ public class VideoBrokerServiceImpl implements VideoBrokerService {
 	@Override
 	public List<VideoCapture> getVideoCaptures(String userId) {
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (userService.isUserAdministrator(user))
 			return videoCaptureRepository.findAll();
 		else
 			return videoCaptureRepository.findByUser(user);
@@ -121,7 +121,7 @@ public class VideoBrokerServiceImpl implements VideoBrokerService {
 		final VideoCapture vc = videoCaptureRepository.findOne(id);
 		final User user = userService.getUser(userid);
 		return (vc != null && vc.getUser().equals(user)
-				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()));
+				|| userService.isUserAdministrator(user));
 	}
 
 }

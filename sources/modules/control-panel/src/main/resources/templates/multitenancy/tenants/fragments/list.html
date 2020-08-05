@@ -1,0 +1,113 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+										
+	<!-- TENANTS LIST -->
+	<div class="col-md-12">											
+		<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+			<div>
+				<!-- Reload button -->
+				<div class="row">
+					<div class="pull-right margin-right-20">
+						<button type="button" id="btn-tenants-reload" name="btn-tenants-reload" value="Reload" 
+							class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh"></i>&nbsp;</button>	
+					</div>
+				</div><!-- // Reload button -->
+															
+				<!-- DATATABLE initCompleteCallback (DT function) -->
+				<div dt:conf="tenants">
+				  	<div dt:confType="callback" dt:type="init" dt:function="Tenant.List.initCompleteCallback"></div>
+				</div><!-- // DATATABLE initCompleteCallback (DT function) -->
+																	
+				<!-- DATATABLE DANDELION CONF. -->												
+				<table id="tenants" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{'/multitenancy/vertical/'+${vertical.name}+'/tenants/data'}"
+					dt:reloadSelector="#btn-tenants-reload" dt:reloadFunction="Tenant.List.reloadTable"
+					dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
+					<thead>
+						<tr class="cabecera-tabla">
+							<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
+							<th dt:property="vertical" class="titulo-columnas" th:text="#{multitenancy.vertical}">Vertical</th>
+							<th dt:property="users" class="titulo-columnas" th:text="#{multitenancy.tenants.number-users}">Vertical</th>															
+							<th dt:sortable="false" dt:renderFunction="Tenant.List.dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
+						</tr>
+					</thead>
+				</table><!-- // DATATABLE DANDELION CONF. -->
+			</div>
+		</div>											
+	</div>
+<!-- // TENANTS LIST -->
+<script th:src="@{/static/js/pages/multitenancy/tenants.js}" th:inline="javascript"></script>
+<script type="text/javascript" th:inline="javascript">
+var constants ={
+		
+		genDelete: [[#{gen.deleteBtn}]],
+		genUpdate:  [[#{gen.edit}]],
+		genView:  [[#{gen.view}]],
+		upload: [[#{bpm.upload}]]
+	};
+$(document).ready(function() {
+	
+	//SHOW/HIDE DATATABLE COLUMNS HANDLER
+	$('label.toggle-vis').on( 'click', function (e) {
+		e.preventDefault(); 
+		// Get the column API object
+		var column = $('#tenants').DataTable().column( $(this).attr('data-column') ); 
+		// Toggle the visibility
+		column.visible( ! column.visible() );
+		// Toggle visibility on filtering row
+		if ($('#filtering')){
+			$('#filtering th').eq($(this).attr('data-column')).toggle();
+		}
+		// toggle Text
+		$(this).toggleClass('text-muted line-through');			
+	});	
+});
+$(window).load(function(){  
+	
+	//DATATABLE 
+	var oTable = $('#tenants').DataTable();
+	oTable.page.len(10);
+	
+	$('#tenants').on('draw.dt', function () {
+		Tenant.List.initCompleteCallback();
+	} );
+	
+	// SHOW/HIDE DATATABLES COLUMN INIT 		
+	$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+	$('#dataTable-vis-toggle').removeClass('hide');
+	
+	// FILTERING COLUMNS INIT
+	$('#filtering').appendTo($('#tenants > thead'));
+	$('#filtering').removeClass('hide');
+	
+	// RESET ALL FILTERS BTN
+	$('#clearFilters').on('click', function(){			
+		yadcf.exResetAllFilters(oTable);		
+	});	
+	
+	
+	// ADJUST CSS FOR DATATABLE FILTERS 
+	var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
+	var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
+	filters.addClass('input-small font-sm');
+	filtersResets.addClass('hide');				
+	
+			
+	
+});
+
+</script>

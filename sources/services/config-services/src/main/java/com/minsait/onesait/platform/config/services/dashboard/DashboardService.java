@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -37,8 +38,9 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserA
 
 public interface DashboardService {
 
-	List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,
-			String user);
+	List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,	String user);
+	
+	List<DashboardDTO> findDashboardWithIdentificationAndType(String identification, String type, String user);
 
 	List<String> getAllIdentifications();
 
@@ -88,7 +90,8 @@ public interface DashboardService {
 
 	DashboardExportDTO addGadgets(DashboardExportDTO dashboard);
 
-	DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboard, String userId);
+	DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboard, String userId, boolean overwrite,
+			boolean importAuthorizations);
 
 	boolean dashboardExistsById(String id);
 
@@ -100,25 +103,18 @@ public interface DashboardService {
 	ResponseEntity<byte[]> generatePDFFromDashboardId(String id, int waittime, int height, int width, String params,
 			String oauthtoken);
 
-	public String importDashboard(String name, String data, String userId, String token);
-
-	public ResponseEntity<byte[]> exportDashboard(String id, String ususerIder, String token);
-
-	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, String body,
-			String token) throws URISyntaxException, IOException;
-
-	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, String token)
-			throws URISyntaxException, IOException;
-
-	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, HttpHeaders headers)
-			throws URISyntaxException, IOException;
-
 	DashboardUserAccess getDashboardUserAccessByIdentificationAndUser(String dashboardId, User user);
 
 	String insertDashboardUserAccess(Dashboard dashboard, List<DashboardUserAccessDTO> dtos, boolean updated);
 
 	String deleteDashboardUserAccess(List<DashboardUserAccessDTO> dtos, String dashboardIdentification,
 			boolean deleteAll);
+
+	JSONObject getAllInternationalizationJSON(Dashboard dashboard);
+	
+	long getClientMaxHeartbeatTime();
+
+	DashboardExportDTO exportDashboardDTO(String dashboardId, String userId);
 
 	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
 	// usersAccessType, boolean updated);

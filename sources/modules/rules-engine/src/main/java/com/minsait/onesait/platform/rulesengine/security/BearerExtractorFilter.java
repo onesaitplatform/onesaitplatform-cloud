@@ -35,8 +35,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
-import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,25 +50,34 @@ public class BearerExtractorFilter implements Filter {
 
 	private static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
 	@Autowired
-	private RemoteTokenServices remoteTokenServices;
+	private TokenStore tokenstore;
 
 	private final TokenExtractor tokenExtractor = new BearerTokenExtractor();
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+
 		if (((HttpServletRequest) request).getHeader(HttpHeaders.AUTHORIZATION) != null) {
 			final Authentication auth = tokenExtractor.extract((HttpServletRequest) request);
 			if (auth instanceof PreAuthenticatedAuthenticationToken) {
-				final OAuth2Authentication oauth = remoteTokenServices.loadAuthentication((String) auth.getPrincipal());
+				final OAuth2Authentication oauth = tokenstore.readAuthentication((String) auth.getPrincipal());
+
 				final SecurityContext securityContext = SecurityContextHolder.getContext();
 				securityContext.setAuthentication(oauth);
+				if (oauth != null) {
+					MultitenancyContextHolder
+							.setVerticalSchema(((UserPrincipal) oauth.getPrincipal()).getVerticalSchema());
+					MultitenancyContextHolder.setTenantName(((UserPrincipal) oauth.getPrincipal()).getTenant());
+				}
 				((HttpServletRequest) request).getSession(true).setAttribute(SPRING_SECURITY_CONTEXT, securityContext);
 				chain.doFilter(request, response);
+				MultitenancyContextHolder.clear();
 				((HttpServletRequest) request).getSession().removeAttribute(SPRING_SECURITY_CONTEXT);
 			}
+		} else {
+			chain.doFilter(request, response);
 		}
-		chain.doFilter(request, response);
 	}
 
 	@Override

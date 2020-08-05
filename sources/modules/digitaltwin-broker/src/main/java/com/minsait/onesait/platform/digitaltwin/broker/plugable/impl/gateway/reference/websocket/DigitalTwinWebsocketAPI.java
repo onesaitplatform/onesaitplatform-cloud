@@ -21,10 +21,10 @@ public interface DigitalTwinWebsocketAPI {
 
 	public void sendAction(String message, MessageHeaders messageHeaders);
 
-	public void notifyShadowMessage(JSONObject message);
+	public void notifyShadowMessage(String apiKey, JSONObject message);
 
-	public void notifyCustomMessage(JSONObject message);
+	public void notifyCustomMessage(String apiKey, JSONObject message);
 
-	public void notifyActionMessage(JSONObject message);
+	public void notifyActionMessage(String apiKey, JSONObject message);
 
 }

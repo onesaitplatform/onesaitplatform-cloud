@@ -23,7 +23,7 @@ var svgEditorLang_mk = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: 'Кликни за да внесете промени бојата, промена клик да се промени бојата удар',
       zoom_level: 'Промена зум ниво',
-      panel_drag: 'Drag left/right to resize side panel',
+      panel_drag: 'Click to show hide',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

@@ -100,7 +100,7 @@ public class KuduBasicOpsDBRepositoryTest {
 	@Ignore
 	@Test
 	public void given_insert() {
-		String oid = kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(0));
+		String oid = kuduBasicOpsDBRepository.insert(ontology_name, instances.get(0));
 
 		JSONObject jObject = new JSONObject(oid);
 		String id = jObject.getString(JsonFieldType.PRIMARY_ID_FIELD);
@@ -114,7 +114,7 @@ public class KuduBasicOpsDBRepositoryTest {
 	@Test
 	public void given_findById() {
 
-		String id = kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(0));
+		String id = kuduBasicOpsDBRepository.insert(ontology_name, instances.get(0));
 		String instance = kuduBasicOpsDBRepository.findById(ontology_name, id);
 
 		assertNotNull(instance);
@@ -124,8 +124,8 @@ public class KuduBasicOpsDBRepositoryTest {
 	@Ignore
 	@Test
 	public void given_findAll() {
-		kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(0));
-		kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(1));
+		kuduBasicOpsDBRepository.insert(ontology_name, instances.get(0));
+		kuduBasicOpsDBRepository.insert(ontology_name, instances.get(1));
 
 		List<String> instances = kuduBasicOpsDBRepository.findAll(ontology_name);
 
@@ -135,8 +135,8 @@ public class KuduBasicOpsDBRepositoryTest {
 	@Ignore
 	@Test
 	public void given_count() {
-		kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(0));
-		kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(1));
+		kuduBasicOpsDBRepository.insert(ontology_name, instances.get(0));
+		kuduBasicOpsDBRepository.insert(ontology_name, instances.get(1));
 
 		long num = kuduBasicOpsDBRepository.count(ontology_name);
 
@@ -146,7 +146,7 @@ public class KuduBasicOpsDBRepositoryTest {
 	@Ignore
 	@Test
 	public void given_delete_by_id() {
-		String oid = kuduBasicOpsDBRepository.insert(ontology_name, schema, instances.get(0));
+		String oid = kuduBasicOpsDBRepository.insert(ontology_name, instances.get(0));
 
 		JSONObject jObject = new JSONObject(oid);
 		String id = jObject.getString(JsonFieldType.PRIMARY_ID_FIELD);

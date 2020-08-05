@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.config.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.User;
@@ -37,11 +39,17 @@ public interface LayerRepository extends JpaRepository<Layer, String> {
 
 	List<Layer> findAllByOrderByIdentificationAsc();
 
+	@Query("select c.identification from Layer as c order by c.identification asc")
+	List<String> findIdentificationOrderByIdentificationAsc();
+
 	List<Layer> findByIdentificationAndDescription(String identification, String description);
 
 	List<Layer> findByIdentificationLikeAndDescriptionLike(String identification, String description);
 
 	List<Layer> findByUserOrIsPublicTrue(User user);
+
+	@Query("select c.identification from Layer as c where c.user=:user or c.isPublic=TRUE order by c.identification asc")
+	List<String> findIdentificationByUserOrIsPublicTrue(@Param("user") User user);
 
 	List<Layer> findByUserOrderByIdentificationAsc(User user);
 

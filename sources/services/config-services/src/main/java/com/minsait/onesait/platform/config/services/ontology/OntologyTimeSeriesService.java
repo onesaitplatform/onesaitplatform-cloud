@@ -14,25 +14,37 @@
  */
 package com.minsait.onesait.platform.config.services.ontology;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 
 public interface OntologyTimeSeriesService {
 
-	public ResponseEntity<Map<String, String>> createOntologyTimeSeries(OntologyTimeSeriesDTO ontology, HttpServletRequest request)
+	public Ontology createOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontology, OntologyConfiguration config,
+			boolean parseProperties, boolean parseWindow)
 			throws OntologyServiceException, OntologyDataJsonProblemException;
 
-	public ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesDTO ontologyTimeSeriesDTO, String sessionUserId,
+	public ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
 			OntologyConfiguration config) throws OntologyServiceException, OntologyDataJsonProblemException;
 
-	public OntologyTimeSeriesDTO generateOntologyTimeSeriesDTO(Ontology ontology);
+	public OntologyTimeSeriesServiceDTO generateOntologyTimeSeriesDTO(Ontology ontology);
+
+	public OntologyTimeSeries getOntologyByOntology(Ontology ontology);
+
+	public List<OntologyTimeSeriesProperty> getTimeSeriesPropertiesByOntologyTimeSeries(
+			OntologyTimeSeries ontologyTimeSeries);
+
+	public List<OntologyTimeSeriesWindow> getTimeSeriesWindowByOntologyTimeSeries(OntologyTimeSeries ontologyTimeSeries);
+
+	ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
+			OntologyConfiguration config, boolean cleanProperties, boolean cleanWindow);
 
 }

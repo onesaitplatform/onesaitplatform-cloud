@@ -37,6 +37,9 @@ var ProjectCreateController = function() {
 			}
 
 		});
+		
+		// INPUT MASK FOR project identification allow only letters, numbers and -_
+		$("#project-name").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 
 	}
 

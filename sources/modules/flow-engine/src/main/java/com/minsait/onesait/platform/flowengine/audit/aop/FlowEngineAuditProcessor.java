@@ -31,9 +31,7 @@ import com.minsait.onesait.platform.audit.bean.OPEventFactory;
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
-import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValidationNodeService;
+import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
 import com.minsait.onesait.platform.flowengine.audit.bean.FlowEngineAuditEvent;
 import com.minsait.onesait.platform.flowengine.audit.bean.FlowEngineAuditEvent.FlowEngineAuditEventBuilder;
 
@@ -44,10 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowEngineAuditProcessor {
 
 	@Autowired
-	private FlowDomainRepository domainRepository;
-
-	@Autowired
-	private FlowEngineValidationNodeService flowEngineValidationNodeService;
+	private FlowDomainService domainService;
 
 	public String getUserId(String domainId) {
 
@@ -55,7 +50,7 @@ public class FlowEngineAuditProcessor {
 
 		if (domainId != null) {
 
-			FlowDomain flowDomain = domainRepository.findByIdentification(domainId);
+			FlowDomain flowDomain = domainService.getFlowDomainById(domainId);
 
 			if (flowDomain != null) {
 				userId = flowDomain.getUser().getUserId();
@@ -111,26 +106,25 @@ public class FlowEngineAuditProcessor {
 	}
 
 	public FlowEngineAuditEvent getQueryEvent(String ontology, String query, String queryType, String retVal,
-			String authentication) {
+			String domainName) {
 		String message = "Query message on ontology " + ontology;
-		return getEvent(ontology, query, queryType, null, message, authentication, OperationType.QUERY);
+		return getEvent(ontology, query, queryType, null, message, domainName, OperationType.QUERY);
 	}
 
-	public FlowEngineAuditEvent getInsertEvent(String ontology, String data, String retVal, String authentication) {
+	public FlowEngineAuditEvent getInsertEvent(String ontology, String data, String retVal, String domainName) {
 		String message = "Executed insert on ontology " + ontology;
-		return getEvent(ontology, null, null, data, message, authentication, OperationType.INSERT);
+		return getEvent(ontology, null, null, data, message, domainName, OperationType.INSERT);
 	}
 
 	public FlowEngineAuditEvent getEvent(String ontology, String query, String queryType, String data, String message,
-			String authentication, OperationType operation) {
+			String domainName, OperationType operation) {
 
 		log.debug("getEvent for operation");
 		FlowEngineAuditEvent event = null;
 
 		try {
 
-			final DecodedAuthentication decodedAuth = flowEngineValidationNodeService.decodeAuth(authentication);
-			final User sofia2User = flowEngineValidationNodeService.validateUser(decodedAuth.getUserId());
+			final User sofia2User = domainService.getFlowDomainByIdentification(domainName).getUser();
 
 			event = getEvent(null, sofia2User.getUserId(), operation, message, ResultOperationType.SUCCESS);
 			event.setData(data);
@@ -165,14 +159,13 @@ public class FlowEngineAuditProcessor {
 		return createErrorEvent(userId, messageOperation, ex);
 	}
 
-	public OPAuditError getErrorEvent(String message, String authentication, Exception ex) {
+	public OPAuditError getErrorEvent(String message, String domainName, Exception ex) {
 
 		OPAuditError event = null;
 
 		try {
 
-			final DecodedAuthentication decodedAuth = flowEngineValidationNodeService.decodeAuth(authentication);
-			final User sofia2User = flowEngineValidationNodeService.validateUser(decodedAuth.getUserId());
+			final User sofia2User = domainService.getFlowDomainByIdentification(domainName).getUser();
 
 			event = createErrorEvent(sofia2User.getUserId(), message, ex);
 		} catch (Exception e) {

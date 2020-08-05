@@ -18,10 +18,12 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.OPResource;
@@ -75,7 +77,19 @@ public class FlowDomain extends OPResource {
 	@Setter
 	@Column(name = "ACCESS_TOKEN", nullable = true)
 	private String accessToken;
-	
+
+	@Getter
+	@Setter
+	@Column(name = "AUTORECOVER", nullable = true, columnDefinition = "BIT")
+	private Boolean autorecover;
+
+	@Getter
+	@Setter
+	@Lob
+	@Type(type = "org.hibernate.type.TextType")
+	@Column(name = "THRESHOLDS", nullable = true)
+	private String thresholds;
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

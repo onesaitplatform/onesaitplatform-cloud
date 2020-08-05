@@ -87,6 +87,10 @@
 		-webkit-box-sizing:content-box; 
 		box-sizing:content-box;
 		}
+
+		#configContainer .control-label{
+			white-space: nowrap;
+		}
 		
 		</style>
 	</head>	
@@ -358,7 +362,7 @@
 														</div>
 													</div>
 														
-													<!-- TO-DO: no se que es -->	
+													<!-- TO-DO:  -->	
 													<div class="col-sm-12 col-md-12" style="display:none"> 
 													  <!-- TABLA dt:table="true" dt:paginate="false" dt:sort="false" -->
 													  <table id="camposConsultaSuscripcion" >
@@ -396,7 +400,7 @@
 															<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasources.maxvalue} + ':'">Max register</span></label>
 															<div class="input-icon ">
 																<i class="fa fa-list-ol"></i> 
-																<input  id="maxvaluesDataSource" type="number" min="1" max="3000" name="maxvalues" th:required="true" onchange="createQuery()" value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+																<input  id="maxvaluesDataSource" type="number" min="1" max="3000" name="maxvalues" th:required="true" onchange="createQuerylimit()" value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
 																
 															</div>
 														</div>
@@ -553,7 +557,8 @@
 												<!-- VIEWER -->
 												<div id="viewer" class="hide col-md-offset-1 col-md-10 col-xs-12 bg-grey-carrara" style="border: 2px dotted #f5f5f5; padding: 10px 15px 10px 15px">
 													<div id="gapp" ng-app="dashboardFramework">
-														<gadget style="height:300px;width:100%;display:inline-block" class="flex layout-column"></gadget>
+														<gadget style="height:300px;width:100%;display:none" class="flex layout-column"></gadget>
+														<datadiscovery style="height:600px;width:100%;display:none" class="flex layout-column"></datadiscovery>
 													</div>
 												</div>												
 												<div class="clearfix"></div>
@@ -602,8 +607,6 @@
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	  </div>
-	 
-</body>
 
 	<!-- END MAIN PAGE WRAPPER -->
 	
@@ -700,6 +703,9 @@
 	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
 	<script src="/controlpanel/static/dashboards/gridster.js"></script>
 	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	
 	<!-- Angular Material Fileinput -->
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
 	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
@@ -727,11 +733,23 @@
 	
 	function createGadgetFull() {	 
 		generateMeasuresArray()
+		if(gtype === "datadiscovery"){
+			measures = [{"config":"{}"}];
+		}
 		$("#jsonMeasures").val(JSON.stringify(measures));
 		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
 		$("#type").val(gtype);
-		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
-		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		var scope;
+		if(gtype != 'datadiscovery'){
+			document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
+			scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
+		}
+		else{
+			scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
+			document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
+			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
+		}
+		$("#config").val(JSON.stringify(scope.vm.config.config));
 		$("#gadget_create_form").get(0).submit();   	 
      };
 	
@@ -751,36 +769,44 @@
 			    '</div>';
 				$("#icons").append(info);
 				$.each(gadget, function() {
-						var Type = this.type;
-						var Icon = this.icon;						
-						var html_markup = '';
-						html_markup ='<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">' +
-						'	<div class="portlet light bordered" id="' + Type + '" style="padding: 8px 16px 16px 16px;" >' +
-						'		<div class="portlet-title">' +
-						'			<div class="caption">' +						
-						'				<span class="caption-subject" onclick="showConfigAndMeasures(\'' + Type + '\')" >'+Type+'</span>' +						
-						'			</div>' +
-						'			<div class="mt-element-overlay">' +		
-						'						<div class="mt-overlay-1" style="height: 10% !important">' +
-						'							<img src="'+ Icon +'">' +
-						'							<div class="mt-overlay">' +
-						'								<ul class="mt-info">' +
-						'									<li>' +
-						'										<a class="btn default btn-outline" onclick="showConfigAndMeasures(\'' + Type + '\')" >' +
-						'											<i class="flaticon-add font-lg bold"></i> ADD GADGET' +
-						'										</a>' +
-						'									</li>' +
-						'								</ul>' +
-						'							</div>' +				
-						'				</div>' +
-						'			</div>' +
-						'		</div>' +				
-						'	</div>' +
-						'</div>';
-						$("#icons").append(html_markup);
+					var Type = this.type;
+					var Icon = this.icon;						
+					var html_markup = '';
+					html_markup ='<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">' +
+					'	<div class="portlet light bordered" id="' + Type + '" style="padding: 8px 16px 16px 16px;" >' +
+					'		<div class="portlet-title">' +
+					'			<div class="caption">' +						
+					'				<span class="caption-subject" onclick="showConfigAndMeasures(\'' + Type + '\')" >'+Type+'</span>' +						
+					'			</div>' +
+					'			<div class="mt-element-overlay">' +		
+					'						<div class="mt-overlay-1" style="height: 90px !important">' +
+					'							<img src="'+ Icon +'">' +
+					'							<div class="mt-overlay">' +
+					'								<ul class="mt-info">' +
+					'									<li>' +
+					'										<a class="btn default btn-outline" onclick="showConfigAndMeasures(\'' + Type + '\')" >' +
+					'											<i class="flaticon-add font-lg bold"></i> ADD GADGET' +
+					'										</a>' +
+					'									</li>' +
+					'								</ul>' +
+					'							</div>' +				
+					'				</div>' +
+					'			</div>' +
+					'		</div>' +				
+					'	</div>' +
+					'</div>';
+					$("#icons").append(html_markup);
+				});
+
+				$.get("/controlpanel/datasources/isGroupDatasourceById/" + $("#datasources").val(), function (isGroup){
+					$.each(gadget, function() {
+						if(isGroup && this.disableOnGroup){
+							$("#" + this.type).hide();
+						}
 					})
+				})
 					
-				}
+			}
 		  }		
 	}
 	
@@ -1042,20 +1068,29 @@
 	function refreshGadget(){
 		console.log('refreshGadget()...');
 		generateMeasuresArray();
-		if(measures.length > 0){			
-	        var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();
+		if(measures.length > 0 || gtype == "datadiscovery"){
+			var scope;
+			if(gtype != 'datadiscovery'){
+				document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
+				scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
+			}
+			else{
+				scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
+				document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
+			}
+			scope.vm.ds = $("#datasources option:selected").val();
 	        if(gtype === "map"){	        
-	        	if(!scope.$$childHead.vm.config.config && !$("#config").val()){
-	        		scope.$$childHead.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:gtype};
+	        	if(!scope.vm.config.config && !$("#config").val()){
+	        		scope.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:gtype};
 	        	}
 	        	else{
 	        		var lat;
 	        		var lng;
 	        		var zoom;	        		
-	        		if(typeof scope.$$childHead.vm.config.config != "undefined") {
-	        			lat = scope.$$childHead.vm.config.config.center.lat;
-	        			lng = scope.$$childHead.vm.config.config.center.lng;
-	        			zoom = scope.$$childHead.vm.config.config.center.zoom;
+	        		if(typeof scope.vm.config.config != "undefined") {
+	        			lat = scope.vm.config.config.center.lat;
+	        			lng = scope.vm.config.config.center.lng;
+	        			zoom = scope.vm.config.config.center.zoom;
 	        		}else{
 	        			jsonConfig = JSON.parse($("#config").val());	        		
 	        			lat = jsonConfig.center.lat;
@@ -1070,7 +1105,7 @@
 				    			markersFilter:$("#markersFilter").val(),
 				    			jsonMarkers:$("#jsonMarkers").val()
 				    			};
-	        		scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
+	        		scope.vm.config = {config:gconfig,type:gtype};	
 	        	}
 	        }
 			else if(gtype == "pie"){
@@ -1106,7 +1141,7 @@
 				};
 				
 				// updating values to refresh gadget
-				scope.$$childHead.vm.config = {config:gconfig,type:gtype};
+				scope.vm.config = {config:gconfig,type:gtype};
 			}
 	        else{
 				if(gtype == "bar" || gtype == "line" || gtype == "mixed"){
@@ -1214,7 +1249,7 @@
 									}}];
 						}
 					}
-					scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
+					scope.vm.config = {config:gconfig,type:gtype};	
 				}else if(gtype == "table"){
 					var gconfig = {tablePagination :{      
 						      limit: $('#limit').val(),
@@ -1241,19 +1276,69 @@
 						        pageSelect: $('#pageSelect').is(':checked')
 						      }
 						    }};
-					scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
+					scope.vm.config = {config:gconfig,type:gtype};	
+				}else if(gtype == "datadiscovery"){
+					var gconfig;
+					if(!$("#config").val()){//new
+						gconfig = {
+							editFields: $('#editFields').is(':checked'),
+							editGrid: $('#editGrid').is(':checked'),
+							showSearch: $('#showSearch').is(':checked'),
+							adjustColumnToView: $('#adjustColumnToView').is(':checked'),
+							enableTotal: $('#enableTotal').is(':checked'),
+							baseRows: $('#baseRows').val(),
+							baseCols: $('#baseCols').val(),
+							showRowNum: $('#showRowNum').is(':checked'),
+							enableMergeCols: $('#enableMergeCols').is(':checked'),
+							prefixTotal: $('#prefixTotal').val(),
+							prefixSubtotal: $('#prefixSubtotal').val()
+						}
+					}
+					else{//edit, erase config to detect load
+						gconfig = JSON.parse($("#config").val());
+						$("#config").val(null)
+					}
+					if(scope.vm.config.config){
+						scope.vm.config.config.editFields = gconfig.editFields;
+						scope.vm.config.config.editGrid = gconfig.editGrid;
+						scope.vm.config.config.showSearch = gconfig.showSearch;
+						scope.vm.config.config.adjustColumnToView = gconfig.adjustColumnToView;
+						scope.vm.config.config.enableTotal = gconfig.enableTotal;
+						scope.vm.config.config.baseRows = gconfig.baseRows;
+						scope.vm.config.config.baseCols = gconfig.baseCols;
+						scope.vm.config.config.showRowNum = gconfig.showRowNum;
+						scope.vm.config.config.enableMergeCols = gconfig.enableMergeCols;
+						scope.vm.config.config.prefixTotal = gconfig.prefixTotal;
+						scope.vm.config.config.prefixSubtotal = gconfig.prefixSubtotal;
+					}
+					else{
+						scope.vm.config.config = gconfig;
+					}
+					scope.vm.config.type = gtype;
+					if(!scope.vm.config.config.discovery){
+						scope.vm.config.config.discovery = {
+							columns:{
+								list:[],
+								subtotalFields:[]
+							},
+							metrics:{
+							},
+							fields: {
+							}
+						}
+					}
+					scope.vm.ds = {"identification":$("#datasources option:selected").text()};
 				}
 				else{					
-					scope.$$childHead.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:gtype};	
+					scope.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:gtype};	
 				}
 	        }
 	        if(gtype == "table"){			
-				scope.$$childHead.vm.measures = orderTable(measures);
+				scope.vm.measures = orderTable(measures);
 			}else{
-				scope.$$childHead.vm.measures = measures;
-			}	        
-			scope.$$childHead.vm.ds = $("#datasources").val();
-			scope.$$childHead.reloadContent();
+				scope.vm.measures = measures;
+			}	       
+			scope.reloadContent();
 		}
 	}
 	
@@ -1346,98 +1431,113 @@
         	$("#createIframeBtn").show();
         }else{       
         	$("#createBtn").show();
-        }
+		}
+		
+		if(type != "datadiscovery"){
         
-		$.get("/controlpanel/datasources/getSampleDatasource/" + $("#datasources").val(), function (jsonString){
-			$("#icons").hide();
-			
-			gfields = iterate(jsonString[0],"", []);
-			
-			gtype = type;
-			$("#configGadget").empty();
-			
-			if(gtype=="line" || gtype=="bar" ){
-				showConfigLineBar(gtype,gfields);				
-			}else if(gtype=="table" ){
-				showConfigTable(gtype,gfields);				
-			}else if(gtype=="map" ){
-				showConfigMap(gtype,gfields);
-			}else if(gtype=="mixed" ){
-				showConfigMixed(gtype,gfields);
-			}else if(gtype=="pie"   ){ showConfigPie(gtype,gfields); }
-			if ( $('#measuresContainer').hasClass('hide') === true ){
-				$('#measuresContainer').removeClass('hide'); $('#viewer').removeClass('hide'); 
-			}
-		    stt = gadget.filter(function(g){return g.type == type})[0];
-		    if(measures.length == 0){
-		    	$("#measures").empty().append(addFormSttByType());
-		    }
-		    else{
-		    	$("#measures").empty();
-		    	for(var i=0;i<measures.length;i++){
-					$("#measures").append(addFormSttByType());
-		    	}
-		    }
-		    
-			for (var i in gfields){
-		    	$('.' + gfields[i].type).append('<option value="' + gfields[i].field + '">' + gfields[i].field + '</option>');
-		    }
-			for(var i=0;i<measures.length;i++){
-				var config;
-				if(typeof measures[i].config !== "object"){
-					config = JSON.parse(measures[i].config);
+			$.get("/controlpanel/datasources/getSampleDatasource/" + $("#datasources").val(), function (jsonString){
+				$("#icons").hide();
+				
+				gfields = iterate(jsonString[0],"", []);
+				
+				gtype = type;
+				$("#configGadget").empty();
+				
+				if(gtype=="line" || gtype=="bar" ){
+					showConfigLineBar(gtype,gfields);				
+				}else if(gtype=="table" ){
+					showConfigTable(gtype,gfields);				
+				}else if(gtype=="map" ){
+					showConfigMap(gtype,gfields);
+				}else if(gtype=="mixed" ){
+					showConfigMixed(gtype,gfields);
+				}else if(gtype=="pie"){ 
+					showConfigPie(gtype,gfields); 
+				}
+				if ( $('#measuresContainer').hasClass('hide') === true ){
+					$('#measuresContainer').removeClass('hide'); $('#viewer').removeClass('hide'); 
+				}
+				stt = gadget.filter(function(g){return g.type == type})[0];
+				if(measures.length == 0){
+					$("#measures").empty().append(addFormSttByType());
 				}
 				else{
-					config = measures[i].config;
+					$("#measures").empty();
+					for(var i=0;i<measures.length;i++){
+						$("#measures").append(addFormSttByType());
+					}
 				}
-				var fields = config.fields;
-				for(var f=0;f<fields.length;f++){
-					
-					var fieldAux = fields[f].replace("[",".").replace("]","");
-					if($("#s_" + i + "_" + f).attr("multiple")){
-						var values=fields.slice(f);
-						$("#s_" + i + "_" + f).val(values);
-						break;
+				
+				for (var i in gfields){
+					$('.' + gfields[i].type).append('<option value="' + gfields[i].field + '">' + gfields[i].field + '</option>');
+				}
+				for(var i=0;i<measures.length;i++){
+					var config;
+					if(typeof measures[i].config !== "object"){
+						config = JSON.parse(measures[i].config);
 					}
 					else{
-						$("#s_" + i + "_" + f).val(fieldAux);
+						config = measures[i].config;
 					}
-				}
-				var gsoptions = $($(".gserie").get(i)).find(".gsoption");
-				for(var gc =0; gc < gsoptions.length; gc++){
-					//property not found
-					if(!config.config || !(stt.series.options[gc].jsonFields[0] in config.config)){
-						continue;
+					var fields = config.fields;
+					for(var f=0;f<fields.length;f++){
+						
+						var fieldAux = fields[f].replace("[",".").replace("]","");
+						if($("#s_" + i + "_" + f).attr("multiple")){
+							var values=fields.slice(f);
+							$("#s_" + i + "_" + f).val(values);
+							break;
+						}
+						else{
+							$("#s_" + i + "_" + f).val(fieldAux);
+						}
 					}
-					$(gsoptions[gc]).val(config.config[stt.series.options[gc].jsonFields[0]]);
-					if(gsoptions[gc].type === "checkbox"){
-						gsoptions[gc].checked = gsoptions[gc].value === "true";
-						gsoptions[gc].value = "on"
+					var gsoptions = $($(".gserie").get(i)).find(".gsoption");
+					for(var gc =0; gc < gsoptions.length; gc++){
+						//property not found
+						if(!config.config || !(stt.series.options[gc].jsonFields[0] in config.config)){
+							continue;
+						}
+						$(gsoptions[gc]).val(config.config[stt.series.options[gc].jsonFields[0]]);
+						if(gsoptions[gc].type === "checkbox"){
+							gsoptions[gc].checked = gsoptions[gc].value === "true";
+							gsoptions[gc].value = "on"
+						}
 					}
-				}
-				$("#n_" + i).val(config.name);
-			}		
-			refreshGadget();
-			$('.colorpicker-component').colorpicker({	
-				container: true,
-				  colorSelectors: {				
-                'amarillo': '#FFEA7F',
-                'amarilloH': '#FFF8D2',
-                'naranja': '#F7AC6F',
-                'naranjah': '#FCE2CC',
-                'rojo': '#E88AA2',
-                'rojoh': '#F7D6DF',
-				'beige':'#FDE3D4',  
-				'beigeh':'#FEF6F0',
-                'verde': '#79C6B4',
-                'verdeh': '#CFEBE5',
-                'azul': '#639FCB',
-				'azulh': '#C8DEED',
-				'morado': '#7874B4',
-				'moradoh': '#CFCEE5'
-				}				
+					$("#n_" + i).val(config.name);
+				}		
+				refreshGadget();
+				$('.colorpicker-component').colorpicker({	
+					container: true,
+					colorSelectors: {				
+					'amarillo': '#FFEA7F',
+					'amarilloH': '#FFF8D2',
+					'naranja': '#F7AC6F',
+					'naranjah': '#FCE2CC',
+					'rojo': '#E88AA2',
+					'rojoh': '#F7D6DF',
+					'beige':'#FDE3D4',  
+					'beigeh':'#FEF6F0',
+					'verde': '#79C6B4',
+					'verdeh': '#CFEBE5',
+					'azul': '#639FCB',
+					'azulh': '#C8DEED',
+					'morado': '#7874B4',
+					'moradoh': '#CFCEE5'
+					}				
+				});
 			});
-		});		
+		}
+		else{
+			$("#icons").hide();
+			gtype = type;
+			showConfigDatadiscovery(gtype,gfields);
+			if ( $('#viewer').hasClass('hide') === true ){
+				$('#viewer').removeClass('hide');
+				$('#measuresContainer').addClass('hide');
+			}
+			refreshGadget();
+		}
 	}
 	
 	
@@ -2119,6 +2219,118 @@
 			$("#addMoreAxes").hide();				
 			
 	}
+
+
+
+
+	function showConfigDatadiscovery(gtype,gfields){
+		
+		if ( $('#configContainer').hasClass('hide') === true ){ 
+			$('#configContainer').removeClass('hide');
+		}
+		var jsonConfig;
+		if(!$("#config").val() || $("#config").val() === "{}"){
+			
+			jsonConfig = {
+				editFields: true,
+				editGrid: true,
+				showRowNum: true,
+			 	baseRows: 10,
+				baseCols: 10,
+				showSearch: false,
+				adjustColumnToView:false,
+				enableTotal: true,
+				enableMergeCols: true,
+				prefixTotal: "Total",
+				prefixSubtotal: "Total {}"
+			};
+		}
+		else{
+			jsonConfig = JSON.parse($("#config").val());
+		}
+		
+			 var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">Config</h4>';			
+			 var editFields = jsonConfig.editFields;
+			 var editGrid = jsonConfig.editGrid;
+			 var showRowNum = jsonConfig.showRowNum;
+			 var baseRows = jsonConfig.baseRows;
+			 var baseCols = jsonConfig.baseCols;
+			 var showSearch = jsonConfig.showSearch;
+			 var adjustColumnToView = jsonConfig.adjustColumnToView;
+			 var enableTotal = jsonConfig.enableTotal;
+			 var enableMergeCols = jsonConfig.enableMergeCols;
+		     var prefixTotal = jsonConfig.prefixTotal;
+		     var prefixSubtotal =jsonConfig.prefixSubtotal;
+		     
+			gchtml += '<div class="gcserie col-md-12">';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.editFields+'</label>';
+			 if(editFields) editFields = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="editFields" ' + editFields + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.editGrid+'</label>';
+			 if(editGrid) editGrid = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="editGrid" ' + editGrid + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.showSearch+'</label>';
+			 if(showSearch) showSearch = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="showSearch" ' + showSearch + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.adjustColumnToView+'</label>';
+			 if(adjustColumnToView) adjustColumnToView = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="adjustColumnToView" ' + adjustColumnToView + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.baseRows+'</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number" min="1" class="form-control content-box-input" data-live-search="true" data-width="100%" value="' + baseRows + '" id="baseRows"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.baseCols+'</label>';
+			gchtml += '<input onchange="refreshGadget()" type="number" min="1" class="form-control content-box-input" data-live-search="true" data-width="100%" value="' + baseCols + '" id="baseCols"/>';
+			gchtml	+= '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.showRowNum+'</label>';
+			 if(showRowNum) showRowNum = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="showRowNum" ' + showRowNum + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.enableTotal+'</label>';
+			 if(enableTotal) enableTotal = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="enableTotal" ' + enableTotal + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">' + gadgetCreateJson.enableMergeCols + '</label>';
+			 if(enableMergeCols) enableMergeCols = "checked";
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="enableMergeCols" ' + enableMergeCols + '/>';
+			gchtml += '</div>';
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.prefixTotal+'</label>';
+			gchtml += '<input type="text" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="prefixTotal" value="' + prefixTotal + '"/>';
+			gchtml += '</div>'
+			gchtml += '<div class="form-group col-md-2">';
+			gchtml += '<label class="control-label">'+gadgetCreateJson.prefixSubtotal+'</label>';
+			gchtml += '<input type="text" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="prefixSubtotal" value="' + prefixSubtotal + '"/>';
+			gchtml += '</div>'
+			gchtml += '</div>'
+			gchtml += '</div>'
+			
+			gchtml += '</div>'
+			gchtml	+= '</div>';
+			$("#configGadget").append(gchtml);				
+			$("#addMoreAxes").hide();
+			$("#measuresContainer").hide();
+	}
+
+
+
+
+
+
+
+
 	
 	//Show especific measures and config for gadget Map
 	function showConfigMap(gtype,gfields){
@@ -2170,12 +2382,14 @@
 	}
 	
 	
-	function selectOntologyOrDataSource(e){		
+	function selectOntologyOrDataSource(e){
+		 $('#identification').attr('readonly', true);
 		if(e!=null && e.options.selectedIndex!=null && e[e.options.selectedIndex].dataset!=null){
 			if (e[e.options.selectedIndex].dataset.type==="ontology"){
 				initOntology();
 				$("#icons").empty();
-				$('#query-panel').show(); 
+				$('#query-panel').show();
+				//$('#createDataSourceButton').hide();
 			}else if(e[e.options.selectedIndex].dataset.type==="datasource"){
 				showGadgetSelect();
 				$('#query-panel').hide();   
@@ -2419,20 +2633,31 @@
 	"json_marker_info" :[[#{gadgets.json.marker.info}]],
 	"iframe" : [[${iframe}]],
 	"type" : [[${type}]],
+	"editFields": [[#{gadgets.editFields}]],
+	"editGrid": [[#{gadgets.editGrid}]],
+	"showRowNum": [[#{gadgets.showRowNum}]],
+	"showSearch": [[#{gadgets.showSearch}]],
+	"adjustColumnToView": [[#{gadgets.adjustColumnToView}]],
+	"enableTotal": [[#{gadgets.enableTotal}]],
+	"enableMergeCols": [[#{gadgets.enableMergeCols}]],
+	"baseRows": [[#{gadgets.baseRows}]],
+	"baseCols": [[#{gadgets.baseCols}]],
+	"prefixTotal": [[#{gadgets.prefixTotal}]],
+	"prefixSubtotal": [[#{gadgets.prefixSubtotal}]],
 	"ontologyId" : /*[[${param.id}]]*/ null
-	
-	
 	};
-		
-
 	
 	function createDataSource(){
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-          var d = new Date();
-          var n = d.getTime();          
-          identification = $("#identification").val()+"_"+n;       
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+			identification = $("#identification").val();		 
+			var str = '_'+new Date().getTime();			
+			if((identification.length)>36){
+			 	identification = identification.substring(0, 36)+str;
+			}else{
+			 	identification = identification+str;
+			}
+          
 			 $.ajax({
 	             url: '/controlpanel/datasources/createFromGadget',
 				 headers: {
@@ -2530,11 +2755,23 @@
 	//function for create from iframe
 	function createGadgetIframe(){
 		generateMeasuresArray();
+		if(gtype === "datadiscovery"){
+			measures = [{"config":"{}"}];
+		}
 		$("#jsonMeasures").val(JSON.stringify(measures));
 		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
 		$("#type").val(gtype);
-		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
-		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		var scope;
+		if(gtype != 'datadiscovery'){
+			document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
+			scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
+		}
+		else{
+			scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
+			document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
+			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
+		}
+		$("#config").val(JSON.stringify(scope.vm.config.config));
 		createGadgetIframeAjaxCall();
 	}
 	
@@ -2562,12 +2799,24 @@
 	
 	//function to update from iframe
 	function updateGadgetIframe(){     	
-     	generateMeasuresArray();
+		generateMeasuresArray();
+		if(gtype === "datadiscovery"){
+			measures = [{"config":"{}"}];
+		}
 		$("#jsonMeasures").val(JSON.stringify(measures));
 		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
 		$("#type").val(gtype);
-		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
-		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		var scope;
+		if(gtype != 'datadiscovery'){
+			document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
+			scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
+		}
+		else{
+			scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
+			document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
+			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
+		}
+		$("#config").val(JSON.stringify(scope.vm.config.config));
 		updateGadgetIframeAjaxCall();
 	}
 	//function to update from iframe  Ajax call
@@ -2708,10 +2957,11 @@
 	}
 	
 	
-	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 	
 	// ]]>
 	</script>
-	
+	</body>
 </html> 
 

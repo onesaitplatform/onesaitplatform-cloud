@@ -27,8 +27,9 @@ var GraphController = function() {
 				springConstant : 0.01,
 				damping : 0.5
 			},
-			minVelocity : 0.3,
-			maxVelocity : 75
+			stabilization: false
+			//minVelocity : 0.3,
+			//maxVelocity : 75
 		},
 		nodes : {
 			shadow : false,
@@ -383,6 +384,7 @@ var GraphController = function() {
 
 		$("#TableInfoNetwork").empty();
 		$("#TableInfoNetwork").html(strInfo);
+		
 	}
 
 	// DRAW RELATIONS INFO ON TABLE
@@ -796,6 +798,15 @@ var GraphController = function() {
 				links = data;
 				graphData = getDataGraph();
 
+				if(graphData!=null && typeof graphData.nodes!='undefined' && graphData.nodes.length > 100){
+					options.physics.stabilization = false;
+					delete options.physics.minVelocity;
+					delete options.physics.maxVelocity;
+				}else{
+					options.physics.stabilization = true;
+					options.physics.minVelocity = 0.3;
+					options.physics.maxVelocity = 75;
+				}
 				if (graphData.nodes.length > 0) {
 					containerNetwork = document.getElementById('networkVis');
 					network = new vis.Network(containerNetwork, graphData,
@@ -815,6 +826,9 @@ var GraphController = function() {
 							}
 						}
 					});
+					if(graphData!=null && typeof graphData.nodes!='undefined' && graphData.nodes.length > 100){
+						clusterGraphBySource();
+					}
 				}
 			},
 			error : function(data, status, er) {
@@ -896,24 +910,31 @@ var GraphController = function() {
 
 		// INIT() CONTROLLER INIT CALLS
 		init : function(all) {
+			
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			createGraphInfoTable();
+			
 			handleGraphHeight();
+			
 			handleHierarchical();
+			
 			handleCluster();
+			
 			toggleGraphInfoTable();
+			
 			createRelationsInfoTable();
+			
 			loadNetwork(all);
+			
+			
 		}
 	};
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-jQuery(document).ready(function() {
-
-	// LOADING JSON DATA FROM THE TEMPLATE (CONST, i18, ...)
-	GraphController.load(graphJson);
-
+jQuery(document).ready(function() {	
+	// LOADING JSON DATA FROM THE TEMPLATE (CONST, i18, ...)	
+	GraphController.load(graphJson);	
 	// AUTO INIT CONTROLLER.
 	GraphController.init(false);
 });

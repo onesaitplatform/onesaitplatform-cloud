@@ -48,7 +48,7 @@ public class KafkaMonitoringController {
 	@Value("${onesaitplatform.kafka.burrow.monitoring.cluster.name:local}")
 	private String clusterName;
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
@@ -68,7 +68,7 @@ public class KafkaMonitoringController {
 		return "kafkamonitoring/list";
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/show/{id}")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		List<KafkaMonitoringTopicInfo> topicsInfo = null;
@@ -87,7 +87,7 @@ public class KafkaMonitoringController {
 		return "kafkamonitoring/show";
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/detail/{consumer}/{topic}/{partition}")
 	public String detail(Model model, @PathVariable("consumer") String consumer, @PathVariable("topic") String topic,
 			@PathVariable("partition") int partition, RedirectAttributes redirect) {

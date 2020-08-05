@@ -31,20 +31,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
-import lombok.Getter;
-import lombok.Setter;
-
 @SpringBootApplication
 public class Oauth2AuthorizationServerApplication extends WebMvcConfigurerAdapter {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Oauth2AuthorizationServerApplication.class, args);
 	}
-
-	@Value("${onesaitplatform.locale.default:en}")
-	@Getter
-	@Setter
-	private String defaultLocale;
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -60,7 +52,7 @@ public class Oauth2AuthorizationServerApplication extends WebMvcConfigurerAdapte
 	}
 
 	@Bean
-	public LocaleResolver localeResolver() {
+	public LocaleResolver localeResolver(@Value("${onesaitplatform.locale.default:en}") String defaultLocale) {
 		final SessionLocaleResolver slr = new SessionLocaleResolver();
 		final Locale locale = new Locale(defaultLocale);
 		slr.setDefaultLocale(locale);

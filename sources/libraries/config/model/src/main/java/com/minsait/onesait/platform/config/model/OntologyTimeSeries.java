@@ -45,7 +45,7 @@ public class OntologyTimeSeries extends AuditableEntityWithUUID {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@OneToOne(cascade = CascadeType.MERGE, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
 	@JsonBackReference

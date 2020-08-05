@@ -18,35 +18,39 @@ import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.OrderByStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 
+@NoArgsConstructor
 public class SelectStatement implements SQLStatement {
 	@NotNull
 	@Size(min = 1)
+	@Getter
 	private String ontology;
+	private String alias;
+	@Getter
 	private List<String> columns;
 	@NotNull
+	@Getter
 	private List<WhereStatement> where;
 	@NotNull
+	@Getter
 	private List<OrderByStatement> orderBy;
 	@Min(1)
+	@Getter
 	private Long limit;
 	@Min(0)
+	@Getter
 	private Long offset;
 	private SQLGenerator sqlGenerator;
 
-	public SelectStatement() {
-	}
-
 	public SelectStatement(final SQLGenerator sqlGenerator) {
 		this.sqlGenerator = sqlGenerator;
-	}
-
-	public String getOntology() {
-		return ontology;
 	}
 
 	public SelectStatement setOntology(final String ontology) {
@@ -58,17 +62,9 @@ public class SelectStatement implements SQLStatement {
 		}
 	}
 
-	public List<String> getColumns() {
-		return columns;
-	}
-
 	public SelectStatement setColumns(final List<String> columns) {
 		this.columns = columns;
 		return this;
-	}
-
-	public List<WhereStatement> getWhere() {
-		return where;
 	}
 
 	public SelectStatement setWhere(final List<WhereStatement> where) {
@@ -76,17 +72,9 @@ public class SelectStatement implements SQLStatement {
 		return this;
 	}
 
-	public List<OrderByStatement> getOrderBy() {
-		return orderBy;
-	}
-
 	public SelectStatement setOrderBy(final List<OrderByStatement> orderBy) {
 		this.orderBy = orderBy;
 		return this;
-	}
-
-	public Long getLimit() {
-		return limit;
 	}
 
 	public SelectStatement setLimit(final long limit) {
@@ -96,10 +84,6 @@ public class SelectStatement implements SQLStatement {
 			this.limit = limit;
 			return this;
 		}
-	}
-
-	public Long getOffset() {
-		return offset;
 	}
 
 	public SelectStatement setOffset(final long offset) {
@@ -112,12 +96,19 @@ public class SelectStatement implements SQLStatement {
 	}
 
 	@Override
-	public String generate() {
+	public PreparedStatement generate(boolean withParams) {
 		if(sqlGenerator != null) {
-			return sqlGenerator.generate(this);
+			return sqlGenerator.generate(this, withParams);
 		} else {
 			throw new IllegalStateException("SQL Generator service is not set, use SQLGenerator instance to generate or build the statement instead");
 		}
 	}
+	
+	public void setAlias(String alias) {
+	    this.alias = alias;
+	}
 
+	public String getAlias() {
+	    return alias;
+	}
 }

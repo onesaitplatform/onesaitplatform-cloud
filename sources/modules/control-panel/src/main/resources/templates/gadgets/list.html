@@ -126,7 +126,11 @@
 																<span class="input-group-addon">
 																	<i class="fa fa-tag font-grey-mint"></i>
 																</span>
-																<input id="type" th:placeholder="#{gadgets.type}" name="type" class="form-control" type="text" maxlength="45" value=""/>
+																<select class="form-control" id="type" name="type" >														 
+																	<option value="" text="" selected="selected"></option>
+																	<option th:each="gadgetType : ${gadgetTypes}" th:id="${gadgetType}" data-type="general" th:value="${gadgetType}" th:text="${gadgetType}"  ></option>
+																	<option id="template" data-type="general" th:value="template" th:text="template"></option>
+																</select>
 															</div>
 														</div>
 													</div>
@@ -150,9 +154,6 @@
 														<tr class="cabecera-tabla">
 															<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
-															<!--<th class="titulo-columnas" th:text="#{gen.description}">Description</th>-->
-															<!--  <th class="titulo-columnas text-center" th:text="#{gen.active}">Active</th> -->	
-															<!-- <th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th> -->	
 															<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"  class="titulo-columnas text-center" th:text="#{gen.type}">Type</th>																
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
@@ -166,11 +167,6 @@
 															<!-- USER -->
 															<td class="text-center " th:text="${gadget.user.userId}"></td>
 															<!-- DESCRIPTION -->
-															<!-- <td class="text-left text-truncate-sm" th:title="${gadget.description}" th:text="${gadget.description}"></td> -->
-															<!-- PUBLIC -->
-															<!--  <td class="text-center" th:if="${gadget.public}"><span class="label label-success"><i class="fa fa-check-circle"></i></span></td>
-															<td class="text-center" th:if="${!gadget.public}"></td>-->
-															<!-- DESCRIPTION -->
 															<td class="text-center" th:title="${gadget.type}">
 															<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
 															<i th:if="${gadget.type} == 'table'" class="fa fa-table font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
@@ -180,9 +176,10 @@
 															<i th:if="${gadget.type} == 'pie'" class="la la-pie-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
 															<i th:if="${gadget.type} == 'map'" class="la la-map font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
 															<i th:if="${gadget.type} == 'wordcloud'" class="la la-cloud font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'radar'" class="la la-bullseye font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>															
+															<i th:if="${gadget.type} == 'radar'" class="la la-bullseye font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'datadiscovery'" class="fa fa-align-justify font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
 															</td>
-															<!-- DATE --> 
+															<!-- DATE -->
 															<td class="text-center" th:if="${gadget.createdAt!=null}"><span th:text="${#dates.format(gadget.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${gadget.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE --> 
@@ -242,10 +239,11 @@
 													</a>
 													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
 														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
-														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}" > Owner</label>														
-														<label class="toggle-vis" data-column="2" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="3" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.options}"> Options</label>															
+														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}" > Owner</label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.type}"> Type</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>
 													</div>
 												</div>											
 											</div>

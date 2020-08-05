@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/consolemenu")
-@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 @Slf4j
 public class ConsoleMenuController {
 	
@@ -68,7 +68,7 @@ public class ConsoleMenuController {
 	private static final String CONSTANT = "},";
 	
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String list (Model model) {
 
 		model.addAttribute("menus", consoleMenuRepository.findAll());

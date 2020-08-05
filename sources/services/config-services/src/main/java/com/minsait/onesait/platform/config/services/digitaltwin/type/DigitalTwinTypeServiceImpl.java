@@ -303,7 +303,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 	@Override
 	public List<DigitalTwinType> getDigitalTwinTypesByUserId(String sessionUserId) {
 		final User sessionUser = userService.getUser(sessionUserId);
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			return digitalTwinTypeRepo.findAll();
 		} else {
 			return digitalTwinTypeRepo.findByUser(sessionUser);

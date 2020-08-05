@@ -7,7 +7,7 @@ RuleDomain.List = (function() {
 	var headersObj = {};
 	headersObj[csrfHeader] = csrfToken;
 	var init = function() {
-	
+		setTimeout(reloadTooltips, 100);
 	};
 	
 	var dtRenderOptions = function (data, type, row) {
@@ -40,6 +40,10 @@ RuleDomain.List = (function() {
 		initTableEvents();
 	
 	}
+	function reloadTooltips(){
+		$('.tooltips').tooltip('destroy');
+		$('.tooltips').tooltip();
+	}
 	
 	
 	
@@ -55,12 +59,11 @@ RuleDomain.List = (function() {
 			RuleDomain.List.initCompleteCallback()
 		}, true);
 		
-		$('.tooltip').tooltip('destroy');
+		$('.tooltips').tooltip('destroy');
 		$('.tooltips').tooltip();
 	}
 	
-	function initTableEvents() {
-		$('.tooltips').tooltip();
+	function initTableEvents() {		
 		
 		$('.btn-show').off().on('click', function(){
 			var id = $(this).data('id');
@@ -81,7 +84,7 @@ RuleDomain.List = (function() {
 						title : 'INFO',
 						type : 'blue',
 						theme : 'light',
-						content : 'Domain ' + message
+						content : 'Domain '+ message
 					});
 		        	reloadRuleDomainTable();
 		        }).fail(function(error) {
@@ -142,6 +145,7 @@ RuleDomain.List = (function() {
 			}
 		});
 	}
+	
 	
 	// Public API
 	return {

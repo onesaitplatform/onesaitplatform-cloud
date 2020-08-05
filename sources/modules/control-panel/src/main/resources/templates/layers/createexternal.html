@@ -183,7 +183,7 @@
 														</div>
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12">
-														<div class="input-group input-group-sm">
+														<div class="form-group">
 															<label th:text="#{layer.external.type}" > Types </label><span class="required"> *</span>
 															<select class="selectpicker select show-tick form-control" id="type" th:field="*{externalType}" th:onchange="'javascript:changeType();'" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{layer.geometry.type.select	}">
 															  <optgroup th:label="#{database.generic}">
@@ -265,10 +265,10 @@
 											<span class="sep">&nbsp;</span>
 											
 											<!-- CREATE -->
-											<button th:if="${layer?.id} == null" id="createBtn" type="button" class="btn btn-circle btn-primary" name="create" th:onclick="'javascript:createLayer();'"><span th:text="#{gen.createBtn}"> New</span></button>
+											<button th:if="${layer?.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-primary" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 
 											<!-- UPDATE -->
-											<button th:if="${layer?.id} != null" id="updateBtn" type="button" class="btn btn-circle btn-primary" name="update"  th:onclick="'javascript:updateLayer();'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+											<button th:if="${layer?.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 										</div>
 									</div>
 								</div>
@@ -347,43 +347,96 @@
 			}
 		};
 	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	
 	$("#run").on("click", function(){
 		event.preventDefault();
 		drawRectangleInput($("#west").val(), $("#south").val(), $("#east").val(), $("#north").val());
 		
 	});
 	
+	$("#resetBtn").on("click", function(){
+		cleanFields('layer_create_form');	
+	});
+	
 	function navigateUrl (url){
 		window.location.href = url; 
 	}
 	
-	function createLayer(){
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-		$('#layer_create_form').ajaxSubmit({type: 'post', headers: {[csrf_header]: csrf_value}, success : function(data){
-			
-			navigateUrl(data.redirect);
-			
-			}, error: function(data){
-				HeaderController.showErrorDialog(data.responseJSON.cause)
+	function handleValidation () {
+        var form1 = $('#layer_create_form');
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
+
+
+        form1.validate({
+            errorElement: 'span', // default input error message container
+            errorClass: 'help-block help-block-error', // default input error
+														// message class
+            focusInvalid: false, // do not focus the last invalid input
+            ignore: ":hidden:not('.selectpicker, .formcolorpicker, .hidden-validation')", // validate
+																		// all
+																		// fields
+																		// including
+																		// form
+																		// hidden
+																		// input
+																		// but
+																		// not
+																		// selectpicker
+			lang: currentLanguage,
+			// custom messages
+            messages: {
+//				jsonschema: { required:"El esquema no se ha guardado correctamente"},
+//				datamodelid: { required: "Por favor seleccione una plantilla de ontología, aunque sea la vacia."}
+			},
+			// validation rules
+            rules: {
+                identification:	{ minlength: 5, required: true },
+				description:	{ minlength: 5, required: true },
+				url:			{ required: true },
+				externalType:	{ required: true }
+            },
+            invalidHandler: function(event, validator) {
+                success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
+            },
+            errorPlacement: function(error, element) {
+            	if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
+				else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline")); }
+				else if ( element.is(':hidden'))	{
+					if ($('#datamodelid').val() === '') { $('#datamodelError').removeClass('hide');}
+				}
+				else { error.insertAfter(element); }
+            },
+            highlight: function(element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            unhighlight: function(element) {
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+            success: function(label) {
+                label.closest('.form-group').removeClass('has-error');
+            },
+            submitHandler: function(form) {            	
+                error1.hide();
+				
+				var csrf_value = $("meta[name='_csrf']").attr("content");
+				var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+				
+				form1.ajaxSubmit({type: 'post', headers: {[csrf_header]: csrf_value}, success : function(data){
+					
+					navigateUrl(data.redirect);
+					
+					}, error: function(data){
+						HeaderController.showErrorDialog(data.responseJSON.cause)
+					}
+				})
 			}
-		})
-	}
-	
-	function updateLayer(){
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-		$('#layer_create_form').ajaxSubmit({type: 'post', headers: {[csrf_header]: csrf_value}, success : function(data){
-			
-			navigateUrl(data.redirect);
-			
-			}, error: function(data){
-				HeaderController.showErrorDialog(data.responseJSON.cause)
-			}
-		})
-	}
+        });
+    }
 	
 	function changeType(){
 		if($("#type").val() == 'wms'){
@@ -400,9 +453,34 @@
 		}
 	}
 	
-	
+	function cleanFields (formId) {
+		
+		// CLEAR OUT THE VALIDATION ERRORS
+		$('#' + formId).validate().resetForm();
+		$('#' + formId).find(
+				'input:text, input:password, input:file, select, textarea')
+				.each(function() {
+					// CLEAN ALL EXCEPTS cssClass "no-remote" persistent fields
+					if (!$(this).hasClass("no-remove")) {
+						$(this).val('');
+					}
+				});
+		
+		// CLEANING SELECTs
+		$(".selectpicker").each(function() {
+			$(this).val('');
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});
+		
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+		
+		// UNCHECK OUBLIC OPTION
+		$("#public").prop("checked", false);
+	}
 	
 	$( document ).ready(function() {
+		handleValidation();
 		if(layerCreateJson.actionMode!=null){
 			if(layerCreateJson.isPublic){
 				$("#public").attr("checked", "checked");

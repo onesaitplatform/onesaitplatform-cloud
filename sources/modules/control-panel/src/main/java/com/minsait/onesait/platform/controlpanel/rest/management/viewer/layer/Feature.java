@@ -18,25 +18,27 @@ import java.util.Map;
 
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.Geometry;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
 public class Feature {
 
-	@Getter
-	@Setter
-	private String type;
+	private String type = "Feature";
 
-	@Getter
-	@Setter
 	private String oid;
 
-	@Getter
-	@Setter
 	private Geometry geometry;
 
-	@Getter
-	@Setter
 	private Map<String, String> properties;
+
+	public Feature(String oid, Geometry geometry, Map<String, String> properties) {
+		super();
+		this.type = "Feature";
+		this.oid = oid;
+		this.geometry = geometry;
+		this.properties = properties;
+	}
 
 }

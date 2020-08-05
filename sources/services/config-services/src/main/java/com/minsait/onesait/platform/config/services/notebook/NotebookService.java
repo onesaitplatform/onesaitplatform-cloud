@@ -17,9 +17,11 @@ package com.minsait.onesait.platform.config.services.notebook;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.minsait.onesait.platform.config.dto.NotebookForList;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -55,6 +57,8 @@ public interface NotebookService {
 	public String loginOrGetWSToken();
 
 	public String loginOrGetWSTokenAdmin();
+	
+	public String loginOrGetWSTokenByBearer(String user, String bearertoken);
 
 	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, String body)
 			throws URISyntaxException, IOException;
@@ -113,7 +117,9 @@ public interface NotebookService {
 
 	public String notebookNameByIdZep(String idzep, String userId);
 
-	public boolean hasUserPermissionCreateNotebook(String userId);
+    public List<NotebookForList> getNotebooksAndByProjects(String userId);
+
+    public boolean hasUserPermissionCreateNotebook(String userId);
 	
 	boolean isUserOwnerOfNotebook(User user, Notebook notebook);
 
@@ -131,6 +137,10 @@ public interface NotebookService {
 
 	public ResponseEntity<String> restartAllInterpretersNotebook(String notebookId, String body, User user) 
 			throws URISyntaxException, IOException;
+
+	String getParagraphOutputMessage(String zeppelinId, String paragraphId) throws URISyntaxException, IOException;
+
+	public Map<String, String> getNotebookInterpreters(String notebookId) throws URISyntaxException, IOException;
 
 	
 }

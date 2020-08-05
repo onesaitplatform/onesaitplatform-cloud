@@ -27,6 +27,8 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.boot.bind.PropertiesConfigurationFactory;
 import org.springframework.context.ApplicationContext;
@@ -36,6 +38,9 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.validation.BindException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MigrationUtils {
 
@@ -59,6 +64,31 @@ public class MigrationUtils {
 		}
 
 		// if the object is not an entity then null is returned
+		return null;
+
+	}
+
+	static String getIdentificationField(Object o) throws IllegalAccessException {
+		if (o != null) {
+			Class<?> clazz = o.getClass();
+
+			Map<String, Field> fields = new HashMap<>();
+			MigrationUtils.getAllFields(fields, clazz);
+			for (Field field : fields.values()) {
+				if (field.getName().equalsIgnoreCase("identification")) {
+					ObjectMapper mapper = new ObjectMapper();
+					JSONObject json;
+					try {
+						json = new JSONObject(mapper.writeValueAsString(o));
+					} catch (JSONException | JsonProcessingException e) {
+						return null;
+					}
+					if (json.has("identification")) {
+						return json.getString("identification");
+					}
+				}
+			}
+		}
 		return null;
 
 	}

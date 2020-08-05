@@ -23,7 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.minsait.onesait.platform.config.model.AppExport;
+import com.minsait.onesait.platform.config.model.AppRoleExport;
+import com.minsait.onesait.platform.config.model.AppUserExport;
+import com.minsait.onesait.platform.config.model.ProjectExport;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessExport;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
@@ -46,6 +52,13 @@ public class MigrationConfiguration {
 	private final static Set<String> masterUsers = Collections.unmodifiableSet(Sets.newHashSet(users));
 	private List<Instance> dataList = new ArrayList<Instance>();
 
+	private static final String USER = "com.minsait.onesait.platform.config.model.User";
+	private static final String PROJECT = "com.minsait.onesait.platform.config.model.Project";
+	private static final String PROJECT_RESOURCE_ACCESS = "com.minsait.onesait.platform.config.model.ProjectResourceAccess";
+	private static final String APP_ROLE = "com.minsait.onesait.platform.config.model.AppRole";
+	private static final String APP_USER = "com.minsait.onesait.platform.config.model.AppUser";
+	private static final String APP = "com.minsait.onesait.platform.config.model.App";
+
 	public MigrationConfiguration() {
 		blacklist = MigrationUtils.blacklist().getBlackList();
 		whitelist = MigrationUtils.whitelist().getWhiteList();
@@ -59,6 +72,15 @@ public class MigrationConfiguration {
 
 	public boolean add(Class<?> clazz, Serializable id, Serializable identification, Serializable version) {
 		if (!blacklist.contains(clazz.getName())) {
+			if (clazz.getCanonicalName().equals(USER)) {
+				clazz = UserExport.class;
+			} else if (clazz.getCanonicalName().equals(APP)) {
+				clazz = AppExport.class;
+			} else if (clazz.getCanonicalName().equals(APP_ROLE)) {
+				clazz = AppRoleExport.class;
+			} else if (clazz.getCanonicalName().equals(APP_USER)) {
+				clazz = AppUserExport.class;
+			}
 			Set<Serializable> ids;
 			if (!config.containsKey(clazz)) {
 				ids = new HashSet<>();
@@ -77,6 +99,9 @@ public class MigrationConfiguration {
 
 	public boolean addUser(Class<?> clazz, Serializable id) {
 		Set<Serializable> ids;
+		if (clazz.getCanonicalName().equals(USER)) {
+			clazz = UserExport.class;
+		}
 		if (!config.containsKey(clazz)) {
 			ids = new HashSet<>();
 			config.put(clazz, ids);
@@ -93,6 +118,19 @@ public class MigrationConfiguration {
 
 	public boolean addProject(Class<?> clazz, Serializable id, Serializable identification) {
 		if (!blackProjectlist.contains(clazz.getName())) {
+			if (clazz.getCanonicalName().equals(USER)) {
+				clazz = UserExport.class;
+			} else if (clazz.getCanonicalName().equals(PROJECT)) {
+				clazz = ProjectExport.class;
+			} else if (clazz.getCanonicalName().equals(PROJECT_RESOURCE_ACCESS)) {
+				clazz = ProjectResourceAccessExport.class;
+			} else if (clazz.getCanonicalName().equals(APP)) {
+				clazz = AppExport.class;
+			} else if (clazz.getCanonicalName().equals(APP_ROLE)) {
+				clazz = AppRoleExport.class;
+			} else if (clazz.getCanonicalName().equals(APP_USER)) {
+				clazz = AppUserExport.class;
+			}
 			Set<Serializable> ids;
 			if (!config.containsKey(clazz)) {
 				ids = new HashSet<>();

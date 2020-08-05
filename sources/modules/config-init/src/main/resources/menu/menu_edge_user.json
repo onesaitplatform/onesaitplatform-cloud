@@ -1,0 +1,162 @@
+{
+    "menu": "onesait Platform",
+    "rol": "ROLE_EDGE_USER",
+    "noSession": "/console/login",
+    "navigation": [
+        {
+            "title": {
+                "EN": "",
+                "ES": ""
+            },
+            "icon": "flaticon-more-v3",
+            "url": "",
+            "submenu": []
+        },
+        {
+            "title": {
+                "EN": "EDGE MANAGEMENT",
+                "ES": "ADMINITRACIÓN EDGE"
+            },
+            "icon": "flaticon-analytics",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Devices Management",
+                        "ES": "Gestión de Dispositivos"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/devices"
+                },
+                {
+                    "title": {
+                        "EN": "Clusters Management",
+                        "ES": "Gestión de Clusters"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/bastions"
+                },
+                {
+                    "title": {
+                        "EN": "Landscape Management",
+                        "ES": "Gestión de Landscape"
+                    },
+                    "icon": "",
+                    "url": ""
+                },
+                {
+                    "title": {
+                        "EN": "Repositories Management",
+                        "ES": "Gestión de Repositorios"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/organizations"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "DEVELOPMENT",
+                "ES": "DESARROLLO"
+            },
+            "icon": "flaticon-network",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "My Projects",
+                        "ES": "Mis Proyectos"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/projects/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Ontologies",
+                        "ES": "Mis Ontologías"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/ontologies/list"
+                },
+                {
+                    "title": {
+                        "EN": "My APIs",
+                        "ES": "Mis APIs"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/apimanager/list"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "VISUALIZATION & GIS",
+                "ES": "VISUALIZATION & GIS"
+            },
+            "icon": "flaticon-graph",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "My Dashboards",
+                        "ES": "Mis Dashboards"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/dashboards/list"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "DEV TOOLS",
+                "ES": "HERR. DESARROLLO"
+            },
+            "icon": "flaticon-open-box",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "My Files",
+                        "ES": "Mis Ficheros"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/files/list"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "TOOLS",
+                "ES": "HERRAMIENTAS"
+            },
+            "icon": "flaticon-refresh",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Query Tool",
+                        "ES": "Herramienta Consultas"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/querytool/show"
+                },
+                {
+                    "title": {
+                        "EN": "My Audit",
+                        "ES": "Mi Auditoría"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/audit/show"
+                },
+                {
+                    "title": {
+                        "EN": "My Market",
+                        "ES": "Mi Market"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/marketasset/list"
+                }
+            ]
+        }
+    ]
+}

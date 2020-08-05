@@ -66,7 +66,7 @@ public class GadgetTemplateController {
 		return this.gadgetTemplateService.getAllIdentifications();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createGadget(Model model) {
 		model.addAttribute(GADGET_TEMPLATE, new GadgetTemplate());
@@ -75,7 +75,7 @@ public class GadgetTemplateController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/create", produces = "text/html")
 	public String saveGadget(@Valid GadgetTemplate gadgetTemplate, BindingResult bindingResult, Model model,
 			HttpServletRequest httpServletRequest, RedirectAttributes redirect) {
@@ -110,34 +110,34 @@ public class GadgetTemplateController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{gadgetTemplateId}", produces = "text/html")
 	public String createGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
 		return "gadgettemplates/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/view/{gadgetTemplateId}", produces = "text/html")
 	public String showGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
 		return "gadgettemplates/show";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/gadgetViewer", produces = "text/html")
 	public String showGadgetViewer(Model model) {
 		return "gadgettemplates/gadgetViewer";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		this.gadgetTemplateService.deleteGadgetTemplate(id, utils.getUserId());
 		return REDIRECT_GADGET_TEMP_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateGadget(Model model, @PathVariable("id") String id, @Valid GadgetTemplate gadgetTemplate,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -155,7 +155,7 @@ public class GadgetTemplateController {
 		return REDIRECT_GADGET_TEMP_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "getUserGadgetTemplate")
 	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplate() {
 		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId());

@@ -1,13 +1,20 @@
-onesaitplatform:       
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+     
+
+onesaitplatform:
    iotbroker:
-      server: http://iotbrokerservice:19000/iotbroker                  
+      server: http://iotbrokerservice:19000/iotbroker
    router.alternativeURL: http://routerservice:20000/router/router/
    audit.global.notify: ${AUDITGLOBALNOTIFY}
 spring:
-   datasource:  
-      url: ${CONFIGDBURL}
+   datasource:
+      url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS} 
+      password: ${CONFIGDBPASS}
       time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
       min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
       max-wait-millis: ${DS_MAX_WAIT_MILLIS}
@@ -18,14 +25,14 @@ spring:
       min-idle: ${DS_MIN_IDLE}
       removeAbandoned: ${DS_REMOVE_ABANDONED}
       removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
-   boot.admin: #Spring Boot Admin Config    
+   boot.admin: #Spring Boot Admin Config
       url: http://monitoringuiservice:18100/monitoring
-      client.service-url: http://devicesimulator:${server.port}${server.contextPath}/      
+      client.service-url: http://devicesimulator:${server.port}${server.contextPath}/
 quartz:
     datasource:
-      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      url: ${SCHEDULERDBBURL}${DBADDPROPS}
 
-              
+
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs 
+   path: /var/log/platform-logs

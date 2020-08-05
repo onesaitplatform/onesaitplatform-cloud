@@ -51,3 +51,5 @@ onesaitplatform: #Config onesaitplatform specific
                min: 27000
                max: 27500
          home.base: /tmp/
+   restPlanner:
+         checkSSL: false

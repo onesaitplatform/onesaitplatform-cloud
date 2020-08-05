@@ -18,6 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.mongodb.util.JSON;
+import oracle.net.aso.n;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -31,12 +35,13 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -59,7 +64,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
 		if (SSAPMessageTypes.UPDATE.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyUpdateMessage> processUpdate = (SSAPMessage<SSAPBodyUpdateMessage>) message;
@@ -83,7 +88,9 @@ public class UpdateProcessor implements MessageTypeProcessor {
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
-		final Optional<IoTSession> session = securityPluginManager.getSession(updateMessage.getSessionKey());
+
+		final String sessionkey = updateMessage.getSessionKey();
+		final Optional<IoTSession> session = securityPluginManager.getSession(sessionkey);
 
 		String user = null;
 		String deviceTemplate = null;
@@ -99,30 +106,42 @@ public class UpdateProcessor implements MessageTypeProcessor {
 				.deviceTemplate(deviceTemplate).queryType(QueryType.NATIVE).body(updateMessage.getBody().getQuery())
 				.build();
 
-		final NotificationModel modelNotification = new NotificationModel();
-		modelNotification.setOperationModel(model);
+		model.setClientSession(sessionkey);
+
+		final String transactionId = updateMessage.getTransactionId();
 
 		OperationResultModel result;
 		String responseStr = null;
 		String messageStr = null;
 		try {
-			result = routerService.update(modelNotification);
-			messageStr = result.getMessage();
-			responseStr = result.getResult();
+			if (null == transactionId) {
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
 
-			final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(responseStr);
+				result = routerService.update(modelNotification);
+				messageStr = result.getMessage();
+				responseStr = result.getResult();
 
-			final String response;
-
-			if (updateMessage.includeIds()) {
-				response = String.format("{\"nModified\":%s, \"modified\":%s}", multidocument.getCount(),
-						multidocument.getStrIds());
+				final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(responseStr);
+				final JSONObject jsonObject = new JSONObject();
+				jsonObject.put("nModified", multidocument.getCount());
+				if(multidocument.getStrIds() != null && updateMessage.includeIds()){
+					jsonObject.put("modified", new JSONArray(multidocument.getStrIds()));
+				}
+				responseMessage.getBody().setData(objectMapper.readTree(jsonObject.toString()));
 			} else {
-				response = String.format("{\"nModified\":%s}", multidocument.getCount());
+				model.setTransactionId(transactionId);
+
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
+
+				result = routerService.update(modelNotification);
+				messageStr = result.getMessage();
+
+				String sequenceNumber = result.getResult();
+
+				responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
 			}
-
-			responseMessage.getBody().setData(objectMapper.readTree(response));
-
 		} catch (final Exception e) {
 			log.error("Error in process:" + e.getMessage());
 			final String error = MessageException.ERR_DATABASE;
@@ -155,40 +174,56 @@ public class UpdateProcessor implements MessageTypeProcessor {
 				.objectId(updateMessage.getBody().getId()).queryType(QueryType.NATIVE)
 				.body(updateMessage.getBody().getData().toString()).deviceTemplate(deviceTemplate).build();
 
-		final NotificationModel modelNotification = new NotificationModel();
-		modelNotification.setOperationModel(model);
-
 		OperationResultModel result;
 		String responseStr = null;
 		String messageStr = null;
+
+		model.setClientSession(updateMessage.getSessionKey());
+
+		final String transactionId = updateMessage.getTransactionId();
+
 		try {
-			result = routerService.update(modelNotification);
-			responseStr = result.getResult();
-			messageStr = result.getMessage();
+			if (null == transactionId) {
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
 
-			if (messageStr != null && messageStr.equals("OK")) {
-				if (updateMessage.includeIds()) {
-					int nUpdated;
-					if (responseStr != null) {
-						nUpdated = 1;
+				result = routerService.update(modelNotification);
+				responseStr = result.getResult();
+				messageStr = result.getMessage();
+
+				if (messageStr.equals("OK")) {
+					if (updateMessage.includeIds()) {
+						final JSONObject jsonResponse = new JSONObject();
+						if (responseStr != null && !responseStr.isEmpty() && !responseStr.equals("[]")) {
+							jsonResponse.put("nModified", 1);
+							final JSONArray updatedId = new JSONArray();
+							updatedId.put(updateMessage.getBody().getId());
+							jsonResponse.put("modified", updatedId);
+						} else {
+							jsonResponse.put("nModified", 0);
+						}
+						responseMessage.getBody().setData(objectMapper.readTree(jsonResponse.toString()));
 					} else {
-						nUpdated = 0;
+						responseMessage.getBody().setData(objectMapper.readTree(responseStr));
 					}
-
-					final String updated = nUpdated > 0 ? "[\"" + updateMessage.getBody().getId() + "\"]" : "[]";
-
-					final String response = String.format("{\"nModified\":%s, \"modified\":%s}", nUpdated, updated);
-
-					responseMessage.getBody().setData(objectMapper.readTree(response));
 				} else {
-					responseMessage.getBody().setData(objectMapper.readTree(responseStr));
+					final String error = MessageException.ERR_DATABASE;
+					responseMessage = SSAPUtils.generateErrorMessage(updateMessage, SSAPErrorCode.PROCESSOR, error);
+					if (messageStr != null) {
+						responseMessage.getBody().setError(messageStr);
+					}
 				}
 			} else {
-				final String error = MessageException.ERR_DATABASE;
-				responseMessage = SSAPUtils.generateErrorMessage(updateMessage, SSAPErrorCode.PROCESSOR, error);
-				if (messageStr != null) {
-					responseMessage.getBody().setError(messageStr);
-				}
+				model.setTransactionId(transactionId);
+
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
+
+				result = routerService.update(modelNotification);
+				messageStr = result.getMessage();
+				String sequenceNumber = result.getResult();
+
+				responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
 			}
 
 		} catch (final Exception e) {

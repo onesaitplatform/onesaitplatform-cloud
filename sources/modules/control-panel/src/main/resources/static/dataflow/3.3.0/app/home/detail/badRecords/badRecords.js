@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('BadRecordsController', function ($scope, $rootScope, _, api, pipelineConstant, $filter, $timeout) {
+  .controller('BadRecordsController', ["$scope", "$rootScope", "_", "api", "pipelineConstant", "$filter", "$timeout", function ($scope, $rootScope, _, api, pipelineConstant, $filter, $timeout) {
 
     var formatValue = function(d){
       return $filter('abbreviateNumber')(d);
@@ -315,4 +315,4 @@ angular
       $scope.errorDataLoaded = true;
     });
 
-  });
+  }]);

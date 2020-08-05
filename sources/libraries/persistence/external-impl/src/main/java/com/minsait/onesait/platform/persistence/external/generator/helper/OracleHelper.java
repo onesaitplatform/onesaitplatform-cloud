@@ -14,25 +14,39 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.helper;
 
-import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.statement.select.*;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
+import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
+
+import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 
 @Component("OracleHelper")
 @Slf4j
 public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 
-	private static final String LIST_TABLES_QUERY = "SELECT table_name FROM user_tables";
+	// private static final String LIST_TABLES_QUERY = "SELECT table_name FROM
+	// (SELECT view_name AS table_name FROM user_views UNION SELECT table_name AS
+	// table_name FROM user_tables) ORDER BY table_name asc";
+	private static final String LIST_TABLES_QUERY = "SELECT table_name FROM ("
+			+ "SELECT view_name AS table_name FROM user_views UNION "
+			+ "SELECT table_name AS table_name FROM user_tables UNION "
+			+ "SELECT table_name AS table_name FROM user_tab_privs WHERE grantee IN (SELECT user from dual)"
+			+ ") ORDER BY table_name asc";
 
+	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
 
+	@Override
 	public PlainSelect addLimit(final PlainSelect select, final long limit) {
 		final boolean hasFetch = select.getFetch() != null;
-		if(hasFetch){
+		if (hasFetch) {
 			final long oldFetch = select.getFetch().getRowCount();
 			select.getFetch().setRowCount(Math.min(oldFetch, limit));
 		} else {
@@ -44,12 +58,13 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 		return select;
 	}
 
+	@Override
 	public PlainSelect addLimit(final PlainSelect select, final long limit, final long offset) {
 		final PlainSelect limitedSelect = addLimit(select, limit);
-		if(offset > 0){
+		if (offset > 0) {
 			final boolean hasOffset = limitedSelect.getOffset() != null;
-			if(hasOffset){
-				if(limitedSelect.getOffset() != null){
+			if (hasOffset) {
+				if (limitedSelect.getOffset() != null) {
 					limitedSelect.getOffset().setOffset(offset);
 				} else {
 					limitedSelect.getLimit().setOffset(new LongValue(offset));
@@ -60,10 +75,49 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 				qOffset.setOffset(Math.max(offset, 0));
 				limitedSelect.setOffset(qOffset);
 			}
-		} else {
-			limitedSelect.setOffset(null);
 		}
 		return limitedSelect;
+	}
+
+	@Override
+	public String getFieldTypeString(String fieldOspType) {
+		String type = null;
+
+		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		switch (fieldtype) {
+		case STRING:
+			type = "CHAR(255)";
+			break;
+		case OBJECT:
+			type = "CHAR(255)";
+			break;
+		case NUMBER:
+			type = "FLOAT";
+			break;
+		case INTEGER:
+			type = "INTEGER";
+			break;
+		case GEOMERTY:
+			type = "VARCHAR2";
+			break;
+		case FILE:
+			type = "LONG RAW";
+			break;
+		case TIMESTAMP_MONGO:
+		case TIMESTAMP:
+			type = "TIMESTAMP";
+			break;
+		case ARRAY:
+			type = "VARCHAR2";
+			break;
+		case BOOLEAN:
+			type = "NUMBER(1)";
+			break;
+		default:
+			throw new OPResourceServiceException("OntologySchemaFieldType not suported: " + fieldtype.getValue());
+		}
+
+		return type;
 	}
 
 }

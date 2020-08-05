@@ -107,6 +107,11 @@ public class CategorizationManagementController {
 			@ApiParam(value = "categorization", required = true) @Valid @RequestBody CategorizationDTO categorizationDTO,
 			Errors errors) {
 		try {
+			
+			if (!categorizationDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+			    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+			}
+			
 			if (categorizationService.getCategorizationByIdentification(categorizationDTO.getIdentification()) != null) {
 				log.error("There is a Categorization Tree with the same Identification");
 				throw new GenericOPException("There is a Categorization Tree with the same Identification");

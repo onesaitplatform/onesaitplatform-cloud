@@ -30,9 +30,10 @@ public class Sofia2EventProducer implements EventProducer {
 	@Autowired
 	ApplicationEventPublisher publisher;
 
+	@Override
 	public void publish(OPAuditEvent event) {
 
-		log.info("Sofia2EventProducer :: thread '{}' handling '{}' publish Event to Application Event Publisher: ",
+		log.debug("Sofia2EventProducer :: thread '{}' handling '{}' publish Event to Application Event Publisher: ",
 				Thread.currentThread(), (event != null) ? event.getMessage() : "");
 
 		if (event != null) {

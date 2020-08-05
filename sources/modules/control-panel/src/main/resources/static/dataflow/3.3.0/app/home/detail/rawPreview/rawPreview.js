@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('RawPreviewController', function ($scope, $rootScope, $q, $modal, _, api) {
+  .controller('RawPreviewController', ["$scope", "$rootScope", "$q", "$modal", "_", "api", function ($scope, $rootScope, $q, $modal, _, api) {
 
     angular.extend($scope, {
       rawDataCodemirrorOptions: {
@@ -52,4 +52,4 @@ angular
       }
     });
 
-  });
+  }]);

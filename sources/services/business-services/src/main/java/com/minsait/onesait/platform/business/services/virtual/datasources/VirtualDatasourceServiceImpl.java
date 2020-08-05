@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
+import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
 import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualDatasourcesManager;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualDatasourceRepository;
 
@@ -48,7 +50,28 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
+	
+	@Autowired
+	private UserService userService;
 
+	@Override
+	public List<OntologyVirtualDatasource> getAllByDatasourceNameAndUser(String identification, String sessionUserId) {
+		final User sessionUser = userService.getUser(sessionUserId);
+		if (userService.isUserAdministrator(sessionUser)) {
+			if (identification==null || identification.trim().equals("")) {
+				return getAllDatasources();
+			} else {
+				return ontologyVirtualDatasourceRepository.findAllByDatasourceNameLikeOrderByDatasourceNameAsc(identification);
+			}
+		} else {
+			if (identification==null || identification.trim().equals("")) {
+				return getAllDatasourcesByUser(sessionUser);
+			} else {
+				return ontologyVirtualDatasourceRepository.findAllByDatasourceNameLikeAndUserIdOrIsPublicTrueOrderByDatasourceNameAsc(identification, sessionUser);
+			}
+		}
+	}
+	
 	@Override
 	public List<String> getAllIdentifications() {
 		final List<OntologyVirtualDatasource> datasources = ontologyVirtualDatasourceRepository
@@ -60,11 +83,31 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	public List<OntologyVirtualDatasource> getAllDatasources() {
 		return ontologyVirtualDatasourceRepository.findAll();
 	}
-
+	
 	@Override
-	public void createDatasource(final OntologyVirtualDatasource datasource) {
+	public List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user) {
+		return ontologyVirtualDatasourceRepository.findByUserIdOrIsPublicTrue(user);
+	}
+        
+	@Override
+	public void createDatasource(final OntologyVirtualDatasource datasource) throws GenericOPException {
 		datasource.setCredentials(JasyptConfig.getEncryptor().encrypt(datasource.getCredentials()));
-		ontologyVirtualDatasourceRepository.save(datasource);
+		
+		if (datasource.getDatasourceName()!=null && !datasource.getDatasourceName().trim().equals("")) {
+			OntologyVirtualDatasource datasourceBD = ontologyVirtualDatasourceRepository.findByDatasourceName(datasource.getDatasourceName());
+			if (datasourceBD!=null) {
+				throw new GenericOPException("Datasource Identification already exists");
+			}
+		}
+		
+		if (datasource.getDatasourceDomain()!=null && !datasource.getDatasourceDomain().trim().equals("")) {
+			List<OntologyVirtualDatasource> datasourceList = ontologyVirtualDatasourceRepository.findByDatasourceDomain(datasource.getDatasourceDomain());
+			if (datasourceList!=null && !datasourceList.isEmpty()) {
+				throw new GenericOPException("Datasource Domain already exists");
+			}
+		}
+		
+		ontologyVirtualDatasourceRepository.saveAndFlush(datasource);
 	}
 
 	@Override
@@ -74,7 +117,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
 	@Override
 	public void updateOntology(final OntologyVirtualDatasource datasource) {
-		datasource.setCredentials(JasyptConfig.getEncryptor().encrypt(datasource.getCredentials()));
+		setUserPasswordDB(datasource);
 		ontologyVirtualDatasourceRepository.save(datasource);
 		virtualDatasourcesManager.setDatasourceDescriptor(datasource.getDatasourceName());
 	}
@@ -95,8 +138,12 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 		final DriverManagerDataSource driverManagerDatasource = new DriverManagerDataSource();
 		driverManagerDatasource.setDriverClassName(driverClassName);
 		driverManagerDatasource.setUrl(url);
-		driverManagerDatasource.setUsername(user);
-		driverManagerDatasource.setPassword(credentials);
+		if(user != null && !"".equals(user)) {
+			driverManagerDatasource.setUsername(user);
+		}
+		if(credentials != null && !"".equals(credentials)) {
+			driverManagerDatasource.setPassword(credentials);
+		}
 
 		final JdbcTemplate jdbcTemplate = new JdbcTemplate(driverManagerDatasource);
 		final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(type);
@@ -130,9 +177,11 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	public Boolean checkConnectionExtern(final String dataSourceName) throws GenericOPException {
 		final OntologyVirtualDatasource dataSource = ontologyVirtualDatasourceRepository
 				.findByDatasourceName(dataSourceName);
+		String user = dataSource.getUser();
+		String credentials = dataSource.getCredentials();
 		return this.checkConnection(dataSourceName,
-				dataSource.getUser(),
-				JasyptConfig.getEncryptor().decrypt(dataSource.getCredentials()),
+				user,
+				(credentials != null ? JasyptConfig.getEncryptor().decrypt(credentials):null),
 				dataSource.getSgdb().toString(),
 				dataSource.getConnectionString(),
 				String.valueOf(dataSource.getQueryLimit()));
@@ -141,10 +190,44 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	private VirtualDatasourceType getTypeFromOntology(final String ontology){
 		return ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology).getSgdb();
 	}
+	
+	//Set user and password to null when they are empty string and no encryption
+	private void setUserPasswordDB(OntologyVirtualDatasource datasource) {
+		if("".equals(datasource.getUser())) {
+			datasource.setUser(null);
+		}
+		if("".equals(datasource.getCredentials())) {
+			datasource.setCredentials(null);
+		}
+		else {
+			datasource.setCredentials(JasyptConfig.getEncryptor().encrypt(datasource.getCredentials()));
+		}
+		
+	}
 
 	@Override
 	public String getUniqueColumn(final String ontology){
 		return this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
 	}
 
+	@Override
+	public OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId) {
+		final User sessionUser = userService.getUser(sessionUserId);
+		if (userService.isUserAdministrator(sessionUser)) {
+			return ontologyVirtualDatasourceRepository.findById(id);
+		} else {
+			return ontologyVirtualDatasourceRepository.findByIdAndUserId(id, sessionUser);
+		}
+	}
+	
+	@Override
+	public OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId) {
+		final User sessionUser = userService.getUser(sessionUserId);
+		if (userService.isUserAdministrator(sessionUser)) {
+			return ontologyVirtualDatasourceRepository.findById(id);
+		} else {
+			return ontologyVirtualDatasourceRepository.findByIdAndUserIdOrIsPublicTrue(id, sessionUser);
+		}
+	}
+	
 }

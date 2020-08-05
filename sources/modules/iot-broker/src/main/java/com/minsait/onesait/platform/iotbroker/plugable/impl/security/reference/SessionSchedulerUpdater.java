@@ -14,7 +14,7 @@
  */
 package com.minsait.onesait.platform.iotbroker.plugable.impl.security.reference;
 
-import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface SessionSchedulerUpdater {
 

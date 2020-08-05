@@ -17,8 +17,6 @@ package com.minsait.onesait.platform.config.services.app.dto;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.User;
@@ -34,11 +32,15 @@ public class RealmCreate {
 
 	@Getter
 	@Setter
-	@NotNull
 	protected String identification;
 	@Getter
 	@Setter
-	@NotNull
+	protected String realmId;
+	@Getter
+	@Setter
+	protected String name;
+	@Getter
+	@Setter
 	protected String description;
 	@Getter
 	@Setter
@@ -57,6 +59,10 @@ public class RealmCreate {
 	public RealmCreate(App app) {
 
 		identification = app.getIdentification();
+		
+		realmId = app.getIdentification();
+		
+		name = app.getIdentification();
 
 		if (null != app.getSecret()) {
 			secret = app.getSecret();

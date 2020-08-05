@@ -189,7 +189,7 @@
 														<div class="form-group">
 															<label class="control-label" th:text="#{model.initial.style}">Initial Style</label>
 															<select id="dashboardConfId" class="form-control" data-size="5" data-live-search="true" data-width="100%" th:field="*{dashboardConfId}" onchange="updateHeaderLibs()"  >
-																<option th:each="schema :${schema}" th:value="${schema.id}" th:text="${schema.description}" ></option>
+																<option th:each="schema :${schema}" th:value="${schema.id}" th:text="${schema.identification} +' (' + ${schema.description} + ')'" ></option>
 															</select>
 														</div>
 													</div>
@@ -225,6 +225,14 @@
 															</select>
 														</div>
 													</div>
+                                                    <div class="col-md-3 col-sm-6 col-xs-12">
+                                                        <div class="form-group">
+                                                            <label class="" th:text="#{dashboards.internationalization}">Internationalization</label>
+                                                            <select id="i18n" class="selectpicker" multiple="multiple" data-selected-text-format="count > 2" th:title="#{dashboards.selecti18n}" data-size="5" data-live-search="true" data-width="100%" th:field="*{i18n}">
+                                                                <option th:each="i18n :${i18ns}" th:value="${i18n.id}" th:text="${i18n.identification}">internationalizations</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>  
 												</div>
 												
 												<!-- ADD LIBRARIES AND SCRIPT AND STYLE ROW -->
@@ -296,7 +304,7 @@
 																				</select>
 																			</td>													
 																			<td width="150px" class="no-wrap text-center">											
-																			<button type="button" class="btn btn-sm btn-circle uppercase blue btn-outline btn-mountable-authorization-remove" onclick="DashboardsCreateController.removeAuthorization(this)">Remove</button>
+																			<button type="button" class="btn btn-sm btn-circle uppercase blue btn-outline btn-mountable-authorization-remove" onclick="DashboardsCreateController.removeAuthorization(this)" th:text = "#{gen.deleteBtn}">Remove</button>
 																			</td>			
 																		</tr>
 																	</tbody>														
@@ -391,6 +399,8 @@
 											th:field="*{publicAccess}"  />
 											<input id="category" type="hidden" name="category"																	
 											th:field="*{category}"  />
+                                            <input id="i18n_aux" type="hidden" name="i18n"                                                                  
+                                            th:field="*{i18n}"  />
 											<input id="subcategory" type="hidden" name="subcategory"																	
 											th:field="*{subcategory}"  />
 											<input id="dashboardConfId_aux" type="hidden" name="dashboardConfId"																	
@@ -457,9 +467,11 @@
 		type="text/javascript"></script>
 	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
 	<!-- TEMPLATE CONTROLLER  -->
 	<script th:src="@{/static/js/pages/dashboardsCreate.js}" />
-<!-- CORE JS CONTROLLERS -->
+	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"/>
 	<script th:src="@{/static/js/layout.js}"/>	
 	<!-- MAIN INIT -->
@@ -476,6 +488,7 @@
 		"authorizationsSaved" : [[${dashboard.authorizations}]],
 		"category" : [[${dashboard?.category}]],
 		"subcategoryField" : [[${dashboard?.subcategory}]],
+		"i18n" : [[${dashboard?.i18n}]],
 		"confirmBtn" : [[#{gen.confirmBtn}]],	
 		"removeBtn" : [[#{gen.deleteBtn}]],
 		"users": [[${users}]],
@@ -489,6 +502,10 @@
 				 getSubcategories();
 				 $('#subcategories').val(dashboardCreateJson.subcategoryField);
 			}
+			var values = $('#i18n_aux').val();
+			$.each(values.split(","), function(i,e){
+				$("#i18n option[value='" + e + "']").prop("selected", true);
+			});
 		}
 	});
 

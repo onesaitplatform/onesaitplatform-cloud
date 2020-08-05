@@ -24,10 +24,12 @@ public class OutputMessage {
 	private String data;
 	private String time;
 	private Long startTime;
+	private boolean error;
 
-	public OutputMessage(final String data, final String time, final Long startTime) {
+	public OutputMessage(final String data, final String time, final Long startTime, final boolean error) {
 		this.data = data;
 		this.time = time;
 		this.startTime = startTime;
+		this.error = error;
 	}
 }

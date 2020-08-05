@@ -15,5 +15,5 @@
 package com.minsait.onesait.platform.persistence.external.generator.model.statements;
 
 public interface SQLStatement {
-	String generate();
+	PreparedStatement generate(boolean withParams);
 }

@@ -1,0 +1,372 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"></title>
+		
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+		
+		<!-- Funciones AJAX -->
+		<script th:inline="javascript">
+			//<![CDATA[
+
+
+
+
+			//]]>
+		</script>	
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/list}"> <span th:text="#{dataflow.breadcrumb.list}">Dataflows</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/instances}"> <span th:text="#{dataflow.breadcrumb.list}">Instances</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/instances/instance}"> <span th:text="#{dataflow.instances.instance}">Instance</span></a></li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{dataflow.instances.instance}">Dataflow instance</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									<span class="caption-subject" th:text="#{dataflow.instances.instance}">Dataflow instance</span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+							</div>
+							<div class="row">
+								<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.identification} + ':'">Identification</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-font"></i>
+											<input th:tabindex="1"  id="identification" type="text" th:value="${instance.identification}"  th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.identPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+									<!-- IS DFEAULT -->
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.isDefault}" >Default instance</label>
+										<div class="mt-checkbox-list">
+											<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o"></i> <div class="inline font-xs" th:text="#{dataflow.instances.instance.makeDefault}">Make default?</div>
+												<input id="isDefault" name="isDefault" type="checkbox" class="form-control no-remove" th:checked="${instance.defaultInstance}"/>
+												<span></span><!-- needed by styles -->
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+									<!-- USER SELECTION -->
+									<div class="form-group" >
+										<label class="control-label" th:text="#{dataflow.instances.instance.userDS}">User analytics</label><span class="required"> (*)</span>
+										<select th:tabindex="2" th:disabled="${instance.defaultInstance}" id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="" th:text="#{dataflow.selectuser}">Select User...</option>
+											<option th:each="user : ${users}" th:selected="${instance.user?.userId} == ${user.userId}" th:value="${user.userId}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
+										</select>
+									</div>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.url} + ':'">URL</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-link"></i>
+											<input th:tabindex="3" id="url" type="text" th:value="${instance.url}" th:required="true"  maxlength="512"  class="form-control"  th:placeholder="#{dataflow.instances.instance.urlPlaceHolder}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-12">
+									<h4 th:text="#{dataflow.instances.instance.crentialsHeader}" >Instance credentials</h4>
+									<h6 th:if="${instance.id}" th:text="#{dataflow.instances.instance.crentialsSubHeader}" style="font-style: italic;">You can left any credentials blank to not update it</h6>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.adminUser} + ':'">Admin user</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-user"></i>
+											<input th:tabindex="4" id="adminUser" type="text" th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.adminUserPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.adminPassword} + ':'">Admin password</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-key"></i>
+											<input th:tabindex="5" id="adminPassword" type="password" th:required="true" maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.adminPasswordPH}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.modUser} + ':'">Manager user</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-user"></i>
+											<input th:tabindex="6" id="modUser" type="text" th:required="true"  maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.modUserPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.modPassword} + ':'">Admin password</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-key"></i>
+											<input th:tabindex="7" id="modPassword" type="password" th:required="true" maxlength="50" class="form-control"  th:placeholder="#{dataflow.instances.instance.modPasswordPH}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.guestUser} + ':'">Guest user</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-user"></i>
+											<input th:tabindex="8" id="guestUser" type="text" th:required="true" maxlength="50" class="form-control" th:placeholder="#{dataflow.instances.instance.guestUserPH}"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+									<div class="form-group">
+										<label class="" th:text="#{dataflow.instances.instance.guestPassword} + ':'">Guest password</label><span class="required"> (*)</span>
+										<div class="input-icon ">
+											<i class="la la-key"></i>
+											<input th:tabindex="9" id="guestPassword" type="password" th:required="true" maxlength="50" class="form-control" th:placeholder="#{dataflow.instances.instance.guestPasswordPH}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-12">
+									<!-- FORM BUTTONS -->
+									<div class="form-actions">
+										<div class="pull-left">
+											<!-- CANCEL TO-DO: authentication and control -->
+											<a th:href="@{/dataflow/instances}" type="button"  class="btn btn-circle btn-outline blue no-border" ><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}" >Cancel</span></a>
+										</div>
+										<div class="pull-right">
+											<!-- CREATE -->
+											<button th:if="${instance?.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create" onclick="newDataflowInstance()" ><span th:text="#{gen.createBtn}"> New</span></button>
+
+											<!-- UPDATE -->
+											<button th:if="${instance?.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="update"  onclick="updateDataflowInstance()" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->				
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+
+	<script type="text/javascript">
+	//<![CDATA[
+
+	function navigateUrl(url){  window.location.href = url;	}
+
+	var response = {};
+	var csrf_value = $("meta[name='_csrf']").attr("content");
+	var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+	function newDataflowInstance(){
+		sendRequest("POST");
+	}
+
+	function updateDataflowInstance(){
+		sendRequest("PUT");
+	}
+
+	function getInstanceData(){
+		var identification 	= $.trim($("#identification").val());
+		var user 			= $.trim($("#users").val());
+		var url 			= $.trim($("#url").val());
+		var isDefault 		= $("#isDefault").prop('checked') ;
+
+
+		var instance = {
+            identification : identification,
+            url : url,
+            defaultInstance: isDefault
+		}
+
+		if(user.length > 0){
+			instance.user = user;
+		}
+
+		var credentials = {}
+
+		var adminUser  		= $.trim($("#adminUser").val());
+		var adminPassword 	= $("#adminPassword").val();
+		var modUser 		= $.trim($("#modUser").val());
+		var modPassword 	= $("#modPassword").val();
+		var guestUser 		= $.trim($("#guestUser").val());
+		var guestPassword 	= $("#guestPassword").val();
+
+		if(adminUser.length > 0 && adminPassword.length > 0){
+			credentials.adminCredentials = {
+				user : adminUser,
+				password : adminPassword,
+				type: "ADMINISTRATOR"
+			}
+		}
+
+		if(modUser.length > 0 && modPassword.length > 0){
+			credentials.userCredentials = {
+				user : modUser,
+				password : modPassword,
+				type: "MANAGER"
+			}
+		}
+
+		if(guestUser.length > 0 && guestPassword.length > 0){
+			credentials.guestCredentials = {
+				user : guestUser,
+				password : guestPassword,
+				type: "GUEST"
+			}
+		}
+
+		return {
+			instance: instance,
+			credentials: credentials,
+		};
+	}
+
+	function sendRequest(method){
+		var instanceData = getInstanceData();
+
+		$.ajax({
+			//url: "/dataflow/instances/instance",
+			headers: {
+				[csrf_header]: csrf_value
+			},
+			type: method,
+			async: true,
+			contentType: "application/json",
+			data: JSON.stringify(instanceData),
+			success: function(response,status){
+				console.log(response, status);
+				window.location.href = "/controlpanel/dataflow/instances";
+			},
+			error: function(e){
+				$.alert({
+					title: 'Error creating new dataflow instance',
+					content: "Error message: " + e.responseText,
+					type: 'red'
+				});
+			}
+		});
+	}
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+
+		$("#isDefault").change(function(data, event){
+			var state = $("#isDefault").prop('checked');
+			var userSelect = $("#users");
+			if(state) {
+				userSelect.prop('disabled', state);
+			} else {
+				userSelect.prop('disabled', state);
+			}
+			userSelect.val("");
+		})
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+	});
+	
+	//]]>
+	</script>
+	
+</body>
+</html>
+  

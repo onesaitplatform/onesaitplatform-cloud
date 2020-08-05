@@ -14,13 +14,18 @@
  */
 package com.minsait.onesait.platform.security.ldap.ri;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
@@ -30,8 +35,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.commons.security.PasswordEncoder;
@@ -62,6 +67,12 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 	private String userMailAtt;
 	@Value("${ldap.attributesMap.cn}")
 	private String userCnAtt;
+	@Value("${ldap.rolesmemberattribute}")
+	private String memberAtt;
+	@Autowired
+	private UserDetailsService userDetails;
+
+	// TO-DO logica de creado de usuarios multitenant
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -75,9 +86,15 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
 		filter.and(new EqualsFilter(userIdAtt, userId));
-		final boolean authenticated = ldapTemplateBase.authenticate(LdapUtils.emptyLdapName(), filter.toString(),
-				password);
+		boolean authenticated = false;
+		try {
+			authenticated = ldapTemplateBase.authenticate(LdapUtils.emptyLdapName(), filter.toString(), password);
+		} catch (final Exception e) {
+			log.error("Error authenticating with LDAP", e);
+			throw e;
+		}
 		final List<User> matches;
+
 		try {
 			matches = ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(),
 					new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
@@ -87,14 +104,24 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		}
 
 		if (authenticated) {
+			final List<String> groups = ldapTemplateBase
+					.search(LdapUtils.emptyLdapName(), filter.encode(), new AttributesMapper<List<String>>() {
+						@Override
+						public List<String> mapFromAttributes(Attributes attributes) throws NamingException {
+							Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+							return Collections.list(enMember);
+						}
+					}).get(0);
+
 			User user = userRepository.findByUserId(userId);
 			if (user == null) {
-				user = ldapUserService.createUser(matches.get(0), password);
+				user = ldapUserService.createUser(matches.get(0), password, groups);
+			} else {
+				ldapUserService.updateUserRole(user, groups);
 			}
 
-			final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-			grantedAuthorities.add(new SimpleGrantedAuthority(user.getRole().getId()));
-			return new UsernamePasswordAuthenticationToken(userId, password, grantedAuthorities);
+			final UserDetails details = userDetails.loadUserByUsername(userId);
+			return new UsernamePasswordAuthenticationToken(details, details.getPassword(), details.getAuthorities());
 		} else {
 
 			if (!matches.isEmpty()) {
@@ -106,9 +133,9 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 							userId);
 					try {
 						if (user.getPassword().equals(PasswordEncoder.getInstance().encodeSHA256(password))) {
-							final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-							grantedAuthorities.add(new SimpleGrantedAuthority(user.getRole().getId()));
-							return new UsernamePasswordAuthenticationToken(userId, password, grantedAuthorities);
+							final UserDetails details = userDetails.loadUserByUsername(userId);
+							return new UsernamePasswordAuthenticationToken(details, details.getPassword(),
+									details.getAuthorities());
 						} else {
 							throw new BadCredentialsException("Wrong password for user " + userId);
 						}

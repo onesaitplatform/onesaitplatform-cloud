@@ -95,7 +95,7 @@
 							<div class="portlet-body" style="display: block; margin-top: -20px;">
 								<div class="row">
 									<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-20">
-										<iframe th:src="${apiSwaggerUI} + ${apiServices} + ${'v' + api.numversion + '/' + api.identification} + '/swagger.json'" width="100%" frameborder="0" height="100%"></iframe>
+										<iframe th:src="${apiSwaggerUI} + ${apiServices} + ${'v' + api.numversion + '/' + api.identification} + '/swagger.json%3Fvertical%3D' + ${#authentication.principal?.vertical}" width="100%" frameborder="0" height="100%"></iframe>
 									</div>
 								</div>
 							</div>

@@ -32,5 +32,5 @@ public class FlowEngineQueryRequest {
 	private String query;
 	@Getter
 	@Setter
-	private String authentication;
+	private String domainName;
 }

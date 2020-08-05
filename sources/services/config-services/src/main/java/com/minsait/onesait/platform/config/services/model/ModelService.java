@@ -20,8 +20,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.Model;
+import com.minsait.onesait.platform.config.model.ParameterModel;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.model.dto.ModelServiceDTO;
 
 public interface ModelService {
 
@@ -34,6 +36,8 @@ public interface ModelService {
 	Model getModelToUpdate(String id);
 
 	void updateModel(Model model);
+	
+	String executeModel(String id, String parameters, String dashboardUrl, String notebookUrl, String userId, boolean returnData);
 
 	Model getModelById(String id);
 
@@ -52,5 +56,14 @@ public interface ModelService {
 	void updateModel(Model model, Category category, Subcategory subcategory, HttpServletRequest request);
 
 	List<Model> findAllModelsByUserHasPermission(User user);
+
+	List<ModelServiceDTO> getModelsByCategoryAndSubcategory(String category, String subcategory, String dashboardUrl,
+			String notebookUrl, String userId);
+
+	public Model getModelByIdentificationAndUser(String identification, String userId);
+
+	ModelServiceDTO modelToModelServiceDTO(Model model);
+
+	void raiseExceptionIfIncorrect(List<ParameterModel> modelParams, String jsonParamsAsString);
 
 }

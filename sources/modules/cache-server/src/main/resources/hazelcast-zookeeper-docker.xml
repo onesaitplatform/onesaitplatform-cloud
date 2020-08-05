@@ -82,5 +82,16 @@
     	<eviction-policy>LRU</eviction-policy>
     	<max-size policy="PER_NODE">300</max-size>
   	</map>
+  	
+  	<map name="transactionalOperations">
+    	<time-to-live-seconds>60</time-to-live-seconds> <!-- 1 minute -->
+    	<eviction-policy>NONE</eviction-policy>
+    	<max-size policy="PER_NODE">300</max-size>
+  	</map>
+  	
+  	<map name="lockedOntologies">
+    	<eviction-policy>NONE</eviction-policy>
+    	<max-size policy="PER_NODE">300</max-size>
+  	</map>
 
 </hazelcast>

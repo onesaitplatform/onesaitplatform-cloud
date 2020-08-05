@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.simulator.job.utils.JsonUtils2;
 import com.minsait.onesait.platform.simulator.service.FieldRandomizerService;
 import com.minsait.onesait.platform.simulator.service.IoTBrokerClient;
@@ -60,7 +62,15 @@ public class DeviceSimulatorJob {
 		final String user = context.getJobDetail().getJobDataMap().getString("userId");
 
 		final String json = context.getJobDetail().getJobDataMap().getString("json");
+		final String verticalSchema = context.getJobDetail().getJobDataMap()
+				.getString(Tenant2SchemaMapper.VERTICAL_SCHEMA_KEY_STRING);
 
+		final String tenant = context.getJobDetail().getJobDataMap().getString(Tenant2SchemaMapper.TENANT_KEY_STRING);
+
+		if (!StringUtils.isEmpty(tenant) && !StringUtils.isEmpty(verticalSchema)) {
+			MultitenancyContextHolder.setTenantName(tenant);
+			MultitenancyContextHolder.setVerticalSchema(verticalSchema);
+		}
 		try {
 			proxyJson(user, json, context);
 			log.debug("Simulated instance for user: {}", user);
@@ -91,7 +101,7 @@ public class DeviceSimulatorJob {
 		final String ontology = contextJson.get("ontology").asText();
 
 		if (!instances.isArray())
-			persistenceService.insertOntologyInstance(instances.asText(), ontology, user, clientPlatform,
+			persistenceService.insertOntologyInstance(instances.toString(), ontology, user, clientPlatform,
 					clientPlatformInstance);
 		else {
 			String instancesMode = contextJson.path(PATH_INSTANCES_MODE).asText();

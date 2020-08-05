@@ -18,33 +18,66 @@ import javax.servlet.http.HttpServletRequest;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor(force = true)
+@Getter
+@Setter
 public class OntologyConfiguration {
-	
-	@Getter final String schema;
-	@Getter final String baseUrl;
-	@Getter final String authCheck;
-	@Getter final String authMethod;
-	@Getter final String header;
-	@Getter final String token;
-	@Getter final String oauthUser;
-	@Getter final String oauthPass;
-	@Getter final String basicUser;
-	@Getter final String basicPass;
-	@Getter final String infer;
-	@Getter final String wadl;
-	@Getter final String swagger;
-	@Getter final String[] headers;
-	@Getter final String[] operations;
-	@Getter final String objectId;
-	@Getter final String datasource;
-	@Getter final String enablePartitionIndexes;
-	@Getter final String primarykey;
-	@Getter final String partitions;
-	@Getter final String npartitions;
+
+	private String schema;
+
+	private String baseUrl;
+
+	private String authCheck;
+
+	private String authMethod;
+
+	private String header;
+
+	private String token;
+
+	private String oauthUser;
+
+	private String oauthPass;
+
+	private String basicUser;
+
+	private String basicPass;
+
+	private String infer;
+
+	private String wadl;
+
+	private String swagger;
+
+	private String[] headers;
+
+	private String[] operations;
+
+	private String objectId;
+	private String objectGeometry;
+	private String datasource;
+	private String datasourceTableName;
+
+	private String enablePartitionIndexes;
+
+	private String primarykey;
+
+	private String partitions;
+
+	private String npartitions;
+
+	private boolean allowsCreateTable = false;
+
+	private String sqlStatement = null;
+
+	private String partitionKey;
+
+	private String uniqueKeys;
 
 	public OntologyConfiguration(HttpServletRequest request) {
+		// rest ontology
 		schema = request.getParameter("schema");
 		baseUrl = request.getParameter("urlBase");
 		authCheck = request.getParameter("authCheck");
@@ -55,17 +88,37 @@ public class OntologyConfiguration {
 		oauthPass = request.getParameter("oauthPass");
 		basicUser = request.getParameter("basicUser");
 		basicPass = request.getParameter("basicPass");
-		infer = request.getParameter("infer");
-		wadl = request.getParameter("wadl");
 		swagger = request.getParameter("swagger");
 		headers = request.getParameterValues("headers");
 		operations = request.getParameterValues("operations");
+		// (deprecated)
+		infer = request.getParameter("infer");
+		wadl = request.getParameter("wadl");
+		// virtual
 		objectId = request.getParameter("objectId");
+		objectGeometry = request.getParameter("objectGeometry");
 		datasource = request.getParameter("datasource");
+
+		if (request.getParameter("allowsCreateTable") != null) {
+
+			allowsCreateTable = request.getParameter("allowsCreateTable").equals("on")
+					|| request.getParameter("allowsCreateTable").equals("true");
+			schema = request.getParameter("jsonSchema"); // form of ontologyVistualCreate.js
+			sqlStatement = request.getParameter("sqlStatement");
+		}
+
+		datasourceTableName = request.getParameter("datasourceTableName");
+
+		// otras
 		enablePartitionIndexes = request.getParameter("enablePartitionIndexes");
 		primarykey = request.getParameter("primarykey");
 		partitions = request.getParameter("partitions");
 		npartitions = request.getParameter("npartitions");
+
+		uniqueKeys = request.getParameter("uniquekeys");
+
+		partitionKey = request.getParameter("partitionkey");
+
 	}
 
 }

@@ -38,6 +38,9 @@ public class LdapConfig {
 	@Value("${ldap.password}")
 	private String ldapPrincipalPassword;
 
+	@Value("${ldap.ignorepartialresult:false}")
+	private boolean ignorePartialResult;
+
 	public static final String LDAP_TEMPLATE_NO_BASE = "ldapTemplateNoBase";
 	public static final String LDAP_TEMPLATE_BASE = "ldapTemplateBase";
 
@@ -56,7 +59,9 @@ public class LdapConfig {
 	@Bean
 	@Qualifier(LDAP_TEMPLATE_BASE)
 	public LdapTemplate ldapTemplate() {
-		return new LdapTemplate(contextSource());
+		LdapTemplate result = new LdapTemplate(contextSource());
+		result.setIgnorePartialResultException(ignorePartialResult);
+		return result;
 	}
 
 	@Bean
@@ -73,6 +78,8 @@ public class LdapConfig {
 	@Bean
 	@Qualifier(LDAP_TEMPLATE_NO_BASE)
 	public LdapTemplate ldapTemplateNoBase() {
-		return new LdapTemplate(contextSourceNoBase());
+		LdapTemplate result = new LdapTemplate(contextSourceNoBase());
+		result.setIgnorePartialResultException(ignorePartialResult);
+		return result;
 	}
 }

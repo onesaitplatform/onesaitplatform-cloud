@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -27,13 +26,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -48,12 +44,12 @@ public class AppRole extends AppRoleParent {
 	 */
 	private static final long serialVersionUID = -3041037657548992627L;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne
 	@JoinColumn(name = "app", nullable = false)
 	@Getter
 	@Setter
 	private App app;
-	
+
 	@JoinTable(name = "app_associated_roles", joinColumns = {
 			@JoinColumn(name = "parent_role", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
 					@JoinColumn(name = "child_role", referencedColumnName = "id", nullable = false) })
@@ -61,7 +57,7 @@ public class AppRole extends AppRoleParent {
 	@Getter
 	@Setter
 	private Set<AppRole> childRoles = new HashSet<>();
-	
+
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter

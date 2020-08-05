@@ -23,7 +23,7 @@ var svgEditorLang_sv = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: 'Klicka för att ändra fyllningsfärg, shift-klicka för att ändra färgar',
       zoom_level: 'Ändra zoomnivå',
-      panel_drag: 'Drag left/right to resize side panel',
+      panel_drag: 'Click to show hide',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

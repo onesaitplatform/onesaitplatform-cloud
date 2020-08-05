@@ -78,8 +78,8 @@ public class OracleVirtualOntologyOpsDBRepositoryTest {
 	@Test
 	public void testInsert() {
 		for (int i = 0; i < 100; i++) {
-			virtualRepo.insert("OpenPlatform", "", "{\"COLUMN1\": \"string1\",\"COLUMN2\": \"string2\",\"COLUMN3\": "
-					+ i + ",\"COLUMN4\": 4.4,\"COLUMN5\":true,\"COLUMN6\": \"string 3\",\"COLUMN7\": 12}");
+			virtualRepo.insert("OpenPlatform", "{\"COLUMN1\": \"string1\",\"COLUMN2\": \"string2\",\"COLUMN3\": " + i
+					+ ",\"COLUMN4\": 4.4,\"COLUMN5\":true,\"COLUMN6\": \"string 3\",\"COLUMN7\": 12}");
 		}
 
 	}

@@ -24,16 +24,20 @@ import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.CategorizationUserRepository;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 @Service
 public class CategorizationUserServiceImpl implements CategorizationUserService {
 	
 	@Autowired
 	private CategorizationUserRepository categorizationUserRepository;
+	
+	@Autowired
+	private UserService userService;
 
 	@Override
 	public List<CategorizationUser> findbyUser(User user) {
-		if(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if(userService.isUserAdministrator(user)) {
 			return categorizationUserRepository.findAllOwner();
 		}
 		return categorizationUserRepository.findByUserAndAuth(user);

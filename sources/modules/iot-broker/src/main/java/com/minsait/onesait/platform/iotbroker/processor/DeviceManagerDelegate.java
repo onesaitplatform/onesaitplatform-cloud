@@ -45,10 +45,11 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.device.ClientPlatformInstanceService;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,22 +72,26 @@ public class DeviceManagerDelegate implements DeviceManager {
 
 	@PostConstruct
 	public void init() {
-		BlockingQueue activityRegistryQueue = new ArrayBlockingQueue(50);
-		this.activityExecutorPool = new ThreadPoolExecutor(1, 1, 3, TimeUnit.SECONDS, activityRegistryQueue);
+		final BlockingQueue activityRegistryQueue = new ArrayBlockingQueue(50);
+		activityExecutorPool = new ThreadPoolExecutor(1, 1, 3, TimeUnit.SECONDS, activityRegistryQueue);
 	}
 
 	@PreDestroy
 	public void predestroy() {
-		this.activityExecutorPool.shutdown();
+		activityExecutorPool.shutdown();
 	}
 
 	@Override
 	public <T extends SSAPBodyMessage> boolean registerActivity(SSAPMessage<T> request,
 			SSAPMessage<SSAPBodyReturnMessage> response, IoTSession session, GatewayInfo info) {
 		try {
+			final String vertical = MultitenancyContextHolder.getVerticalSchema();
+			final String tenant = MultitenancyContextHolder.getTenantName();
 			activityExecutorPool.execute(() -> {
 				try {
-					ClientPlatform clientPlatform = clientPlatformService
+					MultitenancyContextHolder.setTenantName(tenant);
+					MultitenancyContextHolder.setVerticalSchema(vertical);
+					final ClientPlatform clientPlatform = clientPlatformService
 							.getByIdentification(session.getClientPlatform());
 
 					ClientPlatformInstance device = deviceService.getByClientPlatformIdAndIdentification(clientPlatform,
@@ -98,12 +103,13 @@ public class DeviceManagerDelegate implements DeviceManager {
 														// clientId
 														// is reached
 							synchronized (this) {
-								List<ClientPlatformInstance> devices = deviceService
+								final List<ClientPlatformInstance> devices = deviceService
 										.getByClientPlatformId(clientPlatform);
 								if (devices.size() > maxDevicesPerClient) {
 
 									devices.sort((ClientPlatformInstance o1, ClientPlatformInstance o2) -> {
-										long comparation = o1.getUpdatedAt().getTime() - o2.getUpdatedAt().getTime();
+										final long comparation = o1.getUpdatedAt().getTime()
+												- o2.getUpdatedAt().getTime();
 										if (comparation == 0) {
 											return 0;
 										} else {
@@ -147,16 +153,16 @@ public class DeviceManagerDelegate implements DeviceManager {
 						touchDevice(device, session, true, info, null, null);
 						break;
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					log.error("Error registering device activity", e);
 				}
 			});
 
 			return true;
-		} catch (RejectedExecutionException rej) {
+		} catch (final RejectedExecutionException rej) {
 			log.warn("Error registering device activity", rej);
 			return false;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error registering device activity", e);
 			return false;
 		}

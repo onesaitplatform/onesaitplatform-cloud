@@ -32,7 +32,7 @@ public class NotebookInvokeDTO {
 	private Boolean executeNotebook;
 	@Getter
 	@Setter
-	private String authentication;
+	private String domainName;
 	@Getter
 	@Setter
 	private String executionParams;

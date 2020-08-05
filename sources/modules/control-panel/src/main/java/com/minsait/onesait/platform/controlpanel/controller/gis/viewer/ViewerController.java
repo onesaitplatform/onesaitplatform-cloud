@@ -37,7 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -51,20 +51,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.thymeleaf.util.StringUtils;
 
 import com.minsait.onesait.platform.config.model.BaseLayer;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Rollback;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
+import com.minsait.onesait.platform.config.services.exceptions.ViewerServiceException;
 import com.minsait.onesait.platform.config.services.gis.layer.LayerService;
 import com.minsait.onesait.platform.config.services.gis.viewer.ViewerService;
+import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.rollback.RollbackController;
 import com.minsait.onesait.platform.controlpanel.helper.gis.viewer.ViewerHelper;
-import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
-import com.minsait.onesait.platform.controlpanel.rest.management.login.model.RequestLogin;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -103,54 +102,41 @@ public class ViewerController {
 	@Autowired
 	private RollbackController rollbackController;
 
-	@Autowired
-	private LoginManagementController controller;
+	@Autowired(required = false)
+	private JWTService jwtService;
 
-	private static final String CESIUM_STR = "cesium";
+	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
+	private static final String REDIRECT_VIEWERS_VIEW = "viewers/view";
+	private static final String REDIRECT = "redirect";
+	private static final String STATUS = "status";
+	private static final String ERROR = "error";
+	private static final String CAUSE = "cause";
+	private static final String LAYER_SELECTED_HIDDEN = "layersSelectedHidden";
+	private static final String LIST = "/controlpanel/viewers/list";
+	private static final String USER_NOT_PERMISSION = "User has not permission";
+	private static final String REDIRECT_LOGIN = "redirect:/login";
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
-	public String list(Model model, HttpServletRequest request) {
+	public String list(Model model, HttpServletRequest request, @RequestParam(required = false) String identification,
+			@RequestParam(required = false) String description) {
 
-		final List<Viewer> viewers = viewerService.findAllViewers(utils.getUserId());
+		List<Viewer> viewers = new ArrayList<>();
+
+		if (identification != null && identification.equals("")) {
+			identification = null;
+		}
+		if (description != null && description.equals("")) {
+			description = null;
+		}
+
+		if (identification == null && description == null) {
+			viewers = viewerService.findAllViewers(utils.getUserId());
+		} else {
+			viewers = viewerService.checkAllViewerByCriteria(utils.getUserId(), identification, description);
+		}
 		model.addAttribute("viewers", viewers);
 		return "viewers/list";
-	}
-
-	@GetMapping(value = "/{id}/login", produces = "text/html")
-	public String login(Model model, HttpServletRequest request, @PathVariable("id") String id) {
-
-		model.addAttribute("user", new User());
-		return "viewers/login";
-	}
-
-	@PostMapping(value = "/{id}/login")
-	public ResponseEntity<?> doLogin(Model model, HttpServletRequest request, @PathVariable("id") String id) {
-		final Map<String, String> response = new HashMap<>();
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
-
-		if (!StringUtils.isEmpty(password) && !StringUtils.isEmpty(username)) {
-			RequestLogin oauthRequest = new RequestLogin();
-			oauthRequest.setPassword(password);
-			oauthRequest.setUsername(username);
-			try {
-
-				request.getSession().setAttribute("oauthToken",
-						this.controller.postLoginOauth2(oauthRequest).getBody());
-
-				response.put("redirect", "/controlpanel/viewers/view/" + id);
-				response.put("status", "ok");
-				return new ResponseEntity<Map<String, String>>(response, HttpStatus.CREATED);
-			} catch (Exception e) {
-				log.error("Error login user to show viewer. {}", e);
-				response.put("redirect", "/403");
-				response.put("status", "error");
-				return new ResponseEntity<Map<String, String>>(response, HttpStatus.FORBIDDEN);
-			}
-		}
-		return new ResponseEntity<Map<String, String>>(response, HttpStatus.FORBIDDEN);
-
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
@@ -167,13 +153,14 @@ public class ViewerController {
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PostMapping(value = "/create")
 	@Transactional
-	public ResponseEntity<?> createViewer(org.springframework.ui.Model model, @Valid ViewerDTO viewerDTO,
-			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest httpServletRequest) {
+	public ResponseEntity<Map<String, String>> createViewer(org.springframework.ui.Model model,
+			@Valid ViewerDTO viewerDTO, BindingResult bindingResult, RedirectAttributes redirect,
+			HttpServletRequest httpServletRequest) {
 		final Map<String, String> response = new HashMap<>();
 		if (bindingResult.hasErrors()) {
-			response.put("status", "error");
-			response.put("cause", utils.getMessage("ontology.validation.error", "validation error"));
-			return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+			response.put(STATUS, ERROR);
+			response.put(CAUSE, utils.getMessage("ontology.validation.error", "validation error"));
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
 
 		Viewer viewer = new Viewer();
@@ -187,7 +174,13 @@ public class ViewerController {
 		viewer.setLongitude(viewerDTO.getLongitude());
 		viewer.setHeight(viewerDTO.getHeight());
 
-		String layers = httpServletRequest.getParameter("layersSelectedHidden");
+		if (viewerService.checkExist(viewer)) {
+			response.put(CAUSE, "Viewer with identification: " + viewer.getIdentification() + " exists");
+			response.put(STATUS, ERROR);
+			return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+		}
+
+		String layers = httpServletRequest.getParameter(LAYER_SELECTED_HIDDEN);
 		String[] split = null;
 		split = (layers != null) ? layers.split(",") : new String[0];
 
@@ -198,91 +191,92 @@ public class ViewerController {
 			layer.getViewers().add(viewer);
 		}
 
-		viewer = viewerService.create(viewer, viewerDTO.getBaseLayer());
+		try {
+			viewerService.create(viewer, viewerDTO.getBaseLayer());
+		} catch (ViewerServiceException e) {
+			response.put(CAUSE, e.getMessage());
+			response.put(STATUS, ERROR);
+			return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+		}
 
-		response.put("redirect", "/controlpanel/viewers/list");
-		response.put("status", "ok");
-		return new ResponseEntity<Map<String, String>>(response, HttpStatus.CREATED);
+		response.put(REDIRECT, LIST);
+		response.put(STATUS, "ok");
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}")
 	@Transactional
-	public ResponseEntity<?> updateViewer(org.springframework.ui.Model model, @Valid ViewerDTO viewerDTO,
-			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest httpServletRequest,
-			@PathVariable("id") String id) {
+	public ResponseEntity<Map<String, String>> updateViewer(org.springframework.ui.Model model,
+			@Valid ViewerDTO viewerDTO, BindingResult bindingResult, RedirectAttributes redirect,
+			HttpServletRequest httpServletRequest, @PathVariable("id") String id) {
 		final Map<String, String> response = new HashMap<>();
 		if (bindingResult.hasErrors()) {
-			response.put("status", "error");
-			response.put("cause", utils.getMessage("ontology.validation.error", "validation error"));
-			return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+			response.put(STATUS, ERROR);
+			response.put(CAUSE, utils.getMessage("ontology.validation.error", "validation error"));
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
 
 		Viewer viewer = viewerService.getViewerById(id, utils.getUserId());
 
 		if (!utils.getUserId().equals(viewer.getUser().getUserId()) && !utils.getRole().equals("ROLE_ADMINISTRATOR")) {
-			log.error("User has not permission");
-			response.put("status", "error");
-			response.put("cause", "User has not permission");
-			return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+			log.error(USER_NOT_PERMISSION);
+			response.put(STATUS, ERROR);
+			response.put(CAUSE, USER_NOT_PERMISSION);
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
 
-		if (viewer != null) {
-			Boolean doRollback = (httpServletRequest.getParameter("rollback").equals("on")) ? true : false;
-			if (doRollback) {
-				// Serializa Viewer
-				Rollback rollback = rollbackController.saveRollback(viewer, Rollback.EntityType.VIEWER);
-				if (rollback == null) {
-					response.put("status", "error");
-					response.put("cause", "Creation of rollback failed");
-					return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+		Boolean doRollback = (httpServletRequest.getParameter("rollback").equals("on")) ? true : false;
+		if (doRollback) {
+			// Serializa Viewer
+			Rollback rollback = rollbackController.saveRollback(viewer, Rollback.EntityType.VIEWER);
+			if (rollback == null) {
+				response.put(STATUS, ERROR);
+				response.put(CAUSE, "Creation of rollback failed");
+				return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		viewer.setIdentification(viewerDTO.getIdentification());
+		viewer.setDescription(viewerDTO.getDescription());
+		viewer.setPublic(viewerDTO.getIsPublic());
+		viewer.setJs(httpServletRequest.getParameter("jsViewer"));
+		viewer.setLatitude(viewerDTO.getLatitude());
+		viewer.setLongitude(viewerDTO.getLongitude());
+		viewer.setHeight(viewerDTO.getHeight());
+
+		if (httpServletRequest.getParameter(LAYER_SELECTED_HIDDEN) != null) {
+			Set<Layer> layersAux = viewer.getLayers();
+			viewer.setLayers(new HashSet<Layer>());
+			String[] split = httpServletRequest.getParameter(LAYER_SELECTED_HIDDEN).split(",");
+			for (int i = 0; i < split.length; i++) {
+				Layer layer = layerService.findByIdentification(split[i]);
+				viewer.getLayers().add(layer);
+
+				if (!layer.getViewers().contains(viewer)) {
+					layer.getViewers().add(viewer);
+				}
+			}
+			for (Layer l : layersAux) {
+				if (!viewer.getLayers().contains(l)) {
+					l.getViewers().remove(viewer);
 				}
 			}
 
-			viewer.setIdentification(viewerDTO.getIdentification());
-			viewer.setDescription(viewerDTO.getDescription());
-			viewer.setPublic(viewerDTO.getIsPublic());
-			viewer.setJs(httpServletRequest.getParameter("jsViewer"));
-			viewer.setLatitude(viewerDTO.getLatitude());
-			viewer.setLongitude(viewerDTO.getLongitude());
-			viewer.setHeight(viewerDTO.getHeight());
-
-			if (httpServletRequest.getParameter("layersSelectedHidden") != null) {
-				Set<Layer> layersAux = viewer.getLayers();
-				viewer.setLayers(new HashSet<Layer>());
-				String[] split = httpServletRequest.getParameter("layersSelectedHidden").split(",");
-				for (int i = 0; i < split.length; i++) {
-					Layer layer = layerService.findByIdentification(split[i]);
-					viewer.getLayers().add(layer);
-
-					if (!layer.getViewers().contains(viewer)) {
-						layer.getViewers().add(viewer);
-					}
-				}
-				for (Layer l : layersAux) {
-					if (!viewer.getLayers().contains(l)) {
-						l.getViewers().remove(viewer);
-					}
-				}
-
-			} else {
-				for (Layer layer : viewer.getLayers()) {
-					layer.getViewers().remove(viewer);
-				}
-				viewer.setLayers(new HashSet<Layer>());
-			}
-
-			viewerService.create(viewer, viewerDTO.getBaseLayer());
-
-			response.put("redirect", "/controlpanel/viewers/list");
-			response.put("status", "ok");
-			return new ResponseEntity<Map<String, String>>(response, HttpStatus.CREATED);
 		} else {
-			response.put("status", "error");
-			response.put("cause", utils.getMessage("not found", "not found"));
-			return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
+			for (Layer layer : viewer.getLayers()) {
+				layer.getViewers().remove(viewer);
+			}
+			viewer.setLayers(new HashSet<Layer>());
 		}
+
+		viewerService.create(viewer, viewerDTO.getBaseLayer());
+
+		response.put(REDIRECT, LIST);
+		response.put(STATUS, "ok");
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
@@ -292,27 +286,24 @@ public class ViewerController {
 		Viewer viewer = viewerService.getViewerById(id, utils.getUserId());
 
 		if (!utils.getUserId().equals(viewer.getUser().getUserId()) && !utils.getRole().equals("ROLE_ADMINISTRATOR")) {
-			log.error("User has not permission");
+			log.error(USER_NOT_PERMISSION);
 			return "error/403";
 		}
 
-		if (viewer != null) {
-			ViewerDTO viewerDTO = new ViewerDTO();
-			viewerDTO.setId(viewer.getId());
-			viewerDTO.setDescription(viewer.getDescription());
-			viewerDTO.setIdentification(viewer.getIdentification());
-			viewerDTO.setBaseLayer(viewer.getBaseLayer().getIdentification());
-			viewerDTO.setIsPublic(viewer.isPublic());
-			viewerDTO.setJs(viewer.getJs());
-			viewerDTO.setLatitude(viewer.getLatitude());
-			viewerDTO.setLongitude(viewer.getLongitude());
-			viewerDTO.setHeight(viewer.getHeight());
+		ViewerDTO viewerDTO = new ViewerDTO();
+		viewerDTO.setId(viewer.getId());
+		viewerDTO.setDescription(viewer.getDescription());
+		viewerDTO.setIdentification(viewer.getIdentification());
+		viewerDTO.setBaseLayer(viewer.getBaseLayer().getIdentification());
+		viewerDTO.setIsPublic(viewer.isPublic());
+		viewerDTO.setJs(viewer.getJs());
+		viewerDTO.setLatitude(viewer.getLatitude());
+		viewerDTO.setLongitude(viewer.getLongitude());
+		viewerDTO.setHeight(viewer.getHeight());
 
-			model.addAttribute("viewer", viewerDTO);
+		model.addAttribute("viewer", viewerDTO);
 
-		}
-
-		List<String> layers = new ArrayList<String>();
+		List<String> layers = new ArrayList<>();
 		for (Layer layer : viewer.getLayers()) {
 			layers.add(layer.getIdentification());
 		}
@@ -333,7 +324,7 @@ public class ViewerController {
 
 			Viewer viewerRollback = (Viewer) rollbackController.getRollback(id);
 			Viewer viewer = viewerService.getViewerById(id, utils.getUserId());
-			Set<Layer> layers = new HashSet<Layer>();
+			Set<Layer> layers = new HashSet<>();
 			for (Layer layerRollback : viewerRollback.getLayers()) {
 				Layer layer = layerService.findById(layerRollback.getId(), utils.getUserId());
 				layer.getViewers().add(viewerRollback);
@@ -352,7 +343,7 @@ public class ViewerController {
 			log.error("Error in the serialization of the viewer. {}", e);
 		}
 
-		return "/controlpanel/viewers/list";
+		return LIST;
 
 	}
 
@@ -450,32 +441,50 @@ public class ViewerController {
 		respHeaders.setContentDispositionFormData("attachment", zipFile.getName());
 		respHeaders.setContentLength(zipFile.length());
 		final InputStreamResource isr = new InputStreamResource(new FileInputStream(zipFile));
-		return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/view/{id}", produces = "text/html")
 	public String viewerViewer(Model model, @PathVariable("id") String id, HttpServletRequest request) {
 		try {
-			OAuth2AccessToken token = (OAuth2AccessToken) request.getSession().getAttribute("oauthToken");
-			String userId = null;
-			if (token != null) {
-				userId = (String) token.getAdditionalInformation().get("principal");
-			}
-
-			Boolean hasPermission = viewerService.hasUserViewPermission(id, utils.getUserId(), userId);
-			if (hasPermission != null && hasPermission) {
-				model.addAttribute("js", viewerService.getViewerById(id, utils.getUserId()).getJs());
-				return "viewers/view";
-			} else if (hasPermission == null) {
-				// private viewer --> redirect to platform login
-				return "redirect:/viewers/" + id + "/login";
+			if (viewerService.hasUserViewPermission(id, utils.getUserId())) {
+				model.addAttribute("js", viewerService.getViewerPublicById(id).getJs());
+				return REDIRECT_VIEWERS_VIEW;
 			} else {
-				return "redirect:/viewers/" + id + "/login";
+				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getRequestURI());
+				return REDIRECT_LOGIN;
 			}
 		} catch (Exception e) {
-			return "redirect:/viewers/" + id + "/login";
+			request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getRequestURI());
+			return REDIRECT_LOGIN;
 		}
+	}
+
+	@GetMapping(value = "/viewiframe/{id}", produces = "text/html")
+	public String viewerViewerIframe(Model model, @PathVariable("id") String id,
+			@RequestParam("oauthtoken") String userToken, HttpServletRequest request) {
+
+		try {
+			OAuth2Authentication info = null;
+			if (userToken != null) {
+				info = (OAuth2Authentication) jwtService.getAuthentication(userToken);
+				if (viewerService.hasUserViewPermission(id, info.getUserAuthentication().getName())) {
+
+					model.addAttribute("js",
+							viewerService.getViewerById(id, info.getUserAuthentication().getName()).getJs());
+
+					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+					return REDIRECT_VIEWERS_VIEW;
+				} else {
+					request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getRequestURI());
+					return REDIRECT_LOGIN;
+				}
+			}
+		} catch (final Exception e) {
+			log.error("viewerViewerIframe", e);
+			return "redirect:/403";
+		}
+		return "redirect:/403";
 	}
 
 	@GetMapping("/getHtmlCode")

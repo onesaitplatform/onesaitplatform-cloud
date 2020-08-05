@@ -25,16 +25,16 @@ angular
         templateUrl: 'app/home/home.tpl.html',
         controller: 'HomeController',
         resolve: {
-          myVar: function(authService) {
+          myVar: ["authService", function(authService) {
             return authService.init();
-          }
+          }]
         },
         data: {
           authorizedRoles: ['admin', 'creator', 'manager', 'guest']
         }
       });
   }])
-  .controller('HomeController', function ($scope, $rootScope, $routeParams, $q, $modal, $location, pipelineService, api,
+  .controller('HomeController', ["$scope", "$rootScope", "$routeParams", "$q", "$modal", "$location", "pipelineService", "api", "configuration", "pipelineConstant", "Analytics", "$route", "$translate", function ($scope, $rootScope, $routeParams, $q, $modal, $location, pipelineService, api,
                                           configuration, pipelineConstant, Analytics, $route, $translate) {
     $location.search('auth_token', null);
     $location.search('auth_user', null);
@@ -879,4 +879,4 @@ angular
       }
     });
 
-  });
+  }]);

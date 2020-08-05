@@ -28,7 +28,7 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 public class StompWebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
 
 	public static final int BUFFER_MAX_SIZE = 102400 * 1024;
-
+	
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
 		config.enableSimpleBroker("/topic/message", "/topic/subscription", "/topic/command");
@@ -39,6 +39,8 @@ public class StompWebSocketConfig extends AbstractWebSocketMessageBrokerConfigur
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/message");
 		registry.addEndpoint("/message").setAllowedOrigins("*").withSockJS();
+		registry.addEndpoint("/ack");
+		registry.addEndpoint("/ack").setAllowedOrigins("*").withSockJS();
 	}
 
 	@Override
@@ -46,4 +48,5 @@ public class StompWebSocketConfig extends AbstractWebSocketMessageBrokerConfigur
 		registration.setMessageSizeLimit(BUFFER_MAX_SIZE);
 		registration.setSendBufferSizeLimit(BUFFER_MAX_SIZE);
 	}
+	
 }

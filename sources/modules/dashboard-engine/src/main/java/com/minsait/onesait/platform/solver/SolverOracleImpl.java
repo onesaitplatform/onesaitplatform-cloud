@@ -18,174 +18,83 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.dto.socket.FilterStt;
-import com.minsait.onesait.platform.dto.socket.ProjectStt;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.dto.socket.querystt.FilterStt;
+import com.minsait.onesait.platform.dto.socket.querystt.OrderByStt;
+import com.minsait.onesait.platform.dto.socket.querystt.ParamStt;
+import com.minsait.onesait.platform.dto.socket.querystt.ProjectStt;
 import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
-import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.persistence.services.util.QueryParsers;
+
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectItem;
 
 @Component
 @Qualifier("OracleSolver")
-public class SolverOracleImpl implements SolverInterface {
-
-	private static final Logger log = LoggerFactory.getLogger(SolverOracleImpl.class);
-
-	@Autowired
-	QueryToolService qts;
-
+public class SolverOracleImpl extends SolverSQLImpl {
+	
 	@Autowired
 	@Qualifier("OracleHelper")
 	private SQLHelper sqlHelper;
-
-	private static String filterSeparator = " and ";
-	private static String solvedQueryPrefix = "Solved.";
+	
 	private static String stringDEBoundsChar = "\"";
 	private static String stringLocalBoundsChar = "'";
-
+	
 	@Override
-	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group, String executeAs, String ontology)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-		String processedQuery;
-		String trimQuery = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
-		trimQuery = trimQuery.trim().replaceAll(" +", " ");
-		if (isSimpleDatasource(trimQuery)) {
-			processedQuery = buildFromSimpleQuery(trimQuery, maxreg, where, project, group);
-		} else {
-			processedQuery = buildFromComplexQuery(trimQuery, maxreg, where, project, group);
+	protected String buildFromSimpleQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
+			List<String> group, List<OrderByStt> orderby, long offset, long limit, List<ParamStt> param) throws JSQLParserException{
+		
+		return addLimitOffset(buildJSQLFromSimpleQueryNoLimitOffset(filterAS(query), where, project,
+				 group, orderby, param), maxreg, offset, limit);
+	}
+	
+	@Override
+	protected String addLimitOffset(PlainSelect select, int maxreg, long offset, long limit) {
+		Limit querylimit = select.getLimit();
+		
+		Long min = (limit > 0 ? Math.min(maxreg, limit) : maxreg);
+
+		if(querylimit != null) {
+			min = Math.min(min, ((LongValue) querylimit.getRowCount()).getValue());
 		}
-		log.info("Oracle SQL execute query: " + processedQuery);
-		return qts.querySQLAsJson(executeAs, ontology, processedQuery, 0);
+		
+		//Disable limit and added to end of the query
+		select.setLimit(null);
+		
+		if(offset > 0) {
+			return sqlHelper.addLimit(select.toString(), min, offset);
+		}
+		else {
+			return sqlHelper.addLimit(select.toString(), min);
+		}
 	}
-
-	// Check if query of datasource is simple, no inner joins and subqueries
-	// do it in datasource creation and save it with simple datasource flag in
-	// database
-	private boolean isSimpleDatasource(String queryOri) {
-		String query = queryOri.toLowerCase();
-		return query.indexOf("inner join") == -1 && query.indexOf("select", 1) == -1
-				&& query.indexOf("outer join") == -1 && query.indexOf("full join") == -1;
-	}
-
-	// from original query
-	private String buildFromSimpleQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group) {
+	
+	@Override
+	protected Expression buildExpFromFilter(FilterStt f, List<SelectItem> realproject, String prefix) throws JSQLParserException {
 		StringBuilder sb = new StringBuilder();
-		// delete as from query
-		query = filterAS(query);
-
-		if (where != null && where.size() != 0) {
-			// Get real project from query
-
-			String[] realproject = getRealProject(query);
-			String elsWhere = buildWhere(where, "", false, realproject);
-			int indexWhere = query.toLowerCase().lastIndexOf("where ");
-			if (indexWhere == -1) {
-				int indexGroup = query.toLowerCase().lastIndexOf("group by ");
-				int indexOrder = query.toLowerCase().lastIndexOf("order by ");
-				if (indexGroup == -1) {
-					indexWhere = indexOrder != -1 ? indexOrder : query.length();
-				} else {
-					indexWhere = indexGroup;
-				}
-
-				sb.append(query.substring(0, indexWhere));
-				sb.append(" where  " + elsWhere + " ");
-
-			} else {
-				indexWhere += 6;
-				sb.append(query.substring(0, indexWhere));
-				sb.append(elsWhere + " " + filterSeparator + " ");
-
-			}
-			if (indexWhere < query.length()) {
-				sb.append(query.substring(indexWhere));
-			}
-
-		} else {
-			sb.append(query);
-		}
-		return sqlHelper.addLimit(sb.toString(), maxreg);
+		sb.append(prefix);
+		sb.append(findEndParamV2(f.getField(), realproject));
+		sb.append(" ");
+		sb.append(f.getOp());
+		sb.append(" ");
+		sb.append(appendExp(f));
+		return CCJSqlParserUtil.parseCondExpression(sb.toString());
 	}
-
+	
 	private String filterAS(String query) {
-		query = query.replaceAll(" as ", "\\ ");
-		query = query.replaceAll(" AS ", "\\ ");
-		query = query.replaceAll(" As ", "\\ ");
-
-		return query;
+		return query.replaceAll(" (?i)as ", "\\ ");
 	}
-
-	private String[] getRealProject(String query) {
-		String[] lsrealproject = query
-				.substring(query.toLowerCase().indexOf("select ") + 7, query.toLowerCase().indexOf(" from "))
-				.split(",");
-		for (int i = 0; i < lsrealproject.length; i++) {
-			lsrealproject[i] = lsrealproject[i].trim();
-		}
-		return lsrealproject;
-	}
-
-	// With subquery
-	private String buildFromComplexQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ");
-		sb.append(buildProject(project));
-		sb.append(" from ");
-		sb.append("(");
-		sb.append(query);
-		sb.append(" ) Solved ");
-		sb.append(buildWhere(where, solvedQueryPrefix, true, new String[0]));
-		sb.append(buildGroup(group));
-		return sqlHelper.addLimit(sb.toString(), maxreg);
-	}
-
-	private String buildProject(List<ProjectStt> projections) {
-		if (projections == null || projections.size() == 0) {
-			return "Solved.* ";
-		} else {
-			StringBuilder sb = new StringBuilder();
-			for (ProjectStt p : projections) {
-				sb.append(p.getOp());
-				sb.append("(");
-				sb.append(p.getField());
-				sb.append(")");
-				sb.append(",");
-			}
-			return sb.substring(0, sb.length() - 1);
-		}
-	}
-
-	private String buildWhere(List<FilterStt> filters, String prefix, boolean includeWhere, String[] realproject) {
-		if (filters == null || filters.size() == 0) {
-			return "";
-		} else {
-			StringBuilder sb = new StringBuilder();
-			if (includeWhere)
-				sb.append(" where ");
-			for (FilterStt f : filters) {
-				sb.append(prefix);
-				sb.append(findEndParam(f.getField(), realproject));
-				sb.append(" ");
-				sb.append(f.getOp());
-				sb.append(" ");
-				sb.append(appendExp(f));
-				sb.append(filterSeparator);
-			}
-			return sb.substring(0, sb.length() - filterSeparator.length());
-		}
-	}
-
+	
+	
 	private String appendExp(FilterStt f) {
 		String exp = isFilterOverString(f) ? (f.getExp().replaceFirst(stringDEBoundsChar, stringLocalBoundsChar))
 				.replaceFirst(".$", stringLocalBoundsChar) : f.getExp();
@@ -229,34 +138,6 @@ public class SolverOracleImpl implements SolverInterface {
 	private boolean isFilterOverString(FilterStt f) {
 		return f.getExp().startsWith(stringDEBoundsChar) && f.getExp().endsWith(stringDEBoundsChar);
 	}
-
-	private String findEndParam(String param, String[] realproject) {
-		for (int i = 0; i < realproject.length; i++) {
-			if (realproject[i].endsWith(param)) {
-				int asindex = realproject[i].toLowerCase().indexOf(" as ");
-				if (asindex != -1 && realproject[i].substring(asindex + 4).equals(param)) {
-					return realproject[i].substring(0, asindex);
-				}
-				if (realproject[i].endsWith("." + param)) {
-					return realproject[i];
-				}
-			}
-
-		}
-		return param;
-	}
-
-	private String buildGroup(List<String> groups) {
-		if (groups == null || groups.size() == 0) {
-			return "";
-		} else {
-			StringBuilder sb = new StringBuilder();
-			sb.append(" group by ");
-			for (String g : groups) {
-				sb.append(g);
-				sb.append(",");
-			}
-			return sb.substring(0, sb.length() - 1);
-		}
-	}
 }
+
+

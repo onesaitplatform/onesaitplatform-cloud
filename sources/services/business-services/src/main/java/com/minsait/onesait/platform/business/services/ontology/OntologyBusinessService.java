@@ -14,19 +14,21 @@
  */
 package com.minsait.onesait.platform.business.services.ontology;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 
 public interface OntologyBusinessService {
 	public boolean existsOntology(String identificacion);
-	
-	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config) throws OntologyBusinessServiceException;
+
+	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
+			throws OntologyBusinessServiceException;
 
 	public List<String> getTablesFromDatasource(String datasource);
 
@@ -37,8 +39,20 @@ public interface OntologyBusinessService {
 	JsonNode organizeRootNodeIfExist(String schema) throws IOException;
 
 	public String getRelationalSchema(String datasource, String collection);
-	
+
 	public HashMap<String, String> getAditionalDBConfig(Ontology ontology);
 
-	public void updateOntology(Ontology ontology, OntologyConfiguration config, boolean hasDocuments) throws OntologyBusinessServiceException;
+	public void updateOntology(Ontology ontology, OntologyConfiguration config, boolean hasDocuments)
+			throws OntologyBusinessServiceException;
+
+	public String getSqlTableDefinitionFromSchema(String ontology, String schema, VirtualDatasourceType datasource);
+
+	public String getSQLCreateTable(CreateStatement statement, VirtualDatasourceType datasource);
+
+	public Object getStringSupportedFieldDataTypes();
+
+	public Object getStringSupportedConstraintTypes();
+
+	public void deleteOntology(String id, String userId);
+
 }

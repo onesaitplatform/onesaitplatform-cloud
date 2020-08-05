@@ -38,10 +38,17 @@ public class OKPISchedulerListenerConfig implements ApplicationListener<ContextR
 	private SchedulerFactoryBean schedulerFactory;
 
 	@Autowired
+	@Qualifier("expirationusers-scheduler-factory")
+	private SchedulerFactoryBean schedulerExpirationFactory;
+
+	@Autowired
 	private BatchSchedulerFactory batchSchedulerFactory;
 
 	@Autowired
 	private SchedulerListener okpiSchedulerListener;
+
+	@Autowired
+	private SchedulerListener expirationUsersSchedulerListener;
 
 	@Override
 
@@ -53,6 +60,10 @@ public class OKPISchedulerListenerConfig implements ApplicationListener<ContextR
 
 					addSchedulerListener(okpiSchedulerListener);
 
+			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONUSERS).getListenerManager().
+
+					addSchedulerListener(expirationUsersSchedulerListener);
+
 		} catch (SchedulerException | NotFoundException e) {
 
 			log.error("Error on OKPI Scheduler Listener", e);
@@ -61,6 +72,7 @@ public class OKPISchedulerListenerConfig implements ApplicationListener<ContextR
 		log.info("*******init scheduler listener*************");
 
 		schedulerFactory.setSchedulerListeners(okpiSchedulerListener);
+		schedulerExpirationFactory.setSchedulerListeners(expirationUsersSchedulerListener);
 
 	}
 }

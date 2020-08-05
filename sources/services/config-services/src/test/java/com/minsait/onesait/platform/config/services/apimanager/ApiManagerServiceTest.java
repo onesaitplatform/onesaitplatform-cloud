@@ -32,7 +32,7 @@ import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
@@ -389,9 +389,11 @@ public class ApiManagerServiceTest {
 		role.setId(Role.Type.ROLE_ADMINISTRATOR.name());
 		user.setRole(role);
 		api.setUser(null);
+		when(userService.isUserAdministrator(user)).thenReturn(true);
 
 		assertTrue(service.isUserOwnerOrAdmin(user, api));
 
+		when(userService.isUserAdministrator(user)).thenReturn(false);
 		role.setId(Role.Type.ROLE_DATASCIENTIST.name());
 		user.setRole(role);
 		api.setUser(null);

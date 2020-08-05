@@ -15,7 +15,7 @@
 package com.minsait.onesait.platform.config.dto;
 
 
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 
 import lombok.Data;
 

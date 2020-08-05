@@ -309,8 +309,7 @@ public class InternalAPIIntegrationTest {
 
 			assert instances != null;
 			nInstances = instances.size();
-			instances.forEach(i -> basicOps.insert(sensorTag.getOntology().getIdentification(),
-					sensorTag.getOntology().getJsonSchema(), i.toString()));
+			instances.forEach(i -> basicOps.insert(sensorTag.getOntology().getIdentification(), i.toString()));
 		} catch (final Exception e) {
 			log.error("Could not load sample data for test");
 		}

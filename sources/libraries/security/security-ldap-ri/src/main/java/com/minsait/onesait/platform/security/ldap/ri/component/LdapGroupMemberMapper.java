@@ -47,8 +47,10 @@ public class LdapGroupMemberMapper implements AttributesMapper<List<User>> {
 			final HashMap<String, String> mapFromAttr = (HashMap<String, String>) Arrays.asList(next.split(","))
 					.stream().filter(s -> s.contains("uid")).map(s -> s.split("="))
 					.collect(Collectors.toMap(e -> e[0], e -> e[1]));
-			user.setUserId(mapFromAttr.get("uid"));
-			users.add(user);
+			if (null != mapFromAttr.get("uid")) {
+				user.setUserId(mapFromAttr.get("uid"));
+				users.add(user);
+			}
 		}
 		return users;
 	}

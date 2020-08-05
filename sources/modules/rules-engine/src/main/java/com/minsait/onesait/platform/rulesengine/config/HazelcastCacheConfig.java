@@ -16,14 +16,11 @@ package com.minsait.onesait.platform.rulesengine.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
-import com.hazelcast.spring.cache.HazelcastCacheManager;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleObject;
 import com.minsait.onesait.platform.rulesengine.service.RulesManagerService;
@@ -74,14 +71,4 @@ public class HazelcastCacheConfig {
 
 	}
 
-	@Bean
-	CacheManager cacheManager() {
-		if (hazelcastInstance != null) {
-			final CacheManager manager = new HazelcastCacheManager(hazelcastInstance);
-			log.info("Configured Local Cache Manager: Name : {} ", manager.toString());
-			return manager;
-		} else {
-			return new NoOpCacheManager();
-		}
-	}
 }

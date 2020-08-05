@@ -188,7 +188,7 @@ public class RulesEngineIntegrationTest {
 
 	@Test
 	public void When_TemperatureIsHigherThan80_Then_AlarmIsTriggered_Async() throws GenericOPException {
-		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_HIGH_TEMP);
+		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_HIGH_TEMP, null, null);
 
 	}
 
@@ -201,7 +201,7 @@ public class RulesEngineIntegrationTest {
 
 	@Test
 	public void When_TemperatureIsLessThan80_Then_AlarmIsNotTriggered_Async() throws GenericOPException {
-		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_LOW_TEMP);
+		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_LOW_TEMP, null, null);
 	}
 
 	@Transactional

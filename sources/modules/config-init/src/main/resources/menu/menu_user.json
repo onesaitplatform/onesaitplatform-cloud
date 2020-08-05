@@ -1,14 +1,25 @@
 {
-	"menu": "OnesaitPlatform",
+	"menu": "onesait Platform",
 	"rol": "ROLE_USER",
 	"noSession": "/console/login",
 	"navigation": [
+
 		{
 			"title": {
-				"EN": "SHARE & USE",
-				"ES": "COMPARTE Y USA"
+				"EN": "",
+				"ES": ""
 			},
-			"icon": "flaticon-cart",
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+		
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO"
+			},
+			"icon": "flaticon-network",
 			"url": "",
 			"submenu": [
 				{
@@ -34,15 +45,18 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
-				},
-				{
-					"title": {
-						"EN": "My Market",
-						"ES": "Mi Market"
-					},
-					"icon": "",
-					"url": "/controlpanel/marketasset/list"
-				},
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "VISUALIZATION & GIS",
+				"ES": "VISUALIZATION & GIS"
+			},
+			"icon": "flaticon-graph",
+			"url": "",
+			"submenu": [
 				{
 					"title": {
 						"EN": "My Dashboards",
@@ -50,7 +64,18 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/dashboards/list"
-				},
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [			
 				{
 					"title": {
 						"EN": "My Files",
@@ -61,21 +86,13 @@
 				}
 			]
 		},
-		{
-			"title": {
-				"EN": "",
-				"ES": ""
-			},
-			"icon": "flaticon-more-v3",
-			"url": "",
-			"submenu": []
-		},
+
 		{
 			"title": {
 				"EN": "TOOLS",
 				"ES": "HERRAMIENTAS"
 			},
-			"icon": "flaticon-open-box",
+			"icon": "flaticon-refresh",
 			"url": "",
 			"submenu": [
 				{
@@ -93,6 +110,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "My Market",
+						"ES": "Mi Market"
+					},
+					"icon": "",
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

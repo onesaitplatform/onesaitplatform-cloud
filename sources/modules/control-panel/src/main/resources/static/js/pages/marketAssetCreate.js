@@ -306,6 +306,9 @@ var MarketAssetCreateController = function() {
 		
 		logControl ? console.log('|---> datepickers currentLanguage: ' + currentLanguage) : '';
 		
+		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+		
 		// init datepickers dateCreated and dateDeleted		
 		$("#datecreated").datepicker({dateFormat: currentFormat, showButtonPanel: true,  orientation: "bottom auto", todayHighlight: true, todayBtn: "linked", clearBtn: true, language: currentLanguage});
 		

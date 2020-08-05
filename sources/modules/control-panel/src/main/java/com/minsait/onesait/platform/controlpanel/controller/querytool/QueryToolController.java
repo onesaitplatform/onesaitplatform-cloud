@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
+import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
@@ -73,6 +75,9 @@ public class QueryToolController {
 	@Autowired
 	private ConfigurationRepository configurationRepository;
 
+	@Value("${onesaitplatform.queryTool.allowedOperations:false}")
+	private Boolean queryToolAllowedOperations;
+
 	public static final String QUERY_SQL = "SQL";
 	public static final String QUERY_NATIVE = "NATIVE";
 	private static final String QUERY_RESULT_STR = "queryResult";
@@ -93,31 +98,35 @@ public class QueryToolController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("queryconfigdb")
 	public String runQueryConfigDB(Model model, @RequestParam String query, @RequestParam String tableName)
 			throws JsonProcessingException {
 		query = query.trim();
-		if (query.toLowerCase().startsWith("select") && query.split(";").length == 1) {
-			try {
-				List<String> queryResult = new LinkedList<>();
+		List<String> queryResult = new LinkedList<>();
+
+		try {
+			if (query.toLowerCase().startsWith("select") && query.split(";").length == 1) {
 				queryResult = queryToolService.querySQLtoConfigDB(query);
 				model.addAttribute(QUERY_RESULT_STR, queryResult);
-				return QUERY_TOOL_SHOW_QUERY;
-			} catch (final SQLGrammarException e) {
-				log.error("Error while executing SQL query in ConfigDB {}", e.getMessage());
-				model.addAttribute(QUERY_RESULT_STR, e.getSQLException());
-				return QUERY_TOOL_SHOW_QUERY;
-			} catch (final RuntimeException e) {
-				log.error("Error while executing SQL query in ConfigDB {}", e.getMessage());
-				model.addAttribute(QUERY_RESULT_STR, e.getMessage());
-				return QUERY_TOOL_SHOW_QUERY;
+			} else if (queryToolAllowedOperations) {
+				queryResult = queryToolService.updateSQLtoConfigDB(query);
+				model.addAttribute(QUERY_RESULT_STR, queryResult);
+			} else {
+				model.addAttribute(QUERY_RESULT_STR,
+						utils.getMessage("querytool.error.operation", "Unallowed operation"));
 			}
-
-		} else {
-			model.addAttribute(QUERY_RESULT_STR, utils.getMessage("querytool.error.operation", "Unallowed operation"));
+			return QUERY_TOOL_SHOW_QUERY;
+		} catch (final SQLGrammarException e) {
+			log.error("Error while executing SQL query in ConfigDB {}", e.getMessage());
+			model.addAttribute(QUERY_RESULT_STR, e.getSQLException());
+			return QUERY_TOOL_SHOW_QUERY;
+		} catch (final RuntimeException e) {
+			log.error("Error while executing SQL query in ConfigDB {}", e.getMessage());
+			model.addAttribute(QUERY_RESULT_STR, e.getMessage());
 			return QUERY_TOOL_SHOW_QUERY;
 		}
+
 	}
 
 	@PostMapping("query")
@@ -125,13 +134,18 @@ public class QueryToolController {
 			@RequestParam String ontologyIdentification) throws JsonProcessingException {
 		String queryResult = null;
 
-		final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification,
-				utils.getUserId());
+		/*final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification,
+				utils.getUserId());*/
 
 		try {
+			final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification,
+					utils.getUserId());
 			if (ontologyService.hasUserPermissionForQuery(utils.getUserId(), ontologyIdentification)) {
 				final ManageDBRepository manageDB = manageFactory.getInstance(ontologyIdentification);
-				if (manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty()) {
+				if (!ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
+					&& !ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)
+					&& manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty() 
+						) {
 					manageDB.createTable4Ontology(ontologyIdentification, "{}", null);
 				}
 				query = query.replace(CONTEXT_USER, utils.getUserId());
@@ -162,6 +176,10 @@ public class QueryToolController {
 		} catch (final DBPersistenceException e) {
 			log.error(RUNQUERYERROR, e);
 			model.addAttribute(QUERY_RESULT_STR, e.getMessage());
+			return QUERY_TOOL_SHOW_QUERY;
+		} catch (final OntologyServiceException e) {
+			model.addAttribute(QUERY_RESULT_STR, utils.getMessage("querytool.ontology.access.denied.json",
+					"You don't have permissions for this ontology"));
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final Exception e) {
 			log.error(RUNQUERYERROR, e);
@@ -211,7 +229,7 @@ public class QueryToolController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("tableColumns")
 	public String getTableColumns(Model model, @RequestParam String tableName) {
 

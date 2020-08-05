@@ -87,7 +87,7 @@ public class TaskServiceImpl implements TaskService {
 		String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 		User user = this.userService.getUser(userId);
 
-		if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+		if (!userService.isUserAdministrator(user)
 				&& !username.equals(user.getUserId())) {
 			return (new ArrayList<>());
 		}
@@ -142,7 +142,7 @@ public class TaskServiceImpl implements TaskService {
 			list = new ArrayList<>();
 		} else {
 
-			if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			if (!userService.isUserAdministrator(user)) {
 				// if the user is not administrator we have to filter the jobs
 				List<ScheduledJob> userJobs = scheduledJobService.getScheduledJobsByUsername(username);
 				List<String> userJobsId = userJobs.stream().map(x -> x.getJobName()).collect(Collectors.toList());
@@ -239,11 +239,57 @@ public class TaskServiceImpl implements TaskService {
 
 			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
-			if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+			if (!userService.isUserAdministrator(user)
 					&& !job.getUserId().equals(user.getUserId())) {
 				log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 				throw new NotFoundException(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 			}
+
+			if (job != null) {
+
+				String groupName = job.getGroupName();
+
+				log.info("unschedule job [" + " groupName: " + groupName + "]");
+
+				if (checkExists(operation)) {
+
+					TriggerKey triggerKey = TriggerKey.triggerKey(jobName, groupName);
+
+					BatchScheduler scheduler = batchSchedulerFactory.getScheduler(job.getSchedulerId());
+
+					scheduler.pauseTrigger(triggerKey);
+					unscheduled = scheduler.unscheduleJob(triggerKey);
+					if (unscheduled) {
+						scheduler.deleteJob(new JobKey(jobName, groupName));
+						scheduledJobService.deleteById(job.getId());
+					}
+					log.info("unschedule, triggerKey:{}", triggerKey);
+
+				} else {
+					log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
+				}
+
+			}
+
+		} catch (SchedulerException | NotFoundException e) {
+			log.error("Error unscheduled task", e);
+		}
+
+		return unscheduled;
+	}
+
+	@Override
+	public boolean unscheduledFromAnonymous(TaskOperation operation) {
+
+		boolean unscheduled = false;
+
+		String jobName = operation.getJobName();
+
+		try {
+
+			log.info("unschedule job [jobname: " + jobName + "]");
+
+			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
 			if (job != null) {
 
@@ -294,7 +340,7 @@ public class TaskServiceImpl implements TaskService {
 
 			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
-			if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+			if (!userService.isUserAdministrator(user)
 					&& !job.getUserId().equals(user.getUserId())) {
 				log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 				throw new NotFoundException(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
@@ -343,7 +389,7 @@ public class TaskServiceImpl implements TaskService {
 
 			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
-			if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+			if (!userService.isUserAdministrator(user)
 					&& !job.getUserId().equals(user.getUserId())) {
 				log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 				throw new NotFoundException(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);

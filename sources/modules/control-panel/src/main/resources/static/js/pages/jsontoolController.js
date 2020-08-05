@@ -494,6 +494,10 @@ var JsonToolController = function(){
 
 		init : function(){
 			handleCodeMirror();
+			
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#ontologyIdentification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+			
 			$(function() {
 			    $('#ontologyIdentification').on('keypress', function(e) {
 			        if (e.which == 32)

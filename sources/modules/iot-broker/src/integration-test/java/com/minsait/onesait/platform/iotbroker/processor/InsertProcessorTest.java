@@ -40,7 +40,6 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyInsertMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthorizationException;
 import com.minsait.onesait.platform.iotbroker.mock.database.MockMongoOntologies;
@@ -49,10 +48,10 @@ import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.router.RouterServiceGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
-import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,8 +83,6 @@ public class InsertProcessorTest {
 	// OntologyRepository ontologyRepository;
 	@MockBean
 	RouterService routerService;
-	@MockBean
-	RouterSuscriptionService routerSuscriptionService;
 	// @MockBean
 	// IotBrokerAuditableAspect iotBrokerAuditableAspect;
 

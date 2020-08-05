@@ -52,8 +52,16 @@ public interface GadgetDatasourceService {
 	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user);
 
 	public GadgetDatasource getDatasourceByIdentification(String dsIdentification);
+	
+	public boolean isGroupDatasourceById(String id);
+	
+	public String getAccessType (String id, String userId);
+	
+	public String getElementsAssociated (String datasourceId);
+	
+	public String getOntologyFromDatasource(String datasource);
 
-	public String getAccessType(String id, String userId);
+	public String getMaxValuesFromQuery(String query);
 
-	public String getElementsAssociated(String datasourceId);
+	public List<Object> getGadgetsUsingDatasource(String id);
 }

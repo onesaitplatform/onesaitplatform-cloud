@@ -14,27 +14,42 @@
  */
 package com.minsait.onesait.platform.persistence.elasticsearch;
 
+import static org.mockito.Mockito.*;
+
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
-import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.repository.OntologyRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@ComponentScan(basePackages = { "com.minsait.onesait.platform"})
+@EnableAutoConfiguration
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Category(IntegrationTest.class)
 @Slf4j
@@ -48,17 +63,72 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 
 	@Autowired
 	ElasticSearchManageDBRepository manage;
+	
+	@Rule
+	public MockitoRule mockitoRule = MockitoJUnit.rule();
+	
+	@Configuration
+    static class Config {
+        @Bean
+        @Primary
+        public OntologyRepository getOntologyRepository() {
+            return mock(OntologyRepository.class);
+        }
+        
+        @Bean("dataHubRest")
+        public RestTemplate restTemplate() throws GenericOPException {
+            return new RestTemplate();
+        }
+    }
+	
+	@Autowired
+    private OntologyRepository ontologyRepository;
 
-	private String JSON_TEST = "{" + "\"name\":\"skyji\"," + "\"job\":\"Admin\"," + "\"location\":\"India\"" + "}";
+	private static final String JSON_TEST = "{" + "\"name\":\"skyji\"," + "\"job\":\"Admin\"," + "\"location\":\"India\"" + "}";
 
-	private String JSON_TEST_UPDATE = "{" + "\"name\":\"pepe\"," + "\"job\":\"pepe\"," + "\"location\":\"pepe\"" + "}";
+	private static final String JSON_TEST_UPDATE = "{" + "\"name\":\"pepe\"," + "\"job\":\"pepe\"," + "\"location\":\"pepe\"" + "}";
 
-	private String SQL_TEST = "select * from ";
+	private static final String SQL_TEST = "select * from ";
+
+    private static final String QUERY_ALL = "{\"match_all\" : {}}";
+
+    
+    private static final String JSON_SCHEMA = "{\n" + 
+            "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" + 
+            "    \"title\": \"test\",\n" + 
+            "    \"type\": \"object\",\n" + 
+            "\n" + 
+            "\n" + 
+            "        \"description\": \"Properties for DataModel test\",\n" + 
+            "\n" + 
+            "        \"required\": [\n" + 
+            "            \"name\",\n" + 
+            "            \"job\",\n" + 
+            "            \"location\"\n" + 
+            "        ],\n" + 
+            "        \"properties\": {\n" + 
+            "            \"name\": {\n" + 
+            "                \"type\": \"string\"\n" + 
+            "            },\n" + 
+            "            \"job\": {\n" + 
+            "                \"type\": \"string\"\n" + 
+            "            },\n" + 
+            "            \"location\": {\n" + 
+            "                \"type\": \"string\"\n" + 
+            "            }\n" + 
+            "        },\n" + 
+            "    \"additionalProperties\": true\n" + 
+            "}";
 
 	@Before
 	public void doBefore() throws Exception {
 		log.info("up process...");
-		manage.createTable4Ontology(TEST_INDEX_ONLINE, "", null);
+		manage.createTable4Ontology(TEST_INDEX_ONLINE, JSON_SCHEMA, null);
+		Ontology ontology = new Ontology();
+		ontology.setId(TEST_INDEX_ONLINE);
+		ontology.setIdentification(TEST_INDEX_ONLINE);
+		ontology.setJsonSchema(JSON_SCHEMA);
+		when(ontologyRepository.findByIdentification(ontology.getIdentification())).thenReturn(ontology);
 	}
 
 	@After
@@ -77,7 +147,7 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 		try {
 			log.info("testInsertAndGet");
 
-			String id = repository.insert(TEST_INDEX_ONLINE, "", JSON_TEST);
+			String id = repository.insert(TEST_INDEX_ONLINE, JSON_TEST);
 
 			log.info("Returned inserted object with id " + id);
 
@@ -98,7 +168,7 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 		try {
 			log.info("testInsertCountDelete");
 
-			String id = repository.insert(TEST_INDEX_ONLINE, "", JSON_TEST);
+			String id = repository.insert(TEST_INDEX_ONLINE, JSON_TEST);
 			log.info("Returned inserted object with id " + id);
 
 			long many = repository.count(TEST_INDEX_ONLINE);
@@ -125,7 +195,7 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 
 			log.info("testInsertUpdate");
 
-			String id = repository.insert(TEST_INDEX_ONLINE, "", JSON_TEST);
+			String id = repository.insert(TEST_INDEX_ONLINE, JSON_TEST);
 			log.info("Returned inserted object with id " + id);
 
 			long many = repository.updateNativeByObjectIdAndBodyData(TEST_INDEX_ONLINE, id, JSON_TEST_UPDATE)
@@ -151,7 +221,7 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 
 			log.info("testSearchQuery");
 
-			String id = repository.insert(TEST_INDEX_ONLINE, "", JSON_TEST);
+			String id = repository.insert(TEST_INDEX_ONLINE, JSON_TEST);
 			log.info("Returned inserted object with id " + id);
 
 			List<String> listData = repository.findAll(TEST_INDEX_ONLINE);
@@ -181,13 +251,13 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 
 			log.info("testSearchQuery");
 
-			String id = repository.insert(TEST_INDEX_ONLINE, "", JSON_TEST);
+			String id = repository.insert(TEST_INDEX_ONLINE, JSON_TEST);
 			log.info("Returned inserted object with id " + id);
 
 			List<String> listData = repository.findAll(TEST_INDEX_ONLINE);
 			log.info("Returned list of found objects " + listData);
 
-			String output = repository.queryNativeAsJson(TEST_INDEX_ONLINE, ESBaseApi.QUERY_ALL);
+			String output = repository.queryNativeAsJson(TEST_INDEX_ONLINE, QUERY_ALL);
 
 			log.info("query native :" + output);
 			log.info("testSearchQuery END ");

@@ -32,14 +32,13 @@ import lombok.extern.slf4j.Slf4j;
 public class DefaultBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
-	public String insert(String ontology, String schema, String instance) {
+	public String insert(String ontology, String instance) {
 		log.error(NOT_SUPPORTED);
 		throw new DBPersistenceException(NOT_SUPPORTED);
 	}
 
 	@Override
-	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
-			boolean includeIds) {
+	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
 		log.error(NOT_SUPPORTED);
 		throw new DBPersistenceException(NOT_SUPPORTED);
 	}
@@ -168,6 +167,47 @@ public class DefaultBasicOpsDBRepository implements BasicOpsDBRepository {
 	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(String ontologyName, String objectId,
 			String body) {
 		log.error(NOT_SUPPORTED);
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String ontology, String updateStmt)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String collection, String query, String data)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
 		throw new DBPersistenceException(NOT_SUPPORTED);
 	}
 

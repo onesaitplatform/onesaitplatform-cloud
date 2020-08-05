@@ -115,7 +115,7 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send mail")
 	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
 	@PostMapping(OP_MAIL + "/sendMultiple")
@@ -133,7 +133,7 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 	
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
     @ApiOperation(value = "Send mail")
     @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
     @PostMapping(OP_MAIL + "/send")
@@ -142,7 +142,7 @@ public class MailManagementController {
 	    return send(toArray(to), message, subject);
     }
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send html mail")
 	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
 	@PostMapping(OP_MAIL + "/sendHtmlMultiple")
@@ -158,7 +158,7 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 	
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
     @ApiOperation(value = "Send html mail")
     @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
     @PostMapping(OP_MAIL + "/sendHtml")
@@ -168,7 +168,7 @@ public class MailManagementController {
         return sendHtml(toArray(to), htmlMessage, attachmentName, attachment, subject);
     }
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send mail with file")
 	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
 	@PostMapping(OP_MAIL + "/sendMailWithFileMultiple")
@@ -184,7 +184,7 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 	
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
     @ApiOperation(value = "Send mail with file")
     @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
     @PostMapping(OP_MAIL + "/sendMailWithFile")
@@ -194,7 +194,7 @@ public class MailManagementController {
         return sendMailWithFile(toArray(to), message, attachmentName, attachment, subject);
     }
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send mail with templates")
 	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
 	@PostMapping(OP_MAIL + "/sendTemplatesMultiple")
@@ -210,7 +210,7 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 	
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
     @ApiOperation(value = "Send mail with templates")
     @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
     @PostMapping(OP_MAIL + "/sendTemplates")
@@ -220,7 +220,7 @@ public class MailManagementController {
         return sendTemplates(toArray(to), template, templateArgs, subject);
     }
 
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@ApiOperation(value = "Send support Request mail")
 	@PostMapping(OP_MAIL + "/sendSupportRequest")
 	public ResponseEntity<String> sendEmail(@RequestParam("supportRequestId") String supportRequestId,

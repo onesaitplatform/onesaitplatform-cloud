@@ -127,8 +127,7 @@ var create = function() {
 			navigateUrl("/controlpanel/categorization/list/");
 			}
 		).fail(function(response, data){
-			$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
-			console.log("Error: ", response);
+			$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: response.responseText});
 			}		
 		)
 	} else {

@@ -68,6 +68,10 @@ public class DashboardCreateDTO implements Serializable {
 
 	@Getter
 	@Setter
+	private String i18n;
+
+	@Getter
+	@Setter
 	private String headerlibs;
 
 	@Getter

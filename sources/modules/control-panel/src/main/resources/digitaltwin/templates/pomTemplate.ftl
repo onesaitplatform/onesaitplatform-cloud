@@ -43,11 +43,11 @@
 	<repositories>
 		<repository>
 			<id>public</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/groups/public/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/groups/public/</url>
 		</repository>
 		<repository>
 			<id>onesait platform releases</id>
-			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
 	

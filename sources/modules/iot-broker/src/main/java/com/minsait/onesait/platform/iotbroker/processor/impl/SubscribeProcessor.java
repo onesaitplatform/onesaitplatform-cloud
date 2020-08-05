@@ -15,24 +15,18 @@
 package com.minsait.onesait.platform.iotbroker.processor.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hazelcast.core.HazelcastInstance;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
@@ -40,18 +34,16 @@ import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
-import com.minsait.onesait.platform.config.model.IoTSession;
-import com.minsait.onesait.platform.config.model.SuscriptionNotificationsModel;
-import com.minsait.onesait.platform.config.repository.SuscriptionModelRepository;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
-import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
+import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
+import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,20 +53,16 @@ import lombok.extern.slf4j.Slf4j;
 public class SubscribeProcessor implements MessageTypeProcessor {
 
 	@Autowired
-	private RouterSuscriptionService routerService;
+	private RouterService routerService;
+
 	@Autowired
 	SecurityPluginManager securityPluginManager;
+
 	@Autowired
 	ObjectMapper objectMapper;
-	@Autowired
-	SuscriptionModelRepository repository;
-
-	@Autowired
-	HazelcastInstance hazelcastInstance;
-	private static final String SUBSCRIPTION_REPOSITORY = "SuscriptionModelRepository";
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodySubscribeMessage> subscribeMessage = (SSAPMessage<SSAPBodySubscribeMessage>) message;
@@ -84,24 +72,20 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 
 		final Optional<IoTSession> session = securityPluginManager.getSession(subscribeMessage.getSessionKey());
 
-		final SuscriptionModel model = new SuscriptionModel();
-		model.setOntologyName(subscribeMessage.getBody().getOntology());
-		model.setOperationType(SuscriptionModel.OperationType.SUSCRIBE);
-		model.setQuery(subscribeMessage.getBody().getQuery());
-
-		SuscriptionModel.QueryType qType = SuscriptionModel.QueryType.NATIVE;
-		if (SSAPQueryType.SQL.equals(subscribeMessage.getBody().getQueryType())) {
-			qType = SuscriptionModel.QueryType.SQLLIKE;
-		}
-		model.setQueryType(qType);
+		final SubscriptionModel model = new SubscriptionModel();
+		model.setCallback(subscribeMessage.getBody().getCallback());
+		model.setQueryValue(subscribeMessage.getBody().getQueryValue());
+		model.setSubscription(subscribeMessage.getBody().getSubscription());
+		model.setOperationType(SubscriptionModel.OperationType.SUBSCRIBE);
 		model.setSessionKey(subscribeMessage.getSessionKey());
-
 		model.setSuscriptionId(subsId);
+		model.setClientId(subscribeMessage.getBody().getClientId());
+		model.setSubscriptionGW(info.getName());
 		session.ifPresent(s -> model.setUser(s.getUserID()));
 
 		OperationResultModel routerResponse = null;
 		try {
-			routerResponse = routerService.suscribe(model);
+			routerResponse = routerService.subscribe(model);
 		} catch (final Exception e1) {
 			log.error("Error in process:" + e1.getMessage());
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR, e1.getMessage());
@@ -125,8 +109,7 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		response.setSessionKey(subscribeMessage.getSessionKey());
 		response.getBody().setOk(true);
 		response.getBody().setError(routerResponse.getErrorCode());
-		final String dataStr = "{\"subscriptionId\": \"" + subsId + "\",\"message\": \"" + routerResponse.getMessage()
-				+ "\"}";
+		final String dataStr = "{\"subscriptionId\": \"" + subsId + "\"}";
 		JsonNode data;
 		try {
 			data = objectMapper.readTree(dataStr);
@@ -150,43 +133,17 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodySubscribeMessage> subscribeMessage = (SSAPMessage<SSAPBodySubscribeMessage>) message;
 
-		if (StringUtils.isEmpty(subscribeMessage.getBody().getQuery())) {
-			throw new SSAPProcessorException(
-					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "query", message.getMessageType().name()));
+		if (StringUtils.isEmpty(subscribeMessage.getBody().getSubscription())) {
+			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "subscription",
+					message.getMessageType().name()));
 		}
 
-		if (subscribeMessage.getBody().getQueryType() == null) {
-			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "queryType",
+		if (StringUtils.isEmpty(subscribeMessage.getBody().getQueryValue())) {
+			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "queryValue",
 					message.getMessageType().name()));
 		}
 
 		return true;
-	}
-
-	@PostConstruct
-	private void cleanSubscriptions() {
-
-		repository.deleteAll();
-	}
-
-	@Scheduled(fixedDelay = 300000)
-	public void deleteOldSubscriptions() {
-		final ArrayList<SuscriptionNotificationsModel> subscriptionsToRemove = new ArrayList<>();
-		final List<SuscriptionNotificationsModel> subscriptions = getSubscriptionsFromCache();
-		for (final SuscriptionNotificationsModel subscription : subscriptions) {
-
-			final Optional<IoTSession> session = securityPluginManager.getSession(subscription.getSessionKey());
-
-			if (!session.isPresent())
-				subscriptionsToRemove.add(subscription);
-
-		}
-		repository.delete(subscriptionsToRemove);
-	}
-
-	private List<SuscriptionNotificationsModel> getSubscriptionsFromCache() {
-		return hazelcastInstance.getMap(SUBSCRIPTION_REPOSITORY).entrySet().stream()
-				.map(e -> (SuscriptionNotificationsModel) e.getValue()).collect(Collectors.toList());
 	}
 
 }

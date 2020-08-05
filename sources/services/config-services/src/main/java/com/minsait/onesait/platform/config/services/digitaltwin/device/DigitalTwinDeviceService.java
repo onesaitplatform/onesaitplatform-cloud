@@ -56,9 +56,13 @@ public interface DigitalTwinDeviceService {
 
 	DigitalTwinDevice getDigitalTwinDevicebyName(String name);
 
+	DigitalTwinDevice getDigitalTwinDevicebyName(String apiKey, String name);
+
 	Integer getNumOfDevicesByTypeId(String type);
 
 	boolean hasUserEditAccess(String id, String userId);
 
 	boolean hasUserAccess(String id, String userId);
+
+	DigitalTwinDevice save(DigitalTwinDevice digitalTwinDevice);
 }

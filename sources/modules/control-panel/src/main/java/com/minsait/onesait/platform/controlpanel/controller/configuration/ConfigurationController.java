@@ -19,6 +19,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/configurations")
 @Slf4j
-@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 public class ConfigurationController {
 
 	@Autowired
@@ -55,6 +56,9 @@ public class ConfigurationController {
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
+	@Value("${dynamic-load-balancer.enable}")
+	private Boolean nginxServiceEnabled;
+
 	private static final String CONFIGURATION_STR = "configuration";
 	private static final String CONF_CREATE = "configurations/create";
 	private static final String REDIRECT_CONF_LIST = "redirect:/configurations/list";
@@ -64,6 +68,7 @@ public class ConfigurationController {
 
 		final List<Configuration> configurations = configurationService.getAllConfigurations();
 		model.addAttribute("configurations", configurations);
+		model.addAttribute("nginxServiceEnabled", nginxServiceEnabled);
 		return "configurations/list";
 
 	}
@@ -124,7 +129,7 @@ public class ConfigurationController {
 		}
 
 		model.addAttribute(CONFIGURATION_STR, configuration);
-		return "redirect:/configurations/show/" + id;
+		return REDIRECT_CONF_LIST;
 
 	}
 
@@ -148,7 +153,7 @@ public class ConfigurationController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		Configuration configuration = null;

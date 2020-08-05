@@ -24,12 +24,14 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
+import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -42,6 +44,8 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
 	@Autowired
+	private ClientPlatformOntologyRepository clientPlatformOntologyRepository;
+	@Autowired
 	private UserService userService;
 	@Autowired
 	private OntologyService ontologyService;
@@ -53,7 +57,7 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 		List<String> clientIdentifications = new ArrayList<>();
 		List<ClientPlatform> clients = null;
 		User user = this.userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (userService.isUserAdministrator(user))
 			clients = this.clientPlatformRepository.findAll();
 		else
 			clients = this.userService.getClientsForUser(user);
@@ -77,9 +81,9 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 	@Override
 	public List<String> getClientOntologiesIdentification(String clientPlatformId) {
 		List<String> ontologies = new ArrayList<>();
-		for (Ontology ontology : this.ontologyService
-				.getOntologiesByClientPlatform(this.clientPlatformRepository.findByIdentification(clientPlatformId))) {
-			ontologies.add(ontology.getIdentification());
+		for (ClientPlatformOntology clientPlatformOntology :this.clientPlatformOntologyRepository.
+				findByClientPlatformAndInsertAccess(clientPlatformId)) {
+			ontologies.add(clientPlatformOntology.getOntology().getIdentification());
 		}
 		return ontologies;
 	}

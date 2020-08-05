@@ -67,7 +67,7 @@ public class CacheRestController {
     
     private static final String STATUS_OK = "{\"status\": \"ok\"}";
 
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Create a new cache structure")
     @PostMapping("/{identification}/")
     public ResponseEntity<String> create(
@@ -77,6 +77,10 @@ public class CacheRestController {
             @RequestBody(required=true) CacheDTO cacheDTO) throws JsonProcessingException {
         
         log.debug("Recieved request to create a new cached map {}", identification);
+        
+        if (!identification.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+            return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+        }
         
         User user = userService.getUserByIdentification(utils.getUserId());
         
@@ -99,7 +103,7 @@ public class CacheRestController {
         }      
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Delete a map")
     @DeleteMapping("/maps/{identification}/")
     public ResponseEntity<String> deleteMap(
@@ -118,7 +122,7 @@ public class CacheRestController {
         }
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Put value of a type in map")
     @PostMapping("/maps/{identification}/put/{key}/")
     public ResponseEntity<String> putIntoMap(
@@ -142,7 +146,7 @@ public class CacheRestController {
         }
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Put values of a type in map")
     @PostMapping("/maps/{identification}/putMany/")
     public ResponseEntity<String> putManyIntoMap(
@@ -164,7 +168,7 @@ public class CacheRestController {
         
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Get one value from a map")
     @GetMapping("/maps/{identification}/get/{key}/")
     public ResponseEntity<String> getFromMap(
@@ -187,7 +191,7 @@ public class CacheRestController {
         
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Get all values from a map")
     @GetMapping("/maps/{identification}/getAll/")
     public ResponseEntity<Map<String, String>> getAllFromMap(
@@ -207,7 +211,7 @@ public class CacheRestController {
         
     }
     
-    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
     @ApiOperation(value = "Get all values from a map")
     @PostMapping("/maps/{identification}/getMany/")
     public ResponseEntity<Map<String, String>> getManyFromMap(

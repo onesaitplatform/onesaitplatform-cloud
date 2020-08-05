@@ -32,6 +32,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -39,7 +41,8 @@ import com.minsait.onesait.platform.router.client.RouterClient;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
+import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
+import com.minsait.onesait.platform.router.service.app.model.TransactionModel;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +55,9 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+
+	@Value("${onesaitplatform.multitenancy.enabled:false}")
+	private boolean multitenancyEnabled;
 
 	private String routerStandaloneURL;
 
@@ -141,13 +147,40 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		return execute(model);
 	}
 
+	@Override
+	public OperationResultModel startTransaction(TransactionModel model) {
+		return restTemplate.exchange(routerStandaloneURL + "/startTransaction", HttpMethod.POST,
+				new HttpEntity<>(model, addCorrelationHeader()), OperationResultModel.class).getBody();
+	}
+
+	@Override
+	public OperationResultModel commitTransaction(TransactionModel model) {
+		return restTemplate.exchange(routerStandaloneURL + "/commitTransaction", HttpMethod.POST,
+				new HttpEntity<>(model, addCorrelationHeader()), OperationResultModel.class).getBody();
+
+	}
+
+	@Override
+	public OperationResultModel rollbackTransaction(TransactionModel model) {
+		return restTemplate.exchange(routerStandaloneURL + "/rollbackTransaction", HttpMethod.POST,
+				new HttpEntity<>(model, addCorrelationHeader()), OperationResultModel.class).getBody();
+
+	}
+
 	public void setRouterStandaloneURL(String routerStandaloneURL) {
 		this.routerStandaloneURL = routerStandaloneURL;
 	}
 
 	@Override
-	public OperationResultModel suscribe(SuscriptionModel model) {
-		return null;
+	public OperationResultModel subscribe(SubscriptionModel model) {
+		return restTemplate.exchange(routerStandaloneURL + "/subscribe", HttpMethod.POST,
+				new HttpEntity<>(model, addCorrelationHeader()), OperationResultModel.class).getBody();
+	}
+
+	@Override
+	public OperationResultModel unsubscribe(SubscriptionModel model) {
+		return restTemplate.exchange(routerStandaloneURL + "/unsubscribe", HttpMethod.POST,
+				new HttpEntity<>(model, addCorrelationHeader()), OperationResultModel.class).getBody();
 	}
 
 	private HttpHeaders addCorrelationHeader() {
@@ -156,7 +189,26 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		if (StringUtils.isEmpty(correlationID))
 			correlationID = CorrelationInterceptor.generateUniqueCorrelationId();
 		headers.add(CorrelationInterceptor.CORRELATION_ID_HEADER_NAME, correlationID);
+
+		addMultitenancyHeaders(headers);
+
 		return headers;
+	}
+
+	private void addMultitenancyHeaders(HttpHeaders headers) {
+		try {
+			headers.add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER, MultitenancyContextHolder.getVerticalSchema());
+			headers.add(Tenant2SchemaMapper.TENANT_HTTP_HEADER, MultitenancyContextHolder.getTenantName());
+		} catch (final Exception e) {
+			log.error("No authentication found, could not add tenant/vertical headers to HTTP request");
+		}
+	}
+
+	@Override
+	public OperationResultModel notifyModules(NotificationModel model) {
+		return restTemplate.exchange(routerStandaloneURL + "notifyModules", HttpMethod.POST,
+				new HttpEntity<>(model, addCorrelationHeader()), OperationResultModel.class).getBody();
+
 	}
 
 }

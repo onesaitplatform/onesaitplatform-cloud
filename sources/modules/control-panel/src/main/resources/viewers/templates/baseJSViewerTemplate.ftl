@@ -1,5 +1,5 @@
 /** GLOBAL VARIABLES */
-
+var intervalIds = [];
 /** Set the initial extent. Change the values to set your own extent */
 var startLongitude = ${longitude}
 var startLatitude = ${latitude}
@@ -132,7 +132,7 @@ var heatMapLayers = []
  
  /** FILTER DATA */
 
-function filterLayer(data) {
+function filterLayer(data, type) {
 	let layerName
 	let layerNameProcessed
 
@@ -173,10 +173,10 @@ function filterLayer(data) {
 		let newColor
 
 		/** Get the values */
-		if (filter.operation.includes('===')) {
-			keyField = filter.operation.split('===')[0]
+		if (filter.operation.includes('==')) {
+			keyField = filter.operation.split('==')[0]
 			operator = '==='
-			valueField = filter.operation.split('===')[1]
+			valueField = filter.operation.split('==')[1]
 		} else if (filter.operation.includes('>')) {
 			keyField = filter.operation.split('>')[0]
 			operator = '>'
@@ -202,34 +202,70 @@ function filterLayer(data) {
 			if (operator === '>') {
 				if (entityFilterValue > valueField) {
 					/** Change the color of the entity */
-					entity.point.color = Cesium.Color.fromCssColorString(newColor)
-
-					/** Update the entity color metadata */
-					entity.entitySymbology.color = newColor
+					if(type=="point"){
+						entity.point.color = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="lineString".toLowerCase() || type=="polyline".toLowerCase()){
+						entity.polyline.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="polygon".toLowerCase()){
+						entity.polygon.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}
 				}
 			} else if (operator === '<') {
 				if (entityFilterValue < valueField) {
 					/** Change the color of the entity */
-					entity.point.color = Cesium.Color.fromCssColorString(newColor)
-
-					/** Update the entity color metadata */
-					entity.entitySymbology.color = newColor
+					if(type=="point"){
+						entity.point.color = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="lineString".toLowerCase() || type=="polyline".toLowerCase()){
+						entity.polyline.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="polygon".toLowerCase()){
+						entity.polygon.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}
 				}
 			} else if (operator === '!=') {
 				if (valueField != entityFilterValue) {
 					/** Change the color of the entity */
-					entity.point.color = Cesium.Color.fromCssColorString(newColor)
-
-					/** Update the entity color metadata */
-					entity.entitySymbology.color = newColor
+					if(type=="point"){
+						entity.point.color = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="lineString".toLowerCase() || type=="polyline".toLowerCase()){
+						entity.polyline.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="polygon".toLowerCase()){
+						entity.polygon.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}
 				}
 			} else if (operator === '===') {
 				if (valueField === entityFilterValue) {
 					/** Change the color of the entity */
-					entity.point.color = Cesium.Color.fromCssColorString(newColor)
-
-					/** Update the entity color metadata */
-					entity.entitySymbology.color = newColor
+					if(type=="point"){
+						entity.point.color = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="lineString".toLowerCase() || type=="polyline".toLowerCase()){
+						entity.polyline.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}else if( type=="polygon".toLowerCase()){
+						entity.polygon.material = Cesium.Color.fromCssColorString(newColor)
+						/** Update the entity color metadata */
+						entity.entitySymbology.color = newColor
+					}
 				}
 			}
 		})
@@ -1156,6 +1192,7 @@ function createLayer(
 			break
 
 		/** Polyline geometry */
+		case 'multilinestring':
 		case 'lineString':
 			/** Check the kind of geometry class */
 			switch (geometryClass) {
@@ -1179,6 +1216,7 @@ function createLayer(
 			break
 
 		/** Polygon geometry */
+		case 'multipolygon':
 		case 'polygon':
 			/** Check the kind of geometry class */
 			switch (geometryClass) {
@@ -1386,7 +1424,8 @@ function pointEntityColorLayer() {
 								class: 'Point'
 							},
 							typeSymbology: 'color',
-							parentDataSource: dataSourceName
+							parentDataSource: dataSourceName,
+							properties: feature.properties
 						},
 						entitySymbology: {
 							pixelSize: pixelSize,
@@ -1419,12 +1458,13 @@ function pointEntityColorLayer() {
 
 						/** Add the feature as a entity to the dataSource */
 						dataSource.entities.add({
+						    description: fakeInfoBox(feature),
 							entityProperties: {
 								id: id,
 								name: name,
 								layerName: layerName,
 								allowPicking: allowPicking,
-								properties: addProperties(feature),
+								properties: feature.properties,
 								typeGeometry: {
 									type: 'Point',
 									class: 'Multipoint'
@@ -1601,12 +1641,13 @@ function lineStringEntityColorLayer() {
 
 					/** Add the feature as a entity to the dataSource */
 					dataSource.entities.add({
+					    description: fakeInfoBox(feature),
 						entityProperties: {
 							id: id,
 							name: name,
 							layerName: layerName,
 							allowPicking: allowPicking,
-							properties: addProperties(feature),
+							properties: feature.properties,
 							typeGeometry: {
 								type: 'LineString',
 								class: 'LineString'
@@ -1641,12 +1682,13 @@ function lineStringEntityColorLayer() {
 
 					/** Add the feature as a entity to the dataSource */
 					dataSource.entities.add({
+						description: fakeInfoBox(feature),
 						entityProperties: {
 							id: id,
 							name: name,
 							layerName: layerName,
 							allowPicking: allowPicking,
-							properties: addProperties(feature),
+							properties: feature.properties,
 							typeGeometry: {
 								type: 'LineString',
 								class: 'LineString'
@@ -1816,12 +1858,13 @@ function polygonEntityColorLayer() {
 
 					/** Add the feature as a entity to the dataSource */
 					dataSource.entities.add({
+						description: fakeInfoBox(feature),
 						entityProperties: {
 							id: id,
 							name: name,
 							layerName: layerName,
 							allowPicking: allowPicking,
-							properties: addProperties(feature),
+							properties: feature.properties,
 							typeGeometry: {
 								type: 'Polygon',
 								class: 'Polygon'
@@ -1858,12 +1901,13 @@ function polygonEntityColorLayer() {
 
 					/** Add the feature as a entity to the dataSource */
 					dataSource.entities.add({
+						description: fakeInfoBox(feature),
 						entityProperties: {
 							id: id,
 							name: name,
 							layerName: layerName,
 							allowPicking: allowPicking,
-							properties: addProperties(feature),
+							properties: feature.properties,
 							typeGeometry: {
 								type: 'Polygon',
 								class: 'MultiPolygon'
@@ -3313,13 +3357,13 @@ function getLayerData(layer, queryParams){
 			
 			if(type=="point"){
 				createLayer( data,true,type,'entity','color',size,colorIn,alphaIn,outSize,colorOut,alphaOut); 
-				filterLayer(data);
-			}else if(type=="lineString".toLowerCase() || type=="polyline".toLowerCase()){
+				filterLayer(data, type);
+			}else if(type=="lineString".toLowerCase() || type=="polyline".toLowerCase() || type=="multilinestring".toLowerCase()){
 				createLayer( data,true,"lineString",'entity','color',outSize,colorIn,alphaIn);
-				filterLayer(data); 
-			}else if(type=="polygon".toLowerCase()){
+				filterLayer(data, type); 
+			}else if(type=="polygon".toLowerCase() || type=="multipolygon".toLowerCase()){
 				createLayer( data,true,type,'entity','color',colorIn,alphaIn); 
-				filterLayer(data);
+				filterLayer(data, type);
 			}else if(type.toLowerCase()=="raster"){
 				createLayer( data,true,type,'heatmap','color',weithField, min, max, radius); 
 			}

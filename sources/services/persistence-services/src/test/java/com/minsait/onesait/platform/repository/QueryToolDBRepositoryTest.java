@@ -113,7 +113,6 @@ public class QueryToolDBRepositoryTest {
 		log.warn("THIS INTEGRATION TESTS NEEED TO HAVE RTDB MONGO STARTED PREVIOUSLY");
 		log.info("UP process...");
 
-
 		try {
 			connector.deleteIndex("test*");
 			Ontology ontology = new Ontology();
@@ -152,9 +151,8 @@ public class QueryToolDBRepositoryTest {
 
 			manageElasticSearch.createTable4Ontology(TEST_INDEX_ONLINE_ELASTIC, "{}", null);
 
-			String idES = repositoryElasticSearch.insert(TEST_INDEX_ONLINE_ELASTIC, ontology.getJsonSchema(),
-					JSON_TEST);
-			String idMongo = repositoryMongo.insert(TEST_INDEX_ONLINE, ontology.getJsonSchema(), JSON_TEST);
+			String idES = repositoryElasticSearch.insert(TEST_INDEX_ONLINE_ELASTIC, JSON_TEST);
+			String idMongo = repositoryMongo.insert(TEST_INDEX_ONLINE, JSON_TEST);
 			log.info("Returned ES inserted object with id " + idES);
 			log.info("Returned Mongo inserted object with id " + idMongo);
 

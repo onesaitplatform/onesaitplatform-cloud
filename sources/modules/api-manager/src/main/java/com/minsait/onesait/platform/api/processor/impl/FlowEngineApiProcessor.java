@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.api.processor.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.script.ScriptException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,6 +34,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -70,11 +74,17 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	private NoderedAuthenticationService noderedAuthService;
 	@Autowired
 	private FlowDomainService domainService;
-	
+
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	@Autowired
 	private ScriptProcessorFactory scriptEngine;
+
+	@PostConstruct
+	void setUTF8Encoding() {
+		restTemplate.getMessageConverters().removeIf(c -> c instanceof StringHttpMessageConverter);
+		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+	}
 
 	@Override
 	@ApiManagerAuditable
@@ -93,88 +103,80 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 		final String method = (String) data.get(ApiServiceInterface.METHOD);
 		final String pathInfo = (String) data.get(ApiServiceInterface.PATH_INFO);
 		final String pathOperation = apiManagerService.getOperationPath(pathInfo);
-		/*final byte[] requestBody = (byte[]) data.get(ApiServiceInterface.BODY);
-		final String body = new String(requestBody);*/
+		/*
+		 * final byte[] requestBody = (byte[]) data.get(ApiServiceInterface.BODY); final
+		 * String body = new String(requestBody);
+		 */
 		final byte[] body = (byte[]) data.get(ApiServiceInterface.BODY);
 		final Api api = (Api) data.get(ApiServiceInterface.API);
 
 		@SuppressWarnings("unchecked")
-		final Map<String, String[]> queryParamsOrig = (Map<String, String[]>) data.get(ApiServiceInterface.QUERY_PARAMS);
-		//we did not check whether the original query had params, even if not expected
-		final Map<String, String[]> formDataParams = (Map<String, String[]>) data.get(ApiServiceInterface.FORM_PARAMETER_MAP);
-		
+		final Map<String, String[]> queryParamsOrig = (Map<String, String[]>) data
+				.get(ApiServiceInterface.QUERY_PARAMS);
+		// we did not check whether the original query had params, even if not expected
+		final Map<String, String[]> formDataParams = (Map<String, String[]>) data
+				.get(ApiServiceInterface.FORM_PARAMETER_MAP);
+
 		final Map<String, String[]> queryParams = new HashMap<>();
-		boolean pathParamsDefined=false;
-		
-		for(Entry<String,String[]> entry: queryParamsOrig.entrySet()){
-			String queryParamName = entry.getKey();
-			if( formDataParams != null && formDataParams.get(queryParamName)==null){
+		boolean pathParamsDefined = false;
+
+		for (final Entry<String, String[]> entry : queryParamsOrig.entrySet()) {
+			final String queryParamName = entry.getKey();
+			if (formDataParams != null && formDataParams.get(queryParamName) == null) {
 				pathParamsDefined = true;
 			}
 			queryParams.put(entry.getKey(), entry.getValue());
 		}
-		
+
 		final ApiOperation operation = apiManagerService.getFlowEngineApiOperation(pathInfo, api, method, queryParams);
 
 		final HttpServletRequest request = (HttpServletRequest) data.get(ApiServiceInterface.REQUEST);
 
 		final String nodeId = operation.getEndpoint().substring(0, operation.getEndpoint().indexOf('/', 1));
 		String url = api.getEndpointExt() + nodeId + pathOperation;
-		if (pathParamsDefined)
+		if (pathParamsDefined) {
 			url = addExtraQueryParameters(url, pathInfo, queryParams);
-		
-		byte[] result = null;
+
+		}
+
+		ResponseEntity<byte[]> result = null;
+
 		final HttpHeaders headers = new HttpHeaders();
 		// add the headers
 		addHeaders(headers, request);
-		//add NodeRED auth (HTTP IN middleware)
-		String[] endpointParts = api.getEndpointExt().split("/");
-		String domain = endpointParts[endpointParts.length - 1];
-		String user = domainService.getFlowDomainByIdentification(domain).getUser().getUserId();
+		// add NodeRED auth (HTTP IN middleware)
+		final String[] endpointParts = api.getEndpointExt().split("/");
+		final String domain = endpointParts[endpointParts.length - 1];
+		final String user = domainService.getFlowDomainByIdentification(domain).getUser().getUserId();
 		headers.set("X-OP-NODEKey", noderedAuthService.getNoderedAuthAccessToken(user, domain));
-		
+
 		final HttpEntity<?> entity;
-		
-		if (ServletFileUpload.isMultipartContent(request))
+
+		if (ServletFileUpload.isMultipartContent(request)) {
+
 			entity = new HttpEntity<>(addParameters(request, data), headers);
-		else {
+		} else {
 			url = addExtraQueryParameters(url, pathInfo, queryParams);
 			entity = new HttpEntity<>(body, headers);
 		}
-		//final HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
 		try {
-			/*switch (method) {
-			case "GET":
-				result = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
-				break;
+
+			switch (method) {
+
 			case "POST":
-				result = restTemplate.postForEntity(url, entity, String.class).getBody();
+				result = restTemplate.exchange(url, HttpMethod.POST, entity, byte[].class);
 				break;
 			case "PUT":
-				result = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class).getBody();
+				result = restTemplate.exchange(url, HttpMethod.PUT, entity, byte[].class);
 				break;
 			case "DELETE":
-				result = restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class).getBody();
+				result = restTemplate.exchange(url, HttpMethod.DELETE, entity, byte[].class);
 				break;
 			default:
+			case "GET":
+				result = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
 				break;
-
-			}*/
-			switch (method) {
-				case "GET":
-					result = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class).getBody();
-					break;
-				case "POST":
-					result = restTemplate.exchange(url, HttpMethod.POST, entity, byte[].class).getBody();
-					break;
-				case "PUT":
-					result = restTemplate.exchange(url, HttpMethod.PUT, entity, byte[].class).getBody();
-					break;
-				case "DELETE":
-					result = restTemplate.exchange(url, HttpMethod.DELETE, entity, byte[].class).getBody();
-					break;
-				default:
-					break;
 			}
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -187,7 +189,8 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 			throw e;
 		}
 
-		data.put(ApiServiceInterface.OUTPUT, result);
+		data.put(ApiServiceInterface.HTTP_RESPONSE_CODE, result.getStatusCode());
+		data.put(ApiServiceInterface.OUTPUT, result.getBody());
 		return data;
 	}
 
@@ -225,8 +228,9 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	private String getUrl(Swagger swagger, String pathInfo) {
 		String scheme = ApiServiceInterface.HTTPS.toLowerCase();
 		if (!swagger.getSchemes().stream().map(s -> s.name()).collect(Collectors.toList())
-				.contains(ApiServiceInterface.HTTPS))
+				.contains(ApiServiceInterface.HTTPS)) {
 			scheme = ApiServiceInterface.HTTP.toLowerCase();
+		}
 		final String url = scheme + "://" + swagger.getHost() + swagger.getBasePath();
 		final String apiIdentifier = apiManagerService.getApiIdentifier(pathInfo);
 		final String swaggerPath = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length(),
@@ -235,10 +239,12 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	}
 
 	private String addExtraQueryParameters(String url, String pathInfo, Map<String, String[]> queryParams) {
-		if (url.substring(url.length()-1,url.length()).equals("/"))
-			url = url.substring(0, url.length()-1);
-		
-		StringBuilder sb = new StringBuilder(url);
+
+		if (url.substring(url.length() - 1, url.length()).equals("/")) {
+			url = url.substring(0, url.length() - 1);
+		}
+
+		final StringBuilder sb = new StringBuilder(url);
 		if (queryParams.size() > 0) {
 			sb.append("?");
 			queryParams.entrySet().forEach(e -> {
@@ -258,10 +264,11 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 			headers.add(headerName, headerValue);
 		}
 		final String contentType = request.getContentType();
-		if (contentType == null)
+		if (contentType == null) {
 			headers.setContentType(MediaType.APPLICATION_JSON);
-		else
+		} else {
 			headers.setContentType(MediaType.valueOf(contentType));
+		}
 		return headers;
 	}
 

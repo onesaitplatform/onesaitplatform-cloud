@@ -1,0 +1,55 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_SYS_ADMIN",
+	"noSession": "/console/login",
+	"navigation": [
+
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+
+		
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS"
+			},
+			"icon": "flaticon-refresh",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "System Audit",
+						"ES": "Auditoría del Sistema"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "Monitoring UI",
+						"ES": "Consola Monitorización"
+					},
+					"icon": "",
+					"url": "/controlpanel/monitoringui"
+				},
+				{
+					"title": {
+						"EN": "Kafka Monitoring",
+						"ES": "Monitorización de Kafka"
+					},
+					"icon": "",
+					"url": "/controlpanel/kafka/monitoring/list"
+				}
+				
+				
+			]
+		}
+	]
+}

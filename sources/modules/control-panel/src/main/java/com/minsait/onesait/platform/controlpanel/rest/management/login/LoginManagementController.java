@@ -20,11 +20,10 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +33,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.provider.ClientDetails;
@@ -47,14 +42,19 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.endpoint.TokenEndpoint;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.controlpanel.rest.management.login.model.RequestLogin;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.security.jwt.ri.CustomTokenService;
 import com.minsait.onesait.platform.security.jwt.ri.ResponseToken;
 
@@ -81,6 +81,9 @@ public class LoginManagementController {
 	private AuthorizationServerTokenServices tokenServices;
 
 	@Autowired
+	private MultitenancyService multitenancyService;
+
+	@Autowired
 	CustomTokenService customTokenService;
 
 	@Value("${security.jwt.client-id}")
@@ -94,17 +97,31 @@ public class LoginManagementController {
 	private static final String ERROR_RESPONSE = "Leaving Info Token with with Error response = ";
 
 	@ApiOperation(value = "Post Login Oauth2")
+	@GetMapping("principal")
+	public ResponseEntity<OAuth2AccessToken> principal(Authentication auth, HttpServletRequest request) {
+		final OAuth2AccessToken token = postLoginOauthNopass(auth);
+		return new ResponseEntity<>(token, HttpStatus.OK);
+
+	}
+
+	@ApiOperation(value = "Post Login Oauth2")
 	@PostMapping
 	public ResponseEntity<OAuth2AccessToken> postLoginOauth2(@Valid @RequestBody RequestLogin request) {
 
 		try {
-
+			if (!StringUtils.isEmpty(request.getVertical())) {
+				multitenancyService.getVertical(request.getVertical()).ifPresent(v -> {
+					MultitenancyContextHolder.setVerticalSchema(v.getSchema());
+					MultitenancyContextHolder.setForced(true);
+				});
+			}
 			final ClientDetails authenticatedClient = clientDetailsService.loadClientByClientId(clientId);
 
 			final Map<String, String> parameters = new HashMap<>();
 			parameters.put(GRANT_TYPE, PSWD_STR);
 			parameters.put(USERNAME, request.getUsername());
 			parameters.put(PSWD_STR, request.getPassword());
+			parameters.put("vertical", request.getVertical());
 
 			final Principal principal = new UsernamePasswordAuthenticationToken(authenticatedClient.getClientId(),
 					authenticatedClient.getClientSecret(), authenticatedClient.getAuthorities());
@@ -112,10 +129,7 @@ public class LoginManagementController {
 
 			final OAuth2AccessToken accessToken = token.getBody();
 
-			final OAuth2Authentication authentication = customTokenService.loadAuthentication(accessToken.getValue());
-			final OAuth2AccessToken enhanced = enhance(accessToken, authentication);
-
-			return getResponse(enhanced);
+			return getResponse(accessToken);
 
 		} catch (final Exception e) {
 			log.error(OP_LOGIN + ERROR_STR + e.getMessage(), e);
@@ -125,13 +139,15 @@ public class LoginManagementController {
 
 	public OAuth2AccessToken postLoginOauthNopass(Authentication authentication) {
 
-		final String principal = authentication.getPrincipal() instanceof UserDetails
-				? ((UserDetails) authentication.getPrincipal()).getUsername()
-				: authentication.getPrincipal().toString();
+		String vertical = null;
+		if (authentication.getPrincipal() instanceof UserPrincipal) {
+			vertical = ((UserPrincipal) authentication.getPrincipal()).getVertical();
+		}
 		final HashMap<String, String> authorizationParameters = new HashMap<>();
 		authorizationParameters.put("scope", "openid");
-		authorizationParameters.put(USERNAME, principal);
+		authorizationParameters.put(USERNAME, authentication.getName());
 		authorizationParameters.put("client_id", clientId);
+		authorizationParameters.put("vertical", vertical);
 
 		final Set<String> responseType = new HashSet<>();
 		responseType.add(PSWD_STR);
@@ -143,28 +159,30 @@ public class LoginManagementController {
 				authentication.getAuthorities(), true, scopes, null, "", responseType, null);
 
 		final UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-				principal, null, authentication.getAuthorities());
+				authentication.getPrincipal(), null, authentication.getAuthorities());
 
 		final OAuth2Authentication authenticationRequest = new OAuth2Authentication(authorizationRequest,
 				authenticationToken);
 		authenticationRequest.setAuthenticated(true);
 
-		final OAuth2AccessToken accessToken = tokenServices.createAccessToken(authenticationRequest);
+		return tokenServices.createAccessToken(authenticationRequest);
 
-		return enhance(accessToken, authenticationRequest);
 	}
 
 	@ApiOperation(value = "GET Login Oauth2")
 	@GetMapping(value = "/username/{username}/password/{password}")
+	@Deprecated
 	public ResponseEntity<OAuth2AccessToken> getLoginOauth2(
 			@ApiParam(value = USERNAME, required = true) @PathVariable(USERNAME) String username,
-			@ApiParam(value = PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password) {
+			@ApiParam(value = PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
+			@ApiParam(value = "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
 
 		try {
 
 			final RequestLogin request = new RequestLogin();
 			request.setPassword(password);
 			request.setUsername(username);
+			request.setVertical(vertical);
 
 			return postLoginOauth2(request);
 
@@ -195,9 +213,7 @@ public class LoginManagementController {
 			final OAuth2AccessToken tokenRefreshed = customTokenService.refreshAccessToken(refreshToken.getValue(),
 					tokenRequest);
 
-			final OAuth2AccessToken enhanced = enhance(tokenRefreshed, authentication);
-
-			return getResponse(enhanced);
+			return getResponse(tokenRefreshed);
 
 		} catch (final Exception e) {
 			final ResponseToken r = new ResponseToken();
@@ -224,10 +240,7 @@ public class LoginManagementController {
 
 			final OAuth2AccessToken accessToken = token.getBody();
 
-			final OAuth2Authentication authentication = customTokenService.loadAuthentication(accessToken.getValue());
-			final OAuth2AccessToken enhanced = enhance(accessToken, authentication);
-
-			return getResponse(enhanced);
+			return getResponse(accessToken);
 
 		} catch (final Exception e) {
 			final ResponseToken r = new ResponseToken();
@@ -238,23 +251,32 @@ public class LoginManagementController {
 
 	}
 
-	public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-		final Map<String, Object> additionalInfo = new HashMap<>();
-		additionalInfo.put("name", authentication.getName());
-
-		final Collection<GrantedAuthority> authorities = authentication.getAuthorities();
-		final List<String> collect = authorities.stream().map(GrantedAuthority::getAuthority)
-				.collect(Collectors.toList());
-		final Object principal = authentication.getUserAuthentication().getPrincipal();
-		additionalInfo.put("authorities", collect);
-		additionalInfo.put("principal", principal instanceof String ? principal : ((User) principal).getUsername());
-		additionalInfo.put("parameters", authentication.getOAuth2Request().getRequestParameters());
-		additionalInfo.put("clientId", authentication.getOAuth2Request().getClientId());
-		additionalInfo.put("grantType", authentication.getOAuth2Request().getGrantType());
-
-		((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-		return accessToken;
-	}
+	// public OAuth2AccessToken enhance(OAuth2AccessToken accessToken,
+	// OAuth2Authentication authentication) {
+	// final Map<String, Object> additionalInfo = new HashMap<>();
+	// additionalInfo.put("name", authentication.getName());
+	//
+	// final Collection<GrantedAuthority> authorities =
+	// authentication.getAuthorities();
+	// final List<String> collect =
+	// authorities.stream().map(GrantedAuthority::getAuthority)
+	// .collect(Collectors.toList());
+	// final Object principal =
+	// authentication.getUserAuthentication().getPrincipal();
+	// additionalInfo.put("authorities", collect);
+	// additionalInfo.put("principal", principal instanceof String ? principal :
+	// ((User) principal).getUsername());
+	// additionalInfo.put("parameters",
+	// authentication.getOAuth2Request().getRequestParameters());
+	// additionalInfo.put("clientId",
+	// authentication.getOAuth2Request().getClientId());
+	// additionalInfo.put("grantType",
+	// authentication.getOAuth2Request().getGrantType());
+	//
+	// ((DefaultOAuth2AccessToken)
+	// accessToken).setAdditionalInformation(additionalInfo);
+	// return accessToken;
+	// }
 
 	@PostMapping(value = "/info")
 	public ResponseEntity<OAuth2AccessToken> info(@RequestBody String tokenId) {
@@ -265,9 +287,7 @@ public class LoginManagementController {
 			final OAuth2Authentication authentication = customTokenService.loadAuthentication(tokenId);
 			final OAuth2AccessToken token = customTokenService.getAccessToken(authentication);
 
-			final OAuth2AccessToken enhanced = enhance(token, authentication);
-
-			return getResponse(enhanced);
+			return getResponse(token);
 		} catch (final Exception e) {
 			log.info(ERROR_RESPONSE + e.getLocalizedMessage());
 			return getResponse(null);

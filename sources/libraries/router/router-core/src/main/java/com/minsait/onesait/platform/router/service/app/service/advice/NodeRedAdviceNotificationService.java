@@ -21,8 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
+import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.NotificationEntity;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
 import com.minsait.onesait.platform.config.services.flownode.FlowNodeService;
 import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -39,6 +41,9 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 
 	@Autowired
 	FlowNodeService flowNodeService;
+
+	@Autowired
+	FlowDomainService flowDomainService;
 
 	@Autowired
 	OntologyRepository ontologyRepository;
@@ -59,28 +64,41 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 
 		List<NotificationEntity> listNotifications = null;
 		List<AdviceNotificationModel> model = null;
-		String baseUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
+		final String baseUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
 
 		try {
 			listNotifications = flowNodeService.getNotificationsByOntologyAndMessageType(ontologyName,
 					HTTP_METHOD_TO_NODE_METHOD.get(messageType) != null ? HTTP_METHOD_TO_NODE_METHOD.get(messageType)
 							: messageType);
-		} catch (Exception e) {
+		} catch (final IllegalArgumentException e) {
+			log.debug("Deserializing enum error {}", e);
+
+		} catch (final Exception e) {
 			log.error("" + e);
 		}
 
 		if (listNotifications != null) {
 			model = new ArrayList<>();
-			for (NotificationEntity notificationEntity : listNotifications) {
-				AdviceNotificationModel advice = new AdviceNotificationModel();
+			for (final NotificationEntity notificationEntity : listNotifications) {
+				final AdviceNotificationModel advice = new AdviceNotificationModel();
 				advice.setEntityId(notificationEntity.getNotificationEntityId());
 				advice.setUrlAuthkey("X-OP-NODEKey");
-				advice.setUrlAuthValue(noderedAthService.getNoderedAuthAccessToken(
-						notificationEntity.getNotificationDomainUser(), notificationEntity.getNotificationDomain()));
+				advice.setDomainIdentification(notificationEntity.getNotificationDomain());
+				FlowDomain domain = flowDomainService
+						.getFlowDomainByIdentification(notificationEntity.getNotificationDomain());
+				/*advice.setUrlAuthValue(noderedAthService.getNoderedAuthAccessToken(domain.getUser().getUserId(),
+						notificationEntity.getNotificationDomain()));
+						*/
+				advice.setDomainOwner(domain.getUser().getUserId());
 				advice.setUrl(baseUrl + "/" + notificationEntity.getNotificationUrl());
+				advice.setRetryOnFaialureEnabled(notificationEntity.isRetryOnFaialureEnabled());
+				advice.setDiscardAfterElapsedTimeEnabled(notificationEntity.isDiscardAfterElapsedTimeEnabled());
+				advice.setMaxRetryElapsedTime(notificationEntity.getMaxRetryElapsedTime());
 				model.add(advice);
 			}
 		}
 		return model;
 	}
+	
+	
 }

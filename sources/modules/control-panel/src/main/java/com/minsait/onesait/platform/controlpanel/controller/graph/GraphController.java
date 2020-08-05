@@ -43,6 +43,7 @@ import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -66,9 +67,9 @@ public class GraphController {
 	public @ResponseBody String getGraph(Model model, @RequestParam(value = "all", required = false) Boolean all) {
 		final List<GraphDTO> arrayLinks = new LinkedList<>();
 
-		final List<WebProject> webprojects = webProjectService
+		final List<WebProjectDTO> webprojects = webProjectService
 				.getWebProjectsWithDescriptionAndIdentification(utils.getUserId(), null, null);
-		final User user = (null == all || all) ? null : userService.getUser(utils.getUserId());
+		final User user = null == all || all ? null : userService.getUser(utils.getUserId());
 		arrayLinks.add(GraphDTO.constructSingleNode(GENERIC_USER_NAME, null, GENERIC_USER_NAME, utils.getUserId(),
 				utils.getUserId()));
 		arrayLinks.addAll(graphUtil.constructGraphWithOntologies(null, user));
@@ -86,15 +87,17 @@ public class GraphController {
 	@GetMapping("/getgraph/project/{id}")
 	public @ResponseBody String getGraph4Project(Model model, @PathVariable("id") String projectId) {
 		final Project project = projectService.getById(projectId);
-		if (project == null)
+		if (project == null) {
 			return getGraph(model, true);
+		}
 		final List<GraphDTO> arrayLinks = new LinkedList<>();
 		final List<OPResource> resources = new ArrayList<>(
 				projectService.getResourcesForProjectAndUser(projectId, utils.getUserId()));
 
 		List<WebProject> webproject = null;
-		if (project.getWebProject() != null)
+		if (project.getWebProject() != null) {
 			webproject = Collections.singletonList(project.getWebProject());
+		}
 
 		arrayLinks.add(GraphDTO.constructSingleNode(GENERIC_USER_NAME, null, GENERIC_USER_NAME, utils.getUserId(),
 				utils.getUserId()));
@@ -115,17 +118,23 @@ public class GraphController {
 						.map(r -> (DigitalTwinDevice) r).collect(Collectors.toList()), null));
 		arrayLinks.addAll(graphUtil.constructGraphWithFlows(resources.stream().filter(r -> r instanceof FlowDomain)
 				.map(r -> (FlowDomain) r).collect(Collectors.toList()), null));
-		arrayLinks.addAll(graphUtil.constructGraphWithWebProjects(webproject, null));
+		if (webproject != null) {
+			arrayLinks.addAll(graphUtil.constructGraphWithWebProjects(
+					webproject.stream().map(WebProjectDTO::convert).collect(Collectors.toList()), null));
+		}
+
 		arrayLinks.addAll(graphUtil.constructGraphWithNotebooks(resources.stream().filter(r -> r instanceof Notebook)
 				.map(r -> (Notebook) r).collect(Collectors.toList()), null));
 		arrayLinks.addAll(graphUtil.constructGraphWithDataFlows(resources.stream().filter(r -> r instanceof Pipeline)
 				.map(r -> (Pipeline) r).collect(Collectors.toList()), null));
 
 		arrayLinks.stream().forEach(g -> {
-			if (g.getLinkSource() != null && g.getLinkSource().toLowerCase().contains("list"))
+			if (g.getLinkSource() != null && g.getLinkSource().toLowerCase().contains("list")) {
 				g.setLinkSource(null);
-			if (g.getLinkTarget() != null && g.getLinkTarget().toLowerCase().contains("list"))
+			}
+			if (g.getLinkTarget() != null && g.getLinkTarget().toLowerCase().contains("list")) {
 				g.setLinkTarget(null);
+			}
 		});
 		return arrayLinks.toString();
 

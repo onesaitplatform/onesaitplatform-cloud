@@ -30,11 +30,11 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteByIdMessag
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.audit.bean.IotBrokerAuditEvent;
 import com.minsait.onesait.platform.iotbroker.audit.processor.DeleteAuditProcessor;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
 
 @RunWith(MockitoJUnitRunner.class)

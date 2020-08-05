@@ -2,11 +2,11 @@ FROM maven:3.5.3-jdk-8-alpine
 
 # metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="controlpanel"	
+	  module.name="controlpanel"
 
 ADD *-exec.jar app.jar
 
-# Timezone 
+# Timezone
 RUN apk add --no-cache tzdata
 
 # web projects folder & logs folder
@@ -17,20 +17,21 @@ RUN mkdir -p /usr/local/webprojects && \
 	mkdir ./target
 
 # create sofia user/group
-RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
 # Install git
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh	
+    apk add --no-cache bash git openssh
 
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /usr/share/maven && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait ./target && \    
+    chown -R onesait:onesait ./target && \
     chown onesait:onesait app.jar && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
-    chmod -R 777 /usr/local
+    chmod -R 777 /usr/local &&\
+    chmod -R 777 /etc/ssl/certs/java
     
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
@@ -49,7 +50,7 @@ RUN apk add --no-cache \
         ttf-dejavu \
     && wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/$BOWTIE2_VERSION/bowtie2-$BOWTIE2_VERSION-linux-x86_64.zip \
     && unzip -d /usr/local bowtie2-$BOWTIE2_VERSION-linux-x86_64.zip \
-    && rm bowtie2-$BOWTIE2_VERSION-linux-x86_64.zip 
+    && rm bowtie2-$BOWTIE2_VERSION-linux-x86_64.zip
 
 RUN cd /tmp/ \
     && wget 'http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip' --header "Cookie: oraclelicense=accept-securebackup-cookie" \
@@ -58,10 +59,10 @@ RUN cd /tmp/ \
     && rm jce_policy-8.zip \
     && cd /usr/local \
     && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
-   
-    
+
+
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
-	
+
 USER onesait
 
 EXPOSE 18000 5701
@@ -72,22 +73,23 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKAHOST=kafka \
-    KAFKAPORT=9095 \    
+    KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
 	REALTIMEDBUSEAUTH=true \
-	REALTIMEDBUSER=platformadmin \
-	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \ 
-    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \		    
-    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
-    CONFIGDBUSER=root \
-    CONFIGDBPASS=changeIt! \
-    SCHEDULERDBSERVERS=schedulerdb:3306 \
+  	REALTIMEDBUSER=platformadmin \
+	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
+    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
+	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+	CONFIGDBUSER=root \
+	CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
-    DBADDPROPS="" \   
-    ELASTICDBHOST=elasticdb \
-    ELASTICDBPORT=9200 \
-    AUDITGLOBALNOTIFY=false \    
+    DBADDPROPS="" \
+    AUDITGLOBALNOTIFY=false \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     BURROWHOST=burrow \
@@ -107,9 +109,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
 	KUDUNUMREPLICAS=1 \
 	KUDUURL=localhost:7051 \
 	INCLUDEKUDUTABLENAME=false \
-    GRAVITEE_ON=false \
-    GRAVITEE_CLIENTID=onesait \
-    GRAVITEE_CLIENTSECRET=admin \
 	CAPTCHA_ON=false \
 	CAPTCHA_TOKEN=6Lc40JkUAAAAANyTpMrn9JNwKsiNRCY0bZ32cWIh \
 	CSRF_ON=true \
@@ -128,6 +127,19 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     LDAP_USERID_ATT=sAMAccountName \
     LDAP_MAIL_ATT=mail \
     LDAP_CN_ATT=cn \
+    LDAP_IGNORE_PARTIAL_RESULT=false \
+    LDAP_ADMINISTRATOR_DN="" \ 
+    LDAP_ANALYTICS_DN="" \
+    LDAP_DEVELOPER_DN="" \
+    LDAP_DATAVIEWER_DN="" \
+    LDAP_DEVOPS_DN="" \
+    LDAP_OPERATIONS_DN="" \
+    LDAP_PARTNER_DN="" \
+    LDAP_PLATFORM_ADMIN_DN="" \
+    LDAP_SYS_ADMIN_DN="" \
+    LDAP_USER_DN="" \
+    LDAP_GROUP_OF_NAMES_ATT="" \
+    LDAP_ROLES_MEMBER_ATT="" \
     JKS_URI=saml.jks \
     JKS_PASS=pass \
     KEY_ALIAS=pass \
@@ -137,7 +149,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     ENTITY_ID=entityid \
     ENTITY_URL=https://${SERVER_NAME} \
     SAML_SCHEME=https \
-    SAML_SERVER_NAME=localhost \ 
+    SAML_SERVER_NAME=localhost \
     SAML_INCLUDE_PORT=false \
     SAML_UNAUTHORIZED_URL=https://unauthorized.axpoiberia.es/ \
     STREAMSETS_SDC_VERSION=3.10.0 \
@@ -154,7 +166,18 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     DS_MIN_IDLE=5 \
     DS_REMOVE_ABANDONED=true \
     DS_REMOVE_ABANDONED_TIMEOUT=60 \
-    ENABLE_METRICS=true
+    ENABLE_METRICS=true \
+    HTTP_MAX_FILE_SIZE=200Mb \
+    HTTP_MAX_REQUEST_SIZE=200Mb \
+    DYNAMIC_LOADBALANCER_ENABLED=false \
+    DYNAMIC_LOADBALANCER_ENDPOINT=http://localhost:8000/nginx \
+    QUERY_TOOL_ALLOWED_OPERATIONS=false \
+    MULTITENANCY_ENABLED=false \
+    RESTPLANNER_CHECKSSL=false \
+    SPLASH_ON=false \
+    SPLASH_EVERYXHOURS=24 \
+    ELASTICSEARCH_ENABLED=false \
+    NOTEBOOKPLATFORMAUTH=false \
+    SECURE_XFRAMEOPTIONS=true
 
-    
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar

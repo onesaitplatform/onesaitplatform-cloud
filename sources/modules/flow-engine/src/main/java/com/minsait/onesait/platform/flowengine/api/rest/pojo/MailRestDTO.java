@@ -41,5 +41,5 @@ public class MailRestDTO {
 	private String filedata;
 	@Getter
 	@Setter
-	private String authentication;
+	private String domainName;
 }

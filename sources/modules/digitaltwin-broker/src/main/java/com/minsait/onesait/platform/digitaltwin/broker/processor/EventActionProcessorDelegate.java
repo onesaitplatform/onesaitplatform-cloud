@@ -30,7 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
-import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
+import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.ActionNotifier;
 import com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.websocket.DigitalTwinWebsocketAPI;
 import com.minsait.onesait.platform.digitaltwin.broker.processor.model.EventResponseMessage;
@@ -51,9 +51,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 	private static final String ID_REQUIRED = "id is required";
 	private static final String TOKEN_NOT_VALID = "Token not valid";
 	private static final String DT_NOT_FOUND = "Digital Twin not found";
-
+	//
+	// @Autowired
+	// private DigitalTwinDeviceRepository deviceRepo;
 	@Autowired
-	private DigitalTwinDeviceRepository deviceRepo;
+	private DigitalTwinDeviceService digitalTwinDeviceService;
 
 	@Autowired
 	// @Qualifier("routerDigitalTwinServiceImpl")
@@ -74,7 +76,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 	@PreDestroy
 	public void destroy() {
-		this.notifierExecutor.shutdown();
+		notifierExecutor.shutdown();
 	}
 
 	@Override
@@ -84,7 +86,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		if (data.get("id") == null || data.get("endpoint") == null) {
 			return new EventResponseMessage("id and endpoint are required", HttpStatus.BAD_REQUEST);
 		}
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -92,11 +95,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 		if (apiKey.equals(device.getDigitalKey())) {
 			// Set endpoint
-			String deviceUrl = data.get("endpoint").toString();
+			final String deviceUrl = data.get("endpoint").toString();
 
-			String urlSchema = deviceUrl.split("://")[0];
-			String ip = deviceUrl.split("://")[1].split("/")[0].split(":")[0];
-			String port = deviceUrl.split("://")[1].split("/")[0].split(":")[1];
+			final String urlSchema = deviceUrl.split("://")[0];
+			final String ip = deviceUrl.split("://")[1].split("/")[0].split(":")[0];
+			final String port = deviceUrl.split("://")[1].split("/")[0].split(":")[1];
 			String contextPath;
 			if (deviceUrl.split("://")[1].split("/").length > 2) {
 				contextPath = deviceUrl.split("://")[1].split("/")[2];
@@ -113,11 +116,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 				device.setContextPath(contextPath);
 			}
 
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert the register event
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.REGISTER);
 			model.setDeviceId(device.getId());
@@ -128,7 +131,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
@@ -147,7 +150,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			return new EventResponseMessage(ID_REQUIRED, HttpStatus.BAD_REQUEST);
 		}
 
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -156,11 +160,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		if (apiKey.equals(device.getDigitalKey())) {
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert the ping event
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.PING);
 			model.setDeviceId(device.getId());
@@ -170,7 +174,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
@@ -189,7 +193,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -198,10 +203,10 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		if (apiKey.equals(device.getDigitalKey())) {
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 			// insert trace of log
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.LOG);
 			model.setLog(data.get("log").toString());
@@ -212,7 +217,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
@@ -231,7 +236,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -241,11 +247,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert shadow
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(com.minsait.onesait.platform.router.service.app.model.DigitalTwinModel.EventType.SHADOW);
 			model.setStatus(data.get(STATUS_STR).toString());
@@ -257,13 +263,13 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
 			log.info("Send updateshadow to router");
-			OperationResultModel result = routerDigitalTwinService.updateShadow(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.updateShadow(compositeModel);
 			if (!result.isStatus()) {
 				log.info("EventActionProcessorDelegate -- getErrorCode: " + result.getErrorCode());
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
 			log.info("The Shadow is going to be notified to demo");
-			this.notifyShadowSubscriptors(data);
+			notifyShadowSubscriptors(apiKey, data);
 
 			return new EventResponseMessage(result.getMessage(), HttpStatus.OK);
 		} else {
@@ -279,7 +285,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -289,11 +296,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert event
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.NOTEBOOK);
 			model.setStatus(data.get(STATUS_STR).toString());
@@ -304,7 +311,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
@@ -322,7 +329,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -332,11 +340,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert event
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.FLOW);
 			model.setStatus(data.get(STATUS_STR).toString());
@@ -347,7 +355,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
@@ -365,7 +373,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -375,11 +384,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert event
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.RULE);
 			model.setStatus(data.get(STATUS_STR).toString());
@@ -390,7 +399,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
@@ -408,7 +417,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -418,11 +428,11 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
 			// insert event
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setEvent(EventType.CUSTOM);
 			model.setStatus(data.get(STATUS_STR).toString());
@@ -434,12 +444,12 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
 
-			notifyCustomSubscriptors(data);
+			notifyCustomSubscriptors(apiKey, data);
 
 			return new EventResponseMessage(result.getMessage(), HttpStatus.OK);
 		} else {
@@ -455,7 +465,8 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 
 		// Validation apikey
-		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").toString());
+		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
+				data.get("id").toString());
 
 		if (null == device) {
 			return new EventResponseMessage(DT_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -465,10 +476,10 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 
 			// Set last updated
 			device.setUpdatedAt(new Date());
-			deviceRepo.save(device);
+			digitalTwinDeviceService.save(device);
 
-			DigitalTwinModel model = new DigitalTwinModel();
-			DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
+			final DigitalTwinModel model = new DigitalTwinModel();
+			final DigitalTwinCompositeModel compositeModel = new DigitalTwinCompositeModel();
 
 			model.setActionName(data.getString("name"));
 			model.setDeviceId(device.getId());
@@ -481,12 +492,12 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 			compositeModel.setDigitalTwinModel(model);
 			compositeModel.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-			OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
+			final OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
 			if (!result.isStatus()) {
 				return new EventResponseMessage(result.getMessage(), HttpStatus.valueOf(result.getErrorCode()));
 			}
 
-			notifyActionSubscriptors(data);
+			notifyActionSubscriptors(apiKey, data);
 
 			return new EventResponseMessage(result.getMessage(), HttpStatus.OK);
 		} else {
@@ -494,38 +505,38 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		}
 	}
 
-	private void notifyShadowSubscriptors(JSONObject message) {
+	private void notifyShadowSubscriptors(String apiKey, JSONObject message) {
 		log.info("notifyShadowSubscriptors");
 		notifierExecutor.execute(new Runnable() {
 			@Override
 			public void run() {
 				log.info("notifyShadowSubscriptors execution");
-				digitalTwinWebsocketApi.notifyShadowMessage(message);
+				digitalTwinWebsocketApi.notifyShadowMessage(apiKey, message);
 			}
 		});
 
 	}
 
-	private void notifyCustomSubscriptors(JSONObject message) {
+	private void notifyCustomSubscriptors(String apiKey, JSONObject message) {
 		log.info("notifyCustomSubscriptors");
 		notifierExecutor.execute(new Runnable() {
 			@Override
 			public void run() {
 				log.info("notifyCustomSubscriptors execution");
-				digitalTwinWebsocketApi.notifyCustomMessage(message);
+				digitalTwinWebsocketApi.notifyCustomMessage(apiKey, message);
 			}
 		});
 	}
 
-	private void notifyActionSubscriptors(JSONObject message) {
+	private void notifyActionSubscriptors(String apiKey, JSONObject message) {
 		log.info("notifyActionSubscriptors");
 		// Notify to Gateways
-		for (ActionNotifier actionNotifier : actionNotifiers) {
+		for (final ActionNotifier actionNotifier : actionNotifiers) {
 			notifierExecutor.execute(new Runnable() {
 				@Override
 				public void run() {
 					log.info("notifyActionSubscriptors execution");
-					actionNotifier.notifyActionMessage(message);
+					actionNotifier.notifyActionMessage(apiKey, message);
 				}
 			});
 		}
@@ -534,7 +545,7 @@ public class EventActionProcessorDelegate implements EventProcessor, ActionProce
 		notifierExecutor.execute(new Runnable() {
 			@Override
 			public void run() {
-				digitalTwinWebsocketApi.notifyActionMessage(message);
+				digitalTwinWebsocketApi.notifyActionMessage(apiKey, message);
 			}
 		});
 	}

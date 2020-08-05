@@ -65,12 +65,12 @@ public class MainPageController {
 	@GetMapping("/main")
 	public String main(Model model, HttpServletRequest request) {
 		// Load menu by role in session
-		String jsonMenu = this.menuService.loadMenuByRole(this.userService.getUser(utils.getUserId()));
+		final String jsonMenu = menuService.loadMenuByRole(userService.getUser(utils.getUserId()));
 		// Remove PrettyPrinted
-		String menu = utils.validateAndReturnJson(jsonMenu);
+		final String menu = utils.validateAndReturnJson(jsonMenu);
 		utils.setSessionAttribute(request, "menu", menu);
 		if (request.getSession().getAttribute("apis") == null)
-			utils.setSessionAttribute(request, "apis", this.integrationResourcesService.getSwaggerUrls());
+			utils.setSessionAttribute(request, "apis", integrationResourcesService.getSwaggerUrls());
 		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			model.addAttribute("kpis", mainService.createKPIs());
 
@@ -78,44 +78,37 @@ public class MainPageController {
 		} else if (utils.getRole().equals(Role.Type.ROLE_DEVELOPER.name())) {
 			// FLOW
 			model.addAttribute("hasOntology",
-					this.ontologyService.getOntologiesByUserId(this.utils.getUserId()).isEmpty() ? false : true);
+					ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
 			model.addAttribute("hasDevice",
-					this.clientPlatformRepository.findByUser(this.userService.getUser(this.utils.getUserId())).isEmpty()
-							? false
+					clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false
 							: true);
 			model.addAttribute("hasDashboard",
-					this.dashboardRepository.findByUser(this.userService.getUser(this.utils.getUserId())).isEmpty()
-							? false
-							: true);
+					dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 			model.addAttribute("hasSimulation",
-					this.deviceSimulationServicve.getSimulationsForUser(this.utils.getUserId()).isEmpty() ? false
-							: true);
+					deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
 			model.addAttribute("hasApi",
-					this.apiRepository.findByUser(this.userService.getUser(this.utils.getUserId())).isEmpty() ? false
-							: true);
+					apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 
 			return "main";
 		} else if (utils.getRole().equals(Role.Type.ROLE_USER.name())) {
 			return "redirect:/marketasset/list";
+		} else if (utils.getRole().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
+			return "redirect:/multitenancy/verticals";
 		} else if (utils.getRole().equals(Role.Type.ROLE_DATAVIEWER.name())) {
 			return "redirect:/dashboards/viewerlist";
 		}
 
 		// FLOW
 		model.addAttribute("hasOntology",
-				this.ontologyService.getOntologiesByUserId(this.utils.getUserId()).isEmpty() ? false : true);
+				ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
 		model.addAttribute("hasDevice",
-				this.clientPlatformRepository.findByUser(this.userService.getUser(this.utils.getUserId())).isEmpty()
-						? false
-						: true);
+				clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 		model.addAttribute("hasDashboard",
-				this.dashboardRepository.findByUser(this.userService.getUser(this.utils.getUserId())).isEmpty() ? false
-						: true);
+				dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 		model.addAttribute("hasSimulation",
-				this.deviceSimulationServicve.getSimulationsForUser(this.utils.getUserId()).isEmpty() ? false : true);
+				deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
 		model.addAttribute("hasApi",
-				this.apiRepository.findByUser(this.userService.getUser(this.utils.getUserId())).isEmpty() ? false
-						: true);
+				apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 
 		return "main";
 	}

@@ -45,4 +45,6 @@ public interface NodeRedAdminClient {
 
 	public String synchronizeMF(List<FlowEngineDomainStatus> domainList);
 
+	public String exportDomainFromFS(String domain);
+
 }

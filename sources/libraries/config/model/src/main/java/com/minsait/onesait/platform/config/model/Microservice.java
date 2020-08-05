@@ -44,7 +44,7 @@ public class Microservice extends OPResource {
 	private static final long serialVersionUID = 1L;
 
 	public enum TemplateType {
-		IOT_CLIENT_ARCHETYPE, ARCHITECTURE_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE
+		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, IMPORT_FROM_GIT, IMPORT_FROM_ZIP
 	}
 
 	public enum CaaS {

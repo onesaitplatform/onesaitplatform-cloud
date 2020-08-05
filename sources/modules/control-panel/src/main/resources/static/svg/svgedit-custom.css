@@ -154,7 +154,7 @@ body {
 }
 
 #layerpanel{
-	height: 470px;
+	height: 476px;
 	
 }
 
@@ -264,14 +264,18 @@ body {
 }
 
 #tool_open input, #tool_import input, #tool_image input {
-    position: fixed;
+   /*position: fixed;*/
     opacity: 0;
     font-size: 10em;
-    top: 67px;
-    left: 0px;
+   /* top: 67px;
+    left: 0px;*/
     margin: 0;
     cursor: pointer;
-    height: 60px;
+    /*height: 60px;*/
+    z-index: 2;
+    position: absolute;
+    width: 40px;
+    height: 36px;
 }
 
 #main_button {
@@ -371,4 +375,8 @@ body {
 
 .toolset {
 	    padding-bottom: 10px;	
+}
+
+#view_grid {
+	margin-left: 5px;
 }

@@ -449,6 +449,7 @@
 			"deleteInfo":[[#{layer.delete.info}]],
 			"query" :[[${layer?.query}]],
 			"queryParams" :[[${layer?.queryParams}]],
+			"ontology" : [[${layer?.ontology}]],
 			"validations" : {
 				"duplicates": [[#{digitaltwintype.valid.duplicates}]],
 				"update" :[[#{digitaltwintype.validation.update}]],
@@ -665,16 +666,35 @@
 		
 		$("#types").removeAttr("disabled");
 		$("#lon_lat").removeAttr("disabled");
-		
-		var infoB = JSON.parse(layerCreateJson.infobox);
-		
-		$.each(infoB, function(k,v){
-			var field = v.field;
-        	var attribute = v.attribute;
-        	
-        	var add= "<tr id='"+attribute+"'><td class='text-left no-wrap field'>"+field+"</td><td class='text-left no-wrap attribute'>"+attribute+"</td></tr>";
-	    	$("#attributes tbody").append(add);
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url: '/controlpanel/layers/getOntologyFields',
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type:"POST",
+			async: true,
+			data: { 'ontologyIdentification': layerCreateJson.ontology},
+			dataType:"json",
+			success: function(response,status){
+				if(response.FeatureCollection == "FeatureCollection"){
+					$("#tab-infobox").addClass('disabledTab');
+					$("#tab-query").addClass('disabledTab');
+				}else{
+					var infoB = JSON.parse(layerCreateJson.infobox);
+					
+					$.each(infoB, function(k,v){
+						var field = v.field;
+			        	var attribute = v.attribute;
+			        	
+			        	var add= "<tr id='"+attribute+"'><td class='text-left no-wrap field'>"+field+"</td><td class='text-left no-wrap attribute'>"+attribute+"</td></tr>";
+				    	$("#attributes tbody").append(add);
+					});
+				}
+			}
 		});
+		
 	});
 	//]]>
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER

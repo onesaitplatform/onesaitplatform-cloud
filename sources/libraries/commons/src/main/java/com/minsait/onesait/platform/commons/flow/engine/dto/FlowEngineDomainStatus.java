@@ -48,6 +48,14 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 	@Getter
 	@Setter
 	private String user;
+	
+	@Getter
+	@Setter
+	private Boolean autorecover;
+	
+	@Getter
+	@Setter
+	private List<String> sockets;
 
 	public static Collection<FlowEngineDomainStatus> fromJsonArrayToDomainStatus(String json) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();

@@ -17,20 +17,21 @@ package com.minsait.onesait.platform.flowengine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
 @SpringBootApplication
 @ComponentScan("com.minsait.onesait.platform")
-@EnableCaching
 public class FlowEngineApplication extends WebMvcConfigurerAdapter {
 
 	@Autowired
-	CorrelationInterceptor logInterceptor;
+	private CorrelationInterceptor logInterceptor;
+	@Autowired
+	private MultitenancyInterceptor multitenancyInterceptor;
 
 	public static void main(String[] args) {
 		SpringApplication.run(FlowEngineApplication.class, args);
@@ -39,6 +40,7 @@ public class FlowEngineApplication extends WebMvcConfigurerAdapter {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(logInterceptor);
+		registry.addInterceptor(multitenancyInterceptor);
 	}
 
 }

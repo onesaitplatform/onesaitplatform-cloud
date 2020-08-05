@@ -15,23 +15,30 @@
 package com.minsait.onesait.platform.api.rule;
 
 import org.jeasy.rules.api.Facts;
+import org.springframework.http.HttpStatus;
+
+import com.minsait.onesait.platform.api.service.Constants;
 
 public class DefaultRuleBase {
-	
+
 	public enum ReasonType {
 		INTERNAL, API_LIMIT, SECURITY, GENERAL, DEVELOPMENT;
 	}
-		
-	protected void stopAllNextRules(Facts facts, String reason, ReasonType type) {
+
+	protected void stopAllNextRules(Facts facts, String reason, ReasonType type, HttpStatus statusCode) {
 		facts.put(RuleManager.STOP_STATE, true);
 		facts.put(RuleManager.REASON, reason);
 		facts.put(RuleManager.REASON_TYPE, type.name());
+		facts.put(Constants.HTTP_RESPONSE_CODE, statusCode);
 	}
-	
+
 	protected boolean canExecuteRule(Facts facts) {
-		Boolean bool = facts.get(RuleManager.STOP_STATE);
-		if (bool == null) return true;
-		else return !bool.booleanValue();		
+		final Boolean bool = facts.get(RuleManager.STOP_STATE);
+		if (bool == null) {
+			return true;
+		} else {
+			return !bool.booleanValue();
+		}
 	}
-	
+
 }

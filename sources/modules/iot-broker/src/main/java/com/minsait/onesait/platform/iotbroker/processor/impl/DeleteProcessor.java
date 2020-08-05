@@ -32,12 +32,13 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -60,7 +61,7 @@ public class DeleteProcessor implements MessageTypeProcessor {
 	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
 		if (SSAPMessageTypes.DELETE.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyDeleteMessage> deleteMessage = (SSAPMessage<SSAPBodyDeleteMessage>) message;
@@ -89,34 +90,56 @@ public class DeleteProcessor implements MessageTypeProcessor {
 				.builder(message.getBody().getOntology(), OperationType.DELETE, user, OperationModel.Source.IOTBROKER)
 				.objectId(message.getBody().getId()).queryType(QueryType.NATIVE).deviceTemplate(deviceTemplate).build();
 
-		final NotificationModel modelNotification = new NotificationModel();
-		modelNotification.setOperationModel(model);
+		model.setClientSession(message.getSessionKey());
+
+		final String transactionId = message.getTransactionId();
 
 		OperationResultModel result;
 		String responseStr = null;
 		String messageStr = null;
 		try {
-			result = routerService.delete(modelNotification);
-			responseStr = result.getResult();
-			messageStr = result.getMessage();
+			if (null == transactionId) {
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
 
-			if (messageStr.equals("OK")) {
-				if (message.includeIds()) {
-					final JSONObject jsonObject = new JSONObject(responseStr);
-					final int nDeleted = jsonObject.getInt("count");
-					final String deleted = nDeleted > 0 ? "[\"" + message.getBody().getId() + "\"]" : "[]";
+				result = routerService.delete(modelNotification);
+				responseStr = result.getResult();
+				messageStr = result.getMessage();
 
-					final String response = String.format("{\"nDeleted\":%s, \"deleted\":%s}", nDeleted, deleted);
+				if (messageStr.equals("OK")) {
+					if (message.includeIds()) {
+						final JSONObject jsonObject = new JSONObject(responseStr);
+						final int nDeleted = jsonObject.getInt("count");
+						final String deleted = nDeleted > 0 ? "[\"" + message.getBody().getId() + "\"]" : "[]";
 
-					responseMessage.getBody().setData(objectMapper.readTree(response));
+						final String response = String.format("{\"nDeleted\":%s, \"deleted\":%s}", nDeleted, deleted);
+
+						responseMessage.getBody().setData(objectMapper.readTree(response));
+					} else {
+						final String response = String.format("{\"nDeleted\":%s}", responseStr);
+						responseMessage.getBody().setData(objectMapper.readTree(response));
+					}
+
 				} else {
-					final String response = String.format("{\"nDeleted\":%s}", responseStr);
-					responseMessage.getBody().setData(objectMapper.readTree(response));
+					final String error = MessageException.ERR_DATABASE;
+					responseMessage = SSAPUtils.generateErrorMessage(message, SSAPErrorCode.PROCESSOR, error);
+					if (messageStr != null) {
+						responseMessage.getBody().setError(messageStr);
+					}
+
 				}
 			} else {
-				final String error = MessageException.ERR_DATABASE;
-				responseMessage = SSAPUtils.generateErrorMessage(message, SSAPErrorCode.PROCESSOR, error);
-				responseMessage.getBody().setError(messageStr);
+				model.setTransactionId(transactionId);
+
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
+
+				result = routerService.delete(modelNotification);
+				messageStr = result.getMessage();
+				String sequenceNumber = result.getResult();
+
+				responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
+
 			}
 
 		} catch (final Exception e) {
@@ -146,29 +169,47 @@ public class DeleteProcessor implements MessageTypeProcessor {
 						message.includeIds())
 				.queryType(QueryType.NATIVE).body(message.getBody().getQuery()).deviceTemplate(deviceTemplate).build();
 
-		final NotificationModel modelNotification = new NotificationModel();
-		modelNotification.setOperationModel(model);
+		model.setClientSession(message.getSessionKey());
 
 		OperationResultModel result;
 		String responseStr = null;
 		String messageStr = null;
+
+		final String transactionId = message.getTransactionId();
 		try {
-			result = routerService.delete(modelNotification);
-			messageStr = result.getMessage();
-			responseStr = result.getResult();
+			if (null == transactionId) {
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
 
-			final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(responseStr);
+				result = routerService.delete(modelNotification);
+				messageStr = result.getMessage();
+				responseStr = result.getResult();
 
-			final String response;
+				final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(responseStr);
 
-			if (message.includeIds()) {
-				response = String.format("{\"nDeleted\":%s, \"deleted\":%s}", multidocument.getCount(),
-						multidocument.getStrIds());
+				final String response;
+
+				if (message.includeIds()) {
+					response = String.format("{\"nDeleted\":%s, \"deleted\":%s}", multidocument.getCount(),
+							multidocument.getStrIds());
+				} else {
+					response = String.format("{\"nDeleted\":%s}", multidocument.getCount());
+				}
+
+				responseMessage.getBody().setData(objectMapper.readTree(response));
+
 			} else {
-				response = String.format("{\"nDeleted\":%s}", multidocument.getCount());
-			}
+				model.setTransactionId(transactionId);
 
-			responseMessage.getBody().setData(objectMapper.readTree(response));
+				final NotificationModel modelNotification = new NotificationModel();
+				modelNotification.setOperationModel(model);
+
+				result = routerService.delete(modelNotification);
+				messageStr = result.getMessage();
+				String sequenceNumber = result.getResult();
+
+				responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
+			}
 
 		} catch (final Exception e) {
 			log.error("Error in processDelete:" + e.getMessage());

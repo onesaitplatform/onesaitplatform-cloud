@@ -29,6 +29,9 @@ public interface QueryTemplateRepository extends JpaRepository<QueryTemplate, St
 
 	@Cacheable(cacheNames = "QueryTemplateRepositoryByName", unless = "#result == null", key = "#p0")
 	public QueryTemplate findByName(String name);
+	
+	@Cacheable(cacheNames = "QueryTemplateRepositoryByNameContaining", unless = "#result == null", key = "#p0")
+	public List<QueryTemplate> findByNameContaining(String name);
 
 	@Cacheable(cacheNames = "QueryTemplateRepositoryByOntologyIdentification", unless = "#result == null", key = "#p0")
 	public List<QueryTemplate> findByOntologyIdentification(String ontology);

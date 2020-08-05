@@ -20,7 +20,7 @@ import com.minsait.onesait.platform.config.model.CategoryRelation;
 
 public interface CategoryRelationService {
 
-	List<CategoryRelation> getByTypeIdAndType(String typeId, CategoryRelation.Type type);
+	CategoryRelation getByTypeIdAndType(String typeId, CategoryRelation.Type type);
 
 	CategoryRelation getByIdType(String typeId);
 

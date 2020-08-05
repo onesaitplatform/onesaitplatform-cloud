@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -52,7 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.init.mongodb")
 @RunWith(SpringRunner.class)
-@Order(2)
 @SpringBootTest
 public class InitMongoDB {
 
@@ -218,7 +216,7 @@ public class InitMongoDB {
 	private void insertIntoOntology(String ontology, String dataset) {
 		final Scanner scanner = new Scanner(loadFromResources(dataset));
 		while (scanner.hasNextLine()) {
-			basicOps.insert(ontology, "", scanner.nextLine());
+			basicOps.insert(ontology, scanner.nextLine());
 		}
 		scanner.close();
 
@@ -295,20 +293,20 @@ public class InitMongoDB {
 				ontologyRepository.save(ontology);
 			}
 			try {
-				basicOps.insert(CAS_SERVICE_REGISTRY, "",
+				basicOps.insert(CAS_SERVICE_REGISTRY,
 						replaceEnvironment(loadFromResources(dataSet), controlpanelService));
 			} catch (final Exception e) {
 				log.error("" + e);
 			}
 			try {
 				dataSet = "cas/oauthService.json";
-				basicOps.insert(CAS_SERVICE_REGISTRY, "", loadFromResources(dataSet));
+				basicOps.insert(CAS_SERVICE_REGISTRY, loadFromResources(dataSet));
 			} catch (final Exception e) {
 				log.error("" + e);
 			}
 			try {
 				dataSet = "cas/samlService.json";
-				basicOps.insert(CAS_SERVICE_REGISTRY, "",
+				basicOps.insert(CAS_SERVICE_REGISTRY,
 						replaceEnvironment(loadFromResources(dataSet), controlpanelService));
 			} catch (final Exception e) {
 				log.error("" + e);

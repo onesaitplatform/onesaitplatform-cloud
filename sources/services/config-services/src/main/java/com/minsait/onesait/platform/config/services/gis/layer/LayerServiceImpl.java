@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
@@ -59,17 +60,17 @@ public class LayerServiceImpl implements LayerService {
 
 	@Autowired
 	OntologyService ontologyService;
-	
+
 	private static final String USER_NOT_AUTHORIZED = "The user is not authorized";
 	private static final String PROPERTIES = "properties";
-	private static final String URL_CONCAT= "{\"url\":\"";
+	private static final String URL_CONCAT = "{\"url\":\"";
 
 	@Override
 	public List<Layer> findAllLayers(String userId) {
 		List<Layer> layers = null;
 		final User sessionUser = userService.getUser(userId);
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			layers = layerRepository.findAll();
 		} else {
 			layers = layerRepository.findByUserOrIsPublicTrue(sessionUser);
@@ -79,20 +80,20 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public List<String> getAllIdentificationsByUser(String userId) {
-		List<Layer> layers = null;
+		List<String> layers = null;
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
-			layers = layerRepository.findAllByOrderByIdentificationAsc();
+		if (userService.isUserAdministrator(user)) {
+			layers = layerRepository.findIdentificationOrderByIdentificationAsc();
 		} else {
-			layers = layerRepository.findByUserOrderByIdentificationAsc(user);
+			layers = layerRepository.findIdentificationByUserOrIsPublicTrue(user);
 		}
 
-		final List<String> identifications = new ArrayList<>();
-		for (final Layer layer : layers) {
-			identifications.add(layer.getIdentification());
-
-		}
-		return identifications;
+//		final List<String> identifications = new ArrayList<>();
+//		for (final Layer layer : layers) {
+//			identifications.add(layer.getIdentification());
+//
+//		}
+		return layers;
 	}
 
 	@Override
@@ -102,15 +103,24 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public void create(Layer layer) {
+
 		layerRepository.save(layer);
+	}
+
+	@Override
+	public Boolean checkExist(String layerIdentification) {
+
+		if (!layerRepository.findByIdentification(layerIdentification).isEmpty()) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public Layer findById(String id, String userId) {
 		User user = userService.getUser(userId);
 		Layer layer = layerRepository.findById(id);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || layer.getUser().equals(user)
-				|| layer.isPublic()) {
+		if (userService.isUserAdministrator(user) || layer.getUser().equals(user) || layer.isPublic()) {
 			return layer;
 		} else {
 			throw new LayerServiceException(USER_NOT_AUTHORIZED);
@@ -120,8 +130,10 @@ public class LayerServiceImpl implements LayerService {
 	@Override
 	public void deleteLayer(Layer layer, String userId) {
 		User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || layer.getUser().equals(user)
-				|| layer.isPublic()) {
+		if (userService.isUserAdministrator(user) || layer.getUser().equals(user) || layer.isPublic()) {
+			if (!layer.getViewers().isEmpty()) {
+				throw new LayerServiceException("This Layer is associated to a Viewer.");
+			}
 			layerRepository.delete(layer);
 		} else {
 			throw new LayerServiceException(USER_NOT_AUTHORIZED);
@@ -133,7 +145,9 @@ public class LayerServiceImpl implements LayerService {
 			throws IOException {
 		Map<String, String> fields = new TreeMap<>();
 		final Ontology ontology = getOntologyByIdentification(identification, sessionUserId);
+
 		if (ontology != null) {
+			OntologyVirtual virtual = ontologyService.getOntologyVirtualByOntologyId(ontology);
 			final ObjectMapper mapper = new ObjectMapper();
 
 			JsonNode jsonNode = null;
@@ -145,39 +159,50 @@ public class LayerServiceImpl implements LayerService {
 				if (ontology.getJsonSchema().contains("'"))
 					jsonNode = mapper.readTree(ontology.getJsonSchema().replaceAll("'", "\""));
 			}
+			if (virtual == null) {
+				// Predefine Path to data properties
 
-			// Predefine Path to data properties
-			if (!jsonNode.path("datos").path(PROPERTIES).isMissingNode()) {
+				if (!jsonNode.path("datos").path(PROPERTIES).isMissingNode()) {
 
-				jsonNode = jsonNode.path("datos").path(PROPERTIES);
+					jsonNode = jsonNode.path("datos").path(PROPERTIES);
 
-			} 
-			else
-				jsonNode = jsonNode.path(PROPERTIES);
+				} else
+					jsonNode = jsonNode.path(PROPERTIES);
 
-			final Iterator<String> iterator = jsonNode.fieldNames();
-			String property;
-			while (iterator.hasNext()) {
-				Boolean hasCoordinates = false;
-				Boolean hasType = false;
-				property = iterator.next();
-				if (jsonNode.path(property).get("type").asText().equals("object")) {
+				final Iterator<String> iterator = jsonNode.fieldNames();
+				String property;
+				while (iterator.hasNext()) {
+					Boolean hasCoordinates = false;
+					Boolean hasType = false;
+					property = iterator.next();
+					if (!jsonNode.findPath("features").isMissingNode()) {
+						fields.put("geometry", jsonNode.path("features").path("items").get(0).path("properties")
+								.path("geometry").path("properties").path("type").get("enum").get(0).asText());
+					} else {
+						if (jsonNode.path(property).get("type").asText().equals("object")) {
 
-					JsonNode jsonNodeAux = jsonNode.path(property).path(PROPERTIES);
+							JsonNode jsonNodeAux = jsonNode.path(property).path(PROPERTIES);
 
-					if (!jsonNodeAux.path("coordinates").isMissingNode()
-							&& jsonNodeAux.path("coordinates").get("type").asText().equals("array")) {
-						hasCoordinates = true;
+							if (!jsonNodeAux.path("coordinates").isMissingNode()
+									&& jsonNodeAux.path("coordinates").get("type").asText().equals("array")) {
+								hasCoordinates = true;
+							}
+							if (!jsonNodeAux.path("type").isMissingNode()
+									&& !jsonNodeAux.path("type").path("enum").isMissingNode()
+									&& jsonNodeAux.path("type").get("enum").isArray()) {
+								hasType = true;
+							}
+							if (hasCoordinates && hasType) {
+								fields.put(property, jsonNodeAux.path("type").get("enum").get(0).asText());
+							}
+
+						}
 					}
-					if (!jsonNodeAux.path("type").isMissingNode()
-							&& !jsonNodeAux.path("type").path("enum").isMissingNode()
-							&& jsonNodeAux.path("type").get("enum").isArray()) {
-						hasType = true;
-					}
-					if (hasCoordinates && hasType) {
-						fields.put(property, jsonNodeAux.path("type").get("enum").get(0).asText());
-					}
-
+				}
+			} else {
+				if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().isEmpty()) {
+					jsonNode = jsonNode.findPath(PROPERTIES);
+					fields.put(virtual.getObjectGeometry(), null);
 				}
 			}
 		}
@@ -188,8 +213,7 @@ public class LayerServiceImpl implements LayerService {
 	@Override
 	public Layer getLayerByIdentification(String identification, User user) {
 		List<Layer> layers = layerRepository.findByIdentification(identification);
-		if (!layers.isEmpty() && (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
-				|| layers.get(0).getUser().equals(user))) {
+		if (!layers.isEmpty() && (userService.isUserAdministrator(user) || layers.get(0).getUser().equals(user))) {
 			return layers.get(0);
 		} else if (layers.isEmpty()) {
 			throw new LayerServiceException("Layer " + identification + " doesn't exist.");
@@ -218,7 +242,7 @@ public class LayerServiceImpl implements LayerService {
 		List<Layer> layers = null;
 		final User sessionUser = userService.getUser(userId);
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			layers = layerRepository.findAll();
 		} else {
 			layers = layerRepository.findByUserOrIsPublicTrue(sessionUser);
@@ -307,6 +331,47 @@ public class LayerServiceImpl implements LayerService {
 		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 
 		return "{\"params\":" + layer.getQueryParams() + ",\"refresh\":" + layer.getRefreshTime() + "}";
+	}
+
+	@Override
+	public List<Layer> checkAllLayersByCriteria(String userId, String identification, String description) {
+		List<Layer> allLayers = new ArrayList<>();
+		final User sessionUser = userService.getUser(userId);
+
+		if (identification != null && description != null) {
+			allLayers = layerRepository.findByIdentificationContainingAndDescriptionContaining(identification,
+					description);
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				return allLayers;
+			} else {
+				return this.getLayersWithPermission(allLayers, sessionUser);
+			}
+		} else if (identification != null) {
+			allLayers = layerRepository.findByIdentificationContaining(identification);
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				return allLayers;
+			} else {
+				return this.getLayersWithPermission(allLayers, sessionUser);
+			}
+		} else {
+			allLayers = layerRepository.findByDescriptionContaining(description);
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				return allLayers;
+			} else {
+				return this.getLayersWithPermission(allLayers, sessionUser);
+			}
+		}
+	}
+
+	private List<Layer> getLayersWithPermission(List<Layer> allLayers, User user) {
+		List<Layer> layersWithAuth = layerRepository.findByUserOrIsPublicTrue(user);
+		List<Layer> layers = new ArrayList<>();
+		for (Layer layer : allLayers) {
+			if (layersWithAuth.contains(layer)) {
+				layers.add(layer);
+			}
+		}
+		return layers;
 	}
 
 }

@@ -6,34 +6,51 @@ var WebProjectCreateController = function() {
     var logControl = 1;
 	var LANGUAGE = ['es'];
 	var currentLanguage = ''; // loaded from template.	
-	var internalLanguage = 'en';	
+	var internalLanguage = 'en';
 	
-	// CONTROLLER PRIVATE FUNCTIONS	
-
-	
-	$("#createBtn").on('click',function(){
-		event.preventDefault(); 
-		if($("#identification").val()!='' && $("#identification").val()!=undefined && $("#description").val()!='' && $("#description").val()!=undefined
-				&& $('#buttonLoadRootZip')[0].files[0]!=undefined){
-			WebProjectCreateController.submitform();
-		}else{
-			$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: webProjectCreateJson.validform.emptyfields});
-			return false;
-		}
+	// FORM VALIDATION
+	var handleValidation = function() {
+		logControl ? console.log('handleValidation() -> ') : '';
 		
-	});
-	
-	$("#updateBtn").on('click',function(){
-		event.preventDefault(); 
-		if($("#identification").val()!='' && $("#identification").val()!=undefined && $("#description").val()!='' && $("#description").val()!=undefined
-				&& $('#buttonLoadRootZip')[0].files[0]!=undefined){
-			WebProjectCreateController.submitform();
-		}else{
-			$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: webProjectCreateJson.validform.emptyfields});
-			return false;
-		}
+        var form1 = $('#webproject_create_form');
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
 		
-	});
+        form1.validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block help-block-error', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+            ignore: ":hidden:not(.selectpicker)", // validate all fields including form hidden input but not selectpicker
+			lang: currentLanguage,
+			// validation rules
+            rules: {
+				identification:		{ required: true, minlength: 5 },
+				description:		{ required: true, minlength: 5 }
+            },
+            invalidHandler: function(event, validator) { //display error alert on form submit  
+            	success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
+                
+            },
+            highlight: function(element) { // hightlight error inputs
+                $(element).closest('.form-group').addClass('has-error'); 
+            },
+            unhighlight: function(element) { // revert the change done by hightlight
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+            success: function(label) {            	
+                label.closest('.form-group').removeClass('has-error');
+            },
+			// ALL OK, THEN SUBMIT.
+            submitHandler: function(form) {
+                success1.show();
+                error1.hide();                
+                form.submit();				
+            }
+        });
+    }	
+	
     var uploadZip = function (){
 		var zipNameS = $('#buttonLoadRootZip')[0].files[0].name;
 		$('#zipNameS').text(zipNameS); 
@@ -118,6 +135,7 @@ var WebProjectCreateController = function() {
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			initTemplateElements();
+			handleValidation();
 		},
 
 		// REDIRECT

@@ -8,7 +8,7 @@ onesaitplatform:
       mongodb-socket-timeout: 5000
       mongodb-connect-timeout: 30000
       mongodb-max-wait-time: 5000
-      mongodb-pool-size: 10
+      mongodb-pool-size: 100
       mongodb-read-from-secondaries: false
       mongodb-write-concern: UNACKNOWLEDGED
       mongodb-ssl-enabled: false
@@ -16,7 +16,18 @@ onesaitplatform:
       mongodb-quasar-timeout: 10000
       mongodb-quasar-compile: true
       mongodb-quasar-allow-mapreduce: true
-      elastic-sql-timeout: 10000
+      elasticsearch:
+        sql:
+          endpoint: http://elasticdb:9200
+        dump:
+          path: /tmp/export/
+          elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
+        enabled: true
+        servers:
+          -
+            host: elasticdb
+            port: 9200
+            protocol: http
     files:
       allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000

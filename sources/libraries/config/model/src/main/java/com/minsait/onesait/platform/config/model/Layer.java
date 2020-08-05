@@ -134,6 +134,12 @@ public class Layer extends OPResource {
 	@Setter
 	private boolean isPublic;
 
+	@Column(name = "IS_VIRTUAL", nullable = false, columnDefinition = "BIT")
+	@NotNull
+	@Getter
+	@Setter
+	private boolean isVirtual;
+
 	@Column(name = "IS_HEAT_MAP", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter

@@ -231,6 +231,8 @@
 	<script th:src="@{/static/vendor/vs/loader.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
 	<script th:inline="javascript">
 	
 		// <![CDATA[
@@ -238,6 +240,9 @@
       //  $("#dashboardconf_form").get(0).submit();
      });
 	 
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+		
 	var dashboardConfJson = {
 			"language" : currentLanguage};
 		

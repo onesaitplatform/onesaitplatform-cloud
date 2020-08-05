@@ -148,7 +148,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 		final MongoClientOptions.Builder mongoClientOptionsBuilder = new MongoClientOptions.Builder();
 		mongoClientOptionsBuilder.socketTimeout(socketTimeout).connectTimeout(connectTimeout).maxWaitTime(maxWaitTime)
-				.connectionsPerHost(poolSize).sslEnabled(sslEnabled);				
+				.connectionsPerHost(poolSize).sslEnabled(sslEnabled);
 		if (readFromSecondaries) {
 			log.info("The MongoDB connector will forward the queries to the secondary nodes.");
 			mongoClientOptionsBuilder.readPreference(ReadPreference.secondary());
@@ -292,7 +292,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	public long count(String database, String collection, String query) throws DBPersistenceException {
 		log.debug("Running count command. Database = {}, collection = {}, query = {}.", database, collection, query);
 		try {
-			if (!query.trim().equals("{}")) {
+			if (!query.trim().equals("{}") && query.contains("count(")) {
 				query = query.substring(query.indexOf("count(") + 6, query.indexOf(")"));
 			}
 			if (query != null && query != "" && !query.trim().equals("{}") && !query.isEmpty()) {
@@ -833,8 +833,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 			String finalUpdate = update.substring(0, endOfQuery + 1);
 			// allow $push queries to be executed
-			if (finalUpdate.indexOf("$set") == -1 && finalUpdate.indexOf("$push") == -1
-					&& finalUpdate.indexOf("$inc") == -1) {
+			if (finalUpdate.indexOf("$set") == -1 && finalUpdate.indexOf("$push") == -1 && finalUpdate.indexOf("$pull") == -1
+					&& finalUpdate.indexOf("$inc") == -1 && finalUpdate.indexOf("$unset") == -1 && finalUpdate.indexOf("$addToSet") == -1) {
 				finalUpdate = "{$set:" + finalUpdate + "}";
 			}
 			// query = updateQuery.substring(0, updateQuery.indexOf("},") + 1);

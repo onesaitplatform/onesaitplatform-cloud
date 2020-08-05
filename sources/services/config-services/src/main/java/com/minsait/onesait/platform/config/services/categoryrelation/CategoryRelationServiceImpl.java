@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.categoryrelation;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +28,7 @@ public class CategoryRelationServiceImpl implements CategoryRelationService {
 	private CategoryRelationRepository categoryRelationRepository;
 
 	@Override
-	public List<CategoryRelation> getByTypeIdAndType(String typeId, Type type) {
+	public CategoryRelation getByTypeIdAndType(String typeId, Type type) {
 		return categoryRelationRepository.findByTypeIdAndType(typeId, type);
 	}
 	

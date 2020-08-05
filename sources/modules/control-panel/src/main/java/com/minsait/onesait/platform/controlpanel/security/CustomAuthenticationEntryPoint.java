@@ -14,7 +14,13 @@
  */
 package com.minsait.onesait.platform.controlpanel.security;
 
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN;
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN_PARAMS;
+
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -23,9 +29,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class CustomAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {
-	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
-	private static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
+
+	private static final String LOGIN_LOCALE = "login_locale";
+	private static final String LANG = "lang";
+	private static final String LOGINURL = "/login";
 
 	public CustomAuthenticationEntryPoint(String loginFormUrl) {
 		super(loginFormUrl);
@@ -34,8 +45,22 @@ public class CustomAuthenticationEntryPoint extends LoginUrlAuthenticationEntryP
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException authException) throws IOException, ServletException {
-		request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getServletPath());
-		request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, request.getParameterMap());
+		if (request.getServletPath().equals(LOGINURL) && request.getParameterMap() != null
+				&& request.getParameterMap().get(LANG) != null) {
+			request.getSession().setAttribute(LOGIN_LOCALE, request.getParameterMap().get(LANG)[0]);
+			log.debug("Adding parameters from request to session {} only location", request.getParameterMap());
+		} else {
+			if (request.getSession().getAttribute(BLOCK_PRIOR_LOGIN) == null)
+				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getServletPath());
+
+			if (request.getParameterMap() != null && !request.getParameterMap().isEmpty()) {
+				log.debug("Request contains parameters, adding to redirect through session");
+				final HashMap<String, String[]> parameterMap = request.getParameterMap().entrySet().stream().collect(
+						Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
+				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, parameterMap);
+
+			}
+		}
 		super.commence(request, response, authException);
 	}
 

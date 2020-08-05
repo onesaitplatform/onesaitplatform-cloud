@@ -15,40 +15,59 @@
 package com.minsait.onesait.platform.persistence.external.generator;
 
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
+import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
-import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.update.Update;
 
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+
+import java.util.List;
 import java.util.Map;
 
 public interface SQLGeneratorOps {
 
-	PlainSelect getStandardSelect(SelectStatement selectStatement, VirtualDatasourceType dsType,
-								  Map<String, Integer> tableColumnTypes);
+    PreparedStatement getStandardSelect(SelectStatement selectStatement, VirtualDatasourceType dsType,
+								  Map<String, Integer> tableColumnTypes, boolean withParams);
 
-	PlainSelect getStandardSelect(SelectStatement selectStatement);
+    PreparedStatement getStandardSelect(SelectStatement selectStatement, boolean withParams);
 
-	Insert getStandardInsert(InsertStatement insertStatement);
+	PreparedStatement getStandardInsert(InsertStatement insertStatement, boolean withParams);
 
-	Insert getStandardInsert(InsertStatement insertStatement, VirtualDatasourceType virtualDatasourceType,
-							 Map<String, Integer> tableColumnTypes);
+	PreparedStatement getStandardInsert(InsertStatement insertStatement, VirtualDatasourceType virtualDatasourceType,
+							 Map<String, Integer> tableColumnTypes, boolean withParams);
 
-	String getOracleInsertSQL(InsertStatement insertStatement, Map<String, Integer> tableColumnTypes);
+	PreparedStatement getOracleInsertSQL(InsertStatement insertStatement, Map<String, Integer> tableColumnTypes, boolean withParams);
 
-	Update getStandardUpdate(UpdateStatement updateStatement);
+	PreparedStatement getStandardUpdate(UpdateStatement updateStatement, boolean withParams);
 
-	Update getStandardUpdate(UpdateStatement updateStatement,
+	PreparedStatement getStandardUpdate(UpdateStatement updateStatement,
 							 VirtualDatasourceType virtualDatasourceType,
-							 Map<String, Integer> tableColumnTypes);
+							 Map<String, Integer> tableColumnTypes, boolean withParams);
 
-	Delete getStandardDelete(DeleteStatement deleteStatement);
-
-	Delete getStandardDelete(DeleteStatement deleteStatement,
+	PreparedStatement getStandardDelete(DeleteStatement deleteStatement, boolean withParams);
+	
+	PreparedStatement getStandardDelete(DeleteStatement deleteStatement,
 							 VirtualDatasourceType virtualDatasourceType,
-							 Map<String, Integer> tableColumnTypes);
+							 Map<String, Integer> tableColumnTypes, boolean withParams);
+	
+	PreparedStatement getStandardDrop(DropStatement dropStatement);
+	
+	PreparedStatement getStandardDrop(DropStatement dropStatement,
+			 VirtualDatasourceType virtualDatasourceType);
+
+	PreparedStatement getOracleDrop(DropStatement dropStatement, VirtualDatasourceType virtualDatasourceType);
+
+	PreparedStatement getStandardCreate(CreateStatement createStatement, VirtualDatasourceType virtualDatasourceType);
+
+	PreparedStatement getStandardCreate(CreateStatement createStatement);
+
+	List<ColumnRelational> generateSQLColumnsRelational(String ontologyJsonSchema, VirtualDatasourceType dsType);
+
+	List<ColumnRelational> generateColumnsRelational(String ontologyJsonSchema);
+
 }

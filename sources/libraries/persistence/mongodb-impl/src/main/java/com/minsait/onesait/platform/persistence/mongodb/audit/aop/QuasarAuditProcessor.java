@@ -44,7 +44,7 @@ public class QuasarAuditProcessor {
 		final Ontology ontology = ontologyRepository.findByIdentification(collection);
 		return QuasarAuditEvent.builder().id(UUID.randomUUID().toString()).timeStamp(today.getTime())
 				.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).message(MAP_REDUCE_DETECTED)
-				.ontology(ontology.getIdentification()).user(AuditConst.ANONYMOUS_USER).module(Module.QUASAR)
+				.ontology(ontology.getIdentification()).user(AuditConst.ANONYMOUS_USER).module(Module.SQLENGINE)
 				.type(EventType.QUERY).operationType(OperationType.QUERY.name())
 				.resultOperation(ResultOperationType.WARNING).query(query).result(result).build();
 	}
@@ -55,7 +55,7 @@ public class QuasarAuditProcessor {
 		final String message = "Exception detected while executing query: " + query + " ; Ontology:"
 				+ ontology.getIdentification();
 
-		return OPEventFactory.builder().build().createAuditEventError(message, Module.QUASAR, ex);
+		return OPEventFactory.builder().build().createAuditEventError(message, Module.SQLENGINE, ex);
 
 	}
 

@@ -75,8 +75,7 @@ public class JaxRSConfig {
 		openApiFeature.setDescription("");
 		openApiFeature.setVersion("1.0.0");
 		openApiFeature.setSupportSwaggerUi(true);
-		openApiFeature.setSupportSwaggerUi(true);
-		final OpenApiCustomizer customizer = new OpenApiCustomizer();
+		final OpenApiCustomizer customizer = new JaxRSOpenAPICustomizer();
 		customizer.setDynamicBasePath(true);
 		openApiFeature.setCustomizer(customizer);
 		openApiFeature.setScan(false);

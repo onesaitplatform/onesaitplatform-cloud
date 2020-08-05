@@ -16,9 +16,57 @@ var LayerCreateController = function() {
 	var queryFields = [];
 	var mapOperations = [];
 	var queryParams=[];
+	var isVirtual = false;
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 
 	var propertyTypeOntologyIndex=-1;
+	
+	var cleanFields = function(formId) {
+		logControl ? console.log('cleanFields() -> ') : '';
+		
+		// CLEAR OUT THE VALIDATION ERRORS
+		$('.help-block-error').hide();
+		$('.has-error').removeClass('has-error');
+		$('#' + formId).find(
+				'input:text, input:password, input:file, select, textarea')
+				.each(function() {
+					// CLEAN ALL EXCEPTS cssClass "no-remote" persistent fields
+					if (!$(this).hasClass("no-remove")) {
+						$(this).val('');
+					}
+				});
+		
+		// CLEANING SELECTs
+		$(".selectpicker").each(function() {
+			$(this).val('');
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});		
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();		
+		// UNCHECK PUBLIC OPTION
+		$("#public").prop("checked", false);		
+		// UNCHECK IS QUERY
+		$("#isQuery").prop("checked", false);		
+		// UNCHECK HEAT MAP
+		$("#isHeatMap").prop("checked", false);		
+		// HIDE HEAT MAP DEF
+		$("#heatMapDiv").hide();
+		$("#tab-symbology").removeClass('disabledTab')
+		$("#tab-infobox").removeClass('disabledTab');		
+		// HIDE QUERY DEF
+		$("#query_def").hide();		
+		// HIDE GEOMETRY TYPE
+		$("#geometryTypes").css("visibility", "hidden");		
+		// UNCHECK GEOMETRY FILTER
+		$("#filter").prop("checked", false);		
+		// HIDE FILTERS
+		$("#withFilter").hide();				
+		// CLEAR FITERS ATTRIBUTES
+		$("#filtersAttribute").find("tbody").empty();		
+		// CLEAR ATTRIBUTES
+		$("#attributes").find("tbody").empty();
+	}
+
 	
 	
 	// CHECK IF JSON STRING WHEN JSON PARSE IS OK OR NOT, IF THE JSON IS MALFORMED THE JSON.parse() is broken.
@@ -255,7 +303,15 @@ var LayerCreateController = function() {
 	   			
 	   			$("<input type='hidden' name='isQuery' value='"+$("#isQuery").is(":checked")+"' />")
  		         .appendTo("#layer_create_form");
-	   			 
+	   			
+	   			if(isVirtual){
+	   				$("<input type='hidden' name='geometryType' value='"+$("#geometryTypeVirtual").val()+"' />")
+	 		         .appendTo("#layer_create_form");
+	   			}else{
+	   				$("<input type='hidden' name='geometryType' value='"+$("#geometryType").val()+"' />")
+	 		         .appendTo("#layer_create_form");
+	   			}
+	   			
 				// form.submit();
 				form1.ajaxSubmit({type: 'post', success : function(data){
 					
@@ -451,6 +507,8 @@ var LayerCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			handleValidation();
 			
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			
 			// PROTOTYPEs
 			// ARRAY PROTOTYPE FOR CHECK UNIQUE PROPERTIES.
@@ -505,6 +563,20 @@ var LayerCreateController = function() {
 			}
 			// EDIT MODE ACTION 
 			else {
+				$.ajax({
+					url : "/controlpanel/layers/hasOntRoot", 
+					//contentType: "application/json",
+					data : {'ontologyID': $("#ontology").val()},
+					type : "POST",
+					headers: {
+						[csrf_header]: csrf_value
+				    },
+				    success: function(response, status){
+				    	if(response=='virtual'){
+				    		isVirtual=true;
+				    	}
+					}
+				});
 				var csrf_value = $("meta[name='_csrf']").attr("content");
 				var csrf_header = $("meta[name='_csrf_header']").attr("content");
 				$.ajax({
@@ -513,13 +585,16 @@ var LayerCreateController = function() {
 						[csrf_header]: csrf_value
 				    },
 					type:"POST",
-					async: false,
+					async: true,
 					data: { 'ontologyIdentification': $("#ontology").val()},
 					dataType:"json",
 					success: function(response,status){
-						
-						ontologyFields = response;
-						
+						if(response.FeatureCollection == "FeatureCollection"){
+							$("#tab-infobox").addClass('disabledTab');
+							$("#tab-query").addClass('disabledTab');
+						}else{
+							ontologyFields = response;
+						}
 					}
 				});
 				
@@ -712,10 +787,11 @@ var LayerCreateController = function() {
 					        var field = key;
 					        var type = fields[key];
 					        $("#fields").append('<option id="'+field+'" name="'+type+'" value="'+ field +'">' + field +'</option>');
+					        
 					    }
 						
 						$("#fields").val(layerCreateJson.geometryField);
-
+						LayerCreateController.changeField();
 					}
 				});
 				
@@ -738,6 +814,9 @@ var LayerCreateController = function() {
 				}
 				
 			}
+			$('#resetBtn').on('click', function() {
+				cleanFields('layer_create_form');
+			});
 		},
 		
 		// REDIRECT
@@ -833,25 +912,25 @@ var LayerCreateController = function() {
 				var split = operation.split('==')
 				field = split[0];
 				operator = '==';
-				value= split[2];
+				value= split[1];
 				
 			}else if(operation.includes('!=')){
 				var split = operation.split('!=')
 				field = split[0];
 				operator = '!=';
-				value= split[2];
+				value= split[1];
 				
 			}else if(operation.includes('>')){
 				var split = operation.split('>')
 				field = split[0];
 				operator = '>';
-				value= split[2];
+				value= split[1];
 				
 			}else if(operation.includes('<')){
 				var split = operation.split('<')
 				field = split[0];
 				operator = '<';
-				value= split[2];
+				value= split[1];
 				
 			}
 			
@@ -914,7 +993,7 @@ var LayerCreateController = function() {
 				'<option value="<"><</option>'+
 				'<option value="!=">!=</option>'+
 				'</select>'+
-				'<label>'+ layerCreateJson.value +'</label> <input type="text" id="value" name="value[]" id="attribute" value="" class="form-control"/></div>' +
+				'<label>'+ layerCreateJson.value +'</label> <input type="text" id="field_filter_value" name="value[]" id="attribute" value="" class="form-control"/></div>' +
 				'<label>Color</label>'+
 				'<div class="input-group colorpicker-component formcolorpicker" id="filterColor">'+
 					'<label class="" th:text="#{layer.symbology.color} + ":""></label>'+
@@ -931,7 +1010,7 @@ var LayerCreateController = function() {
 			            action: function () {
 			            	var field = $("#fields_pop").val();
 			            	var operator = $("#operator").val();
-			            	var value= $("#value").val();
+			            	var value= $("#field_filter_value").val();
 			            	
 			            	if(isNaN(value)){
 			            		value = "'" + value + "'";
@@ -971,7 +1050,7 @@ var LayerCreateController = function() {
 					
 					$("#fields_pop").val(field);
 					$("#operator").val(operator);
-					$("#value").val(value);
+					$("#field_filter_value").val(value);
 					$("#filterColor").find(".input-group-append").css({"margin-top":-9});
 					
 			    }
@@ -992,13 +1071,18 @@ var LayerCreateController = function() {
 					[csrf_header]: csrf_value
 			    },
 			    success: function(response, status){
-			    	if (response == true){
+			    	if(response=='virtual'){
+			    		isVirtual=true;
+			    	}else{
+			    		LayerCreateController.changeOntology();
+			    	}
+			    /*	if (response != 'false'){
 			    		LayerCreateController.changeOntology();
 			    	} else {
 			    		$("#fields").empty();
 			    		$("#geometryTypes").attr("style","visibility:hidden");
 			    		$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.root});
-			    	}
+			    	}*/
 				}
 			});
 			
@@ -1108,9 +1192,12 @@ var LayerCreateController = function() {
 				data: { 'ontologyIdentification': $("#ontology").val()},
 				dataType:"json",
 				success: function(response,status){
-					
-					ontologyFields = response;
-					
+					if(response.FeatureCollection == "FeatureCollection"){
+						$("#tab-infobox").addClass('disabledTab');
+						$("#tab-query").addClass('disabledTab');
+					}else{
+						ontologyFields = response;
+					}
 				}
 			});
 		},
@@ -1165,7 +1252,63 @@ var LayerCreateController = function() {
 		changeField: function (){
 			var field = $("#fields").val();
 			var type = $("#"+field).attr("name");
-			$("#geometryType").val(type);
+			if(type!="null"){
+				$("#geometryType").val(type);
+				$("#normalType").attr("style","display:block");
+				$("#virtualType").attr("style","display:none");
+				if(layerCreateJson.actionMode!=null){
+					$("#geometryType").val(layerCreateJson.geometryType);
+				}
+			}else if(type=="null"){
+				$("#normalType").attr("style","display:none");
+				$("#virtualType").attr("style","display:block");
+				if(layerCreateJson.actionMode!=null){
+					$("#geometryTypeVirtual").val(layerCreateJson.geometryType);
+				}
+			}
+			
+			if(type=="Point"){
+				$("#checkHeatMap").show();
+				spinnerEachFrom = $("#min").TouchSpin({
+					min: 0,
+					max: 999.0,
+					stepinterval: 0.2,
+					maxboostedstep: 999.0,
+					verticalbuttons: true
+				});			
+				
+				($("#min").val() == "") ? $("#min").val(0.0) : null;		
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				
+				spinnerEachFrom = $("#max").TouchSpin({
+					min: 0.0,
+					max: 999.0,
+					stepinterval: 0.2,
+					maxboostedstep: 999,
+					verticalbuttons: true
+				});			
+				
+				($("#max").val() == "") ? $("#max").val(0.0) : null;		
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				
+				spinnerEachFrom = $("#radius").TouchSpin({
+					min: 0.0,
+					max: 9999.0,
+					stepinterval: 0.2,
+					maxboostedstep: 9999,
+					verticalbuttons: true,
+					postfix: 'px'
+				});			
+				
+				($("#radius").val() == "") ? $("#radius").val(0.0) : null;		
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			}else if(type=="null"){
+				LayerCreateController.changeFieldAux();
+			}else{
+				$("#checkHeatMap").hide();
+			}
+		},changeFieldAux: function (){
+			var type = $("#geometryTypeVirtual").val();
 			if(type=="Point"){
 				$("#checkHeatMap").show();
 				spinnerEachFrom = $("#min").TouchSpin({
@@ -1263,12 +1406,12 @@ var LayerCreateController = function() {
 			    '<label>' + layerCreateJson.field + '</label> <select id="fields_pop" class="form-control" data-width="100%">'+
 				'</select>'+
 				'<label>' + layerCreateJson.operator + '</label> <select id="operator" class="form-control" data-width="100%">'+
-				'<option value="===">===</option>'+
+				'<option value="==">==</option>'+
 				'<option value=">">></option>'+
 				'<option value="<"><</option>'+
 				'<option value="!=">!=</option>'+
 				'</select>'+
-				'<label>'+ layerCreateJson.value +'</label> <input type="text" id="value" name="value[]" id="attribute" value="" class="form-control"/></div>' +
+				'<label>'+ layerCreateJson.value +'</label> <input type="text" id="field_filter_value" name="value[]" id="attribute" value="" class="form-control"/></div>' +
 				'<label>Color</label>'+
 				'<div class="input-group colorpicker-component formcolorpicker" id="filterColor">'+
 					'<label class="" th:text="#{layer.symbology.color} + ":""></label>'+
@@ -1285,7 +1428,7 @@ var LayerCreateController = function() {
 			            action: function () {
 			            	var field = $("#fields_pop").val();
 			            	var operator = $("#operator").val();
-			            	var value= $("#value").val();
+			            	var value= $("#field_filter_value").val();
 			            	
 			            	var operation = field + operator + value;
 			            	

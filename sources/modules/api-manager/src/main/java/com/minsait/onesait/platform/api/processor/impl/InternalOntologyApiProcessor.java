@@ -125,12 +125,12 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		modelNotification.setOperationModel(model);
 		final OperationResultModel result = routerService.query(modelNotification);
 
-		if (result != null) {
+		if (result.isStatus()) {
 			processQueryResult(result, data, operationType);
 		} else {
 			data.put(Constants.STATUS, ChainProcessingStatus.STOP);
 			final String messageError = ApiProcessorUtils.generateErrorMessage("ERROR Output from Router Processing",
-					"Stopped Execution", "Null Result From Router");
+					"Stopped Execution", result.getMessage() == null ? "Null Result From Router" : result.getMessage());
 			data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
 			data.put(Constants.REASON, messageError);
 		}
@@ -197,7 +197,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 
 	private Map<String, Object> postProcess(Map<String, Object> data) {
 
-		final ApiOperation apiOperation = ((ApiOperation) data.get(Constants.API_OPERATION));
+		final ApiOperation apiOperation = (ApiOperation) data.get(Constants.API_OPERATION);
 		if (apiOperation != null) {
 			String postProcessScript = apiOperation.getPostProcess();
 			if (postProcessScript != null && !"".equals(postProcessScript)) {

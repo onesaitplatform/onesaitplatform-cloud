@@ -31,6 +31,8 @@ public interface QueryTemplateService {
 	boolean queryTemplateExists(QueryTemplate queryTemplate);
 
 	public QueryTemplate getQueryTemplateById(String id);
+	
+	public List<QueryTemplate> getQueryTemplateByCriteria(String name);
 
 	public void updateQueryTemplate(QueryTemplate queryTemplate);
     

@@ -117,7 +117,10 @@ md-tabs.md-default-theme md-ink-bar, md-tabs md-ink-bar{
   color: #0e668c;
   background: #0e668c;
 }
-
+md-nav-bar.md-default-theme md-nav-ink-bar, md-nav-bar md-nav-ink-bar {
+  color: #0e668c !important;
+  background: #0e668c !important;
+}
 .md-tab{
   color: #888A91 ;
   font-family: "Soho";
@@ -126,6 +129,10 @@ md-tabs.md-default-theme md-ink-bar, md-tabs md-ink-bar{
   letter-spacing: 0.2px;
   line-height: 24px;
 
+}
+
+.md-button.md-default-theme.md-accent, .md-button.md-accent {
+  color: #0e668c;
 }
 
 .ods-picker-panel.ods-date-range-picker.ods-popper.has-time{
@@ -149,6 +156,10 @@ md-tabs.md-default-theme md-ink-bar, md-tabs md-ink-bar{
 
 .badgesMarginRightNoEditMode {
   margin-right: 55px;
+}
+.warning::before {
+  content:''!important;
+  background-color:transparent !important;
 }
 html, body {
   height: 100vh;
@@ -304,11 +315,6 @@ element{
   display: inline-block
 }
 
-
-.CodeMirror-linenumber {
-  padding: 1px 8px 0 5px;
-}
-
 md-tooltip.tt-multiline {
   height: auto !important;
 }
@@ -382,6 +388,156 @@ tip-arrow{
 .ods-date-editor--datetimerange>.ods-input__inner {
     width: 139px !important;
 }
+
+table.jexcel
+{
+    border-right:1px solid transparent;
+}
+
+table.jexcel > thead
+{
+    background-color:#fff;
+}
+
+table.jexcel > thead > tr > td
+{
+    border-top:1px solid transparent;
+    border-left:1px solid transparent;
+    border-right:1px solid transparent;
+    border-bottom:1px solid #000;
+    background-color:#fff;
+    padding:10px;
+    font-weight:bold;
+}
+
+table.jexcel > thead > tr > td.selected
+{
+    background-color:#eee;
+}
+
+table.jexcel > tbody > tr > td
+{
+    padding:8px;
+    border-right:1px solid transparent;
+    border-left:1px solid transparent;
+}
+
+table.jexcel > tbody > tr > td:first-child
+{
+    background-color:#fff;
+}
+
+table.jexcel > tbody > tr.selected > td:first-child
+{
+    background-color:#eee;
+}
+
+.jexcel_toolbar { 
+  background-color: #fff;
+}
+
+li.datacolumn {
+  display: inline-block;
+  padding: 8px 8px;
+  margin: 4px 4px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: Soho;
+  border: 1px solid aliceblue;
+}
+
+li.selectcolumn {
+  color: rgb(7, 7, 7) !important;
+  background-color: #ffffff;
+  border-color: #2e6c99;
+  box-shadow: 0 2px 5px 0 rgba(46, 108, 153, 0.2);
+}
+
+li.pickercolumn {
+  color: #000000;
+  background-color: #fff;
+  border-color: #eee;
+  width: 90%;
+  box-shadow: 0 2px 5px 0 rgba(46, 108, 153, 0.2);
+}
+
+li.addmetric {
+  color: rgba(255, 255, 255, 0.667) !important;
+  background-color: #fff;
+  text-align: center;
+  border-color: chartreuse;
+  width: 90%;
+  cursor: pointer !important;
+  box-shadow: 0 2px 5px 0 rgba(46, 108, 153, 0.2);
+}
+
+
+datadiscovery-field-selector {
+  max-height: 70px;
+}
+
+.jexcel_container {
+  height: 100%;
+  width:100%
+}
+
+.jexcel_content {
+  display: flex !important;
+}
+
+.fieldPicker {
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  padding-inline-start: 40px;
+}
+
+.fieldPicker li {
+  height: 22px !important;
+  box-sizing: initial;
+}
+
+.fieldPicker button {
+  min-height:0px
+}
+
+.fieldPicker label {
+  width: calc(100% - 50px);
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.columnSelector{
+  height: 44px;
+  width: max-content;
+  min-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.columnSelector .as-sortable-item,
+.columnSelector .as-sortable-placeholder {
+    height: 38px;
+    width: max-content;
+    float: left;
+}
+
+.columnSelector.as-sortable-drag {
+  width: auto !important;
+  min-width: 0% !important;
+  float:none
+}
+
+.as-sortable-item-handle{
+  padding: 3px 7px 1px 9px;
+}
+
+.jexcel_toolbar, .jexcel{
+  z-index: 10 !important
+}
+
 /***************** SOHO FONT *****************/
 
 @font-face {
@@ -683,7 +839,8 @@ tooltip._bottom._left tip {
 }
 
 .withBadges{
-  height: calc(100% - 62px);
+  height: calc(100% - 48px);
+  top: 55% !important;
 }
 
 .withoutBadges{
@@ -691,7 +848,8 @@ tooltip._bottom._left tip {
 }
 
 .withBadgesAndHeader{
-  height: calc(100% - 100px);
+  height: calc(100% - 70px);
+  top: 55% !important;
 }
 .withoutBadgesAndHeader{
   height: calc(100% - 40px);
@@ -794,8 +952,8 @@ md-menu-item > .md-button span{
   display:table-cell; 
   vertical-align:middle; 
   text-align:center;
-  height: 100px;
-  width: 100px;
+  height: 80px;
+  width: 80px;
   border-color: #E6EDF3!important;
   border-width: 2px;
   border-style: solid;

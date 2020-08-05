@@ -22,9 +22,7 @@ public class GeometryMultiPolygon extends Geometry {
 	private List<List<List<Double[]>>> coordinates;
 
 	public GeometryMultiPolygon() {
-		super();
 		this.coordinates = new ArrayList<>();
-		this.type = GeometryType.POLYGON;
 	}
 
 	public List<List<List<Double[]>>> getCoordinates() {
@@ -33,10 +31,6 @@ public class GeometryMultiPolygon extends Geometry {
 
 	public void setCoordinates(List<List<List<Double[]>>> coordinates) {
 		this.coordinates = coordinates;
-	}
-
-	public GeometryType getType() {
-		return type;
 	}
 
 	@Override

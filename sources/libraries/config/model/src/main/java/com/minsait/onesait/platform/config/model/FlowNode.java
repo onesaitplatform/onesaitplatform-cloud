@@ -103,6 +103,21 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	@Setter
 	private Ontology ontology;
 
+	@Getter
+	@Setter
+	@Column(name = "RETRY_ON_FAILURE", nullable = true, columnDefinition = "BIT")
+	private Boolean retryOnFailure;
+
+	@Getter
+	@Setter
+	@Column(name = "ALLOW_DISCARD_AFTER_ELAPSED_TIME", nullable = true, columnDefinition = "BIT" )
+	private Boolean discardAfterElapsedTime;
+
+	@Getter
+	@Setter
+	@Column(name = "MAX_RETRY_ELAPSE_TIME", nullable = true)
+	private Integer maxRetryElapsedTime;
+
 	@Override
 	public String getNotificationEntityId() {
 		return getNodeRedNodeId();
@@ -123,6 +138,20 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	public String getNotificationDomainUser() {
 		return getFlow().getFlowDomain().getUser().getUserId();
 	}
-
+	
+	@Override
+	public Boolean isRetryOnFaialureEnabled(){
+		return this.retryOnFailure;
+	}
+	
+	@Override
+	public Boolean isDiscardAfterElapsedTimeEnabled(){
+		return this.discardAfterElapsedTime;
+	}
+	
+	@Override
+	public Integer getMaxRetryElapsedTime(){
+		return this.maxRetryElapsedTime;
+	}
 
 }

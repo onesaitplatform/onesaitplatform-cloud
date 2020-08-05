@@ -69,7 +69,6 @@ public class GeoSpatialRepositoryTest {
 	@Autowired
 	private OntologyService ontologyService;
 
-
 	@Autowired
 	private UserRepository userCDBRepository;
 
@@ -168,7 +167,7 @@ public class GeoSpatialRepositoryTest {
 
 			}
 
-			String idES = basicOpsFacade.insert(ontologyName, ontology.getJsonSchema(), DATA);
+			String idES = basicOpsFacade.insert(ontologyName, DATA);
 			log.info("doBefore4 inserted object with id " + idES);
 
 		} catch (Exception e) {

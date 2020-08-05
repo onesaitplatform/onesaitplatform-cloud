@@ -75,7 +75,7 @@ public class DeviceManagerController {
 	private static final String LOG_PREFIX = "LOG_";
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) throws JsonProcessingException {
@@ -98,7 +98,7 @@ public class DeviceManagerController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PatchMapping
 	public String update(Model model, @RequestParam String id, @RequestParam String tags) {
 
@@ -106,13 +106,13 @@ public class DeviceManagerController {
 		return "redirect:/devices/management/show/" + id;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("/show")
 	public String show(Model model, RedirectAttributes redirect) {
 		return "devices/management/show";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("/show/{id}")
 	public String info(Model model, RedirectAttributes redirect, @PathVariable String id)
 			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {

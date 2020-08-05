@@ -43,6 +43,7 @@ import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
@@ -97,13 +98,16 @@ public class GadgetController {
 	private static final String REDIRECT_GADGETS_CREATE = "redirect:/gadgets/create";
 	private static final String REDIRECT_GADGETS_LIST = "redirect:/gadgets/list";
 	private static final String ERROR_TRUE_STR = "{\"error\":\"true\"}";
-
+	private static final String GADGET_TEMPLATE_TYPE = "template";
+	
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
+		
+		uiModel.addAttribute("gadgetTypes", gadgetService.getGadgetTypes());
 
 		String identification = request.getParameter("name");
 		String type = request.getParameter("type");
@@ -115,8 +119,7 @@ public class GadgetController {
 			type = null;
 		}
 
-		final List<Gadget> gadget = gadgetService.findGadgetWithIdentificationAndType(identification, type,
-				utils.getUserId());
+		final List<Gadget> gadget = gadgetService.findGadgetWithIdentificationAndType(identification, type,	utils.getUserId());
 		// gadgets: tiene que coincidir con el del list
 		uiModel.addAttribute("gadgets", gadget);
 
@@ -125,8 +128,13 @@ public class GadgetController {
 		if (description != null && description.equals("")) {
 			description = null;
 		}
-		List<GadgetTemplate> gadgetTemplate = this.gadgetTemplateService
-				.findGadgetTemplateWithIdentificationAndDescription(identification, description, utils.getUserId());
+		
+		List<GadgetTemplate> gadgetTemplate = new ArrayList<GadgetTemplate>();
+		
+		if (type==null || type.equals(GADGET_TEMPLATE_TYPE)) {
+			gadgetTemplate = this.gadgetTemplateService
+					.findGadgetTemplateWithIdentificationAndDescription(identification, description, utils.getUserId());
+		}
 
 		uiModel.addAttribute("gadgetTemplates", gadgetTemplate);
 		return "gadgets/list";
@@ -153,7 +161,7 @@ public class GadgetController {
 		return gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadgetId);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createGadget(Model model) {
 		model.addAttribute(IFRAME_STR, Boolean.FALSE);
@@ -174,7 +182,7 @@ public class GadgetController {
 		return GADGETS_CREATE;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/create", produces = "text/html")
 	public String saveGadget(@Valid Gadget gadget, BindingResult bindingResult, String jsonMeasures,
 			String datasourcesMeasures, Model uiModel, HttpServletRequest httpServletRequest,
@@ -211,7 +219,7 @@ public class GadgetController {
 				+ g.getType() + "\"}";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{gadgetId}", produces = "text/html")
 	public String createGadget(Model model, @PathVariable("gadgetId") String gadgetId) {
 		if (!gadgetService.hasUserPermission(gadgetId, utils.getUserId()))
@@ -229,7 +237,7 @@ public class GadgetController {
 		return GADGETS_CREATE;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/view/{gadgetId}", produces = "text/html")
 	public String showGadget(Model model, @PathVariable("gadgetId") String gadgetId) {
 		if (!gadgetService.hasUserViewPermission(gadgetId, utils.getUserId()))
@@ -264,7 +272,7 @@ public class GadgetController {
 		return GADGETS_CREATE;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = { "/updateiframe/{gadgetId}" }, produces = "application/json")
 	public @ResponseBody String saveUpadteGadgetIframe(@PathVariable("gadgetId") String gadgetId, Gadget gadget,
 			String jsonMeasures, String datasourcesMeasures) {
@@ -284,7 +292,7 @@ public class GadgetController {
 		return "{\"id\":\"" + gadgetId + "\"}";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes ra) {
 		try {
@@ -295,7 +303,7 @@ public class GadgetController {
 		return REDIRECT_GADGETS_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping("/gadgettemplates/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		log.info("Controlador");
@@ -303,7 +311,7 @@ public class GadgetController {
 		return REDIRECT_GADGETS_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateGadget(Model model, @PathVariable("id") String id, @Valid Gadget gadget, String jsonMeasures,
 			String datasourcesMeasures, BindingResult bindingResult, RedirectAttributes redirect) {
@@ -325,7 +333,7 @@ public class GadgetController {
 		return REDIRECT_GADGETS_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = { "/existGadget" }, produces = "application/json")
 	public @ResponseBody String existGadget(String identification) {
 

@@ -1,0 +1,42 @@
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
+    
+
+onesaitplatform:
+   router.alternativeURL: http://routerservice:20000/router/router/
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
+   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+   restPlanner:
+      checkSSL: ${RESTPLANNER_CHECKSSL}
+spring:
+   datasource:
+      url: ${CONFIGDBURL}${DBADDPROPS}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
+   boot.admin: #Spring Boot Admin Config
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://devicesimulator:${server.port}${server.contextPath}/
+quartz:
+    datasource:
+      url: ${SCHEDULERDBBURL}${DBADDPROPS}
+
+
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs

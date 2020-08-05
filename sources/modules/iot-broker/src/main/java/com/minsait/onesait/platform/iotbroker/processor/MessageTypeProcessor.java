@@ -22,13 +22,14 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 
 public interface MessageTypeProcessor {
-	SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message)
-			throws OntologyBusinessServiceException, IOException;
 
 	List<SSAPMessageTypes> getMessageTypes();
 
 	boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message);
-
+	
+	SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) 
+			throws OntologyBusinessServiceException, IOException;
 }

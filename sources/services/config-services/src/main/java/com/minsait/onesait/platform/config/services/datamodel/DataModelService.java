@@ -22,7 +22,7 @@ public interface DataModelService {
 
 	void deleteDataModel(String id);
 
-	void createDataModel(DataModel dataModel);
+	DataModel createDataModel(DataModel dataModel);
 
 	List<DataModel.MainType> getAllDataModelsTypes();
 

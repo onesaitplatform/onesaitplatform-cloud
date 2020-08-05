@@ -70,7 +70,7 @@ import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
@@ -92,6 +92,7 @@ import com.minsait.onesait.platform.config.services.deletion.EntityDeletionServi
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
@@ -183,7 +184,7 @@ public class OntologyServiceImpl implements OntologyService {
 	public List<Ontology> getAllOntologies(String sessionUserId) {
 
 		final User sessionUser = userService.getUser(sessionUserId);
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			return ontologyRepository.findAllByOrderByIdentificationAsc();
 		} else {
 			return ontologyRepository.findByUserAndOntologyUserAccessAndAllPermissions(sessionUser);
@@ -194,30 +195,31 @@ public class OntologyServiceImpl implements OntologyService {
 	public List<OntologyDTO> getAllOntologiesForListWithProjectsAccess(String sessionUserId) {
 
 		final User sessionUser = userService.getUser(sessionUserId);
-		List<OntologyForList> ontologiesForList = ontologyRepository.findOntologyForListOrderByIdentificationAsc();
+		final List<OntologyForList> ontologiesForList = ontologyRepository
+				.findOntologyForListOrderByIdentificationAsc();
 		if (!sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			securityService.setSecurityToInputList(ontologiesForList, sessionUser, "Ontology");
 		}
-		List<OntologyKPI> kpis = ontologyKpiRepository.findByUser(sessionUser);
-		Map<String, OntologyKPI> mapKpis = new HashMap<>();
-		for (OntologyKPI kpi : kpis) {
+		final List<OntologyKPI> kpis = ontologyKpiRepository.findByUser(sessionUser);
+		final Map<String, OntologyKPI> mapKpis = new HashMap<>();
+		for (final OntologyKPI kpi : kpis) {
 			mapKpis.put(kpi.getOntology().getId(), kpi);
 		}
-		List<OntologyUserAccess> access = ontologyUserAccessRepository.findAll();
+		final List<OntologyUserAccess> access = ontologyUserAccessRepository.findAll();
 
-		Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
-		for (OntologyUserAccess a : access) {
+		final Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
+		for (final OntologyUserAccess a : access) {
 			if (mapAccess.containsKey(a.getOntology().getId())) {
 				mapAccess.get(a.getOntology().getId()).add(a);
 			} else {
-				List<OntologyUserAccess> accessList = new ArrayList<>();
+				final List<OntologyUserAccess> accessList = new ArrayList<>();
 				accessList.add(a);
 				mapAccess.put(a.getOntology().getId(), accessList);
 			}
 		}
 
-		List<OntologyDTO> dtos = new ArrayList<>();
-		for (OntologyForList temp : ontologiesForList) {
+		final List<OntologyDTO> dtos = new ArrayList<>();
+		for (final OntologyForList temp : ontologiesForList) {
 			if (temp.getAccessType() != null) {
 
 				final OntologyDTO obj = new OntologyDTO();
@@ -248,9 +250,9 @@ public class OntologyServiceImpl implements OntologyService {
 		final User sessionUser = userService.getUser(sessionUserId);
 		List<OntologyForList> ontologiesForList = new ArrayList<>();
 		List<OntologyUserAccess> access = new ArrayList<>();
-		Map<String, OntologyKPI> mapKpis = new HashMap<>();
+		final Map<String, OntologyKPI> mapKpis = new HashMap<>();
 		List<OntologyKPI> kpis = new ArrayList<>();
-		Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
+		final Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
 
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
@@ -268,21 +270,21 @@ public class OntologyServiceImpl implements OntologyService {
 			kpis = ontologyKpiRepository.findByUser(sessionUser);
 		}
 
-		for (OntologyKPI kpi : kpis) {
+		for (final OntologyKPI kpi : kpis) {
 			mapKpis.put(kpi.getOntology().getId(), kpi);
 		}
 		access = ontologyUserAccessRepository.findAll();
-		for (OntologyUserAccess a : access) {
+		for (final OntologyUserAccess a : access) {
 			if (mapAccess.containsKey(a.getOntology().getId())) {
 				mapAccess.get(a.getOntology().getId()).add(a);
 			} else {
-				List<OntologyUserAccess> accessList = new ArrayList<>();
+				final List<OntologyUserAccess> accessList = new ArrayList<>();
 				accessList.add(a);
 				mapAccess.put(a.getOntology().getId(), accessList);
 			}
 		}
-		List<OntologyDTO> dtos = new ArrayList<>();
-		for (OntologyForList temp : ontologiesForList) {
+		final List<OntologyDTO> dtos = new ArrayList<>();
+		for (final OntologyForList temp : ontologiesForList) {
 			if (temp.getAccessType() != null) {
 				final OntologyDTO obj = new OntologyDTO();
 				obj.setActive(temp.isActive());
@@ -313,7 +315,7 @@ public class OntologyServiceImpl implements OntologyService {
 		final User sessionUser = userService.getUser(sessionUserId);
 		List<OntologyForList> ontologiesForList = new ArrayList<>();
 		List<OntologyUserAccess> access = new ArrayList<>();
-		Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
+		final Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
@@ -321,23 +323,78 @@ public class OntologyServiceImpl implements OntologyService {
 				.findOntologiesForListByUserAndPermissionsANDIdentificationAndDescriptionNoPublic(sessionUser,
 						identification, description);
 		securityService.setSecurityToInputList(ontologiesForList, sessionUser, "Ontology");
-		List<OntologyKPI> kpis = ontologyKpiRepository.findByUser(sessionUser);
-		Map<String, OntologyKPI> ids = new HashMap<>();
-		for (OntologyKPI kpi : kpis) {
+		final List<OntologyKPI> kpis = ontologyKpiRepository.findByUser(sessionUser);
+		final Map<String, OntologyKPI> ids = new HashMap<>();
+		for (final OntologyKPI kpi : kpis) {
 			ids.put(kpi.getOntology().getId(), kpi);
 		}
 		access = ontologyUserAccessRepository.findAll();
-		for (OntologyUserAccess a : access) {
+		for (final OntologyUserAccess a : access) {
 			if (mapAccess.containsKey(a.getOntology().getId())) {
 				mapAccess.get(a.getOntology().getId()).add(a);
 			} else {
-				List<OntologyUserAccess> accessList = new ArrayList<>();
+				final List<OntologyUserAccess> accessList = new ArrayList<>();
 				accessList.add(a);
 				mapAccess.put(a.getOntology().getId(), accessList);
 			}
 		}
-		List<OntologyDTO> dtos = new ArrayList<>();
-		for (OntologyForList temp : ontologiesForList) {
+		final List<OntologyDTO> dtos = new ArrayList<>();
+		for (final OntologyForList temp : ontologiesForList) {
+			if (temp.getAccessType() != null) {
+
+				final OntologyDTO obj = new OntologyDTO();
+				obj.setActive(temp.isActive());
+				obj.setCreatedAt(temp.getCreated_at());
+				obj.setDescription(temp.getDescription());
+				obj.setId(temp.getId());
+				obj.setIdentification(temp.getIdentification());
+				obj.setPublic(temp.isPublic());
+				obj.setUpdatedAt(temp.getUpdated_at());
+				obj.setAuthorizations(mapAccess.containsKey(temp.getId()));
+				obj.setUser(temp.getUser());
+				obj.setDataModel(temp.getDataModel());
+				obj.setRtdbDatasource(temp.getRtdbDatasource());
+				obj.setOntologyKPI(ids.get(obj.getId()));
+				obj.setOntologyUserAccesses(mapAccess.containsKey(obj.getId()) ? mapAccess.get(obj.getId())
+						: new ArrayList<OntologyUserAccess>());
+
+				dtos.add(obj);
+			}
+		}
+
+		return dtos;
+	}
+
+	@Override
+	public List<OntologyDTO> getOntologiesForListByUserPropietary(String sessionUserId, String identification,
+			String description) {
+
+		final User sessionUser = userService.getUser(sessionUserId);
+		List<OntologyForList> ontologiesForList = new ArrayList<>();
+		List<OntologyUserAccess> access = new ArrayList<>();
+		final Map<String, List<OntologyUserAccess>> mapAccess = new HashMap<>();
+		description = description == null ? "" : description;
+		identification = identification == null ? "" : identification;
+
+		ontologiesForList = ontologyRepository.findOntologiesForListByUser(sessionUser);
+		securityService.setSecurityToInputList(ontologiesForList, sessionUser, "Ontology");
+		final List<OntologyKPI> kpis = ontologyKpiRepository.findByUser(sessionUser);
+		final Map<String, OntologyKPI> ids = new HashMap<>();
+		for (final OntologyKPI kpi : kpis) {
+			ids.put(kpi.getOntology().getId(), kpi);
+		}
+		access = ontologyUserAccessRepository.findAll();
+		for (final OntologyUserAccess a : access) {
+			if (mapAccess.containsKey(a.getOntology().getId())) {
+				mapAccess.get(a.getOntology().getId()).add(a);
+			} else {
+				final List<OntologyUserAccess> accessList = new ArrayList<>();
+				accessList.add(a);
+				mapAccess.put(a.getOntology().getId(), accessList);
+			}
+		}
+		final List<OntologyDTO> dtos = new ArrayList<>();
+		for (final OntologyForList temp : ontologiesForList) {
 			if (temp.getAccessType() != null) {
 
 				final OntologyDTO obj = new OntologyDTO();
@@ -378,7 +435,7 @@ public class OntologyServiceImpl implements OntologyService {
 	@Override
 	public List<Ontology> getOntologiesByUserId(String sessionUserId) {
 		final User sessionUser = userService.getUser(sessionUserId);
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			return ontologyRepository.findAllByOrderByIdentificationAsc();
 		} else {
 			return ontologyRepository.findByUserAndAccess(sessionUser);
@@ -395,7 +452,7 @@ public class OntologyServiceImpl implements OntologyService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			ontologies = ontologyRepository.findByIdentificationLikeAndDescriptionLike(identification, description);
 		} else {
 			ontologies = ontologyRepository.findByUserAndPermissionsANDIdentificationAndDescription(sessionUser,
@@ -414,7 +471,7 @@ public class OntologyServiceImpl implements OntologyService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			ontologies = ontologyRepository
 					.findByIdentificationContainingAndDescriptionContainingAndActiveTrue(identification, description);
 		} else {
@@ -430,12 +487,12 @@ public class OntologyServiceImpl implements OntologyService {
 		final List<DataModel> lDataModels = dataModelRepository.findByIdentification(datamodel);
 		if (lDataModels == null || lDataModels.isEmpty()) {
 			log.warn("DataModel {} not found, no ontologies will be returned", datamodel);
-			return new ArrayList<Ontology>();
+			return new ArrayList<>();
 		} else if (lDataModels.size() > 1) {
 			log.warn("Several DataModels were found for name {}, using first one", datamodel);
 		}
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 
 			return ontologyRepository.findAllByDataModelOrderByIdentificationAsc(lDataModels.get(0));
 		} else {
@@ -480,13 +537,13 @@ public class OntologyServiceImpl implements OntologyService {
 
 		List<Ontology> ontologies;
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (userService.isUserAdministrator(user)) {
 			ontologies = ontologyRepository.findAllByOrderByIdentificationAsc();
 		} else {
 			ontologies = ontologyRepository.findByUserOrderByIdentificationAsc(user);
 		}
 
-		final List<String> identifications = new ArrayList<String>();
+		final List<String> identifications = new ArrayList<>();
 		for (final Ontology ontology : ontologies) {
 			identifications.add(ontology.getIdentification());
 
@@ -508,6 +565,11 @@ public class OntologyServiceImpl implements OntologyService {
 			return null;
 		}
 
+	}
+
+	@Override
+	public List<OntologyKPI> getOntologyKpisByOntology(Ontology ontology) {
+		return ontologyKpiRepository.findByOntology(ontology);
 	}
 
 	@Override
@@ -564,7 +626,7 @@ public class OntologyServiceImpl implements OntologyService {
 	@Override
 	public List<String> getAllDataModelTypes() {
 		final List<MainType> types = Arrays.asList(DataModel.MainType.values());
-		final List<String> typesString = new ArrayList<String>();
+		final List<String> typesString = new ArrayList<>();
 		for (final MainType type : types) {
 			typesString.add(type.toString());
 		}
@@ -572,10 +634,15 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	@Override
+	public OntologyVirtualDatasource getOntologyVirtualDatasourceByName(String datasourceName) {
+		return ontologyVirtualDatasourceRepository.findByDatasourceName(datasourceName);
+	}
+
+	@Override
 	public boolean hasUserPermissionForQuery(User user, Ontology ontology) {
 		if (ontology == null || user == null)
 			return false;
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (ontology.getUser().getUserId().equals(user.getUserId())) {
 			return true;
@@ -615,7 +682,7 @@ public class OntologyServiceImpl implements OntologyService {
 	public boolean hasUserPermissionForInsert(User user, Ontology ontology) {
 		if (ontology == null || user == null)
 			return false;
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (ontology.getUser().getUserId().equals(user.getUserId())) {
 			return true;
@@ -651,7 +718,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public boolean hasEncryptionEnabled(String ontology) {
-		Ontology ont = getOntologyByIdentification(ontology);
+		final Ontology ont = getOntologyByIdentification(ontology);
 		if (ont == null)
 			return false;
 		else
@@ -671,9 +738,12 @@ public class OntologyServiceImpl implements OntologyService {
 				jsonNode = jsonNode.path(DATOS_STR).path(PROP_STR);
 			else
 				jsonNode = jsonNode.path(PROP_STR);
-
-			fields = extractFieldsFromJsonNode(jsonNode);
-
+			if (!jsonNode.path("type").isMissingNode() && !jsonNode.path("type").path("enum").isMissingNode()
+					&& jsonNode.path("type").path("enum").get(0).asText().equalsIgnoreCase("FeatureCollection")) {
+				fields.put("FeatureCollection", "FeatureCollection");
+			} else {
+				fields = extractFieldsFromJsonNode(jsonNode);
+			}
 		}
 
 		return fields;
@@ -733,7 +803,7 @@ public class OntologyServiceImpl implements OntologyService {
 		}
 		// add Context to fields for query
 		if (!context.equals("")) {
-			final Map<String, String> fieldsForQuery = new TreeMap<String, String>();
+			final Map<String, String> fieldsForQuery = new TreeMap<>();
 			for (final Map.Entry<String, String> field : fields.entrySet()) {
 				final String key = field.getKey();
 				final String value = field.getValue();
@@ -745,7 +815,7 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	private Map<String, String> extractFieldsQueryToolFromJsonNode(JsonNode jsonNode) {
-		Map<String, String> fields = new TreeMap<>();
+		final Map<String, String> fields = new TreeMap<>();
 		final Iterator<String> iterator = jsonNode.fieldNames();
 		String property;
 		while (iterator.hasNext()) {
@@ -813,7 +883,7 @@ public class OntologyServiceImpl implements OntologyService {
 				}
 
 				ontology.setIdentification(ontologyDb.getIdentification());
-				ontologyRepository.save(ontology);
+				ontologyRepository.saveAndFlush(ontology);
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
 					createRestOntology(ontologyDb, config);
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
@@ -853,14 +923,16 @@ public class OntologyServiceImpl implements OntologyService {
 			if (!ignoreTitleCaseCheck && !ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL))
 				ontologyDataService.checkTitleCaseSchema(ontology.getJsonSchema());
 
+			ontology.setPartitionKey(config == null ? null : config.getPartitionKey());
 			final User user = userService.getUser(ontology.getUser().getUserId());
 			if (user != null) {
 				ontology.setUser(user);
-				ontologyRepository.saveAndFlush(ontology);
+				ontology = ontologyRepository.saveAndFlush(ontology);
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
 					createRestOntology(ontology, config);
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
-					createVirtualOntology(ontology, config.getDatasource(), config.getObjectId());
+					createVirtualOntology(ontology, config.getDatasource(), config.getDatasourceTableName(),
+							config.getObjectId(), config.getObjectGeometry());
 				}
 			} else {
 				throw new OntologyServiceException("Invalid user");
@@ -872,7 +944,8 @@ public class OntologyServiceImpl implements OntologyService {
 
 	}
 
-	private void createVirtualOntology(Ontology ontology, String datasourceName, String objectId) {
+	private void createVirtualOntology(Ontology ontology, String datasourceName, String datasourceTableName,
+			String objectId, String objectGeometry) {
 		if (objectId == null || objectId.equals("")) {
 			objectId = null;
 		}
@@ -882,8 +955,10 @@ public class OntologyServiceImpl implements OntologyService {
 		if (datasource != null) {
 			final OntologyVirtual ontologyVirtual = new OntologyVirtual();
 			ontologyVirtual.setDatasourceId(datasource);
+			ontologyVirtual.setDatasourceTableName(datasourceTableName);
 			ontologyVirtual.setOntologyId(ontology);
 			ontologyVirtual.setObjectId(objectId);
+			ontologyVirtual.setObjectGeometry(objectGeometry);
 			ontologyvirtualRepository.save(ontologyVirtual);
 		} else {
 			throw new OntologyServiceException("Datasource " + datasourceName + " not found.");
@@ -909,7 +984,8 @@ public class OntologyServiceImpl implements OntologyService {
 			if (isAuth) {
 
 				if (config.getAuthMethod() != null) {
-					if (config.getAuthMethod().equalsIgnoreCase("apiKey")) {
+					if (config.getAuthMethod().equalsIgnoreCase("apiKey")
+							|| config.getAuthMethod().equalsIgnoreCase("api_key")) {
 						authJson.put("header", config.getHeader());
 						authJson.put("token", config.getToken());
 						ontologyRest.setSecurityType(SecurityType.API_KEY);
@@ -945,8 +1021,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 			String headersConfig = "[]";
 			if (config.getHeaders() != null && config.getHeaders().length > 0) {
-				final JSONArray jsonHeader = new JSONArray(config.getHeaders()[0]);
-				headersConfig = jsonHeader.toString();
+				headersConfig = new JSONArray(config.getHeaders()[0]).toString();
 			}
 			ontologyHeaders.setConfig(headersConfig);
 			ontologyHeaders = ontologyRestHeadersRepo.save(ontologyHeaders);
@@ -954,7 +1029,7 @@ public class OntologyServiceImpl implements OntologyService {
 			final Set<OntologyRestOperation> operationsList = new HashSet<>();
 			final Set<OntologyRestOperationParam> paramsRestOperations = new HashSet<>();
 
-			List<OntologyRestOperation> operationsOld = new ArrayList<OntologyRestOperation>();
+			List<OntologyRestOperation> operationsOld = new ArrayList<>();
 
 			if (config.getOperations() != null) {
 
@@ -1131,7 +1206,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public List<Ontology> getOntologiesByClientPlatform(ClientPlatform clientPlatform) {
-		final List<Ontology> ontologies = new ArrayList<Ontology>();
+		final List<Ontology> ontologies = new ArrayList<>();
 		for (final ClientPlatformOntology relation : clientPlatformOntologyRepository
 				.findByClientPlatform(clientPlatform)) {
 			ontologies.add(relation.getOntology());
@@ -1250,7 +1325,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public boolean hasUserPermisionForChangeOntology(User user, Ontology ontology) {
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (ontology.getUser().getUserId().equals(user.getUserId())) {
 			return true;
@@ -1343,15 +1418,32 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	@Override
-	public List<String> getDatasourcesRelationals() {
-		return ontologyVirtualDatasourceRepository.findAllByOrderByDatasourceNameAsc().stream()
-				.map(OntologyVirtualDatasource::getDatasourceName).collect(Collectors.toList());
+	public List<VirtualDatasourceDTO> getDatasourcesRelationals() {
+		final List<VirtualDatasourceDTO> virtualDatasetDTOList = new ArrayList<>();
+		final List<OntologyVirtualDatasource> virtualDatasources = ontologyVirtualDatasourceRepository
+				.findAllByOrderByDatasourceNameAsc();
+
+		for (final OntologyVirtualDatasource ontologyVirtualDatasource : virtualDatasources) {
+			final VirtualDatasourceDTO virtualDatasetDTO = new VirtualDatasourceDTO(ontologyVirtualDatasource);
+			virtualDatasetDTOList.add(virtualDatasetDTO);
+		}
+
+		return virtualDatasetDTOList;
 	}
 
 	@Override
-	public List<String> getPublicDatasourcesRelationals() {
-		return ontologyVirtualDatasourceRepository.findByIsPublicTrue().stream()
-				.map(OntologyVirtualDatasource::getDatasourceName).collect(Collectors.toList());
+	public List<VirtualDatasourceDTO> getPublicOrOwnedDatasourcesRelationals(String sessionUserId) {
+		final List<VirtualDatasourceDTO> virtualDatasetDTOList = new ArrayList<>();
+		final User sessionUser = userService.getUser(sessionUserId);
+		final List<OntologyVirtualDatasource> virtualDatasources = ontologyVirtualDatasourceRepository
+				.findByUserIdOrIsPublicTrue(sessionUser);
+
+		for (final OntologyVirtualDatasource ontologyVirtualDatasource : virtualDatasources) {
+			final VirtualDatasourceDTO virtualDatasetDTO = new VirtualDatasourceDTO(ontologyVirtualDatasource);
+			virtualDatasetDTOList.add(virtualDatasetDTO);
+		}
+
+		return virtualDatasetDTOList;
 	}
 
 	@Override
@@ -1397,7 +1489,7 @@ public class OntologyServiceImpl implements OntologyService {
 			throws Exception {
 
 		final PlatformQuery newQuery = queryTemplateService.getTranslatedQuery(ontology, query);
-		Map<String, String> mapResponse = new HashMap<String, String>();
+		final Map<String, String> mapResponse = new HashMap<>();
 		// send query
 		String queryTranslated = query;
 		if (newQuery != null) {
@@ -1424,7 +1516,7 @@ public class OntologyServiceImpl implements OntologyService {
 					return mapResponse;
 				}
 			}
-			String resultInsert = processQuery("", ontology, ApiOperation.Type.POST.name(), output, "", user);
+			final String resultInsert = processQuery("", ontology, ApiOperation.Type.POST.name(), output, "", user);
 			if (resultInsert.equals("error")) {
 				mapResponse.put("status", "error");
 				mapResponse.put("message", "ontology.error.create.kpi.message.insert");
@@ -1494,8 +1586,8 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public String getOntologyFromQuery(String query) {
-		query = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ").trim().replaceAll(" +", " ").replace(" FROM ",
-				" from ");
+		query = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ").trim().replaceAll(" +", " ")
+				.replace(" FROM ", " from ").replaceAll(",", " ");
 
 		final String[] list = query.split("from ");
 
@@ -1548,13 +1640,22 @@ public class OntologyServiceImpl implements OntologyService {
 
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			ontologies = ontologyRepository
-					.findOntologyForListByIdentificationContainingAndDescriptionContainingAndActiveTrue(identification,
-							description);
+					.findOntologyForListByIdentificationContainingAndDescriptionContaining(identification, description);
 		} else {
 			ontologies = ontologyRepository
 					.findOntologyForListByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(
 							sessionUser, identification, description);
 		}
 		return ontologies;
+	}
+
+	@Override
+	public List<Ontology> getOntologiesByOwner(String sessionUserId) {
+		final User sessionUser = userService.getUser(sessionUserId);
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			return ontologyRepository.findAllByOrderByIdentificationAsc();
+		} else {
+			return ontologyRepository.findByUser(sessionUser);
+		}
 	}
 }

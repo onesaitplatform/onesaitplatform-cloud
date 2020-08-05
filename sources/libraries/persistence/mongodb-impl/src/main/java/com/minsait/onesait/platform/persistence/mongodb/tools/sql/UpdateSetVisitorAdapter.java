@@ -42,6 +42,8 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 	private static final String ISODATE_FUNCTION = "ISODate";
 	private static final String OBJECTID_FUNCTION = "ObjectId";
 	private static final String APPEND_FUNCTION = "APPEND";
+	private static final String BOOLEAN_FUNCTION = "BOOLEAN";
+	private static final String OBJECT = "OBJECT";
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
@@ -52,7 +54,10 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 			builder.append(getObjectId(stringValue.getValue()));
 		else if (isBooleanValue(stringValue.getValue()))
 			builder.append(getBooleanValue(stringValue.getValue()));
-		else
+		else if (isObject(stringValue.getValue())) {
+			final JsonNode object = toObject(stringValue.getValue());
+			builder.append(toObjectString(object));
+		} else
 			builder.append(stringValue);
 
 	}
@@ -78,13 +83,16 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 		if (function.getName().equalsIgnoreCase(APPEND_FUNCTION)) {
 			final ExpressionList params = function.getParameters();
 			int push2Pos;
-			// First look where to insert $push cmd
-			if (positionInStatement == 0)
-				push2Pos = 0;
-			else
-				push2Pos = builder.lastIndexOf(",");
 			final String statement = "$push:{";
-			builder.insert(push2Pos + 1, statement);
+			// First look where to insert $push cmd
+			if (positionInStatement == 0) {
+				push2Pos = 0;
+				builder.insert(push2Pos, statement);
+			} else {
+				push2Pos = builder.lastIndexOf(",");
+				builder.insert(push2Pos + 1, statement);
+			}
+
 			if (params.getExpressions().size() == 1) {
 				// argument is object?
 				final String param = params.getExpressions().get(0).toString();
@@ -120,9 +128,29 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 				throw new GenericRuntimeOPException("Incorrect use of APPEND function");
 			}
 
-		}
+		} else if (function.getName().equalsIgnoreCase(BOOLEAN_FUNCTION)) {
+			final ExpressionList params = function.getParameters();
+			if (params.getExpressions().size() == 1) {
+				final String param = params.getExpressions().get(0).toString();
+				builder.append(Boolean.valueOf(param));
+				builder.append("}");
+			} else {
+				throw new RuntimeException("Incorrect use of " + BOOLEAN_FUNCTION + " function");
+			}
 
-		throw new GenericRuntimeOPException("SQL Function " + function.getName() + " not supported");
+		} else if (function.getName().equalsIgnoreCase(OBJECT)) {
+
+			final ExpressionList params = function.getParameters();
+			if (params.getExpressions().size() == 1) {
+				final String param = params.getExpressions().get(0).toString();
+				final JsonNode object = toObject(param);
+				builder.append(toObjectString(object));
+			} else {
+				throw new RuntimeException("Incorrect use of " + OBJECT + " function");
+			}
+		} else {
+			throw new GenericRuntimeOPException("SQL Function " + function.getName() + " not supported");
+		}
 
 	}
 

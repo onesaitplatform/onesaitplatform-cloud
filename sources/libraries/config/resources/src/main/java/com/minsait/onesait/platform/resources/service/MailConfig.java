@@ -14,11 +14,14 @@
  */
 package com.minsait.onesait.platform.resources.service;
 
+import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
+
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -26,6 +29,7 @@ import com.minsait.onesait.platform.config.components.MailConfiguration;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 
 @Configuration
+@DependsOn(JASYPT_BEAN)
 public class MailConfig {
 
 	@Autowired

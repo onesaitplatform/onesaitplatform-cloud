@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.controlpanel.security;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.jasig.cas.client.validation.Assertion;
@@ -23,14 +24,21 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.cas.userdetails.AbstractCasAssertionUserDetailsService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
+import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +51,8 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 	@Autowired
 	private RoleRepository roleRepository;
 	@Autowired
+	private MasterUserRepository masterUserRepository;
+	@Autowired
 	private ObjectMapper mapper;
 	@Value("${onesaitplatform.authentication.cas.attributes.mail:mail}")
 	private String mail;
@@ -50,16 +60,41 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 	private String fullName;
 	@Value("${onesaitplatform.authentication.default_password:changeIt9900!}")
 	private String defaultPassword;
+	@Autowired
+	private VerticalResolver tenantDBResolver;
 
 	@Override
 	protected UserDetails loadUserDetails(Assertion assertion) {
 		log.debug("New user logged from CAS server {}", assertion.getPrincipal().getName());
+		String username = assertion.getPrincipal().getName();
+		MasterUser user = masterUserRepository.findByUserId(username);
 
-		if (userRepository.findByUserId(assertion.getPrincipal().getName()) == null)
-			return toUserDetails(
-					importUserToDB(assertion.getPrincipal().getName(), assertion.getPrincipal().getAttributes()));
-		else
-			return toUserDetails(userRepository.findByUserId(assertion.getPrincipal().getName()));
+		if (user == null) {
+			log.info("LoadUserByUserName: User not found by name: {}", username);
+			log.info("Creating CAS user on default vertical");
+			User newUser = importUserToDB(username, assertion.getPrincipal().getAttributes());
+			user = masterUserRepository.findByUserId(username);
+			if (user == null)
+				throw new UsernameNotFoundException("Could not create CAS user: " + username);
+			return toUserDetails(user.getUserId(), user.getPassword(),
+					tenantDBResolver.getSingleVerticalIfPossible(user), user.getTenant().getName(),
+					newUser.getRole().getId());
+		}
+
+		String role = Role.Type.ROLE_PREVERIFIED_TENANT_USER.name();
+		Vertical vertical = null;
+		final String tenant = user.getTenant().getName();
+		if (tenantDBResolver.hasSingleTenantSchemaAssociated(user) || MultitenancyContextHolder.isForced()) {
+
+			vertical = tenantDBResolver.getSingleVerticalIfPossible(user);
+			MultitenancyContextHolder.setVerticalSchema(vertical.getSchema());
+			MultitenancyContextHolder.setTenantName(tenant);
+			role = userRepository.findByUserId(user.getUserId()).getRole().getId();
+
+		}
+
+		return toUserDetails(user.getUserId(), user.getPassword(), vertical, tenant, role);
+
 	}
 
 	private UserDetails toUserDetails(User user) {
@@ -82,6 +117,12 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 			log.warn("could not add extrafields for user: {}", username);
 		}
 		return userRepository.save(user);
+
+	}
+
+	private org.springframework.security.core.userdetails.User toUserDetails(String username, String password,
+			Vertical vertical, String tenant, String role) {
+		return new UserPrincipal(username, password, Arrays.asList(new SimpleGrantedAuthority(role)), vertical, tenant);
 
 	}
 

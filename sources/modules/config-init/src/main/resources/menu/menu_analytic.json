@@ -1,8 +1,9 @@
 {
 	"menu": "OnesaitPlatform",
-	"rol": "ROLE_DEVELOPER",
+	"rol": "ROLE_DATASCIENTIST",
 	"noSession": "/console/login",
 	"navigation": [
+		
 		{
 			"title": {
 				"EN": "ANALYTICS TOOLS",
@@ -13,27 +14,11 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Projects",
-						"ES": "Mis Proyectos"
+						"EN": "My DataFlows",
+						"ES": "Mis DataFlows"
 					},
 					"icon": "",
-					"url": "/controlpanel/projects/list"
-				},
-				{
-					"title": {
-						"EN": "Data Import Tools",
-						"ES": "Herramientas de importación"
-					},
-					"icon": "",
-					"url": "/controlpanel/jsontool/tools"
-				},
-				{
-					"title": {
-						"EN": "My Digital Flows",
-						"ES": "Mis Flujos Digitales"
-					},
-					"icon": "",
-					"url": "/controlpanel/flows/list"
+					"url": "/controlpanel/dataflow/list"
 				},
 				{
 					"title": {
@@ -50,69 +35,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
-				},
-				{
-					"title": {
-						"EN": "My DataFlows",
-						"ES": "Mis DataFlows"
-					},
-					"icon": "",
-					"url": "/controlpanel/dataflow/list"
-				},
-				{
-					"title": {
-						"EN": "My Business Rules",
-						"ES": "Mis Reglas de Negocio"
-					},
-					"icon": "",
-					"url": "/controlpanel/rule-domains/list"
-				},
-				{
-					"title": {
-						"EN": "My Ontologies",
-						"ES": "Mis Ontologías"
-					},
-					"icon": "",
-					"url": "/controlpanel/ontologies/list"
-				},
-				{
-					"title": {
-						"EN": "My APIs",
-						"ES": "Mis APIs"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/list"
-				},
-				{
-					"title": {
-						"EN": "My Web Projects",
-						"ES": "Mis Proyectos Web"
-					},
-					"icon": "",
-					"url": "/controlpanel/webprojects/list"
-				},
-				{
-					"title": {
-						"EN": "My Files",
-						"ES": "Mis Ficheros"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
-						"EN": "BPM Tenants",
-						"ES": "Dominios de BPM"
-					},
-					"icon": "",
-					"url": "/controlpanel/bpm/list"
 				}
+				
 			]
 		},
+
 		{
 			"title": {
-				"EN": "VISUALIZATION",
-				"ES": "VISUALIZACIÓN"
+				"EN": "VISUALIZATION & GIS",
+				"ES": "VISUALIZATION & GIS"
 			},
 			"icon": "flaticon-graph",
 			"url": "",
@@ -148,9 +79,26 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/reports/list"
+				},
+				{
+					"title": {
+						"EN": "My GIS Viewers",
+						"ES": "Mis Visores GIS"
+					},
+					"icon": "",
+					"url": "/controlpanel/viewers/list"
+				},
+				{
+					"title": {
+						"EN": "My GIS Layers",
+						"ES": "Mis Capas GIS"
+					},
+					"icon": "",
+					"url": "/controlpanel/layers/list"
 				}
 			]
 		},
+		
 		{
 			"title": {
 				"EN": "",
@@ -160,28 +108,145 @@
 			"url": "",
 			"submenu": []
 		},
+
 		{
 			"title": {
-				"EN": "SHARE & USE",
-				"ES": "COMPARTE Y USA"
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO"
 			},
-			"icon": "flaticon-cart",
+			"icon": "flaticon-network",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Market",
-						"ES": "Mi Market"
+						"EN": "My Projects",
+						"ES": "Mis Proyectos"
 					},
 					"icon": "",
-					"url": "/controlpanel/marketasset/list"
+					"url": "/controlpanel/projects/list"
+				},
+				{
+					"title": {
+						"EN": "My Ontologies",
+						"ES": "Mis Ontologías"
+					},
+					"icon": "",
+					"url": "/controlpanel/ontologies/list"
+				},
+				{
+					"title": {
+						"EN": "My APIs",
+						"ES": "Mis APIs"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/list"
+				},
+				{
+					"title": {
+						"EN": "My Flows",
+						"ES": "Mis Flujos"
+					},
+					"icon": "",
+					"url": "/controlpanel/flows/list"
+				},
+				{
+					"title": {
+						"EN": "My Rules",
+						"ES": "Mis Reglas"
+					},
+					"icon": "",
+					"url": "/controlpanel/rule-domains/list"
+				},
+				{
+					"title": {
+						"EN": "My Realms",
+						"ES": "Mis Dominios de Seguridad"
+					},
+					"icon": "",
+					"url": "/controlpanel/apps/list"
 				}
 			]
 		},
+
 		{
 			"title": {
-				"EN": "DIGITAL CLIENTS",
-				"ES": "CLIENTES DIGITALES"
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "Data to Ontology Import Tools",
+						"ES": "Herramientas de importación de datos a ontología"
+					},
+					"icon": "",
+					"url": "/controlpanel/jsontool/tools"
+				},
+				{
+					"title": {
+						"EN": "My Web Projects",
+						"ES": "Mis Proyectos Web"
+					},
+					"icon": "",
+					"url": "/controlpanel/webprojects/list"
+				},
+				{
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "My REST Services Planner",
+						"ES": "Mis planificador de servicios REST"
+					},
+					"icon": "",
+					"url": "/controlpanel/restplanner/list"
+				},
+				{
+					"title": {
+						"EN": "My Caches",
+						"ES": "Mis cachés"
+					},
+					"icon": "",
+					"url": "/controlpanel/caches/list"
+				},
+                {
+					"title": {
+						"EN": "My Internationalizations",
+						"ES": "Mis internacionalizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/internationalizations/list"
+				},
+				{
+					"title": {
+						"EN": "My Control Panel Trees",
+						"ES": "Mis árboles del Panel de Control"
+					},
+					"icon": "",
+					"url": "/controlpanel/categorization/list"
+				},
+				{
+					"title": {
+						"EN": "My JDBC Connections",
+						"ES": "Mis conexiones JDBC"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "CLIENTS & DIGITAL TWINS",
+				"ES": "CLIENTS & DIGITAL TWINS"
 			},
 			"icon": "flaticon-share",
 			"url": "",
@@ -217,41 +282,48 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/show"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "GIS TOOLS",
-				"ES": "HERRAMIENTAS GIS"
-			},
-			"icon": "flaticon-map-location",
-			"url": "",
-			"submenu": [			
-				{
-					"title": {
-						"EN": "My GIS Viewers",
-						"ES": "Mis Visores GIS"
-					},
-					"icon": "",
-					"url": "/controlpanel/viewers/list"
 				},
 				{
 					"title": {
-						"EN": "My GIS Layers",
-						"ES": "Mis Capas GIS"
+						"EN": "My Subscriptions Definitions",
+						"ES": "Mis Definiciones de Suscripciones"
 					},
 					"icon": "",
-					"url": "/controlpanel/layers/list"
+					"url": "/controlpanel/subscriptions/list"
+				},
+				{
+					"title": {
+						"EN": "My Digital Twin Definitions",
+						"ES": "Mis Definiciones de Digital Twin"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwintypes/list"
+				},
+				{
+					"title": {
+						"EN": "My Digital Twins",
+						"ES": "Mis Digital Twins"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwindevices/list"
+				},
+				{
+					"title": {
+						"EN": "Digital Twin Status",
+						"ES": "Estado de mis Digital Twins"
+					},
+					"icon": "",
+					"url": "/controlpanel/digitaltwindisplay/show"
 				}
 			]
 		},
+
 		{
 			"title": {
 				"EN": "TOOLS",
 				"ES": "HERRAMIENTAS"
 			},
-			"icon": "flaticon-open-box",
+			"icon": "flaticon-refresh",
 			"url": "",
 			"submenu": [
 				{
@@ -272,27 +344,11 @@
 				},
 				{
 					"title": {
-						"EN": "My Realms",
-						"ES": "Mis Dominios de Seguridad"
+						"EN": "My Market",
+						"ES": "Mi Market"
 					},
 					"icon": "",
-					"url": "/controlpanel/apps/list"
-				},
-				{
-					"title": {
-						"EN": "My Microservices",
-						"ES": "Mis microservicios"
-					},
-					"icon": "",
-					"url": "/controlpanel/microservices/list"
-				},
-				{
-					"title": {
-						"EN": "My Categorizations",
-						"ES": "Mis Categorizaciones"
-					},
-					"icon": "",
-					"url": "/controlpanel/categorization/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
 		}

@@ -21,9 +21,10 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.external.api.rest.ExternalApiRestOpsDBRepository;
-import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyDBRepository;
+import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
@@ -31,7 +32,7 @@ import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepositor
 @Component
 public class BasicOpsDBRepositoryFactory {
 
-	@Autowired
+	@Autowired(required = false)
 	private ElasticSearchBasicOpsDBRepository elasticBasicOps;
 
 	@Autowired
@@ -44,15 +45,18 @@ public class BasicOpsDBRepositoryFactory {
 	private OntologyRepository ontologyRepository;
 
 	@Autowired
-	private VirtualOntologyDBRepository virtualRepository;
+	private VirtualOntologyOpsDBRepository virtualRepository;
+
+	@Autowired
+	private CosmosDBBasicOpsDBRepository cosmosBasicOps;
 
 	@Autowired(required = false)
 	@Qualifier(NameBeanConst.KUDU_BASIC_OPS_BEAN_NAME)
 	private BasicOpsDBRepository kuduBasicOpsDBRepository;
 
 	public BasicOpsDBRepository getInstance(String ontologyId) {
-		Ontology ds = ontologyRepository.findByIdentification(ontologyId);
-		RtdbDatasource dataSource = ds.getRtdbDatasource();
+		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
+		final RtdbDatasource dataSource = ds.getRtdbDatasource();
 		return getInstance(dataSource);
 	}
 
@@ -67,6 +71,8 @@ public class BasicOpsDBRepositoryFactory {
 			return externalApiRest;
 		} else if (RtdbDatasource.VIRTUAL.equals(dataSource)) {
 			return virtualRepository;
+		} else if (RtdbDatasource.COSMOS_DB.equals(dataSource)) {
+			return cosmosBasicOps;
 		} else {
 			return mongoBasicOps;
 		}

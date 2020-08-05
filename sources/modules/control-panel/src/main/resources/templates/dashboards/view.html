@@ -35,15 +35,38 @@
 		
 	</head>	
 	
+	<script th:inline="javascript">
+     /*<![CDATA[*/
+    	 
+	  	 
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/controlpanel/static/opsw.js', { scope: '/controlpanel/static/' })
+          .then(function(registration) {
+                console.log('Service Worker Registered');
+          });
+
+        navigator.serviceWorker.ready.then(function(registration) {
+           console.log('Service Worker Ready');
+        });
+      }
+     
+   /*]]>*/
+
+  
+		
+	
+	</script>
+     
 	
 	<!-- <script src="../env/env.js"></script> -->
 	<script src="/controlpanel/static/js/pages/dashboardMessageHandler.js"></script>
+
 	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
 
   	<script th:inline="javascript">
-     // <![CDATA[ 
+     /*<![CDATA[*/
+    	 
   
-        
     
 	    window.__env = window.__env || {};
 	    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
@@ -57,10 +80,12 @@
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
 	    window.__env.restUrl = [[${iotbrokerurl}]];
-	    window.__env.urlParameters = getURLParameters();
+		window.__env.urlParameters = getURLParameters();
+		window.__env.i18njson = /*[[${i18njson}]]*/ "{}";
+		window.__env.i18njson = JSON.parse(window.__env.i18njson);
+		window.__env.globalSockMaxWaitTimeout = [[${heartbeatMaxTimeout}]];
 		
 	 
-			 
      //Function that catch url parameters and return these like a map   
      function getURLParameters()
  		{	    	 
@@ -106,8 +131,10 @@
 	 		}
 	 	}
 	     
+	
 	   
-        // ]]>  
+	     
+        /*]]>*/
 
   
 		
@@ -121,12 +148,13 @@
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
 	
  	<!-- VUE and onesait components -->
-	
+
 	<link rel="stylesheet" th:href="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.css')}"/>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
-	
- 	<!-- VUE and onesait components -->
+
+
+	<!-- VUE and onesait components -->
  	
  	
  	 	<!-- page-sidebar-closed to start page with collapsed menu -->
@@ -180,9 +208,19 @@
 	        }
 	    });
 	});	
-</script>
+	</script>
 
- 
+	<!-- Mocano only in edit -->
+	<script th:if="${edition == true}">	
+		var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
+	</script>
+	
+	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/loader.js}"></script>
+	
+	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
+	
+	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
+	<!-- End Monaco Require -->
 
  
 

@@ -23,7 +23,7 @@ public interface RulesEngineService {
 
 	String executeRules(String ontology, String jsonInput, String user) throws GenericOPException;
 
-	List<Future<String>> executeRulesAsync(String ontology, String jsonInput) throws GenericOPException;
+	List<Future<String>> executeRulesAsync(String ontology, String jsonInput, String vertical, String tenant) throws GenericOPException;
 
 	String executeRestRule(String ruleIdentification, String jsonInput) throws GenericOPException;
 

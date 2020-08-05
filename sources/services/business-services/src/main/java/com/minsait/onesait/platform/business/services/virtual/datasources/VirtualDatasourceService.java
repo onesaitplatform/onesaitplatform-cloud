@@ -18,6 +18,7 @@ import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface VirtualDatasourceService {
 
@@ -25,7 +26,7 @@ public interface VirtualDatasourceService {
 
 	List<OntologyVirtualDatasource> getAllDatasources();
 
-	void createDatasource(OntologyVirtualDatasource datasource);
+	void createDatasource(OntologyVirtualDatasource datasource) throws GenericOPException;
 
 	OntologyVirtualDatasource getDatasourceById(String id);
 
@@ -42,4 +43,12 @@ public interface VirtualDatasourceService {
 
 	String getUniqueColumn(final String ontology);
 
+	List<OntologyVirtualDatasource> getAllByDatasourceNameAndUser(String identification, String sessionUserId);
+
+	List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user);
+
+	OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId);
+
+	OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId);
+	
 }

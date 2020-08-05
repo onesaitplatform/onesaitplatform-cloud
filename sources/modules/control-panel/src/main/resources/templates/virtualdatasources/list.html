@@ -91,7 +91,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../virtualdatasources/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../virtualdatasources/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>								
 							</div>
@@ -134,7 +134,8 @@
 												<table id="datasource" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas" th:text="#{ontology.identification}">Identification</th>
+															<th class="titulo-columnas" th:text="#{datasource.identification}">Identification</th>
+															<th class="titulo-columnas" th:text="#{datasource.domain}">Identification</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas text-center">SGDB</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>
@@ -147,6 +148,8 @@
 														<tr th:each="datasource : ${datasources}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${datasource.datasourceName}"></td>
+															<!-- DOMAIN -->
+															<td class="text-left no-wrap " th:text="${datasource.datasourceDomain}"></td>
 															<!-- USER -->
 															<td class="text-center " th:text="${datasource.userId.userId}"></td>
 															<!-- SGDB -->
@@ -164,15 +167,14 @@
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-circle btn-outline blue no-border tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
-																																																			
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-circle btn-outline blue no-border tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																				
 																	<!-- EDIT -->
-																	<span  sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" class="btn btn-xs btn-circle btn-outline blue no-border tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId}" class="btn btn-xs btn-circle btn-outline blue no-border tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
 																	<!-- CHANGE PRIVATE/PUBLIC -->
-																	<span th:if="${!datasource.public}" th:title="#{datasource.public}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{datasource.public}" th:onclick="'javascript:makePublic(\''+${datasource.datasourceName}+'\')'"><i class="la la-user font-hg"></i></span>
-																	<span th:if="${datasource.public}" th:title="#{datasource.private}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{datasource.private}" th:onclick="'javascript:makePublic(\''+${datasource.datasourceName}+'\')'"><i class="la la-user-times font-hg"></i></span>
+																	<span th:if="${!datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:title="#{datasource.public}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{datasource.public}" th:onclick="'javascript:makePublic(\''+${datasource.datasourceName}+'\')'"><i class="la la-user font-hg"></i></span>
+																	<span th:if="${datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:title="#{datasource.private}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{datasource.private}" th:onclick="'javascript:makePublic(\''+${datasource.datasourceName}+'\')'"><i class="la la-user-times font-hg"></i></span>
 																	<!-- CHECK CONNECTION -->
-																	<span  sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" class="btn btn-xs no-border btn-circle btn-outline blue  tooltips" data-container="body" data-placement="bottom" th:title="#{datasource.check}" th:data-original-title="#{datasource.check}" th:onclick="'javascript:checkConnection(\''+${datasource.datasourceName}+'\');'"><i class="la la-plug font-hg"></i></span>
+																	<span class="btn btn-xs no-border btn-circle btn-outline blue  tooltips" data-container="body" data-placement="bottom" th:title="#{datasource.check}" th:data-original-title="#{datasource.check}" th:onclick="'javascript:checkConnection(\''+${datasource.datasourceName}+'\');'"><i class="la la-plug font-hg"></i></span>
 																</div>
 															</td>
 														</tr>

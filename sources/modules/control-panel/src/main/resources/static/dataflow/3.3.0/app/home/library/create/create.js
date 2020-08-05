@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('CreateModalInstanceController', function ($scope, $modalInstance, $translate, api) {
+  .controller('CreateModalInstanceController', ["$scope", "$modalInstance", "$translate", "api", function ($scope, $modalInstance, $translate, api) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -76,4 +76,4 @@ angular
       }
     });
 
-  });
+  }]);

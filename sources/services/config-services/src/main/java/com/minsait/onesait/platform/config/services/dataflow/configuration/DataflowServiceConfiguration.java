@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.dataflow.configuration;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,32 +24,7 @@ import lombok.Setter;
 @Setter
 @Component
 public class DataflowServiceConfiguration {
-	@Value("${onesaitplatform.analytics.dataflow.streamsetsProtocol:http}")
-	private String dataflowProtocol;
-	@Value("${onesaitplatform.analytics.dataflow.streamsetsHostname:localhost}")
-	private String dataflowHostname;
-	@Value("${onesaitplatform.analytics.dataflow.streamsetsPort:8080}")
-	private int dataflowPort;
-	@Value("${onesaitplatform.analytics.dataflow.streamsetsPathname:#{null}}")
-	private String dataflowPathname;
-	@Value("${onesaitplatform.analytics.dataflow.adminUsername:#{null}}")
-	private String dataflowAdminUsername;
-	@Value("${onesaitplatform.analytics.dataflow.adminPass:#{null}}")
-	private String dataflowAdminPass;
-	@Value("${onesaitplatform.analytics.dataflow.username:#{null}}")
-	private String dataflowUsername;
-	@Value("${onesaitplatform.analytics.dataflow.pass:#{null}}")
-	private String dataflowPass;
-	@Value("${onesaitplatform.analytics.dataflow.guestUsername:#{null}}")
-	private String dataflowGuest;
-	@Value("${onesaitplatform.analytics.dataflow.guestPass:#{null}}")
-	private String dataflowGuestPass;
-	@Value("${onesaitplatform.analytics.dataflow.streamsetsGlobalTimeout:#{120000}}")
-	private String globalTimeout;
-	private String baseURL;
+	@Value("${onesaitplatform.analytics.dataflow.version:3.10.0}")
+	private String dataflowVersion;
 
-	@PostConstruct
-	public void init() {
-		baseURL = String.format("%s://%s:%s/%s", dataflowProtocol, dataflowHostname, dataflowPort, dataflowPathname);
-	}
 }

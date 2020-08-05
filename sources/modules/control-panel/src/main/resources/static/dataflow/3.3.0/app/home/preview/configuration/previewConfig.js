@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('PreviewConfigModalInstanceController', function ($scope, $rootScope, $modalInstance, pipelineConfig,
+  .controller('PreviewConfigModalInstanceController', ["$scope", "$rootScope", "$modalInstance", "pipelineConfig", "pipelineStatus", "$timeout", "pipelineService", "api", "pipelineConstant", function ($scope, $rootScope, $modalInstance, pipelineConfig,
                                                                 pipelineStatus, $timeout, pipelineService, api, pipelineConstant) {
     angular.extend($scope, {
       previewConfig: angular.copy(pipelineConfig.uiInfo.previewConfig),
@@ -76,4 +76,4 @@ angular
       });
     }
 
-  });
+  }]);

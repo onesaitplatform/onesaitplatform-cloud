@@ -272,16 +272,6 @@
 																	<img id="showedImg" th:if="${#lists.isEmpty(api.image)}" th:src="@{/img/API.png}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>																	
 																</div>		
 															</div>
-															<div th:if="!*{graviteeId}AND ${graviteeOn}" class="col-md-6 col-sm-6 col-xs-12">																
-																<div class="form-group">
-																	<label th:text="#{apimanager.publish.gravitee}">Publish to gravitee</label>
-																	<div style="padding: 5px;">
-																		<input id="checkbox-gravitee" name="checkbox-gravitee" type="checkbox" onchange="updateCheckGravitee()" />
-																		<input type="hidden" name="publish2gravitee" id="publish2gravitee" value="false"/>
-																	</div>
-																	<img id="showedImg"  th:src="@{/static/images/graviteeio.png}" class="img-responsive thumbnail" style="height: 60px; position: relative; float: right; top: -45px;"/>
-																</div>																
-															</div>	
 														</div>		
 														<!-- JSON swagger import -->	
 														<div th:classappend="*{apiType?.name() != 'EXTERNAL_FROM_JSON' ? 'hide':''}"  class="row" id="row-json">
@@ -628,8 +618,8 @@
 			                     </div>
 							</div>					
 							<div class="modal-footer">
-						        <button type="button" class="btn btn-circle btn-outline blue" data-dismiss="modal">Close</button>
-						        <button th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" type="button" class="btn btn-circle btn-outline btn-primary" th:onclick="'javascript:ApiCustomOpsController.saveCustom()'" >Save changes</button>
+						        <button type="button" class="btn btn-circle btn-outline blue" data-dismiss="modal" th:text = "#{apimanager.customsql.close}">Close</button>
+						        <button th:if="(${api.id} == null) OR (${api.state.name() != 'PUBLISHED'})" type="button" class="btn btn-circle btn-outline btn-primary" th:onclick="'javascript:ApiCustomOpsController.saveCustom()'" th:text = "#{apimanager.customsql.save.changes}">Save changes</button>
 							</div>
 						</div>
 					</div>
@@ -816,12 +806,6 @@
 			}
 		});
 	}
-	
-	function updateCheckGravitee(){
-		var checked = $('#checkbox-gravitee').is(':checked');
-		$('#publish2gravitee').val(checked);
-	}
-	
 	
 	//var valueObjects = [];
 	var queryResponse = {};

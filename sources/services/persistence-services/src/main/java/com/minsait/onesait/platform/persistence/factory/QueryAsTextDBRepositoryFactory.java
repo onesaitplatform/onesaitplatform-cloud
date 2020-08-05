@@ -25,6 +25,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.external.api.rest.QueryAsTextRestDBImpl;
 import com.minsait.onesait.platform.persistence.external.virtual.QueryAsTextVirtualDBImpl;
@@ -38,7 +39,7 @@ public class QueryAsTextDBRepositoryFactory {
 	@Autowired
 	private QueryAsTextMongoDBImpl queryMongo;
 
-	@Autowired
+	@Autowired(required = false)
 	private ElasticSearchQueryAsTextDBRepository queryElasticSearch;
 
 	@Autowired(required = false)
@@ -57,21 +58,25 @@ public class QueryAsTextDBRepositoryFactory {
 	@Autowired
 	private QueryAsTextRestDBImpl queryApiRest;
 
+	@Autowired
+	private CosmosDBQueryAsTextDBRepository comosDBQuery;
+
 	public QueryAsTextDBRepository getInstance(String ontologyId, String sessionUserId) {
-		Ontology ds = ontologyService.getOntologyByIdentification(ontologyId, sessionUserId);
-		RtdbDatasource dataSource = ds.getRtdbDatasource();
+		final Ontology ds = ontologyService.getOntologyByIdentification(ontologyId, sessionUserId);
+		final RtdbDatasource dataSource = ds.getRtdbDatasource();
 		return getInstance(dataSource);
 	}
 
 	public QueryAsTextDBRepository getInstanceClientPlatform(String ontologyId, String clientP) {
-		ClientPlatform cp = clientPlatformService.getByIdentification(clientP);
+		final ClientPlatform cp = clientPlatformService.getByIdentification(clientP);
 
-		List<Ontology> ds = ontologyService.getOntologiesByClientPlatform(cp);
+		final List<Ontology> ds = ontologyService.getOntologiesByClientPlatform(cp);
 
-		Ontology result1 = ds.stream().filter(x -> ontologyId.equals(x.getIdentification())).findAny().orElse(null);
+		final Ontology result1 = ds.stream().filter(x -> ontologyId.equals(x.getIdentification())).findAny()
+				.orElse(null);
 
 		if (result1 != null) {
-			RtdbDatasource dataSource = result1.getRtdbDatasource();
+			final RtdbDatasource dataSource = result1.getRtdbDatasource();
 			return getInstance(dataSource);
 		} else
 			return queryMongo;
@@ -88,6 +93,8 @@ public class QueryAsTextDBRepositoryFactory {
 			return queryVirtual;
 		else if (dataSource.equals(RtdbDatasource.API_REST))
 			return queryApiRest;
+		else if (dataSource.equals(RtdbDatasource.COSMOS_DB))
+			return comosDBQuery;
 		else
 			return queryMongo;
 	}

@@ -1,4 +1,4 @@
-/**
+	/**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
  * 2013-2019 SPAIN
  *
@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
+import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
@@ -60,7 +61,7 @@ import net.sf.jsqlparser.JSQLParserException;
 @Slf4j
 public class QueryToolServiceImpl implements QueryToolService {
 
-	@PersistenceContext(unitName = "onesaitPlatform")
+	@PersistenceContext(unitName = ConfigDBTenantConfig.PERSISTENCE_UNIT_NAME_TENANT)
 	private EntityManager entityManager;
 
 	@Autowired
@@ -71,14 +72,15 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 	@Autowired
 	private QueryTemplateService queryTemplateService;
-	@Autowired
-	private IntegrationResourcesService resourcesService;
 
 	@Autowired
 	private QueryAsTextDBRepositoryFactory queryAsTextDBRepositoryFactory;
 
 	@Autowired
 	private QuasarMongoDBbHttpConnector quasarConnector;
+
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
 	private static final String JOIN_REGEX = "(LEFT OUTER JOIN|RIGHT OUTER JOIN|INNER JOIN|FULL JOIN|CROSS)\\W+(\\w+)";
 	private static final String USER = "User:";
@@ -137,14 +139,11 @@ public class QueryToolServiceImpl implements QueryToolService {
 	public String queryNativeAsJson(String user, String ontology, String query, int offset, int limit) {
 		try {
 			hasUserPermission(user, ontology, query);
-
 			if (ontologyService.hasEncryptionEnabled(ontology))
 				query = ontologyDataService.encryptQuery(query, true);
 			String result = queryAsTextDBRepositoryFactory.getInstance(ontology, user).queryNativeAsJson(ontology,
 					query, offset, limit);
-
 			result = ontologyDataService.decryptAllUsers(result, ontology);
-
 			metricsManagerLogControlPanelQueries(user, ontology, "OK");
 			return result;
 		} catch (final Exception e) {
@@ -158,13 +157,11 @@ public class QueryToolServiceImpl implements QueryToolService {
 	public String queryNativeAsJson(String user, String ontology, String query) {
 		try {
 			hasUserPermission(user, ontology, query);
-
 			if (ontologyService.hasEncryptionEnabled(ontology))
 				query = ontologyDataService.encryptQuery(query, true);
 			String result = queryAsTextDBRepositoryFactory.getInstance(ontology, user).queryNativeAsJson(ontology,
 					query);
 			result = ontologyDataService.decryptAllUsers(result, ontology);
-
 			metricsManagerLogControlPanelQueries(user, ontology, "OK");
 			return result;
 
@@ -203,7 +200,12 @@ public class QueryToolServiceImpl implements QueryToolService {
 		} catch (final QueryNativeFormatException e) {
 			log.error("Error querySQLAsJson:" + e.getMessage());
 			throw e;
-		} catch (final Exception e) {
+		}
+		catch (final DBPersistenceException e) {
+			log.error("Error querySQLAsJson:" + e.getMessage());
+			throw e;
+		}
+		catch (final Exception e) {
 			log.error("Error querySQLAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
@@ -213,12 +215,10 @@ public class QueryToolServiceImpl implements QueryToolService {
 	public String querySQLAsJson(String user, String ontology, String query, int offset)
 			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		try {
-
 			if (ontologyService.hasEncryptionEnabled(ontology))
 				query = ontologyDataService.encryptQuery(query, false);
 			String result = querySQLAsJson(user, ontology, query, offset, true);
 			result = ontologyDataService.decryptAllUsers(result, ontology);
-
 			metricsManagerLogControlPanelQueries(user, ontology, "OK");
 			return result;
 		} catch (final DBPersistenceException e) {
@@ -230,7 +230,6 @@ public class QueryToolServiceImpl implements QueryToolService {
 			metricsManagerLogControlPanelQueries(user, ontology, "KO");
 			throw e;
 		}
-
 	}
 
 	@Override
@@ -239,13 +238,11 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 		try {
 			hasClientPlatformPermisionForQuery(clientPlatform, ontology);
-
 			if (ontologyService.hasEncryptionEnabled(ontology))
 				query = ontologyDataService.encryptQuery(query, true);
 			String result = queryAsTextDBRepositoryFactory.getInstanceClientPlatform(ontology, clientPlatform)
 					.queryNativeAsJson(ontology, query, offset, limit);
 			result = ontologyDataService.decryptAllUsers(result, ontology);
-
 			metricsManagerLogControlPanelQueries(clientPlatform, ontology, "OK");
 
 			return result;
@@ -289,12 +286,10 @@ public class QueryToolServiceImpl implements QueryToolService {
 	@Override
 	public String querySQLAsJsonForPlatformClient(String clientPlatform, String ontology, String query, int offset)
 			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-
 		if (ontologyService.hasEncryptionEnabled(ontology))
 			query = ontologyDataService.encryptQuery(query, false);
 		String result = querySQLAsJsonForPlatformClient(clientPlatform, ontology, query, offset, true);
 		result = ontologyDataService.decryptAllUsers(result, ontology);
-
 		metricsManagerLogControlPanelQueries(clientPlatform, ontology, "OK");
 		return result;
 	}
@@ -382,6 +377,19 @@ public class QueryToolServiceImpl implements QueryToolService {
 		});
 		return queryResult;
 	}
+	
+	@Override
+	@Transactional
+	public List<String> updateSQLtoConfigDB(String query) {
+		final List<String> queryResult = new LinkedList<>();
+		final org.hibernate.Session session = entityManager.unwrap(Session.class);
+		session.doWork(connection -> {
+			final PreparedStatement statement = connection.prepareStatement(query);
+			final int outputResult = statement.executeUpdate();
+			queryResult.add(outputResult + " rows affected");
+		});
+		return queryResult;
+	}	
 
 	private boolean isJoin(String query) {
 		String joinOntology = "";

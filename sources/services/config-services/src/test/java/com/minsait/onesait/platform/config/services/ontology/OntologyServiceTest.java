@@ -32,6 +32,7 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OntologyServiceTest {
@@ -43,6 +44,9 @@ public class OntologyServiceTest {
 
 	@InjectMocks
 	OntologyServiceImpl service;
+
+	@Mock
+	private UserService userService;
 
 	@Test
 	public void given_OneOntologyWithNullUserAccesses_When_IsRequestedIfItHasAnyUserAccess_Then_FalseIsReturned() {
@@ -88,6 +92,8 @@ public class OntologyServiceTest {
 		ontology.setUser(ontologyUser);
 
 		User sessionUser = createUser("any", "any");
+
+		when(userService.isUserAdministrator(sessionUser)).thenReturn(false);
 
 		assertTrue("Any user should have query access to a public ontology",
 				service.hasUserPermissionForQuery(sessionUser, ontology));

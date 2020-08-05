@@ -1,0 +1,419 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
+<meta name="description" content="Gadget list template" />
+<meta name="keywords" content="sofia2,smart,cities,platform,Indra" />
+<meta name="author" content="Indra Sistemas, S.A." />
+
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PLUGINS STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />	
+</head>
+
+<!-- page-sidebar-closed to start page with collapsed menu -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+	
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<!-- BEGIN PAGE HEADER-->
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{restplanner.name}">Rest planner</span></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									<span class="caption-subject" th:text="#{restplanner.management}">Rest planner</span>
+								</div>
+								
+								<div class="actions margin-right-20">
+									<div class="btn-group">									
+										<button type="button" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/create/|} + '\');'" ><span th:text="#{gen.create}">Create </span></button>
+									</div>
+								</div>
+								
+								<!-- THEMES LIST -->
+									<div class="col-md-12">
+										<div id="contenedor-tabla-outside"
+											class="contiene margin-bottom-30">
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->
+												<table id="categorizations" class="table table-hover table-striped"
+													dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:sortInitDirection="asc"
+																class="titulo-columnas" th:text="#{restplanner.restservice}">Rest service</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.owner}">Owner</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.description}">Description</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{restplanner.url}">URL</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.created}">Created at</th>
+															<th dt:sortInitDirection="dsc"
+																class="titulo-columnas text-center"
+																th:text="#{consolemenu.updated}">Updated at</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.options}">Options</th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="restservice : ${restservices}" pages:paginate="10">
+															<!--REST SERVICE-->
+															<td class="text-left " th:text="${restservice.identification}"></td>
+															<!--OWNER-->
+															<td class="text-left " th:text="${restservice.user.userId}"></td>
+															<!--DESCRIPTION-->
+															<td class="text-left " th:text="${restservice.description}"></td>
+															<!--URL-->
+															<td class="text-left text-primary" th:text="${restservice.url}"></td>
+															<!--CREATED -->
+															<td class="text-center" th:if="${restservice.createdAt!=null}">
+															<span th:text="${#dates.format(restservice.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(restservice.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${restservice.createdAt==null}"
+																th:text="'---'"></td>
+															<!-- UPDATED -->
+															<td class="text-center" th:if="${restservice.updatedAt!=null}">
+															<span th:text="${#dates.format(restservice.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(restservice.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${restservice.updatedAt==null}"
+																th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">																	
+																	<!-- VIEW -->
+																	<span th:title="#{gen.view}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/show/${restservice.Id}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
+																	<!-- EDIT -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"><i
+																		class="la la-edit font-hg"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/update/${restservice.Id}/|} + '\');'"></i></span>
+																	<!-- DELETE -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.deleteBtn}"
+																		th:data-original-title="#{gen.deleteBtn}"><i
+																		class="la la-trash font-hg"
+																		th:onclick="'javascript:deleteRestPlannerConfirmation(\'' +${restservice.Id}+ '\');'"></i></span>
+																	<!-- START/STOP/EXECUTE -->
+																	<span  th:if="${restservice.active}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stop}" th:data-original-title="#{gen.stop}" th:onclick="'javascript:startStop(\'' + ${restservice.id} + '\');'"><i class="la la-stop font-hg"></i></span>
+																	<span  th:if="!${restservice.active}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.play}" th:data-original-title="#{gen.play}" th:onclick="'javascript:startStop(\'' + ${restservice.id} + '\');'"><i class="la la-play font-hg"></i></span>
+																    <span  class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{restplanner.execute}" th:data-original-title="#{restplanner.execute}" th:onclick="'javascript:execute(\'' + ${restservice.id} + '\');'"><i class="la la-rocket font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{restplanner.restservice}" data-column="0">Rest service</label>
+														<label class="toggle-vis"
+															th:text="#{gen.owner}" data-column="1">Owner</label>
+														<label class="toggle-vis"
+															th:text="#{gen.description}" data-column="2">Description</label>
+														<label class="toggle-vis"
+															th:text="#{gen.created}" data-column="3"> Created At</label>
+														<label class="toggle-vis"
+														th:text="#{consolemenu.updated}" data-column="4"> Updated At</label>
+														<label class="toggle-vis"
+														th:text="#{restplanner.url}" data-column="5">URL</label>
+														<label class="toggle-vis"
+															th:text="#{gen.options}" data-column="6"> Options</label>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								
+								<div class="row"></div>
+							</div>							
+						</div>
+						<!-- END PORTLET BASIC LIGHT -->
+					</div>
+					<!-- END COL-12 -->
+				</div>
+				<!-- END MAIN ROW -->
+			</div>
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment"
+		class="page-footer"> </footer>
+		
+	<!-- LIST CONTROLLER JS -->
+	<!--<script th:src="@{/static/js/pages/restplanner.js}"/>-->
+
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}" />
+	<script th:src="@{/static/js/layout.js}" />
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" />
+	
+	<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+
+
+	<script th:inline="javascript">		
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){
+		$.extend( true, $.fn.dataTable.defaults, { language: languageJson }); 
+	}
+	</script>
+	
+	<script type="text/javascript" th:inline="javascript">
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			var column = $('#categorizations').DataTable().column( $(this).attr('data-column') ); 
+			column.visible( ! column.visible() );
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+
+		// HIDE COLUMN OWNER		
+		$.each([2],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
+	});
+	
+	function deleteRestPlannerConfirmation (id){
+		
+		console.log('deleteUserConfirmation() -> formId: '+ id);
+		
+		// no Id no fun!
+		if ( !id ) {$.alert({title: 'ERROR!', theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
+		
+		// call  Confirm 
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	function showConfirmDeleteDialog(id){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = [[#{restplanner.delete.confirm}]];
+		var Title = headerReg.titleConfirm + ':';
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			icon: 'fa fa-warning',
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-sm btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 
+						console.log(id);
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+						
+						$.ajax({
+						    url: '/controlpanel/restplanner/'+id,
+						    headers: {
+								[csrf_header]: csrf_value
+						    },
+						    type: 'DELETE',						  
+						    success: function(result) {
+						    	console.log(result.responseText);
+						    	navigateUrl('/controlpanel/restplanner/list');
+						    },
+						    error: function(result){
+						    	console.log(result.responseText);
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content : result.responseText
+								});
+						    }
+						});
+					}											
+				}				
+			}
+		});
+	}	
+	
+	function startStop(id) {
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
+		$.ajax({ url: "/controlpanel/restplanner/startstop", headers: {[csrf_header]: csrf_value}, type: 'POST',data:{'id': id}, 
+			success: function (source) {
+				navigateUrl('/controlpanel/restplanner/list');
+			}
+		});
+		
+		
+	}
+	
+	function execute(id) {
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
+		$.ajax({ url: "/controlpanel/restplanner/execute", headers: {[csrf_header]: csrf_value}, type: 'POST',data:{'id': id}, 
+			success: function (source) {				
+				$.alert({
+					title : [[#{restplanner.success}]],
+					type : 'green',
+					theme : 'light',
+					content : [[#{restplanner.executed.ok}]]
+				});
+			
+			},
+		 error: function(xhr, status, error) {	
+			 
+			 $.alert({
+					title : [[#{restplanner.error}]],
+					type : 'red',
+					theme : 'light',
+					content :  [[#{restplanner.executed.error}]]
+				});
+			}
+		});
+		
+	}
+	
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}	
+	
+	var errorMsg = [[#{categorization.errorMsg}]];	
+	var deleteBtn = [[#{gen.deleteBtn}]];
+	var closeBtn = [[#{gen.closeBtn}]];
+	var deleteDialog = [[#{categorization.deleteDialog}]];
+	//]]>
+	
+	</script>
+
+</body>
+</html>
+

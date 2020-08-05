@@ -38,7 +38,6 @@ Rules.Create = (function() {
 	"end";
 	var init = function() {
 
-		
 		editor = ace.edit("drlCode");
 	    editor.setTheme("ace/theme/xcode");
 	    editor.session.setMode("ace/mode/drools");
@@ -49,6 +48,12 @@ Rules.Create = (function() {
 	    	$('#drl').val(editor.getValue());
 	    });
 	   
+	    $('#btn-cancel').off().on('click',function(){
+	    	window.location = window.location.href+ 's';
+	    });
+	    
+		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 		
 	};
 	var changeRuleType = function(){

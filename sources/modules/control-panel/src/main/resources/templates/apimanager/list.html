@@ -168,7 +168,7 @@
 															<th class="titulo-columnas text-center" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas text-center"><span th:text="#{gen.public}">Public</span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Name</span></th>
-															<th class="titulo-columnas text-center" id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="roleFilter" dt:filterCssClass="input-small"><span th:text="#{apimanager.state}" >State</span></th>
+															<th class="titulo-columnas text-center" id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="stateFilter" dt:filterCssClass="input-small"><span th:text="#{apimanager.state}" >State</span></th>
 															<th class="titulo-columnas text-center"><span th:text="#{apimanager.auth}">Authorizations</span></th>															
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
@@ -202,18 +202,7 @@
 															<td class="text-center" th:if="${api.userApiAccesses.isEmpty()}"><span class=""><i class="la la-times-circle-o text-danger font-hg"></i> </span></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
-																<!-- GRAVITEE IO-->
-																<span th:if="${api.graviteeId} AND ${graviteeOn}" th:title="#{apimanager.gravitee}" class="dropdown btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{apimanager.gravitee}">
-																	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-																		<img style="width:22px" th:src="@{/static/images/graviteeio.png}"></img>
-																	</a>
-																	<ul class="dropdown-menu" style="position:relative">
-																		<li><a th:href="@{|/apimanager/gravitee/${api.id}?iframe=analytics|}">Analytics</a></li>
-																		<li><a th:href="@{|/apimanager/gravitee/${api.id}?iframe=policies|}">Policies</a></li>
-																		<li><a target="_blank" th:href="${graviteeUI}">Gravitee UI</a></li>
-																	</ul>
-																	<span aria-hidden="true" class="stretchy-nav-bg"></span>
-																</span>
+
 																
 																
 																
@@ -236,7 +225,7 @@
                               									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.DEVELOPMENT}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/DEVELOPMENT|} + '\');'"><i class="la la-laptop font-hg"></i></span><!-- <span th:text="#{apimanager.state.action.DEVELOPMENT}">DEVELOPMENT</span> -->
 																<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.PUBLISH}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/PUBLISHED|} + '\');'"><i class="la la-upload font-hg"></i></span>
                               									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'PUBLISHED'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.DEPRECATE}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/DEPRECATED|} + '\');'"> <span th:text="#{apimanager.state.action.DEPRECATE}" >DEPRECATED</span></span>
-                              									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'DEPRECATED'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.DELETE}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/DELETED|} + '\');'"> <i class="la la-trash font-hg"></i></span>							                              							
+                              									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'DEPRECATED'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.DELETE}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/DELETED|} + '\');'"> <i class="la la-minus-circle font-hg"></i></span>							                              							
 																<!-- DELETE -->
 																<span th:if="${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteApi(\'' + ${api.id} + '\');'"><i class="la la-trash font-hg"></i></span>
 																
@@ -257,8 +246,8 @@
 																	<th></th>
 																	<th></th>
 																	<th></th>
-																	<th id="roleFilter" class="dtFilter text-center"></th>
 																	<th></th>
+																	<th id="stateFilter" class="dtFilter text-center"></th>
 																	<th></th>
 																</tr>
 														</table>

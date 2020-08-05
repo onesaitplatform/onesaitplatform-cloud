@@ -27,7 +27,7 @@ import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.FlowDomain.State;
 import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.FlowNode.Type;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
@@ -38,6 +38,7 @@ import com.minsait.onesait.platform.config.services.exceptions.FlowDomainService
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,6 +72,8 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	private UserService userService;
 	@Autowired
 	private ApiManagerService apiManagerService;
+	@Autowired
+	private MultitenancyService multitenancyService;
 
 	@Override
 	public List<FlowDomain> getFlowDomainByUser(User user) {
@@ -140,7 +143,8 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	@Override
 	public FlowDomain createFlowDomain(String identification, User user) {
 
-		if (domainRepository.findByIdentification(identification) != null) {
+		// validate against global domains
+		if (multitenancyService.getFlowDomainByIdentification(identification) != null) {
 			log.debug("Flow domain {} already exist.", identification);
 			throw new FlowDomainServiceException("The requested flow domain already exists in CDB");
 		}
@@ -152,7 +156,7 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 		domain.setUser(user);
 		domain.setHome(homeBase + user.getUserId());
 		// Check free domain ports
-		final List<Integer> usedDomainPorts = domainRepository.findAllDomainPorts();
+		final List<Integer> usedDomainPorts = multitenancyService.getAllDomainsPorts();
 		Integer selectedPort = domainPortMin;
 		boolean portFound = false;
 		while (selectedPort <= domainPortMax && !portFound) {
@@ -168,7 +172,7 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 		}
 		domain.setPort(selectedPort);
 		// Check free service ports
-		final List<Integer> usedServicePorts = domainRepository.findAllServicePorts();
+		final List<Integer> usedServicePorts = multitenancyService.getAllDomainServicePorts();
 		Integer selectedServicePort = servicePortMin;
 		boolean servicePortFound = false;
 		while (selectedServicePort <= servicePortMax && !servicePortFound) {

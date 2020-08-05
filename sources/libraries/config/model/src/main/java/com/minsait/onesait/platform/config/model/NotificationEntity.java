@@ -24,5 +24,10 @@ public interface NotificationEntity {
 
 	public String getNotificationDomainUser();
 	
+	public Boolean isRetryOnFaialureEnabled();
+	
+	public Boolean isDiscardAfterElapsedTimeEnabled();
+	
+	public Integer getMaxRetryElapsedTime();
 
 }

@@ -59,6 +59,10 @@ public class SynopticElementDTO {
 
 	@Getter
 	@Setter
+	private String unitsOfMeasure;
+
+	@Getter
+	@Setter
 	private String classTypeList[];
 
 	@Getter

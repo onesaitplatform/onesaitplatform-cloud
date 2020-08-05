@@ -40,16 +40,15 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteByIdMessag
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.router.RouterServiceGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
-import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,8 +68,6 @@ public class DeleteProcessorTest {
 	SecurityPluginManager securityPluginManager;
 	@MockBean
 	RouterService routerService;
-	@MockBean
-	RouterSuscriptionService routerSuscriptionService;
 
 	Person subject = PojoGenerator.generatePerson();
 	String subjectId;
@@ -101,7 +98,7 @@ public class DeleteProcessorTest {
 		// mockOntologies.createOntology(Person.class);
 
 		subject = PojoGenerator.generatePerson();
-		final String subjectInsertResult = repository.insert(Person.class.getSimpleName(), "",
+		final String subjectInsertResult = repository.insert(Person.class.getSimpleName(),
 				objectMapper.writeValueAsString(subject));
 		// subjectId =
 		// objectMapper.readTree(subjectInsertResult).at("/_id/$oid").asText();
