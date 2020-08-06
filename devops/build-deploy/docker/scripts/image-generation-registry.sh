@@ -203,7 +203,7 @@ if [[ "$MODULE_RULESENGINE" = true && "$(docker images -q $USERNAME/rules-engine
 	buildImage $homepath/../../../../sources/modules/rules-engine rules-engine $MODULE_TAG
 fi		
 
-if [[ "$MODULE_RESTPLANNER" = true && "$(docker images -q $USERNAME/rest-planner 2> /dev/null)" == "" ]]; then
+if [[ "$MODULE_REST_PLANNER" = true && "$(docker images -q $USERNAME/rest-planner 2> /dev/null)" == "" ]]; then
 	buildImage $homepath/../../../../sources/modules/rest-planner rest-planner $MODULE_TAG
 fi		
 
