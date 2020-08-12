@@ -39,4 +39,3 @@ target
 transaction-logs
 .flattened-pom.xml
 secrets.yml
-sources/modules/video-broker/src/main/resources/processor/yolo/yolov3.weights
