@@ -7333,6 +7333,7 @@
         * @returns {void}
         */
         toEditMode: function toEditMode(element) {
+        	
           path = getPath_(element);
           editorContext_.setCurrentMode('pathedit');
           editorContext_.clearSelection();
@@ -7369,6 +7370,7 @@
         * @returns {void}
         */
         addSubPath: function addSubPath(on) {
+        	
           if (on) {
             // Internally we go into "path" mode, but in the UI it will
             // still appear as if in "pathedit" mode.
@@ -7376,6 +7378,7 @@
             subpath = true;
           } else {
             pathActions.clear(true);
+            
             pathActions.toEditMode(path.elem);
           }
         },
@@ -7386,6 +7389,7 @@
         */
         select: function select(target) {
           if (currentPath === target) {
+        	  
             pathActions.toEditMode(target);
             editorContext_.setCurrentMode('pathedit'); // going into pathedit mode
           } else {
@@ -8102,6 +8106,7 @@
     var blob = new Blob([u8arr], {
       type: mime
     });
+    
     return URL.createObjectURL(blob);
   };
   /**
@@ -8115,7 +8120,7 @@
     if (!blob || typeof URL === 'undefined' || !URL.createObjectURL) {
       return '';
     }
-
+    
     return URL.createObjectURL(blob);
   };
   /**
@@ -8130,6 +8135,7 @@
     var blob = new Blob(['<html><head><title>SVG-edit</title></head><body>&nbsp;</body></html>'], {
       type: 'text/html'
     });
+    
     return createObjectURL(blob);
   }();
   /**
@@ -8289,6 +8295,8 @@
   var setHref = function setHref(elem, val) {
     // eslint-disable-line import/no-mutable-exports
     elem.setAttributeNS(NS.XLINK, 'xlink:href', val);
+   // elem.setAttributeNS(NS.XLINK, 'target', "_blank");
+     
   };
   /**
   * @function module:utilities.findDefs
@@ -9562,6 +9570,7 @@
       var blob = new Blob([loader], {
         type: 'text/javascript'
       });
+      
       script.src = URL.createObjectURL(blob);
       document.head.append(script);
     });
@@ -15127,6 +15136,7 @@
       }
 
       if (!preventUndo) {
+    	  
         // we need to undo it, then redo it so it can be undo-able! :)
         // TODO: figure out how to make changes to transform list undo-able cross-browser?
         var newTransform = elem.getAttribute('transform');
@@ -16684,6 +16694,7 @@
             cleanupElement(element);
 
             if (currentMode === 'path') {
+            	
               pathActions$1.toEditMode(element);
             } else if (curConfig.selectNew) {
               selectOnly([element], true);
@@ -17136,6 +17147,7 @@
           */
           select: function select(target, x, y) {
             curtext = target;
+            
             textActions.toEditMode(x, y);
           },
 
@@ -17145,6 +17157,7 @@
           */
           start: function start(elem) {
             curtext = elem;
+            
             textActions.toEditMode();
           },
 
@@ -17958,8 +17971,7 @@
                       done();
                     }, mimeType, quality);
                     return;
-                  }
-
+                  }                  
                   bloburl = dataURLToObjectURL(datauri);
                   done();
                 }));
@@ -29368,7 +29380,7 @@
         svgCanvas.bind('saved', opts.save);
       }
 
-      if (opts.exportImage) {
+      if (opts.exportImage) {    	  
         customExportImage = opts.exportImage;
         svgCanvas.bind('exported', customExportImage); // canvg and our RGBColor will be available to the method
       }
@@ -29737,7 +29749,7 @@
     var setFlyoutPositions = function setFlyoutPositions() {
       $$b('.tools_flyout').each(function () {
         var shower = $$b('#' + this.id + '_show');
-
+        if(typeof shower.offset() !== 'undefined' && shower.offset()!==null){
         var _shower$offset = shower.offset(),
             left = _shower$offset.left,
             top = _shower$offset.top;
@@ -29747,6 +29759,7 @@
           left: (left + w) * editor.tool_scale,
           top: top
         });
+        }
       });
     };
     /**
@@ -29826,6 +29839,7 @@
     var setIconSize = editor.setIconSize = function (size) {
       // const elems = $('.tool_button, .push_button, .tool_button_current, .disabled, .icon_label, #url_notice, #tool_open');
       var selToscale = '#tools_top .toolset, #editor_panel > *, #history_panel > *,' + '        #main_button, #tools_left > *, #path_node_panel > *, #multiselected_panel > *,' + '        #g_panel > *, #tool_font_size > *, .tools_flyout';
+     
       var elems = $$b(selToscale);
       var scale = 1;
 
@@ -29842,7 +29856,8 @@
       }
 
       stateObj.tool_scale = editor.tool_scale = scale;
-      setFlyoutPositions(); // $('.tools_flyout').each(function () {
+      setFlyoutPositions(); 
+      // $('.tools_flyout').each(function () {
       //   const pos = $(this).position();
       //   console.log($(this), pos.left+(34 * scale));
       //   $(this).css({left: pos.left+(34 * scale), top: pos.top+(77 * scale)});
@@ -30242,8 +30257,9 @@
                     }
 
                     size = $$b.pref('iconsize');
-                    editor.setIconSize(size || ($$b(window).height() < minHeight ? 's' : 'm')); // Look for any missing flyout icons from plugins
-
+                    
+                  //  editor.setIconSize(size || ($$b(window).height() < minHeight ? 's' : 'm')); // Look for any missing flyout icons from plugins
+                    editor.setIconSize(size || 'm');
                     $$b('.tools_flyout').each(function () {
                       var shower = $$b('#' + this.id + '_show');
                       var sel = shower.attr('data-curopt'); // Check if there's an icon here
@@ -30618,8 +30634,8 @@
         $$b.alert(uiStrings$1.notification.popupWindowBlocked);
         return;
       }
-
-      exportWindow.location.href = data.bloburl || data.datauri;
+      
+      exportWindow.location.href = data.bloburl || data.datauri;     
       var done = $$b.pref('export_notice_done');
 
       if (done !== 'all') {
@@ -30635,6 +30651,10 @@
         $$b.pref('export_notice_done', 'all');
         exportWindow.alert(note);
       }
+      setTimeout(function(){
+    	  exportWindow.document.body.style.backgroundColor = "white"; 
+    	  }, 10);
+       
     };
     /**
     *
@@ -31216,7 +31236,7 @@
      */  
     
     
-	$("#datasourceSelect,#fieldSelect,#indicator_color_on,#indicator_color_off,#fieldSelectText,#progress_bar_type,#select_region,#select_event").change(function(){
+	$("#datasourceSelect,#fieldSelect,#indicator_color_on,#indicator_color_off,#fieldSelectText,#progress_bar_type,#select_region,#select_event,#unitsOfMeasure").change(function(){
 	
 		$("#applyChangesButton").show();
 		
@@ -31233,7 +31253,8 @@
 	
     
 	
-	var applyChanges = function applyChanges(){		
+	var applyChanges = function applyChanges(){	
+		
 		if (selectedElement != null) {
 			var elementClass = selectedElement.getAttribute("class");
 			
@@ -31252,7 +31273,7 @@
 				    classTypeList:getClassTypeList(selectedElement.nodeName)
 			}
 			
-			//TODO:EVENTS
+			
 		  	if(synConditions.get(selectedElement.id) === undefined || synConditions.get(selectedElement.id) && synConditions.get(selectedElement.id).events === undefined){
 				condition.events = {}
 			}else{
@@ -31272,6 +31293,7 @@
 				case 'label':
 					condition.elementAttr = "setText"
 					condition.fieldAtt=$("#fieldSelectText").val();	
+					condition.unitsOfMeasure=$("#unitsOfMeasure").val();	
 					break;
 				case 'indicator':
 					condition.elementAttr = "fill";
@@ -31298,9 +31320,9 @@
 			}
 			synConditions.set(selectedElement.id,condition);
 		
+			selectedElement.condition=condition;
 		}
 		
-		selectedElement.condition=condition;
 		$("#applyChangesButton").hide();
 		
 	}
@@ -31351,6 +31373,7 @@
 			var condition = {
 				 identification: selectedElement.id,				
 				 datasource: datasource,
+				 unitsOfMeasure:synDataSourceElemPropertiesExt.synopticElement.unitsOfMeasure,
 		         field: "result",
 		         class:  elementClass,				
 		         color:color,
@@ -31399,9 +31422,9 @@
 			}
 			synConditions.set(selectedElement.id,condition);
 		
+			selectedElement.condition=condition;
 		}
 		
-		selectedElement.condition=condition;
 		$("#applyChangesButton").hide();
 		
 	}
@@ -31447,7 +31470,8 @@
   	}
   	
     
-  	var updateTagType = function() {  		
+  	var updateTagType = function() { 
+  		
   		loadDataSources();
   		if (selectedElement != null) {
   			var condition = synConditions.get(selectedElement.id);
@@ -31472,7 +31496,7 @@
 							$("#indicator_color_on").val('#00ff00');
 							$("#indicator_color_off").val('#ff0000');
 							$("#indicator_value_cuttoff").val('');
-		  				
+							$("#unitsOfMeasure").val('');
 		  			}
   			}else{
 					// reset to origin values
@@ -31480,6 +31504,7 @@
 					$("#indicator_color_on").val('#00ff00');
 					$("#indicator_color_off").val('#ff0000');
 					$("#indicator_value_cuttoff").val('');
+					$("#unitsOfMeasure").val('');
 				}
   			//events
   			if (condition && condition.events && Object.keys(condition.events).length>0){
@@ -31503,8 +31528,12 @@
 				if (condition && condition.fieldAtt!=""){
 					$("#fieldSelectText").val(condition.fieldAtt);
 				}
+				if (condition && condition.unitsOfMeasure!=""){
+					$("#unitsOfMeasure").val(condition.unitsOfMeasure);
+				}
 				$('#GeneralAttributesLabel').text('TextAttributes');
 				$('#GeneralAttributes').show();
+				$('#labelunitsOfMeasure').show();
 				$('#ColorAttributes').show();
 				$('#Color_CuttOff').show();
 				$('#UrlAttributes').hide();
@@ -31527,6 +31556,7 @@
 				$('#ButtonAttributes').hide();
 				$('#ProgressBarAttributes').show();				
 				$('#GeneralAttributes').show();
+				$('#labelunitsOfMeasure').hide();
 				$('#ColorAttributes').show();
 				$('#Color_CuttOff').show();
 				$('#GeneralAttributesLabel').text('ProgressBarAttributes');
@@ -31539,6 +31569,8 @@
 					$("#progress_bar_max").val(condition.condition.maxValue);
 					$("#progress_bar_type").val(condition.condition.type);
 					$("#fieldSelectText").val(condition.fieldAtt);
+					$("#unitsOfMeasure").val(condition.unitsOfMeasure);
+					
 				}else{
 					$('#ProgressBarAttributes .contenidoTag').hide();
 					$("#progress_bar_min").val(0);
@@ -32266,7 +32298,10 @@
         var tooltips = $$b(this).children().map(function () {
           return this.title;
         }).get();
-        shower[0].title = tooltips.join(' / ');
+        if(typeof shower[0] !=='undefined' && shower[0]!==null ){
+        	shower[0].title = tooltips.join(' / ');
+        }
+        
       });
     };
 
@@ -34245,6 +34280,7 @@
             switch (_context9.prev = _context9.next) {
               case 0:
                 openExportWindow = function _ref20() {
+            	  
                   var loadingImage = uiStrings$1.notification.loadingImage;
 
                   if (curConfig.exportWindowType === 'new') {
@@ -34270,16 +34306,15 @@
 
                     loadingURL = popURL;
                   }
-
+                  
                   exportWindow = window.open(popURL, exportWindowName);
                 };
 
                 _context9.next = 3;
                 return $$b.select('Select an image type for export: ', [// See http://kangax.github.io/jstests/toDataUrl_mime_type_test/ for a useful list of MIME types and browser support
                 // 'ICO', // Todo: Find a way to preserve transparency in SVG-Edit if not working presently and do full packaging for x-icon; then switch back to position after 'PNG'
-                'PNG', 'JPEG', 'BMP'], function () {
+                'PNG', 'BMP'], function () {
                   var sel = $$b(this);
-
                   if (sel.val() === 'JPEG' || sel.val() === 'WEBP') {
                     if (!$$b('#image-slider').length) {
                       $$b("<div><label>".concat(uiStrings$1.ui.quality, "\n              <input id=\"image-slider\"\n                type=\"range\" min=\"1\" max=\"100\" value=\"92\" />\n            </label></div>")).appendTo(sel.parent());
@@ -34443,7 +34478,8 @@
 
     
     
-    var clickCorner = function clickCorner() {    	    	
+    var clickCorner = function clickCorner() {  
+    	
     	      var zoom = svgCanvas.getZoom();
     	      var wArea = workarea;
     	      var cnvs = $$b('#svgcanvas');
@@ -34481,7 +34517,7 @@
     	      }    	
       };
 
-    
+     
     
     
     $$b('#svg_docprops_container, #svg_prefs_container').draggable({
@@ -35501,11 +35537,15 @@
      */
 
 
-    var toggleSidePanel = function toggleSidePanel(close) {
-    	
+    var toggleSidePanel = function toggleSidePanel(close) {    	
       var dpr = window.devicePixelRatio || 1;
       var w = $$b('#sidepanels').width();
       var isOpened = (dpr < 1 ? w : w / dpr) > 2;
+      if(isOpened){
+    	  $('#sidepanel_handle').html("  <  ");
+      }else{
+    	  $('#sidepanel_handle').html("  >  ");
+      }
       //var zoomAdjustedSidepanelWidth = (dpr < 1 ? 1 : dpr) * SIDEPANEL_OPENWIDTH;
       var zoomAdjustedSidepanelWidth =  SIDEPANEL_OPENWIDTH;
       var deltaX = (isOpened || close ? 0 : zoomAdjustedSidepanelWidth) - w;
@@ -36587,10 +36627,11 @@
       * @returns {void}
       */
       var importImage = function importImage(e) {
+    	  
         $$b.process_cancel(uiStrings$1.notification.loadingImage);
         e.stopPropagation();
         e.preventDefault();
-        $$b('#workarea').removeAttr('style');
+       // $$b('#workarea').removeAttr('style');
         $$b('#main_menu').hide();
         var file = e.type === 'drop' ? e.dataTransfer.files[0] : this.files[0];
 
@@ -37293,9 +37334,9 @@
   
   window.onload = function () { 
 	  setTimeout(function(){  
-		  $('body').removeClass('overlay_load_page');
-		  $('#tool_corner').trigger( "mousedown" ); 
-		  }, 2);
+		  $('#tool_corner').trigger( "mousedown" ); console.log("cornerTool") 
+		  $('body').removeClass('overlay_load_page');		 
+		  }, 200);
 	  
   }
   /**

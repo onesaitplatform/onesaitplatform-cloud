@@ -93,7 +93,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">
 										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='/controlpanel/configurations/create'" > <span th:text="#{gen.create}">New </span></button>
-										<button sec:authorize="!hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../configurations/create'" ><span th:text="#{gen.create}">New </span></button>
+										<button th:if="${nginxServiceEnabled}" sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-outline blue" onclick="location.href='../nginxmanager/show'" ><span th:text="#{gen.ngixreload}">New </span></button>
 										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline  btn-circle btn-outline blue" onclick="location.href='../configurations/reload'" ><span th:text="#{gen.reloadconfig}">Reload Configurations</span></button>
 									</div>
 								</div>																

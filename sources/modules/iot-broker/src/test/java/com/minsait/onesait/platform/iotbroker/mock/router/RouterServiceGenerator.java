@@ -19,8 +19,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;

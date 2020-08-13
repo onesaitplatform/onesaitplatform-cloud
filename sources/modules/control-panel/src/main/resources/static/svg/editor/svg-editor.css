@@ -1000,7 +1000,7 @@ span.zoom_tool {
   }
 }
 
-@media screen and (max-width:1100px) {
+/*@media screen and (max-width:1100px) {
   #tools_bottom:not(.expanded) #palette_holder {
     left: 410px;
     overflow-x: scroll;
@@ -1008,7 +1008,7 @@ span.zoom_tool {
     margin-top: 2px;
     height: 30px;
   }
-}
+}*/
 
 /*–––––––––––––––––––––––––––––––––––––*/
 

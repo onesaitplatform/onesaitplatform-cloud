@@ -15,68 +15,57 @@
 package com.minsait.onesait.platform.persistence.elasticsearch.api;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
-import io.searchbox.core.Count;
-import io.searchbox.core.CountResult;
+import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Conditional(ElasticsearchEnabledCondition.class)
 @Slf4j
 public class ESCountService {
 
 	@Autowired
 	ESBaseApi connector;
 	
-	private static final String COUNTING_ERROR = "Error counting type ";
-
-	public long getMatchAllQueryCountByType(String type, String... indexes) {
-		final String query = ESBaseApi.QUERY_ALL;
-
-		final List<String> list = new ArrayList<>(Arrays.asList(indexes));
-		Count count = null;
-		if (type == null) {
-			count = new Count.Builder().query(query).addIndex(list).build();
-		} else {
-			count = new Count.Builder().query(query).addIndex(list).addType(type).build();
-		}
-
-		CountResult result;
-		try {
-			result = connector.getHttpClient().execute(count);
-			return result.getCount().longValue();
-		} catch (final IOException e) {
-			log.error(COUNTING_ERROR + e.getMessage());
-			return -1;
-		}
-
+	@Autowired
+	private RestHighLevelClient hlClient;
+	
+	private static final String COUNTING_ERROR = "Error in count query ";
+	
+	private CountResponse count(QueryBuilder queryBuilder, String... indices) {
+	    CountRequest countRequest = new CountRequest(indices);
+	    countRequest.query(queryBuilder);
+	    return executeCount(countRequest, indices);
+	}
+	
+	private CountResponse executeCount(CountRequest countRequest, String... indices) {
+	    try {
+            return hlClient.count(countRequest, RequestOptions.DEFAULT);         
+        } catch (final IOException e) {
+            log.error(COUNTING_ERROR + e.getMessage());
+            return null;
+        }
 	}
 
-	public long getMatchAllQueryCount(String... indexes) {
-		return getMatchAllQueryCountByType(null, indexes);
+	public long getMatchAllQueryCount(String... indices) {
+	    CountResponse countResponse = count(QueryBuilders.matchAllQuery(), indices);
+	    return countResponse == null ? -1 : countResponse.getCount();		
 	}
 
-	public long getQueryCount(String jsonQueryString, String... indexes) {
-		final List<String> list = new ArrayList<>(Arrays.asList(indexes));
-		try {
-			final CountResult result = connector.getHttpClient()
-					.execute(new Count.Builder().addIndex(list).query(jsonQueryString).build());
-
-			return result.getCount().longValue();
-		} catch (final IOException e) {
-			log.error(COUNTING_ERROR + e.getMessage());
-			return -1;
-		} catch (final RuntimeException e) {
-			final StringBuilder builder = new StringBuilder();
-			Arrays.asList(indexes).forEach(i -> builder.append(i));
-			log.error(COUNTING_ERROR + builder.toString() + " , index(es) may not exist, returning count = 0");
-			return 0;
-		}
+	public long getQueryCount(String jsonQueryString, String... indices) {
+	    CountResponse countResponse = count(QueryBuilders.wrapperQuery(jsonQueryString), indices);
+	    return countResponse == null ? -1 : countResponse.getCount();
 	}
 
 }

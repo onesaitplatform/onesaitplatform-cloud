@@ -113,6 +113,12 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 	private final String PROPERLY_CREATED_GADGET = "properly created gadget";
 	private final String LIVEFILTER = "livefilter";
 	private final String MULTISELECTFILTER = "multiselectfilter";
+	// datasources
+	private final String MULTISELECTDSFILTER = "multiselectdsfilter";
+	private final String MULTISELECTNUMBERDSFILTER = "multiselectnumberdsfilter";
+	private final String SIMPLESELECTDSFILTER = "simpleselectdsfilter";
+	private final String SIMPLESELECTNUMBERDSFILTER = "simpleselectnumberdsfilter";
+
 	private final String TEXTFILTER = "textfilter";
 	private final String NUMBERFILTER = "numberfilter";
 	private final String FILTER_NOT_DEFINED = "Filter not defined";
@@ -367,7 +373,8 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 			GadgetTemplate gadgetTemplate = gadgetTemplateService
 					.getGadgetTemplateByIdentification(commandDTO.getInformation().getGadgetType(), userId);
 
-			if (gadgetTemplate != null) {
+			if (commandDTO.getInformation().getGadgetType() == null
+					|| commandDTO.getInformation().getGadgetType().trim().length() == 0 || gadgetTemplate != null) {
 
 				return "{\"requestcode\":\"updateGadget\",\"status\":\"Template\", \"filters\":"
 						+ mapper.writeValueAsString(commandDTO.getInformation().getFilters())
@@ -469,7 +476,17 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 					createTextFilter(id, filter, filters);
 				} else if (filter.getType().equals(NUMBERFILTER)) {
 					createNumberFilter(id, filter, filters);
-				} else {
+				} else if (filter.getType().equals(MULTISELECTDSFILTER)) {
+					createMultiSelectDSFilter(id, filter, filters);
+				} else if (filter.getType().equals(MULTISELECTNUMBERDSFILTER)) {
+					createMultiSelectDSFilter(id, filter, filters);
+				} else if (filter.getType().equals(SIMPLESELECTDSFILTER)) {
+					createSimpleSelectDSFilter(id, filter, filters);
+				} else if (filter.getType().equals(SIMPLESELECTNUMBERDSFILTER)) {
+					createSimpleSelectDSFilter(id, filter, filters);
+				}
+
+				else {
 					throw new IOException(FILTER_NOT_DEFINED);
 				}
 			}
@@ -542,6 +559,74 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		datamultiDTO.setOptions(filter.getData().getOptions());
 		datamultiDTO.setOptionsDescription(filter.getData().getOptionsDescription());
 		datamultiDTO.setOptionsSelected(filter.getData().getOptionsSelected());
+		multiselectfilter.setData(datamultiDTO);
+		// setTargetList
+
+		TargetDTO targetDTO = new TargetDTO(id, filter.getField(), filter.getField());
+		TargetDTO[] listTargetDTO = new TargetDTO[1];
+		listTargetDTO[0] = targetDTO;
+		multiselectfilter.setTargetList(listTargetDTO);
+		filters.add(multiselectfilter);
+	}
+
+	private void createMultiSelectDSFilter(String id, FilterDTO filter, ArrayList<FiltersDTO> filters) {
+
+		FiltersDTO multiselectfilter = new FiltersDTO();
+		multiselectfilter.setId(filter.getId());
+		multiselectfilter.setType(filter.getType());
+		multiselectfilter.setField(filter.getField());
+		multiselectfilter.setName(filter.getName());
+		multiselectfilter.setOp(IN);
+		multiselectfilter.setTypeAction(FILTER);
+		multiselectfilter.setInitialFilter(filter.isInitialFilter());
+		multiselectfilter.setUseLastValue(false);
+		multiselectfilter.setFilterChaining(false);
+		multiselectfilter.setValue(START);
+		multiselectfilter.setHide(filter.isHide());
+
+		DataDTO datamultiDTO = new DataDTO();
+
+		datamultiDTO.setDs(filter.getData().getDs());
+		datamultiDTO.setDsFieldValue(filter.getData().getDsFieldValue());
+		if (filter.getData().getDsFieldDes() == null) {
+			datamultiDTO.setDsFieldDes(filter.getData().getDsFieldValue());
+		} else {
+			datamultiDTO.setDsFieldDes(filter.getData().getDsFieldDes());
+		}
+		multiselectfilter.setData(datamultiDTO);
+		// setTargetList
+
+		TargetDTO targetDTO = new TargetDTO(id, filter.getField(), filter.getField());
+		TargetDTO[] listTargetDTO = new TargetDTO[1];
+		listTargetDTO[0] = targetDTO;
+		multiselectfilter.setTargetList(listTargetDTO);
+		filters.add(multiselectfilter);
+	}
+
+	private void createSimpleSelectDSFilter(String id, FilterDTO filter, ArrayList<FiltersDTO> filters) {
+
+		FiltersDTO multiselectfilter = new FiltersDTO();
+		multiselectfilter.setId(filter.getId());
+		multiselectfilter.setType(filter.getType());
+		multiselectfilter.setField(filter.getField());
+		multiselectfilter.setName(filter.getName());
+		multiselectfilter.setOp(filter.getOp());
+		multiselectfilter.setTypeAction(FILTER);
+		multiselectfilter.setInitialFilter(filter.isInitialFilter());
+		multiselectfilter.setUseLastValue(false);
+		multiselectfilter.setFilterChaining(false);
+		multiselectfilter.setValue(START);
+		multiselectfilter.setHide(filter.isHide());
+
+		DataDTO datamultiDTO = new DataDTO();
+
+		datamultiDTO.setDs(filter.getData().getDs());
+		datamultiDTO.setDsFieldValue(filter.getData().getDsFieldValue());
+		if (filter.getData().getDsFieldDes() == null) {
+			datamultiDTO.setDsFieldDes(filter.getData().getDsFieldValue());
+		} else {
+			datamultiDTO.setDsFieldDes(filter.getData().getDsFieldDes());
+		}
 		multiselectfilter.setData(datamultiDTO);
 		// setTargetList
 

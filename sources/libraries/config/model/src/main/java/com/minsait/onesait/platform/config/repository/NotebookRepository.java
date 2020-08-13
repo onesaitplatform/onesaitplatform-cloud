@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.dto.NotebookForList;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -40,5 +41,8 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 	List<Notebook> findByIdentificationAndIdzep(String notebookId, String idzep);
 
 	Notebook findByIdzep(String idzep);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.NotebookForList(o.id, o.identification, o.idzep, o.user, o.isPublic, 'EDIT') " + "FROM Notebook AS o ")
+	List<NotebookForList> findAllNotebookList();
 
 }

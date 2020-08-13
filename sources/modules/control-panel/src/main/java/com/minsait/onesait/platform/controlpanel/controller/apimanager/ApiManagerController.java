@@ -48,8 +48,6 @@ import com.minsait.onesait.platform.controlpanel.helper.apimanager.ApiManagerHel
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,20 +58,22 @@ public class ApiManagerController {
 
 	@Autowired
 	private ApiManagerService apiManagerService;
+
 	@Autowired
 	private ApiManagerHelper apiManagerHelper;
+
 	@Autowired
 	private AppWebUtils utils;
+
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_404 = "error/404";
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
-	private static final String GRAVITEE_MANAGEMENT = "/management";
-	private static final String GRAVITEE_APIS = "/apis";
 
 	@GetMapping(value = "/create", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createForm(Model model) {
 
 		apiManagerHelper.populateApiManagerCreateForm(model);
@@ -82,9 +82,10 @@ public class ApiManagerController {
 	}
 
 	@GetMapping(value = "/update/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String updateForm(@PathVariable("id") String id, Model model) {
-		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId()))
+		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())
+				|| !apiManagerService.isApiStateValidForEditAuth(id))
 			return ERROR_403;
 		apiManagerHelper.populateApiManagerUpdateForm(model, id);
 
@@ -100,9 +101,8 @@ public class ApiManagerController {
 		return "apimanager/show";
 	}
 
-
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER','ROLE_USER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	public String list(Model model, @RequestParam(required = false) String apiId,
 			@RequestParam(required = false) String state, @RequestParam(required = false) String user) {
 		try {
@@ -118,7 +118,7 @@ public class ApiManagerController {
 	}
 
 	@PostMapping(value = "/create")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(ApiMultipart api, BindingResult bindingResult, HttpServletRequest request,
 			@RequestParam(required = false) String postProcessFx,
 			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
@@ -135,6 +135,8 @@ public class ApiManagerController {
 
 			final String apiId = apiManagerService.createApi(apiManagerHelper.apiMultipartMap(api), operationsObject,
 					authenticationObject);
+			if (!StringUtils.isEmpty(postProcessFx))
+				apiManagerService.updateApiPostProcess(apiId, postProcessFx);
 
 			return "redirect:/apimanager/show/" + utils.encodeUrlPathSegment(apiId, request);
 		} catch (final Exception e) {
@@ -166,7 +168,6 @@ public class ApiManagerController {
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
 
-			
 			return "redirect:/apimanager/show/" + api.getId();
 		} catch (final Exception e) {
 			log.error("Could not update API: {}", e);
@@ -176,7 +177,7 @@ public class ApiManagerController {
 	}
 
 	@DeleteMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@Transactional
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		try {
@@ -185,7 +186,6 @@ public class ApiManagerController {
 			final Api api = apiManagerService.getById(id);
 			if (null != api) {
 				apiManagerService.removeAPI(id);
-				
 			}
 
 		} catch (final RuntimeException e) {
@@ -202,7 +202,7 @@ public class ApiManagerController {
 
 	// AUTHORIZATIONS//
 	@GetMapping(value = "/authorize/list", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String index(@RequestParam(value = "page", required = false) Integer page,
 			@RequestParam(value = "size", required = false) Integer size, Model model) {
 		apiManagerHelper.populateAutorizationForm(model);
@@ -210,7 +210,7 @@ public class ApiManagerController {
 	}
 
 	@PostMapping(value = "/authorization", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<UserApiDTO> createAuthorization(@RequestParam String api, @RequestParam String user) {
 		try {
 			if (!apiManagerService.hasUserEditAccess(api, utils.getUserId()))
@@ -226,7 +226,7 @@ public class ApiManagerController {
 	}
 
 	@PostMapping(value = "/authorization/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<String> deleteAuthorization(@RequestParam String id) {
 		try {
 			final UserApi userApi = apiManagerService.getUserApiAccessById(id);
@@ -280,7 +280,6 @@ public class ApiManagerController {
 		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId()))
 			return ERROR_403;
 		apiManagerService.updateState(id, state);
-		final Api api = apiManagerService.getById(id);
 		return "redirect:/apimanager/list";
 	}
 

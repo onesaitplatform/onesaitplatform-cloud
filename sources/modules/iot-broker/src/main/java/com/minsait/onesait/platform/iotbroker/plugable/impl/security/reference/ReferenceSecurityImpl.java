@@ -33,10 +33,7 @@ import org.springframework.util.StringUtils;
 import com.hazelcast.core.HazelcastInstance;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.model.Token;
-import com.minsait.onesait.platform.config.repository.IoTSessionRepository;
-import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
@@ -44,6 +41,11 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthenticationException;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.security.SecurityPlugin;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
+import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterDeviceTokenRepository;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -67,22 +69,30 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	IntegrationResourcesService resourcesService;
 	@Autowired(required = false)
 	SessionSchedulerUpdater sessionSchedulerUpdater;
+	@Autowired
+	MasterDeviceTokenRepository masterDeviceTokenRepository;
 
 	@Autowired
 	HazelcastInstance hazelcastInstance;
-	private static final String SESSIONS_REPOSITORY = "IoTSessionRepository";
 
 	ConcurrentHashMap<String, IoTSession> sessionList = new ConcurrentHashMap<>(200);
 
 	@Override
 	public Optional<IoTSession> authenticate(String token, String clientPlatform, String clientPlatformInstance,
 			String sessionKey) {
+		final Optional<MasterDeviceToken> masterToken = Optional
+				.ofNullable(masterDeviceTokenRepository.findByTokenName(token));
+
+		masterToken.ifPresent(mt -> {
+			MultitenancyContextHolder.setVerticalSchema(mt.getVerticalSchema());
+			MultitenancyContextHolder.setTenantName(mt.getTenant());
+		});
 		final Token retrivedToken = tokenService.getTokenByToken(token);
-		if (retrivedToken == null) {
-			log.info("Impossible to retrieve Token with token: {}",token);
+		if (!masterToken.isPresent() || retrivedToken == null) {
+			log.info("Impossible to retrieve Token with token: {}", token);
 			return Optional.empty();
 		} else if (!retrivedToken.isActive()) {
-			log.info("Token inactive with token: {}",token);
+			log.info("Token inactive: {}", token);
 			return Optional.empty();
 		}
 
@@ -95,7 +105,8 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 			session.setExpiration(
 					(Long) resourcesService.getGlobalConfiguration().getEnv().getIotbroker().get("session-expiration"));
 			session.setLastAccess(ZonedDateTime.now());
-			session.setToken(token);
+			// TO-DO check cases where there is no master token presente, create one?
+			session.setToken(masterToken.orElse(null));
 			session.setClientPlatformID(clientPlatformDB.getId());
 
 			session.setUserID(retrivedToken.getClientPlatform().getUser().getUserId());
@@ -166,6 +177,10 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 		}
 
 		final IoTSession session = ioTSessionRepository.findBySessionKey(sessionKey);
+		if (session != null && session.getToken() != null) {
+			MultitenancyContextHolder.setVerticalSchema(session.getToken().getVerticalSchema());
+			MultitenancyContextHolder.setTenantName(session.getToken().getTenant());
+		}
 
 		boolean clientHasAuthority = false;
 		try {
@@ -198,7 +213,9 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 		if (session == null) {
 			return Optional.empty();
 		} else {
-			Token token = tokenService.getTokenByToken(session.getToken());
+			MultitenancyContextHolder.setVerticalSchema(session.getToken().getVerticalSchema());
+			MultitenancyContextHolder.setTenantName(session.getToken().getTenant());
+			final Token token = tokenService.getTokenByToken(session.getToken().getTokenName());
 			if (token == null || !token.isActive()) {
 				closeSession(sessionKey);
 				return Optional.empty();
@@ -227,13 +244,13 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	}
 
 	private List<IoTSession> getIotSessionsFromCache() {
-		return hazelcastInstance.getMap(SESSIONS_REPOSITORY).entrySet().stream().map(e -> (IoTSession) e.getValue())
-				.collect(Collectors.toList());
+		return hazelcastInstance.getMap(IoTSessionRepository.SESSIONS_REPOSITORY).entrySet().stream()
+				.map(e -> (IoTSession) e.getValue()).collect(Collectors.toList());
 	}
 
 	private void synchronizeSessions() {
-		ioTSessionRepository.findAll()
-				.forEach(s -> hazelcastInstance.getMap(SESSIONS_REPOSITORY).put(s.getSessionKey(), s));
+		ioTSessionRepository.findAll().forEach(
+				s -> hazelcastInstance.getMap(IoTSessionRepository.SESSIONS_REPOSITORY).put(s.getSessionKey(), s));
 
 	}
 

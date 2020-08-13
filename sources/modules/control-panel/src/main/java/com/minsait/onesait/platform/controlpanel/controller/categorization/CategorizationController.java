@@ -155,11 +155,13 @@ public class CategorizationController {
 	@GetMapping(value = "/share/{id}", produces = "text/html")
 	public String share(Model model, @PathVariable("id") String id) {
 		final Categorization categorization = categorizationRepository.findById(id);
-		if (!categorization.getUser().getUserId().equals(utils.getUserId())
-				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		User user = userService.getUser(utils.getUserId());
+		
+		if (!categorization.getUser().getUserId().equals(user.getUserId())
+				&& !userService.isUserAdministrator(user)) {
 			return E403;
 		}
-		User user = userService.getUser(utils.getUserId());
+		
 		List<User> users = userService.getAllUsers();
 		model.addAttribute("users", users);
 
@@ -216,9 +218,13 @@ public class CategorizationController {
 			User user = userService.getUser(utils.getUserId());
 			
 			categorizationService.createCategorization(name, json, user);
-		} catch (Exception e) {
+		} catch (GenericOPException e) {
 			log.error("Could not create the Categorization tree");
-			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}	 
+		catch (Exception e) {
+			log.error("Could not create the Categorization tree");
+			return new ResponseEntity<>("Could not create the Categorization tree", HttpStatus.BAD_REQUEST);
 		}		
 		return new ResponseEntity<>(OK, HttpStatus.OK);
 	}
@@ -410,7 +416,7 @@ public class CategorizationController {
 		User user = userService.getUser(utils.getUserId());
 		try {
 			JSONObject list = new JSONObject();			
-			if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			if (!userService.isUserAdministrator(user)) {
 				dataflows = dataflowRepository.findByUserAndAccess(user);
 			} else {
 				dataflows = dataflowRepository.findAll();
@@ -432,7 +438,7 @@ public class CategorizationController {
 		try {
 			JSONObject list = new JSONObject();
 			List<Notebook> notebooks = null;
-			if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			if (!userService.isUserAdministrator(user)) {
 				notebooks = notebookRepository.findByUserAndAccess(user);
 			} else {
 				notebooks =  notebookRepository.findAllByOrderByIdentificationAsc();
@@ -454,7 +460,7 @@ public class CategorizationController {
 		try {
 			JSONObject list = new JSONObject();
 			List<Viewer> viewers = null;
-			if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			if (userService.isUserAdministrator(user)) {
 				viewers = viewerRepository.findAll();
 			} else {
 				viewers = viewerRepository.findByIsPublicTrueOrUser(user);
@@ -470,14 +476,14 @@ public class CategorizationController {
 	}
 	
 	@Transactional
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@RequestMapping(value = "/getReports", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> getReports(){
 		User user = userService.getUser(utils.getUserId());
 		try {
 			JSONObject list = new JSONObject();
 			List<Report> reports = null;
-			if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+			if (userService.isUserAdministrator(user)) {
 				reports = reportService.findAllActiveReports();
 			} else {
 				reports = reportService.findAllActiveReportsByUserId(user.getUserId());
@@ -555,7 +561,7 @@ public class CategorizationController {
 			try {
 				Notebook notebook = notebookRepository.findById(id);
 				List<Notebook> notebooks = null;
-				if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				if (!userService.isUserAdministrator(user)) {
 					notebooks = notebookRepository.findByUserAndAccess(user);
 				} else {
 					notebooks =  notebookRepository.findAllByOrderByIdentificationAsc();
@@ -571,7 +577,7 @@ public class CategorizationController {
 			try {
 				List<Pipeline> dataflows = null;
 				Pipeline dataflow = dataflowRepository.findOne(id);
-				if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				if (!userService.isUserAdministrator(user)) {
 					dataflows = dataflowRepository.findByUserAndAccess(user);
 				} else {
 					dataflows = dataflowRepository.findAll();
@@ -587,7 +593,7 @@ public class CategorizationController {
 			try {
 				Viewer viewer = viewerRepository.findById(id);
 				List<Viewer> viewers = null;
-				if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				if (userService.isUserAdministrator(user)) {
 					viewers = viewerRepository.findAll();
 				} else {
 					viewers = viewerRepository.findByIsPublicTrueOrUser(user);
@@ -603,7 +609,7 @@ public class CategorizationController {
 			try {
 				Report report = reportService.findById(id);
 				List<Report> reports = null;
-				if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				if (userService.isUserAdministrator(user)) {
 					reports = reportService.findAllActiveReports();
 				} else {
 					reports = reportService.findAllActiveReportsByUserId(user.getUserId());

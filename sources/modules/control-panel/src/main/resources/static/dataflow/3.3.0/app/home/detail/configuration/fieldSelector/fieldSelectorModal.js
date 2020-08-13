@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('FieldSelectorModalInstanceController', function ($scope, $timeout, $modalInstance, previewService,
+  .controller('FieldSelectorModalInstanceController', ["$scope", "$timeout", "$modalInstance", "previewService", "currentSelectedPaths", "activeConfigInfo", "detailPaneConfig", function ($scope, $timeout, $modalInstance, previewService,
             currentSelectedPaths, activeConfigInfo, detailPaneConfig) {
     angular.extend($scope, {
       common: {
@@ -66,4 +66,4 @@ angular
         }
       );
     }, 300);
-  });
+  }]);

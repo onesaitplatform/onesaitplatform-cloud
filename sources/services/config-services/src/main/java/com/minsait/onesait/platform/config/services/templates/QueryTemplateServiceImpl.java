@@ -138,6 +138,11 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	public QueryTemplate getQueryTemplateById(String id) {
 		return queryTemplateRepository.findById(id);
 	}
+	
+	@Override
+	public List<QueryTemplate> getQueryTemplateByCriteria(String name){
+		return queryTemplateRepository.findByNameContaining(name);
+	}
 
 	@Override
 	public void updateQueryTemplate(QueryTemplate queryTemplate) {

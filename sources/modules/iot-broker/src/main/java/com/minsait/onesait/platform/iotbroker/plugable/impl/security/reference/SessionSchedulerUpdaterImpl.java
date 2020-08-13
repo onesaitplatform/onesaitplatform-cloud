@@ -27,8 +27,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.IoTSession;
-import com.minsait.onesait.platform.config.repository.IoTSessionRepository;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,19 +1,19 @@
 FROM onesaitplatform/baseimage:latest
 
 # Metadata
-LABEL platform.image.name="apimanager"	
+LABEL platform.image.name="apimanager"
 
 ADD *-exec.jar app.jar
 
-# Timezone 
+# Timezone
 RUN apk add --no-cache tzdata
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \
 	mkdir ./target
-	
+
 # create onesait user/group
-RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
@@ -24,19 +24,22 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /usr/local
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
-    
+
 USER onesait
-    
+
 EXPOSE 19100
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
 ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
-    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
-    CONFIGDBUSER=root \
-    CONFIGDBPASS=changeIt! \
-    SCHEDULERDBSERVERS=schedulerdb:3306 \
+	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+	CONFIGDBUSER=root \
+	CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \    
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \

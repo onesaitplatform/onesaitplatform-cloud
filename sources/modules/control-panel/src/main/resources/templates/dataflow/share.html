@@ -49,7 +49,7 @@
 			var authorization = function(action,dataflow,user,accesstype,authorization,btn){
 				
 				var insertURL = '/controlpanel/dataflow/auth';
-				var deleteURL = '/controlpanel/dataflow/auth/delete';
+				var deleteURL = '/controlpanel/dataflow/auth/'+authorization;
 				var response = {};
 				
 				var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -78,17 +78,22 @@
 				if (action  === 'delete'){
 					console.log('    |---> Deleting... ' + user + ' with authId:' + authorization );
 
-					$.ajax({url:deleteURL, type:"POST",
+					$.ajax({
+						type:"DELETE",
 						headers: {
 							[csrf_header]: csrf_value
-					    },
-						async: true,
-						data: {"id": authorization},
-						dataType:"json",
-						success: function(response,status){
-							window.location.reload(true);
-						}
-					});
+						},
+						contentType: "application/json",
+						url:deleteURL
+					}).done(function(data){
+						window.location.reload();
+					}).fail(function(e){
+						$.alert({
+							title: 'Error removing authorization',
+							content: "Response message: " + e.responseText,
+							type: 'red'
+						});
+					})
 				}
 			};
 			
@@ -112,25 +117,23 @@
 			}
 			
 			function insertAuthorization (dataflowid){
-					console.log("esto es: " + dataflowid);
-					// UPDATE MODE ONLY AND VALUES on user and accesstype
-					if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled') && ($('#accesstypes').val() !== '')){
+				console.log("esto es: " + dataflowid);
+				// UPDATE MODE ONLY AND VALUES on user and accesstype
+				if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled') && ($('#accesstypes').val() !== '')){
 
-						// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
-						// object with data.
-						authorization('insert',dataflowid,$('#users').val(),$('#accesstypes').val(),'');
+					// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
+					// object with data.
+					authorization('insert',dataflowid,$('#users').val(),$('#accesstypes').val(),'');
 
-					} else {  $.alert({title: 'ERROR!', theme: 'light',  content: "ERROR"}); }
-				
+				} else {
+					$.alert({title: 'ERROR!', theme: 'light',  content: "ERROR"});
+				}
 			}
 
 			// REMOVE authorization
 			function removeAuthorization (intid){
-				
-					console.log(intid);
-
-					authorization('delete','','','',intid);
-				
+				console.log(intid);
+				authorization('delete','','','',intid);
 			}
 		
 			//]]>
@@ -203,8 +206,7 @@
 										<label class="control-label" th:text="#{dataflow.auth.accesstypes}">Access types:</label>
 										<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >
 											<option value="ACCESS-TYPE-1">EDIT</option>
-											<!-- <option value="QUERY">QUERY</option>
-											<option value="INSERT">INSERT</option> -->
+											<option value="ACCESS-TYPE-2">VIEW</option>
 										</select>
 									</div>
 									<div class="form-group margin-top-30">

@@ -27,20 +27,27 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyCommitTransactionMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteByIdMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyEmptyMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyEmptySessionMandatoryMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyInsertMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyLeaveMessage;
@@ -53,7 +60,7 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryResultFormat;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
-import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
@@ -62,6 +69,7 @@ import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPlu
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
 import com.minsait.onesait.platform.iotbroker.processor.MessageProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -99,14 +107,17 @@ public class Rest extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	private CorrelationInterceptor logInterceptor;
+	@Autowired
+	private MultitenancyInterceptor multitenancyInterceptor;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(logInterceptor);
+		registry.addInterceptor(multitenancyInterceptor);
 	}
 
 	@ApiOperation(value = "Logs a client device into onesaitPlatform with token.\nReturns a sessionKey to use in further operations")
-	@RequestMapping(value = "/client/join", method = RequestMethod.GET)
+	@GetMapping(value = "/client/join")
 	public ResponseEntity<?> join(
 			@ApiParam(value = "Token asociated to client platform", required = true) @RequestParam(name = "token") String token,
 			@ApiParam(value = "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
@@ -117,7 +128,6 @@ public class Rest extends WebMvcConfigurerAdapter {
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.JOIN);
-		// request.setSessionKey();
 		request.getBody().setToken(token);
 		request.getBody().setDeviceTemplate(clientPlatform);
 		request.getBody().setDevice(clientPlatformId);
@@ -131,7 +141,7 @@ public class Rest extends WebMvcConfigurerAdapter {
 	}
 
 	@ApiOperation(value = "Logs out a client device into onesaitPlatform with token")
-	@RequestMapping(value = "/client/leave", method = RequestMethod.GET)
+	@GetMapping(value = "/client/leave")
 	public ResponseEntity<?> leave(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey) {
 
@@ -151,7 +161,7 @@ public class Rest extends WebMvcConfigurerAdapter {
 	}
 
 	@ApiOperation(value = "Get a list of instances of a ontology data")
-	@RequestMapping(value = "/ontology/{ontology}", method = RequestMethod.GET)
+	@GetMapping(value = "/ontology/{ontology}")
 	public ResponseEntity<?> list(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
@@ -178,15 +188,32 @@ public class Rest extends WebMvcConfigurerAdapter {
 		}
 	}
 
+	@ApiOperation(value = "Get a list of instances of a ontology data through POST HTTP")
+	@PostMapping(value = "/ontology/{ontology}/query")
+	public ResponseEntity<?> postList(
+			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@ApiParam(value = "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature ", required = true) @RequestParam(name = "query") String query,
+			@ApiParam(value = "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType) {
+
+		return list(sessionKey, ontology, query, queryType);
+
+	}
+
 	@ApiOperation(value = "Inserts a instance of a ontology expresed in json format")
-	@RequestMapping(value = "/ontology/{ontology}", method = RequestMethod.POST)
+	@PostMapping(value = "/ontology/{ontology}")
 	public ResponseEntity<?> create(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
 			@ApiParam(value = "Json data representing ontology instance", required = true) @RequestBody JsonNode data) {
 
 		final SSAPMessage<SSAPBodyInsertMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyInsertMessage());
+
+		if (null != transactionId && transactionId.length() > 0) {
+			request.setTransactionId(transactionId);
+		}
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.INSERT);
@@ -203,9 +230,10 @@ public class Rest extends WebMvcConfigurerAdapter {
 	}
 
 	@ApiOperation(value = "Updates a instance of a ontology expresed in json format")
-	@RequestMapping(value = "/ontology/{ontology}/{id}", method = RequestMethod.PUT)
+	@PutMapping(value = "/ontology/{ontology}/{id}")
 	public ResponseEntity<?> updateById(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
 			@ApiParam(value = "Ontology identification to perform operation", required = true) @PathVariable("id") String id,
 			@ApiParam(value = "Json data representing ontology instance", required = true) @RequestBody JsonNode data,
@@ -213,6 +241,10 @@ public class Rest extends WebMvcConfigurerAdapter {
 
 		final SSAPMessage<SSAPBodyUpdateByIdMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyUpdateByIdMessage());
+
+		if (null != transactionId && transactionId.length() > 0) {
+			request.setTransactionId(transactionId);
+		}
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.UPDATE_BY_ID);
@@ -237,15 +269,20 @@ public class Rest extends WebMvcConfigurerAdapter {
 	// Use put operation instad this one
 	@Deprecated
 	@ApiOperation(value = "Updates a instance or instances of a ontology with a update query")
-	@RequestMapping(value = "/ontology/{ontology}/update", method = RequestMethod.GET)
+	@GetMapping(value = "/ontology/{ontology}/update")
 	public ResponseEntity<?> updateByQuery(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
 			@ApiParam(value = "Examples: NATIVE: db.temperature.update({\"location\":\"Helsinki\"}, { $set:{\"value\":15}})", required = true) @RequestParam(name = "query") String query,
 			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids) {
 
 		final SSAPMessage<SSAPBodyUpdateMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyUpdateMessage());
+
+		if (null != transactionId && transactionId.length() > 0) {
+			request.setTransactionId(transactionId);
+		}
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.UPDATE);
@@ -268,15 +305,20 @@ public class Rest extends WebMvcConfigurerAdapter {
 	}
 
 	@ApiOperation(value = "Updates a instance or instances of a ontology with a update query in body")
-	@RequestMapping(value = "/ontology/{ontology}/update", method = RequestMethod.PUT)
+	@PutMapping(value = "/ontology/{ontology}/update")
 	public ResponseEntity<?> updateByQueryBody(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
 			@ApiParam(value = "Examples: NATIVE: db.temperature.update({\"location\":\"Helsinki\"}, { $set:{\"value\":15}})", required = true, example = "") @RequestBody String query,
 			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids) {
 
 		final SSAPMessage<SSAPBodyUpdateMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyUpdateMessage());
+
+		if (null != transactionId && transactionId.length() > 0) {
+			request.setTransactionId(transactionId);
+		}
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.UPDATE);
@@ -299,9 +341,10 @@ public class Rest extends WebMvcConfigurerAdapter {
 	}
 
 	@ApiOperation(value = "Delete a instance or instances of a ontology with a remove query")
-	@RequestMapping(value = "/ontology/{ontology}/delete", method = RequestMethod.GET)
+	@GetMapping(value = "/ontology/{ontology}/delete")
 	public ResponseEntity<?> deleteByQuery(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
 			@ApiParam(value = "Examples: NATIVE: db.temperature.update({\"value\":15})", required = true) @RequestParam(name = "query") String query,
 			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids)
@@ -310,8 +353,12 @@ public class Rest extends WebMvcConfigurerAdapter {
 		final SSAPMessage<SSAPBodyDeleteMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyDeleteMessage());
 
-		String ontologyDecoded = URLDecoder.decode(ontology, StandardCharsets.UTF_8.name());
-		String queryDecoded = URLDecoder.decode(query, StandardCharsets.UTF_8.name());
+		if (null != transactionId && transactionId.length() > 0) {
+			request.setTransactionId(transactionId);
+		}
+
+		final String ontologyDecoded = URLDecoder.decode(ontology, StandardCharsets.UTF_8.name());
+		final String queryDecoded = URLDecoder.decode(query, StandardCharsets.UTF_8.name());
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.DELETE);
@@ -334,15 +381,20 @@ public class Rest extends WebMvcConfigurerAdapter {
 	}
 
 	@ApiOperation(value = "Delete a instance of a ontology")
-	@RequestMapping(value = "/ontology/{ontology}/{id}", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/ontology/{ontology}/{id}")
 	public ResponseEntity<?> deleteById(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
 			@ApiParam(value = "Ontology identification to perform operation", required = true) @PathVariable("id") String id,
 			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids) {
 
 		final SSAPMessage<SSAPBodyDeleteByIdMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyDeleteByIdMessage());
+
+		if (null != transactionId && transactionId.length() > 0) {
+			request.setTransactionId(transactionId);
+		}
 
 		request.setDirection(SSAPMessageDirection.REQUEST);
 		request.setMessageType(SSAPMessageTypes.DELETE_BY_ID);
@@ -363,7 +415,7 @@ public class Rest extends WebMvcConfigurerAdapter {
 		}
 	}
 
-	@RequestMapping(value = "/ontology/decrypt/{ontology}", method = RequestMethod.POST)
+	@PostMapping(value = "/ontology/decrypt/{ontology}")
 	public ResponseEntity<?> decryptById(
 			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
 			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
@@ -391,6 +443,111 @@ public class Rest extends WebMvcConfigurerAdapter {
 		} else {
 			return new ResponseEntity<>("A valid user is necessary", HttpStatus.UNAUTHORIZED);
 		}
+	}
+
+	@ApiOperation(value = "Start a Transaction")
+	@GetMapping(value = "/transaction/start")
+	public ResponseEntity<?> startTx(
+			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey) {
+
+		final SSAPMessage<SSAPBodyEmptySessionMandatoryMessage> request = new SSAPMessage<>();
+		request.setBody(new SSAPBodyEmptySessionMandatoryMessage());
+
+		request.setDirection(SSAPMessageDirection.REQUEST);
+		request.setMessageType(SSAPMessageTypes.START_TRANSACTION);
+		request.setSessionKey(sessionKey);
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(request, getGatewayInfo());
+		if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
+			return new ResponseEntity<>(response.getBody().getData(), HttpStatus.OK);
+		} else {
+			return formResponseError(response);
+		}
+
+	}
+
+	@ApiOperation(value = "Commit a Transaction")
+	@GetMapping(value = "/transaction/commit/{transactionId}")
+	public ResponseEntity<?> commitTx(
+			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "Lock ontologies during the transaction", required = false) @RequestHeader(value = "LockOntologies", defaultValue = "false") Boolean lockOntologies,
+			@ApiParam(value = "Transaction Identifier", required = true) @PathVariable("transactionId") String transactionId) {
+
+		final SSAPMessage<SSAPBodyCommitTransactionMessage> request = new SSAPMessage<>();
+		final SSAPBodyCommitTransactionMessage commitBody = new SSAPBodyCommitTransactionMessage();
+		commitBody.setLockOntologies(lockOntologies);
+
+		request.setBody(commitBody);
+
+		request.setTransactionId(transactionId);
+
+		request.setDirection(SSAPMessageDirection.REQUEST);
+		request.setMessageType(SSAPMessageTypes.COMMIT_TRANSACTION);
+		request.setSessionKey(sessionKey);
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(request, getGatewayInfo());
+		if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
+			return new ResponseEntity<>(response.getBody().getData(), HttpStatus.OK);
+		} else {
+			return formResponseError(response);
+		}
+	}
+
+	@ApiOperation(value = "Rollback a Transaction")
+	@GetMapping(value = "/transaction/rollback/{transactionId}")
+	public ResponseEntity<?> rollbackTx(
+			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "Transaction Identifier", required = true) @PathVariable("transactionId") String transactionId) {
+
+		final SSAPMessage<SSAPBodyEmptyMessage> request = new SSAPMessage<>();
+		request.setBody(new SSAPBodyEmptyMessage());
+		request.setTransactionId(transactionId);
+
+		request.setDirection(SSAPMessageDirection.REQUEST);
+		request.setMessageType(SSAPMessageTypes.ROLLBACK_TRANSACTION);
+		request.setSessionKey(sessionKey);
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(request, getGatewayInfo());
+		if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
+			return new ResponseEntity<>(response.getBody().getData(), HttpStatus.OK);
+		} else {
+			return formResponseError(response);
+		}
+	}
+
+	@ApiOperation(value = "Subscribe by subscription. The subscription have to be defined in controlpanel")
+	@PostMapping(value = "/subscribe/{subscription}")
+	public ResponseEntity<?> subscribe(
+			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "Subscription to perform the operation. Client platform must have granted permissions ", required = true) @PathVariable("subscription") String subscription,
+			@ApiParam(value = "Value of the subscription ontology field", required = true) @RequestParam(name = "queryValue") String queryValue,
+			@ApiParam(value = "Endpoint where notifications will be sent", required = true) @RequestParam(name = "callback") String callback) {
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(SSAPMessageGenerator
+				.generateRequestSubscriptionMessage(subscription, queryValue, callback, sessionKey, subscription),
+				getGatewayInfo());
+		if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
+			return new ResponseEntity<>(response.getBody().getData(), HttpStatus.OK);
+		} else {
+			return formResponseError(response);
+		}
+
+	}
+
+	@ApiOperation(value = "Unsubscribe by subscriptionId.")
+	@PostMapping(value = "/unsubscribe/{subscriptionId}")
+	public ResponseEntity<?> unsubscribe(
+			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@ApiParam(value = "Subscription ID ", required = true) @PathVariable("subscriptionId") String subscriptionId) {
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(
+				SSAPMessageGenerator.generateRequestUnsubscribeMessage(sessionKey, subscriptionId), getGatewayInfo());
+		if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
+			return new ResponseEntity<>(response.getBody().getData(), HttpStatus.OK);
+		} else {
+			return formResponseError(response);
+		}
+
 	}
 
 	private ResponseEntity<?> formResponseError(SSAPMessage<SSAPBodyReturnMessage> response) {

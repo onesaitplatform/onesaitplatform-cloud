@@ -30,11 +30,15 @@ public class RestApiOperationDTO {
 	private String name;
 	@Getter
 	@Setter
+	private String path;
+	@Getter
+	@Setter
 	private String method;
+
 	@Getter
 	@Setter
 	private List<RestApiOperationParamDTO> params;
 	@Getter
 	@Setter
-	private Map<String,String> returnMessagesresponseCodes;
+	private Map<String, String> returnMessagesresponseCodes;
 }

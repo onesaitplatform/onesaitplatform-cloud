@@ -18,9 +18,10 @@ import com.minsait.onesait.platform.scheduler.scheduler.instance.SchedulerNames;
 
 public enum SchedulerType {
 
-	TWITTER(SchedulerNames.TWITTER_SCHEDULER_NAME), SCRIPT(SchedulerNames.SCRIPT_SCHEDULER_NAME), SIMULATION(
-			SchedulerNames.SIMULATION_SCHEDULER_NAME), BATCH(
-					SchedulerNames.BATCH_SCHEDULER_NAME), OKPI(SchedulerNames.OKPI_SCHEDULER_NAME);
+	TWITTER(SchedulerNames.TWITTER_SCHEDULER_NAME), SCRIPT(SchedulerNames.SCRIPT_SCHEDULER_NAME),
+	SIMULATION(SchedulerNames.SIMULATION_SCHEDULER_NAME), BATCH(SchedulerNames.BATCH_SCHEDULER_NAME),
+	OKPI(SchedulerNames.OKPI_SCHEDULER_NAME), RESTPLANNER(SchedulerNames.REST_PLANNER_SCHEDULER_NAME),
+	EXPIRATIONUSERS(SchedulerNames.EXPIRATION_USERS_NAME);
 
 	private String schedulerName;
 

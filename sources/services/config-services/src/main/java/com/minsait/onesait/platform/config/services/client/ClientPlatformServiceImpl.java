@@ -37,8 +37,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
@@ -48,6 +47,7 @@ import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.client.dto.DeviceCreateDTO;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.exceptions.ClientPlatformServiceException;
+import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
@@ -78,6 +78,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	private OPResourceService resourceService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
+	@Autowired
+	private KafkaAuthorizationService kafkaAuthorizationService;
 
 	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
 	private static final String LOG_DEVICE_DATA_MODEL = "DeviceLog";
@@ -101,6 +103,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(ontology.getIdentification(),
 						clientPlatform.getIdentification()) == null) {
 					clientPlatformOntologyRepository.save(relation);
+					kafkaAuthorizationService.addAclToOntologyClient(relation);
 				}
 			}
 
@@ -132,7 +135,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		final User user = userService.getUser(userId);
 		List<ClientPlatform> clients = new ArrayList<>();
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			if (identification != null) {
 				ClientPlatform cli = clientPlatformRepository.findByIdentification(identification);
 				if (cli != null)
@@ -250,6 +253,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			for (final ClientPlatformOntology cpoNew : clientsPlatformOntologies) {
 				cpoNew.setClientPlatform(cli);
 				clientPlatformOntologyRepository.save(cpoNew);
+				kafkaAuthorizationService.addAclToOntologyClient(cpoNew);
 			}
 
 			this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "OK");
@@ -278,6 +282,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 				clientPlatformOntology.setAccess(AccessType.valueOf(ontology.getString(ACCESS_STR)));
 				clientPlatformOntologyRepository.save(clientPlatformOntology);
+				kafkaAuthorizationService.addAclToOntologyClient(clientPlatformOntology);
 
 				return true;
 			}
@@ -304,6 +309,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(ontology.getString("id"),
 				ndevice.getIdentification()) == null) {
 			clientPlatformOntologyRepository.save(clientPlatformOntology);
+			kafkaAuthorizationService.addAclToOntologyClient(clientPlatformOntology);
 		}
 	}
 
@@ -324,6 +330,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 			if (!find) {
 				clientPlatformOntologyRepository.delete(clientPlatformOntology);
+				kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
 				iterator.remove();
 			}
 		}
@@ -358,6 +365,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(ontology.getIdentification(),
 				clientPlatform.getIdentification()) == null) {
 			clientPlatformOntologyRepository.save(relation);
+			kafkaAuthorizationService.addAclToOntologyClient(relation);
 		}
 
 	}
@@ -395,7 +403,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		final User user = userService.getUser(userId);
 		final ClientPlatform clientPlatform = clientPlatformRepository.findById(id);
 		if (user.equals(clientPlatform.getUser())
-				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()))
+				|| userService.isUserAdministrator(user))
 			return true;
 		else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
@@ -408,7 +416,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		final User user = userService.getUser(userId);
 		final ClientPlatform clientPlatform = clientPlatformRepository.findById(id);
 		if (user.equals(clientPlatform.getUser())
-				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()))
+				|| userService.isUserAdministrator(user))
 			return true;
 		else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
@@ -432,6 +440,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(
 						ontology.getKey().getIdentification(), clientPlatform.getIdentification()) == null) {
 					clientPlatformOntologyRepository.save(relation);
+					kafkaAuthorizationService.addAclToOntologyClient(relation);
 				}
 			}
 

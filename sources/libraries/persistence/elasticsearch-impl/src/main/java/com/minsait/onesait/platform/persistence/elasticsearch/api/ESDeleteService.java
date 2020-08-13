@@ -16,61 +16,84 @@ package com.minsait.onesait.platform.persistence.elasticsearch.api;
 
 import java.io.IOException;
 
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
+import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
+import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
 
-import io.searchbox.client.JestResult;
-import io.searchbox.core.Delete;
-import io.searchbox.core.DeleteByQuery;
-import io.searchbox.core.DocumentResult;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Conditional(ElasticsearchEnabledCondition.class)
 @Slf4j
 public class ESDeleteService {
 
-	@Autowired
-	ESBaseApi connector;
-
-	public boolean deleteById(String index, String type, String id) {
-		try {
-			DocumentResult d = connector.getHttpClient()
-					.execute(new Delete.Builder(id).index(index).type(type).build());
-
-			log.info("Document has been deleted..." + id + " " + d.isSucceeded());
-
-			return d.isSucceeded();
-
-		} catch (Exception ex) {
-			log.error("Exception occurred while delete Document : " + ex, ex);
-		}
-		return false;
+    @Autowired
+    private RestHighLevelClient hlClient;
+	
+	
+	private DeleteResponse delete(String index, String id) {
+	    DeleteRequest deleteRequest = new DeleteRequest(index, id);
+	    return exececuteDelete(deleteRequest);
+	}
+	
+	private BulkByScrollResponse deleteIndexByQuery(String index) {
+	    DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index);
+	    deleteByQueryRequest.setQuery(QueryBuilders.matchAllQuery());
+	    return executeDeleteByQuery(deleteByQueryRequest);
+	}
+	
+	private BulkByScrollResponse deleteIndexByQuery(String index, String jsonQuery) {
+        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest(index);
+        deleteByQueryRequest.setQuery(QueryBuilders.wrapperQuery(jsonQuery));
+        return executeDeleteByQuery(deleteByQueryRequest);
+    }
+	
+	private DeleteResponse exececuteDelete(DeleteRequest deleteRequest) {
+	    try {
+            return hlClient.delete(deleteRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            log.error("Error in delete query ", e);
+            return null;
+        }
+	}
+	
+	private BulkByScrollResponse executeDeleteByQuery(DeleteByQueryRequest deleteByQueryRequest) {
+	    try {
+            return hlClient.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            log.error("Error in delete by query ", e);
+            return null;
+        }
 	}
 
-	public boolean deleteAll(String index, String type) {
-		MultiDocumentOperationResult result = deleteByQuery(index, type, ESBaseApi.QUERY_ALL, false);
-		return (result.getCount() != -1);
+	public boolean deleteById(String index, String id) {
+	    DeleteResponse deleteResponse = delete(index, id);
+	    return deleteResponse != null && deleteResponse.status().equals(RestStatus.OK);
 	}
 
-	public MultiDocumentOperationResult deleteByQuery(String index, String type, String jsonQueryString,
-			boolean includeIds) {
-		DeleteByQuery deleteByQuery = new DeleteByQuery.Builder(jsonQueryString).addIndex(index).addType(type).build();
+	public boolean deleteAll(String index) {
+	    BulkByScrollResponse deleteResponse = deleteIndexByQuery(index);
+	    return deleteResponse != null && deleteResponse.getDeleted() >= 0;
+	}
+
+	public MultiDocumentOperationResult deleteByQuery(String index, String jsonQuery) {
+	    BulkByScrollResponse deleteResponse = deleteIndexByQuery(index, jsonQuery);	    
 		MultiDocumentOperationResult result = new MultiDocumentOperationResult();
-		try {
-			JestResult resultOp = connector.getHttpClient().execute(deleteByQuery);
-
-			if (resultOp.isSucceeded()) {
-				result.setCount(resultOp.getJsonObject().getAsJsonObject("_indices").getAsJsonObject(index)
-						.get("deleted").getAsLong());
-			} else {
-				result.setCount(-1);
-			}
-
-		} catch (IOException e) {
-			log.error("Exception occurred while delete Document : " + e, e);
-			result.setCount(-1);
+		if (deleteResponse != null) {
+		    result.setCount(deleteResponse.getDeleted());
+		} else {
+		    result.setCount(-1);
 		}
 		return result;
 	}

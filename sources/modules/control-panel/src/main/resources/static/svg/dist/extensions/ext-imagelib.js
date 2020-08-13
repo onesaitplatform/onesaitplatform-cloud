@@ -107,7 +107,7 @@ var svgEditorExtension_imagelib = (function () {
                     }).hide();
                     /* const type = */
 
-                    $('<select><option value=s>' + imagelibStrings.import_single + '</option><option value=m>' + imagelibStrings.import_multi + '</option><option value=o>' + imagelibStrings.open + '</option></select>').appendTo(leftBlock).change(function () {
+                    $('<select><option value=s>' + imagelibStrings.import_single + '</option><option value=m>' + imagelibStrings.import_multi + '</option></select>').appendTo(leftBlock).change(function () {
                       mode = $(this).val();
 
                       switch (mode) {
@@ -545,7 +545,7 @@ var svgEditorExtension_imagelib = (function () {
                 * @returns {void}
                 */
 
-                buttons = [{
+              /*  buttons = [{
                   id: 'tool_imagelib',
                   type: 'app_menu',
                   // _flyout
@@ -554,10 +554,23 @@ var svgEditorExtension_imagelib = (function () {
                   events: {
                     mouseup: showBrowser
                   }
-                }];
+                }];*/
+                buttons = [{
+                    id: 'tool_imagelib',
+                    type: 'context',
+                    // _flyout
+                    panel:'toolssidenav',
+                    icon: extIconsPath + 'imagelib.png',
+                    position: 1,
+                    events: {
+                      mouseup: showBrowser
+                    }
+                  }]
+                
+                
                 return _context2.abrupt("return", {
                   svgicons: extIconsPath + 'ext-imagelib.xml',
-                  buttons: imagelibStrings.buttons.map(function (button, i) {
+                  buttons: imagelibStrings.buttons.map(function (button, i) {                	  
                     return Object.assign(buttons[i], button);
                   }),
                   callback: function callback() {

@@ -1,3 +1,11 @@
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
+     
 onesaitplatform: #Config onesaitplatform specific
    iotbroker.plugable:
       gateway:
@@ -5,18 +13,16 @@ onesaitplatform: #Config onesaitplatform specific
             enable: ${KAFKAENABLED}
             host: ${KAFKAHOST}
             port: ${KAFKAPORT}
-   database.elasticsearch:
-      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-      url: ${ELASTICDBHOST}
+   database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
    database.mongodb:
       database: ${REALTIMEDBNAME}
-      servers: ${REALTIMEDBSERVERS} 
-      authenticationDatabase: ${REALTIMEDBAUTHDB}               
+      servers: ${REALTIMEDBSERVERS}
+      authenticationDatabase: ${REALTIMEDBAUTHDB}
       useAuth: ${REALTIMEDBUSEAUTH}
       username: ${REALTIMEDBUSER}
       password: ${REALTIMEDBPASS}
-      writeConcern: ${REALTIMEDBWRITECONCERN}     
-      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/ 
+      writeConcern: ${REALTIMEDBWRITECONCERN}
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
       quasar.maxHttpConnections: ${MAXCONN}
       quasar.maxHttpConnectionsPerRoute: ${MAXCONNROUTE}
    database.hadoop.enabled: ${ENABLEHADOOP}
@@ -52,16 +58,20 @@ onesaitplatform: #Config onesaitplatform specific
       nodered: ${NOTIFICATION_POOL_NODERED}
       kafka: ${NOTIFICATION_POOL_KAFKA}
       rulesengine: ${NOTIFICATION_POOL_RULESENGINE}
+      subscription: ${NOTIFICATION_POOL_SUBSCRIPTION}
+      subscription.notificator: ${NOTIFICATION_POOL_SUBSCRIPTION_NOTIFICATOR}
+      subscription.attemps: ${NOTIFICATION_SUBSCRIPTION_ATTEMPS}
+   urls:
+      iotbroker.advice: http://iotbrokerservice:19000/iot-broker/advice
 
-   
-spring: ## General Config  
-   boot.admin: #Spring Boot Admin Config    
-      url: http://monitoringuiservice:18100/monitoring    
-      client.service-url: http://routerservice:${server.port}${server.contextPath}/ 
+spring: ## General Config
+   boot.admin: #Spring Boot Admin Config
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://routerservice:${server.port}${server.contextPath}/
    datasource: ## JPA Config
-      url: ${CONFIGDBURL}
+      url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS} 
+      password: ${CONFIGDBPASS}
       time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
       min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
       max-wait-millis: ${DS_MAX_WAIT_MILLIS}
@@ -73,10 +83,10 @@ spring: ## General Config
       removeAbandoned: ${DS_REMOVE_ABANDONED}
       removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
    data.mongodb:
-      host: ${REALTIMEDBSERVERS}      
+      host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
-      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}      
-            
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+
 ## LOGGING CONF
 logging:
    path: /var/log/platform-logs

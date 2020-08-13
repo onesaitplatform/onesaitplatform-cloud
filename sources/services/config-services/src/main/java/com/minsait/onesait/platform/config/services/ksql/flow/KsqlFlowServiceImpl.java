@@ -37,6 +37,7 @@ import com.minsait.onesait.platform.config.repository.KsqlResourceRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlFlowServiceException;
 import com.minsait.onesait.platform.config.services.ksql.resource.KsqlResourceService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,6 +53,8 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 	private KsqlResourceRepository ksqlResourceRepository;
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private UserService userService;
 	@Autowired
 	private KsqlResourceService ksqlResourceService;
 
@@ -126,7 +129,7 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			ksqlFlows = ksqlFlowRepository.findByIdentificationContainingAndDescriptionContaining(identification,
 					description);
 		} else {
@@ -185,7 +188,7 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 
 	private boolean hasUserPermission(String id, String userId) {
 		User user = userRepository.findByUserId(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
 			return ksqlFlowRepository.findById(id).getUser().getUserId().equals(userId);

@@ -215,9 +215,9 @@
 													</div>
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="" th:text="#{ontology.public} + ':'">Public</label>
+															<label class="" th:text="#{gen.public} + ':'">Public</label>
 															<div class="mt-checkbox-list">
-																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{layer.public.help},data-title='Rollback'"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{ontology.public} +'?'">Public?</div>
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{viewer.public.help},data-title=#{gen.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{gen.public} +'?'">Public?</div>
 																	<input  id="public" class="form-control no-remove" th:field="*{isPublic}"  name="public" type="checkbox"  />
 																	<span></span><!-- necesario por estilos. -->
 																</label>
@@ -228,7 +228,7 @@
 														<div class="form-group">
 															<label>Rollback</label>
 															<div class="mt-checkbox-list">
-																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{viewer.rollback.help},data-title=#{ontology.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" text="Rollback +'?'">Rollback?</div>
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{viewer.rollback.help},data-title='Rollback'"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" text="Rollback +'?'">Rollback?</div>
 																	<input  id="rollback" class="form-control no-remove" name="rollback" type="checkbox"  />
 																	<span></span><!-- necesario por estilos. -->
 																</label>
@@ -278,7 +278,7 @@
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label th:text="#{viewer.tecnology}" > Technology </label><span class="required"> *</span>
-															<select class="selectpicker select show-tick form-control" id="technology" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="ViewerCreateController.changeTechology()" th:title="#{viewer.tecnology.select}">
+															<select th:required="true" class="selectpicker select show-tick form-control" id="technology" name="technology" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="ViewerCreateController.changeTechology()" th:title="#{viewer.tecnology.select}">
 																
 																<option value="cesium">Cesium</option>
 															</select>
@@ -287,7 +287,7 @@
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group ">
 															<label th:text="#{viewer.base.layer}" > Base Layer </label><span class="required"> *</span>
-															<select disabled="disabled" class="selectpicker select show-tick form-control" id="baseLayers" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="ViewerCreateController.changeBaseLayer()" th:title="#{viewer.base.layer.select}">
+															<select th:required="true" disabled="disabled" class="selectpicker select show-tick form-control" id="baseLayers" name="baseLayers" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="ViewerCreateController.changeBaseLayer()" th:title="#{viewer.base.layer.select}">
 															  
 															</select>
 														</div>

@@ -19,9 +19,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.controlpanel.rest.management.notebook.model.NotebookDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,6 +227,10 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final boolean authorized = notebookService.hasUserPermissionCreateNotebook(userId);
 
+		if (!nameCreate.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+		    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+		}
+		
 		if (authorized) {
 			try {
 				final String id = notebookService.createEmptyNotebook(nameCreate, userId).getIdzep();
@@ -284,7 +291,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final User user = userService.getUser(userId);
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			notebooks = notebookRepository.findAll();
 		} else {
 			notebooks = notebookRepository.findByUser(user);
@@ -303,6 +310,23 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	@ApiOperation(value = "List notebooks")
+	@GetMapping(value = "/listAllAndByProject/")
+	public ResponseEntity<?> listNotebookAndByProject() {
+		final String userId = utils.getUserId();
+		List<NotebookForList> nfl = notebookService.getNotebooksAndByProjects(userId);
+
+		if (!nfl.isEmpty()) {
+			return new ResponseEntity<>( nfl.stream().map(temp -> {
+				final NotebookDTO obj = new NotebookDTO(temp.getId(), temp.getIdentification(), temp.getIdzep(), temp.getUser().getUserId(), temp.isPublic(), temp.getAccessType());
+				return obj;
+			}).collect(Collectors.toList()), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, "", MSG_NONE_NOTEBOOK_FOUND),
+					HttpStatus.NOT_FOUND);
+		}
 	}
 
 	@ApiOperation(value = "Export notebook by identification or id")
@@ -341,7 +365,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final User user = userService.getUser(userId);
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			notebooks = notebookRepository.findAll();
 		} else {
 			notebooks = notebookRepository.findByUser(user);
@@ -514,7 +538,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final User user = userService.getUser(userId);
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			try {
 				return notebookService.restartInterpreter(interpreterName, "");
 			} catch (final Exception e) {
@@ -594,8 +618,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
 
-			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
-					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
+			if (!(userService.isUserAdministrator(user) || notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
 
@@ -640,7 +663,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
 
-			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+			if (!(userService.isUserAdministrator(user)
 					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
@@ -689,7 +712,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
 
-			if (!(user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+			if (!(userService.isUserAdministrator(user)
 					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}

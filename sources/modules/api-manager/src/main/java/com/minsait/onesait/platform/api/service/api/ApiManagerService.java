@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +46,19 @@ import com.minsait.onesait.platform.config.repository.ApiRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Service("apiManagerService")
 @Slf4j
 public class ApiManagerService {
+
+	private final List<String> keyWords = new ArrayList<String>() {
+		{
+			add(" OR ");
+			add(" AND ");
+			add("DROP ");
+			add(";");
+			add("%3B");
+		}
+	};
 
 	private static final String WRONG_PARAMETER_TYPE = "com.indra.sofia2.api.service.wrongparametertype";
 
@@ -124,30 +135,26 @@ public class ApiManagerService {
 		return apiIdentifier;
 	}
 
-	public Api getApi(String apiIdentifier, int apiVersion, ApiType tipoapi) {
-
-		Api api = null;
-
-		if (tipoapi != null) {
-			api = apiRepository.findByIdentificationAndNumversionAndApiType(apiIdentifier, apiVersion, tipoapi);
+	public Api getApi(String apiIdentifier, int apiVersion, ApiType apiType) {
+		if (apiType != null) {
+			return apiRepository.findByIdentificationAndNumversionAndApiType(apiIdentifier, apiVersion, apiType);
 		} else {
-			api = apiRepository.findByIdentificationAndNumversion(apiIdentifier, apiVersion);
+			return apiRepository.findByIdentificationAndNumversion(apiIdentifier, apiVersion);
 		}
-		return api;
 	}
 
 	public boolean isPathQuery(String pathInfo) {
 		final String apiIdentifier = getApiIdentifier(pathInfo);
-		final String objectId = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
+		final String objectId = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
 
-		return (objectId.length() == 0 || !objectId.startsWith("/"));
+		return objectId.length() == 0 || !objectId.startsWith("/");
 	}
 
 	public ApiOperation getCustomSQL(String pathInfo, Api api) {
 
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
-		String opIdentifier = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
+		String opIdentifier = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
 		if (opIdentifier.startsWith("\\") || opIdentifier.startsWith("/")) {
 			opIdentifier = opIdentifier.substring(1);
 		}
@@ -183,7 +190,7 @@ public class ApiManagerService {
 	public String getOperationPath(String pathInfo) {
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
-		return pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
+		return pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
 	}
 
 	public ApiOperation getFlowEngineApiOperation(String pathInfo, Api api, String method,
@@ -242,61 +249,61 @@ public class ApiManagerService {
 
 	private String getCustomParamValue(ApiQueryParameter customqueryparameter, HttpServletRequest request,
 			ApiOperation customSQL, String body) {
-		String paramvalue = null;
-		if (customqueryparameter.getHeaderType().name().equalsIgnoreCase(ApiQueryParameter.HeaderType.BODY.name())) {
-			paramvalue = body;
-		} else if (customqueryparameter.getHeaderType().name()
-				.equalsIgnoreCase(ApiQueryParameter.HeaderType.PATH.name())) {
+		switch (customqueryparameter.getHeaderType()) {
+		case PATH:
+			String paramvalue = null;
 			final String apiIdentifier = getApiIdentifier(request.getRequestURI());
 			final String relativePath = request.getServletPath()
 					.substring(request.getServletPath().indexOf(apiIdentifier) + apiIdentifier.length());
-			final String[] splittedParams = customSQL.getPath().split("/");
+			final String[] splitParams = customSQL.getPath().split("/");
 
-			for (int i = 0; i < splittedParams.length; i++) {
-				if (splittedParams[i].equalsIgnoreCase("{" + customqueryparameter.getName() + "}")
-						&& paramvalue == null) {
+			for (int i = 0; i < splitParams.length; i++) {
+				if (splitParams[i].equalsIgnoreCase("{" + customqueryparameter.getName() + "}") && paramvalue == null) {
 					paramvalue = relativePath.split("/")[i + 1];
 				}
 
 			}
+			return paramvalue;
+		case BODY:
+			return body;
+		default:
+			return null;
 		}
-
-		return paramvalue;
 	}
 
-	private String processCustomParamValue(ApiQueryParameter customqueryparameter, String paramvalue) {
-		if (customqueryparameter.getDataType().name().equalsIgnoreCase(ApiQueryParameter.DataType.DATE.name())) {
+	private String processCustomParamValue(ApiQueryParameter apiQueryParameter, String paramValue) {
+		switch (apiQueryParameter.getDataType()) {
+		case DATE:
 			try {
 				final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-				df.parse(paramvalue);
-				paramvalue = "\"" + paramvalue + "\"";
+				df.parse(paramValue);
+				return "\"" + paramValue + "\"";
 			} catch (final Exception e) {
-				final Object[] parametros = { "$" + customqueryparameter.getName(), "Date" };
-				throw new BadRequestException("com.indra.sofia2.api.service.wrongparametertype " + parametros[0]);
+				final Object[] params = { "$" + apiQueryParameter.getName(), "Date" };
+				throw new BadRequestException(WRONG_PARAMETER_TYPE + params[0]);
 			}
-		} else if (customqueryparameter.getDataType().name()
-				.equalsIgnoreCase(ApiQueryParameter.DataType.STRING.name())) {
+		case STRING:
 			try {
-				paramvalue = "\"" + paramvalue + "\"";
+				// Escape string value
+				return getEscapedString(paramValue);
 			} catch (final Exception e) {
-				final Object[] parametros = { "$" + customqueryparameter.getName(), "String" };
-				throw new BadRequestException(WRONG_PARAMETER_TYPE + parametros[0]);
+				final Object[] params = { "$" + apiQueryParameter.getName(), "String" };
+				throw new BadRequestException(WRONG_PARAMETER_TYPE + params[0]);
 			}
-		} else if (customqueryparameter.getDataType().name()
-				.equalsIgnoreCase(ApiQueryParameter.DataType.NUMBER.name())) {
+		case NUMBER:
 			try {
-				Double.parseDouble(paramvalue);
-			} catch (final Exception e) {
-				final Object[] parametros = { "$" + customqueryparameter.getName(), "Integer" };
-				throw new BadRequestException(WRONG_PARAMETER_TYPE + parametros[0]);
+				Double.parseDouble(paramValue);
+			} catch (final NumberFormatException e) {
+				final Object[] params = { "$" + apiQueryParameter.getName(), "Integer" };
+				throw new BadRequestException(WRONG_PARAMETER_TYPE + params[0]);
 			}
-		} else if (customqueryparameter.getDataType().name().equalsIgnoreCase("boolean")
-				&& !paramvalue.equalsIgnoreCase("true") && !paramvalue.equalsIgnoreCase("false")) {
-			final Object[] parametros = { "$" + customqueryparameter.getName(), "Boolean" };
-			throw new BadRequestException(WRONG_PARAMETER_TYPE + parametros[0]);
+		default:
+			return paramValue;
 		}
+	}
 
-		return paramvalue;
+	private String getEscapedString(String paramValue) {
+		return "'" + paramValue.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'") + "'";
 	}
 
 	public Map<String, String> getCustomParametersValues(HttpServletRequest request, String body,
@@ -306,12 +313,14 @@ public class ApiManagerService {
 		for (final ApiQueryParameter customqueryparameter : queryParametersCustomQuery) {
 			String paramvalue = request.getParameter(customqueryparameter.getName());
 			if (paramvalue == null) {
-				paramvalue = this.getCustomParamValue(customqueryparameter, request, customSQL, body);
+				paramvalue = getCustomParamValue(customqueryparameter, request, customSQL, body);
 			}
 
 			if (paramvalue != null) {
-				paramvalue = this.processCustomParamValue(customqueryparameter, paramvalue);
-
+				if (hasPossibleSQLInjectionSyntax(paramvalue)) {
+					throw new IllegalArgumentException("Value contains forbidden SQL Syntax");
+				}
+				paramvalue = processCustomParamValue(customqueryparameter, paramvalue);
 				customqueryparametersvalues.put(customqueryparameter.getName(), paramvalue);
 			}
 		}
@@ -328,14 +337,14 @@ public class ApiManagerService {
 
 	public String getObjectidFromPathQuery(String pathInfo, ApiOperation customSQL) {
 		String identifier = null;
-		
-		if (customSQL==null) {
+
+		if (customSQL == null) {
 			identifier = getApiIdentifier(pathInfo);
 		} else {
 			return "";
 		}
 
-		String objectId = pathInfo.substring(pathInfo.indexOf(identifier) + (identifier).length());
+		String objectId = pathInfo.substring(pathInfo.indexOf(identifier) + identifier.length());
 
 		if (!objectId.startsWith("/")) {
 			return null;
@@ -375,6 +384,41 @@ public class ApiManagerService {
 			log.error("Error reading payload", e);
 		}
 		return buffer.toString();
+	}
+
+	public boolean hasPossibleSQLInjectionSyntax(String objectId) {
+		if (objectId != null) {
+			for (final String keyWord : keyWords) {
+				final int length = keyWord.length();
+				for (int i = objectId.length() - length; i >= 0; i--) {
+					if (objectId.regionMatches(true, i, keyWord, 0, length)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	public String getFieldValue(String objectId) {
+		if (isNumeric(objectId)) {
+			return objectId;
+		} else {
+			return getEscapedString(objectId);
+		}
+	}
+
+	private boolean isNumeric(String strNum) {
+		if (strNum == null) {
+			return false;
+		} else {
+			try {
+				Double.parseDouble(strNum);
+			} catch (final NumberFormatException nfe) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

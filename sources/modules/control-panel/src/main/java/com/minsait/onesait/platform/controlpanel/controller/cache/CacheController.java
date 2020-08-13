@@ -44,7 +44,6 @@ import com.minsait.onesait.platform.business.services.cache.CacheBusinessService
 import com.minsait.onesait.platform.business.services.cache.CacheBusinessServiceException;
 import com.minsait.onesait.platform.config.model.Cache;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.CacheRepository;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.cache.CacheDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -65,9 +64,6 @@ public class CacheController {
 	@Autowired
 	private AppWebUtils utils;
 
-	@Autowired
-	private CacheRepository cacheRepository;
-
 	private static final String CACHE_CREATE = "caches/create";
 	private static final String REDIRECT_CACHE_CREATE = "redirect:/caches/create";
 	private static final String REDIRECT_CACHE_LIST = "redirect:/caches/list";
@@ -76,22 +72,21 @@ public class CacheController {
 	private static final String CANNOT_UPDATE_CACHE = "Cannot update cache";
 
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String list(Model model, HttpServletRequest request, String identification) {
 
-		final List<Cache> caches = cacheRepository.findAll();
-		model.addAttribute("caches", caches);
+		model.addAttribute("caches", cacheBS.getByIdentificationLikeOrderByIdentification(identification));
 		return "caches/list";
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		return cacheBS.getCachesIdentifications(utils.getUserId());
 	}
 
 	@GetMapping(value = "/create", produces = "text/html")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String create(Model model, @Valid Cache cache, BindingResult bindingResult) {
 
 		if (bindingResult.hasErrors())
@@ -103,7 +98,7 @@ public class CacheController {
 		return CACHE_CREATE;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/create")
 	public String createCache(Model model, @Valid CacheDTO cacheDTO, BindingResult bindingResult,
 			RedirectAttributes redirect, String identification) throws JsonProcessingException {
@@ -143,7 +138,7 @@ public class CacheController {
 	}
 
 	@GetMapping(value = "/update/{identification}", produces = "text/html")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String update(Model model, @PathVariable("identification") String identification) {
 		final Cache cache = cacheBS.getCacheWithId(identification);
 		model.addAttribute("cacheTypes", Cache.Type.values());
@@ -158,7 +153,7 @@ public class CacheController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/update/{identification}", produces = "text/html")
 	public String updateCache(Model model, @PathVariable("identification") String identification, @Valid Cache cache,
 			BindingResult bindingResult, RedirectAttributes redirect) throws JsonProcessingException {
@@ -181,7 +176,7 @@ public class CacheController {
 	}
 
 	@GetMapping(value = "/delete/{identification}")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String deleteCache(Model model, @PathVariable("identification") String identification,
 			RedirectAttributes redirect) {
 
@@ -194,7 +189,7 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping(value = "/maps/{identification}/", produces = "text/html")
 	public String deleteMap(Model model, @PathVariable("identification") String identification,
 			RedirectAttributes redirect) {
@@ -213,7 +208,7 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/maps/{identification}/put/{key}/", produces = "text/html")
 	public String putIntoMap(Model model, @PathVariable("identification") String identification, String key,
 			String value, RedirectAttributes redirect) {
@@ -234,7 +229,7 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/show/{identification}", produces = "text/html")
 	public String show(Model model, @PathVariable("identification") String id) {
 		Cache cache = cacheBS.getCacheWithId(id);
@@ -246,7 +241,7 @@ public class CacheController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/maps/{identification}/putMany/", produces = "text/html")
 	public String putManyIntoMap(Model model, @PathVariable("identification") String identification,
 			Map<String, String> values, RedirectAttributes redirect) throws IOException {
@@ -266,7 +261,7 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/maps/{identification}/get/{key}/", produces = "text/html")
 	public ResponseEntity<String> getFromMap(
 			@ApiParam(value = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
@@ -284,7 +279,7 @@ public class CacheController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/maps/{identification}/getAll/", produces = "text/html")
 	public ResponseEntity<Map<String, String>> getAllFromMap(
 			@ApiParam(value = "Identification of the map to get data", required = true) @PathVariable("identification") String identification) {
@@ -301,7 +296,7 @@ public class CacheController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/maps/{identification}/getMany/", produces = "text/html")
 	public ResponseEntity<Map<String, String>> getManyFromMap(
 			@ApiParam(value = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,

@@ -44,7 +44,6 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
@@ -56,6 +55,7 @@ import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
@@ -113,7 +113,7 @@ public class GraphUtil {
 	public void init() {
 		// initialize URLS
 
-		String url = intregationResourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE);
+		final String url = intregationResourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE);
 		urlClientPlatform = url + "/devices/show/";
 		urlGadget = url + "/gadgets/";
 		urlDashboard = url + "/dashboards/";
@@ -133,8 +133,8 @@ public class GraphUtil {
 		final String name = utils.getMessage("name.ontologies", "ONTOLOGIES");
 		final String description = utils.getMessage("tooltip_ontologies", null);
 
-		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlOntology + "list", GENERIC_USER_NAME, "ONTOLOGIES",
-				utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
+		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlOntology + "list", GENERIC_USER_NAME,
+				"ONTOLOGIES", utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
 
 		if (ontologies == null) {
 			if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
@@ -272,7 +272,7 @@ public class GraphUtil {
 		return arrayLinks;
 	}
 
-	public List<GraphDTO> constructGraphWithWebProjects(List<WebProject> projects, User user) {
+	public List<GraphDTO> constructGraphWithWebProjects(List<WebProjectDTO> projects, User user) {
 		final List<GraphDTO> arrayLinks = new LinkedList<>();
 		final String name = utils.getMessage("name.webprojects", "WEB PROJECTS");
 		final String description = utils.getMessage("tooltip_webprojects", null);
@@ -281,7 +281,8 @@ public class GraphUtil {
 				"webprojects", utils.getUserId(), name, "suite", description, urlWebProjects + CREATE_STR));
 		if (projects != null) {
 			if (null != user)
-				projects = projects.stream().filter(p -> p.getUser().equals(user)).collect(Collectors.toList());
+				projects = projects.stream().filter(p -> p.getUserId().equals(user.getUserId()))
+						.collect(Collectors.toList());
 			try {
 				projects.forEach(p -> {
 					arrayLinks.add(new GraphDTO(name, p.getIdentification(), urlWebProjects + "list",
@@ -429,7 +430,7 @@ public class GraphUtil {
 								dashboard.getIdentification(), LICENSING_STR, gadget));
 					}
 				} catch (final Exception e) {
-				    log.error("" + e);
+					log.error("" + e);
 				}
 			}
 		} catch (final Exception e) {

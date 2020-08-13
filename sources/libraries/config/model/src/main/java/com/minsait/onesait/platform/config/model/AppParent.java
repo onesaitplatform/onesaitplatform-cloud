@@ -18,33 +18,18 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
-
 
 @Configurable
 @MappedSuperclass
@@ -54,23 +39,12 @@ public abstract class AppParent extends AuditableEntityWithUUID {
 	 *
 	 */
 	private static final long serialVersionUID = 7199595602818161052L;
-	
+
 	@Column(name = "IDENTIFICATION", length = 50, unique = true, nullable = false)
 	@NotNull
 	@Getter
 	@Setter
 	private String identification;
-
-	@Column(name = "ID", nullable = false)
-	@Getter
-	@Setter
-	private String id;
-	
-	@ManyToOne
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User user;
 
 	@Column(name = "DESCRIPTION", length = 255)
 	@Getter
@@ -93,33 +67,27 @@ public abstract class AppParent extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String userExtraFields;
-	
-	public AppParent() {};
-	
+
+	public AppParent() {
+	}
+
 	public AppParent(String id) {
 		this.setId(id);
-	};
-	
-	public AppParent(String id, String identification, String description, User user, String secret, String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
+	}
+
+	public AppParent(String id, String identification, String description, String secret, String user_extra_fields,
+			int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
 		this.setId(id);
 		this.setIdentification(identification);
 		this.setDescription(description);
-		this.setUser(user);
 		this.setCreatedAt(createAt);
 		this.setUpdatedAt(updateAt);
 		this.setSecret(secret);
 		this.setUserExtraFields(user_extra_fields);
 		this.setTokenValiditySeconds(tokenValiditySeconds);
 		Set<AppRole> appRoles = new HashSet<AppRole>();
-		if(appRole != null) {
+		if (appRole != null) {
 			appRoles.add(appRole);
 		}
-		//this.setAppRoles(appRoles);
-		
-		/*Set<App> childapps = new HashSet<App>();
-		if(childApp != null) {
-			childApps.add(new App(childApp));
-		}
-		this.setChildApps(childapps);*/
-	};
+	}
 }

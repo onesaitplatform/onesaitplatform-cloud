@@ -78,6 +78,9 @@ public class OperationModel implements Serializable {
 	@Getter
 	@Setter
 	private boolean includeIds = false;
+	@Getter
+	@Setter
+	private String transactionId = null;
 
 	public OperationModel() {
 
@@ -108,6 +111,7 @@ public class OperationModel implements Serializable {
 		clientConnection = builder.clientConnection;
 		cacheable = builder.cacheable;
 		includeIds = builder.includeIds;
+		transactionId = builder.transactionId;
 	}
 
 	public static Builder builder(String ontologyName, OperationType operationType, String user, Source source) {
@@ -134,6 +138,7 @@ public class OperationModel implements Serializable {
 		private String clientConnection;
 		private boolean cacheable = false;
 		private boolean includeIds = false;
+		private String transactionId = null;
 
 		public Builder(String ontologyName, OperationType operationType, String user, Source source) {
 			this.ontologyName = ontologyName;
@@ -149,6 +154,11 @@ public class OperationModel implements Serializable {
 			this.user = user;
 			this.source = source;
 			this.includeIds = includeIds;
+		}
+
+		public Builder transactionId(String transactionId) {
+			this.transactionId = transactionId;
+			return this;
 		}
 
 		public OperationModel build() {

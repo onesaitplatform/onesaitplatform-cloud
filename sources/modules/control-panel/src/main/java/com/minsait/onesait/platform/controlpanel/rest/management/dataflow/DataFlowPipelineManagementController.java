@@ -18,9 +18,17 @@ import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -85,7 +93,7 @@ public class DataFlowPipelineManagementController {
 			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Server Error") })
 	public ResponseEntity<String> statusPipelines() {
-		return dataflowService.statusPipelines(utils.getUserId());
+		return dataflowService.getPipelinesStatus(utils.getUserId());
 	}
 	
 	@ApiOperation(value = "Get a pipeline metrics")
@@ -113,4 +121,43 @@ public class DataFlowPipelineManagementController {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		return dataflowService.resetOffsetPipeline(utils.getUserId(), identification);
 	}
+
+	/* EXCEPTION HANDLERS */
+
+	@ExceptionHandler(ResourceAccessException.class)
+	@ResponseStatus(value = HttpStatus.BAD_GATEWAY)
+	@ResponseBody
+	public String handleOPException(final ResourceAccessException exception) {
+		return "Could not access the resource. Response: " + exception.getMessage();
+	}
+
+	@ExceptionHandler({IllegalArgumentException.class , RestClientException.class, DataAccessException.class,
+			BadRequestException.class})
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public String handleOPException(final RuntimeException exception) {
+		return exception.getMessage();
+	}
+
+	@ExceptionHandler(ClientErrorException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public String handleOPException(final ClientErrorException exception) {
+		return "Status: "+exception.getResponse().getStatus()+" Response: "+exception.getMessage();
+	}
+
+	@ExceptionHandler(NotAuthorizedException.class)
+	@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+	@ResponseBody
+	public String handleOPException(final NotAuthorizedException exception) {
+		return exception.getMessage();
+	}
+
+	@ExceptionHandler(NotFoundException.class)
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	@ResponseBody
+	public String handleOPException(final NotFoundException exception) {
+		return exception.getMessage();
+	}
+
 }

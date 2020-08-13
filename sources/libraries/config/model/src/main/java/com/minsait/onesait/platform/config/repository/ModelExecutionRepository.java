@@ -33,5 +33,7 @@ public interface ModelExecutionRepository extends JpaRepository<ModelExecution, 
 	ModelExecution findByIdentification(String identification);
 
 	ModelExecution findByIdentificationAndUser(String identification, User user);
+	
+	ModelExecution findByIdEject(String executionId);
 
 }

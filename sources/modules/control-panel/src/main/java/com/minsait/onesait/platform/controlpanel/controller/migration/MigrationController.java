@@ -14,10 +14,14 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.migration;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +29,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -34,21 +42,35 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.MigrationData;
+import com.minsait.onesait.platform.config.model.Notebook;
+import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.migration.DataFromDB;
 import com.minsait.onesait.platform.config.services.migration.ExportResult;
+import com.minsait.onesait.platform.config.services.migration.Instance;
 import com.minsait.onesait.platform.config.services.migration.MigrationConfiguration;
+import com.minsait.onesait.platform.config.services.migration.MigrationError;
 import com.minsait.onesait.platform.config.services.migration.MigrationErrors;
 import com.minsait.onesait.platform.config.services.migration.MigrationService;
 import com.minsait.onesait.platform.config.services.migration.SchemaFromDB;
+import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.help.migration.MigrationHelper;
+import com.minsait.onesait.platform.controlpanel.rest.management.dataflow.DataFlowStorageManagementController;
 import com.minsait.onesait.platform.controlpanel.rest.management.flowengine.FlowengineManagementController;
+import com.minsait.onesait.platform.controlpanel.rest.management.notebook.NotebookManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.nodered.auth.exception.NoderedAuthException;
 import com.mongodb.util.JSON;
@@ -60,7 +82,7 @@ import de.galan.verjson.step.ProcessStepException;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
-@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 @RequestMapping("/migration")
 @Slf4j
 public class MigrationController {
@@ -80,6 +102,21 @@ public class MigrationController {
 	@Autowired
 	FlowengineManagementController flowengineController;
 
+	@Autowired
+	NotebookManagementController notebookController;
+
+	@Autowired
+	DataFlowStorageManagementController dataflowController;
+
+	@Autowired
+	OntologyService ontologyService;
+
+	@Autowired
+	private MigrationHelper migrationHelper;
+
+	@Autowired
+	HazelcastInstance hazelcast;
+
 	private static final String IMPORT_DATA_STR = "importData";
 	private static final String OTHER_SCHEMA_STR = "otherSchema";
 	private static final String CLASS_NAMES_STR = "classNames";
@@ -92,9 +129,13 @@ public class MigrationController {
 	private static final String PRAGMA = "Pragma";
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.Project";
-	private static final String USER = "com.minsait.onesait.platform.config.model.User";
+	private static final String PROJECT_EXPORT = "com.minsait.onesait.platform.config.model.ProjectExport";
+	private static final String USER = "com.minsait.onesait.platform.config.model.UserExport";
 	private static final String DOMAIN_DATA = "domainData";
 	private static final String IDENTIFICATION = "identification";
+	private static final String NOTEBOOK_DATA = "notebookData";
+	private static final String IDZEP = "idzep";
+	private static final String DATAFLOW_DATA = "dataflowData";
 
 	@GetMapping(value = "/show", produces = "text/html")
 	public String show(Model model, HttpServletRequest request) {
@@ -106,6 +147,7 @@ public class MigrationController {
 		model.addAttribute(OTHER_SCHEMA_STR, otherSchema);
 		model.addAttribute(CLASS_NAMES_STR, new ArrayList<String>());
 		model.addAttribute("selectedClasses", new SelectedClasses());
+		model.addAttribute("ontologies", ontologyService.getAllOntologiesForList(utils.getUserId(), null, null));
 		return MIGRATION_SHOW;
 	}
 
@@ -114,6 +156,8 @@ public class MigrationController {
 			throws IllegalAccessException, IOException {
 		ExportResult allData = migrationService.exportAll();
 		allData = this.exportDomain(allData);
+		allData = this.exportNotebooks(allData);
+		allData = this.exportDataflow(allData);
 		String json = migrationService.getJsonFromData(allData.getData());
 		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
 		response.setContentType(APPLICATION_DOWNLOAD);
@@ -128,6 +172,8 @@ public class MigrationController {
 			@PathVariable("id") String userId) throws IllegalArgumentException, IllegalAccessException, IOException {
 		ExportResult userData = migrationService.exportUser(userService.getUser(userId));
 		userData = this.exportDomain(userData);
+		userData = this.exportNotebooks(userData);
+		userData = this.exportDataflow(userData);
 		String json = migrationService.getJsonFromData(userData.getData());
 		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
 		response.setContentType(APPLICATION_DOWNLOAD);
@@ -165,7 +211,7 @@ public class MigrationController {
 		return output;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/exportSchema")
 	public ResponseEntity<String> exportSchema(Model model, HttpServletResponse response, HttpServletRequest request)
 			throws IOException {
@@ -177,6 +223,22 @@ public class MigrationController {
 		response.setHeader(PRAGMA, NO_CACHE_STR);
 		response.setHeader(CACHE_CONTROL, NO_CACHE_STR);
 		return output;
+	}
+
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PostMapping(value = "/exportMongo/{ontologies}")
+	public ResponseEntity<InputStreamResource> exportMongo(Model model, HttpServletResponse response,
+			HttpServletRequest request, @PathVariable("ontologies") List<String> ontologies, @RequestBody String body)
+			throws IOException {
+		JSONObject jsonBody = new JSONObject(body);
+		File file = migrationHelper.generateFiles(ontologies, jsonBody.getString("userMongo"),
+				jsonBody.getString("passwordMongo"));
+		final HttpHeaders respHeaders = new HttpHeaders();
+		respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		respHeaders.setContentDispositionFormData("attachment", file.getName());
+		respHeaders.setContentLength(file.length());
+		final InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
+		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/compareSchema", produces = "text/html")
@@ -215,12 +277,15 @@ public class MigrationController {
 
 			model.addAttribute(OTHER_SCHEMA_STR, new ImportData());
 
-			List<String> classNames = new ArrayList<>();
+			List<Clazz> classNames = new ArrayList<>();
+			List<String> clazzs = new ArrayList<>();
 			for (Class<?> clazz : data.getClasses()) {
-				classNames.add(clazz.getName());
+				String[] split = clazz.getCanonicalName().split("\\.");
+				classNames.add(new Clazz(split[split.length - 1], clazz.getName()));
+				clazzs.add(clazz.getName());
 			}
 			model.addAttribute(CLASS_NAMES_STR, classNames);
-			importData.setClasses(classNames);
+			importData.setClasses(clazzs);
 			model.addAttribute(IMPORT_DATA_STR, importData);
 		}
 		return MIGRATION_SHOW;
@@ -247,11 +312,11 @@ public class MigrationController {
 				for (Serializable id : data.getInstances(clazz)) {
 					Map<String, Object> result = data.getInstanceData(clazz, id);
 					if (clazz.getName().startsWith(PROJECT)) {
-						config.addProject(clazz, id, (Serializable) result.get("identification"));
+						config.addProject(clazz, id, (Serializable) result.get(IDENTIFICATION));
 					} else if (clazz.getName().equals(USER)) {
 						config.addUser(clazz, id);
 					} else {
-						config.add(clazz, id, (Serializable) result.get("identification"),
+						config.add(clazz, id, (Serializable) result.get(IDENTIFICATION),
 								(Serializable) result.get("numversion"));
 					}
 				}
@@ -263,16 +328,35 @@ public class MigrationController {
 		model.addAttribute(OTHER_SCHEMA_STR, new ImportData());
 
 		MigrationErrors errors = new MigrationErrors();
-		if (importData.getClasses().contains(PROJECT)) {
-			errors = migrationService.importData(config, data, true, false);
+		if (importData.getClasses().contains(PROJECT_EXPORT)) {
+			errors = migrationService.importData(config, data, true, false, importData.getOverride());
 		} else if (importData.getClasses().contains(USER)) {
-			errors = migrationService.importData(config, data, false, true);
+			errors = migrationService.importData(config, data, false, true, importData.getOverride());
 		} else {
-			errors = migrationService.importData(config, data, false, false);
+			errors = migrationService.importData(config, data, false, false, importData.getOverride());
 		}
+		this.importDomain(data, errors, importData.getOverride());
+		errors = this.importNotebook(data, errors, importData.getOverride());
+		errors = this.importDataflow(data, errors, importData.getOverride());
 
 		model.addAttribute("errors", errors.getErrors());
 
+		return MIGRATION_SHOW;
+	}
+
+	@GetMapping(value = "/cleanCache")
+	public String cleanCache(Model model, HttpServletResponse response, HttpServletRequest request) throws IOException {
+		final Collection<DistributedObject> distributedObjects = hazelcast.getDistributedObjects();
+		for (DistributedObject distributedObject : distributedObjects) {
+			if (distributedObject instanceof IMap) {
+				final IMap<?, ?> map = (IMap) distributedObject;
+				map.clear();
+			}
+		}
+		model.addAttribute(CLASS_NAMES_STR, new ArrayList<String>());
+		model.addAttribute(IMPORT_DATA_STR, new ImportData());
+		model.addAttribute(OTHER_SCHEMA_STR, new ImportData());
+		model.addAttribute("errors", new ArrayList<MigrationErrors>());
 		return MIGRATION_SHOW;
 	}
 
@@ -300,16 +384,17 @@ public class MigrationController {
 		return data;
 	}
 
-	private void importDomain(DataFromDB data) {
+	private void importDomain(DataFromDB data, MigrationErrors errors, Boolean override) {
 		// if data has FlowDomain.class then all domain data are exported too
 		Iterator<Serializable> iterator = data.getInstances(FlowDomain.class).iterator();
+		ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getInstanceData(FlowDomain.class, id);
 			try {
 				ResponseEntity<String> result = flowengineController.importFlowDomainToUserAdmin(
-						obj.get(DOMAIN_DATA).toString(), obj.get(IDENTIFICATION).toString(),
-						obj.get("user").toString());
+						mapper.writeValueAsString(obj.get(DOMAIN_DATA)), obj.get(IDENTIFICATION).toString(),
+						obj.get("user").toString(), override);
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					log.info("Domain data imported successfully for domain {} and user {}",
 							obj.get(IDENTIFICATION).toString(), obj.get("user").toString());
@@ -320,8 +405,136 @@ public class MigrationController {
 			} catch (NoderedAuthException e) {
 				log.warn("Domain {} are not started, data are not imported. {}", obj.get(IDENTIFICATION).toString(),
 						e.getMessage());
+			} catch (JsonProcessingException e) {
+				log.error("Error importing FlowEngine data {}. Error parsing JSON data {}",
+						obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Notebook.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
 			}
 		}
+	}
+
+	private ExportResult exportNotebooks(ExportResult data) {
+		// if data has Notebook.class then all notebooks data are exported too
+		Iterator<Serializable> iterator = data.getData().getInstances(Notebook.class).iterator();
+		while (iterator.hasNext()) {
+			Serializable id = iterator.next();
+			Map<String, Object> obj = data.getData().getInstanceData(Notebook.class, id);
+
+			ResponseEntity<?> result = notebookController.exportNotebook(obj.get(IDZEP).toString());
+			if (result.getStatusCode().equals(HttpStatus.OK)) {
+				obj.put(NOTEBOOK_DATA, JSON.parse(new String((byte[]) result.getBody(), StandardCharsets.UTF_8)));
+			} else {
+				log.error("Error exporting notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+						result.getStatusCode().name());
+				obj.put(NOTEBOOK_DATA, JSON.parse("[]"));
+			}
+
+		}
+		return data;
+	}
+
+	private MigrationErrors importNotebook(DataFromDB data, MigrationErrors errors, Boolean override) {
+		// if data has FlowDomain.class then all domain data are exported too
+		Iterator<Serializable> iterator = data.getInstances(Notebook.class).iterator();
+		ObjectMapper mapper = new ObjectMapper();
+		while (iterator.hasNext()) {
+			Serializable id = iterator.next();
+			Map<String, Object> obj = data.getInstanceData(Notebook.class, id);
+
+			try {
+				ResponseEntity<?> result = notebookController.importNotebook(obj.get(IDENTIFICATION).toString(),
+						override, true, mapper.writeValueAsString(obj.get(NOTEBOOK_DATA)));
+
+				if (result.getStatusCode().equals(HttpStatus.OK)) {
+					log.info("Notebook data imported successfully notebook {} and user {}",
+							obj.get(IDENTIFICATION).toString(), obj.get("user").toString());
+					errors.addError(new MigrationError(
+							new Instance(Notebook.class, id, obj.get(IDENTIFICATION).toString(), null), null,
+							MigrationError.ErrorType.INFO, "Entity Persisted"));
+				} else {
+					log.error("Error importing Notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+							result.getStatusCode().name());
+					errors.addError(new MigrationError(
+							new Instance(Notebook.class, id, obj.get(IDENTIFICATION).toString(), null), null,
+							MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+				}
+			} catch (JsonProcessingException e) {
+				log.error("Error importing Notebook data {}. Error parsing JSON data {}",
+						obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Notebook.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+			}
+
+		}
+		return errors;
+	}
+
+	private ExportResult exportDataflow(ExportResult data) {
+		// if data has Pipeline.class then all pipelines data are exported too
+		Iterator<Serializable> iterator = data.getData().getInstances(Pipeline.class).iterator();
+		while (iterator.hasNext()) {
+			Serializable id = iterator.next();
+			Map<String, Object> obj = data.getData().getInstanceData(Pipeline.class, id);
+
+			try {
+				ResponseEntity<?> result = dataflowController.exportPipeline(obj.get(IDENTIFICATION).toString());
+				if (result.getStatusCode().equals(HttpStatus.OK)) {
+					obj.put(DATAFLOW_DATA, JSON.parse(result.getBody().toString()));
+				} else {
+					log.error("Error exporting dataflow data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+							result.getStatusCode().name());
+					obj.put(DATAFLOW_DATA, JSON.parse("[]"));
+				}
+			} catch (UnsupportedEncodingException e) {
+				log.error("Error exportin dataflow data: {}. {}", obj.get(IDENTIFICATION).toString(), e);
+			}
+
+		}
+		return data;
+	}
+
+	private MigrationErrors importDataflow(DataFromDB data, MigrationErrors errors, Boolean override) {
+		Iterator<Serializable> iterator = data.getInstances(Pipeline.class).iterator();
+		ObjectMapper mapper = new ObjectMapper();
+		while (iterator.hasNext()) {
+			Serializable id = iterator.next();
+			Map<String, Object> obj = data.getInstanceData(Pipeline.class, id);
+
+			try {
+				ResponseEntity<?> result = dataflowController.importPipeline(obj.get(IDENTIFICATION).toString(),
+						override, mapper.writeValueAsString(obj.get(DATAFLOW_DATA)));
+
+				if (result.getStatusCode().equals(HttpStatus.OK)) {
+					log.info("Dataflow data imported successfully dataflow {} and user {}",
+							obj.get(IDENTIFICATION).toString(), obj.get("user").toString());
+					errors.addError(new MigrationError(
+							new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null), null,
+							MigrationError.ErrorType.INFO, "Entity Persisted"));
+				} else {
+					log.error("Error importing Dataflow data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+							result.getStatusCode().name());
+					errors.addError(new MigrationError(
+							new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null), null,
+							MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+				}
+			} catch (JsonProcessingException e) {
+				log.error("Error importing Dataflow data. Error parsing JSON data {}",
+						obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+			} catch (UnsupportedEncodingException e) {
+				log.error("Error importing Dataflow data {}. {}", obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+			}
+
+		}
+		return errors;
 	}
 
 }

@@ -11,35 +11,77 @@ var dataModelCreateController  = function(){
 	
 	// CONTROLLER PRIVATE FUNCTIONS
 	
-	$("#createBtn").on('click',function(event){
-		event.preventDefault(); 
-		var editor = $('.CodeMirror')[0].CodeMirror;
-		if($("#datamodelName").val()!='' && $("#datamodelName").val()!=undefined && $("#datamodelDescription").val()!='' && $("#datamodelDescription").val()!=undefined && editor.getValue()!='') {
-			dataModelCreateController.submitform();
-		}else{
-			$.alert({title: 'ERROR!', theme: 'light', content: dataModelCreateJson.validform.emptyfields});
-			return false;
-		}
+	var handleValidation = function() {
+		logControl ? console.log('handleValidation() -> ') : '';
+        // for more info visit the official plugin documentation: 
+        // http://docs.jquery.com/Plugins/Validation
 		
-	});
-	
+        var form1 = $('#datamodel_create_form');
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
+		
+		// set current language
+		currentLanguage = currentLanguage || LANGUAGE;
+		
+        form1.validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block help-block-error', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+            ignore: ":hidden:not(.selectpicker)", // validate all fields including form hidden input but not selectpicker
+			lang: currentLanguage,
+			// validation rules
+            rules: {
+            	identification:	{required: true, minlength: 5},
+            	description:	{required: true, minlength: 5},
+            	labels:			{required: true},
+            	type:			{required: true},
+            	jsonSchema:		{required: true}
+            },
+            invalidHandler: function(event, validator) { //display error alert on form submit
+            	success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
+            },
+            errorPlacement: function(error, element) {
+                if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
+				else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline")); }
+				else { error.insertAfter(element); }
+            },
+            highlight: function(element) { // hightlight error inputs
+                $(element).closest('.form-group').addClass('has-error'); 
+            },
+            unhighlight: function(element) { // revert the change done by hightlight
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+            success: function(label) {
+            	
+                label.closest('.form-group').removeClass('has-error');
+            },
+			// ALL OK, THEN SUBMIT.
+            submitHandler: function(form) {
+            	if($('#datamodelLabel').val() === ''){
+					success1.hide();
+					error1.show();
+					$('#metainferror').removeClass('hide').addClass('help-block-error font-red'); App.scrollTo(error1, -200);
+				} else if($('.CodeMirror')[0].CodeMirror.getValue() === ''){
+					success1.hide();
+					error1.show();
+					$('#jsonerror').removeClass('hide').addClass('help-block-error font-red'); App.scrollTo(error1, -200);
+				} else {
+					success1.show();
+	                error1.hide();
+	                form.submit();
+				}
+            }
+        });
+    }
+
 	
 	$('#resetBtn').on('click',function(){ 
 		cleanFields('datamodel_create_form');
 	});
 
 	
-	$("#updateBtn").on('click',function(event){
-		event.preventDefault(); 
-		var editor = $('.CodeMirror')[0].CodeMirror;
-		if($("#datamodelName").val()!='' && $("#datamodelName").val()!=undefined && $("#datamodelDescription").val()!='' && $("#datamodelDescription").val()!=undefined && editor.getValue()!=''){
-			dataModelCreateController.submitform();
-		}else{
-			$.alert({title: 'ERROR!', theme: 'light',  content: dataModelCreateJson.validform.emptyfields});
-			return false;
-		}
-		
-	});
 	
 	// REDIRECT URL
 	var navigateUrl = function(url){
@@ -86,7 +128,15 @@ var dataModelCreateController  = function(){
 	// INIT TEMPLATE ELEMENTS
 	var initTemplateElements = function(){
 		logControl ? console.log('initTemplateElements() -> resetForm') : '';		
-				
+		
+		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+		$("#datamodelName").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+
+		// tagsinput validate fix when handleValidation()
+		$('#datamodelLabel').on('itemAdded', function(event) {
+			if ($(this).val() !== ''){ $('#metainferror').addClass('hide');}
+		});
+
 		// Reset form
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('datamodel_create_form');
@@ -139,6 +189,8 @@ var dataModelCreateController  = function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			initTemplateElements();
 			handleCodeMirror();
+			handleValidation();
+
 		},
 		
 		// REDIRECT

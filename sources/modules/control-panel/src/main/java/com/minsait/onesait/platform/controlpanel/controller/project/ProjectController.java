@@ -45,12 +45,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
+import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
@@ -63,8 +64,11 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
 @RequestMapping("/projects")
+@Slf4j
 public class ProjectController {
 
 	@Autowired
@@ -102,7 +106,7 @@ public class ProjectController {
 	}
 
 	@GetMapping("create")
-	@PreAuthorize("hasAnyRole('ROLE_DEVELOPER','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_DEVELOPER')")
 	public String create(Model model) {
 		model.addAttribute(PROJECT_OBJ_STR, new Project());
 		model.addAttribute("projectTypes", Project.ProjectType.values());
@@ -135,15 +139,21 @@ public class ProjectController {
 	}
 
 	@PostMapping("create")
-	@PreAuthorize("hasAnyRole('ROLE_DEVELOPER','ROLE_DATASCIENTIST')")
-	public String createProject(Model model, @Valid ProjectDTO project) {
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_DEVELOPER')")
+	public String createProject(Model model, @Valid ProjectDTO project, RedirectAttributes redirect) {
 		project.setUser(userService.getUser(utils.getUserId()));
-		projectService.createProject(project);
+		try {
+			projectService.createProject(project);
+		} catch (final ProjectServiceException e) {
+			log.debug("Cannot create project");
+			utils.addRedirectException(e, redirect);
+			return "redirect:/projects/create";
+		}
 		return REDIRECT_PROJ_LIST;
 	}
 
 	@GetMapping("update/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String update(Model model, @PathVariable("id") String id) {
 		if (!projectService.isUserAuthorized(id, utils.getUserId()))
 			return ERROR_403;
@@ -154,7 +164,7 @@ public class ProjectController {
 	}
 
 	@GetMapping("share/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String share(Model model, @PathVariable("id") String id) {
 		if (!projectService.isUserInProject(utils.getUserId(), id))
 			return ERROR_403;
@@ -164,7 +174,7 @@ public class ProjectController {
 	}
 
 	@PutMapping("update/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String updateProject(Model model, @Valid ProjectDTO project, @PathVariable("id") String id) {
 		if (!projectService.isUserAuthorized(id, utils.getUserId()))
 			return ERROR_403;
@@ -295,36 +305,34 @@ public class ProjectController {
 		if (!projectService.isUserAuthorized(authorization.getProject(), utils.getUserId())
 				&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource()))
 			return ERROR_403;
+		log.debug("New request for access for user {} with permission {} to resource {} in project {}",
+				authorization.getAuthorizing(), authorization.getAccess().name(), authorization.getResource(),
+				authorization.getProject());
 		final Project project = projectService.getById(authorization.getProject());
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
 		if (project.getApp() != null) {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
 				projectService.getProjectRoles(authorization.getProject())
-						.forEach(ar -> accesses.add(ProjectResourceAccess.builder().access(authorization.getAccess())
-								.appRole(appService.findRole(ar.getId()))
-								.resource(resourceService.getResourceById(authorization.getResource())).project(project)
-								.build()));
+						.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+								resourceService.getResourceById(authorization.getResource()), project,
+								appService.findRole(ar.getId()))));
 				resourceService.insertAuthorizations(accesses);
-
 			} else {
-				resourceService.createUpdateAuthorization(ProjectResourceAccess.builder()
-						.access(authorization.getAccess()).appRole(appService.findRole(authorization.getAuthorizing()))
-						.resource(resourceService.getResourceById(authorization.getResource())).project(project)
-						.build());
+				resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project,
+						appService.findRole(authorization.getAuthorizing())));
 			}
 		} else {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
-				project.getUsers()
-						.forEach(u -> accesses.add(ProjectResourceAccess.builder().access(authorization.getAccess())
-								.user(u).resource(resourceService.getResourceById(authorization.getResource()))
-								.project(project).build()));
+				project.getUsers().forEach(u -> accesses.add(new ProjectResourceAccess(u, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project, null)));
 				resourceService.insertAuthorizations(accesses);
 			} else {
-				resourceService.createUpdateAuthorization(ProjectResourceAccess.builder()
-						.access(authorization.getAccess()).user(userService.getUser(authorization.getAuthorizing()))
-						.resource(resourceService.getResourceById(authorization.getResource())).project(project)
-						.build());
+				resourceService.createUpdateAuthorization(new ProjectResourceAccess(
+						userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project, null));
 			}
+
 		}
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(authorization.getProject()));
 		return PROJ_FRAG_RESTAB;
@@ -343,31 +351,25 @@ public class ProjectController {
 			if (project.getApp() != null) {
 				if (authorization.getAuthorizing().equals(ALL_USERS)) {
 					projectService.getProjectRoles(authorization.getProject())
-							.forEach(ar -> accesses.add(ProjectResourceAccess.builder()
-									.access(authorization.getAccess()).appRole(appService.findRole(ar.getId()))
-									.resource(resourceService.getResourceById(authorization.getResource()))
-									.project(project).build()));
+							.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+									resourceService.getResourceById(authorization.getResource()), project,
+									appService.findRole(ar.getId()))));
 					resourceService.insertAuthorizations(accesses);
 
 				} else {
-					resourceService
-							.createUpdateAuthorization(ProjectResourceAccess.builder().access(authorization.getAccess())
-									.appRole(appService.findRole(authorization.getAuthorizing()))
-									.resource(resourceService.getResourceById(authorization.getResource()))
-									.project(project).build());
+					resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project,
+							appService.findRole(authorization.getAuthorizing())));
 				}
 			} else {
 				if (authorization.getAuthorizing().equals(ALL_USERS)) {
-					project.getUsers()
-							.forEach(u -> accesses.add(ProjectResourceAccess.builder().access(authorization.getAccess())
-									.user(u).resource(resourceService.getResourceById(authorization.getResource()))
-									.project(project).build()));
+					project.getUsers().forEach(u -> accesses.add(new ProjectResourceAccess(u, authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project, null)));
 					resourceService.insertAuthorizations(accesses);
 				} else {
-					resourceService.createUpdateAuthorization(ProjectResourceAccess.builder()
-							.access(authorization.getAccess()).user(userService.getUser(authorization.getAuthorizing()))
-							.resource(resourceService.getResourceById(authorization.getResource())).project(project)
-							.build());
+					resourceService.createUpdateAuthorization(new ProjectResourceAccess(
+							userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project, null));
 				}
 			}
 			model.addAttribute(PROJECT_OBJ_STR, projectService.getById(authorization.getProject()));
@@ -388,7 +390,7 @@ public class ProjectController {
 		return PROJ_FRAG_RESTAB;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_DEVELOPER','ROLE_DATASCIENTIST','ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("{id}")
 	public String delete(Model model, @PathVariable("id") String projectId, RedirectAttributes ra) {
 		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
@@ -468,13 +470,15 @@ public class ProjectController {
 		final Collection<OPResource> resources2 = resourceService.getResourcesByType(utils.getUserId(), type_resource);
 
 		if (type_resource.equals("API")) {
-			return resources2.stream().filter(r -> r.getIdentification().contains(identification))
+			return resources2.stream()
+					.filter(r -> r.getIdentification().toLowerCase().contains(identification.toLowerCase()))
 					.map(r -> ProjectResourceDTO.builder().id(r.getId())
 							.identification(r.getIdentification() + " - V" + ((Api) r).getNumversion())
 							.type(r.getClass().getSimpleName()).build())
 					.collect(Collectors.toList());
 		} else {
-			return resources2.stream().filter(r -> r.getIdentification().contains(identification))
+			return resources2.stream()
+					.filter(r -> r.getIdentification().toLowerCase().contains(identification.toLowerCase()))
 					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification())
 							.type(r.getClass().getSimpleName()).build())
 					.collect(Collectors.toList());

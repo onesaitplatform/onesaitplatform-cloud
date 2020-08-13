@@ -37,8 +37,7 @@ import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
@@ -653,7 +652,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		final Api api = apiRepository.findById(apiId);
 		return isApiStateValidForEdit(api);
 	}
-	
+
 	@Override
 	public boolean isApiStateValidForEditAuth(String apiId) {
 		final Api api = apiRepository.findById(apiId);
@@ -665,17 +664,17 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		return api.getState().name().equals(Api.ApiStates.CREATED.name())
 				|| api.getState().name().equals(Api.ApiStates.DEVELOPMENT.name());
 	}
-	
+
 	@Override
 	public boolean isApiStateValidForEditAuth(Api api) {
 		return api.getState().name().equals(Api.ApiStates.CREATED.name())
 				|| api.getState().name().equals(Api.ApiStates.DEVELOPMENT.name())
-						|| api.getState().name().equals(Api.ApiStates.PUBLISHED.name());
+				|| api.getState().name().equals(Api.ApiStates.PUBLISHED.name());
 	}
 
 	@Override
 	public boolean isUserOwnerOrAdmin(User user, Api api) {
-		return user.equals(api.getUser()) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name());
+		return user.equals(api.getUser()) || userService.isUserAdministrator(user);
 	}
 
 	@Override
@@ -769,7 +768,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	@Override
 	public List<Api> getAllApis(User user) {
 		List<Api> apis = new ArrayList<>();
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (userService.isUserAdministrator(user)) {
 			apis = apiRepository.findAll();
 		}
 		return apis;

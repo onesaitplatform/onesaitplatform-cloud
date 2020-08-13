@@ -39,11 +39,22 @@ public class RtdbMaintainerConfiguration implements ApplicationListener<Applicat
 	TaskService taskService;
 
 	private static final String JOB_NAME = "RtdbMaintainerJob";
+	private static final String JOB_EXPIRATION_USERS_PASS = "ExpirationUsersPassJob";
 
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
+
+		initializeRtdbMaintainerJob();
+
+		initializeUsersPassJob();
+
+	}
+
+	private void initializeRtdbMaintainerJob() {
+
 		final Configuration configuration = configurationService.getConfiguration(Configuration.Type.SCHEDULING,
 				"default", null);
+
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> ymlConfig = (Map<String, Object>) configurationService
 				.fromYaml(configuration.getYmlConfig()).get("RtdbMaintainer");
@@ -67,6 +78,41 @@ public class RtdbMaintainerConfiguration implements ApplicationListener<Applicat
 			taskService.addJob(task);
 		}
 
+	}
+
+	private void initializeUsersPassJob() {
+
+		final Configuration configuration = configurationService.getConfiguration(Configuration.Type.EXPIRATIONUSERS,
+				"default", null);
+
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+				.fromYaml(configuration.getYmlConfig()).get("ExpirationUsersPass");
+		final String cron = (String) ymlExpirationUsersPassConfig.get("cron");
+		final int timeLifePass = ((Integer) ymlExpirationUsersPassConfig.get("timeLifePass")).intValue();
+		final int noticesDaysBefore = ((Integer) ymlExpirationUsersPassConfig.get("noticesDaysBefore")).intValue();
+		final int maxInactiveDays = ((Integer) ymlExpirationUsersPassConfig.get("maxInactiveDays")).intValue();
+
+		// expiration task manage passwords and users
+		final TaskOperation taskManageUsersOperation = new TaskOperation();
+		taskManageUsersOperation.setJobName(JOB_EXPIRATION_USERS_PASS + "-" + SchedulerType.EXPIRATIONUSERS.toString());
+
+		if (taskService.checkExists(taskManageUsersOperation)) {
+			taskService.unscheduledFromAnonymous(taskManageUsersOperation);
+		}
+
+		final TaskInfo task = new TaskInfo();
+		task.setSchedulerType(SchedulerType.EXPIRATIONUSERS);
+		task.setCronExpression(cron);
+		task.setSingleton(true);
+		task.setJobName(JOB_EXPIRATION_USERS_PASS);
+		task.setUsername("administrator");
+		final Map<String, Object> jobContext = new HashMap<>();
+		jobContext.put("timeLifePass", timeLifePass);
+		jobContext.put("noticesDaysBefore", noticesDaysBefore);
+		jobContext.put("maxInactiveDays", maxInactiveDays);
+		task.setData(jobContext);
+		taskService.addJob(task);
 	}
 
 }

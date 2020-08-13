@@ -23,9 +23,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GadgetDatasourceDTO implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class GadgetDatasourceDTO {
 
 	private String identification;
 

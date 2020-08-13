@@ -31,9 +31,9 @@ import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Path;
@@ -60,6 +60,8 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	private static final String BASE_PATH = "/api-manager/server/api";
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+	@Autowired
+	private MultitenancyService masterUserService;
 
 	@Value("${server.port:19090}")
 	private String port;
@@ -108,13 +110,21 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	}
 
 	@Override
-	public Response getApiWithoutToken(String numVersion, String identification) throws GenericOPException {
+	public Response getApiWithoutToken(String numVersion, String identification, String vertical)
+			throws GenericOPException {
+		if (!StringUtils.isEmpty(vertical))
+			masterUserService.getVertical(vertical)
+					.ifPresent(v -> MultitenancyContextHolder.setVerticalSchema(v.getSchema()));
+
 		if (numVersion.indexOf('v') != -1) {
 			numVersion = numVersion.substring(1, numVersion.length());
 		}
 		final Api api = apiService.getApiByIdentificationAndVersion(identification, numVersion);
-		if (api == null)
+		if (api == null) {
+			MultitenancyContextHolder.clear();
 			return Response.noContent().status(404).build();
+
+		}
 
 		// EXTERNAL API FROM JSON
 		if (api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
@@ -144,15 +154,10 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 
 	private Response getExternalApiWithSwagger(Api api, Swagger swagger) {
 
-		if (StringUtils.isEmpty(api.getGraviteeId())) {
-			addCustomHeaderToPaths(swagger);
-			swagger.setHost(null);
-			swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
-		} else {
-			swagger.setHost(getGraviteeHost());
-			swagger.setBasePath(getGraviteeBasePath(api));
-		}
-
+		addCustomHeaderToPaths(swagger);
+		swagger.setHost(null);
+		swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
+		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
 
@@ -160,12 +165,9 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		addCustomHeaderToPaths(openAPI);
 		final Server server = new Server();
 
-		if (!StringUtils.isEmpty(api.getGraviteeId())) {
-			server.setUrl(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY) + getGraviteeBasePath(api));
-		} else {
-			server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
-		}
+		server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
 		openAPI.setServers(Arrays.asList(server));
+		MultitenancyContextHolder.clear();
 		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
 	}
 
@@ -173,13 +175,8 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		final ApiDTO apiDto = apiFIQL.toApiDTO(api);
 		final BeanConfig config = new BeanConfig();
 
-		if (!StringUtils.isEmpty(api.getGraviteeId())) {
-			config.setHost(getGraviteeHost());
-			config.setBasePath(getGraviteeBasePath(api));
-		} else {
-			config.setBasePath(getApiBasePath(api, numVersion));
-			config.setHost(null);
-		}
+		config.setBasePath(getApiBasePath(api, numVersion));
+		config.setHost(null);
 
 		final RestSwaggerReader reader = new RestSwaggerReader();
 		final Swagger swagger = reader.read(apiDto, config);
@@ -192,6 +189,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
 
 		final String json = io.swagger.v3.core.util.Json.pretty(openAPI);
+		MultitenancyContextHolder.clear();
 		return Response.ok(json).build();
 	}
 
@@ -201,23 +199,12 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		config.setBasePath(getApiBasePath(api, numVersion));
 		final RestSwaggerReader reader = new RestSwaggerReader();
 		final Swagger swagger = reader.read(apiDto, config);
-		if (!StringUtils.isEmpty(api.getGraviteeId())) {
-			swagger.setHost(getGraviteeHost());
-		}
-
+		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
 
 	private String getApiBasePath(Api api, String numVersion) {
 		return BASE_PATH + "/v" + numVersion + "/" + api.getIdentification();
-	}
-
-	private String getGraviteeBasePath(Api api) {
-		return "/".concat(api.getIdentification().concat("/v").concat(String.valueOf(api.getNumversion())));
-	}
-
-	private String getGraviteeHost() {
-		return resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).replaceAll("^(http://|https://)", "");
 	}
 
 	/**

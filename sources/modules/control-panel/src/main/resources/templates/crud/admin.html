@@ -239,6 +239,9 @@
 									<!-- tab editor -->
 									<div class="tab-pane" id="tab_form">
 										<div class="row">
+										    <div id="alert-authorizations" class="alert alert-info">
+												<i class="fa fa-info-circle"></i> <span th:text="#{crud.virtual.info}"> If it is a virtual ontology, it is necessary that you have an ID assigned to be able to modify, edit and delete elements.</span>
+											</div>
 											<div id="editor_holder" class=" col-md-8 col-sm-8 col-xs-12"></div>
 
 											<div class=" col-md-4 col-sm-4 col-xs-12"    style="margin-top: 20px;">
@@ -505,7 +508,17 @@ function removeExpression(index){
 		createQuery();
 
 		var params = createParametersMap();
-
+		
+		if(params!==undefined && params.where !== undefined && params.where.length>0 ){
+			for(var i=0;i<params.where.length;i++){
+				if(params.where[i].operator==="&#60;"){
+					params.where[i].operator="<";
+				}else if(params.where[i].operator==="&#60;="){
+					params.where[i].operator="<=";
+				}
+			}
+		}
+		
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 
@@ -552,6 +565,7 @@ function removeExpression(index){
 	function createTableFromJson(data){
 		delete data.contextData;
 		delete data.id;
+		delete data._id;
 		var resultTitle = recursiveTitle(data,"");
 		var resultValue = recursiveValue(data,"");
 		var theadContent = "";
@@ -633,6 +647,7 @@ function removeExpression(index){
 		  success: function(dataSet) {
 				console.log("success findElementForId "+ id);
 				delete dataSet[0].contextData;
+                delete dataSet[0]._id;
 				reloadJSONEditor(false,dataSet[0]);
 		  },
 		  error: function(data,status,er) {
@@ -889,6 +904,18 @@ function editRecord(id){
 	 $('#mytabs a[href="#tab_form"]').tab('show');
 }
 
+function accessRecMap(jsonAccess,dotkey){
+	var keys = dotkey.split("\.");
+	var jsonAccessAux = jsonAccess;
+	for(var i=0;i<keys.length;i++){
+		jsonAccessAux = jsonAccessAux[keys[i]];
+		if(typeof jsonAccessAux === 'undefined'){
+			return jsonAccessAux; 
+		}
+	}
+	return jsonAccessAux;
+}
+
 function map_IdFromDataSet(dataSet){
 	var newDataSet = [];
 	if(typeof dataSet!= "undefined" && dataSet.length>0){
@@ -896,10 +923,10 @@ function map_IdFromDataSet(dataSet){
 			newDataSet[i]={};
 			if($uniqueId !== null) {
 				
-				if(typeof dataSet[i][$uniqueId] !=='undefined'){
-					newDataSet[i].id = dataSet[i][$uniqueId];
-				}else if (typeof dataSet[i].value[$uniqueId] !=='undefined'){
-					newDataSet[i].id = dataSet[i].value[$uniqueId];
+				if(typeof accessRecMap(dataSet[i],$uniqueId) !=='undefined'){
+					newDataSet[i].id = accessRecMap(dataSet[i],$uniqueId);
+				}else if (typeof accessRecMap(dataSet[i].value,$uniqueId) !=='undefined'){
+					newDataSet[i].id = accessRecMap(dataSet[i].value,$uniqueId);
 				}else{
 					newDataSet[i].id = undefined;
 				}			
@@ -1130,6 +1157,8 @@ function map_IdFromDataSet(dataSet){
 		
 		var query 		= "select ";
 		var queryFields = " c._id as id,c ";
+		if($ontology.datasource == 'COSMOS_DB')
+			queryFields = " c.id as id,c ";
 		var ontology 	= $ontology.identification
 		var conditions = $('#where_ul li input:not(".panel-sofia2")');		
 		var orderby 	= $('#orderby_ul li input:not(".panel-sofia2")');

@@ -23,11 +23,11 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.audit.aop.MessageAuditProcessor;
 import com.minsait.onesait.platform.iotbroker.audit.bean.IotBrokerAuditEvent;
 import com.minsait.onesait.platform.iotbroker.audit.bean.IotBrokerAuditEventFactory;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 

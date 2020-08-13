@@ -32,7 +32,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.minsait.onesait.platform.business.services.interceptor.InterceptorCommon;
-import com.minsait.onesait.platform.config.components.BeanUtil;
+import com.minsait.onesait.platform.multitenant.util.BeanUtil;
 import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;

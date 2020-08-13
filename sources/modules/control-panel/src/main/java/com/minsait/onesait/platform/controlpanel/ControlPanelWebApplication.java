@@ -30,7 +30,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -79,7 +78,6 @@ import lombok.extern.slf4j.Slf4j;
 @EnableMongoRepositories(basePackages = "com.minsait.onesait.platform.persistence.mongodb")
 @ComponentScan(basePackages = { "com.ibm.javametrics.spring", "com.minsait.onesait.platform" }, lazyInit = true)
 @EnableAutoConfiguration(exclude = { MetricsDropwizardAutoConfiguration.class })
-@EnableCaching
 public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 
 	@Configuration
@@ -98,7 +96,6 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	private CorrelationInterceptor logInterceptor;
-
 	@Autowired
 	private CheckSecurityFilter securityCheckInterceptor;
 
@@ -137,6 +134,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		registry.addResourceHandler("/notebooks/app/**").addResourceLocations("classpath:/static/notebooks/");
+		registry.addResourceHandler("/dataflow/{instance}/app/**")
+				.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/dataflow/app/**")
 				.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/gitlab/**").addResourceLocations("classpath:/static/gitlab/");

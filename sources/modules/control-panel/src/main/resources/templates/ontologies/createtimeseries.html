@@ -321,7 +321,7 @@
 																								th:text="${tsprop.propertyName}" >A</td> 
 																							<td 
 																								th:text="${tsprop.propertyDataType}" >STRING</td> 
-																							<td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td>
+																							<td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeTagRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td>
 																						</tr>
 																					</tbody>
 																					<tfoot>
@@ -417,7 +417,7 @@
 																								th:text="${tsprop.propertyName}" ></td> 
 																							<td 
 																								th:text="${tsprop.propertyDataType}" ></td> 
-																							<td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td>
+																							<td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeTagRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td>
 																						</tr>
 																					</tbody>
 																					<tfoot>
@@ -745,6 +745,7 @@
 	var mountableModel2 = $('#ontology_autthorizations').find('tr.authorization-model')[0].outerHTML;
 	var secsValues = [1,2,3,4,5,6,10,12,15,20,30];
 	var hourValues = [1,2,3,4,6,8,12];
+	var tagsAndFieldsList=[];
 	
 	var showMongoConf = function()
 	{
@@ -770,10 +771,9 @@
 			document.getElementById("auxDataValues").style.display = 'none';
 		}
 	}
-	
+
 	
 	var addTagRow = function() {
-
 		var NameSelected = $("#tagName").val();
 		var typeSelected = $("#tagType option:selected").val();
 		if (NameSelected === "" || typeSelected=== "") {
@@ -785,17 +785,30 @@
 			});
 			return false;
 		}
-		$('#tag_properties > tbody')
-				.append(
-						'<tr class="tagRow"><td>'
-								+ NameSelected
-								+ '</td><td >'
-								+ typeSelected
-								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
-		$('#tagName').val( '' );
-		$('#tagName').selectpicker('deselectAll').selectpicker('refresh');
-		$('#tagType').val( '' );
-		$('#tagType').selectpicker('deselectAll').selectpicker('refresh');
+		if(!tagsAndFieldsList.includes(NameSelected))
+		{
+			tagsAndFieldsList.push(NameSelected);
+			$('#tag_properties > tbody')
+					.append(
+							'<tr class="tagRow"><td>'
+									+ NameSelected
+									+ '</td><td >'
+									+ typeSelected
+									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeTagRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
+			$('#tagName').val( '' );
+			$('#tagName').selectpicker('deselectAll').selectpicker('refresh');
+			$('#tagType').val( '' );
+			$('#tagType').selectpicker('deselectAll').selectpicker('refresh');
+		}
+		else{
+			$.alert({
+				title : 'ERROR!',
+				type : 'red',
+				theme : 'light',
+				content : [[#{ontology.valid.duplicates}]]
+			});
+			return false;
+		}
 	}
 	
 	var addFieldRow = function() {
@@ -811,17 +824,30 @@
 			});
 			return false;
 		}
-		$('#field_properties > tbody')
-				.append(
-						'<tr class="fieldRow"><td>'
-								+ NameSelected
-								+ '</td><td >'
-								+ typeSelected
-								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
-		$('#fieldName').val( '' );
-		$('#fieldName').selectpicker('deselectAll').selectpicker('refresh');
-		$('#fieldType').val( '' );
-		$('#fieldType').selectpicker('deselectAll').selectpicker('refresh');	
+		if(!tagsAndFieldsList.includes(NameSelected))
+		{
+			tagsAndFieldsList.push(NameSelected);
+			$('#field_properties > tbody')
+					.append(
+							'<tr class="fieldRow"><td>'
+									+ NameSelected
+									+ '</td><td >'
+									+ typeSelected
+									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeTagRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
+			$('#fieldName').val( '' );
+			$('#fieldName').selectpicker('deselectAll').selectpicker('refresh');
+			$('#fieldType').val( '' );
+			$('#fieldType').selectpicker('deselectAll').selectpicker('refresh');	
+		}
+		else{
+			$.alert({
+				title : 'ERROR!',
+				type : 'red',
+				theme : 'light',
+				content : [[#{ontology.valid.duplicates}]]
+			});
+			return false;
+		}
 	}
 	
 	var activateNum = function ()
@@ -922,6 +948,13 @@
 		document.getElementById("freqnum").disabled=true;
 	}
 	
+	var removeTagRow = function(row) {
+		var tagSelected = row.parentElement.parentElement.firstElementChild.innerHTML;
+		row.parentElement.parentElement.remove();
+		var index = tagsAndFieldsList.indexOf(tagSelected);
+		tagsAndFieldsList.splice(index,1);
+	}
+
 	var removeRow = function(row) {
 		var tagSelected = row.parentElement.parentElement.firstElementChild.innerHTML;
 		row.parentElement.parentElement.remove();
@@ -1248,6 +1281,14 @@
 		var url = window.location.href.split('/');
 		url[url.length-1]=="" ? ontologyId = url[url.length-2] : ontologyId= url[url.length-1];
 		
+		if(ontologyCreateJson.ontologyId != null)
+		{
+	        tagsAndFieldsList = ontologyCreateJson.properties;
+		}
+		
+		// INPUT MASK FOR ontology identification allow only letters, numbers and _
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
+		
 		// if ontology has authorizations we load it!.
 		authorizationsJson = ontologyCreateJson.authorizations;
 		if (authorizationsJson.length > 0 ){
@@ -1305,12 +1346,19 @@
 		var updateURL = '/controlpanel/ontologies/authorization/update';
 		var deleteURL = '/controlpanel/ontologies/authorization/delete';
 		var response = {};
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 
 		if (action === 'insert'){
 			console.log('    |---> Inserting... ' + insertURL);
-
+			
+			
 			$.ajax({
 				url:insertURL,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
 				type:"POST",
 				async: true,
 				data: {"accesstype": accesstype, "ontology": ontology,"user": user},
@@ -1354,6 +1402,9 @@
 		if (action === 'update'){
 
 			$.ajax({url:updateURL, type:"POST", async: true,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
 				data: {"id": authorization, "accesstype": accesstype},
 				dataType:"json",
 				success: function(response,status){
@@ -1374,6 +1425,9 @@
 			console.log('    |---> Deleting... ' + user + ' with authId:' + authorization );
 
 			$.ajax({url:deleteURL, type:"POST", async: true,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
 				data: {"id": authorization},
 				dataType:"json",
 				success: function(response,status){
@@ -1483,6 +1537,7 @@
 		"language" : currentLanguage,
 		"actionMode" : [[${ontologyTSDTO?.id}]],
 		"schemaEditMode" : [[${ontologyTSDTO?.jsonSchema}]],
+		"properties" : [[${propertyNames}]],
 		"ontologyId": [[${ontologyTSDTO?.id}]],
 		"authorizations" : [[${authorizations}]],
 		"confirmBtn" : [[#{gen.confirmBtn}]],

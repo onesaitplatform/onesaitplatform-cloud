@@ -37,6 +37,8 @@ public interface DroolsRuleService {
 
 	List<DroolsRuleDomain> getAllDomains(String user);
 
+	List<DroolsRuleDomain> getAllDomains();
+
 	DroolsRuleDomain getUserDomain(String user);
 
 	DroolsRuleDomain getUserDomain(User user);
@@ -55,11 +57,15 @@ public interface DroolsRuleService {
 
 	DroolsRuleDomain changeDomainState(String id);
 
+	void changeDomainState(String userId, boolean active);
+
 	void updateDRL(String identification, String drl);
 
 	void deleteRule(String identification);
 
 	void updateActive(String identification);
+
+	void updateActive(String identification, boolean active);
 
 	DroolsRule create(DroolsRule rule, String userId);
 

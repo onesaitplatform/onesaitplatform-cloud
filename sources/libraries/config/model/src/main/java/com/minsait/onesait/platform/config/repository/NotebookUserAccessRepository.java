@@ -47,4 +47,7 @@ public interface NotebookUserAccessRepository extends JpaRepository<NotebookUser
 	NotebookUserAccess findByUserAndAccess(@Param("user") User user,
 			@Param("notebookUserAccessType") NotebookUserAccessType notebookUserAccessType);
 
+	@Query("SELECT o FROM NotebookUserAccess AS o WHERE o.user=:user")
+	List<NotebookUserAccess> findByUser(@Param("user") User user);
+
 }

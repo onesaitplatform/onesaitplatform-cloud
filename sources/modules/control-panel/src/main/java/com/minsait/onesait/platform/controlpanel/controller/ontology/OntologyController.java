@@ -17,17 +17,23 @@ package com.minsait.onesait.platform.controlpanel.controller.ontology;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +46,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -49,6 +56,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.gson.JsonObject;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException.Error;
@@ -69,33 +77,39 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
-import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyKPIDTO;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.templates.PlatformQuery;
 import com.minsait.onesait.platform.config.services.templates.QueryTemplateService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyVirtualDataSourceDTO;
+import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.sql.CreateStatementDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
+import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.quartz.services.ontologyKPI.OntologyKPIService;
 
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -113,13 +127,16 @@ public class OntologyController {
 	@Autowired
 	private ClientPlatformOntologyRepository clientPlatformOntologyRepository;
 
+	// Lazy so in local you can start ControlPanel and no start KPI Module
 	@Autowired
+	@Lazy
 	private OntologyKPIService ontologyKPIService;
 
 	@Autowired
 	private OntologyBusinessService ontologyBusinessService;
 	@Autowired
-	private EntityDeletionService entityDeletionService;
+	private BasicOpsPersistenceServiceFacade basicOpsRepository;
+
 	@Autowired
 	private UserService userService;
 
@@ -149,6 +166,7 @@ public class OntologyController {
 	private static final String ONTOLOGIES_CREATE = "ontologies/create";
 	private static final String ONTOLOGIES_CREATE_TS = "ontologies/createtimeseries";
 	private static final String ONTOLOGIES_LIST = "ontologies/list";
+	private static final String REDIRECT_ONTOLOGY_LIST = "/controlpanel/ontologies/list";
 	private static final String ERROR_STR = "error";
 	private static final String MESSAGE_STR = "message";
 	private static final String STATUS_STR = "status";
@@ -169,6 +187,7 @@ public class OntologyController {
 	private static final String ONTOLOGYTSDTO = "ontologyTSDTO";
 	private static final String AUTHORIZATIONS = "authorizations";
 	private static final String USERS = "users";
+	private static final String PROPERTY_NAMES = "propertyNames";
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -205,8 +224,8 @@ public class OntologyController {
 			description = null;
 		}
 
-		final List<OntologyDTO> ontologies = ontologyConfigService.getOntologiesForListByUser(utils.getUserId(),
-				identification, description);
+		final List<OntologyDTO> ontologies = ontologyConfigService
+				.getOntologiesForListByUserPropietary(utils.getUserId(), identification, description);
 
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", true);
@@ -219,7 +238,7 @@ public class OntologyController {
 	}
 
 	@GetMapping(value = "/create")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(Model model) {
 		model.addAttribute(ONTOLOGY_STR, new Ontology());
 		model.addAttribute(ONTOLOGY_REST_STR, new OntologyRestDTO());
@@ -228,7 +247,7 @@ public class OntologyController {
 	}
 
 	@GetMapping(value = "/createwizard", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createWizard(Model model) {
 		Ontology ontology = (Ontology) model.asMap().get(ONTOLOGY_STR);
 		if (ontology == null) {
@@ -246,7 +265,7 @@ public class OntologyController {
 	}
 
 	@GetMapping(value = "/createapirest", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createAPIREST(Model model) {
 
 		model.addAttribute(ONTOLOGY_STR, new Ontology());
@@ -263,7 +282,7 @@ public class OntologyController {
 	}
 
 	@GetMapping(value = "/createkpi", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createkpi(Model model) {
 		OntologyKPIDTO ontology = (OntologyKPIDTO) model.asMap().get(ONTOLOGY_STR);
 		if (ontology == null) {
@@ -283,13 +302,13 @@ public class OntologyController {
 	@GetMapping(value = "/createtimeseries", produces = "text/html")
 	public String createTimeSeries(Model model) {
 
-		model.addAttribute(ONTOLOGYTSDTO, new OntologyTimeSeriesDTO());
+		model.addAttribute(ONTOLOGYTSDTO, new OntologyTimeSeriesServiceDTO());
 		populateFormTimeseries(model);
 		return ONTOLOGIES_CREATE_TS;
 	}
 
 	@PostMapping(value = { "/create", "/createwizard", "/createapirest", "/createvirtual" })
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createOntology(Model model, @Valid Ontology ontology,
 			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
 		final Map<String, String> response = new HashMap<>();
@@ -307,7 +326,7 @@ public class OntologyController {
 
 			if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
 					|| ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
-				response.put(REDIRECT_STR, "/controlpanel/ontologies/list");
+				response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
 			}
 			response.put(STATUS_STR, "ok");
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -348,9 +367,9 @@ public class OntologyController {
 	}
 
 	@PostMapping(value = { "/createtimeseries" })
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createTimeseriesOntology(Model model,
-			@Valid OntologyTimeSeriesDTO ontologyTimeSeriesDTO, BindingResult bindingResult,
+			@Valid OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, BindingResult bindingResult,
 			RedirectAttributes redirect, HttpServletRequest request) {
 		final Map<String, String> response = new HashMap<>();
 
@@ -359,9 +378,26 @@ public class OntologyController {
 			response.put(CAUSE_STR, utils.getMessage(ONT_VAL_ERROR, VAL_ERROR));
 			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 		}
+
+		if (ontologyBusinessService.existsOntology(ontologyTimeSeriesDTO.getIdentification())) {
+			response.put(STATUS_STR, ERROR_STR);
+			response.put(CAUSE_STR, "Exists another ontology with this identification");
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
 		try {
 			ontologyTimeSeriesDTO.setUser(userService.getUser(utils.getUserId()));
-			return ontologyTimeSeriesService.createOntologyTimeSeries(ontologyTimeSeriesDTO, request);
+			final OntologyConfiguration config = new OntologyConfiguration(request);
+			final Ontology createdOnt = ontologyTimeSeriesService.createOntologyTimeSeries(ontologyTimeSeriesDTO,
+					config, true, true);
+			if (createdOnt != null) {
+				response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
+				response.put(STATUS_STR, "ok");
+				return new ResponseEntity<>(response, HttpStatus.CREATED);
+			} else {
+				response.put(REDIRECT_STR, "/controlpanel/ontologies/list");
+				response.put(STATUS_STR, "ko");
+				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 
 		} catch (final OntologyServiceException | OntologyDataJsonProblemException e) {
 			log.error("Error creating ontology TimeSeries", e);
@@ -380,8 +416,9 @@ public class OntologyController {
 
 	}
 
+	@Transactional
 	@PostMapping(value = { "/createkpi" })
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createKPIOntology(Model model, @Valid OntologyKPIDTO ontologyKPIDTO,
 			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
 
@@ -395,8 +432,8 @@ public class OntologyController {
 
 		if (!ontologyKPIDTO.isNewOntology()) {
 			// Find Existing ontology and validate if has a KPI information.
-			final Ontology ontology = ontologyConfigService.getOntologyByIdentification(ontologyKPIDTO.getId(),
-					utils.getUserId());
+
+			final Ontology ontology = ontologyRepository.findByIdentificationIgnoreCase(ontologyKPIDTO.getId()).get(0);
 			final List<OntologyKPI> kpis = ontologyKPIRepository.findByOntology(ontology);
 			// if exist ontology with kpi
 			if (!kpis.isEmpty()) {
@@ -472,7 +509,7 @@ public class OntologyController {
 	}
 
 	@GetMapping(value = "/update/{id}", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String update(Model model, @PathVariable("id") String id) {
 		try {
 			final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
@@ -490,7 +527,7 @@ public class OntologyController {
 
 				final List<User> users = userService.getAllActiveUsers();
 
-				OntologyTimeSeriesDTO otsDTO = new OntologyTimeSeriesDTO();
+				OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
 				if (ontology.getDataModel().getId().equals(TIMESERIES_DATAMODEL)) {
 					otsDTO = ontologyTimeSeriesService.generateOntologyTimeSeriesDTO(ontology);
 				}
@@ -516,7 +553,9 @@ public class OntologyController {
 							.getOntologyVirtualByOntologyId(ontology);
 					populateFormVirtual(model);
 					model.addAttribute("datasource", ontologyVirtual.getDatasourceId());
+					model.addAttribute("tableName", ontologyVirtual.getDatasourceTableName());
 					model.addAttribute("objId", ontologyVirtual.getObjectId());
+					model.addAttribute("objGeometry", ontologyVirtual.getObjectGeometry());
 					return "ontologies/createvirtual";
 				}
 				if (ontology.getDataModel().getId().equals(TIMESERIES_DATAMODEL)) {
@@ -556,7 +595,7 @@ public class OntologyController {
 
 				final List<User> users = userService.getAllActiveUsers();
 
-				OntologyTimeSeriesDTO otsDTO = new OntologyTimeSeriesDTO();
+				OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
 				if (ontology.getDataModel().getId().equals(TIMESERIES_DATAMODEL)) {
 					otsDTO = ontologyTimeSeriesService.generateOntologyTimeSeriesDTO(ontology);
 					populateFormTimeseries(model);
@@ -565,6 +604,7 @@ public class OntologyController {
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
 				model.addAttribute(ONTOLOGY_STR, ontology);
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
+				model.addAttribute(PROPERTY_NAMES, getPropertyNames(otsDTO.getTimeSeriesProperties()));
 				model.addAttribute(USERS, users);
 
 				return ONTOLOGIES_CREATE_TS;
@@ -609,7 +649,7 @@ public class OntologyController {
 	}
 
 	@PutMapping(value = "/update/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> updateOntology(Model model, @PathVariable("id") String id,
 			@Valid Ontology ontology, BindingResult bindingResult, RedirectAttributes redirect,
 			HttpServletRequest request)
@@ -623,14 +663,13 @@ public class OntologyController {
 		}
 
 		try {
-			final String value;
+
+			long count = 0;
 			if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST) {
-				value = queryToolService.querySQLAsJson(utils.getUserId(), ontology.getIdentification(),
-						"select count(*) as c from " + ontology.getIdentification(), 0);
-			} else {
-				value = "{}";
+				count = basicOpsRepository.count(ontology.getIdentification());
+
 			}
-			final int count = mapper.readValue(value, JsonNode.class).path(0).path("c").asInt();
+
 			final OntologyConfiguration config = new OntologyConfiguration(request);
 
 			// Get KPI ID by looking for the ontology in DDBB because HTML doesn't retrieve
@@ -653,6 +692,12 @@ public class OntologyController {
 			ontologyBusinessService.updateOntology(ontology, config, count > 0 ? true : false);
 
 			ontologyConfigService.updateOntology(ontology, utils.getUserId(), config, count > 0 ? true : false);
+
+			if (ontologyFound != null && ontologyFound.getOntologyKPI() != null
+					&& ontologyFound.getOntologyKPI().getId() != null) {
+				ontologyKPIRepository.save(ontology.getOntologyKPI());
+			}
+
 			if (ontologyFound != null && ontologyFound.getOntologyKPI() != null
 					&& ontologyFound.getOntologyKPI().getId() != null && ontology.getOntologyKPI().isActive()) {
 
@@ -666,7 +711,7 @@ public class OntologyController {
 			response.put(STATUS_STR, ERROR_STR);
 			response.put(CAUSE_STR, e.getMessage());
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (final IOException e) {
+		} catch (final DBPersistenceException e) {
 			log.error("Could not check if ontology has documents in RTDB");
 			response.put(STATUS_STR, ERROR_STR);
 			response.put(CAUSE_STR, e.getMessage());
@@ -697,7 +742,7 @@ public class OntologyController {
 
 	@PutMapping(value = "/updatetimeseries/{id}")
 	public ResponseEntity<Map<String, String>> updateOntologyTimeseries(Model model, @PathVariable("id") String id,
-			OntologyTimeSeriesDTO ontologyDTO, BindingResult bindingResult, RedirectAttributes redirect,
+			OntologyTimeSeriesServiceDTO ontologyDTO, BindingResult bindingResult, RedirectAttributes redirect,
 			HttpServletRequest request) throws OntologyBusinessServiceException {
 		final Map<String, String> response = new HashMap<>();
 		final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
@@ -725,8 +770,9 @@ public class OntologyController {
 
 	}
 
+	@Transactional
 	@DeleteMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
 		final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
@@ -735,7 +781,7 @@ public class OntologyController {
 				if (ontology.getOntologyKPI() != null) {
 					ontologyKPIService.unscheduleKpi(ontology.getOntologyKPI());
 				}
-				entityDeletionService.deleteOntology(id, utils.getUserId());
+				ontologyBusinessService.deleteOntology(id, utils.getUserId());
 
 			} catch (final Exception e) {
 				if (e.getCause() instanceof ConstraintViolationException) {
@@ -784,7 +830,7 @@ public class OntologyController {
 				}
 
 				final List<User> users = userService.getAllActiveUsers();
-				OntologyTimeSeriesDTO otsDTO = new OntologyTimeSeriesDTO();
+				OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
 				if (ontology.getDataModel().getId().equals(TIMESERIES_DATAMODEL)) {
 					otsDTO = ontologyTimeSeriesService.generateOntologyTimeSeriesDTO(ontology);
 				}
@@ -861,6 +907,10 @@ public class OntologyController {
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
 		model.addAttribute(RTDBS, ontologyConfigService.getDatasources());
 
+		model.addAttribute("fieldTypes", ontologyBusinessService.getStringSupportedFieldDataTypes());
+
+		model.addAttribute("constraintTypes", ontologyBusinessService.getStringSupportedConstraintTypes());
+
 		if (ontologyConfigService.getDatasourcesRelationals().isEmpty()) {
 
 			model.addAttribute("datasources", new ArrayList<OntologyVirtualDatasource>());
@@ -868,11 +918,11 @@ public class OntologyController {
 
 		} else {
 
-			List<String> dsList;
+			List<VirtualDatasourceDTO> dsList;
 			if (utils.getRole().equals("ROLE_ADMINISTRATOR"))
 				dsList = ontologyConfigService.getDatasourcesRelationals();
 			else
-				dsList = ontologyConfigService.getPublicDatasourcesRelationals();
+				dsList = ontologyConfigService.getPublicOrOwnedDatasourcesRelationals(utils.getUserId());
 
 			model.addAttribute("datasources", dsList);
 			model.addAttribute("collectionNames", new ArrayList<String>());
@@ -895,7 +945,7 @@ public class OntologyController {
 	}
 
 	@PostMapping(value = "/authorization", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<OntologyUserAccessDTO> createAuthorization(@RequestParam String accesstype,
 			@RequestParam String ontology, @RequestParam String user) {
 
@@ -912,7 +962,7 @@ public class OntologyController {
 	}
 
 	@PostMapping(value = "/authorization/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<String> deleteAuthorization(@RequestParam String id) {
 
 		try {
@@ -924,7 +974,7 @@ public class OntologyController {
 	}
 
 	@PostMapping(value = "/authorization/update", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public @ResponseBody ResponseEntity<OntologyUserAccessDTO> updateAuthorization(@RequestParam String id,
 			@RequestParam String accesstype) {
 
@@ -940,7 +990,7 @@ public class OntologyController {
 	}
 
 	@GetMapping(value = "/authorization", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public @ResponseBody ResponseEntity<List<OntologyUserAccessDTO>> getAuthorizations(@RequestParam("id") String id) {
 
 		try {
@@ -965,7 +1015,7 @@ public class OntologyController {
 		try {
 			final List<String> tables = ontologyBusinessService.getTablesFromDatasource(datasource);
 			if (tables.isEmpty())
-				return new ResponseEntity<>("The schema has no tables.", HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			else
 				return new ResponseEntity<>(tables, HttpStatus.OK);
 		} catch (final Exception e) {
@@ -977,15 +1027,13 @@ public class OntologyController {
 	public @ResponseBody ResponseEntity<?> hasDocuments(@PathVariable("id") String id) {
 		try {
 			final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
-			final String value;
+
+			long count = 0;
 			if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST) {
-				value = queryToolService.querySQLAsJson(utils.getUserId(), ontology.getIdentification(),
-						"select count(*) as c from " + ontology.getIdentification(), 0);
-			} else {
-				value = "{}";
+				count = basicOpsRepository.count(ontology.getIdentification());
 			}
-			final int count = mapper.readValue(value, JsonNode.class).path(0).path("c").asInt();
-			Boolean hasDocuments = count > 0 ? true : false;
+
+			final Boolean hasDocuments = count > 0 ? true : false;
 
 			return new ResponseEntity<>(hasDocuments, HttpStatus.OK);
 
@@ -1064,9 +1112,9 @@ public class OntologyController {
 				utils.getUserId());
 
 		// validate if queryu has parameters at this case show a message
-		String patternString = "\\{.*\\$\\w+\\.*}";
-		Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
-		Matcher matcher = pattern.matcher(query);
+		final String patternString = "\\{.*\\$\\w+\\.*}";
+		final Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(query);
 		if (matcher.find()) {
 
 			model.addAttribute(QUERY_RESULT, utils.getMessage("ontology.kpi.executed.has.parameters",
@@ -1136,7 +1184,7 @@ public class OntologyController {
 	}
 
 	@PostMapping("queryKPIOne")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public @ResponseBody String runQueryOne(Model model, @RequestParam String queryType, @RequestParam String query,
 			@RequestParam String ontologyIdentification) throws JsonProcessingException {
 		String queryResult = null;
@@ -1186,6 +1234,22 @@ public class OntologyController {
 		oKPI.setCron(ontologyKPIDTO.getCron());
 		oKPI.setDateFrom(ontologyKPIDTO.getDateFrom());
 		oKPI.setDateTo(ontologyKPIDTO.getDateTo());
+		if (ontologyKPIDTO.getDateTo() != null && ontologyKPIDTO.getDateFrom() == null) {
+			final Date now = new Date();
+			if (ontologyKPIDTO.getDateTo().before(now)) {
+				final Calendar dateFrom = Calendar.getInstance();
+				dateFrom.setTime(ontologyKPIDTO.getDateTo());
+				dateFrom.add(Calendar.HOUR, -1);
+				oKPI.setDateFrom(dateFrom.getTime());
+			} else {
+				oKPI.setDateFrom(now);
+			}
+		}
+		if (ontologyKPIDTO.getDateTo() != null && ontologyKPIDTO.getDateFrom() != null
+				&& ontologyKPIDTO.getDateTo().before(ontologyKPIDTO.getDateFrom())) {
+			oKPI.setDateFrom(null);
+			oKPI.setDateTo(null);
+		}
 		oKPI.setActive(Boolean.FALSE);
 		oKPI.setOntology(ontology);
 		oKPI.setQuery(ontologyKPIDTO.getQuery());
@@ -1209,10 +1273,8 @@ public class OntologyController {
 				ontologyKPIService.scheduleKpi(ontology.getOntologyKPI());
 			}
 		}
-		final List<Ontology> ontologies = ontologyConfigService.getOntologiesByUserAndAccess(utils.getUserId(), null,
-				null);
-		model.addAttribute(ONTOLOGIES_STR, ontologies);
-		return ONTOLOGIES_LIST;
+
+		return REDIRECT_ONTOLOGIES_LIST;
 	}
 
 	@PostMapping("executeKPI")
@@ -1223,9 +1285,9 @@ public class OntologyController {
 
 			if (ontology.getOntologyKPI() != null) {
 				// validate if queryu has parameters at this case show a message
-				String patternString = "\\{.*\\$\\w+\\.*}";
-				Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
-				Matcher matcher = pattern.matcher(ontology.getOntologyKPI().getQuery());
+				final String patternString = "\\{.*\\$\\w+\\.*}";
+				final Pattern pattern = Pattern.compile(patternString, Pattern.CASE_INSENSITIVE);
+				final Matcher matcher = pattern.matcher(ontology.getOntologyKPI().getQuery());
 				if (matcher.find()) {
 					response.put(STATUS_STR, ERROR_STR);
 					response.put(CAUSE_STR, utils.getMessage("ontology.kpi.executed.has.parameters",
@@ -1233,10 +1295,10 @@ public class OntologyController {
 					return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 
-				Map<String, String> result = ontologyConfigService.executeKPI(utils.getUserId(),
+				final Map<String, String> result = ontologyConfigService.executeKPI(utils.getUserId(),
 						ontology.getOntologyKPI().getQuery(), ontology.getIdentification(),
 						ontology.getOntologyKPI().getPostProcess());
-				if (result != null && result.get("status").equals(ERROR_STR)) {
+				if (result != null && result.get(STATUS_STR).equals(ERROR_STR)) {
 					response.put(STATUS_STR, ERROR_STR);
 					response.put(CAUSE_STR, utils.getMessage(result.get(MESSAGE_STR), ""));
 					return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1256,6 +1318,80 @@ public class OntologyController {
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	@GetMapping("/virtual/schema/sql")
+	public ResponseEntity<String> getSqlTableDefinitionFromSchema(
+			@ApiParam(value = "Ontology name") @RequestParam(required = true) String ontology,
+			@ApiParam(value = "Ontology json schema") @RequestParam(required = true) String schema,
+			@ApiParam(value = "Datasource type") @RequestParam(required = true) VirtualDatasourceType datasource) {
+		ResponseEntity<String> response = null;
+		try {
+			final String definition = ontologyBusinessService.getSqlTableDefinitionFromSchema(ontology, schema,
+					datasource);
+			response = new ResponseEntity<>(definition, HttpStatus.OK);
+
+		} catch (final Exception e) {
+
+			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		return response;
+	}
+
+	@PostMapping("/virtual/sql/converter/create/{identification}")
+	public ResponseEntity<String> getSQLCreateTable(
+			@ApiParam(value = "Ontology identification") @PathVariable("identification") String identification,
+			@ApiParam(value = "Ontology json schema") @Valid @RequestBody(required = true) CreateStatementDTO statementDTO,
+			@ApiParam(value = "Datasource type") @RequestParam(required = true) VirtualDatasourceType datasource) {
+		ResponseEntity<String> response = null;
+		try {
+			final CreateStatement statement = statementDTO.toCreateStatement();
+			statement.setOntology(identification);
+			final String definition = ontologyBusinessService.getSQLCreateTable(statement, datasource);
+			final JsonObject responseBody = new JsonObject();
+			responseBody.addProperty("statement", definition);
+			response = new ResponseEntity<>(responseBody.toString(), HttpStatus.OK);
+
+		} catch (final Exception e) {
+
+			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		return response;
+	}
+
+	@GetMapping("/virtual/datasource/{identification}")
+	public ResponseEntity<?> getDataSourceByIdentification(
+			@ApiParam(value = "Ontology datasource identification") @PathVariable(required = true) String identification) {
+		ResponseEntity<?> response = null;
+		try {
+			final User user = userService.getUser(utils.getUserId());
+			OntologyVirtualDatasource datasource = null;
+			datasource = ontologyConfigService.getOntologyVirtualDatasourceByName(identification);
+
+			if (datasource == null) {
+				response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			} else {
+				if (userService.isUserAdministrator(user) || datasource.isPublic()
+						|| datasource.getUser().contentEquals(user.getUserId())) {
+
+					final OntologyVirtualDataSourceDTO datasourceDTO = new OntologyVirtualDataSourceDTO(datasource);
+					response = new ResponseEntity<>(datasourceDTO, HttpStatus.OK);
+				}
+			}
+
+		} catch (final Exception e) {
+
+			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		return response;
+	}
+
+	private List<String> getPropertyNames(Set<OntologyTimeSeriesProperty> props) {
+		List<String> propertyNames = new LinkedList<String>();
+		for (OntologyTimeSeriesProperty otsp : props) {
+			propertyNames.add(otsp.getPropertyName());
+		}
+		return propertyNames;
 	}
 
 }

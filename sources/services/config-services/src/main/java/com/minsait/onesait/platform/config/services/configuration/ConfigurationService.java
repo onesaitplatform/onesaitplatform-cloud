@@ -33,12 +33,12 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface ConfigurationService {
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	List<Configuration> getAllConfigurations();
 
 	List<Configuration> getAllConfigurations(User user);
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	void deleteConfiguration(String id);
 
 	Configuration getConfiguration(String id);

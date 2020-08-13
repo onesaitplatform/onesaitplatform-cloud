@@ -19,41 +19,110 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.SuscriptionNotificationsModel;
-import com.minsait.onesait.platform.config.model.SuscriptionNotificationsModel.OperationType;
-import com.minsait.onesait.platform.config.model.SuscriptionNotificationsModel.QueryType;
-import com.minsait.onesait.platform.config.repository.SuscriptionModelRepository;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
+import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
+import com.minsait.onesait.platform.router.service.app.model.TransactionModel;
 import com.minsait.onesait.platform.router.service.processor.RouterFlowManagerService;
+import com.minsait.onesait.platform.router.subscription.SubscriptionManager;
+import com.minsait.onesait.platform.router.transaction.OntologyLockChecker;
+import com.minsait.onesait.platform.router.transaction.OpenPlatformTransactionManager;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service("routerServiceImpl")
-public class RouterServiceImpl implements RouterService, RouterSuscriptionService {
+@Slf4j
+public class RouterServiceImpl implements RouterService, RouterSubscriptionService {
+
+	public static final String ONTOLOGIES_NOT_AVAILABLE_MESSAGE = "Ontologies are locked, please try again.";
+	public static final String ONTOLOGIES_NOT_AVAILABLE_CODE = "ONTOLOGIES_NOT_AVAILABLE";
 
 	@Autowired
 	RouterFlowManagerService routerFlowManagerService;
 
 	@Autowired
-	SuscriptionModelRepository repository;
+	OntologyDataService ontologyDataService;
 
 	@Autowired
-	OntologyDataService ontologyDataService;
+	OntologyLockChecker ontologyLockChecker;
+
+	@Autowired
+	private OpenPlatformTransactionManager transactionManager;
+
+	@Autowired
+	private SubscriptionManager subscriptionManager;
 
 	@Override
 	public OperationResultModel insert(NotificationModel model) {
-		return routerFlowManagerService.startBrokerFlow(model);
+		OperationResultModel result = new OperationResultModel();
+		if (model.getOperationModel().getTransactionId() == null) {
+			log.info("Insert not transactional, check if the ontology {} is locked.",
+					model.getOperationModel().getOntologyName());
+			final Boolean isLocked = ontologyLockChecker.isOntologyLocked(model.getOperationModel().getOntologyName());
+			if (!isLocked) {
+				result = routerFlowManagerService.startBrokerFlow(model);
+			} else {
+				// Ontology is locked for a transaction --> The operation is rejected.
+				result.setStatus(false);
+				result.setErrorCode(ONTOLOGIES_NOT_AVAILABLE_CODE);
+				result.setMessage(ONTOLOGIES_NOT_AVAILABLE_MESSAGE);
+				return result;
+			}
+		} else {
+			result = transactionManager.insert(model);
+		}
+		return result;
+
 	}
 
 	@Override
 	public OperationResultModel update(NotificationModel model) {
-		return routerFlowManagerService.startBrokerFlow(model);
+		OperationResultModel result = new OperationResultModel();
+
+		if (model.getOperationModel().getTransactionId() == null) {
+			log.info("Update not transactional, check if the ontology {} is locked.",
+					model.getOperationModel().getOntologyName());
+			final Boolean isLocked = ontologyLockChecker.isOntologyLocked(model.getOperationModel().getOntologyName());
+			if (!isLocked) {
+				result = routerFlowManagerService.startBrokerFlow(model);
+			} else {
+				// Ontology cannot be locked --> The operation is rejected.
+				result.setStatus(false);
+				result.setErrorCode(ONTOLOGIES_NOT_AVAILABLE_CODE);
+				result.setMessage(ONTOLOGIES_NOT_AVAILABLE_MESSAGE);
+				return result;
+			}
+
+		} else {
+			result = transactionManager.update(model);
+		}
+
+		return result;
+
 	}
 
 	@Override
 	public OperationResultModel delete(NotificationModel model) {
-		return routerFlowManagerService.startBrokerFlow(model);
+		OperationResultModel result = new OperationResultModel();
+		if (model.getOperationModel().getTransactionId() == null) {
+			log.info("Delete not transactional, check if the ontology {} is locked.",
+					model.getOperationModel().getOntologyName());
+			final Boolean isLocked = ontologyLockChecker.isOntologyLocked(model.getOperationModel().getOntologyName());
+			if (!isLocked) {
+				result = routerFlowManagerService.startBrokerFlow(model);
+			} else {
+				// Ontology cannot be locked --> The operation is rejected.
+				result.setStatus(false);
+				result.setErrorCode(ONTOLOGIES_NOT_AVAILABLE_CODE);
+				result.setMessage(ONTOLOGIES_NOT_AVAILABLE_MESSAGE);
+				return result;
+			}
+		} else {
+			result = transactionManager.delete(model);
+		}
+		return result;
+
 	}
 
 	@Override
@@ -62,40 +131,38 @@ public class RouterServiceImpl implements RouterService, RouterSuscriptionServic
 	}
 
 	@Override
-	public OperationResultModel suscribe(SuscriptionModel model) {
-
-		SuscriptionNotificationsModel m = new SuscriptionNotificationsModel();
-		m.setOntologyName(model.getOntologyName());
-		m.setOperationType(OperationType.valueOf(model.getOperationType().name()));
-		m.setQuery(model.getQuery());
-		m.setQueryType(QueryType.valueOf(model.getQueryType().name()));
-		m.setSessionKey(model.getSessionKey());
-		m.setSuscriptionId(model.getSuscriptionId());
-		m.setUser(model.getUser());
-
-		SuscriptionNotificationsModel saved = repository.save(m);
-
-		OperationResultModel result = new OperationResultModel();
-		result.setErrorCode("");
-		result.setOperation("SUSCRIBE");
-		result.setResult(saved.getId());
-		result.setMessage("Suscription to " + saved.getOntologyName() + " has "
-				+ repository.findAllByOntologyName(model.getOntologyName()).size());
-		return result;
+	public OperationResultModel subscribe(SubscriptionModel model) {
+		log.info("A subscription message arrive.");
+		return subscriptionManager.subscription(model);
 	}
 
 	@Transactional
 	@Override
-	public OperationResultModel unSuscribe(SuscriptionModel model) {
+	public OperationResultModel unsubscribe(SubscriptionModel model) {
 
-		repository.deleteBySuscriptionId(model.getSuscriptionId());
+		log.info("A unsubscription message arrive.");
+		return subscriptionManager.unsubscription(model);
+	}
 
-		OperationResultModel result = new OperationResultModel();
-		result.setErrorCode("");
-		result.setOperation("UNSUSCRIBE");
-		result.setResult("OK");
-		result.setMessage("Suscription " + model.getSuscriptionId() + " removed");
-		return result;
+	@Override
+	public OperationResultModel startTransaction(TransactionModel model) {
+		return transactionManager.startTransaction(model);
+
+	}
+
+	@Override
+	public OperationResultModel commitTransaction(TransactionModel model) {
+		return transactionManager.commitTransaction(model);
+	}
+
+	@Override
+	public OperationResultModel rollbackTransaction(TransactionModel model) {
+		return transactionManager.rollbackTransaction(model);
+	}
+
+	@Override
+	public OperationResultModel notifyModules(NotificationModel model) {
+		return routerFlowManagerService.notifyModules(model);
 	}
 
 }

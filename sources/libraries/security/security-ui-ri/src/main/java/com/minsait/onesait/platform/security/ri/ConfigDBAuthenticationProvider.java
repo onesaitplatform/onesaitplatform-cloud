@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.security.ri;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,13 +35,16 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.commons.security.PasswordEncoder;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +56,10 @@ import lombok.extern.slf4j.Slf4j;
 public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 
 	@Autowired
-	private UserRepository userRepository;
+	private MasterUserRepository masterUserRepository;
+
+	@Autowired
+	private UserDetailsService userDetails;
 
 	@Autowired
 	private ApplicationEventPublisher applicationEventPublisher;
@@ -86,8 +93,9 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 			log.info("authenticate: User is not allowed to make login: {}", name);
 			throw new BadCredentialsException("Authentication failed. User is not in the ACL: " + name);
 		}
+		// TO-DO authenticate with master table
 
-		final User user = userRepository.findByUserId(name);
+		final MasterUser user = masterUserRepository.findByUserId(name);
 
 		if (user == null) {
 			log.info("authenticate: User not exist: {}", name);
@@ -110,15 +118,17 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 			publishFailureCredentials(user, authentication);
 			throw new BadCredentialsException("Authentication failed. Password incorrect for " + name);
 		}
-		String role = user.getRole().getId();
-		if (tfaEnabled && role.equals(Role.Type.ROLE_ADMINISTRATOR.name()) && authentication.getDetails() != null
+
+		final UserDetails details = userDetails.loadUserByUsername(user.getUserId());
+		Collection<? extends GrantedAuthority> grantedAuthorities = details.getAuthorities();
+		if (tfaEnabled
+				&& grantedAuthorities.iterator().next().getAuthority().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+				&& authentication.getDetails() != null
 				&& authentication.getDetails() instanceof WebAuthenticationDetails)
-			role = Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name();
-		final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+			grantedAuthorities = Arrays
+					.asList(new SimpleGrantedAuthority(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name()));
 
-		grantedAuthorities.add(new SimpleGrantedAuthority(role));
-
-		final Authentication auth = new UsernamePasswordAuthenticationToken(user.getUserId(), password,
+		final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
 				grantedAuthorities);
 
 		publishSuccess(auth);
@@ -137,6 +147,14 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 
 	@Async
 	private void publishFailureCredentials(User user, Authentication authentication) {
+		final Authentication auth = new UsernamePasswordAuthenticationToken(user.getUserId(), "", new ArrayList<>());
+
+		applicationEventPublisher.publishEvent(new AuthenticationFailureBadCredentialsEvent(auth,
+				new BadCredentialsException("Authentication failed. Password incorrect for " + user.getUserId())));
+	}
+
+	@Async
+	private void publishFailureCredentials(MasterUser user, Authentication authentication) {
 		final Authentication auth = new UsernamePasswordAuthenticationToken(user.getUserId(), "", new ArrayList<>());
 
 		applicationEventPublisher.publishEvent(new AuthenticationFailureBadCredentialsEvent(auth,

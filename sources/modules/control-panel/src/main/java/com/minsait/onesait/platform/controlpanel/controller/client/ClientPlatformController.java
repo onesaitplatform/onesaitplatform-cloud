@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
+import com.minsait.onesait.platform.commons.kafka.KafkaExectionException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -112,11 +113,12 @@ public class ClientPlatformController {
 	private static final String DEVICE_STR = "device";
 	private static final String REDIRECT_DEV_CREATE = "redirect:/devices/create";
 	private static final String REDIRECT_DEV_LIST = "redirect:/devices/list";
+	private static final String REDIRECT_UPDATE = "redirect:/devices/update/";
 	private static final String ERROR_403 = "/error/403";
 	private static final String TOKEN_STR = "token";
 	private static final String ACTIVE_STR = "active";
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) {
@@ -167,7 +169,7 @@ public class ClientPlatformController {
 		model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
@@ -199,7 +201,7 @@ public class ClientPlatformController {
 		}
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
@@ -246,7 +248,7 @@ public class ClientPlatformController {
 		return new ResponseEntity<>(accessList, HttpStatus.OK);
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@PostMapping(value = { "/create" })
 	public String createDevice(Model model, @Valid DeviceCreateDTO device, BindingResult bindingResult,
 			RedirectAttributes redirect) {
@@ -274,7 +276,7 @@ public class ClientPlatformController {
 		return REDIRECT_DEV_LIST;
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		final ClientPlatform device = clientPlatformService.getById(id);
@@ -363,7 +365,7 @@ public class ClientPlatformController {
 		}
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDevice(Model model, @PathVariable("id") String id, @Valid DeviceCreateDTO uDevice,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -371,7 +373,7 @@ public class ClientPlatformController {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some device properties missing");
 			utils.addRedirectMessage("device.validation.error", redirect);
-			return "redirect:/devices/update/" + id;
+			return REDIRECT_UPDATE + id;
 		}
 
 		if (!clientPlatformService.hasUserManageAccess(id, utils.getUserId())) {
@@ -383,12 +385,16 @@ public class ClientPlatformController {
 			log.debug("Cannot update device");
 			utils.addRedirectMessage("device.update.error", redirect);
 			return REDIRECT_DEV_CREATE;
+		} catch (KafkaExectionException e){
+			log.debug("Cannot update Kafka topics ACL.");
+			utils.addRedirectMessage("device.update.error", redirect);
+			return REDIRECT_UPDATE + id;
 		}
 
 		return REDIRECT_DEV_LIST;
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping("/show/{id}")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
@@ -415,7 +421,7 @@ public class ClientPlatformController {
 
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@PostMapping(value = "/desactivateToken")
 	public @ResponseBody TokenActivationResponse desactivateToken(@RequestBody TokenActivationRequest request) {
 		final TokenActivationResponse response = new TokenActivationResponse();
@@ -431,7 +437,7 @@ public class ClientPlatformController {
 		return response;
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@PostMapping(value = "/deleteToken")
 	public @ResponseBody TokenActivationResponse deleteToken(@RequestBody TokenSelectedRequest request) {
 		final TokenActivationResponse response = new TokenActivationResponse();
@@ -450,7 +456,7 @@ public class ClientPlatformController {
 		return response;
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@PostMapping(value = "/generateToken")
 	public @ResponseBody GenerateTokensResponse generateTokens(@RequestBody TokensRequest request) {
 
@@ -465,7 +471,7 @@ public class ClientPlatformController {
 		return response;
 	}
 
-	@PreAuthorize("!hasRole('ROLE_USER')")
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@PostMapping(value = "/loadDeviceTokens")
 	public @ResponseBody String loadDeviceTokens(@RequestBody TokensRequest request) {
 

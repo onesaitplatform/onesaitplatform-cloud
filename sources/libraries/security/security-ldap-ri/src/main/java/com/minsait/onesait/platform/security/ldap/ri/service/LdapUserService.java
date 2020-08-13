@@ -15,13 +15,20 @@
 package com.minsait.onesait.platform.security.ldap.ri.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
@@ -31,9 +38,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.repository.UserTokenRepository;
+import com.minsait.onesait.platform.security.ldap.ri.component.LdapGroupMemberFromDNMapper;
 import com.minsait.onesait.platform.security.ldap.ri.component.LdapGroupMemberMapper;
 import com.minsait.onesait.platform.security.ldap.ri.component.LdapGroupNameMapper;
 import com.minsait.onesait.platform.security.ldap.ri.component.LdapUserMapper;
@@ -49,6 +61,8 @@ public class LdapUserService {
 	private UserRepository userRepository;
 	@Autowired
 	private RoleRepository roleRepository;
+	@Autowired
+	private UserTokenRepository userTokenRepository;
 
 	@Autowired
 	@Qualifier(LdapConfig.LDAP_TEMPLATE_BASE)
@@ -67,26 +81,78 @@ public class LdapUserService {
 	private String userMailAtt;
 	@Value("${ldap.attributesMap.cn}")
 	private String userCnAtt;
+	@Value("${ldap.attributesMap.groupOfNames}")
+	private String groupOfNamesAtt;
+	@Value("${ldap.rolesmemberattribute}")
+	private String memberAtt;
 
-	public static final String MEMBER_OF_GROUP = "member";
+	@Value("${ldap.platformRolesGroup.administrator:null}")
+	private String administratorDn;
+	@Value("${ldap.platformRolesGroup.datascientist:null}")
+	private String datascientistDn;
+	@Value("${ldap.platformRolesGroup.dataviewer:null}")
+	private String dataviewerDn;
+	@Value("${ldap.platformRolesGroup.developer:null}")
+	private String developerDn;
+	@Value("${ldap.platformRolesGroup.devops:null}")
+	private String devopsDn;
+	@Value("${ldap.platformRolesGroup.operations:null}")
+	private String operationsDn;
+	@Value("${ldap.platformRolesGroup.partner:null}")
+	private String partnerDn;
+	@Value("${ldap.platformRolesGroup.platformAdmin:null}")
+	private String platformAdminDn;
+	@Value("${ldap.platformRolesGroup.sysAdmin:null}")
+	private String sysAdminDn;
+	@Value("${ldap.platformRolesGroup.user:null}")
+	private String userDn;
 
+	private static final String MEMBER_OF_GROUP = "member";
 	private static final String OBJECT_CLASS_STR = "objectClass";
 	private static final String PERSON_STR = "person";
-	private static final String GROUP_OF_NAMES = "groupOfNames";
 
-	public User createUser(User user, String password) {
+	public User createUser(User user, String password, List<String> groups) {
 		user.setPassword(password);
 		user.setActive(true);
-		user.setRole(roleRepository.findById(defaultRole));
+
+		if (groups != null && groups.size() > 0) {
+			user.setRole(this.getRole(groups));
+		} else {
+			user.setRole(roleRepository.findById(defaultRole));
+		}
+
 		log.debug("Importing user {} from LDAP server", user.getUserId());
-		return userRepository.save(user);
+		User createdUser = userRepository.save(user);
+		try {
+			generateToken(user);
+		} catch (final Exception e) {
+			log.debug("Error creating userToken");
+		}
+
+		return createdUser;
+	}
+
+	public void updateUserRole(User user, List<String> groups) {
+		Role currentRole = user.getRole();
+		Role ldapRole;
+		if (groups != null && groups.size() > 0) {
+			ldapRole = this.getRole(groups);
+		} else {
+			ldapRole = roleRepository.findById(defaultRole);
+		}
+
+		if (!currentRole.getId().equals(ldapRole.getId())) {
+			log.debug("Updating user {} from LDAP server", user.getUserId());
+			user.setRole(ldapRole);
+			userRepository.save(user);
+		}
 	}
 
 	public void createUser(String userId, String dn) {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
 		filter.and(new EqualsFilter(userIdAtt, userId));
-		final List<User> matches;
+		List<User> matches;
 		try {
 			matches = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(),
 					new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
@@ -95,13 +161,36 @@ public class LdapUserService {
 			throw new RuntimeException("Could not import user from LDAP");
 		}
 
+		if (matches.isEmpty()) {// Es posible que el usuario este en otro grupo y en el rol solo se tenga una
+								// referencia a su DN
+			try {
+				final AndFilter filter2 = new AndFilter();
+				filter2.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
+				filter2.and(new EqualsFilter(userIdAtt, userId));
+				matches = ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter2.encode(),
+						new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
+			} catch (final Exception e) {
+				log.error("Could not map user from LDAP", e);
+			}
+		}
+
 		if (matches.isEmpty()) {
 			log.error("User not found in LDAP server, it may not exist or it may not be objectClass=person");
 			throw new UsernameNotFoundException("User not found in LDAP server");
 		}
 		final User user = matches.get(0);
 		user.setUserId(userId);
-		createUser(user, defaultPassword);
+
+		final List<String> groups = ldapTemplateBase
+				.search(LdapUtils.emptyLdapName(), filter.encode(), new AttributesMapper<List<String>>() {
+					@Override
+					public List<String> mapFromAttributes(Attributes attributes) throws NamingException {
+						Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+						return Collections.list(enMember);
+					}
+				}).get(0);
+
+		createUser(user, defaultPassword, groups);
 	}
 
 	public List<User> getAllUsers() {
@@ -120,10 +209,28 @@ public class LdapUserService {
 
 	public List<User> getAllUsersFromGroup(String dn, String cn) {
 		final AndFilter filterAnd = new AndFilter();
-		filterAnd.and(new EqualsFilter(OBJECT_CLASS_STR, GROUP_OF_NAMES));
+		filterAnd.and(new EqualsFilter(OBJECT_CLASS_STR, groupOfNamesAtt));
 		filterAnd.and(new EqualsFilter(userCnAtt, cn));
 		final List<List<User>> users = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filterAnd.encode(),
 				new LdapGroupMemberMapper(MEMBER_OF_GROUP));
+
+		if (!users.isEmpty() && users.get(0).isEmpty()) {// en el atributo member es posible que tengamos el DN del
+															// usuario en vez del uid (Esto pasa en Logrono)
+			final List<List<String>> membersDn = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn),
+					filterAnd.encode(), new LdapGroupMemberFromDNMapper(MEMBER_OF_GROUP));
+
+			List<User> usersInGroup = new ArrayList<User>();
+			membersDn.get(0).stream().forEach(member -> {
+				List<User> currentUser = getAllUsers(member);
+				if (currentUser != null && !currentUser.isEmpty()) {
+					usersInGroup.add(getAllUsers(member).get(0));
+				}
+			});
+
+			return usersInGroup;
+
+		}
+
 		if (!users.isEmpty())
 			return users.stream().flatMap(List::stream).collect(Collectors.toList());
 		else
@@ -131,7 +238,7 @@ public class LdapUserService {
 	}
 
 	public List<String> getAllGroups() {
-		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, GROUP_OF_NAMES);
+		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, groupOfNamesAtt);
 		return ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(), new LdapGroupNameMapper());
 
 	}
@@ -139,8 +246,49 @@ public class LdapUserService {
 	public List<String> getAllGroups(String dn) {
 		if (StringUtils.isEmpty(dn))
 			return getAllGroups();
-		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, GROUP_OF_NAMES);
+		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, groupOfNamesAtt);
 		return ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(), new LdapGroupNameMapper());
 
+	}
+
+	private Role getRole(List<String> groups) {
+		if (null != administratorDn && groups.contains(administratorDn)) {
+			return roleRepository.findById("ROLE_ADMINISTRATOR");
+		} else if (null != datascientistDn && groups.contains(datascientistDn)) {
+			return roleRepository.findById("ROLE_DATASCIENTIST");
+		} else if (null != dataviewerDn && groups.contains(dataviewerDn)) {
+			return roleRepository.findById("ROLE_DATAVIEWER");
+		} else if (null != developerDn && groups.contains(developerDn)) {
+			return roleRepository.findById("ROLE_DEVELOPER");
+		} else if (null != devopsDn && groups.contains(devopsDn)) {
+			return roleRepository.findById("ROLE_DEVOPS");
+		} else if (null != operationsDn && groups.contains(operationsDn)) {
+			return roleRepository.findById("ROLE_OPERATIONS");
+		} else if (null != partnerDn && groups.contains(partnerDn)) {
+			return roleRepository.findById("ROLE_PARTNER");
+		} else if (null != platformAdminDn && groups.contains(platformAdminDn)) {
+			return roleRepository.findById("ROLE_PLATFORM_ADMIN");
+		} else if (null != sysAdminDn && groups.contains(sysAdminDn)) {
+			return roleRepository.findById("ROLE_SYS_ADMIN");
+		} else if (null != userDn && groups.contains(userDn)) {
+			return roleRepository.findById("ROLE_USER");
+		} else {
+			return roleRepository.findById(defaultRole);
+		}
+
+	}
+
+	private UserToken generateToken(User user) throws GenericOPException {
+		UserToken userToken = new UserToken();
+		if (user.getUserId() != null) {
+			userToken.setUser(user);
+			userToken.setToken(UUID.randomUUID().toString().replaceAll("-", ""));
+			if (this.userTokenRepository.findByToken(userToken.getToken()) == null) {
+				userToken = this.userTokenRepository.save(userToken);
+			} else {
+				throw new GenericOPException("Token with value " + userToken.getToken() + " already exists");
+			}
+		}
+		return userToken;
 	}
 }

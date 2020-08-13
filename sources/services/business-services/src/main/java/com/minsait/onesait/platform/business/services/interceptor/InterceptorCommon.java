@@ -19,6 +19,9 @@ import javax.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+
 public class InterceptorCommon {
 
 	public static final String SESSION_ATTR_PREVIOUS_AUTH = "PREVIOUS_AUTH";
@@ -29,16 +32,25 @@ public class InterceptorCommon {
 
 	public static void setContexts(Authentication auth) {
 		SecurityContextHolder.getContext().setAuthentication(auth);
+		MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
+		MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
 	}
 
 	public static void clearContexts(Authentication auth, HttpSession session) {
+		MultitenancyContextHolder.clear();
 		SecurityContextHolder.getContext().setAuthentication(auth);
 		session.removeAttribute(SESSION_ATTR_PREVIOUS_AUTH);
 	}
 
 	public static void setPreviousAuthenticationOnSession(HttpSession session) {
-		if (session.getAttribute(SESSION_ATTR_PREVIOUS_AUTH) == null)
+		if (session.getAttribute(SESSION_ATTR_PREVIOUS_AUTH) == null) {
 			session.setAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH,
 					SecurityContextHolder.getContext().getAuthentication());
+		}
 	}
+
+	public static void clearMultitenancyContext() {
+		MultitenancyContextHolder.clear();
+	}
+
 }

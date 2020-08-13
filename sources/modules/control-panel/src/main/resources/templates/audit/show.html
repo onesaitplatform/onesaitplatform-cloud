@@ -56,28 +56,29 @@
 				[csrf_header]: csrf_value
 		    }});
 			
-			$("#CanvasResponse").load('/controlpanel/audit/executeQuery', { 'offset': $("#offset").val(), 'operation': $("#operation").val(), 'user': $("#user").val()},function(response,status,xhr){
+			$("#CanvasResponse").load('/controlpanel/audit/executeQuery', {'resultType': $("#resultType").val(),'modulesname': $("#modulesname").val(),'operation': $("#operation").val(),'offset': $("#offset").val(), 'user': $("#user").val()},
+				function(response,status,xhr){
 				
-				queryResponse = $(response);				
-				
-				// check for valid json, or server string error like java.lang.Exception...
-				var IS_JSON = true;
-				try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
-				
-				if (!IS_JSON){
-					var text=""+queryResponse.text();
-					// Our own JSON string to mark non JSON ERRORs
-					queryErrorResponse = text;										
-				}
-				
-				if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
-				if (IS_JSON) { 
-					dataJSON = queryResponse.text();
-					if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
-					editor.setText(queryResponse.text());
-					editor.setMode('view');
-				}
-				else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+					queryResponse = $(response);				
+					
+					// check for valid json, or server string error like java.lang.Exception...
+					var IS_JSON = true;
+					try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+					
+					if (!IS_JSON){
+						var text=""+queryResponse.text();
+						// Our own JSON string to mark non JSON ERRORs
+						queryErrorResponse = text;										
+					}
+					
+					if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+					if (IS_JSON) { 
+						dataJSON = queryResponse.text();
+						if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
+						editor.setText(queryResponse.text());
+						editor.setMode('view');
+					}
+					else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
 								
 			});		
 			
@@ -196,18 +197,38 @@
 												<div class="panel-tools">	
 													<!-- OPCIONES DE CONSULTA -->
 													<div class="col-md-12 col-sm-11  margin-top-10 margin-bottom-10">
+														<fieldset class="col-md-2">
+															<label class="" th:text="#{audit.resultevent} + ':'">Resultado</label>									
+															<select  class="form-control" id="resultType" name="resultType" >
+																<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+
+																<option th:each="result : ${resultevent}" th:id="${result}" data-type="general" th:value="${result}" th:text="${result}"  ></option>
+																
+															</select>
+														</fieldset>	
+														
+														<fieldset class="col-md-3">
+															<label class="" th:text="#{audit.module} + ':'">Módulo</label>									
+															<select  class="form-control" id="modulesname" name="module" >
+																<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+
+																<option th:each="modulesname : ${modulesnames}" th:id="${modulesname}" data-type="general" th:value="${modulesname}" th:text="${modulesname}"  ></option>
+																
+															</select>
+														</fieldset>	
 														
 														<fieldset class="col-md-3">
 															<label class="" th:text="#{audit.operation} + ':'">Operation</label>									
 															<select  class="form-control" id="operation" name="operation" >
 																<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
-																 
+
 																<option th:each="operation : ${operations}" th:id="${operation}" data-type="general" th:value="${operation}" th:text="${operation}"  ></option>
 																
 															</select>
-														</fieldset>	
+														</fieldset>
+
 														<fieldset id="fieldset_offset" class="col-md-3">
-															<label class="" th:text="#{audit.offset} + ':'">Offset</label>																
+															<label class="" th:text="#{audit.limit} + ':'">Limit</label>																
 															<input class="form-control" name="offset" id="offset" th:value="50"/>															
 														</fieldset>
 														<fieldset class="col-md-3" th:if="${userRole == 'ROLE_ADMINISTRATOR'}">

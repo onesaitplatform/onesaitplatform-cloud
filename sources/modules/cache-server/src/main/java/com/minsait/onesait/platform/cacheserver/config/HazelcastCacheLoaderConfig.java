@@ -37,6 +37,9 @@ public class HazelcastCacheLoaderConfig {
 	@Value("${onesaitplatform.hazelcast.service.discovery.strategy:service}")
 	private String hazelcastServiceDiscoveryStrategy;
 
+	@Value("${onesaitplatform.transaction.timeout.seconds:60}")
+	private int transactionTimeout;
+
 	@Autowired
 	private Environment environment;
 
@@ -45,7 +48,9 @@ public class HazelcastCacheLoaderConfig {
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() {
 		Config config = new ClasspathXmlConfig("hazelcast.xml");
 		log.info("Configured Cache with data: Name : {} Instance Name: {} Group Name: {} ",
-				config.getConfigurationFile(), config.getInstanceName(),  config.getGroupConfig().getName());
+				config.getConfigurationFile(), config.getInstanceName(), config.getGroupConfig().getName());
+		config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
+		config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
 		return Hazelcast.newHazelcastInstance(config);
 	}
 
@@ -61,6 +66,8 @@ public class HazelcastCacheLoaderConfig {
 
 		log.info("Configured Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
 				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+		config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
+		config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
 		return Hazelcast.newHazelcastInstance(config);
 	}
 }

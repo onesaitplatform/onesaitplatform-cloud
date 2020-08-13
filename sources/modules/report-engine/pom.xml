@@ -1,0 +1,140 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>2.0.0-ce</version>
+		<relativePath>../..</relativePath>
+	</parent>
+
+	<artifactId>onesaitplatform-report-engine</artifactId>
+
+	<name>onesait Platform Report Engine</name>
+	<description>onesait Platform Report Engine</description>
+
+	<properties>
+		<camunda.version>7.8.0</camunda.version>
+		<camunda.version.boot>2.3.2</camunda.version.boot>
+		<license.dir>${project.parent.basedir}</license.dir>
+		<lombok.version>1.16.18</lombok.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version>${spring-boot-admin-starter-client.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-business-services</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-security-ui-ri</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!-- JASPER REPORTS -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.jaspersoft.adapter.webservice</groupId>
+			<artifactId>jaspersoft-webservices-dataadapter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.3.6</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle.jdbc</groupId>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
+		</dependency>
+		<!-- Spring fox swagger ui -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+		</dependency>
+			<!-- OAUTH -->
+		<dependency>
+			<groupId>org.springframework.security.oauth</groupId>
+			<artifactId>spring-security-oauth2</artifactId>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>Spring Plugins</id>
+			<url>https://repo.spring.io/plugins-release/</url>
+		</repository>
+		<repository>
+			<id>Jasper</id>
+			<url>https://maven.xwiki.org/externals</url>
+		</repository>
+		<repository>
+			<id>jasper</id>
+			<url>http://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts</url>
+		</repository>
+
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<layout>ZIP</layout>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<classifier>exec</classifier>
+							<layout>ZIP</layout> <!-- to use PropertiesLaunchar -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

@@ -17,6 +17,16 @@ var FlowDomainCreateController = function() {
 		window.location.href = url; 
 	}
 	
+	var initThresholds = function(){
+		//load thresholds data into table
+		console.log(flowDomainCreateReg.thresholds);
+		var thresholds = JSON.parse(flowDomainCreateReg.thresholds);
+		$.each(thresholds, function(i,item){
+			$("#"+item.filter + "Limit").val(item.limit);
+			$("#"+item.filter + "Active").prop('checked', item.active);
+		});
+	}
+	
 	// DELETE DASHBOARD
 	var deleteFlowDomainConfirmation = function(dashboardId){
 		console.log('deleteFlowDomainConfirmation() -> formId: '+ dashboardId);		
@@ -156,13 +166,39 @@ var FlowDomainCreateController = function() {
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
                
+            	//do not check if update
+            	var isPut=false;
+        		if($("#domain_create_form input[name='_method']").val() == 'PUT'){
+        			isPut = true;
+        		}
+        		
             	checkDomainAmountAvailable($('#identification').val());
             	var error1 = $('.alert-danger');
    			 	var success1 = $('.alert-success');
-   				if (freeDomains) {
+   				if (freeDomains || (!freeDomains && isPut)) {
    					checkDomainNameAvailable($('#identification').val());
    	   		     
-   	   			 	if (ontologyExist) {
+   	   			 	if (ontologyExist || (!ontologyExist && isPut)) {
+   	   			 		// Parse limit conditions into form
+   	   			 	var json =[];
+   	   			 	
+	   	   			var conditionLimits = $("#condiointLimits tbody tr");
+	   	   			$.each(conditionLimits, function(i,item){
+	   	   				
+	   	   				if(item.id){
+	   	   					
+	   	   					//json.push({'filter': $("#"+item.id + " td")[0].innerHTML, 'limit': $("#"+item.id + "Limit").val(), 'active': $("#"+item.id + "Active").is(":checked")});
+	   	   					json.push({'filter':item.id, 'socketStatus': $("#"+item.id + " td")[0].innerHTML, 'limit': $("#"+item.id + "Limit").val(), 'active': $("#"+item.id + "Active").is(":checked")});
+	   	   					
+	   	   				}
+	   	   			   
+	   	   			    
+	   	   			 });
+	   	   			 	
+		   	   			$("<input type='hidden' value='"+JSON.stringify(json)+"' />")
+				         	.attr("name", "thresholds")
+				         	.attr("id", "thresholds").val(JSON.stringify(json))
+				         	.appendTo("#domain_create_form");
    		   			 	error1.hide();
    		                success1.show();
    		                form.submit();
@@ -196,7 +232,8 @@ var FlowDomainCreateController = function() {
 		},
 		// INIT() CONTROLLER INIT CALLS
 		init: function(){
-			logControl ? console.log(LIB_TITLE + ': init()') : '';			
+			logControl ? console.log(LIB_TITLE + ': init()') : '';	
+			initThresholds();
 			handleValidation();
 		},
 		// REDIRECT
@@ -206,20 +243,25 @@ var FlowDomainCreateController = function() {
 		},
 		// CHECK FOR NON DUPLICATE PROPERTIES
 		checkProperty: function(obj){
-			
-			checkDomainNameAvailable($('#identification').val());
-			 var error1 = $('.alert-danger');
+			var error1 = $('.alert-danger');
 		     var success1 = $('.alert-success');
-		     
-			if (ontologyExist) {
-	             error1.hide();
+			if($("#domain_create_form input[name='_method']").val() == 'PUT'){
+				freeDomains = true;
+				error1.hide();
 			} else{
-				console.log('Domain Identification is not available.');
-				//Change style to red
-				error1.find('span').text("Domain must be unique.");
-				$('#domainId').closest('.form-group').addClass('has-error'); 
-				success1.hide();
-	            error1.show();
+				checkDomainNameAvailable($('#identification').val());
+				 
+			     
+				if (ontologyExist) {
+		             error1.hide();
+				} else{
+					console.log('Domain Identification is not available.');
+					//Change style to red
+					error1.find('span').text("Domain must be unique.");
+					$('#domainId').closest('.form-group').addClass('has-error'); 
+					success1.hide();
+		            error1.show();
+				}
 			}
 		},
 		deleteFlowDomain: function(flowDomainId){

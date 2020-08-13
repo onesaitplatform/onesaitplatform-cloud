@@ -12,6 +12,25 @@ server: ## Config Web Server
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
+      
+master: 
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
      
 onesaitplatform: #Config onesait Platform specific
    environment.name: local
@@ -53,7 +72,8 @@ spring: ## General Config
       driver-class-name: com.mysql.jdbc.Driver
       test-while-idle: true
       test-on-borrow: true
-      validation-query: SELECT 1   
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
       # Number of ms to wait before throwing an exception if no connection is available.
       max-wait: 10000
       # Maximum number of active connections that can be allocated from this pool at the same time.

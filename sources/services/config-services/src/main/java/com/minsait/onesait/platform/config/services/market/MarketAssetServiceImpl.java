@@ -69,7 +69,7 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 			marketAssetId = "";
 		}
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (userService.isUserAdministrator(user)) {
 			return marketAssetRepository.findByIdentificationLike(marketAssetId);
 		} else {
 			return (filterByUserOrAproved(marketAssetRepository.findByIdentificationLike(marketAssetId), user));
@@ -212,7 +212,7 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 		final User user = userService.getUser(userId);
 		final MarketAsset marketAssetToDelete = marketAssetRepository.findById(id);
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+		if (userService.isUserAdministrator(user)
 				|| marketAssetToDelete.getUser().equals(user)) {
 			marketAssetToDelete.setDeletedAt(new Date());
 			marketAssetRepository.save(marketAssetToDelete);

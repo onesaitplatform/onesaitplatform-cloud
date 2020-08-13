@@ -13,7 +13,26 @@ security.basic.enabled: false
 
 #hawtio.authenticationEnabled: false
 #hawtio.offline: true
-     
+
+master: 
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
+      
 onesaitplatform: #Config onesaitplatform specific
    audit.global.notify: false
    apimanager:
@@ -23,10 +42,11 @@ onesaitplatform: #Config onesaitplatform specific
          kafka:
             enable: true
             host: localhost
-            port: 9092
+            port: 9095
             partitions: 1
             replication: 1
             prefix: ONTOLOGY_
+            notification.prefix: ONTOLOGY_OUTPUT_
             group: ontologyGroup
             topic.pattern: ONTOLOGY.*
             router.topic: router
@@ -34,14 +54,7 @@ onesaitplatform: #Config onesaitplatform specific
             consumer.seekTo : beginning 
             consumer.group : kafkaGroup
             consumer.maxPollRecords : 5000
-   database.elasticsearch:
-      database: onesaitplatform_rtdb_es
-      sql.maxHttpConnections: 10
-      sql.maxHttpConnectionsPerRoute: 10
-      sql.connectionTimeout.millis: 10000
-      sql.connector.http.endpoint: http://localhost:9200
-      url: localhost
-      port: 9300
+   database.elasticsearch.enabled: false
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -101,6 +114,10 @@ onesaitplatform: #Config onesaitplatform specific
       nodered: 50
       kafka: 50
       rulesengine: 50
+      subscription: 50
+      subscription.notificator: 50
+      subscription.attemps: 5
+   transaction.timeout.seconds: 60
 
 spring: ## General Config  
    application.name: onesaitplatform-semantic-inf-broker
@@ -111,13 +128,14 @@ spring: ## General Config
       client.metadata.user.name: ${spring.boot.admin.username}
       client.metadata.user.password: ${spring.boot.admin.password} 
    datasource: ## JPA Config
-      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       driver-class-name: com.mysql.jdbc.Driver
       # Validate the connection before borrowing it from the pool.
       test-on-borrow: true
       validation-query: SELECT 1
+      validationQueryTimeout: 5
       test-while-idle: true
       test-on-return: false
       time-between-eviction-runs-millis: 5000

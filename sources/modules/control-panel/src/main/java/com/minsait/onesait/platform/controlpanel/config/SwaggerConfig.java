@@ -532,6 +532,27 @@ public class SwaggerConfig {
 	}
 
 	@Bean
+	public Docket restPlannerAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Rest Planner").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorRestPlannerManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorRestPlannerManagement() {
+		return or(regex("/api/restplanner.*"));
+	}
+
+	@Bean
 	public Docket categorizationManagementAPI() {
 
 		// Adding Header
@@ -615,4 +636,160 @@ public class SwaggerConfig {
 		return or(regex("/api/flowengine.*"));
 	}
 
+	@Bean
+	public Docket auditManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Audit").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorAuditManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorAuditManagement() {
+		return or(regex("/api/audit.*"));
+	}
+
+	@Bean
+	public Docket gadgetDatasourceManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Gadget Datasources").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorDatasourcesManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorDatasourcesManagement() {
+		return or(regex("/api/gadgetdatasources.*"));
+	}
+
+	@Bean
+	public Docket webProjectsAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Web projects").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorWebProjects()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorWebProjects() {
+		return or(regex("/api/webprojects.*"));
+	}
+
+	@Bean
+	public Docket rulesAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Rules").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorRules()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorRules() {
+		return or(regex("/api/rules.*"));
+	}
+
+	@Bean
+	public Docket moduleNotifications() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Module Notifications").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorNotifications()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorNotifications() {
+		return or(regex("/api/notifier.*"));
+	}
+
+	@Bean
+	public Docket gadgetTemplateManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Gadget Templates").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorGadgetTemplateManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorGadgetTemplateManagement() {
+		return or(regex("/api/gadgettemplates.*"));
+	}
+
+	@Bean
+	public Docket gadgetManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Gadgets").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorGadgetManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorGadgetManagement() {
+		return or(regex("/api/gadgets.*"));
+	}
 }

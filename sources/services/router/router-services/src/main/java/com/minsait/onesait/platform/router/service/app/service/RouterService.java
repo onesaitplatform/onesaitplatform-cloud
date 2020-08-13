@@ -16,7 +16,8 @@ package com.minsait.onesait.platform.router.service.app.service;
 
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
+import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
+import com.minsait.onesait.platform.router.service.app.model.TransactionModel;
 
 public interface RouterService {
 
@@ -28,6 +29,16 @@ public interface RouterService {
 
 	public OperationResultModel query(NotificationModel model);
 
-	public OperationResultModel suscribe(SuscriptionModel model);
+	public OperationResultModel subscribe(SubscriptionModel model);
+
+	public OperationResultModel unsubscribe(SubscriptionModel model);
+
+	public OperationResultModel startTransaction(TransactionModel model);
+
+	public OperationResultModel commitTransaction(TransactionModel model);
+
+	public OperationResultModel rollbackTransaction(TransactionModel model);
+
+	public OperationResultModel notifyModules(NotificationModel model);
 
 }

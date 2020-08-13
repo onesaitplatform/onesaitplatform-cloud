@@ -47,8 +47,8 @@ public class BasicTestES {
 
 	@Test
 	public void testReplaces() {
-		service.load(index, index, Arrays.asList(message), schema);
-		service.load(indexGeo, indexGeo, Arrays.asList(instanceGeometry), schemaGeo);
+		service.bulkInsert(index, Arrays.asList(message), schema);
+		service.bulkInsert(indexGeo, Arrays.asList(instanceGeometry), schemaGeo);
 	}
 
 }

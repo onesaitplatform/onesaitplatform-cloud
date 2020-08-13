@@ -14,13 +14,21 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.helper;
 
-import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.statement.select.*;
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
+import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
+
+import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Top;
 
 @Component("SQLServerHelper")
 @Slf4j
@@ -28,16 +36,18 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 
 	private final static String LIST_TABLES_QUERY = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
 
+	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
 
-	public PlainSelect addLimit(final PlainSelect select, final long limit){
+	@Override
+	public PlainSelect addLimit(final PlainSelect select, final long limit) {
 		final boolean hasTop = (select.getTop() != null);
 		final boolean hasFetch = (select.getFetch() != null);
-		if(hasFetch){
+		if (hasFetch) {
 			final long oldFetch = select.getFetch().getRowCount();
-			final long newFetch = Math.min( oldFetch, limit );
+			final long newFetch = Math.min(oldFetch, limit);
 			select.getFetch().setRowCount(newFetch);
 		} else if (hasTop) {
 			final long oldTop = ((LongValue) select.getTop().getExpression()).getValue();
@@ -51,15 +61,16 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 		return select;
 	}
 
+	@Override
 	public PlainSelect addLimit(final PlainSelect select, final long limit, final long offset) {
 		final PlainSelect limitedSelect = addLimit(select, limit);
-		if(offset > 0){
+		if (offset > 0) {
 			final boolean hasOrderBy = (limitedSelect.getOrderByElements() != null);
 			final boolean hasTop = (limitedSelect.getTop() != null);
 			final boolean hasOffset = (limitedSelect.getOffset() != null);
 
 			// Order by mandatory to do offset
-			if( !hasOrderBy ) {
+			if (!hasOrderBy) {
 				final OrderByElement orderByElement = new OrderByElement();
 				orderByElement.setExpression(new LongValue(1));
 				final List<OrderByElement> orderByList = new LinkedList<>();
@@ -68,7 +79,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 			}
 
 			// Change to fetch to use offset
-			if(hasTop){
+			if (hasTop) {
 				final long finalLimit = ((LongValue) select.getTop().getExpression()).getValue();
 				limitedSelect.setTop(null);
 
@@ -79,7 +90,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 			}
 
 			// Set new offset
-			if(hasOffset) {
+			if (hasOffset) {
 				limitedSelect.getOffset().setOffset(offset);
 			} else {
 				final Offset newOffset = new Offset();
@@ -87,10 +98,49 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 				newOffset.setOffsetParam("ROWS");
 				limitedSelect.setOffset(newOffset);
 			}
-		} else {
-			limitedSelect.setOffset(null);
 		}
 		return limitedSelect;
+	}
+
+	@Override
+	public String getFieldTypeString(String fieldOspType) {
+		String type = null;
+
+		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		switch (fieldtype) {
+		case STRING:
+			type = "VARCHAR(255)";
+			break;
+		case OBJECT:
+			type = "TEXT";
+			break;
+		case NUMBER:
+			type = "FLOAT";
+			break;
+		case INTEGER:
+			type = "INT";
+			break;
+		case GEOMERTY:
+			type = "TEXT";
+			break;
+		case FILE:
+			type = "VARBINARY";
+			break;
+		case TIMESTAMP_MONGO:
+		case TIMESTAMP:
+			type = "DATETIME";
+			break;
+		case ARRAY:
+			type = "TEXT";
+			break;
+		case BOOLEAN:
+			type = "BIT";
+			break;
+		default:
+			throw new OPResourceServiceException("OntologySchemaFieldType not suported: " + fieldtype.getValue());
+		}
+
+		return type;
 	}
 
 }

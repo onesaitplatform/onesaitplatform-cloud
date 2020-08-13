@@ -17,6 +17,7 @@ spring:
       
 management.security.enabled: false
 endpoints.configprops.enabled: true
+onesaitplatform.transaction.timeout.seconds: 60
 
 security:
    basic.enabled: false

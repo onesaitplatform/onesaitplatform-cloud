@@ -12,6 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+
+ * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+ * 2013-2019 SPAIN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.minsait.onesait.platform.systemconfig.init;
 
 import java.io.ByteArrayInputStream;
@@ -26,30 +41,37 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
@@ -61,6 +83,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.commons.OSDetector;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
+import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
+import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.Api.ApiCategories;
+import com.minsait.onesait.platform.config.model.Api.ApiStates;
+import com.minsait.onesait.platform.config.model.Api.ApiType;
+import com.minsait.onesait.platform.config.model.ApiOperation;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter.DataType;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter.HeaderType;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppUser;
@@ -76,11 +107,14 @@ import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
 import com.minsait.onesait.platform.config.model.DataModel;
+import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.I18nResources;
+import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.MarketAsset;
 import com.minsait.onesait.platform.config.model.Notebook;
@@ -101,11 +135,14 @@ import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Rollback;
 import com.minsait.onesait.platform.config.model.Subcategory;
+import com.minsait.onesait.platform.config.model.Subscription;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.model.WebProject;
+import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
+import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 import com.minsait.onesait.platform.config.repository.BaseLayerRepository;
 import com.minsait.onesait.platform.config.repository.CategoryRepository;
@@ -119,6 +156,7 @@ import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.DashboardUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
+import com.minsait.onesait.platform.config.repository.DataflowInstanceRepository;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.config.repository.DigitalTwinTypeRepository;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
@@ -126,6 +164,8 @@ import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
+import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
+import com.minsait.onesait.platform.config.repository.InternationalizationRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
@@ -138,30 +178,40 @@ import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesWindowRe
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualDatasourceRepository;
-import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.PipelineUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.RollbackRepository;
 import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
+import com.minsait.onesait.platform.config.repository.SubscriptionRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 import com.minsait.onesait.platform.config.repository.ViewerRepository;
 import com.minsait.onesait.platform.config.repository.WebProjectRepository;
+import com.minsait.onesait.platform.config.services.dataflow.beans.DataflowCredential;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.multitenant.config.model.Tenant;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.TenantRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.TemplateLoader;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.init.configdb")
 @RunWith(SpringRunner.class)
-@Order(1)
 @SpringBootTest
 public class InitConfigDB {
 
-	private static final String MICROSERVICE_STR = "microservice";
 	private static final String TIMESERIE_STR = "TimeSerie";
 	private static final String REST_STR = "Restaurants";
 	private static final String ROUTES_STR = "routes";
@@ -183,6 +233,7 @@ public class InitConfigDB {
 	private static final String OPERATIONTYPE_STR = "operationType";
 	private static final String VALUE_STR = "value";
 	private static final String SHA_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
+	private static final String SHA_EDGE_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
 	private static final String RESTSCHEMA_STR = "examples/Restaurants-schema.json";
 	private static final String GTKPEXAMPLE_STR = "GTKP-Example";
 	private static final String GENERALIOT_STR = "General,IoT";
@@ -204,6 +255,12 @@ public class InitConfigDB {
 
 	@Value("${onesaitplatform.webproject.rootfolder.path:/usr/local/webprojects/}")
 	private String rootFolder;
+
+	@Value("${onesaitplatform.webproject.baseurl:http://localhost:18000/web}")
+	private String webProjectPath;
+
+	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
+	private String basePath;
 
 	private static final String ISO3166_2 = "ISO3166_2";
 
@@ -232,6 +289,10 @@ public class InitConfigDB {
 	@Autowired
 	GadgetRepository gadgetRepository;
 	@Autowired
+	InternationalizationRepository internationalizationRepository;
+	@Autowired
+	I18nResourcesRepository i18nResourcesRepository;
+	@Autowired
 	OntologyRepository ontologyRepository;
 	@Autowired
 	OntologyCategoryRepository ontologyCategoryRepository;
@@ -248,6 +309,7 @@ public class InitConfigDB {
 	TokenRepository tokenRepository;
 	@Autowired
 	UserRepository userCDBRepository;
+
 	@Autowired
 	ConfigurationRepository configurationRepository;
 
@@ -273,7 +335,7 @@ public class InitConfigDB {
 	NotebookRepository notebookRepository;
 
 	@Autowired
-	PipelineRepository pipelineRepository;
+	DataflowInstanceRepository dataflowInstanceRepository;
 
 	@Autowired
 	ClientPlatformInstanceSimulationRepository simulationRepository;
@@ -325,6 +387,9 @@ public class InitConfigDB {
 
 	@Autowired
 	private SubcategoryRepository subcategoryRepository;
+
+	@Autowired
+	private SubscriptionRepository subscriptionRepository;
 
 	@Value("${onesaitplatform.server.name:localhost}")
 	private String serverName;
@@ -379,6 +444,7 @@ public class InitConfigDB {
 	private static final String DEFAULT = "default";
 	private static final String DEVELOPER = "developer";
 	private static final String ADMINISTRATOR = "administrator";
+	private static final String PLATFORM_ADMINISTRATOR = "platform_admin";
 	private static final String DOCKER = "docker";
 	private static final String QUERY = "query";
 	private static final String CESIUM = "cesium";
@@ -388,14 +454,32 @@ public class InitConfigDB {
 	private static final String GADGET2CONFIG = "{\"tablePagination\":{\"limit\":\"5\",\"page\":1,\"limitOptions\":[5,10,20,50,100],\"style\":{\"backGroundTHead\":\"#ffffff\",\"backGroundTFooter\":\"#ffffff\",\"trHeightHead\":\"40\",\"trHeightBody\":\"40\",\"trHeightFooter\":\"40\",\"textColorTHead\":\"#141414\",\"textColorBody\":\"#000000\",\"textColorFooter\":\"#000000\"},\"options\":{\"rowSelection\":false,\"multiSelect\":false,\"autoSelect\":false,\"decapitate\":false,\"largeEditDialog\":false,\"boundaryLinks\":true,\"limitSelect\":true,\"pageSelect\":true}}}";
 	private static final String GADGET5CONFIG = "{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"\",\"display\":true},\"stacked\":false,\"sort\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"1000\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"sort\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}";
 
+	@Before
+	public void setDBTenant() {
+		Optional.ofNullable(System.getenv().get(ConfigDBTenantConfig.CONFIGDB_TENANT_ENVVAR)).ifPresent(s -> {
+			MultitenancyContextHolder.setVerticalSchema(s);
+			MultitenancyContextHolder.setTenantName(
+					Tenant2SchemaMapper.defaultTenantName(Tenant2SchemaMapper.extractVerticalNameFromSchema(s)));
+		});
+	}
+
+	@After
+	public void unsetDBTenant() {
+		MultitenancyContextHolder.clear();
+	}
+
 	@PostConstruct
 	@Test
 	public void init() {
+		setDBTenant();
 		if (!started) {
 			started = true;
 
 			log.info("Start initConfigDB...");
 			// first we need to create users
+			log.info("creating Default Vertical for multitenancy");
+			initDefaultVertical();
+
 			initRoleUser();
 			log.info("OK init_RoleUser");
 			initUser();
@@ -447,6 +531,9 @@ public class InitConfigDB {
 			initDashboardUserAccessType();
 			log.info("OK init_DashboardUserAccessType");
 
+			initInternationalization();
+			log.info("OK init_Internationalization");
+
 			initMenuControlPanel();
 			log.info("OK init_ConsoleMenu");
 			initConsoleMenuRollBack();
@@ -469,7 +556,7 @@ public class InitConfigDB {
 			initNotebook();
 			log.info("OK init_Notebook");
 
-			initDataflow();
+			initDataflowInstances();
 			log.info("OK init_dataflow");
 
 			initNotebookUserAccessType();
@@ -502,6 +589,9 @@ public class InitConfigDB {
 			initCategories();
 			log.info("OK Categories");
 
+			initInternationalizationSample();
+			log.info("OK initInternationalizationSample");
+
 			// init_OntologyVirtualDatasource();
 			// log.info(" OK init_OntologyVirtualDatasource");
 			// init_realms();
@@ -511,8 +601,258 @@ public class InitConfigDB {
 
 			initWebProject();
 			log.info("OK initWebProject");
+
+			initApis();
+			log.info("Init API");
+
+			initSubscription();
+			log.info("Init Subscription");
+
 		}
 
+	}
+
+	@Autowired
+	private VerticalRepository verticalRepository;
+
+	private void initDefaultVertical() {
+		if (verticalRepository.findAll().isEmpty()) {
+			final Vertical onesait = new Vertical();
+			onesait.setName(Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME);
+			onesait.setSchema(Tenant2SchemaMapper.DEFAULT_SCHEMA);
+			Tenant development = new Tenant();
+			development.setName(Tenant2SchemaMapper.defaultTenantName(
+					Tenant2SchemaMapper.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema())));
+			development.setId("MASTER-Tenant-1");
+			development = tenantRepository.save(development);
+			development.getVerticals().add(onesait);
+			onesait.getTenants().add(development);
+			onesait.setId("MASTER-Vertical-1");
+			verticalRepository.save(onesait);
+		}
+	}
+
+	private @Autowired ApiRepository apiRepository;
+	private @Autowired ApiOperationRepository apiOperationRepository;
+
+	private void initSubscription() {
+		if (subscriptionRepository.findByIdentification("ticketStatus").isEmpty()) {
+			Ontology ontology = ontologyRepository.findByIdentification(TICKET);
+			Subscription subscription = new Subscription();
+			subscription.setIdentification("ticketStatus");
+			subscription.setOntology(ontology);
+			subscription.setProjection("$.Ticket.file");
+			subscription.setQueryField("$.Ticket.status");
+			subscription.setId("MASTER-Subscription-1");
+			subscription.setQueryOperator("igual");
+			subscription.setDescription("Subscription to Ticket status");
+			subscription.setUser(userDeveloper);
+
+			subscriptionRepository.save(subscription);
+		}
+	}
+
+	private void initApis() {
+		final String vueProjectApi = "project";
+		final String projectOntology = "Project";
+		if (apiRepository.findByIdentificationAndNumversion(vueProjectApi, 1) == null) {
+			if (ontologyRepository.findByIdentification(projectOntology) == null) {
+				final Ontology o = new Ontology();
+				o.setIdentification(projectOntology);
+				o.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
+				o.setDescription("Project ontology for Vue JS + SB 2 example");
+				o.setJsonSchema(loadFromResources("datamodels/DataModel_Project.json"));
+				o.setUser(userDeveloper);
+				o.setId("MASTER-Ontology-35");
+				o.setMetainf("project,example,vue,springboot");
+				o.setPublic(true);
+				ontologyRepository.save(o);
+			}
+			Api api = new Api();
+			api.setIdentification(vueProjectApi);
+			api.setApiType(ApiType.INTERNAL_ONTOLOGY);
+			api.setCategory(ApiCategories.ALL);
+			api.setDescription("Vue JS + SB 2 API");
+			api.setNumversion(1);
+			api.setPublic(true);
+			api.setState(ApiStates.DEVELOPMENT);
+			api.setUser(userDeveloper);
+			api.setOntology(ontologyRepository.findByIdentification(projectOntology));
+			api.setId("MASTER-Api-1");
+			api = apiRepository.save(api);
+
+			ApiOperation operation = new ApiOperation();
+			operation.setIdentification("project_PUT");
+			operation.setPath("/{id}");
+			operation.setDescription("edit");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.PUT);
+			operation.setApi(api);
+			ApiQueryParameter body = new ApiQueryParameter();
+			body.setName("body");
+			body.setApiOperation(operation);
+			body.setDataType(DataType.STRING);
+			body.setHeaderType(HeaderType.BODY);
+			body.setDescription("");
+			body.setValue("");
+			ApiQueryParameter id = new ApiQueryParameter();
+			id.setName("id");
+			id.setApiOperation(operation);
+			id.setDataType(DataType.STRING);
+			id.setHeaderType(HeaderType.PATH);
+			id.setDescription("");
+			id.setValue("");
+			operation.getApiqueryparameters().addAll(Arrays.asList(id, body));
+			apiOperationRepository.save(operation);
+
+			operation = new ApiOperation();
+			operation.setIdentification("project_POST");
+			operation.setPath("/");
+			operation.setDescription("post");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.POST);
+			operation.setApi(api);
+			body = new ApiQueryParameter();
+			body.setName("body");
+			body.setApiOperation(operation);
+			body.setDataType(DataType.STRING);
+			body.setHeaderType(HeaderType.BODY);
+			body.setDescription("");
+			body.setValue("");
+			operation.getApiqueryparameters().add(body);
+			apiOperationRepository.save(operation);
+
+			operation = new ApiOperation();
+			operation.setIdentification("project_GET");
+			operation.setPath("/{id}");
+			operation.setDescription("getbyid");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.GET);
+			operation.setApi(api);
+			id = new ApiQueryParameter();
+			id.setName("id");
+			id.setApiOperation(operation);
+			id.setDataType(DataType.STRING);
+			id.setHeaderType(HeaderType.PATH);
+			id.setDescription("");
+			id.setValue("");
+			operation.getApiqueryparameters().add(id);
+			apiOperationRepository.save(operation);
+
+			operation = new ApiOperation();
+			operation.setIdentification("project_GETAll");
+			operation.setPath("");
+			operation.setDescription("all");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.GET);
+			operation.setApi(api);
+			apiOperationRepository.save(operation);
+
+			operation = new ApiOperation();
+			operation.setIdentification("project_DELETEID");
+			operation.setPath("/{id}");
+			operation.setDescription("delete");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.DELETE);
+			operation.setApi(api);
+			id = new ApiQueryParameter();
+			id.setName("id");
+			id.setApiOperation(operation);
+			id.setDataType(DataType.STRING);
+			id.setHeaderType(HeaderType.PATH);
+			id.setDescription("");
+			id.setValue("");
+			operation.getApiqueryparameters().add(id);
+			apiOperationRepository.save(operation);
+
+			operation = new ApiOperation();
+			operation.setIdentification("name");
+			operation.setPath("name/{pname}");
+			operation.setDescription("filter by name");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.GET);
+			operation.setApi(api);
+			operation.setPostProcess("// data is a string variable containing the query output \n"
+					+ "var dataArray = JSON.parse(data);\n" + "try{\n" + "  var instance = dataArray[0];\n"
+					+ "  instance.id = instance._id;\n" + "  delete instance._id;\n"
+					+ "  return JSON.stringify(instance);\n" + "}catch(error){ return data;}\n"
+					+ "// A string result must be returned\n" + "return (JSON.stringify(dataArray));");
+			ApiQueryParameter targetDb = new ApiQueryParameter();
+			targetDb.setApiOperation(operation);
+			targetDb.setCondition("CONSTANT");
+			targetDb.setDataType(DataType.STRING);
+			targetDb.setHeaderType(HeaderType.QUERY);
+			targetDb.setValue("rtdb");
+			targetDb.setName("targetdb");
+			targetDb.setDescription("");
+			ApiQueryParameter queryType = new ApiQueryParameter();
+			queryType.setApiOperation(operation);
+			queryType.setCondition("CONSTANT");
+			queryType.setDataType(DataType.STRING);
+			queryType.setHeaderType(HeaderType.QUERY);
+			queryType.setValue("sql");
+			queryType.setName("queryType");
+			queryType.setDescription("");
+			ApiQueryParameter query = new ApiQueryParameter();
+			query.setApiOperation(operation);
+			query.setCondition("CONSTANT");
+			query.setDataType(DataType.STRING);
+			query.setHeaderType(HeaderType.QUERY);
+			query.setValue("select p from Project as p where p.features.name={$pname}");
+			query.setName("query");
+			query.setDescription("");
+			ApiQueryParameter parameter = new ApiQueryParameter();
+			parameter.setApiOperation(operation);
+			parameter.setCondition("REQUIRED");
+			parameter.setDataType(DataType.STRING);
+			parameter.setHeaderType(HeaderType.PATH);
+			parameter.setValue(null);
+			parameter.setName("pname");
+			parameter.setDescription("");
+			operation.getApiqueryparameters().addAll(Arrays.asList(parameter, query, queryType, targetDb));
+			apiOperationRepository.save(operation);
+
+			operation = new ApiOperation();
+			operation.setIdentification("id");
+			operation.setPath("id/{name}");
+			operation.setDescription("filter by name");
+			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.GET);
+			operation.setPostProcess("// data is a string variable containing the query output \n"
+					+ "var dataArray = JSON.parse(data);\n" + "try{\n" + "  var instance = dataArray[0];\n"
+					+ "  instance.id = instance._id;\n" + "  delete instance._id;\n"
+					+ "  return JSON.stringify(instance);\n" + "}catch(error){ return data;}\n"
+					+ "// A string result must be returned\n" + "return (JSON.stringify(dataArray));");
+			operation.setApi(api);
+			query = new ApiQueryParameter();
+			query.setApiOperation(operation);
+			query.setCondition("CONSTANT");
+			query.setDataType(DataType.STRING);
+			query.setHeaderType(HeaderType.QUERY);
+			query.setValue("select p from Project as p where p.features.name={$name}");
+			query.setName("query");
+			query.setDescription("");
+			parameter = new ApiQueryParameter();
+			parameter.setApiOperation(operation);
+			parameter.setCondition("REQUIRED");
+			parameter.setDataType(DataType.STRING);
+			parameter.setHeaderType(HeaderType.PATH);
+			parameter.setValue(null);
+			parameter.setName("name");
+			parameter.setDescription("");
+			targetDb = new ApiQueryParameter();
+			targetDb.setApiOperation(operation);
+			targetDb.setCondition("CONSTANT");
+			targetDb.setDataType(DataType.STRING);
+			targetDb.setHeaderType(HeaderType.QUERY);
+			targetDb.setValue("rtdb");
+			targetDb.setName("targetdb");
+			targetDb.setDescription("");
+			queryType = new ApiQueryParameter();
+			queryType.setApiOperation(operation);
+			queryType.setCondition("CONSTANT");
+			queryType.setDataType(DataType.STRING);
+			queryType.setHeaderType(HeaderType.QUERY);
+			queryType.setValue("sql");
+			queryType.setName("queryType");
+			queryType.setDescription("");
+			operation.getApiqueryparameters().addAll(Arrays.asList(parameter, query, queryType, targetDb));
+			apiOperationRepository.save(operation);
+
+		}
 	}
 
 	private void initBaseLayers() {
@@ -573,6 +913,11 @@ public class InitConfigDB {
 			role.setApp(app);
 			role.setDescription("Back-end developer");
 			role.setName("BACK");
+			final AppUser developer = new AppUser();
+			developer.setRole(role);
+			developer.setUser(userDeveloper);
+			role.getAppUsers().add(developer);
+
 			app.getAppRoles().add(role);
 			role = new AppRole();
 			role.setApp(app);
@@ -597,6 +942,8 @@ public class InitConfigDB {
 			final AppUser admin = new AppUser();
 			admin.setRole(role);
 			admin.setUser(getUserAdministrator());
+			role.getAppUsers().add(admin);
+			app.getAppRoles().add(role);
 
 			role = new AppRole();
 			role.setApp(app);
@@ -606,7 +953,8 @@ public class InitConfigDB {
 			final AppUser userApp = new AppUser();
 			userApp.setRole(role);
 			userApp.setUser(getUser());
-
+			role.getAppUsers().add(userApp);
+			app.getAppRoles().add(role);
 			app.setUserExtraFields(
 					"{\"firstName\":\"string\",\"lastName\":\"string\",\"telephone\":\"string\",\"location\":{\"color\":\"string\",\"floor\":\"string\",\"place\":\"string\"}}");
 			appRepository.save(app);
@@ -653,10 +1001,18 @@ public class InitConfigDB {
 		initGadgetMeasureQAWindTurbines();
 	}
 
+	public void initInternationalizationSample() {
+		initDashboardInternationalizations();
+		log.info("OK init_DashboardInternationalizations");
+		initI18nResources();
+		log.info("OK init_I18nResources");
+	}
+
 	private void initFlowDomain() {
 		log.info("init_FlowDomain");
 		// Domain for administrator
-		if (domainRepository.count() == 0) {
+		if (MultitenancyContextHolder.getVerticalSchema().equals(Tenant2SchemaMapper.DEFAULT_SCHEMA)
+				&& domainRepository.count() == 0) {
 			FlowDomain domain = new FlowDomain();
 			domain.setId("MASTER-FlowDomain-1");
 			domain.setActive(true);
@@ -689,6 +1045,7 @@ public class InitConfigDB {
 			config.setId("MASTER-Configuration-1");
 			config.setType(Configuration.Type.TWITTER);
 			config.setUser(getUserAdministrator());
+			config.setDescription("Twitter");
 			config.setEnvironment("dev");
 			config.setYmlConfig(loadFromResources("configurations/TwitterConfiguration.yml"));
 			configurationRepository.save(config);
@@ -737,6 +1094,7 @@ public class InitConfigDB {
 			config.setId("MASTER-Configuration-6");
 			config.setType(Configuration.Type.MAIL);
 			config.setUser(getUserAdministrator());
+			config.setDescription("Mail Config");
 			config.setEnvironment(DEFAULT);
 			if (loadMailConfig)
 				config.setYmlConfig(loadFromResources("configurations/MailConfiguration.yml"));
@@ -750,6 +1108,7 @@ public class InitConfigDB {
 			config.setType(Configuration.Type.MONITORING);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
+			config.setDescription("Spring Boot Admin Config");
 			config.setYmlConfig(loadFromResources("configurations/MonitoringConfiguration.yml"));
 			configurationRepository.save(config);
 
@@ -808,44 +1167,6 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 		}
 
-		config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.DOCKER, "default", "microservice");
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription(MICROSERVICE_STR);
-			config.setEnvironment(DEFAULT);
-			config.setId("MASTER-Configuration-16");
-			config.setType(Type.DOCKER);
-			config.setUser(getUserAdministrator());
-			config.setSuffix(MICROSERVICE_STR);
-			config.setYmlConfig(loadFromResources("configurations/Microservice-compose.yml"));
-			configurationRepository.save(config);
-		}
-		config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.JENKINS, DEFAULT,
-				"IOT_CLIENT_ARCHETYPE");
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription("Pipeline XML for microservice generation");
-			config.setEnvironment(DEFAULT);
-			config.setId("MASTER-Configuration-17");
-			config.setType(Type.JENKINS);
-			config.setUser(getUserAdministrator());
-			config.setSuffix("IOT_CLIENT_ARCHETYPE");
-			config.setYmlConfig(loadFromResources("configurations/JenkinsXMLTemplateIoT.xml"));
-			configurationRepository.save(config);
-		}
-
-		config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.JENKINS, DEFAULT, "ML_MODEL_ARCHETYPE");
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription("Pipeline XML for microservice generation");
-			config.setEnvironment(DEFAULT);
-			config.setId("MASTER-Configuration-18");
-			config.setType(Type.JENKINS);
-			config.setUser(getUserAdministrator());
-			config.setSuffix("ML_MODEL_ARCHETYPE");
-			config.setYmlConfig(loadFromResources("configurations/JenkinsXMLTemplateML.xml"));
-			configurationRepository.save(config);
-		}
 		config = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
@@ -853,10 +1174,21 @@ public class InitConfigDB {
 			config.setType(Configuration.Type.GOOGLE_ANALYTICS);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
+			config.setDescription("Google Analytics Configuration");
 			config.setYmlConfig(loadFromResources("configurations/GoogleAnalyticsConfiguration.yml"));
 			configurationRepository.save(config);
 		}
-
+		config = configurationRepository.findByTypeAndEnvironment(Type.EXPIRATIONUSERS, DEFAULT);
+		if (config == null) {
+			config = new Configuration();
+			config.setId("MASTER-Configuration-21");
+			config.setType(Configuration.Type.EXPIRATIONUSERS);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setDescription("Expiration Users config");
+			config.setYmlConfig(loadFromResources("configurations/ExpirationUsersPass_default.yml"));
+			configurationRepository.save(config);
+		}
 	}
 
 	public void initClientPlatformOntology() {
@@ -991,6 +1323,101 @@ public class InitConfigDB {
 		} catch (final Exception e) {
 			log.error("Error adding menu for role DATAVIEWER");
 		}
+		try {
+			log.info("Adding menu for role PLATFORM_ADMINISTRATOR");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-6");
+			menu.setJson(loadFromResources("menu/menu_platform_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DATAVIEWER");
+		}
+		try {
+			log.info("Adding menu for role DEVOPS");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-7");
+
+			menu.setJson(loadFromResources("menu/menu_devops.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DEVOPS");
+		}
+		try {
+			log.info("Adding menu for role PARTNER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-8");
+
+			menu.setJson(loadFromResources("menu/menu_partner.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role PARTNER");
+		}
+		try {
+			log.info("Adding menu for role OPERATIONS");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-9");
+
+			menu.setJson(loadFromResources("menu/menu_operations.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role OPERATIONS");
+		}
+		try {
+			log.info("Adding menu for role SYS_ADMIN");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-10");
+
+			menu.setJson(loadFromResources("menu/menu_sys_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role SYS_ADMIN");
+		}
+		try {
+			log.info("Adding menu for role EDGE_USER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-11");
+
+			menu.setJson(loadFromResources("menu/menu_edge_user.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role SYS_ADMIN");
+		}
+		try {
+			log.info("Adding menu for role EDGE_USER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-12");
+
+			menu.setJson(loadFromResources("menu/menu_edge_developer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role EDGE_DEVELOPER");
+		}
+		try {
+			log.info("Adding menu for role EDGE_ADMINISTRATOR");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-13");
+
+			menu.setJson(loadFromResources("menu/menu_edge_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role EDGE_ADMINISTRATOR");
+		}
 	}
 
 	public void initConsoleMenuRollBack() {
@@ -1065,6 +1492,23 @@ public class InitConfigDB {
 		}
 		try {
 			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-5");
+
+			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
+			if (rollback == null) {
+				rollback = new Rollback();
+
+				rollback.setEntityId(menu.getId());
+				rollback.setType(Rollback.EntityType.MENU);
+			}
+			final String result = toString(menu);
+			rollback.setSerialization(result);
+
+			rollbackRepository.save(rollback);
+		} catch (final Exception e) {
+			log.error("Error creating console menu rollback for MASTER-ConsoleMenu-5: " + e);
+		}
+		try {
+			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-6");
 
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
@@ -1194,7 +1638,7 @@ public class InitConfigDB {
 		}
 		if (!dashboardConfRepository.exists("MASTER-DashboardConf-4")) {
 			final DashboardConf dashboardConfSynoptic = new DashboardConf();
-			final String synopticSchema = "{\"header\":{\"title\":\" \",\"enable\":true,\"height\":72,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":false},\"pages\":[{\"title\":\"New Page\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fixed\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":20,\"maxCols\":100,\"minRows\":20,\"maxRows\":100,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":4,\"defaultItemRows\":4,\"fixedColWidth\":20,\"fixedRowHeight\":20,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
+			final String synopticSchema = "{\"header\":{\"title\":\" \",\"enable\":true,\"height\":72,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":false},\"pages\":[{\"title\":\"New Page\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":false,\"mobileBreakpoint\":640,\"minCols\":299,\"maxCols\":301,\"minRows\":299,\"maxRows\":301,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":40,\"defaultItemRows\":40,\"fixedColWidth\":2,\"fixedRowHeight\":20,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
 			dashboardConfSynoptic.setId("MASTER-DashboardConf-4");
 			dashboardConfSynoptic.setIdentification("fixed");
 			dashboardConfSynoptic.setModel(synopticSchema);
@@ -1203,7 +1647,7 @@ public class InitConfigDB {
 		}
 		if (!dashboardConfRepository.exists("MASTER-DashboardConf-5")) {
 			final DashboardConf dashboardConfNoTitleEcharts = new DashboardConf();
-			final String notitleechartsSchema = "{\"header\":{\"title\":\"\",\"enable\":false,\"height\":0,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fixed\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":20,\"maxCols\":100,\"minRows\":20,\"maxRows\":100,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":4,\"defaultItemRows\":4,\"fixedColWidth\":250,\"fixedRowHeight\":250,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
+			final String notitleechartsSchema = "{\"header\":{\"title\":\"\",\"enable\":false,\"height\":0,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":299,\"maxCols\":301,\"minRows\":299,\"maxRows\":301,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":40,\"defaultItemRows\":40,\"fixedColWidth\":2,\"fixedRowHeight\":20,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
 			dashboardConfNoTitleEcharts.setId("MASTER-DashboardConf-5");
 			dashboardConfNoTitleEcharts.setIdentification("notitleechartsfixed");
 			dashboardConfNoTitleEcharts.setModel(notitleechartsSchema);
@@ -1266,6 +1710,24 @@ public class InitConfigDB {
 			dashboard.setModel(loadFromResources("dashboardmodel/OpenFlight.json"));
 			dashboard.setPublic(true);
 			dashboard.setUser(getUserAnalytics());
+
+			dashboardRepository.save(dashboard);
+		}
+	}
+
+	public void initDashboardInternationalizations() {
+		if (dashboardRepository.findById("MASTER-Dashboard-4") == null) {
+			log.info("init Dashboard Internationalization");
+			final Dashboard dashboard = new Dashboard();
+			dashboard.setId("MASTER-Dashboard-4");
+			dashboard.setIdentification("Internationalization Dashboard Example");
+			dashboard.setDescription("Internationalization Dashboard Example");
+			dashboard.setJsoni18n("");
+			dashboard.setCustomcss("");
+			dashboard.setCustomjs("");
+			dashboard.setModel(loadFromResources("dashboardmodel/InternationalizationDashExample.json"));
+			dashboard.setPublic(true);
+			dashboard.setUser(getUserAdministrator());
 
 			dashboardRepository.save(dashboard);
 		}
@@ -1936,6 +2398,7 @@ public class InitConfigDB {
 			final GadgetDatasource gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_1);
 			gadgetDatasources.setIdentification("DsRawRestaurants");
+			gadgetDatasources.setDescription("Restaurants sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery("select * from Restaurants");
 			gadgetDatasources.setDbtype("RTDB");
@@ -1956,6 +2419,7 @@ public class InitConfigDB {
 		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_2) == null) {
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_2);
 			gadgetDatasources.setIdentification(ROUTESORIGINTOP_STR);
+			gadgetDatasources.setDescription("Routes group by src sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
 					"select r.routes.src as src,count(r) as count from routes as r group by r.routes.src order by count desc");
@@ -1972,6 +2436,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_3);
 			gadgetDatasources.setIdentification(ROUTESDESTTOP_STR);
+			gadgetDatasources.setDescription("Routes group by dest sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
 					"select r.routes.dest as dest,count(r) as count from routes as r group by r.routes.dest order by count desc");
@@ -1988,9 +2453,10 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_4);
 			gadgetDatasources.setIdentification("countriesAsDestination");
+			gadgetDatasources.setDescription("Routesexten group by countrysrc sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
-					"select re.routesexten.countrysrc,re.routesexten.countrydest,count(re) as count from routesexten As re group by re.routesexten.countrysrc,re.routesexten.countrydest order by count desc");
+					"select re.routesexten.countrysrc as countrysrc ,re.routesexten.countrydest as countrydest ,count(re) as count from routesexten As re group by re.routesexten.countrysrc,re.routesexten.countrydest order by count desc");
 			gadgetDatasources.setDbtype("RTDB");
 			gadgetDatasources.setRefresh(0);
 			gadgetDatasources.setOntology(ontologyRepository.findByIdentification(ROUTESEXT_STR));
@@ -2004,9 +2470,10 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_5);
 			gadgetDatasources.setIdentification(DESTINATIONMAP_STR);
+			gadgetDatasources.setDescription("Routesexten sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
-					"select re.countrysrc,re.countrydest,re.count, iso.ISO3166.latitude , iso.ISO3166.longitude from ( select rx.routesexten.countrysrc As countrysrc, rx.routesexten.countrydest As countrydest, count(re.routesexten.countrysrc) As count from routesexten as rx group by rx.routesexten.countrysrc, rx.routesexten.countrydest order by count desc) As re inner join ISO3166_1 As iso on re.countrydest = iso.ISO3166.name order by re.count desc");
+					"select re.countrysrc as countrysrc,re.countrydest as countrydest,re.count, iso.ISO3166.latitude as latitude, iso.ISO3166.longitude as longitude from ( select rx.routesexten.countrysrc As countrysrc, rx.routesexten.countrydest As countrydest, count(re.routesexten.countrysrc) As count from routesexten as rx group by rx.routesexten.countrysrc, rx.routesexten.countrydest order by count desc) As re inner join ISO3166_1 As iso on re.countrydest = iso.ISO3166.name");
 			gadgetDatasources.setDbtype("RTDB");
 			gadgetDatasources.setRefresh(0);
 			gadgetDatasources.setOntology(ontologyRepository.findByIdentification(ROUTESEXT_STR));
@@ -2020,9 +2487,10 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_6);
 			gadgetDatasources.setIdentification("airportsCountByCountryTop10");
+			gadgetDatasources.setDescription("Airports group by country top 10 sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
-					"select airp.airportsdata.country, count(airp.airportsdata.country) AS count from airportsdata AS airp group by airp.airportsdata.country order by count desc");
+					"select airp.airportsdata.country as country, count(airp.airportsdata.country) AS count from airportsdata AS airp group by airp.airportsdata.country order by count desc");
 			gadgetDatasources.setDbtype("RTDB");
 			gadgetDatasources.setRefresh(0);
 			gadgetDatasources.setOntology(ontologyRepository.findByIdentification(AIRPORT_STR));
@@ -2036,6 +2504,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_7);
 			gadgetDatasources.setIdentification("airportsCountByCountry");
+			gadgetDatasources.setDescription("Airports group by country sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
 					"select airp.airportsdata.country as acountry, count(*) AS count from airportsdata AS airp group by airp.airportsdata.country");
@@ -2052,9 +2521,10 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_8);
 			gadgetDatasources.setIdentification("distinctCountries");
+			gadgetDatasources.setDescription("Routesexten group by countrysrc sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
-					"select distinct routesexten.routesexten.countrysrc as country from routesexten order by country");
+					"SELECT r.routesexten.countrysrc AS country FROM routesexten as r group by r.routesexten.countrysrc ORDER BY country");
 			gadgetDatasources.setDbtype("RTDB");
 			gadgetDatasources.setRefresh(0);
 			gadgetDatasources.setOntology(ontologyRepository.findByIdentification(ROUTESEXT_STR));
@@ -2072,6 +2542,7 @@ public class InitConfigDB {
 		if (gadgetDatasourceRepository.findByIdentification("QA_overview") == null) {
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_9);
 			gadgetDatasources.setIdentification("QA_overview");
+			gadgetDatasources.setDescription("QA_OVERVIEW sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery("select * from QA_OVERVIEW");
 			gadgetDatasources.setDbtype("RTDB");
@@ -2087,6 +2558,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_10);
 			gadgetDatasources.setIdentification(PRODUCERERRORCAT_STR);
+			gadgetDatasources.setDescription("Producer_ErrorCat sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
 					"select nameCat1,nameCat2,nameCat3, process_date,idAdaptador, totalLoaded, structural, integrity, business,\" Ok\" as refCat from Producer_ErrorCat");
@@ -2103,6 +2575,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_11);
 			gadgetDatasources.setIdentification(TRENDERROR_STR);
+			gadgetDatasources.setDescription("ErrorsOnDate sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery("select * from errorsOnDate");
 			gadgetDatasources.setDbtype("RTDB");
@@ -2118,6 +2591,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_12);
 			gadgetDatasources.setIdentification(ERRORBYSITE_STR);
+			gadgetDatasources.setDescription("QA_DETAILS sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
 					"select qa.process_date, qa.idAdaptador, qa.errors, (qa.errors*0.15 - qa.errors*0.15%1) as meteor, (qa.errors*0.16 - qa.errors*0.16%1) as forecast, site.name from ((select process_date,idAdaptador,siteCode,count(*) as errors from QA_DETAIL group by process_date,idAdaptador,siteCode) as qa inner join SITES as site on site.siteCode = qa.siteCode)");
@@ -2134,6 +2608,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_13);
 			gadgetDatasources.setIdentification(PRODUCERERRORTYPE_STR);
+			gadgetDatasources.setDescription("Producer error type sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
 					"select '100' as nameType0, '101' as nameType1, '102' as nameType2,  '103' as nameType3, '104' as nameType4, '105' as nameType5,  '106' as nameType6, '107' as nameType7, '108' as nameType8,  '109' as nameType9, '110' as nameType10,  process_date,idAdaptador,sum(CASE errorCode WHEN 100 THEN 1 ELSE 0 END) as e100,sum(CASE errorCode WHEN 101 THEN 1 ELSE 0 END) as e101,sum(CASE errorCode WHEN 102 THEN 1 ELSE 0 END) as e102,sum(CASE errorCode WHEN 103 THEN 1 ELSE 0 END) as e103,sum(CASE errorCode WHEN 104 THEN 1 ELSE 0 END) as e104,sum(CASE errorCode WHEN 105 THEN 1 ELSE 0 END) as e105,sum(CASE errorCode WHEN 106 THEN 1 ELSE 0 END) as e106,sum(CASE errorCode WHEN 107 THEN 1 ELSE 0 END) as e107,sum(CASE errorCode WHEN 108 THEN 1 ELSE 0 END) as e108,sum(CASE errorCode WHEN 109 THEN 1 ELSE 0 END) as e109,sum(CASE errorCode WHEN 110 THEN 1 ELSE 0 END) as e110 from QA_DETAIL group by process_date,idAdaptador");
@@ -2150,6 +2625,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_14);
 			gadgetDatasources.setIdentification(TRENDERRORTYPE_STR);
+			gadgetDatasources.setDescription("Errors type on date sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery("select * from errorsTypeOnDate");
 			gadgetDatasources.setDbtype("RTDB");
@@ -2165,6 +2641,7 @@ public class InitConfigDB {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_15);
 			gadgetDatasources.setIdentification("listerroraxpo");
+			gadgetDatasources.setDescription("QA_DETAIL_EXTENDED sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery("select * from QA_DETAIL_EXTENDED");
 			gadgetDatasources.setDbtype("RTDB");
@@ -2719,6 +3196,39 @@ public class InitConfigDB {
 		}
 	}
 
+	public void initInternationalization() {
+		log.info("init Internationalization");
+		final List<Internationalization> internationalizations = internationalizationRepository.findAll();
+		if (internationalizations.isEmpty()) {
+			log.info("No internationalizations...adding");
+
+			final Internationalization internationalization = new Internationalization();
+			internationalization.setId("MASTER-Internationalization-1");
+			internationalization.setIdentification("InternationalizationExample");
+			internationalization.setDescription("Internationalization example");
+			internationalization
+					.setJsoni18n(loadFromResources("internationalizations/InternationalizationExample.json"));
+			internationalization.setPublic(true);
+			internationalization.setUser(getUserAdministrator());
+
+			internationalizationRepository.save(internationalization);
+		}
+	}
+
+	public void initI18nResources() {
+		log.info("init i18nResources");
+		final List<I18nResources> i18nResources = i18nResourcesRepository.findAll();
+		if (i18nResources.isEmpty()) {
+			log.info("No i18n resources...adding");
+			final I18nResources i18nresource = new I18nResources();
+			i18nresource.setId("MASTER-I18nResources-1");
+			i18nresource.setI18n(internationalizationRepository.findById("MASTER-Internationalization-1"));
+			i18nresource.setOpResource(dashboardRepository.findById("MASTER-Dashboard-4"));
+
+			i18nResourcesRepository.save(i18nresource);
+		}
+	}
+
 	public void initOntologyCategory() {
 
 		log.info("init OntologyCategory");
@@ -3074,42 +3584,42 @@ public class InitConfigDB {
 			}
 
 			// La especializa como TimeSeries
-			OntologyTimeSeries oTS = new OntologyTimeSeries();
+			final OntologyTimeSeries oTS = new OntologyTimeSeries();
 			oTS.setOntology(ontology);
 			oTS.setId(ontology.getId());
 			ontologyTimeSeriesRepository.save(oTS);
 
 			// Crea las propiedades
-			OntologyTimeSeriesProperty resultProperty = this.createTimeSeriesProperty(oTS, RESULT_STR,
+			final OntologyTimeSeriesProperty resultProperty = createTimeSeriesProperty(oTS, RESULT_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(resultProperty);
 
-			OntologyTimeSeriesProperty userProperty = this.createTimeSeriesProperty(oTS, "user",
+			final OntologyTimeSeriesProperty userProperty = createTimeSeriesProperty(oTS, "user",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(userProperty);
 
-			OntologyTimeSeriesProperty apiProperty = this.createTimeSeriesProperty(oTS, "api", PropertyDataType.STRING,
+			final OntologyTimeSeriesProperty apiProperty = createTimeSeriesProperty(oTS, "api", PropertyDataType.STRING,
 					PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiProperty);
 
-			OntologyTimeSeriesProperty operationTypeProperty = this.createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
+			final OntologyTimeSeriesProperty operationTypeProperty = createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(operationTypeProperty);
 
-			OntologyTimeSeriesProperty valueProperty = this.createTimeSeriesProperty(oTS, VALUE_STR,
+			final OntologyTimeSeriesProperty valueProperty = createTimeSeriesProperty(oTS, VALUE_STR,
 					PropertyDataType.INTEGER, PropertyType.SERIE_FIELD);
 			ontologyTimeSeriesPropertyRepository.save(valueProperty);
 
 			// Crea las ventanas
-			OntologyTimeSeriesWindow hourlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow hourlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.MINUTES, WindowType.HOURS);
 			ontologyTimeSeriesWindowRepository.save(hourlyWindow);
 
-			OntologyTimeSeriesWindow dailyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow dailyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.HOURS, WindowType.DAYS);
 			ontologyTimeSeriesWindowRepository.save(dailyWindow);
 
-			OntologyTimeSeriesWindow monthlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow monthlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.DAYS, WindowType.MONTHS);
 			ontologyTimeSeriesWindowRepository.save(monthlyWindow);
 
@@ -3138,38 +3648,38 @@ public class InitConfigDB {
 			}
 
 			// La especializa como TimeSeries
-			OntologyTimeSeries oTS = new OntologyTimeSeries();
+			final OntologyTimeSeries oTS = new OntologyTimeSeries();
 			oTS.setOntology(ontology);
 			oTS.setId(ontology.getId());
 			ontologyTimeSeriesRepository.save(oTS);
 
 			// Crea las propiedades
-			OntologyTimeSeriesProperty resultProperty = this.createTimeSeriesProperty(oTS, RESULT_STR,
+			final OntologyTimeSeriesProperty resultProperty = createTimeSeriesProperty(oTS, RESULT_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(resultProperty);
 
-			OntologyTimeSeriesProperty userProperty = this.createTimeSeriesProperty(oTS, "user",
+			final OntologyTimeSeriesProperty userProperty = createTimeSeriesProperty(oTS, "user",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(userProperty);
 
-			OntologyTimeSeriesProperty apiProperty = this.createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
+			final OntologyTimeSeriesProperty apiProperty = createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiProperty);
 
-			OntologyTimeSeriesProperty valueProperty = this.createTimeSeriesProperty(oTS, VALUE_STR,
+			final OntologyTimeSeriesProperty valueProperty = createTimeSeriesProperty(oTS, VALUE_STR,
 					PropertyDataType.INTEGER, PropertyType.SERIE_FIELD);
 			ontologyTimeSeriesPropertyRepository.save(valueProperty);
 
 			// Crea las ventanas
-			OntologyTimeSeriesWindow hourlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow hourlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.MINUTES, WindowType.HOURS);
 			ontologyTimeSeriesWindowRepository.save(hourlyWindow);
 
-			OntologyTimeSeriesWindow dailyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow dailyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.HOURS, WindowType.DAYS);
 			ontologyTimeSeriesWindowRepository.save(dailyWindow);
 
-			OntologyTimeSeriesWindow monthlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow monthlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.DAYS, WindowType.MONTHS);
 			ontologyTimeSeriesWindowRepository.save(monthlyWindow);
 
@@ -3198,46 +3708,46 @@ public class InitConfigDB {
 			}
 
 			// La especializa como TimeSeries
-			OntologyTimeSeries oTS = new OntologyTimeSeries();
+			final OntologyTimeSeries oTS = new OntologyTimeSeries();
 			oTS.setOntology(ontology);
 			oTS.setId(ontology.getId());
 			ontologyTimeSeriesRepository.save(oTS);
 
 			// Crea las propiedades
-			OntologyTimeSeriesProperty resultProperty = this.createTimeSeriesProperty(oTS, RESULT_STR,
+			final OntologyTimeSeriesProperty resultProperty = createTimeSeriesProperty(oTS, RESULT_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(resultProperty);
 
-			OntologyTimeSeriesProperty userProperty = this.createTimeSeriesProperty(oTS, "user",
+			final OntologyTimeSeriesProperty userProperty = createTimeSeriesProperty(oTS, "user",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(userProperty);
 
-			OntologyTimeSeriesProperty apiProperty = this.createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
+			final OntologyTimeSeriesProperty apiProperty = createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiProperty);
 
-			OntologyTimeSeriesProperty apiSource = this.createTimeSeriesProperty(oTS, "source", PropertyDataType.STRING,
-					PropertyType.TAG);
+			final OntologyTimeSeriesProperty apiSource = createTimeSeriesProperty(oTS, "source",
+					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiSource);
 
-			OntologyTimeSeriesProperty apiOntology = this.createTimeSeriesProperty(oTS, "ontology",
+			final OntologyTimeSeriesProperty apiOntology = createTimeSeriesProperty(oTS, "ontology",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiOntology);
 
-			OntologyTimeSeriesProperty valueProperty = this.createTimeSeriesProperty(oTS, VALUE_STR,
+			final OntologyTimeSeriesProperty valueProperty = createTimeSeriesProperty(oTS, VALUE_STR,
 					PropertyDataType.INTEGER, PropertyType.SERIE_FIELD);
 			ontologyTimeSeriesPropertyRepository.save(valueProperty);
 
 			// Crea las ventanas
-			OntologyTimeSeriesWindow hourlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow hourlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.MINUTES, WindowType.HOURS);
 			ontologyTimeSeriesWindowRepository.save(hourlyWindow);
 
-			OntologyTimeSeriesWindow dailyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow dailyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.HOURS, WindowType.DAYS);
 			ontologyTimeSeriesWindowRepository.save(dailyWindow);
 
-			OntologyTimeSeriesWindow monthlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow monthlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.DAYS, WindowType.MONTHS);
 			ontologyTimeSeriesWindowRepository.save(monthlyWindow);
 
@@ -3266,42 +3776,42 @@ public class InitConfigDB {
 			}
 
 			// La especializa como TimeSeries
-			OntologyTimeSeries oTS = new OntologyTimeSeries();
+			final OntologyTimeSeries oTS = new OntologyTimeSeries();
 			oTS.setOntology(ontology);
 			oTS.setId(ontology.getId());
 			ontologyTimeSeriesRepository.save(oTS);
 
 			// Crea las propiedades
-			OntologyTimeSeriesProperty resultProperty = this.createTimeSeriesProperty(oTS, RESULT_STR,
+			final OntologyTimeSeriesProperty resultProperty = createTimeSeriesProperty(oTS, RESULT_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(resultProperty);
 
-			OntologyTimeSeriesProperty userProperty = this.createTimeSeriesProperty(oTS, "user",
+			final OntologyTimeSeriesProperty userProperty = createTimeSeriesProperty(oTS, "user",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(userProperty);
 
-			OntologyTimeSeriesProperty apiProperty = this.createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
+			final OntologyTimeSeriesProperty apiProperty = createTimeSeriesProperty(oTS, OPERATIONTYPE_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiProperty);
 
-			OntologyTimeSeriesProperty apiSource = this.createTimeSeriesProperty(oTS, "source", PropertyDataType.STRING,
-					PropertyType.TAG);
+			final OntologyTimeSeriesProperty apiSource = createTimeSeriesProperty(oTS, "source",
+					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(apiSource);
 
-			OntologyTimeSeriesProperty valueProperty = this.createTimeSeriesProperty(oTS, VALUE_STR,
+			final OntologyTimeSeriesProperty valueProperty = createTimeSeriesProperty(oTS, VALUE_STR,
 					PropertyDataType.INTEGER, PropertyType.SERIE_FIELD);
 			ontologyTimeSeriesPropertyRepository.save(valueProperty);
 
 			// Crea las ventanas
-			OntologyTimeSeriesWindow hourlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow hourlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.MINUTES, WindowType.HOURS);
 			ontologyTimeSeriesWindowRepository.save(hourlyWindow);
 
-			OntologyTimeSeriesWindow dailyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow dailyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.HOURS, WindowType.DAYS);
 			ontologyTimeSeriesWindowRepository.save(dailyWindow);
 
-			OntologyTimeSeriesWindow monthlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow monthlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.DAYS, WindowType.MONTHS);
 			ontologyTimeSeriesWindowRepository.save(monthlyWindow);
 
@@ -3330,38 +3840,38 @@ public class InitConfigDB {
 			}
 
 			// La especializa como TimeSeries
-			OntologyTimeSeries oTS = new OntologyTimeSeries();
+			final OntologyTimeSeries oTS = new OntologyTimeSeries();
 			oTS.setOntology(ontology);
 			oTS.setId(ontology.getId());
 			ontologyTimeSeriesRepository.save(oTS);
 
 			// Crea las propiedades
-			OntologyTimeSeriesProperty resultProperty = this.createTimeSeriesProperty(oTS, RESULT_STR,
+			final OntologyTimeSeriesProperty resultProperty = createTimeSeriesProperty(oTS, RESULT_STR,
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(resultProperty);
 
-			OntologyTimeSeriesProperty userProperty = this.createTimeSeriesProperty(oTS, "user",
+			final OntologyTimeSeriesProperty userProperty = createTimeSeriesProperty(oTS, "user",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(userProperty);
 
-			OntologyTimeSeriesProperty ontologyProperty = this.createTimeSeriesProperty(oTS, "ontology",
+			final OntologyTimeSeriesProperty ontologyProperty = createTimeSeriesProperty(oTS, "ontology",
 					PropertyDataType.STRING, PropertyType.TAG);
 			ontologyTimeSeriesPropertyRepository.save(ontologyProperty);
 
-			OntologyTimeSeriesProperty valueProperty = this.createTimeSeriesProperty(oTS, VALUE_STR,
+			final OntologyTimeSeriesProperty valueProperty = createTimeSeriesProperty(oTS, VALUE_STR,
 					PropertyDataType.INTEGER, PropertyType.SERIE_FIELD);
 			ontologyTimeSeriesPropertyRepository.save(valueProperty);
 
 			// Crea las ventanas
-			OntologyTimeSeriesWindow hourlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow hourlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.MINUTES, WindowType.HOURS);
 			ontologyTimeSeriesWindowRepository.save(hourlyWindow);
 
-			OntologyTimeSeriesWindow dailyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow dailyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.HOURS, WindowType.DAYS);
 			ontologyTimeSeriesWindowRepository.save(dailyWindow);
 
-			OntologyTimeSeriesWindow monthlyWindow = this.createTimeSeriesWindow(oTS, AggregationFunction.SUM,
+			final OntologyTimeSeriesWindow monthlyWindow = createTimeSeriesWindow(oTS, AggregationFunction.SUM,
 					FrecuencyUnit.DAYS, WindowType.MONTHS);
 			ontologyTimeSeriesWindowRepository.save(monthlyWindow);
 
@@ -3372,7 +3882,7 @@ public class InitConfigDB {
 	private OntologyTimeSeriesProperty createTimeSeriesProperty(OntologyTimeSeries oTS, String propertyName,
 			PropertyDataType dataType, PropertyType type) {
 
-		OntologyTimeSeriesProperty resultProperty = new OntologyTimeSeriesProperty();
+		final OntologyTimeSeriesProperty resultProperty = new OntologyTimeSeriesProperty();
 		resultProperty.setOntologyTimeSeries(oTS);
 		resultProperty.setPropertyDataType(dataType);
 		resultProperty.setPropertyName(propertyName);
@@ -3383,7 +3893,7 @@ public class InitConfigDB {
 
 	private OntologyTimeSeriesWindow createTimeSeriesWindow(OntologyTimeSeries oTS,
 			AggregationFunction aggregationFuncion, FrecuencyUnit frecuencyUnit, WindowType windowType) {
-		OntologyTimeSeriesWindow hourlyWindow = new OntologyTimeSeriesWindow();
+		final OntologyTimeSeriesWindow hourlyWindow = new OntologyTimeSeriesWindow();
 		hourlyWindow.setOntologyTimeSeries(oTS);
 		hourlyWindow.setAggregationFunction(aggregationFuncion);
 		hourlyWindow.setBdh(false);
@@ -3454,7 +3964,7 @@ public class InitConfigDB {
 			viewer.getLayers().add(layer02);
 
 			viewer.setUser(getUserDeveloper());
-			viewer.setJs(loadFromResources("examples/viewer.html"));
+			viewer.setJs(buildJSCode());
 			viewer.setLatitude("28.134");
 			viewer.setLongitude("-15.434");
 			viewer.setHeight("4500");
@@ -3465,6 +3975,35 @@ public class InitConfigDB {
 			viewerRepository.save(viewer);
 
 		}
+	}
+
+	private String buildJSCode() {
+		freemarker.template.Configuration cfg = new freemarker.template.Configuration(
+				freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+		Map<String, Object> dataMap = new HashMap<>();
+
+		try {
+			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/examples");
+
+			cfg.setTemplateLoader(templateLoader);
+			Template indexViewerTemplate = cfg.getTemplate("viewer.ftl");
+
+			dataMap.put("cesiumPath", webProjectPath + "/cesium/Cesium1.60/Cesium.js");
+			dataMap.put("widgetcss", webProjectPath + "/cesium/Cesium1.60/Widgets/widgets.css");
+			dataMap.put("basePath", basePath);
+
+			// write the freemarker output to a StringWriter
+			StringWriter stringWriter = new StringWriter();
+			indexViewerTemplate.process(dataMap, stringWriter);
+
+			// get the String from the StringWriter
+			return stringWriter.toString();
+		} catch (IOException e) {
+			log.error("Error configuring the template loader. {}", e.getMessage());
+		} catch (TemplateException e) {
+			log.error("Error processing the template loades. {}", e.getMessage());
+		}
+		return null;
 	}
 
 	public void initOntologyOpenFlight() {
@@ -3792,12 +4331,15 @@ public class InitConfigDB {
 
 	public void initRoleUser() {
 		log.info("init init_RoleUser");
+		Role type = new Role();
+		Role typeSon = new Role();
+		Role typeParent = new Role();
 		final List<Role> types = roleRepository.findAll();
 		if (types.isEmpty()) {
 			try {
 
 				log.info("No roles en tabla.Adding...");
-				Role type = new Role();
+
 				type.setIdEnum(Role.Type.ROLE_ADMINISTRATOR);
 				type.setName("Administrator");
 				type.setDescription("Administrator of the Platform");
@@ -3845,9 +4387,45 @@ public class InitConfigDB {
 				type.setDescription("DevOps for the Platform");
 				roleRepository.save(type);
 				//
+				type = new Role();
+				type.setIdEnum(Role.Type.ROLE_EDGE_USER);
+				type.setName("Edge User");
+				type.setDescription("User of the Platform for Edge");
+				roleRepository.save(type);
+				//
+				// UPDATE of the ROLE_EDGE_USER
+				typeSon = roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString());
+				typeParent = roleRepository.findById(Role.Type.ROLE_USER.toString());
+				typeSon.setRoleParent(typeParent);
+				roleRepository.save(typeSon);
+				//
+				type = new Role();
+				type.setIdEnum(Role.Type.ROLE_EDGE_DEVELOPER);
+				type.setName("Edge Developer");
+				type.setDescription("Developer of the Platform for Edge");
+				roleRepository.save(type);
+				//
+				// UPDATE of the ROLE_EDGE_USER
+				typeSon = roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString());
+				typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString());
+				typeSon.setRoleParent(typeParent);
+				roleRepository.save(typeSon);
+				//
+				type = new Role();
+				type.setIdEnum(Role.Type.ROLE_EDGE_ADMINISTRATOR);
+				type.setName("Edge Administrator");
+				type.setDescription("Administrator of the Platform for Edge");
+				roleRepository.save(type);
+				//
+				// UPDATE of the ROLE_EDGE_USER
+				typeSon = roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString());
+				typeParent = roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString());
+				typeSon.setRoleParent(typeParent);
+				roleRepository.save(typeSon);
+				//
 				// UPDATE of the ROLE_ANALYTICS
-				final Role typeSon = roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString());
-				final Role typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString());
+				typeSon = roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString());
+				typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString());
 				typeSon.setRoleParent(typeParent);
 				roleRepository.save(typeSon);
 
@@ -3863,6 +4441,13 @@ public class InitConfigDB {
 				throw new GenericRuntimeOPException("Error creating Roles...Stopping");
 			}
 
+		}
+		if (roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.name()) == null) {
+			type = new Role();
+			type.setIdEnum(Role.Type.ROLE_PLATFORM_ADMIN);
+			type.setName("Multitenant admin");
+			type.setDescription("Administration of multitenant platform");
+			roleRepository.save(type);
 		}
 	}
 
@@ -3925,12 +4510,33 @@ public class InitConfigDB {
 		}
 	}
 
+	@Autowired
+	private TenantRepository tenantRepository;
+
+	@Transactional
 	public void initUser() {
 		log.info("init UserCDB");
 		final List<User> types = userCDBRepository.findAll();
 		User type = null;
 		if (types.isEmpty()) {
 			try {
+				// only one platform administrator per system config init (if ran multiple times
+				// for different tenants)
+
+				// if new tenant then create admin tenant user
+				if (!MultitenancyContextHolder.getVerticalSchema().equals(Tenant2SchemaMapper.DEFAULT_SCHEMA)) {
+					final String vertical = Tenant2SchemaMapper
+							.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema());
+					type = new User();
+					type.setUserId(ADMINISTRATOR + "_" + vertical);
+					type.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
+					type.setFullName("Administrator of vertical " + vertical);
+					type.setEmail(vertical.toLowerCase() + "@onesaitplatform.com");
+					type.setActive(true);
+					type.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()));
+					userCDBRepository.save(type);
+				}
+
 				log.info("No types en tabla.Adding...");
 				type = new User();
 				type.setUserId(ADMINISTRATOR);
@@ -3939,7 +4545,6 @@ public class InitConfigDB {
 				type.setEmail("administrator@onesaitplatform.com");
 				type.setActive(true);
 				type.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()));
-
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -3985,7 +4590,6 @@ public class InitConfigDB {
 				type.setEmail("analytics@onesaitplatform.com");
 				type.setActive(true);
 				type.setRole(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()));
-
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -3995,7 +4599,6 @@ public class InitConfigDB {
 				type.setEmail("partner@onesaitplatform.com");
 				type.setActive(true);
 				type.setRole(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()));
-
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4005,7 +4608,6 @@ public class InitConfigDB {
 				type.setEmail("sysadmin@onesaitplatform.com");
 				type.setActive(true);
 				type.setRole(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()));
-
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4025,14 +4627,62 @@ public class InitConfigDB {
 				type.setActive(true);
 				type.setRole(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()));
 				userCDBRepository.save(type);
-				//
+
+				type = new User();
+				type.setUserId("anonymous");
+				type.setPassword(SHA_STR);
+				type.setFullName("Anonymous User of the Platform");
+				type.setEmail("anonymous@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_administrator");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE Administrator User of the Platform");
+				type.setEmail("edge_admin@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_developer");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE Developer User of the Platform");
+				type.setEmail("edge_developer@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_user");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE User User of the Platform");
+				type.setEmail("edge_user@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()));
+				userCDBRepository.save(type);
+
 			} catch (final Exception e) {
 				log.error("Error UserCDB:" + e.getMessage());
 				userCDBRepository.deleteAll();
 				throw new GenericRuntimeOPException("Error creating users...ignoring creation rest of Tables");
 			}
 		}
+		if (masterUserRepository.findByUserId(PLATFORM_ADMINISTRATOR) == null) {
+			final User master = new User();
+			master.setUserId(PLATFORM_ADMINISTRATOR);
+			master.setRole(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.name()));
+			master.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
+			master.setFullName("Platform administrator");
+			master.setEmail("platformadmin@onesaitplatform.com");
+			userCDBRepository.save(master);
+		}
 	}
+
+	@Autowired
+	private MasterUserRepository masterUserRepository;
 
 	public void initMarketPlace() {
 		log.info("init MarketPlace");
@@ -4264,8 +4914,38 @@ public class InitConfigDB {
 		}
 	}
 
-	public void initDataflow() {
-		log.info("init dataflow");
+	public void initDataflowInstances() {
+		log.info("init dataflow instances");
+		final boolean hasDefault = dataflowInstanceRepository.findByDefaultInstance(true) != null;
+		if (!hasDefault) {
+			final DataflowInstance instance = new DataflowInstance();
+			instance.setIdentification("Default");
+			instance.setUrl("http://streamsets:18630");
+			instance.setDefaultInstance(true);
+
+			final DataflowCredential adminCredential = new DataflowCredential();
+			adminCredential.setUser("admin");
+			adminCredential.setPassword("admin");
+			adminCredential.setType(DataflowCredential.Type.ADMINISTRATOR);
+
+			instance.setAdminCredentials(adminCredential.getEncryptedCredentials());
+
+			final DataflowCredential userCredential = new DataflowCredential();
+			userCredential.setUser("user1");
+			userCredential.setPassword("user1");
+			userCredential.setType(DataflowCredential.Type.MANAGER);
+
+			instance.setUserCredentials(userCredential.getEncryptedCredentials());
+
+			final DataflowCredential guestCredential = new DataflowCredential();
+			guestCredential.setUser("guest");
+			guestCredential.setPassword("guest");
+			guestCredential.setType(DataflowCredential.Type.GUEST);
+
+			instance.setGuestCredentials(guestCredential.getEncryptedCredentials());
+
+			dataflowInstanceRepository.save(instance);
+		}
 	}
 
 	public void initNotebookUserAccessType() {
@@ -4287,8 +4967,10 @@ public class InitConfigDB {
 
 	public void initDataflowUserAccessType() {
 		log.info("init dataflow access type");
-		final List<PipelineUserAccessType> pipelineUat = pipelineUserAccessTypeRepository.findAll();
-		if (pipelineUat.isEmpty()) {
+		final List<String> uatIds = pipelineUserAccessTypeRepository.findAll().stream()
+				.map(PipelineUserAccessType::getId).collect(Collectors.toList());
+
+		if (!uatIds.contains("ACCESS-TYPE-1")) {
 			try {
 				final PipelineUserAccessType p = new PipelineUserAccessType();
 				p.setId("ACCESS-TYPE-1");
@@ -4298,7 +4980,18 @@ public class InitConfigDB {
 			} catch (final Exception e) {
 				log.info("Could not create dataflow access type by:" + e.getMessage());
 			}
+		}
 
+		if (!uatIds.contains("ACCESS-TYPE-2")) {
+			try {
+				final PipelineUserAccessType p = new PipelineUserAccessType();
+				p.setId("ACCESS-TYPE-2");
+				p.setDescription("View Access");
+				p.setName("VIEW");
+				pipelineUserAccessTypeRepository.save(p);
+			} catch (final Exception e) {
+				log.info("Could not create dataflow access type by:" + e.getMessage());
+			}
 		}
 	}
 

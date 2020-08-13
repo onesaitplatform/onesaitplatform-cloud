@@ -36,7 +36,6 @@ import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.Role;
@@ -52,6 +51,7 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthenticationException;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthorizationException;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

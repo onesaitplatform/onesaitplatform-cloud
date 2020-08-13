@@ -14,11 +14,50 @@
  */
 package com.minsait.onesait.platform.persistence;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.Node;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 @Configuration
 @ComponentScan
+@Conditional(ElasticsearchEnabledCondition.class)
 public class ESPersistenceStarterAutoConfig {
+    
 
+    @Bean(destroyMethod = "close")
+    public RestHighLevelClient client(IntegrationResourcesService resourcesService) {
+
+        Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object>  elasticsearch = (Map<String, Object>) database.get("elasticsearch");
+        
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> servers = (List<Map<String, Object>>) elasticsearch.get("servers");
+        
+        Node[] nodes = new Node[servers.size()];
+        
+        for (int i = 0; i < servers.size(); i++) {
+            Map<String, Object> server = servers.get(i); 
+            String host = (String) server.get("host");
+            int port = (int) server.get("port");
+            String protocol = (String) server.get("protocol");
+            HttpHost httpHost = new HttpHost(host, port, protocol);
+            nodes[i] = new Node(httpHost);
+        }
+
+        return  new RestHighLevelClient(RestClient.builder(nodes));
+    }
+    
+    
 }

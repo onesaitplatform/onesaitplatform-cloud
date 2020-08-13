@@ -32,20 +32,19 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.filter.OAuth2AuthenticationFailureEvent;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import com.minsait.onesait.platform.business.services.interceptor.InterceptorCommon;
-import com.minsait.onesait.platform.config.components.BeanUtil;
+import com.minsait.onesait.platform.multitenant.util.BeanUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class BearerTokenFilter implements Filter {
 
-	private final TokenExtractor tokenExtractor = new BearerTokenExtractor();
+	private final TokenExtractor tokenExtractor = new BearerTokenExtractorPlatform();
 	private final TokenStore tokenStore;
 
 	public BearerTokenFilter() {

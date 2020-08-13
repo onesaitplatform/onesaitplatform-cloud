@@ -18,6 +18,7 @@ import static com.minsait.onesait.platform.controlpanel.rest.management.user.Use
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -39,14 +40,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jayway.jsonpath.JsonPath;
+import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
+import com.minsait.onesait.platform.config.services.user.UserAmplified;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
-import com.minsait.onesait.platform.controlpanel.rest.management.user.model.UserAmplified;
 import com.minsait.onesait.platform.controlpanel.rest.management.user.model.UserId;
 import com.minsait.onesait.platform.controlpanel.rest.management.user.model.UserSimplified;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -70,6 +75,10 @@ public class UserManagementController {
 	private AppWebUtils utils;
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private MultitenancyService multitenancyService;
+	@Autowired
+	private ConfigurationService configurationService;
 
 	@ApiOperation(value = "Get user by id")
 	@GetMapping("/{id}")
@@ -77,8 +86,9 @@ public class UserManagementController {
 	public ResponseEntity<?> get(
 			@ApiParam(value = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
 		if (isUserAdminOrSameAsRequest(userId)) {
-			if (userService.getUser(userId) == null)
+			if (userService.getUser(userId) == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
 			return new ResponseEntity<>(new UserAmplified(userService.getUser(userId)), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -92,8 +102,9 @@ public class UserManagementController {
 			@ApiParam(value = "Hard delete (DB)", name = "hardDelete") @RequestParam(value = "hardDelete", required = false, defaultValue = "false") boolean hardDelete) {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			log.info("User to be deleted: " + userId);
-			if (userService.getUser(userId) == null)
+			if (userService.getUser(userId) == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
 			if (!hardDelete) {
 				utils.deactivateSessions(userId);
 				userService.deleteUser(userId);
@@ -147,8 +158,8 @@ public class UserManagementController {
 	@ApiResponses(@ApiResponse(response = UserSimplified[].class, code = 200, message = "OK"))
 	public ResponseEntity<?> getAll() {
 		if (utils.isAdministrator()) {
-			final Set<UserSimplified> users = new TreeSet<>();
-			userService.getAllActiveUsers().forEach(u -> users.add(new UserSimplified(u)));
+			final List<UserAmplified> users = userService.getAllActiveUsersList();
+
 			return new ResponseEntity<>(users, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -159,8 +170,9 @@ public class UserManagementController {
 	@PostMapping
 	public ResponseEntity<?> create(@ApiParam(value = "User", required = true) @Valid @RequestBody UserSimplified user,
 			Errors errors) {
-		if (errors.hasErrors())
+		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
 		if (utils.isAdministrator()) {
 
 			if (!utils.paswordValidation(user.getPassword())) {
@@ -168,6 +180,10 @@ public class UserManagementController {
 			}
 			if (userService.getUser(user.getUsername()) != null) {
 				return new ResponseEntity<>("User already exists", HttpStatus.CONFLICT);
+			}
+			if (!user.getUsername().matches("[a-zA-Z0-9@._]*")) {
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '@', '.', '_'",
+						HttpStatus.BAD_REQUEST);
 			}
 			if (userService.emailExists(user.getMail())) {
 				return new ResponseEntity<>("Mail already taken", HttpStatus.UNPROCESSABLE_ENTITY);
@@ -178,13 +194,15 @@ public class UserManagementController {
 			userDb.setActive(true);
 			userDb.setFullName(user.getFullName());
 			userDb.setPassword(user.getPassword());
-			if (user.getAvatar() != null)
+			if (user.getAvatar() != null) {
 				userDb.setAvatar(user.getAvatar());
-			if (!StringUtils.isEmpty(user.getExtraFields()))
+			}
+			if (!StringUtils.isEmpty(user.getExtraFields())) {
 				userDb.setExtraFields(user.getExtraFields());
+			}
 			userDb.setEmail(user.getMail());
 			try {
-				userDb.setRole(userService.getUserRoleById((user.getRole())));
+				userDb.setRole(userService.getUserRoleById(user.getRole()));
 				userService.createUser(userDb);
 				return new ResponseEntity<>(HttpStatus.CREATED);
 			} catch (final UserServiceException e) {
@@ -201,11 +219,13 @@ public class UserManagementController {
 	@PutMapping
 	public ResponseEntity<?> update(@ApiParam(value = "User", required = true) @Valid @RequestBody UserSimplified user,
 			Errors errors) {
-		if (errors.hasErrors())
+		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
 		if (isUserAdminOrSameAsRequest(user.getUsername())) {
-			if (userService.getUser(user.getUsername()) == null)
+			if (userService.getUser(user.getUsername()) == null) {
 				return new ResponseEntity<>(USER_STR + user.getUsername() + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
 			if (!userService.canUserUpdateMail(user.getUsername(), user.getMail())) {
 				return new ResponseEntity<>("Mail already taken", HttpStatus.UNPROCESSABLE_ENTITY);
 			}
@@ -215,17 +235,31 @@ public class UserManagementController {
 			userDb.setFullName(user.getFullName());
 			userDb.setEmail(user.getMail());
 			userDb.setAvatar(user.getAvatar());
-			if (!StringUtils.isEmpty(user.getExtraFields()))
+			if (!StringUtils.isEmpty(user.getExtraFields())) {
 				userDb.setExtraFields(user.getExtraFields());
+			}
 
-			userDb.setRole(userService.getUserRoleById((user.getRole())));
+			userDb.setRole(userService.getUserRoleById(user.getRole()));
 
 			try {
 				if (!StringUtils.isEmpty(user.getPassword()) && utils.paswordValidation(user.getPassword())) {
 					userDb.setPassword(user.getPassword());
+
+					final Configuration configuration = configurationService
+							.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+					final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+							.fromYaml(configuration.getYmlConfig()).get("Authentication");
+					final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig
+							.get("numberLastEntriesToCheck");
+
+					if (!multitenancyService.isValidPass(user.getUsername(), user.getPassword(),
+							numberLastEntriesToCheck)) {
+						throw new UserServiceException("Password not valid because it has already been used before");
+					}
 					userService.updatePassword(userDb);
-				} else if (!StringUtils.isEmpty(user.getPassword()))
+				} else if (!StringUtils.isEmpty(user.getPassword())) {
 					throw new UserServiceException("New password format is not valid");
+				}
 				userService.updateUser(userDb);
 				return new ResponseEntity<>(HttpStatus.OK);
 			} catch (final UserServiceException e) {
@@ -241,11 +275,13 @@ public class UserManagementController {
 	@PatchMapping
 	public ResponseEntity<?> patch(@ApiParam(value = "User", required = true) @RequestBody UserSimplified user,
 			Errors errors) {
-		if (errors.hasErrors())
+		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
 		if (isUserAdminOrSameAsRequest(user.getUsername())) {
-			if (userService.getUser(user.getUsername()) == null)
+			if (userService.getUser(user.getUsername()) == null) {
 				return new ResponseEntity<>(USER_STR + user.getUsername() + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
 			try {
 				final User u = patchExistingAttributes(userService.getUser(user.getUsername()), user);
 
@@ -276,8 +312,9 @@ public class UserManagementController {
 	@PostMapping("/activate/{userId}")
 	public ResponseEntity<String> activate(@PathVariable("userId") String userId) {
 		if (isUserAdminOrSameAsRequest(userId)) {
-			if (userService.getUser(userId) == null)
+			if (userService.getUser(userId) == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
 			userService.activateUser(userService.getUser(userId));
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -291,11 +328,21 @@ public class UserManagementController {
 	public ResponseEntity<?> changePassword(@ApiParam("User id") @PathVariable("userId") String userId,
 			@ApiParam(value = "Password", required = true) @Valid @RequestBody String password) {
 		if (isUserAdminOrSameAsRequest(userId)) {
-			if (userService.getUser(userId) == null)
+			if (userService.getUser(userId) == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
 			if (!StringUtils.isEmpty(password) && utils.paswordValidation(password)) {
 				final User user = userService.getUser(userId);
 				user.setPassword(password);
+				final Configuration configuration = configurationService
+						.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+				final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+						.fromYaml(configuration.getYmlConfig()).get("Authentication");
+				final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig
+						.get("numberLastEntriesToCheck");
+				if (!multitenancyService.isValidPass(userId, password, numberLastEntriesToCheck)) {
+					throw new UserServiceException("Password not valid because it has already been used before");
+				}
 				userService.updatePassword(user);
 				return new ResponseEntity<>(HttpStatus.OK);
 
@@ -308,29 +355,72 @@ public class UserManagementController {
 	}
 
 	private boolean isUserAdminOrSameAsRequest(String userId) {
-		return (utils.getUserId().equals(userId) || utils.isAdministrator());
+		return utils.getUserId().equals(userId) || utils.isAdministrator();
 	}
 
 	private User patchExistingAttributes(User user, UserSimplified dto) {
 		user.setUserId(dto.getUsername());
 		user.setActive(true);
-		if (!StringUtils.isEmpty(dto.getFullName()))
+		if (!StringUtils.isEmpty(dto.getFullName())) {
 			user.setFullName(dto.getFullName());
-		if (!StringUtils.isEmpty(dto.getMail()))
+		}
+		if (!StringUtils.isEmpty(dto.getMail())) {
 			user.setEmail(dto.getMail());
-		if (!StringUtils.isEmpty(dto.getMail()))
+		}
+		if (!StringUtils.isEmpty(dto.getMail())) {
 			user.setAvatar(dto.getAvatar());
-		if (!StringUtils.isEmpty(dto.getExtraFields()))
+		}
+		if (!StringUtils.isEmpty(dto.getExtraFields())) {
 			user.setExtraFields(dto.getExtraFields());
-		if (!StringUtils.isEmpty(dto.getRole()))
-			user.setRole(userService.getUserRoleById((dto.getRole())));
+		}
+		if (!StringUtils.isEmpty(dto.getRole())) {
+			user.setRole(userService.getUserRoleById(dto.getRole()));
+		}
 		if (!StringUtils.isEmpty(dto.getPassword()) && utils.paswordValidation(dto.getPassword())) {
 			user.setPassword(dto.getPassword());
+			final Configuration configuration = configurationService
+					.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+			final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+					.fromYaml(configuration.getYmlConfig()).get("Authentication");
+			final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig.get("numberLastEntriesToCheck");
+			if (!multitenancyService.isValidPass(dto.getUsername(), dto.getPassword(), numberLastEntriesToCheck)) {
+				throw new UserServiceException("Password not valid because it has already been used before");
+			}
 			userService.updatePassword(user);
 		} else if (!StringUtils.isEmpty(dto.getPassword())) {
 			throw new UserServiceException("New password format is not valid");
 		}
 		return user;
+	}
+
+	@ApiOperation(value = "Get all active users filtered by 'extra_fields' attribute")
+	@GetMapping("/filter/extra-fields/{jsonPath}/{value}")
+	@ApiResponses(@ApiResponse(response = UserSimplified[].class, code = 200, message = "OK"))
+	public ResponseEntity<?> getAllFilter(@PathVariable(value = "jsonPath") String jsonPath,
+			@PathVariable(value = "value") String value) {
+		if (utils.isAdministrator()) {
+			final Set<UserSimplified> users = new TreeSet<>();
+			userService.getAllActiveUsers().stream().filter(u -> {
+				if (!StringUtils.isEmpty(u.getExtraFields())) {
+					try {
+
+						final Object v = JsonPath.parse(u.getExtraFields()).read("$." + jsonPath, Object.class);
+
+						return v != null && value.equals(String.valueOf(v));
+					} catch (final Exception e) {
+						log.debug("Error while reading extra_fields for user {}", u.getUserId(), e);
+						return false;
+					}
+
+				}
+				return false;
+			}).forEach(u -> users.add(new UserSimplified(u)));
+			return new ResponseEntity<>(users, HttpStatus.OK);
+		} else
+
+		{
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 	}
 
 }

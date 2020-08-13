@@ -102,14 +102,14 @@ Rules.List = (function() {
 		var availableOntologies = [];
 		
 		rules.forEach(function(rule){
-			if(rule.type == 'ONTOLOGY'){
+			if(rule.type.$name == 'ONTOLOGY'){
 				if(availableOntologies.indexOf(rule.inputOntology == -1)){
 					json.push({"id" : rule.inputOntology , "parent" : "ONTOLOGY", "text": rule.inputOntology, icon: "flaticon-network"});
 					availableOntologies.push(rule.inputOntology);
 				}
 				var r = {"id" : rule.id ,"identification": rule.identification, "parent" : rule.inputOntology, "text": rule.identification, "icon": "flaticon-interface-5", "drl": rule.drl, "active": rule.active};
 				json.push(r);
-			}else if(rule.type == 'REST'){
+			}else if(rule.type.$name == 'REST'){
 				var r = {"id" : rule.id , "identification": rule.identification, "parent" : "REST", "text": rule.identification, "icon": "flaticon-interface-5", "drl": rule.drl, "active": rule.active };
 				json.push(r);
 			}

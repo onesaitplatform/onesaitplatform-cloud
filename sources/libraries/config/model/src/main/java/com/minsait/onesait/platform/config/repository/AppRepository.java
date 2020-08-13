@@ -25,7 +25,7 @@ import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface AppRepository extends JpaRepository<App, String> {
-	
+
 	@Query("SELECT o FROM App AS o WHERE (o.identification = :identification) ORDER BY o.identification ASC")
 	App findByIdentification(@Param("identification") String identification);
 
@@ -37,8 +37,11 @@ public interface AppRepository extends JpaRepository<App, String> {
 
 	@Query("SELECT o FROM AppList AS o WHERE (o.user=:user AND o.identification like %:identification%) ORDER BY o.identification ASC")
 	List<AppList> findByUserANDIdentification(@Param("user") User user, @Param("identification") String identification);
-	
+
 	@Query("SELECT o FROM AppList As o")
 	List<AppList> findAllList();
-	
+
+	@Query("SELECT o FROM AppList AS o WHERE (o.identification = :identification) ORDER BY o.identification ASC")
+	AppList findAppListByIdentification(@Param("identification") String identification);
+
 }

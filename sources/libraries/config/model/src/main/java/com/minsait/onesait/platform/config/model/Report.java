@@ -23,8 +23,10 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.Lob;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
@@ -77,7 +79,9 @@ public class Report extends OPResource {
 	@NotNull
 	private ReportExtension extension;
 
-	@OneToMany(orphanRemoval = true)
+	@ManyToMany
+	@JoinTable(name = "REPORT_RESOURCES", uniqueConstraints = @UniqueConstraint(columnNames = { "REPORT_ID",
+			"RESOURCES_ID" }), joinColumns = @JoinColumn(name = "REPORT_ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCES_ID"))
 	@Getter
 	@Setter
 	private Set<BinaryFile> resources = new HashSet<>();

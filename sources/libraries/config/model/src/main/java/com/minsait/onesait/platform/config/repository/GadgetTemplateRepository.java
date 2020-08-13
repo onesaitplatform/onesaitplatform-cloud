@@ -53,5 +53,9 @@ public interface GadgetTemplateRepository extends JpaRepository<GadgetTemplate, 
 	@Query("SELECT o FROM GadgetTemplate AS o WHERE ((o.user.userId LIKE %:userId% ) OR o.isPublic IS true) AND o.identification=:identification ")
 	GadgetTemplate findGadgetTemplateByUserAndIsPublicTrueAndIdentification(@Param("userId") String userId,
 			@Param("identification") String identification);
+	
+	@Query("SELECT o FROM GadgetTemplate AS o WHERE ((o.user.userId LIKE %:userId% ) OR o.isPublic IS true) AND o.identification LIKE %:identification% ")
+	List<GadgetTemplate> findGadgetTemplateByUserAndIsPublicTrueAndIdentificationLike(@Param("userId") String userId,
+			@Param("identification") String identification);
 
 }

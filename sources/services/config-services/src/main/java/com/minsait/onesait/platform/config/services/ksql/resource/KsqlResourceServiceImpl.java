@@ -33,13 +33,13 @@ import com.minsait.onesait.platform.config.model.KsqlResource.KsqlResourceType;
 import com.minsait.onesait.platform.config.repository.KsqlResourceRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlResourceServiceException;
 import com.minsait.onesait.platform.config.services.ksql.resource.pojo.KsqlResourceForUpdate;
-import com.minsait.onesait.platform.router.service.app.service.KafkaTopicNotificationService;
+import com.minsait.onesait.platform.router.service.app.service.KafkaTopicKsqlNotificationService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicNotificationService {
+public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicKsqlNotificationService {
 
 	@Autowired
 	private KsqlResourceRepository ksqlResourceRepository;
@@ -248,7 +248,7 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicN
 	}
 
 	@Override
-	public List<String> getKafkaTopicNotification(String ontology) {
+	public List<String> getKafkaTopicKsqlNotification(String ontology) {
 		return ksqlResourceRepository.findByOntologyIdentificationAndResourceType(ontology, FlowResourceType.ORIGIN);
 	}
 

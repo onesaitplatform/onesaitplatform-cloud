@@ -66,7 +66,7 @@
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/users/list}"> <span th:text="#{user.breadcrumb.prev}">users</span></a></li>						
+						<li><span th:text="#{user.breadcrumb.prev}">users</span></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -131,8 +131,18 @@
 																</select>
 															</div>
 														</div>
-													</div>													
-													<div class="col-md-4 col-xs-12">
+													</div>
+													<div class="col-md-2 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">															
+																<select id="isActive" class="selectpicker form-control" data-width="100%" th:title="#{gen.active}" name="active">
+																	<option value="true" th:text="#{gen.active}"></option>
+																	<option value="false" th:text="#{gen.inactive}"></option>
+																</select>
+															</div>
+														</div>
+													</div>											
+													<div class="col-md-2 col-xs-12">
 														<div class="btn-group">
 															<button type="button" id="search_user" name="search_user" th:title="#{gen.search}" th:value="#{gen.search}" value="Search" class="btn  btn-sm  btn-circle btn-outline blue" th:text="#{gen.search}"> Search </button>
 															<button type="button" id="reset_user" name="reset_user" value="Reset" class="btn  btn-sm  btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
@@ -160,27 +170,35 @@
 															<th class="titulo-columnas text-center" > <span th:text="#{user.dateDeleted}">Deleted At </span></th>																
 															<th class="titulo-columnas text-center" th:text="#{user.active}">Active</th>
 															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}"> Options</span></th>
+															<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" > <span th:text="#{multitenancy.tenant}" >Tenant</span></th>
+															
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">														
 														<tr th:each="user : ${users}" pages:paginate="10">
 															<!-- IDENTIFICATION -->
-															<td class="text-left no-wrap  internalId" th:text="${user.userId} ==  ${#authentication.name} ? ${user.userId} + ' (Logged)': ${user.userId} "  th:classappend="${#authentication.name} == ${user.userId} ? bg-info : ''"  ></td>
+															<td class="text-left no-wrap  internalId" th:text="${user.username} ==  ${#authentication.name} ? ${user.username} + ' (Logged)': ${user.username} "  th:classappend="${#authentication.name} == ${user.username} ? bg-info : ''"  ></td>
 															<!-- NAME -->
 															<td class="text-left no-wrap " th:text="${user.fullName}"></td>
 															<!-- EMAIL --> 
-															<td class="text-left no-wrap " th:text="${user.email}"></td>
+															<td class="text-left no-wrap " th:text="${user.mail}"></td>
 															<!-- ROLE -->
-															<td  class="text-left no-wrap " th:text="${user.role.name}"></td>
+															<td  class="text-left no-wrap " th:text="${user.role}"></td>
 															<!-- DATE CREATED -->
-															<td class="text-center" th:if="${user.createdAt!=null}"><span th:text="${#dates.format(user.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(user.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${user.createdAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${user.created!=null}">
+															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.created),'yyyy/MM/dd')}"  style="display:none"></span>
+															<span th:text="${user.created}" ></span></td>
+															<td class="text-center" th:if="${user.created==null}" th:text="'---'"></td>
 															<!-- DATE UPDATED -->
-															<td class="text-center" th:if="${user.updatedAt!=null}"><span th:text="${#dates.format(user.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(user.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${user.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${user.updated!=null}">
+															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.updated),'yyyy/MM/dd')}"  style="display:none"></span>
+															<span th:text="${user.updated}" ></span></td>
+															<td class="text-center" th:if="${user.updated==null}" th:text="'---'"></td>
 															<!-- DATE DELETED -->
-															<td class="text-center" th:if="${user.dateDeleted!=null}"><span th:text="${#dates.format(user.dateDeleted,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(user.dateDeleted,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${user.dateDeleted==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${user.deleted!=null}">
+															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.deleted),'yyyy/MM/dd')}"  style="display:none"></span>
+															<span th:text="${user.deleted}" ></span></td>
+															<td class="text-center" th:if="${user.deleted==null}" th:text="'---'"></td>
 															<!-- ACTIVE -->
 															<td class="text-center" th:if="${user.active}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i></td>
 															<td class="text-center" th:if="${!user.active}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i></td>															
@@ -189,12 +207,14 @@
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span th:if="(${#authentication.name} == ${user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/show/${user.userId}/|} + '\');'" ><i class="la la-eye font-hg"></i></span>
+																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/show/${user.username}/|} + '\');'" ><i class="la la-eye font-hg"></i></span>
 																	
 																	<!-- EDIT -->
-																	<span th:if="(${#authentication.name} == ${user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.userId}|} + '/false\');'"><i class="la la-edit font-hg"></i></span>
+																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.username}|} + '/false\');'"><i class="la la-edit font-hg"></i></span>
 																</div>
 															</td>
+															<!-- TENANT -->
+															<td th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"  class="text-left no-wrap " th:text="${user.tenant}"></td>
 														</tr>
 													</tbody>
 												</table>
@@ -213,6 +233,7 @@
 																	<th></th>
 																	<th></th>
 																	<th></th>
+																	<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"></th>
 																</tr>
 														</table>
 													</div>
@@ -238,6 +259,7 @@
 														<label class="toggle-vis" data-column="6" th:text="#{user.dateDeleted}"> Deleted At</label>
 														<label class="toggle-vis" data-column="7" th:text="#{user.active}"> Active</label>															
 														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>
+														<label th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="toggle-vis" data-column="9" th:text="#{multitenancy.tenant}"> Tenant</label>
 													</div>
 													
 												</div>											
@@ -275,17 +297,20 @@
 	var fullname = [[${param.fullName}]] || '';
 	var email = [[${param.email}]] || '';
 	var roles = [[${param.roleType}]] || '';
-	
+	var roles = [[${param.roleType}]] || '';
+	var active = [[${param.active}]] || '';
+	var multitenancyEnabled= [[${@environment.getProperty('onesaitplatform.multitenancy.enabled')}]]
 	//GET SEARCH DATA
 	userid ? $('#userid').val(userid) : userid = '';
 	fullname ? $('#fullname').val(fullname) : fullname = '';
 	email ? $('#email').val(email) : email = '';	
 	roles ? $('#roles').selectpicker('val', roles) : roles = '';
+	active ? $('#isActive').selectpicker('val', active) : active = '';
 	
-	console.log('SEARCHING ... [ Identification: ' + userid + ' fullName: ' + fullname + ' email: ' +  email + ' roles: ' +  roles + ']');
+	console.log('SEARCHING ... [ Identification: ' + userid + ' fullName: ' + fullname + ' email: ' +  email + ' roles: ' +  roles + ' active: ' +  active + ']');
 	
 	// OPEN SEARCH FORM IF SEARCH DATA EXISTS.
-	if (( userid != '') || (fullname != '') || (email != '') || (roles != '')) { $('#search-toggle').trigger('click'); }
+	if (( userid != '') || (fullname != '') || (email != '') || (roles != '') || (active != '')) { $('#search-toggle').trigger('click'); }
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
@@ -376,8 +401,10 @@
 		// INIT row selection
 		handleSingleSelection('users');
 		
-		// HIDE COLUMNS 		
-		$.each([ 1, 6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		// HIDE COLUMNS 	
+		
+		
+		$.each([ 1,6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 				
 		
 	});

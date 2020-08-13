@@ -21,10 +21,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,6 +38,7 @@ import com.minsait.onesait.platform.api.service.impl.ApiServiceImpl.ChainProcess
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.commons.metrics.Source;
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,19 +61,19 @@ public class ApiManagerEntryPoint {
 
 	@RequestMapping(value = "/api/**", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
 			RequestMethod.DELETE })
-	public ResponseEntity<String> processRequest(HttpServletRequest request, HttpServletResponse response,
+	public ResponseEntity<?> processRequest(HttpServletRequest request, HttpServletResponse response,
 			@RequestBody(required = false) byte[] requestBody) {
-		Map<String, Object> mData = new HashMap();
+		Map<String, Object> mData = new HashMap<>();
 		try {
 			mData = apiService.processRequestData(request, response, requestBody);
-			ChainProcessingStatus status = ChainProcessingStatus.valueOf((String) mData.get(Constants.STATUS));
+			ChainProcessingStatus status = (ChainProcessingStatus) mData.get(Constants.STATUS);
 			if (status == ChainProcessingStatus.STOP) {
 				log.error("STOP state detected: exiting");
 				return buildErrorResponse(mData);
 			}
 
 			mData = apiService.processLogic(mData);
-			status = ChainProcessingStatus.valueOf((String) mData.get(Constants.STATUS));
+			status = (ChainProcessingStatus) mData.get(Constants.STATUS);
 			if (status == ChainProcessingStatus.STOP) {
 				log.error("Error Processing Query, Stop Execution detected");
 				return buildErrorResponse(mData);
@@ -101,29 +104,39 @@ public class ApiManagerEntryPoint {
 							((Api) mData.get(ApiServiceInterface.API)).getIdentification());
 				}
 			}
+			SecurityContextHolder.getContext().setAuthentication(null);
+			MultitenancyContextHolder.setVerticalSchema(null);
 		}
 
 	}
 
-	private ResponseEntity<String> buildResponse(Map<String, Object> mData) {
+	private ResponseEntity<?> buildResponse(Map<String, Object> mData) {
 		final String contentType = (String) mData.get(Constants.CONTENT_TYPE);
 		final HttpHeaders headers = getDefaultHeaders(contentType);
-		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null)
-			return new ResponseEntity<>((String) mData.get(Constants.OUTPUT), headers,
-					(HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));
-		else
-			return new ResponseEntity<>((String) mData.get(Constants.OUTPUT), headers, HttpStatus.OK);
+		final Object output = mData.get(Constants.OUTPUT);
+		if (output instanceof ByteArrayResource) {
+			headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(((ByteArrayResource) output).contentLength()));
+			// headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline");
+		}
+		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null) {
+
+			return new ResponseEntity<>(output, headers, (HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));
+		} else {
+			return new ResponseEntity<>(output, headers, HttpStatus.OK);
+		}
+
 	}
 
 	private ResponseEntity<String> buildErrorResponse(Map<String, Object> mData) {
 		final String contentType = (String) mData.get(Constants.CONTENT_TYPE);
 		final HttpHeaders headers = getDefaultHeaders(contentType);
-		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null)
+		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null) {
 			return new ResponseEntity<>((String) mData.get(Constants.REASON), headers,
 					(HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));
-		else
+		} else {
 			return new ResponseEntity<>((String) mData.get(Constants.REASON), headers,
 					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
 	}
 

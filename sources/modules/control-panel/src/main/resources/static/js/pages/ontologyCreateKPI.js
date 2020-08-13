@@ -112,8 +112,8 @@ var OntologyCreateController = function() {
 			return true;
 		}
 	}
-
-
+	
+	
 	// FORM VALIDATION
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
@@ -152,7 +152,11 @@ var OntologyCreateController = function() {
 			// validation rules
             rules: {
             	query:{minlength: 5, required: true },
-            	cron:{minlength: 5, required: true} 
+            	cron:{minlength: 5, required: true} ,
+            	name:{minlength: 5, required: false}
+            	/*,
+            	dateTo:{ greaterThan: "#dateFrom" },
+            	dateFrom:{ lessThan: "#dateTo" }*/
 				/*ontologyId:		{ minlength: 5, required: true },
                 identification:	{ minlength: 5, required: true },
 				datamodelid:	{ required: true},
@@ -232,36 +236,47 @@ var OntologyCreateController = function() {
 	}
 	var createOntologyFromQuery = function(form1,error1,success1){
 		
-		var testOntology = GenericFunctions.getOntologyFromQuery($("#query").val());
+		//Check  the query has been executed
+		if (!$('#result-panel').is(":visible")){
+			HeaderController.showErrorDialog(ontologyCreateJson.executeQuery);
+		} else {
 		
-		$.post( '/controlpanel/ontologies/queryKPIOne', { 'query': $("#query").val(), 'queryType':'SQL', 'ontologyIdentification': testOntology}, function( data ) {
+			var testOntology = GenericFunctions.getOntologyFromQuery($("#query").val());
 			
-			console.log("callback post queryKPIOne");			
+			$.post( '/controlpanel/ontologies/queryKPIOne', { 'query': $("#query").val(), 'queryType':'SQL', 'ontologyIdentification': testOntology}, function( data ) {
+				
+				console.log("callback post queryKPIOne");			
+				
+				//Case bad query 
+				if(data === "querytool/show :: query"){
+					HeaderController.showErrorDialog(ontologyCreateJson.validations.invalidQuery);				
+				}else{
+					try {
+						var parseData = JSON.parse(data);									
+						if (parseData.length>0){
+							$('#schema').val(processJSON(JSON.stringify(parseData[0])));				
+							//send form to controller 
+							form1.ajaxSubmit({type: 'post', success : function(data){						
+								if(ontologyCreateReg.actionMode != null){
+									navigateUrl(data.redirect);
+								}else{
+									$('#modal-created').modal('show');
+									}
+								}, error: function(data){						
+									HeaderController.showErrorDialog(data.responseJSON.cause);
+								}
+							})
 			
-			//Case bad query 
-			if(data === "querytool/show :: query"){
-				HeaderController.showErrorDialog(ontologyCreateJson.validations.invalidQuery);				
-			}else{
-				var parseData = JSON.parse(data);
-				if (parseData.length>0){
-					$('#schema').val(processJSON(JSON.stringify(parseData[0])));				
-					//send form to controller 
-					form1.ajaxSubmit({type: 'post', success : function(data){						
-						if(ontologyCreateReg.actionMode != null){
-							navigateUrl(data.redirect);
-						}else{
-							$('#modal-created').modal('show');
-							}
-						}, error: function(data){						
-							HeaderController.showErrorDialog(data.responseJSON.cause);
-						}
-					})
-	
-				}else {
-					HeaderController.showErrorDialog(ontologyCreateJson.validations.noinstances);
-				} 	
-			}
-		});
+						}else {
+							HeaderController.showErrorDialog(ontologyCreateJson.validations.noinstances);
+						} 
+					} catch (error){
+						console.log(error);
+						HeaderController.showErrorDialog(ontologyCreateJson.validations.invalidSchema);
+					}
+				}
+			});
+		}
 		
 	}
 	
@@ -708,4 +723,27 @@ jQuery(document).ready(function() {
 
 	// AUTO INIT CONTROLLER.
 	OntologyCreateController.init();
+	
+	/*jQuery.validator.addMethod("greaterThan", 
+			function(value, element, params) {
+
+			    if (!/Invalid|NaN/.test(new Date(value))) {
+			        return new Date(value) > new Date($(params).val());
+			    }
+
+			    return isNaN(value) && isNaN($(params).val()) 
+			        || (Number(value) > Number($(params).val())); 
+			}, ontologyCreateJson.validations.greaterthan);
+	
+	jQuery.validator.addMethod("lessThan", 
+			function(value, element, params) {
+
+			    if (!/Invalid|NaN/.test(new Date(value))) {
+			        return new Date(value) < new Date($(params).val());
+			    }
+
+			    return isNaN(value) && isNaN($(params).val()) 
+			        || (Number(value) < Number($(params).val())); 
+			}, ontologyCreateJson.validations.greaterthan);*/
+
 });

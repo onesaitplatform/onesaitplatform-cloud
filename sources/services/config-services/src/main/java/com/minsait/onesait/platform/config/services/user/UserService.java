@@ -51,7 +51,12 @@ public interface UserService {
 
 	List<UserToken> getUserToken(User userId);
 
+	List<UserAmplified> getAllUsersList();
+
 	List<User> getAllUsers();
+
+	List<UserAmplified> getAllUsersByCriteriaList(String userId, String fullName, String email, String roleType,
+			Boolean active);
 
 	List<User> getAllUsersByCriteria(String userId, String fullName, String email, String roleType, Boolean active);
 
@@ -87,6 +92,8 @@ public interface UserService {
 
 	User saveExistingUser(User user);
 
+	List<UserAmplified> getAllActiveUsersList();
+
 	List<User> getAllActiveUsers();
 
 	List<User> getDifferentUsersWithRole(User user, Type roleType);
@@ -94,5 +101,9 @@ public interface UserService {
 	boolean emailExists(String mail);
 
 	void activateUser(User user);
+
+	public void registerRoleAdministrator(User user);
+
+	public boolean deactivateUser(String userId);
 
 }

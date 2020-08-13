@@ -21,6 +21,41 @@ var ViewerCreateController = function() {
 
 	var propertyTypeOntologyIndex=-1;
 	
+	var cleanFields = function(formId) {
+		logControl ? console.log('cleanFields() -> ') : '';
+		
+		// CLEAR MAP
+        $("#container").css('visibility', 'hidden');
+		htmlEditor.setValue('');
+		ViewerCreateController.run();
+		if (isBaseLayerLoad) {
+			isBaseLayerLoad = false;			
+		}
+		
+		// CLEAR OUT THE VALIDATION ERRORS
+		$('#' + formId).validate().resetForm();
+		$('#' + formId).find(
+				'input:text, input:password, input:file, select, textarea')
+				.each(function() {
+					// CLEAN ALL EXCEPTS cssClass "no-remote" persistent fields
+					if (!$(this).hasClass("no-remove")) {
+						$(this).val('');
+					}
+				});
+		
+		// CLEANING SELECTs
+		$(".selectpicker").each(function() {
+			$(this).val('');
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});
+		
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+		
+		// UNCHECK OUBLIC OPTION
+		$("#public").prop("checked", false);
+	}
+	
 	
 	// CHECK IF JSON STRING WHEN JSON PARSE IS OK OR NOT, IF THE JSON IS MALFORMED THE JSON.parse() is broken.
 	var IsJsonString = function(str) {
@@ -86,8 +121,8 @@ var ViewerCreateController = function() {
             	ontology:		{ required: true },
                 identification:	{ minlength: 5, required: true },
 				description:	{ minlength: 5, required: true },
-				techonology:	{ required: true },
-				baseLayer:		{ required: true },
+				technology:	{ required: true },
+				baseLayer:		{ required: true }
             },
             invalidHandler: function(event, validator) { // display error
 															// alert on form
@@ -128,29 +163,36 @@ var ViewerCreateController = function() {
     			src = src.replace('</body>', js + '</body>');
     			src = src.replace(/"/g, "&quot;");
     			
-    			$("<input type='hidden' name='rollback' value='"+$("#rollback").is(':checked')+"' />")
- 		         .appendTo("#viewer_create_form");
-    			
-    			$("<input type='hidden' name='baseLayer' th:field='*{baseLayer}' value='"+$("#baseLayers").val()+"' />")
-  		         .appendTo("#viewer_create_form");
-    			
-    			$('<input type="hidden" name="jsViewer" value="'+src+'" />')
- 		         .appendTo("#viewer_create_form");
-    			
-    			if($("#layersSelect").val() != null){
-    				$('<input type="hidden" name="layersSelectedHidden" value="'+$("#layersSelect").val()+'" />')
-   		         .appendTo("#viewer_create_form");
+    			if($("#baseLayers").val()!="")
+    			{
+	    			$("<input type='hidden' name='rollback' value='"+$("#rollback").is(':checked')+"' />")
+	 		         .appendTo("#viewer_create_form");
+	    			
+	    			$("<input type='hidden' name='baseLayer' th:field='*{baseLayer}' value='"+$("#baseLayers").val()+"' />")
+	  		         .appendTo("#viewer_create_form");
+	    			
+	    			$('<input type="hidden" name="jsViewer" value="'+src+'" />')
+	 		         .appendTo("#viewer_create_form");
+	    			
+	    			if($("#layersSelect").val() != null){
+	    				$('<input type="hidden" name="layersSelectedHidden" value="'+$("#layersSelect").val()+'" />')
+	   		         .appendTo("#viewer_create_form");
+	    			}
+	    			
+					form1.ajaxSubmit({type: 'post', success : function(data){
+						
+						navigateUrl(data.redirect);
+						
+						}, error: function(data){
+							HeaderController.showErrorDialog(data.responseJSON.cause)
+						}
+					})
     			}
-    			
-				form1.ajaxSubmit({type: 'post', success : function(data){
-					
-					navigateUrl(data.redirect);
-					
-					}, error: function(data){
-						HeaderController.showErrorDialog(data.responseJSON.cause)
-					}
-				})
-				
+				else
+				{
+					success1.hide();
+					error1.show();	
+				}
 
 			}
         });
@@ -169,6 +211,9 @@ var ViewerCreateController = function() {
 		// INIT() CONTROLLER INIT CALLS
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
+			
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			
 			$(".panel-left").resizable({
 			   handleSelector: ".splitter",
@@ -343,6 +388,10 @@ var ViewerCreateController = function() {
 					}
 				});
 			}
+			
+			$('#resetBtn').on('click', function() {
+				cleanFields('viewer_create_form');
+			});
 		},
 		
 		// REDIRECT
@@ -375,6 +424,14 @@ var ViewerCreateController = function() {
 		},
 		run : function() {
 			event.preventDefault();
+			
+			var intervalIds = $("#viewerIframe").contents().find("#intervalIds").val();
+			if(intervalIds != undefined && intervalIds != ""){
+				$.each(JSON.parse(intervalIds), function(k,v){
+					document.getElementById("viewerIframe").contentWindow.clearInterval(v);
+				});
+			}
+			
 			
 			var iframe = document.querySelector('#viewerIframe');
 			iframe_doc = iframe.contentDocument;
@@ -801,7 +858,7 @@ var ViewerCreateController = function() {
 									
 									if(refresh>0){
 										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
-										data += 'setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+');\n';
+										data += 'intervalIds.push(setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+'));\n';
 									}else{
 										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
 									}
@@ -836,7 +893,7 @@ var ViewerCreateController = function() {
 									
 									if(refresh>0){
 										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
-										data += 'setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+');\n';
+										data += 'intervalIds.push(setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+'));\n';
 									}else{
 										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
 									}
@@ -849,15 +906,8 @@ var ViewerCreateController = function() {
 					  		
 					  		
 						})
-						
-//						$.each(setHeatLayers, function(k,v){
-//							if(refresh>0){
-//								data += 'setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+');';
-//							}else{
-//								data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')\n';
-//							}
-//							
-//						})
+						data += '$("#intervalIds").val(JSON.stringify(intervalIds));\n';
+
 						htmlEditor.setValue(data);
 						ViewerCreateController.run();
 					

@@ -83,7 +83,9 @@ var ApiCustomOpsController = function() {
     			$('#id_customsql_querytype').val("native");
     			$('#id_customsql_querytype').attr("disabled", "disabled");
     			return "";
-    		}else{
+    		} else if (rtdb=="ELASTIC_SEARCH"){
+    			return "";
+    		} else {
     			$('#id_customsql_querytype').removeAttr("disabled");
     			if (((field.toUpperCase().indexOf("SELECT")>=0)&&($('#id_customsql_querytype').val()=="sql"))|| 
     					((field.toUpperCase().indexOf("DELETE")>=0)&&($('#id_customsql_querytype').val()=="sql")) ||

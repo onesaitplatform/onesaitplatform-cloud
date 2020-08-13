@@ -31,7 +31,7 @@
 		<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
 		<!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
 		<!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
-		<ul class="page-sidebar-menu page-header-fixed page-sidebar-menu-closed list" data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200" style="padding-top: 20px">
+		 <ul class="page-sidebar-menu page-header-fixed page-sidebar-menu-compact page-sidebar-menu-closed " data-keep-expanded="false" data-auto-scroll="false" data-slide-speed="200" >
 			<!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
 			<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
 			<li class="sidebar-toggler-wrapper hide">
@@ -51,9 +51,9 @@
 					<a href="javascript:;" class="remove">
 						<i class="icon-close"></i>
 					</a>
-					<div class="input-group"> 						
+					<div class="input-group" > 						
 						<input id="search-query" type="text" class="form-control search"  th:placeholder="#{menu.search.placeholder}"/>
-						<span class="input-group-btn">
+						<span class="input-group-btn" style="height: 32px;">
 						<a href="#" class="btn submit"><i class="icon-equalizer" style="transform: rotateZ(90deg);"></i> </a> 														
 						</span>
 					</div>
@@ -61,7 +61,7 @@
 				<!-- END RESPONSIVE QUICK SEARCH FORM -->
 			</li>
 			<!-- HOME  margin-top 30 if search is hidden if not 5 -->
-			<li class="nav-item start active" style="margin-top: 5px;">
+			<li class="nav-item start active" >
 				<a th:href="@{/}" href="index.html" class="nav-link nav-toggle">
 					<i class="la la-home" style="margin-left: 1px;"></i>
 					<span class="title" th:text="#{name.home}">HOME</span>
@@ -81,11 +81,12 @@
 		// GET REAL-DATA FROM SERVER.
 		var menuJson = JSON.parse([[${session.menu}]]);
 		var currentLanguage = [[${lang}]];	
-						
+		
+		
 		// LOAD DATA TO USE IN MENUCONTROLLER
 		// MENU CONTROLLER LOAD AND INIT ITSELF
 		// LIST INIT FOR MENU SEARCH
-			
+	   $('body').removeClass().addClass("page-header-fixed page-sidebar-fixed page-content-white page-sidebar-closed");		
 	</script>
 </div>
 <!-- END SOFIA2 CONTROL PANEL MENU -->

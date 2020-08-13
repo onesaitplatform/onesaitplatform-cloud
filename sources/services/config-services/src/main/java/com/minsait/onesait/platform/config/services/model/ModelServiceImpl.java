@@ -14,28 +14,44 @@
  */
 package com.minsait.onesait.platform.config.services.model;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.CategoryRelation.Type;
 import com.minsait.onesait.platform.config.model.Model;
+import com.minsait.onesait.platform.config.model.ParameterModel;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.CategoryRelationRepository;
+import com.minsait.onesait.platform.config.repository.CategoryRepository;
 import com.minsait.onesait.platform.config.repository.ModelRepository;
+import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.categoryrelation.CategoryRelationService;
 import com.minsait.onesait.platform.config.services.exceptions.ModelServiceException;
+import com.minsait.onesait.platform.config.services.model.dto.ModelServiceDTO;
+import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.parametermodel.ParameterModelService;
+import com.minsait.onesait.platform.config.services.user.UserService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class ModelServiceImpl implements ModelService {
 
 	@Autowired
@@ -46,18 +62,84 @@ public class ModelServiceImpl implements ModelService {
 
 	@Autowired
 	private CategoryRelationRepository categoryRelationRepository;
+	
+	@Autowired
+	CategoryRelationService categoryRelationService;
 
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private SubcategoryRepository subcategoryRepository;
+	
+	@Autowired
+	private ModelService modelService;
+
+	@Autowired
+	private NotebookService notebookService;
+	
+	@Autowired
+	private UserService userService; 
+
+	private static final String RESULT_STR = "result";
+	private static final String DATA_STR = "data";
+	private static final String ERROR_USER_NOT_FOUND = "Invalid input data: User not found";
+	private static final String MISSING_PARAMETER = "There are missing parameters";
+	private static final String ASLFRAME_STR = "?asIframe";
+	private static final String NOTEBOOK_STR = "#/notebook/";
+	private static final String PARAGRAPH_STR = "/paragraph/";
+	
+	
+	public Model getModelByIdentificationUserOrId(String identificationOrId, String userId) {
+		Model model = getModelById(identificationOrId);
+		
+		if (model == null ) {
+			model = getModelByIdentificationAndUser(identificationOrId, userId);
+		}
+		return model;
+	}
+	
+	
+	@Override
+	public void raiseExceptionIfIncorrect(List<ParameterModel> modelParams, String jsonParamsAsString) {
+		if (!modelParams.isEmpty()) {
+			final JSONObject jsonParams = new JSONObject(jsonParamsAsString);
+			for (final ParameterModel param : modelParams) {
+				
+				if (!jsonParams.has(param.getIdentification())) {
+					throw new ModelServiceException(ModelServiceException.Error.MISSING_PARAMETER, MISSING_PARAMETER + ": " + param.getIdentification());
+				}
+			}
+		}
+	}
+	
+	@Override
+	public ModelServiceDTO modelToModelServiceDTO(Model model) {
+		
+		Category category = null;
+		Subcategory subcategory = null;
+		List<ParameterModel> parameters;
+
+		final CategoryRelation categoryRelation = categoryRelationService
+				.getByTypeIdAndType(model.getId(), CategoryRelation.Type.MODEL);
+		if (categoryRelation != null) {
+
+			category = categoryRepository.findById(categoryRelation.getCategory());
+			subcategory = subcategoryRepository.findById(categoryRelation.getSubcategory());
+		}
+		parameters = parameterModelService.findAllParameterModelsByModel(model);
+	
+		return new ModelServiceDTO(model, category, subcategory, null, parameters);
+	}
+	
 	@Override
 	public List<Model> getModelsByIdentification(String identification) {
 
 		identification = identification == null ? "" : identification;
-
-		List<Model> models = modelRepository.findByIdentificationLike(identification);
-
-		return models;
+		return modelRepository.findByIdentificationLike(identification);
 	}
 
 	@Override
@@ -87,7 +169,102 @@ public class ModelServiceImpl implements ModelService {
 	public void updateModel(Model model) {
 		modelRepository.save(model);
 	}
+	
+	private ResponseEntity<?> executeConfigurationParagraphFromModel(Model model, JSONObject finalJson) {
+		ResponseEntity<?> response;
+		try {
+			response = notebookService.runParagraph(model.getNotebook().getIdzep(),
+					model.getInputParagraphId(), finalJson.toString());
+		} catch (final Exception e) {
+			response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+	
+	private ResponseEntity<?> executeAllNotebookParagraphsFromModel(Model model) {
+		ResponseEntity<?> response;
+		try {
+			response = notebookService.runAllParagraphs(model.getNotebook().getIdzep());
+		} catch (final Exception e) {
+			response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+	
+	private JSONObject generateExecutionResponse(Model model, String idEject, String dashboardUrl, String notebookUrl, boolean returnData) throws URISyntaxException, IOException {
+		JSONObject result = new JSONObject();
+		
+		result.put("idEject", idEject);
+		if (model.getDashboard() != null) {
+			result.put(RESULT_STR, dashboardUrl + model.getDashboard().getId());
+			
+		} else if (model.getOutputParagraphId() != null) {
+			String url = notebookUrl + "#/notebook/" + model.getNotebook().getIdzep() + "/paragraph/"
+					+ model.getOutputParagraphId() + "?asIframe";
+			result.put(RESULT_STR, url);
+			
+			if (returnData) {
+				String paragraphOutput = notebookService.getParagraphOutputMessage(model.getNotebook().getIdzep(), model.getOutputParagraphId());
+				result.put(DATA_STR, paragraphOutput);
+			}
+	
+		}
+		return result;
+	}
+	
+	@Override
+	public String executeModel(String id, String parameters, String dashboardUrl, String notebookUrl, String userId, boolean returnData) {
+		// INFO: parameters must be on json format {"param1": "value1", "param2": "value2", ...}
+		JSONObject result = new JSONObject();
+		JSONObject json = new JSONObject();
+		JSONObject finalJson = new JSONObject();
+		Model model = modelService.getModelById(id);
+		
+		if (model != null) {
+			
+			if  (notebookService.hasUserPermissionForNotebook(model.getNotebook().getIdzep(), userId)) {
 
+				String idEject = UUID.randomUUID().toString();
+				json.put("id_ejec", idEject);
+				json.put("params", parameters);
+				finalJson.put("params", json);
+				
+
+				log.info("Attemp to execute configuration paragraph from model {}", model.getIdentification());
+				ResponseEntity<?> response = executeConfigurationParagraphFromModel(model, finalJson);
+				
+				if (response.getStatusCode() == HttpStatus.OK) {
+					log.info("Executed configuration paragraph from model {}", model.getIdentification());
+					log.info("Attemp to execute model {}", model.getIdentification());
+
+					ResponseEntity<?> responseAux = executeAllNotebookParagraphsFromModel(model);
+					if (responseAux.getStatusCode() == HttpStatus.OK) {
+						try {
+							result = generateExecutionResponse(model, idEject, dashboardUrl, notebookUrl, returnData);
+						} catch (URISyntaxException | IOException e) {
+							log.error("Error running the notebook: {} - {}" + model.getNotebook().getIdentification(), e.getMessage());
+							throw new ModelServiceException(ModelServiceException.Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE, "Error running the notebook: {} - {}" + model.getNotebook().getIdentification() + ", " + e.getMessage());
+						}
+						return result.toString();
+					} else {
+						log.error("Error running the notebook: " + model.getNotebook().getIdentification());
+						throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, "Error running the notebook: " + model.getNotebook().getIdentification());
+					}
+				} else {
+					log.error("Error running the paragraph of configuration: " + model.getInputParagraphId());
+					throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, "Error running the paragraph of configuration: " + model.getInputParagraphId());
+				}
+			} else {
+				log.error("User not allowed for notebook: " + model.getNotebook().getIdentification());
+				throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, "User not allowed for notebook: " + model.getNotebook().getIdentification());
+			}
+		} else {
+			log.error("Model not found with id: " + id);
+			throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, "Model not found with id: " + id);
+		}
+
+	}
+	
 	@Override
 	public Model getModelById(String id) {
 
@@ -113,6 +290,15 @@ public class ModelServiceImpl implements ModelService {
 	@Override
 	public Model getModelByIdentification(String identification) {
 		return modelRepository.findByIdentification(identification).get(0);
+	}
+	
+	@Override
+	public Model getModelByIdentificationAndUser(String identification, String userId) {
+		User user = userRepository.findByUserId(userId);
+		if (user == null) {
+			throw new ModelServiceException(ModelServiceException.Error.USER_NOT_FOUND, ERROR_USER_NOT_FOUND);
+		}
+		return modelRepository.findByUserAndIdentification(user, identification);
 	}
 
 	@Override
@@ -176,7 +362,7 @@ public class ModelServiceImpl implements ModelService {
 	@Override
 	public List<Model> findAllModelsByUser(String userId) {
 		User user = userRepository.findByUserId(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return modelRepository.findAll();
 		} else {
 			return modelRepository.findByUser(user);
@@ -186,11 +372,68 @@ public class ModelServiceImpl implements ModelService {
 	@Override
 	public List<Model> findAllModelsByUserHasPermission(User user) {
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return modelRepository.findAll();
 		} else {
 			return modelRepository.findByUserNoAdministratorIsOwnerOrHasPermission(user);
 		}
 	}
+	
+	@Override
+	public List<ModelServiceDTO> getModelsByCategoryAndSubcategory(String category, String subcategory, 
+			String dashboardUrl, String notebookUrl, String userId) {
+		
+		final User user = userRepository.findByUserId(userId);
+		if (user == null) {
+			throw new ModelServiceException(ModelServiceException.Error.USER_NOT_FOUND, ERROR_USER_NOT_FOUND);
+		}
+		List<Model> models =  findAllModelsByUserHasPermission(user);
+		
+		return filterModelsByCategoryAndSubcategory(models, category,
+				subcategory, dashboardUrl, notebookUrl);
+	}
+	
+	private List<ModelServiceDTO> filterModelsByCategoryAndSubcategory(List<Model> models, String category,
+			String subcategory, String dashboardUrl, String notebookUrl) {
+		final List<ModelServiceDTO> modelsResult = new ArrayList<>();
+		for (final Model m : models) {
+			final CategoryRelation categoryRelation = categoryRelationService
+					.getByTypeIdAndType(m.getId(), CategoryRelation.Type.MODEL);
+			if (categoryRelation != null) {
+
+				final Category c = categoryRepository.findById(categoryRelation.getCategory());
+				final Subcategory subc = subcategoryRepository.findById(categoryRelation.getSubcategory());
+
+				if (c != null && subc != null && category.equalsIgnoreCase(c.getIdentification())
+						&& subcategory.equalsIgnoreCase(subc.getIdentification())) {
+					final List<ParameterModel> parameterModelDTOs = new ArrayList<>();
+					final List<ParameterModel> parameters = parameterModelService.findAllParameterModelsByModel(m);
+					for (final ParameterModel param : parameters) {
+						parameterModelDTOs.add(param);
+					}
+
+					if (m.getDashboard() != null) {
+						modelsResult.add(new ModelServiceDTO(m.getId(), m.getIdentification(), m.getDescription(),
+								m.getNotebook().getIdentification(), m.getDashboard().getIdentification(),
+								c.getIdentification(), subc.getIdentification(), null, m.getInputParagraphId(),
+								dashboardUrl + m.getDashboard().getId(), parameterModelDTOs,
+								m.getCreatedAt().toString()));
+					} else {
+						modelsResult.add(new ModelServiceDTO(m.getId(), m.getIdentification(), m.getDescription(),
+								m.getNotebook().getIdentification(), null, c.getIdentification(),
+								subc.getIdentification(), m.getOutputParagraphId(), m.getInputParagraphId(),
+								notebookUrl + NOTEBOOK_STR + m.getNotebook().getIdzep() + PARAGRAPH_STR
+										+ m.getOutputParagraphId() + ASLFRAME_STR,
+								parameterModelDTOs, m.getCreatedAt().toString()));
+					}
+
+				}
+			}
+		}
+
+		return modelsResult;
+	}
+	
+	
 
 }

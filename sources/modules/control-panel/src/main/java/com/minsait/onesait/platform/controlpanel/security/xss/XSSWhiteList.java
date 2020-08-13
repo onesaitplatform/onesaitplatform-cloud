@@ -25,14 +25,18 @@ public class XSSWhiteList {
 	private static final String HEADERLIBS = "headerlibs";
 	private static final String HEADERLIBS_AUX = "headerlibs_aux";
 	private static final String POSTPROCESS = "postProcess";
-	
+	private static final String MODEL = "model";
+
 	static {
 		mWhiteList = new HashMap<>();
 		mWhiteList.put("/viewers/create", new HashSet<>(Arrays.asList("jsViewer", "jsBody", "js")));
 		mWhiteList.put("/viewers/update", new HashSet<>(Arrays.asList("jsViewer", "jsBody", "js")));
-		mWhiteList.put("/dashboards/editfull", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, "js")));
-		mWhiteList.put("/dashboards/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, "js")));
+		mWhiteList.put("/dashboards/editfull", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
+		mWhiteList.put("/dashboards/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
+		mWhiteList.put("/dashboards/edit", new HashSet<>(Arrays.asList("dashboard", MODEL, "js")));
 		mWhiteList.put("/dashboards/dashboardconf", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, "js")));
+		mWhiteList.put("/dashboardconf/update", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
+		mWhiteList.put("/dashboardconf/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/gadgets/create", new HashSet<>(Arrays.asList("*")));
 		mWhiteList.put("/gadgettemplates/create",
 				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
@@ -60,7 +64,7 @@ public class XSSWhiteList {
 		if (fields != null) {
 			return fields.contains(field) || fields.contains("*");
 		} else {
-			for (Map.Entry<String,HashSet<String>> entry : mWhiteList.entrySet()) {
+			for (Map.Entry<String, HashSet<String>> entry : mWhiteList.entrySet()) {
 				String key = entry.getKey();
 				if (path.startsWith(key)) {
 					return mWhiteList.get(key).contains(field) || mWhiteList.get(key).contains("*");

@@ -166,6 +166,9 @@
 	<script th:src="@{/static/js/app.js}"/>
 	<script th:src="@{/static/js/layout.js}"/>
 	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	
 	<script th:src="@{/static/js/pages/categorization.js}"/>
 	
 	<!-- PLUGINS -->
@@ -181,6 +184,9 @@
 	var noName = [[#{categorization.noName}]];
 	var errorMsg = [[#{categorization.errorMsg}]];
 	var node = "";
+	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 	
 	$(document).ready(function(){
 		var json = {};

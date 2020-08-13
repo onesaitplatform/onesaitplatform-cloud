@@ -26,6 +26,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -34,18 +35,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.common.net.HttpHeaders;
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
+import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.model.HazelcastMessageNotification;
+import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleObject;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.DroolsRule;
+import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.drools.DroolsRuleService;
+import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.controller.rules.RuleDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
@@ -68,6 +74,10 @@ public class BusinessRuleServiceImpl implements BusinessRuleService {
 	private ITopic<String> topicAsyncComm;
 
 	@Autowired
+	@Qualifier("topicChangedDomains")
+	private ITopic<String> topicDomains;
+
+	@Autowired
 	private DroolsRuleService droolsRuleService;
 
 	@Autowired
@@ -75,6 +85,12 @@ public class BusinessRuleServiceImpl implements BusinessRuleService {
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private OntologyService ontologyService;
 
 	private RestTemplate restTemplate;
 
@@ -126,14 +142,23 @@ public class BusinessRuleServiceImpl implements BusinessRuleService {
 
 	@Override
 	public String test(String identification, String input) {
+		final HttpHeaders headers = new HttpHeaders();
+		MultitenancyInterceptor.addMultitenantHeaders(headers);
 		return restTemplate.postForObject(
 				resourcesService.getUrl(Module.RULES_ENGINE, ServiceUrl.BASE) + "/execute/rule/" + identification,
-				new HttpEntity<>(input), String.class);
+				new HttpEntity<>(input, headers), String.class);
 	}
 
 	@Override
 	public void updateActive(String identification) {
 		droolsRuleService.updateActive(identification);
+		final DroolsRule rule = droolsRuleService.getRule(identification);
+		publishHzRuleNotification(identification, rule.getDRL());
+	}
+
+	@Override
+	public void updateActive(String identification, boolean active) {
+		droolsRuleService.updateActive(identification, active);
 		final DroolsRule rule = droolsRuleService.getRule(identification);
 		publishHzRuleNotification(identification, rule.getDRL());
 	}
@@ -206,6 +231,84 @@ public class BusinessRuleServiceImpl implements BusinessRuleService {
 
 			});
 		}
+
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public void save(RuleDTO rule, String userId) throws GenericOPException {
+		final DroolsRule r = convertFromDTO(rule, userId);
+		droolsRuleService.create(r, userId);
+		try {
+			publishAndHandleHzNotification(rule.getIdentification(), r.getDRL());
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			log.error("save:", e);
+			throw new GenericOPException(e);
+		}
+
+	}
+
+	private DroolsRule convertFromDTO(RuleDTO r, String userId) {
+		final DroolsRule dr = new DroolsRule();
+		dr.setActive(true);
+		dr.setDRL(r.getDrl());
+		dr.setIdentification(r.getIdentification());
+		dr.setType(r.getType());
+		dr.setUser(userService.getUser(userId));
+		dr.setSourceOntology(ontologyService.getOntologyByIdentification(r.getInputOntology()));
+		dr.setTargetOntology(ontologyService.getOntologyByIdentification(r.getOutputOntology()));
+		return dr;
+	}
+
+	@Override
+	public DroolsRuleDomain changeDomainState(String id) {
+		final DroolsRuleDomain domain = droolsRuleService.changeDomainState(id);
+		if (domain != null)
+			HazelcastRuleDomainObject.builder().id(domain.getId()).userId(domain.getUser().getUserId()).build().toJson()
+					.ifPresent(s -> topicDomains.publish(s));
+		return domain;
+	}
+
+	@Override
+	public DroolsRuleDomain createDomain(String user) {
+		final DroolsRuleDomain domain = droolsRuleService.createDomain(user);
+		HazelcastRuleDomainObject.builder().id(domain.getId()).userId(domain.getUser().getUserId()).build().toJson()
+				.ifPresent(s -> topicDomains.publish(s));
+		return domain;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public void update(RuleDTO rule, String userId, String identification) throws GenericOPException {
+		final DroolsRule dr = convertFromDTO(rule, userId);
+		droolsRuleService.update(identification, dr);
+		try {
+			publishAndHandleHzNotification(rule.getIdentification(), dr.getDRL());
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			log.error("update:", e);
+			throw new GenericOPException(e);
+		}
+
+	}
+
+	@Override
+	public void changeDomainState(String userId, boolean active) {
+		final DroolsRuleDomain drd = droolsRuleService.getUserDomain(userId);
+		if (drd != null) {
+			droolsRuleService.changeDomainState(userId, active);
+			HazelcastRuleDomainObject.builder().id(drd.getId()).userId(drd.getUser().getUserId()).build().toJson()
+					.ifPresent(s -> topicDomains.publish(s));
+		}
+
+	}
+
+	@Override
+	public void changeDomainStates(boolean active) {
+		droolsRuleService.getAllDomains().forEach(drd -> {
+			droolsRuleService.changeDomainState(drd.getUser().getUserId(), active);
+			HazelcastRuleDomainObject.builder().id(drd.getId()).userId(drd.getUser().getUserId()).build().toJson()
+					.ifPresent(s -> topicDomains.publish(s));
+		});
 
 	}
 

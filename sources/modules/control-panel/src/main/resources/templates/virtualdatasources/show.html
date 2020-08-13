@@ -145,11 +145,18 @@
 																	<label class="" th:text="#{datasource.identification} + ':'">Name</label><span class="required"> (*)</span>
 																	<p class="form-control-static-block" th:text="*{datasourceName}"> Name </p>
 																</div>
+															</div>
+															<div class="col-md-3 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{datasource.domain} + ':'">Domain</label>
+																	<p class="form-control-static-block" th:text="*{datasourceDomain}"> Name </p>
+																</div>
 															</div>	
 															<div class="col-md-6 col-sm-6 col-xs-12">
 																<div class="form-group">
 																	<label class="" th:text="#{datasource.connection.url} + ':'">URL Connection</label><span class="required"> (*)</span>
-																	<p class="form-control-static-block" th:text="*{connectionString}"> URL Connection </p>
+																	<p th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId}" class="form-control-static-block" th:text="*{connectionString}"> URL Connection </p>
+																	<p th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR' AND ${#authentication.name} != ${datasource.userId.userId}" class="form-control-static-block" > ******** </p>
 																</div>
 															</div>	
 															<div class="form-group col-md-3">
@@ -159,7 +166,9 @@
 															<div class="col-md-3 col-sm-6 col-xs-12">
 																<div class="form-group">
 																	<label class="" th:text="#{datasource.user} + ':'">User</label><span class="required"> (*)</span>
-																	<p class="form-control-static-block" th:text="*{user}"> User </p>
+																	<p th:if="*{user != null} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId})" class="form-control-static-block" th:text="*{user}"> User </p>
+																	<p th:if="*{user == null} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId})" class="form-control-static-block">  </p>
+																	<p th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR' AND ${#authentication.name} != ${datasource.userId.userId}" class="form-control-static-block" > ******** </p>
 																</div>
 															</div>	
 															<div class="col-md-3 col-sm-6 col-xs-12">
@@ -196,26 +205,15 @@
 													<!-- FORM BUTTONS -->
 													<div class="form-actions">
 														<div class="pull-left">
-														
 															<!-- CANCEL TO-DO: authentication and control -->
-															<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-															<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-													
-														
-														</div>
-													
-													
+															<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+														</div>			
 														<div class="pull-right">
-														
 															<!-- REMOVE -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
-															
-															<span class="sep " ></span>
+															<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>	
+															<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId}" class="sep " ></span>
 															<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
-															<button sec:authorize=" hasAuthority('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
-															
-	
+															<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>															
 														</div>
 													</div>
 											</div>

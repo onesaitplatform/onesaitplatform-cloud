@@ -14,11 +14,16 @@
  */
 package com.minsait.onesait.platform.flowengine.nodered.communication;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +37,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomainStatus;
+import com.minsait.onesait.platform.config.model.FlowDomain;
+import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
 import com.minsait.onesait.platform.flowengine.audit.aop.FlowEngineAuditable;
 import com.minsait.onesait.platform.flowengine.exception.NodeRedAdminServiceException;
 import com.minsait.onesait.platform.flowengine.exception.NotSynchronizedToCdbException;
@@ -65,6 +72,11 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 	private String flowEngineDomainStop;
 	@Value("${onesaitplatform.flowengine.services.sync}")
 	private String syncFlowEngineDomains;
+	@Value("${onesaitplatform.flowengine.home.base:/tmp/}")
+	private String homeBase;
+	@Autowired
+	private FlowDomainService domainService;
+
 	private HttpComponentsClientHttpRequestFactory httpRequestFactory;
 	private ObjectMapper mapper;
 	private boolean isSynchronizedWithBDC;
@@ -80,7 +92,6 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 	@Override
 	public String stopFlowEngine() {
 		String response = null;
-		checkIsSynchronized();
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 		try {
 			response = restTemplate.postForObject(flowengineUrl + stopflowEngine, null, String.class);
@@ -235,6 +246,29 @@ public class NodeRedAdminClientImpl implements NodeRedAdminClient {
 		if (!this.isSynchronizedWithBDC) {
 			log.warn("NodeRed AdminClient is not synchronized with CDB data.");
 			throw new NotSynchronizedToCdbException("NodeRed AdminClient is not synchronized with CDB data.");
+		}
+	}
+
+	@Override
+	public String exportDomainFromFS(String domain) {
+		try {
+			FlowDomain flowDomain = domainService.getFlowDomainByIdentification(domain);
+			if (flowDomain != null) {
+				String path = homeBase + File.separator + flowDomain.getUser().getUserId() + File.separator + "flows_"
+						+ domain + ".json";
+				File file = new File(path);
+				if( file.exists()){
+					return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
+				}
+				log.error("Could not access to {} domian FS json", domain);
+				throw new NodeRedAdminServiceException("NodeRed AdminClient could not FlowDomain json.");
+			} else {
+				log.error("Domain {} not found.", domain);
+				throw new NodeRedAdminServiceException("NodeRed AdminClient could not find the domain.");
+			}
+		} catch (Exception e) {
+			log.error("Could not access to {} domian FS json", domain);
+			throw new NodeRedAdminServiceException("NodeRed AdminClient could not FlowDomain json.");
 		}
 	}
 }

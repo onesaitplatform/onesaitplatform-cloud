@@ -86,14 +86,14 @@
 										</tr>
 									</thead>
 									<tbody>
-										<tr th:each="resource : *{resources}" >
+										<tr th:each="resource : ${report.resources}" >
 											<td>
 												<input type="text" name="identifications[]" readonly="readonly"  class="form-control"  th:value="${resource.fileName}"/>
 											</td>
 																			
 											<td width="150px" class="no-wrap text-center">	
 												<!-- UPDATE -->
-												<span th:attr="data-id=${resource.id}" class="btn btn-download-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="la la-arrow-down font-hg"></i></span>
+												<span th:attr="data-id=${resource.id}" class="btn btn-download-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{gen.download}" ><i class="la la-arrow-down font-hg"></i></span>
 												<!-- UPDATE -->
 												<span  th:attr="data-id=${resource.id}, data-report=*{id}"  class="btn btn-update-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="la la-edit font-hg"></i></span>
 												<!-- DELETE -->

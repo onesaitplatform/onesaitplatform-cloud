@@ -15,14 +15,17 @@
 package com.minsait.onesait.platform.persistence.services.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
-import com.minsait.onesait.platform.persistence.services.ManageDBPersistenceServiceFacade;
+import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
+import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,19 +34,20 @@ import lombok.extern.slf4j.Slf4j;
 public class OntologyLogicService {
 
 	@Autowired
-	private ManageDBPersistenceServiceFacade manageDBPersistenceServiceFacade;
+	private ManageDBRepositoryFactory manageDBPersistence;
 
 	public void createOntology(Ontology ontology, Map<String, String> config) {
 
 		try {
+			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.API_REST)) {
 
-			log.debug("create ontology in db " + ontology.getRtdbDatasource());
-			manageDBPersistenceServiceFacade.createTable4Ontology(ontology.getIdentification(),
-					ontology.getJsonSchema(), config);
+				log.debug("create ontology in db " + ontology.getRtdbDatasource());
+				this.getInstance(ontology.getRtdbDatasource()).createTable4Ontology(ontology.getIdentification(),
+						ontology.getJsonSchema(), config);
+			}
 
 		} catch (final Exception e) {
-
-			throw new OntologyServiceException("Problems creating the ontology." + e.getMessage(), e);
+			throw new OntologyServiceException("Problems creating table for ontology." + e.getMessage(), e);
 		}
 
 		log.debug("ontology created");
@@ -52,7 +56,7 @@ public class OntologyLogicService {
 	public Map<String, String> getAdditionalDBConfig(Ontology ontology) {
 		log.debug("Get internal config in ontology " + ontology.getRtdbDatasource());
 		try {
-			return manageDBPersistenceServiceFacade.getAdditionalDBConfig(ontology.getIdentification());
+			return this.getInstance(ontology.getRtdbDatasource()).getAdditionalDBConfig(ontology.getIdentification());
 		} catch (final Exception e) {
 			throw new OntologyLogicServiceException(
 					"Problems getting internal DB config of the ontology." + e.getMessage(), e);
@@ -63,7 +67,7 @@ public class OntologyLogicService {
 		try {
 
 			log.debug("update ontology in db " + ontology.getRtdbDatasource());
-			manageDBPersistenceServiceFacade.updateTable4Ontology(ontology.getIdentification(),
+			this.getInstance(ontology.getRtdbDatasource()).updateTable4Ontology(ontology.getIdentification(),
 					ontology.getJsonSchema(), config);
 
 		} catch (final Exception e) {
@@ -97,6 +101,39 @@ public class OntologyLogicService {
 				}
 			}
 		}
+	}
+
+	public void removeOntology(Ontology ontology) {
+
+		try {
+
+			log.debug("remove ontology in db " + ontology.getRtdbDatasource());
+			this.getInstance(ontology.getRtdbDatasource()).removeTable4Ontology(ontology.getIdentification());
+
+		} catch (final Exception e) {
+
+			throw new OntologyLogicServiceException("Problems removing the ontology." + e.getMessage(), e);
+		}
+
+		log.debug("ontology removed");
+	}
+
+	public List<String> getListOfTables4Ontology(Ontology ontology) {
+		try {
+
+			log.debug("list tables for ontology in db " + ontology.getRtdbDatasource());
+			return this.getInstance(ontology.getRtdbDatasource())
+					.getListOfTables4Ontology(ontology.getIdentification());
+
+		} catch (final Exception e) {
+
+			throw new OntologyLogicServiceException("Problems listing tables for the ontology." + e.getMessage(), e);
+		}
+
+	}
+
+	private ManageDBRepository getInstance(RtdbDatasource rtdbDatasource) {
+		return manageDBPersistence.getInstance(rtdbDatasource);
 	}
 
 }

@@ -25,6 +25,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
@@ -47,7 +48,7 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	private static final long serialVersionUID = 1L;
 
 	public enum VirtualDatasourceType {
-		ORACLE,ORACLE11,MYSQL,MARIADB,SQLSERVER,POSTGRESQL,IMPALA,HIVE
+		ORACLE,ORACLE11,MYSQL,MARIADB,SQLSERVER,POSTGRESQL,IMPALA,HIVE,OP_QUERYDATAHUB
 	}
 
 	@ManyToOne
@@ -68,6 +69,11 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String datasourceName;
+	
+	@Column(name = "DATASOURCE_DOMAIN", length = 128, nullable = true)
+	@Getter
+	@Setter
+	private String datasourceDomain;
 
 	@Column(name = "SGDB", length = 50, nullable = false)
 	@NotNull
@@ -81,8 +87,7 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	@Setter
 	private String connectionString;
 
-	@Column(name = "USER", length = 128, nullable = false)
-	@NotNull
+	@Column(name = "USER", length = 128, nullable = true)
 	@Getter
 	@Setter
 	private String user;
@@ -109,5 +114,37 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private boolean isPublic;
+
+	@Transient
+	public String getValidationQuery() {
+	    switch (sgdb) {
+        case ORACLE:
+        case ORACLE11:
+            return "select 1 from dual";
+        case MYSQL:
+        case MARIADB:
+        case SQLSERVER:
+        case POSTGRESQL:
+        case HIVE:
+        case IMPALA:
+        default:
+	        return "select 1";
+        }
+	}
+
+    @Column(name = "VALIDATION_QUERY_TIMEOUT", columnDefinition = "integer default 5")
+    @Getter
+    @Setter
+    private Integer validationQueryTimeout;
+
+    @Column(name = "TEST_ON_BORROW", columnDefinition = "BIT default 1")
+    @Getter
+    @Setter
+    private Boolean testOnBorrow;
+
+    @Column(name = "TEST_WHILE_IDLE", columnDefinition = "BIT default 1")
+    @Getter
+    @Setter
+    private Boolean testWhileIdle;
 
 }

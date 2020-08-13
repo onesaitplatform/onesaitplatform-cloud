@@ -33,5 +33,5 @@ public interface CategoryRelationRepository extends JpaRepository<CategoryRelati
 
 	CategoryRelation findByTypeId(String typeId);
 
-	List<CategoryRelation> findByTypeIdAndType(String typeId, Type type);
+	CategoryRelation findByTypeIdAndType(String typeId, Type type);
 }

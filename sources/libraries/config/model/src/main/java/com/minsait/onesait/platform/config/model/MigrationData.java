@@ -14,8 +14,12 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
 
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -23,24 +27,28 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Table(name = "MIGRATION_DATA")
 public class MigrationData extends OPResource {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Getter
 	@Setter
+	@Column(name = "DESCRIPTION")
 	private String description;
-	
+
 	@Getter
 	@Setter
+	@Column(name = "FILE_NAME")
 	private String fileName;
-	
+
+	@Column(name = "FILE", length = 100000)
 	@Lob
+	@Type(type = "org.hibernate.type.BinaryType")
 	@Getter
 	@Setter
 	private byte[] file;
-	
-	
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -49,7 +57,7 @@ public class MigrationData extends OPResource {
 		if (!(o instanceof MigrationData)) {
 			return false;
 		}
-		MigrationData that = (MigrationData) o;
+		final MigrationData that = (MigrationData) o;
 		return getIdentification() != null && getIdentification().equals(that.getIdentification());
 	}
 

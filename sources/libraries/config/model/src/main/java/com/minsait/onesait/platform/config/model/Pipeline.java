@@ -14,14 +14,10 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
@@ -34,11 +30,13 @@ public class Pipeline extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
-	@ManyToOne
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User user;
+	public enum PipelineType {
+		DATA_COLLECTOR, MICROSERVICE, DATA_COLLECTOR_EDGE
+	}
+
+	public enum PipelineStatus{
+		EDITED, RUN_ERROR, STOPPED, FINISHED, RUNNING, START_ERROR, RUNNING_ERROR, DISCONNECTED, DISCONNECTING, CONNECTING, STOP_ERROR, INSTANCE_ERROR, CONNECT_ERROR, FINISHING, RETRY, STARTING, STARTING_ERROR, STOPPING, STOPPING_ERROR
+	}
 
 	@Column(name = "IDSTREAMSETS", length = 100, nullable = false)
 	@Getter
@@ -51,12 +49,34 @@ public class Pipeline extends OPResource {
 	@Setter
 	private boolean isPublic;
 
+	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "ID_INSTANCE", nullable = false, referencedColumnName = "ID")
+	@Getter
+	@Setter
+	private DataflowInstance instance;
+
+	@Transient
+	@Getter
+	@Setter
+	private PipelineUserAccessType.Type accessType;
+
+	@Transient
+	@Getter
+	@Setter
+	private PipelineType type;
+
+	@Transient
+	@Getter
+	@Setter
+	private PipelineStatus status;
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (super.getIdentification().hashCode());
-		result = prime * result + (user.hashCode());
+		result = prime * result + (super.getUser().hashCode());
 		result = prime * result + (idstreamsets.hashCode());
 		return result;
 	}
@@ -75,10 +95,10 @@ public class Pipeline extends OPResource {
 				return false;
 		} else if (!super.getIdentification().equals(other.getIdentification()))
 			return false;
-		if (user == null) {
-			if (other.user != null)
+		if (super.getUser() == null) {
+			if (other.getUser() != null)
 				return false;
-		} else if (!user.equals(other.user))
+		} else if (!super.getUser().equals(other.getUser()))
 			return false;
 		if (idstreamsets == null) {
 			if (other.idstreamsets != null)

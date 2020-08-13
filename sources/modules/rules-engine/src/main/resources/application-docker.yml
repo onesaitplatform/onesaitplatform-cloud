@@ -1,8 +1,17 @@
-spring: ## General Config  
-   datasource: ## JPA Config
-      url: ${CONFIGDBURL}
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS} 
+      password: ${CONFIGDBPASS}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
+     
+
+spring: ## General Config
+   datasource: ## JPA Config
+      url: ${CONFIGDBURL}${DBADDPROPS}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
       time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
       min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
       max-wait-millis: ${DS_MAX_WAIT_MILLIS}

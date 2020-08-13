@@ -23,7 +23,7 @@ import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
@@ -31,6 +31,7 @@ import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +50,9 @@ public class ApiSecurityService {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private ConfigDBDetailsService detailsService;
 
 	@Autowired
 	private OntologyUserAccessRepository ontologyUserAccessRepository;
@@ -70,6 +74,7 @@ public class ApiSecurityService {
 	}
 
 	public User getUserByApiToken(String token) {
+		detailsService.loadUserByUserToken(token);
 		return userService.getUserByToken(token);
 	}
 
@@ -125,7 +130,8 @@ public class ApiSecurityService {
 			return false;
 
 		boolean can = api.getState().name().equalsIgnoreCase(Api.ApiStates.CREATED.name())
-				&& (api.getUser().getUserId().equals(user.getUserId()));
+				&& ((api.getUser().getUserId().equals(user.getUserId())
+						|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())));
 		if (can)
 			return true;
 		else {

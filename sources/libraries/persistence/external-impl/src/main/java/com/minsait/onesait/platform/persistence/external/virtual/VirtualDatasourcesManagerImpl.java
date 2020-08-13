@@ -41,7 +41,7 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	private int minIdle;
 
 	@Value("${onesaitplatform.database.virtual.datasource.maxWait:30000}")
-	private long maxWait;
+	private long maxWait; 
 
 	@Value("${device.broker.rest.removeAbandoned:true}")
 	private boolean removeAbandoned;
@@ -60,6 +60,10 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	@Autowired
 	@Qualifier("SQLHelperImpl")
 	private SQLHelper sqlHelper;
+	
+	@Autowired
+	@Qualifier("PostgreSQLHelper")
+	private SQLHelper postgreSQLHelper;
 
 	@Autowired
 	@Qualifier("OracleHelper")
@@ -74,8 +78,8 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	private SQLHelper sqlserverHelper;
 
 	@Autowired
-	@Qualifier("PostgreSQLHelperImpl")
-	private SQLHelper postgreSQLHelper;
+	@Qualifier("OpQueryDatahubHelper")
+	private SQLHelper opQueryDatahubHelper;
 
 	@PostConstruct
 	public void init() {
@@ -108,8 +112,13 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 
 		datasource.setDriverClassName(driverClassName);
 		datasource.setUrl(connectionString);
-		datasource.setUsername(user);
-		datasource.setPassword(JasyptConfig.getEncryptor().decrypt(password));
+		
+		if(user != null && !"".equals(user)) {
+			datasource.setUsername(user);
+		}
+		if(password != null && !"".equals(password)) {
+			datasource.setPassword(JasyptConfig.getEncryptor().decrypt(password));
+		}
 		datasource.setMaxActive(poolSize);
 
 		datasource.setInitialSize(1);
@@ -119,6 +128,20 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 		datasource.setMaxWait(maxWait);
 		datasource.setRemoveAbandoned(removeAbandoned);
 		datasource.setRemoveAbandonedTimeout(removeAbandonedTimeout);
+
+		//if they are not definede, the default datasource values will be used.
+		if (datasourceConfiguration.getValidationQuery() != null) {
+		    datasource.setValidationQuery(datasourceConfiguration.getValidationQuery());
+		}
+		if (datasourceConfiguration.getValidationQueryTimeout() != null) {
+		    datasource.setValidationQueryTimeout(datasourceConfiguration.getValidationQueryTimeout());
+		}
+		if (datasourceConfiguration.getTestOnBorrow() != null) {
+		    datasource.setTestOnBorrow(datasourceConfiguration.getTestOnBorrow());
+		}
+		if (datasourceConfiguration.getTestWhileIdle() != null) {
+		    datasource.setTestWhileIdle(datasourceConfiguration.getTestWhileIdle());
+		}
 
 		dsDescriptor.setQueryLimit(datasourceConfiguration.getQueryLimit());
 		dsDescriptor.setDatasource(datasource);
@@ -142,9 +165,8 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 			case ORACLE11:
 				return oracle.jdbc.driver.OracleDriver.class.getName();
 			case MYSQL:
-				return com.mysql.jdbc.Driver.class.getName();
 			case MARIADB:
-				return org.mariadb.jdbc.Driver.class.getName();
+				return com.mysql.cj.jdbc.Driver.class.getName();
 			case POSTGRESQL:
 				return org.postgresql.Driver.class.getName();
 			case SQLSERVER:
@@ -152,6 +174,8 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 			case IMPALA:
 			case HIVE:
 				return org.apache.hive.jdbc.HiveDriver.class.getName();
+			case OP_QUERYDATAHUB:
+				return org.apache.calcite.avatica.remote.Driver.class.getName();
 			default:
 				throw new SGDBNotSupportedException("Not supported SGDB: " + type.name());
 		}
@@ -173,6 +197,8 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 				return oracleHelper;
 			case ORACLE11:
 				return oracle11Helper;
+			case OP_QUERYDATAHUB:
+				return opQueryDatahubHelper;
 			default:
 				throw new SGDBNotSupportedException("Not supported SGDB: " + type);
 		}

@@ -4,22 +4,30 @@ onesaitplatform:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
           list: ${CONFIGDB_ACL_LIST}
-   database.mongodb:   
-      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/ 
+   database.mongodb:
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
    database.elasticsearch:
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
       url: ${ELASTICDBHOST}
       port: 9300
-   router.alternativeURL: http://routerservice:20000/router/router/ 
-   audit.global.notify: ${AUDITGLOBALNOTIFY} 
-   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}   
+   router.alternativeURL: http://routerservice:20000/router/router/
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    metrics:
       collector.endpoint: http://routerservice:20000/router/metrics-collector/refresh
       enabled: ${ENABLE_METRICS}
-           
+
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
+
 spring:
-   datasource:  
+   datasource:
       url: ${CONFIGDBURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
@@ -33,11 +41,11 @@ spring:
       min-idle: ${DS_MIN_IDLE}
       removeAbandoned: ${DS_REMOVE_ABANDONED}
       removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
-   boot.admin: #Spring Boot Admin Config    
+   boot.admin: #Spring Boot Admin Config
       url: http://monitoringuiservice:18100/monitoring
       client.service-url: http://apimanagerservice:${server.port}${server.contextPath}/
    data.mongodb:
-      host: ${REALTIMEDBSERVERS}      
+      host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
 

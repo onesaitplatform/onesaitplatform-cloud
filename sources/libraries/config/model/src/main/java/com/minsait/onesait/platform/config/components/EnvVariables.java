@@ -20,7 +20,6 @@ import lombok.Data;
 
 @Data
 public class EnvVariables {
-
 	private Map<String, Object> ontologies;
 	private Map<String, Object> database;
 	private Map<String, Object> files;

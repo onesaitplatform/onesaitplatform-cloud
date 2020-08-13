@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.repository.AppUserRepository;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,17 +37,16 @@ public class Realm extends RealmCreate {
 	@Setter
 	private Set<RealmAssociation> associations;
 
-	public Realm(App app, List<AppRole> allRoles) {
+	public Realm(AppUserRepository appUserRepository, App app, List<AppRole> allRoles) {
 		super(app);
 		users = new HashSet<>();
-		app.getAppRoles().forEach(r -> 
-			users.addAll(r.getAppUsers().stream()
-					.map(u -> RealmUser.builder().avatar(u.getUser().getAvatar())
-							.extraFields(u.getUser().getExtraFields()).fullName(u.getUser().getFullName())
-							.mail(u.getUser().getEmail()).role(u.getRole().getName()).username(u.getUser().getUserId())
-							.build())
-					.collect(Collectors.toSet()))
-		);
+		app.getAppRoles().forEach(r -> users.addAll(r.getAppUsers().stream()
+				.map(u -> RealmUser.builder().avatar(u.getUser().getAvatar()).extraFields(u.getUser().getExtraFields())
+						.fullName(u.getUser().getFullName()).mail(u.getUser().getEmail())
+						.role(appUserRepository.findOne(u.getId()).getRole().getName())
+						.username(u.getUser().getUserId()).build())
+				.collect(Collectors.toSet())));
+
 		associations = new HashSet<>();
 		app.getAppRoles().forEach(r -> 
 			r.getChildRoles()

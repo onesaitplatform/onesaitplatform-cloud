@@ -33,8 +33,8 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUnsubscribeMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateByIdMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateMessage;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.Builder;
 
@@ -55,8 +55,8 @@ public class IotBrokerAuditEventFactory {
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodySubscribeMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
-		return createIotBrokerAuditEvent(message.getOntology(), message.getQuery(), null, OperationType.SUBSCRIBE,
-				messageText, info, session);
+		return createIotBrokerAuditEvent(message.getOntology(), null, null, OperationType.SUBSCRIBE, messageText, info,
+				session);
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyUnsubscribeMessage message, String messageText,

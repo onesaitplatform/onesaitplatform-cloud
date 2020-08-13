@@ -27,6 +27,7 @@ import com.minsait.onesait.platform.config.services.exceptions.ApiManagerService
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.ApiResponseErrorDTO;
+import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -34,34 +35,38 @@ import io.swagger.annotations.ApiParam;
 @RestController
 @RequestMapping("/nodered/auth")
 public class NoderedUserManagementController {
-	
+
 	@Autowired
 	private UserTokenService userTokenService;
 	@Autowired
 	private UserService userService;
-	
+	@Autowired
+	private ConfigDBDetailsService detailsService;
+
 	@ApiOperation(value = "Get users access to api by identification or id")
 	@GetMapping(value = "/{userId}/{apiToken}")
 	public ResponseEntity<String> getAuthorizations(
 			@ApiParam(value = "User", required = true) @PathVariable(name = "userId") String userId,
-			@ApiParam(value = "Api token", required = true) @PathVariable("apiToken") String apiToken){
+			@ApiParam(value = "Api token", required = true) @PathVariable("apiToken") String apiToken) {
 
 		ResponseEntity<String> response;
 		try {
-			UserToken userToken = userTokenService.getTokenByUserAndToken(userService.getUser(userId), apiToken);
-			if(userToken != null){
+			// Multitenant context loading
+			detailsService.loadUserByUserToken(apiToken);
+			final UserToken userToken = userTokenService.getTokenByUserAndToken(userService.getUser(userId), apiToken);
+			if (userToken != null) {
 				response = new ResponseEntity<>("{}", HttpStatus.OK);
-			} else{
+			} else {
 				response = new ResponseEntity<>("{}", HttpStatus.NOT_FOUND);
 			}
-		} catch (ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+		} catch (final ApiManagerServiceException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			response = new ResponseEntity<>("{}", errorDTO.defaultHttpStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			response = new ResponseEntity<>("{}", HttpStatus.BAD_REQUEST);
 		}
 
 		return response;
-		
+
 	}
 }

@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -36,6 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.http.BaseHttpClient;
 import com.minsait.onesait.platform.persistence.mongodb.audit.aop.QuasarAuditable;
@@ -51,8 +53,8 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 
 	@Value("${onesaitplatform.database.mongodb.quasar.connector.http.endpoint:http://localhost:18200/query/fs/}")
 	private String quasarEndpoint;
-	@Value("${onesaitplatform.database.mongodb.database:onesaitplatform_rtdb}")
-	private String database;
+	// @Value("${onesaitplatform.database.mongodb.database:onesaitplatform_rtdb}")
+	// private String database;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 	@Autowired
@@ -91,6 +93,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		try {
 			if (query.contains("*"))
 				query = replaceAsterisk(collection, query);
+			query = deleteSemicolonFromEnd(query);
 			url = buildUrl(query, offset, limit);
 		} catch (final UnsupportedEncodingException e) {
 			log.error(BUILDING_ERROR, e);
@@ -98,7 +101,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		}
 		if (compileQueries())
 			((QuasarMongoDBbHttpConnector) AopContext.currentProxy()).compileQueryAsJson(collection, query, offset);
-		final String result = quasarHttpClient.invokeSQLPlugin(url, MediaType.APPLICATION_JSON_VALUE, null);
+		final String result = quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null);
 		return formatResult(result);
 	}
 
@@ -111,7 +114,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-		return quasarHttpClient.invokeSQLPlugin(url, BaseHttpClient.ACCEPT_TEXT_CSV, null);
+		return quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, BaseHttpClient.ACCEPT_TEXT_CSV, null);
 
 	}
 
@@ -137,7 +140,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 			params += "&limit=" + limit;
 		}
 
-		return quasarEndpoint + database + "/?" + params;
+		return quasarEndpoint + Tenant2SchemaMapper.getRtdbSchema() + "/?" + params;
 	}
 
 	private String replaceObjectId(String query) {
@@ -147,6 +150,10 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		query = query.replaceAll(oid, newOid);
 		log.trace("replaced query with _id {}", query);
 		return query;
+	}
+
+	private String deleteSemicolonFromEnd(String query) {
+		return query.replaceAll("([\\;])(\\s+)*$", "");
 	}
 
 	private String replaceAsterisk(String collection, String query) {
@@ -207,7 +214,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	private String handleCompileQuery(String url, String query, String collection) {
 		try {
 			final String compileResult = quasarHttpClient.invokeSQLPlugin(url.replace("/query/", "/compile/"),
-					MediaType.APPLICATION_JSON_VALUE, null);
+					null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null);
 			final JsonNode compile = mapper.readTree(compileResult);
 			String nativeQuery = compile.path(PATH_TO_COMPILED_QUERY).asText();
 			if (!StringUtils.isEmpty(nativeQuery)) {
@@ -256,6 +263,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		try {
 			if (query.contains("*"))
 				query = replaceAsterisk(collection, query);
+			query = deleteSemicolonFromEnd(query);
 			url = buildUrl(query, offset, getMaxRegisters());
 		} catch (final UnsupportedEncodingException e) {
 			log.error(BUILDING_ERROR, e);

@@ -49,6 +49,9 @@ var QueryTemplatesCreateController = function() {
 			}*/
 			initDatapicker();
 			
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+			
 			// INSERT MODE ACTIONS (templateCreateReg.actionMode = NULL )
 			if ( templateCreateReg.actionMode !== null){
 			logControl ? console.log('|---> Action-mode: UPDATE') : '';

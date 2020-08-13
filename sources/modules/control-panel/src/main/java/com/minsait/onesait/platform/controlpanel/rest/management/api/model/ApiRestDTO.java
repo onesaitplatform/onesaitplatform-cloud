@@ -21,8 +21,6 @@ import java.util.List;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.UserApi;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -33,7 +31,7 @@ import lombok.Setter;
 public class ApiRestDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@ApiModelProperty(value = "API Id")
 	@Getter
 	@Setter
@@ -83,7 +81,7 @@ public class ApiRestDTO implements Serializable {
 	@Getter
 	@Setter
 	private String endpoint;
-	
+
 	@ApiModelProperty(value = "External Endpoint for invoking API")
 	@Getter
 	@Setter
@@ -133,7 +131,7 @@ public class ApiRestDTO implements Serializable {
 	@Getter
 	@Setter
 	private ArrayList<UserApiSimplifiedResponseDTO> authentications;
-	
+
 	public ApiRestDTO(Api api, List<ApiOperation> apiops, List<UserApi> usersapi, String urlBase) {
 		this.id = api.getId();
 		this.identification = api.getIdentification();
@@ -154,9 +152,10 @@ public class ApiRestDTO implements Serializable {
 		}
 		this.apiLimit = api.getApilimit();
 		this.endpointExt = api.getEndpointExt();
-		
-		this.setEndpoint(urlBase.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
-		
+
+		this.setEndpoint(
+				urlBase.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+
 		this.description = api.getDescription();
 		this.metainf = api.getMetaInf();
 		this.imageType = api.getImageType();
@@ -176,5 +175,5 @@ public class ApiRestDTO implements Serializable {
 		}
 
 	}
-	
+
 }

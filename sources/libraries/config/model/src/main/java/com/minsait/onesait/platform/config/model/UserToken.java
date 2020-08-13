@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -27,6 +28,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.listener.EntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -34,11 +36,12 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "USER_TOKEN")
+@EntityListeners(EntityListener.class)
 public class UserToken extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "TOKEN", nullable = false)
+	@Column(name = "TOKEN", nullable = false, unique = true)
 	@NotNull
 	@Getter
 	@Setter

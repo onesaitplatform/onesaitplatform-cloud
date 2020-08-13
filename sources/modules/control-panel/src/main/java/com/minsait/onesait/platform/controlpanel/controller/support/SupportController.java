@@ -74,7 +74,7 @@ public class SupportController {
 		return "support/create";
 	}
 	
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/notifications", produces = "text/html")
 	public String notifications(Model model) {
 		model.addAttribute("notifications", supportRepository.findAll());
@@ -105,7 +105,7 @@ public class SupportController {
 		return new ResponseEntity<>(OK, HttpStatus.OK);
 	}
 	
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/notifications/update")
 	public ResponseEntity<String> update(@RequestParam("user") User user, @RequestParam("role") Role role) {
 		try {
@@ -118,7 +118,7 @@ public class SupportController {
 		}
 	}
 	
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/notifications/updateStatus")
 	public ResponseEntity<String> updateStatus(@RequestParam("supportRequestId") String supportRequestId) {
 		try {
@@ -139,7 +139,7 @@ public class SupportController {
 		return "redirect:/support/notifications";
 	}
 	
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/notifications/sendEmail")
 	public ResponseEntity<String> sendEmail(@RequestParam("supportRequestId") String supportRequestId, @RequestParam("message") String message) {
 		

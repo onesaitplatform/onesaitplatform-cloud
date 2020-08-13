@@ -1,0 +1,242 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2019 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Copyright Indra Sistemas, S.A. 2013-2018 SPAIN -->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css}" />
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+				
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
+						<li><span th:text="#{multitenancy.tenants}">My tenants</span></li>
+					</ul>						
+				</div><!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{multitenancy.tenants}">My tenants </span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">					
+						<div class="portlet light">
+							
+							<!-- TITTLE CONTENT -->
+							<div class="portlet-title">
+								<div class="caption">									
+									<span class="caption-subject" th:text="#{multitenancy.tenants}"> My verticals </span>									
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								<div class="actions margin-right-20">
+									<div class="btn-group">										
+										<a th:href="@{/multitenancy/tenants/create}"><button type="button" class="btn btn-circle btn-outline btn-primary" id="btn-vertical-create"><span th:text="#{gen.create}">New </span></button></a>
+									</div>										
+								</div>															
+							</div><!-- // TITTLE CONTENT -->
+							
+							<!-- BODY CONTENT -->
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="row" th:include="multitenancy/tenants/fragments/list" >
+											
+								</div>
+							</div><!-- // BODY CONTENT -->
+						</div><!-- // PORTLET BASIC LIGHT -->							
+					</div><!-- // COL-12 -->						
+				</div><!-- // MAIN ROW -->				
+			</div><!-- // CONTENT BODY -->
+		</div><!-- // CONTENT page-content-wrapper -->		
+	</div><!-- // MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	<style>
+	.modal-xl {
+		width: 100% !important;
+		display: block;
+		margin-left: 12% !important;
+		
+	}
+	@media (max-width: 992px) {
+	  .modal-xl {
+	   margin-left: 0% !important;
+	  }
+	}
+	</style>
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/blockUI.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/dataTables.buttons.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery-format-datetime/jquery.formatDateTime.js}"/>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" />
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	
+	
+	
+	<script type="text/javascript" th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM.
+	var sname = [[${param.name}]] || '';
+	var stype = [[${param.type}]] || '';
+	
+	sname ? $('#name').val(sname) : sname = '';
+	stype ? $('#type').val(stype) : stype = '';
+	console.log('SEARCHING ... [ Name: ' + sname + ' Type: ' + stype + ']');
+	if (( sname != '') || (stype != '')) { $('#search-toggle').trigger('click'); }
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	
+	// PROVISIONAL => ELIMINARRRRRRRRRRR
+	datatable_lang = '{\"decimal\": \"\", \"emptyTable\": \"No Entries\", \"info\": \"Showing _START_ to _END_ of _TOTAL_ Entries\", \"infoEmpty\": \"0 Entries \", \"infoFiltered\": \"(Filtered from _MAX_ total Entries)\",\"infoPostFix\":\"\",\"thousands\":\",\",\"lengthMenu\":\" _MENU_ \",\"loadingRecords\": \" \",\"processing\": \" \",\"search\":\"Search:\",\"zeroRecords\":\"No matching records found\",\"paginate\": {\"first\":\"First\",\"last\":\"Last\",\"next\":\"&gt;\",\"previous\": \"&lt;\"}}';	
+	////////////////////////////////////////////////
+	
+	/*var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ) { 
+		$.extend( true, $.fn.dataTable.defaults, { language: languageJson }); 
+	}*/
+	
+	// Datatable ajax loading
+	var ajaxLoading = "@{/img/ajax-loading-flat.gif}";
+	
+	</script>
+	
+	
+	<script th:src="@{/static/js/pages/multitenancy/verticals.js}" th:inline="javascript"></script>
+
+	<script type="text/javascript" th:inline="javascript">	
+		
+	
+	
+		
+	var constants ={
+			
+		genDelete: [[#{gen.deleteBtn}]],
+		genUpdate:  [[#{gen.edit}]],
+		genView:  [[#{gen.view}]],
+		upload: [[#{bpm.upload}]]
+	};
+		$(document).ready(function() {
+			
+			//SHOW/HIDE DATATABLE COLUMNS HANDLER
+			$('label.toggle-vis').on( 'click', function (e) {
+				e.preventDefault(); 
+				// Get the column API object
+				var column = $('#verticals').DataTable().column( $(this).attr('data-column') ); 
+				// Toggle the visibility
+				column.visible( ! column.visible() );
+				// Toggle visibility on filtering row
+				if ($('#filtering')){
+					$('#filtering th').eq($(this).attr('data-column')).toggle();
+				}
+				// toggle Text
+				$(this).toggleClass('text-muted line-through');			
+			});	
+		});
+		$(window).load(function(){  
+			
+			//DATATABLE 
+			var oTable = $('#verticals').DataTable();
+			oTable.page.len(10);
+			
+			$('#verticals').on('draw.dt', function () {
+				Vertical.List.initCompleteCallback();
+			} );
+			
+			// SHOW/HIDE DATATABLES COLUMN INIT 		
+			$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+			$('#dataTable-vis-toggle').removeClass('hide');
+			
+			// FILTERING COLUMNS INIT
+			$('#filtering').appendTo($('#verticals > thead'));
+			$('#filtering').removeClass('hide');
+			
+			// RESET ALL FILTERS BTN
+			$('#clearFilters').on('click', function(){			
+				yadcf.exResetAllFilters(oTable);		
+			});	
+			
+			
+			// ADJUST CSS FOR DATATABLE FILTERS 
+			var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
+			var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
+			filters.addClass('input-small font-sm');
+			filtersResets.addClass('hide');				
+			
+					
+			
+		});
+		
+	</script>
+	
+</body>
+</html> 

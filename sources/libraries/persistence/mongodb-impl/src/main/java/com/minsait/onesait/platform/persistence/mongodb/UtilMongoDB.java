@@ -50,6 +50,9 @@ public class UtilMongoDB {
 			final String collection = getCollectionName(query);
 			String auxName = query.replace("db." + collection + ".", "");
 			auxName = auxName.substring(auxName.indexOf('(') + 1, auxName.lastIndexOf(')'));
+			if (auxName.contains(").count(")) {
+				auxName=auxName.replace(").count(", "");
+			}
 			if (auxName.equals(""))
 				auxName = "{}";
 			return auxName;

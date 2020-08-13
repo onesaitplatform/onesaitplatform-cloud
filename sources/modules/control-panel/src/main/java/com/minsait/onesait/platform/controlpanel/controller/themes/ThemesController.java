@@ -69,14 +69,14 @@ public class ThemesController {
 	private static final String DELETINGERROR = "Error delating the support request: ";
 	
 	@GetMapping(value = "/create", produces = "text/html")
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String create(Model model) {
 		model.addAttribute(THEME, new ThemesDTO());
 		return "themes/create";
 	}
 	
 	@GetMapping(value = "/show/{id}", produces = "text/html")
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String show(Model model, @PathVariable("id") String id) {
 		model.addAttribute("type", "show");
 		model.addAttribute(THEME, populateThemeDTO(themesRepository.findById(id)));
@@ -85,7 +85,7 @@ public class ThemesController {
 	}
 	
 	@GetMapping(value = "/edit/{id}", produces = "text/html")
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String edit(Model model, @PathVariable("id") String id) {
 		model.addAttribute("type", "edit");
 		model.addAttribute(THEME, populateThemeDTO(themesRepository.findById(id)));
@@ -93,7 +93,7 @@ public class ThemesController {
 	}
 	
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String show(Model model) {
 		model.addAttribute("themes", themesRepository.findAll());
 		return "themes/list";
@@ -101,7 +101,7 @@ public class ThemesController {
 
 	
 	@PostMapping(value = "/create")
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String createTheme (@Valid ThemesDTO theme){
 		try {
 			populateJsonTheme(theme);			
@@ -116,7 +116,7 @@ public class ThemesController {
 	}
 	
 	@PostMapping(value = "/edit/{id}")
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String editTheme (@Valid ThemesDTO theme,  @PathVariable("id") String id){
 		try {
 			theme.setId(id);
@@ -133,7 +133,7 @@ public class ThemesController {
 
 	@Transactional
 	@RequestMapping(value = "/delete", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> delete(@RequestParam String id) {
 		try {
 			themesRepository.delete(id);
@@ -146,7 +146,7 @@ public class ThemesController {
 	
 	@Transactional
 	@RequestMapping(value = "/activate", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> active(@RequestParam String id) {
 		try {
 			themesService.setActive(id);
@@ -160,7 +160,7 @@ public class ThemesController {
 	
 	@Transactional
 	@RequestMapping(value = "/deactivate", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> inactive(@RequestParam String id) {
 		try {
 			themesService.deactivate(id);
@@ -174,7 +174,7 @@ public class ThemesController {
 	
 	@Transactional
 	@RequestMapping(value = "/byDefault", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	@PreAuthorize("hasRole('ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> byDefault() {
 		themesService.setDefault();
 		final List<Themes> activeThemes = themesRepository.findActive();

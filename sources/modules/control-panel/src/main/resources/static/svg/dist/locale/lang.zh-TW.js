@@ -23,7 +23,7 @@ var svgEditorLang_zh_TW = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: '點擊更改填充顏色，按住Shift鍵單擊更改線條顏色',
       zoom_level: '更改縮放級別',
-      panel_drag: 'Drag left/right to resize side panel',
+      panel_drag: 'Click to show hide',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

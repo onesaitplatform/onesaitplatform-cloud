@@ -19,13 +19,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
-import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -35,8 +34,6 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -56,7 +53,13 @@ public class App extends AppParent {
 	@Getter
 	@Setter
 	private Project project;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
+	@Getter
+	@Setter
+	private User user;
+
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
@@ -72,11 +75,12 @@ public class App extends AppParent {
 	@Setter
 	@JsonIgnore
 	private Set<App> childApps;
-	
-	public App() {};
 
-	
-	public App(String id, String identification, String description, User user, String secret, String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
+	public App() {
+	};
+
+	public App(String id, String identification, String description, User user, String secret, String user_extra_fields,
+			int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
 		this.setId(id);
 		this.setIdentification(identification);
 		this.setDescription(description);
@@ -87,15 +91,35 @@ public class App extends AppParent {
 		this.setUserExtraFields(user_extra_fields);
 		this.setTokenValiditySeconds(tokenValiditySeconds);
 		Set<AppRole> appRoles = new HashSet<AppRole>();
-		if(appRole != null) {
+		if (appRole != null) {
 			appRoles.add(appRole);
 		}
 		this.setAppRoles(appRoles);
-		
-		/*Set<App> childapps = new HashSet<App>();
-		if(childApp != null) {
-			childApps.add(new App(childApp));
-		}
-		this.setChildApps(childapps);*/
+
+		/*
+		 * Set<App> childapps = new HashSet<App>(); if(childApp != null) {
+		 * childApps.add(new App(childApp)); } this.setChildApps(childapps);
+		 */
 	};
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+
+		if (this.getClass() != obj.getClass())
+			return false;
+
+		final App that = (App) obj;
+		if (getIdentification() != null)
+			return getIdentification().equals(that.getIdentification());
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+
+		return java.util.Objects.hash(getIdentification());
+	}
+
 }

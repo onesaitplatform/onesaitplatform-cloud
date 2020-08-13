@@ -18,22 +18,19 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyIndicationMessage;
-import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
-import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.SuscriptionNotificationsModel;
-import com.minsait.onesait.platform.config.repository.SuscriptionModelRepository;
+import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
+import com.minsait.onesait.platform.iotbroker.subscription.model.SubscriptorClient;
+import com.minsait.onesait.platform.iotbroker.subscription.notificator.RestNotificatorImpl;
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 
@@ -47,48 +44,51 @@ import lombok.extern.slf4j.Slf4j;
 public class IndicationProcessor {
 
 	@Autowired
-	GatewayNotifier notifier;
-	@Autowired
-	SuscriptionModelRepository repository;
+	GatewayNotifier mqttNotifier;
 	@Autowired
 	ObjectMapper mapper;
+	@Autowired
+	RestNotificatorImpl restNotifier;
 
-	@RequestMapping(value = "/advice", method = RequestMethod.POST)
+	@PostMapping(value = "/advice")
 	public OperationResultModel create(@RequestBody NotificationCompositeModel notification) {
 		final OperationResultModel model = new OperationResultModel();
 
-		model.setErrorCode("");
-		model.setMessage("");
-		model.setOperation(notification.getOperationResultModel().getOperation());
-		model.setResult(notification.getOperationResultModel().getResult());
-		model.setStatus(false);
-
-		final SuscriptionNotificationsModel suscription = repository
-				.findAllBySuscriptionId(notification.getNotificationEntityId());
-
 		try {
 
-			final SSAPMessage<SSAPBodyIndicationMessage> indication = new SSAPMessage<>();
-			indication.setDirection(SSAPMessageDirection.REQUEST);
-			indication.setMessageType(SSAPMessageTypes.INDICATION);
-			indication.setSessionKey(suscription.getSessionKey());
-			indication.setBody(new SSAPBodyIndicationMessage());
+			model.setStatus(true);
+			model.setErrorCode("");
+			model.setResult("");
 
-			JsonNode data;
-			final String body = notification.getNotificationModel().getOperationModel().getBody();
-			// final String body = notification.getOperationResultModel().getResult();
-			if (StringUtils.isEmpty(body)) {
-				createErrorResponse(notification, "Blank notification NOT PROCESSING");
+			String dataToNotify = notification.getNotificationModel().getOperationModel().getBody();
+			SubscriptorClient client = mapper.readValue(
+					notification.getNotificationModel().getOperationModel().getClientConnection(),
+					SubscriptorClient.class);
+
+			if (client.getSubscriptionGW().equals("rest_gateway")){
+				log.info("Client {} is going to be notified via REST by rest_gateway.", client.getClientId());
+				Boolean isOk = restNotifier.notify(dataToNotify, client);
+				if (!isOk) {
+					model.setStatus(false);
+					model.setMessage("Impossible to notify subscriber");
+					model.setResult("Error");
+				}
+			} else if (client.getSubscriptionGW().equals("moquette_gateway")) {
+				log.info("Client {} is going to be notified via MQTT.", client.getClientId());
+				SSAPMessage<SSAPBodyIndicationMessage> response = SSAPMessageGenerator
+						.generateResponseIndicationMessage(client.getSubscriptionId(), dataToNotify, client.getSessionKey());
+				mqttNotifier.notify(client.getSubscriptionGW(), response);
+			} else if (client.getSubscriptionGW().equals("stomp_gateway")) {
+
+				log.info("Client {} is going to be notified via WEBSOCKET.", client.getClientId());
+				SSAPMessage<SSAPBodyIndicationMessage> response = SSAPMessageGenerator
+						.generateResponseIndicationMessage(client.getSubscriptionId(), dataToNotify, client.getSessionKey());
+				mqttNotifier.notify(client.getSubscriptionGW(), response);
+				
+			} else {
+				log.error("Protocol not supported", client.getSubscriptionGW());
+				createErrorResponse(notification, "Protocol not supported" + client.getSubscriptionGW());
 			}
-
-			data = mapper.readTree(body);
-			indication.getBody().setData(data);
-
-			indication.getBody().setOntology(notification.getNotificationModel().getOperationModel().getOntologyName());
-			indication.getBody().setQuery("");
-			indication.getBody().setSubsciptionId(notification.getNotificationEntityId());
-
-			notifier.notify(indication);
 
 		} catch (final IOException e) {
 			log.error("Indication result can't be process", e.getMessage());

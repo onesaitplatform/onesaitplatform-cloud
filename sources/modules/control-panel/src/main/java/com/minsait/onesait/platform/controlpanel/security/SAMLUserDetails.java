@@ -14,21 +14,28 @@
  */
 package com.minsait.onesait.platform.controlpanel.security;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.saml.SAMLCredential;
 import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
+import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,25 +53,47 @@ public class SAMLUserDetails implements SAMLUserDetailsService {
 	@Value("${onesaitplatform.authentication.default_password:changeIt9900!}")
 	private String defaultPassword;
 
+	@Autowired
+	private VerticalResolver tenantDBResolver;
+	@Autowired
+	private MasterUserRepository masterUserRepository;
+
 	@Override
 	public Object loadUserBySAML(SAMLCredential credential) {
-
-		User user = userRepository.findByUserId(credential.getNameID().getValue());
+		log.debug("New user logged from SAML server {}", credential.getNameID().getValue());
+		final String username = credential.getNameID().getValue();
+		MasterUser user = masterUserRepository.findByUserId(username);
 		if (user == null) {
-			log.info("LoadUserByUserName: User not found by name: " + credential.getNameID().getValue());
-			log.info("Importing user {} to configdb", credential.getNameID().getValue());
-			user = importUserToDB(credential.getNameID().getValue());
-			// throw new UsernameNotFoundException("User not found by name: " +
-			// credential.getNameID().getValue());
+			log.info("LoadUserByUserName: User not found by name: {}", username);
+			log.info("Creating SAML user on default vertical");
+			final User newUser = importUserToDB(username);
+			user = masterUserRepository.findByUserId(username);
+			if (user == null)
+				throw new UsernameNotFoundException("Could not create CAS user: " + username);
+			return toUserDetails(user.getUserId(), user.getPassword(),
+					tenantDBResolver.getSingleVerticalIfPossible(user), user.getTenant().getName(),
+					newUser.getRole().getId());
 		}
 
-		return toUserDetails(user);
+		String role = Role.Type.ROLE_PREVERIFIED_TENANT_USER.name();
+		Vertical vertical = null;
+		final String tenant = user.getTenant().getName();
+		if (tenantDBResolver.hasSingleTenantSchemaAssociated(user) || MultitenancyContextHolder.isForced()) {
+
+			vertical = tenantDBResolver.getSingleVerticalIfPossible(user);
+			MultitenancyContextHolder.setVerticalSchema(vertical.getSchema());
+			MultitenancyContextHolder.setTenantName(tenant);
+			role = userRepository.findByUserId(user.getUserId()).getRole().getId();
+
+		}
+
+		return toUserDetails(user.getUserId(), user.getPassword(), vertical, tenant, role);
 	}
 
-	private UserDetails toUserDetails(User userObject) {
-		return org.springframework.security.core.userdetails.User.withUsername(userObject.getUserId())
-				.password(userObject.getPassword())
-				.authorities(new SimpleGrantedAuthority(userObject.getRole().getId())).build();
+	private org.springframework.security.core.userdetails.User toUserDetails(String username, String password,
+			Vertical vertical, String tenant, String role) {
+		return new UserPrincipal(username, password, Arrays.asList(new SimpleGrantedAuthority(role)), vertical, tenant);
+
 	}
 
 	private User importUserToDB(String username) {

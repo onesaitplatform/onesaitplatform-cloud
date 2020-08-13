@@ -24,15 +24,23 @@
 				
 				document.getElementById("historicalQuery").value = null; 
 				queryResponse = $(response);	
-				
+				debugger
 				// check for valid json, or server string error like java.lang.Exception...
 				var IS_JSON = true;
-				try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+				try{ 
+					var json = $.parseJSON(queryResponse.text());
+					/*if(json.length>0){
+						$('#createDataSourceButton').show();	
+					}else{
+						$('#createDataSourceButton').hide();
+					}*/
+				} catch(err){ IS_JSON = false; }
 				
 				if (!IS_JSON){					
 					var text=""+queryResponse.text();
 					// Our own JSON string to mark non JSON ERRORs
-					queryErrorResponse = text;										
+					queryErrorResponse = text;	
+					//$('#createDataSourceButton').hide();
 				}
 				
 				if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
@@ -41,7 +49,7 @@
 					editor.setText(queryResponse.text()); 
 					editor.setMode('view');
 					if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
-								
+						
 			});		
 			
 			
@@ -453,6 +461,31 @@
 				}
 			};
 			
+			
+			function createQuerylimit(){				
+				var limit = $("#maxvaluesDataSource").val();
+			    var query =	$('#querySql').val();
+			    if(query.trim().length===0){
+			    	createQuery();
+			    	return;
+			    }else{
+				    var index = query.toLowerCase().lastIndexOf(" limit ");
+				    if(index>0){
+				    	var isSubquery = query.substr(index,query.length).lastIndexOf(")");
+				    	if(isSubquery<0){
+				    		query = query.substr(0,index) + " limit "+ limit;	
+				    	}else{
+				    		query = query + " limit "+ limit;
+				    				    		
+				    	}
+				    }else{
+				    	query = query + " limit "+ limit;
+				    }
+				    $('#querySql').val(query);
+			    }
+			}
+			
+			
 			//GENERATION OF THE QUERY STRING SQL NO-RELATIONALORACLE AND RELATIONALORACLE WITH SQL
 			function createQuerySql(){
 				
@@ -605,6 +638,7 @@
 			function getOntologyFromQuery(query){			
 				query = query.replace(/(\r\n\t|\n|\r\t)/gm," ");
 				query = query.replace(/  +/g, ' ');
+				query = query.replace(/\,/g,' ');
 				var list = query.split(/from /i);
 				if(list.length>1){
 					for (var i=1; i< list.length;i++){

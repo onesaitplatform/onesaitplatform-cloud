@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
@@ -38,7 +39,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.Project.ProjectType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -85,8 +86,9 @@ public class OPResourceRepositoryTest {
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 
-		project.getProjectResourceAccesses().add(ProjectResourceAccess.builder().access(ResourceAccessType.MANAGE)
-				.user(user).project(project).resource(resource).build());
+		project.getProjectResourceAccesses()
+				.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, resource, project, null));
+
 		project = projectRepository.save(project);
 		Assert.assertTrue(project.getProjectResourceAccesses().size() > 0);
 		project.getProjectResourceAccesses().clear();
@@ -108,8 +110,10 @@ public class OPResourceRepositoryTest {
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
-		resourceRepository.findAll().stream().forEach(r -> accesses.add(ProjectResourceAccess.builder().user(user)
-				.access(ResourceAccessType.MANAGE).resource(r).project(project).build()));
+
+		resourceRepository.findAll().stream().forEach(
+				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null)));
+
 		project.getProjectResourceAccesses().addAll(accesses);
 		projectRepository.save(project);
 		projectRepository.delete(project);
@@ -127,8 +131,10 @@ public class OPResourceRepositoryTest {
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
-		resourceRepository.findAll().stream().forEach(r -> accesses.add(ProjectResourceAccess.builder().user(user)
-				.access(ResourceAccessType.MANAGE).resource(r).project(project).build()));
+
+		resourceRepository.findAll().stream().forEach(
+				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null)));
+
 		project.getProjectResourceAccesses().addAll(accesses);
 		Project pdb = projectRepository.save(project);
 

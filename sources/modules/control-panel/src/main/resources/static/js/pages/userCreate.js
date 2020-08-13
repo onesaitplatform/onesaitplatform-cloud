@@ -242,7 +242,7 @@ var UserCreateController = function() {
 			$('#datecreated').datepicker('update',today);
 			
 			// Set active 
-			$('#checkboxactive').trigger('click');
+			//$('#checkboxactive').trigger('click');
 			
 			// set date deleted to null 
 			 $('#datedeleted').datepicker('update',null);

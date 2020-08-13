@@ -47,20 +47,20 @@ public class EventSenderImpl implements EventRouter {
 
 	@PostConstruct
 	public void init() {
-		this.senderExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
+		senderExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
 	}
 
 	@PreDestroy
 	public void destroy() {
-		this.senderExecutor.shutdown();
+		senderExecutor.shutdown();
 	}
 
 	@Override
 	public void notify(String event) {
 		if (sendAudit) {
-			log.info("Received Audit Event: {} ", event);
+			log.debug("Received Audit Event: {} ", event);
 			if (instance != null) {
-				this.senderExecutor.execute(() -> {
+				senderExecutor.execute(() -> {
 					try {
 						instance.getQueue(AUDIT_QUEUE_NAME).offer(event);
 					} catch (final Exception e4) {

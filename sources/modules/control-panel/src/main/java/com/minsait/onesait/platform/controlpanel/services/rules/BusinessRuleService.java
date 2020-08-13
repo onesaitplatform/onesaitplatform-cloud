@@ -16,12 +16,18 @@ package com.minsait.onesait.platform.controlpanel.services.rules;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
+import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
+import com.minsait.onesait.platform.controlpanel.controller.rules.RuleDTO;
 
 public interface BusinessRuleService {
 
 	void save(DroolsRule rule, String userId) throws GenericOPException;
 
+	void save(RuleDTO rule, String userId) throws GenericOPException;
+
 	void update(DroolsRule rule, String userId, String identification) throws GenericOPException;
+
+	void update(RuleDTO rule, String userId, String identification) throws GenericOPException;
 
 	void delete(String identification);
 
@@ -29,6 +35,16 @@ public interface BusinessRuleService {
 
 	void updateActive(String identification);
 
+	void updateActive(String identification, boolean active);
+
 	void updateDRL(String identification, String newDRL) throws GenericOPException;
+
+	DroolsRuleDomain changeDomainState(String id);
+
+	void changeDomainState(String userId, boolean active);
+
+	void changeDomainStates(boolean active);
+
+	DroolsRuleDomain createDomain(String user);
 
 }

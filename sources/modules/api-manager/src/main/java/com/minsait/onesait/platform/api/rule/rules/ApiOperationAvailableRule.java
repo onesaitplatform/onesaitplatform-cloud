@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.api.rule.rules;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jeasy.rules.annotation.Action;
@@ -22,7 +23,10 @@ import org.jeasy.rules.annotation.Priority;
 import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
@@ -39,6 +43,9 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 
 	@Autowired
 	private ApiManagerService apiManagerService;
+	@Autowired
+	@Qualifier("apiManagerService")
+	private com.minsait.onesait.platform.api.service.api.ApiManagerService apiService;
 
 	@Priority
 	public int getPriority() {
@@ -49,7 +56,7 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 	public boolean existsRequest(Facts facts) {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
-		return(api != null && !api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON));
+		return api != null && !api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON);
 	}
 
 	@Action
@@ -57,12 +64,25 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
 		final String method = (String) data.get(Constants.METHOD);
-		final ApiOperation operation = apiManagerService.getOperationsByMethod(api, Type.valueOf(method)).stream()
-				.findAny().orElse(null);
-		if (operation == null)
+		final String pathInfo = (String) data.get(Constants.PATH_INFO);
+		final ApiOperation customSQL = apiService.getCustomSQL(pathInfo, api);
+		final String objectId = apiService.getObjectidFromPathQuery(pathInfo, customSQL);
+		final List<ApiOperation> operations = apiManagerService.getOperationsByMethod(api, Type.valueOf(method));
+		ApiOperation operation = null;
+		if (!StringUtils.isEmpty(objectId)) {
+			operation = operations.stream().filter(a -> a.getPath().equals("/{id}")).findAny().orElse(null);
+		} else if (customSQL != null) {
+			operation = customSQL;
+		} else {
+			operation = operations.stream().filter(a -> StringUtils.isEmpty(a.getPath()) || "/".equals(a.getPath()))
+					.findAny().orElse(null);
+		}
+
+		if (operation == null) {
 			stopAllNextRules(facts, "There are no operations allowed for this API with HTTP method " + method,
 
-					DefaultRuleBase.ReasonType.GENERAL);
+					DefaultRuleBase.ReasonType.GENERAL, HttpStatus.NOT_FOUND);
+		}
 	}
 
 }

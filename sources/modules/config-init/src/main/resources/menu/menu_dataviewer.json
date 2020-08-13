@@ -1,14 +1,63 @@
 {
-	"menu": "OnesaitPlatform",
+	"menu": "onesait Platform",
 	"rol": "ROLE_DATAVIEWER",
 	"noSession": "/console/login",
 	"navigation": [
+
 		{
 			"title": {
-				"EN": "SHARE & USE",
-				"ES": "SHARE & USE"
+				"EN": "",
+				"ES": ""
 			},
-			"icon": "flaticon-cart",
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+		
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO"
+			},
+			"icon": "flaticon-network",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Projects",
+						"ES": "Mis Proyectos"
+					},
+					"icon": "",
+					"url": "/controlpanel/projects/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "VISUALIZATION & GIS",
+				"ES": "VISUALIZATION & GIS"
+			},
+			"icon": "flaticon-graph",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Dashboards",
+						"ES": "Mis Dashboards"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS"
+			},
+			"icon": "flaticon-refresh",
 			"url": "",
 			"submenu": [
 				{
@@ -18,22 +67,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/marketasset/list"
-				},							
-				{
-					"title": {
-						"EN": "My Dashboards",
-						"ES": "Mis Dashboards"
-					},
-					"icon": "",
-					"url": "/controlpanel/dashboards/viewerlist"
-				},
-				{
-					"title": {
-						"EN": "My Projects",
-						"ES": "Mis Proyectos"
-					},
-					"icon": "",
-					"url": "/controlpanel/projects/list"
 				}
 			]
 		}

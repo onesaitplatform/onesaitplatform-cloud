@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.rtdbmaintainer.job;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -33,6 +34,10 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.Tenant;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 import com.minsait.onesait.platform.rtdbmaintainer.service.RtdbExportDeleteService;
 import com.minsait.onesait.platform.rtdbmaintainer.service.RtdbMaintenanceService;
 
@@ -50,6 +55,8 @@ public class RtdbMaintainerJob {
 	private OntologyService ontologyService;
 	@Autowired
 	private RtdbExportDeleteService rtdbExportDeleteService;
+	@Autowired
+	private VerticalRepository verticalRepository;
 
 	@Autowired
 	private RtdbMaintenanceService maintenanceService;
@@ -64,44 +71,60 @@ public class RtdbMaintainerJob {
 
 	public void execute(JobExecutionContext context) throws InterruptedException {
 
-		final List<Ontology> ontologies = ontologyService.getCleanableOntologies().stream()
-				.filter(o -> o.getRtdbCleanLapse().getMilliseconds() > 0).collect(Collectors.toList());
+		final List<Vertical> verticals = verticalRepository.findAll();
+		verticals.forEach(v -> {
+			MultitenancyContextHolder.setVerticalSchema(v.getSchema());
 
-		if (!ontologies.isEmpty()) {
+			final List<Tenant> tenants = new ArrayList<>(v.getTenants());
+			final String verticalSchema = v.getSchema();
 
-			final TimeUnit timeUnit = (TimeUnit) context.getJobDetail().getJobDataMap().get("timeUnit");
-			long timeout = context.getJobDetail().getJobDataMap().getLongValue("timeout");
-			if (timeout == 0)
-				timeout = DEFAULT_TIMEOUT;
+			final List<Ontology> ontologies = ontologyService.getCleanableOntologies().stream()
+					.filter(o -> o.getRtdbCleanLapse().getMilliseconds() > 0).collect(Collectors.toList());
 
-			final BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(ontologies.size());
-			final ThreadPoolExecutor executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_THREADS, KEEP_ALIVE,
-					TimeUnit.SECONDS, blockingQueue);
+			if (!ontologies.isEmpty()) {
 
-			final List<CompletableFuture<String>> futureList = ontologies.stream()
-					.map(o -> CompletableFuture.supplyAsync(() -> {
-						final String query = rtdbExportDeleteService.performExport(o);
-						rtdbExportDeleteService.performDelete(o, query);
-						return query;
-					}, executor)).collect(Collectors.toList());
+				final TimeUnit timeUnit = (TimeUnit) context.getJobDetail().getJobDataMap().get("timeUnit");
+				long timeout = context.getJobDetail().getJobDataMap().getLongValue("timeout");
+				if (timeout == 0)
+					timeout = DEFAULT_TIMEOUT;
 
-			final CompletableFuture<Void> globalResut = CompletableFuture
-					.allOf(futureList.toArray(new CompletableFuture[futureList.size()]));
+				final BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(ontologies.size());
+				final ThreadPoolExecutor executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_THREADS, KEEP_ALIVE,
+						TimeUnit.SECONDS, blockingQueue);
 
-			try {
+				final List<CompletableFuture<String>> futureList = ontologies.stream()
+						.map(o -> CompletableFuture.supplyAsync(() -> {
+							MultitenancyContextHolder.setVerticalSchema(verticalSchema);
+							String query = null;
+							for (final Tenant t : tenants) {
+								// TO-DO identify tenant holder of ontology schema in rtdb
+								MultitenancyContextHolder.setTenantName(t.getName());
+								query = rtdbExportDeleteService.performExport(o);
+								rtdbExportDeleteService.performDelete(o, query);
+							}
+							return query;
+						}, executor)).collect(Collectors.toList());
 
-				globalResut.get(timeout, timeUnit);
+				final CompletableFuture<Void> globalResut = CompletableFuture
+						.allOf(futureList.toArray(new CompletableFuture[futureList.size()]));
 
-			} catch (ExecutionException | RuntimeException e) {
-				log.error("Error while trying to export and delete ontologies", e);
-			} catch (final TimeoutException e) {
-				log.error("Timeout Exception while executing batch job Rtdb Maintainer", e);
+				try {
+
+					globalResut.get(timeout, timeUnit);
+
+				} catch (ExecutionException | RuntimeException e) {
+					log.error("Error while trying to export and delete ontologies", e);
+				} catch (final TimeoutException e) {
+					log.error("Timeout Exception while executing batch job Rtdb Maintainer", e);
+				} catch (final Exception e) {
+					log.error("Exception while executing rtdb maintenance process", e);
+				}
+
+				maintenanceService.getTmpGenCollections().stream()
+						.forEach(s -> maintenanceService.deleteTmpGenCollection(s));
+
 			}
-
-			maintenanceService.getTmpGenCollections().stream()
-					.forEach(s -> maintenanceService.deleteTmpGenCollection(s));
-
-		}
+		});
 
 	}
 

@@ -64,11 +64,11 @@ public class MetricQueryResolverImpl implements MetricQueryResolver {
 
 	private static final int MINUTES_IN_HOUR = 60;
 	private static final int HOURS_IN_DAY = 24;
-	
-    private static final String VALUE_STR = "value";
-    private static final String VALUES_STR = "values";
-    private static final String TIMESERIE_STR = "TimeSerie";
-    private static final String TIMESTAMP_STR = "timestamp";
+
+	private static final String VALUE_STR = "value";
+	private static final String VALUES_STR = "values";
+	private static final String TIMESERIE_STR = "TimeSerie";
+	private static final String TIMESTAMP_STR = "timestamp";
 	private static final String TIMESERIE_DATE_STR = "$.TimeSerie.timestamp.$date";
 	private static final String WINDOW_TYPE_STR = "windowType";
 	private static final String DATE_STR = "$date";
@@ -255,7 +255,7 @@ public class MetricQueryResolverImpl implements MetricQueryResolver {
 							metrics.put(metric);
 						}
 
-						mongodbRepository.insert(MongoBasicOpsDBRepository.METRICS_BASE, "", dataHourly.toString());
+						mongodbRepository.insert(MongoBasicOpsDBRepository.METRICS_BASE, dataHourly.toString());
 
 						currentIntancetime = sdfHours.parse(sdfHours.format(lastDateCalendar.getTime())).getTime();
 					}
@@ -328,7 +328,7 @@ public class MetricQueryResolverImpl implements MetricQueryResolver {
 							metrics.put(metric);
 						}
 
-						mongodbRepository.insert(MongoBasicOpsDBRepository.METRICS_BASE, "", dataDaily.toString());
+						mongodbRepository.insert(MongoBasicOpsDBRepository.METRICS_BASE, dataDaily.toString());
 
 						currentIntancetime = sdfDays.parse(sdfDays.format(lastDateCalendar.getTime())).getTime();
 					}
@@ -403,7 +403,7 @@ public class MetricQueryResolverImpl implements MetricQueryResolver {
 							metrics.put(metric);
 						}
 
-						mongodbRepository.insert(MongoBasicOpsDBRepository.METRICS_BASE, "", dataMonthly.toString());
+						mongodbRepository.insert(MongoBasicOpsDBRepository.METRICS_BASE, dataMonthly.toString());
 
 						currentIntancetime = sdfMonths.parse(sdfMonths.format(lastDateCalendar.getTime())).getTime();
 					}
@@ -436,7 +436,6 @@ public class MetricQueryResolverImpl implements MetricQueryResolver {
 																						// MONTHS --> 1 por dia
 
 				long date = JsonPath.read(dataUnit, TIMESERIE_DATE_STR);
-
 
 				JSONArray metrics = null;
 				if (windowType.equals("HOURS")) {

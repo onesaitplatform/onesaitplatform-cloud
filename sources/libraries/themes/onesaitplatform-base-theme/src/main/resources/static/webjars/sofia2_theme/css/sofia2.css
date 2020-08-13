@@ -38,8 +38,8 @@ color: #060e14;
 color: #2e6c99;
 position: relative;
 top: 2px;
-left: 20px;
-font-size: 11px;
+left: 5 !important;
+font-size: 14px;
 white-space: nowrap;
 display: block;
 }
@@ -297,7 +297,7 @@ letter-spacing: normal;
     .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li:hover > a, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li.open > a,
     .page-sidebar .page-sidebar-menu > li:hover > a,
     .page-sidebar .page-sidebar-menu > li.open > a {
-     color: white;font-family: Soho;font-size: 13px;font-style: normal;font-stretch: normal; letter-spacing: normal;font-weight: normal;	border-top-left-radius: 0px;	border-bottom-left-radius: 0px;	background-color: #0e668c; }
+     color: white;font-family: Soho;font-size: 11px;font-style: normal;font-stretch: normal; letter-spacing: normal;font-weight: normal;	border-top-left-radius: 0px;	border-bottom-left-radius: 0px;	background-color: #0e668c; }
       .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li:hover > a > i, .page-sidebar-closed.page-sidebar-fixed .page-sidebar:hover .page-sidebar-menu > li.open > a > i,
       .page-sidebar .page-sidebar-menu > li:hover > a > i,
       .page-sidebar .page-sidebar-menu > li.open > a > i {
@@ -501,7 +501,7 @@ letter-spacing: normal;
     .page-sidebar-menu.page-sidebar-menu-hover-submenu > li:hover > .sub-menu.sidebar-toggler-wrapper, .page-sidebar-menu.page-sidebar-menu-hover-submenu > li:hover > .sub-menu.sidebar-search-wrapper {
       box-shadow: none; }
   .page-sidebar-menu.page-sidebar-menu-closed > li:hover {
-    box-shadow: 5px 5px rgba(44, 53, 66, 0.2); }
+   }
     .page-sidebar-menu.page-sidebar-menu-closed > li:hover.sidebar-toggler-wrapper, .page-sidebar-menu.page-sidebar-menu-closed > li:hover.sidebar-search-wrapper {
       box-shadow: none; }
     .page-sidebar-menu.page-sidebar-menu-closed > li:hover > .sub-menu {

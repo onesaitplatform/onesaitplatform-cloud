@@ -47,14 +47,20 @@ public class BaseHttpClient {
 	@Qualifier("dataHubRest")
 	private RestTemplate restTemplate;
 
-	public String invokeSQLPlugin(String endpoint, String accept, String contentType) {
+	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method, String accept, String contentType) {
 
 		String output = null;
 		final ObjectMapper mapper = new ObjectMapper();
 		try {
 
-			final HttpEntity<?> entity = new HttpEntity<>(getHeaders(accept, contentType));
-			final ResponseEntity<JsonNode> response = restTemplate.exchange(new URI(endpoint), HttpMethod.GET, entity,
+		    HttpEntity<?> entity;
+		    if (body != null) {
+		        entity = new HttpEntity<>(body, getHeaders(accept, contentType));
+		    } else {
+		        entity = new HttpEntity<>(getHeaders(accept, contentType));
+		    }
+			
+			final ResponseEntity<JsonNode> response = restTemplate.exchange(new URI(endpoint), method, entity,
 					JsonNode.class);
 			log.info("Send message: to {}.", endpoint);
 
@@ -82,8 +88,8 @@ public class BaseHttpClient {
 
 	}
 
-	public String invokeSQLPlugin(String endpoint) {
-		return invokeSQLPlugin(endpoint, ACCEPT_TEXT_CSV, null);
+	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method) {
+		return invokeSQLPlugin(endpoint, body, method, ACCEPT_TEXT_CSV, null);
 	}
 
 	private HttpHeaders getHeaders(String accept, String contentType) {

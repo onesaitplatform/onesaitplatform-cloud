@@ -69,6 +69,7 @@
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="la la-angle-right"></i></li>
+						<li><a th:href="@{/users/list}" th:text="#{user.breadcrumb.prev}">Home</a><i class="la la-angle-right"></i></li>
 						<li>
 							<span th:if="${user.userId} == null" th:text="#{user.breadcrumb.create}">Show User</span>
 							<span th:if="${user.userId} != null" th:text="#{user.breadcrumb.update}">Update User</span>
@@ -224,6 +225,18 @@
 																<span></span><!-- needed by styles -->
 															</label>																													
 														</div>
+													</div>
+												</div>
+											</div>
+											<div th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled') AND user.userId == null} " class="row">
+												<div class="col-md-4 col-sm-6 col-xs-12">
+													<div class="form-group">
+														<label th:text="#{multitenancy.tenant} + ':'">Tenant</label>
+														<div class=" ">
+															<select name="tenant" id="tenants" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true">
+																<option th:each="tenant:${tenants}" th:value="${tenant.name}" th:text="${tenant.name}" ></option>
+															</select>
+														</div>															
 													</div>
 												</div>
 											</div>

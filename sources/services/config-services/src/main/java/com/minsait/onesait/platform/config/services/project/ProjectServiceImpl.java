@@ -37,15 +37,17 @@ import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
 import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
+import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 
 import avro.shaded.com.google.common.collect.Lists;
@@ -68,6 +70,11 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Project createProject(ProjectDTO project) {
+
+		if (!projectRepository.findByIdentification(project.getIdentification()).isEmpty()) {
+			throw new ProjectServiceException(
+					"Project with identification: " + project.getIdentification() + " exists");
+		}
 
 		Project p = new Project();
 		p.setIdentification(project.getIdentification());
@@ -101,8 +108,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public List<Project> getAllProjects() {
-		List<Project> lproject = new LinkedList<Project>();
-		for (ProjectList plist: projectRepository.findAllForList()) {
+		final List<Project> lproject = new LinkedList<>();
+		for (final ProjectList plist : projectRepository.findAllForList()) {
 			lproject.add(EntitiesCast.castProjectList(plist, true));
 		}
 		return lproject;
@@ -114,12 +121,33 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public Project getByName(String identification) {
-		List<Project> projects = projectRepository.findByIdentification(identification);
-		if (!projects.isEmpty())
+	public ProjectList getByIdForList(String id) {
+		final List<ProjectList> projects = projectRepository.findByIdForList(id);
+		if (!projects.isEmpty()) {
 			return projects.get(0);
-		else
+		} else {
 			return null;
+		}
+	}
+
+	@Override
+	public Project getByName(String identification) {
+		final List<Project> projects = projectRepository.findByIdentification(identification);
+		if (!projects.isEmpty()) {
+			return projects.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public ProjectList getByNameForList(String identification) {
+		final List<ProjectList> projects = projectRepository.findByIdentificationForList(identification);
+		if (!projects.isEmpty()) {
+			return projects.get(0);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -155,15 +183,17 @@ public class ProjectServiceImpl implements ProjectService {
 			final App app = project.getApp();
 			if (!CollectionUtils.isEmpty(app.getChildApps())) {
 				app.getChildApps().forEach(a -> a.getAppRoles().forEach(r -> r.getAppUsers().forEach(au -> {
-					if (!users.contains(au))
+					if (!users.contains(au)) {
 						users.add(au);
+					}
 				})
 
 				));
 			}
 			app.getAppRoles().forEach(r -> r.getAppUsers().forEach(au -> {
-				if (!users.contains(au))
+				if (!users.contains(au)) {
 					users.add(au);
+				}
 			}));
 			return users;
 		} else {
@@ -173,15 +203,16 @@ public class ProjectServiceImpl implements ProjectService {
 
 	private List<ProjectUserDTO> getMembersDTO(List<?> members) {
 		return members.stream().map(o -> {
-			if (o instanceof AppUser)
+			if (o instanceof AppUser) {
 				return ProjectUserDTO.builder().userId(((AppUser) o).getUser().getUserId())
 						.roleName(((AppUser) o).getRole().getName()).fullName(((AppUser) o).getUser().getFullName())
 						.realm(((AppUser) o).getRole().getApp().getIdentification()).build();
-			else if (o instanceof User)
+			} else if (o instanceof User) {
 				return ProjectUserDTO.builder().userId(((User) o).getUserId()).roleName(((User) o).getRole().getId())
 						.fullName(((User) o).getFullName()).build();
-			else
+			} else {
 				return null;
+			}
 		}).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
@@ -194,19 +225,18 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public List<Project> getProjectsForUser(String userId) {
-		
-		List<ProjectList> projectsList = projectRepository.findAllForList();
-		List<Project> projects = new LinkedList<Project>();
-		
+
+		final List<ProjectList> projectsList = projectRepository.findAllForList();
+		final List<Project> projects = new LinkedList<>();
+
 		final User user = userService.getUser(userId);
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
-			for(ProjectList pl: projectsList) {
+			for (final ProjectList pl : projectsList) {
 				projects.add(EntitiesCast.castProjectList(pl, true));
 			}
 			return projects;
-		}
-		else{
-			for(ProjectList pl: projectsList) {
+		} else {
+			for (final ProjectList pl : projectsList) {
 				projects.add(EntitiesCast.castProjectList(pl, false));
 			}
 		}
@@ -223,15 +253,17 @@ public class ProjectServiceImpl implements ProjectService {
 				app.getChildApps().forEach(a -> a.getAppRoles().forEach(r -> {
 					final List<User> users = r.getAppUsers().stream().map(AppUser::getUser)
 							.collect(Collectors.toList());
-					if (users.contains(user) && !filteredProjects.contains(p))
+					if (users.contains(user) && !filteredProjects.contains(p)) {
 						filteredProjects.add(p);
+					}
 
 				}));
 			}
 			app.getAppRoles().forEach(r -> {
 				final List<User> users = r.getAppUsers().stream().map(AppUser::getUser).collect(Collectors.toList());
-				if (users.contains(user) && !filteredProjects.contains(p))
+				if (users.contains(user) && !filteredProjects.contains(p)) {
 					filteredProjects.add(p);
+				}
 			});
 		}
 	}
@@ -308,9 +340,9 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public void addWebProject(String webProjectId, String projectId, String userId) {
 		final Project project = projectRepository.findOne(projectId);
-		final WebProject webProject = webProjectService.getWebProjectById(webProjectId, userId);
+		final WebProjectDTO webProject = webProjectService.getWebProjectById(webProjectId, userId);
 		if (webProject != null && project != null) {
-			project.setWebProject(webProject);
+			project.setWebProject(WebProjectDTO.convert(webProject, userService.getUser(userId)));
 			projectRepository.save(project);
 		}
 
@@ -331,31 +363,33 @@ public class ProjectServiceImpl implements ProjectService {
 	public boolean isUserInProject(String userId, String projectId) {
 		final User user = userService.getUser(userId);
 		final Project project = projectRepository.findOne(projectId);
-		if (project.getUser().equals(user))
+		if (project.getUser().equals(user)) {
 			return true;
-		else if (project.getApp() != null)
+		} else if (project.getApp() != null) {
 			return project.getApp().getAppRoles().stream()
 					.map(ar -> ar.getAppUsers().stream().map(au -> au.getUser().equals(user))
 							.filter(Boolean::booleanValue).findFirst().orElse(false))
 					.filter(Boolean::booleanValue).findFirst().orElse(false);
-		else
+		} else {
 			return project.getUsers().contains(user);
+		}
 	}
 
 	@Transactional
 	@Override
 	public Set<User> getUsersInProject(String projectId) {
 		final Project project = projectRepository.findOne(projectId);
-		if (project != null)
+		if (project != null) {
 			return project.getUsers().stream().collect(Collectors.toSet());
-		else
+		} else {
 			return new HashSet<>();
+		}
 	}
 
 	@Override
 	public Map<AppRole, Set<AppUser>> getAllRoleUsersInProject(Set<AppRole> projectRoles) {
-		Map<AppRole, Set<AppUser>> projectUserRoles = new HashMap<>();
-		for (AppRole rol : projectRoles) {
+		final Map<AppRole, Set<AppUser>> projectUserRoles = new HashMap<>();
+		for (final AppRole rol : projectRoles) {
 			projectUserRoles.put(rol, rol.getAppUsers());
 		}
 		return projectUserRoles;
@@ -394,10 +428,11 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public Set<ProjectResourceAccess> getAllResourcesAccesses(String projectId) {
 		final Project project = projectRepository.findOne(projectId);
-		if (project != null)
+		if (project != null) {
 			return project.getProjectResourceAccesses().stream().collect(Collectors.toSet());
-		else
+		} else {
 			return new HashSet<>();
+		}
 	}
 
 	@Override
@@ -405,24 +440,21 @@ public class ProjectServiceImpl implements ProjectService {
 		final User user = userService.getUser(userId);
 		final Project project = projectRepository.findOne(projectId);
 		final String role_user = user.getRole().getId();
-		if (user.equals(project.getUser()) || role_user.equals(Role.Type.ROLE_ADMINISTRATOR.toString()))
+		if (user.equals(project.getUser()) || role_user.equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return project.getProjectResourceAccesses().stream().map(ProjectResourceAccess::getResource)
 					.collect(Collectors.toSet());
-		else
+		} else {
 			return getResourcesAccessesForUser(projectId, userId).stream().map(ProjectResourceAccess::getResource)
 					.collect(Collectors.toSet());
+		}
 	}
 
 	@Override
 	@Transactional
 	public Set<OPResource> getResourcesForUser(String userId) {
 		final Set<OPResource> resources = new HashSet<>();
-		final User user = userService.getUser(userId);
-		final List<Project> projects = getProjectsForUser(userId);
-		if (null == user || projects.isEmpty())
-			return resources;
-		projects.stream().forEach(p -> resources.addAll(getResourcesForProjectAndUser(p.getId(), userId)));
-
+		final List<ProjectResourceAccessList> accesses = projectResourceAccessRepository.findByUserId(userId);
+		accesses.stream().forEach(a -> resources.add(a.getResource()));
 		return resources;
 
 	}
@@ -440,15 +472,15 @@ public class ProjectServiceImpl implements ProjectService {
 		final Set<AppRole> roles = new HashSet<>();
 		final Project project = projectRepository.findOne(projectId);
 		roles.addAll(project.getApp().getAppRoles());
-		project.getApp().getChildApps().forEach(a -> roles.addAll(a.getAppRoles()));
+		project.getApp().getAppRoles().forEach(a -> roles.addAll(a.getChildRoles()));
 		return roles;
 	}
 
 	@Override
 	public boolean isUserAuthorized(String projectId, String userId) {
-		final Project project = projectRepository.findOne(projectId);
+		final ProjectList project = getByIdForList(projectId);
 		final User user = userService.getUser(userId);
-		return (project.getUser().equals(user) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()));
+		return project.getUser().equals(user) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name());
 	}
 
 	@Override
@@ -470,14 +502,15 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public boolean isUserInProjectWithoutOwner(String userId, String projectId) {
 		final User user = userService.getUser(userId);
-		final Project project = projectRepository.findOne(projectId);
-		if (project.getApp() != null)
+		final Project project = EntitiesCast.castProjectList(getByIdForList(projectId), false);
+		if (project.getApp() != null) {
 			return project.getApp().getAppRoles().stream()
 					.map(ar -> ar.getAppUsers().stream().map(au -> au.getUser().equals(user))
 							.filter(Boolean::booleanValue).findFirst().orElse(false))
 					.filter(Boolean::booleanValue).findFirst().orElse(false);
-		else
+		} else {
 			return project.getUsers().contains(user);
+		}
 	}
 
 }

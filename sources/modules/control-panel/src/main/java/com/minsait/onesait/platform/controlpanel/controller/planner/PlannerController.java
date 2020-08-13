@@ -49,7 +49,7 @@ public class PlannerController {
 
 	private static final String REDIRECT_PLANNER_LIST = "redirect:/planner/list";
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request) {
 
@@ -59,7 +59,7 @@ public class PlannerController {
 		return "planner/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@RequestMapping(method = RequestMethod.GET, value = "/unschedule/{jobName}")
 	public String unschedule(@PathVariable String jobName) {
 
@@ -67,7 +67,7 @@ public class PlannerController {
 		return REDIRECT_PLANNER_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@RequestMapping(method = RequestMethod.GET, value = "/pause/{jobName}")
 	public String pause(@PathVariable String jobName) {
 
@@ -75,7 +75,7 @@ public class PlannerController {
 		return REDIRECT_PLANNER_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@RequestMapping(method = RequestMethod.GET, value = "/resume/{jobName}")
 	public String resume(@PathVariable String jobName) {
 

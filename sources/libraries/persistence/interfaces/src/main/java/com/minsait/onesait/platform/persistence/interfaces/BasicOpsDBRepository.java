@@ -18,13 +18,13 @@ import java.util.List;
 
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 public interface BasicOpsDBRepository {
 
-	public String insert(String ontology, String schema, String instance);
+	public String insert(String ontology, String instance);
 
-	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
-			boolean includeIds);
+	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds);
 
 	public MultiDocumentOperationResult updateNative(String ontology, String updateStmt, boolean includeIds);
 
@@ -68,5 +68,23 @@ public interface BasicOpsDBRepository {
 
 	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(String ontologyName, String objectId,
 			String body);
+
+	public List<String> queryUpdateTransactionCompensationNative(String ontology, String updateStmt)
+			throws DBPersistenceException;
+
+	public List<String> queryUpdateTransactionCompensationNative(String collection, String query, String data)
+			throws DBPersistenceException;
+
+	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
+			throws DBPersistenceException;
+
+	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
+			throws DBPersistenceException;
+
+	public List<String> queryDeleteTransactionCompensationNative(String collection);
+
+	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
+			throws DBPersistenceException;
+
 
 }

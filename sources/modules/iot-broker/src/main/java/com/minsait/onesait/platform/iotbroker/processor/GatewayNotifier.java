@@ -29,7 +29,7 @@ public interface GatewayNotifier {
 	void addCommandListener(String key,
 			Function<SSAPMessage<SSAPBodyCommandMessage>, SSAPMessage<SSAPBodyReturnMessage>> command);
 
-	void notify(SSAPMessage<SSAPBodyIndicationMessage> indication);
+	void notify(String notifierGW, SSAPMessage<SSAPBodyIndicationMessage> indication);
 
 	void sendCommandAsync(SSAPMessage<SSAPBodyCommandMessage> command);
 

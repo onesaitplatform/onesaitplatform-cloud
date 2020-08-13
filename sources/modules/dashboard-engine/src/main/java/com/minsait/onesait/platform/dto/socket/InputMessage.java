@@ -16,6 +16,11 @@ package com.minsait.onesait.platform.dto.socket;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.dto.socket.querystt.FilterStt;
+import com.minsait.onesait.platform.dto.socket.querystt.OrderByStt;
+import com.minsait.onesait.platform.dto.socket.querystt.ParamStt;
+import com.minsait.onesait.platform.dto.socket.querystt.ProjectStt;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,18 +29,45 @@ import lombok.Setter;
 public class InputMessage {
 
 	private String dashboard;
-    private String ds;
-    private List<String> group;
-    private List<FilterStt> filter;
-    private List<ProjectStt> project;
-    
-    public InputMessage() {};
-    
-    public InputMessage (String dashboard, String ds, List<String> group, List<FilterStt> filter, List<ProjectStt> project) {
-    	this.dashboard = dashboard;
-    	this.ds = ds;
-    	this.group = group;
-    	this.filter = filter;
-    	this.project = project;
-    }
+	private String ds;
+	private List<String> group;
+	private List<FilterStt> filter;
+	private List<ProjectStt> project;
+	private List<OrderByStt> sort;
+	private long offset;
+	private long limit;
+	private List<ParamStt> param;
+	private boolean debug;
+
+	public InputMessage() {
+	};
+
+	public InputMessage(String dashboard, String ds, List<String> group, List<FilterStt> filter,
+			List<ProjectStt> project, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param) {
+		this.dashboard = dashboard;
+		this.ds = ds;
+		this.group = group;
+		this.filter = filter;
+		this.project = project;
+		this.sort = sort;
+		this.offset = offset;
+		this.limit = limit;
+		this.param = param;
+		this.debug = false;
+	}
+
+	public InputMessage(String dashboard, String ds, List<String> group, List<FilterStt> filter,
+			List<ProjectStt> project, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param,
+			boolean debug) {
+		this.dashboard = dashboard;
+		this.ds = ds;
+		this.group = group;
+		this.filter = filter;
+		this.project = project;
+		this.sort = sort;
+		this.offset = offset;
+		this.limit = limit;
+		this.param = param;
+		this.debug = debug;
+	}
 }

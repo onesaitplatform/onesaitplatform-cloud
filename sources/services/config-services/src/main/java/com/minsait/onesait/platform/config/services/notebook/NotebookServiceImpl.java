@@ -22,9 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.model.*;
+import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,11 +48,7 @@ import org.springframework.web.client.RestTemplate;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.minsait.onesait.platform.config.model.Notebook;
-import com.minsait.onesait.platform.config.model.NotebookUserAccess;
-import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
-import com.minsait.onesait.platform.config.model.Role;
-import com.minsait.onesait.platform.config.model.User;
+import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
@@ -60,6 +60,9 @@ import com.minsait.onesait.platform.config.services.notebook.configuration.Noteb
 import com.minsait.onesait.platform.config.services.notebook.conversion.JupyterConverterImpl;
 import com.minsait.onesait.platform.config.services.notebook.dto.NotebookOspInfoDTO;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
+import com.minsait.onesait.platform.config.services.token.TokenService;
+import com.minsait.onesait.platform.config.services.user.UserService;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -77,6 +80,9 @@ public class NotebookServiceImpl implements NotebookService {
 
 	@Autowired
 	private OPResourceService resourceService;
+	
+	@Autowired
+	private UserService userService;
 
 	@Autowired
 	private NotebookUserAccessRepository notebookUserAccessRepository;
@@ -86,6 +92,9 @@ public class NotebookServiceImpl implements NotebookService {
 	
 	@Autowired
 	private JupyterConverterImpl jupyterConverter;
+
+	@Autowired
+	private SecurityService securityService;
 
 	private static final String WITHNAME_STR = " with name: ";
 	private static final String URI_POST_ERROR = "The URI of the endpoint is invalid in creation POST";
@@ -102,6 +111,9 @@ public class NotebookServiceImpl implements NotebookService {
 	private static final String API_INTERPRETER_SETTING_STR = "/api/interpreter/setting/";
 	private static final String API_INTERPRETER_RESTART_STR = "/api/interpreter/setting/restart/";
 	private static final String API_IMPORT_STR = "/api/notebook/import";
+	private static final String API_EXPORT_STR = "/api/notebook/export/";
+	private static final String API_JOB_STR = "/api/notebook/job/";
+	private static final String API_RUN_STR = "/api/notebook/run/";
 	private static final String ERROR = "ERROR: ";
 	private static final String ERROR_USERACCESS_PROPR = "Not possible to give access to proprietary user of notebook";
 	private static final String ERROR_USERACCESS_ROL = "Not possible to give access to user: role not allowed";
@@ -231,7 +243,7 @@ public class NotebookServiceImpl implements NotebookService {
 	public Notebook importNotebook(String name, String data, String userId, boolean overwrite, boolean importAuthorizations) {
 		Notebook nt = null;
 		User user = userRepository.findByUserId(userId);
-		boolean isUserAdmin = user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
+		boolean isUserAdmin = userService.isUserAdministrator(user);
 		User importingUser = user;
 		User notebookOwner = null;
 		// if admin: import with user owner
@@ -400,14 +412,14 @@ public class NotebookServiceImpl implements NotebookService {
 	
 	@Override
 	public JSONObject exportNotebook(String id, String user) {
-		final Notebook nt = notebookRepository.findByIdzep(id);
+		final Notebook nt = getNotebook(id);
 		final User userObj = userRepository.findByUserId(user);
 		ResponseEntity<String> responseEntity;
 		JSONObject notebookJSONObject;
 
 		if (hasUserPermissionInNotebook(nt, user)) {
 			try {
-				responseEntity = sendHttp("/api/notebook/export/" + nt.getIdzep(), HttpMethod.GET, "");
+				responseEntity = sendHttp(API_EXPORT_STR + nt.getIdzep(), HttpMethod.GET, "");
 				
 				if (responseEntity == null) {
 					log.error(ERROR_NOTEBOOK_NOT_FOUND_ZEPPELIN, nt.getIdzep());
@@ -535,6 +547,11 @@ public class NotebookServiceImpl implements NotebookService {
 		return loginOrGetWSTokenWithUserPass(configuration.getZeppelinShiroAdminUsername(),
 				configuration.getZeppelinShiroAdminPass());
 	}
+	
+	@Override
+	public String loginOrGetWSTokenByBearer(String user, String bearertoken) {
+		return loginOrGetWSTokenWithUserPass(user,bearertoken);
+	}
 
 	private String loginOrGetWSTokenWithUserPass(String username, String password) {
 		final HttpHeaders headers = new HttpHeaders();
@@ -623,11 +640,24 @@ public class NotebookServiceImpl implements NotebookService {
 	@Override
 	public List<Notebook> getNotebooks(String userId) {
 		final User user = userRepository.findByUserId(userId);
-		if (!user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (!userService.isUserAdministrator(user)) {
 			return notebookRepository.findByUserAndAccess(user);
 		} else {
 			return notebookRepository.findAllByOrderByIdentificationAsc();
+		}
+	}
 
+	@Override
+	public List<NotebookForList> getNotebooksAndByProjects(String userId) {
+		final User user = userRepository.findByUserId(userId);
+		List<NotebookForList> notebookForLists = notebookRepository.findAllNotebookList();
+		if(user.isAdmin()){
+			return notebookForLists;
+		}
+		else{
+			securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
+			return notebookForLists.stream()
+					.filter(n -> "EDIT".equals(n.getAccessType())).collect(Collectors.toList());
 		}
 	}
 	
@@ -638,8 +668,7 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 	
 	private boolean hasUserPermissionCreateNotebook(User user) {
-		return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
-				|| user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.toString()));
+		return (userService.isUserAdministrator(user) || userService.isUserAnalytics(user));
 	}
 
 	@Override
@@ -649,8 +678,7 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 
 	private boolean hasUserPermissionInNotebook(Notebook nt, User user) {
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
-				|| nt.getUser().getUserId().equals(user.getUserId()) || nt.isPublic())
+		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId()) || nt.isPublic())
 			return true;
 		else { // TO-DO differentiate between access MANAGE/VIEW
 			for (NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt, user)) {
@@ -658,7 +686,7 @@ public class NotebookServiceImpl implements NotebookService {
 					return true;
 				}
 			}
-			return false;
+			return resourceService.hasAccess(user.getUserId(),nt.getId(), ProjectResourceAccessParent.ResourceAccessType.VIEW);
 		}
 	}
 	
@@ -738,7 +766,7 @@ public class NotebookServiceImpl implements NotebookService {
 	public ResponseEntity<String> runParagraph(String zeppelinId, String paragraphId, String body)
 			throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-		responseEntity = sendHttp("/api/notebook/run/".concat(zeppelinId).concat("/").concat(paragraphId),
+		responseEntity = sendHttp(API_RUN_STR.concat(zeppelinId).concat("/").concat(paragraphId),
 				HttpMethod.POST, body);
 		if (responseEntity.getStatusCode() == HttpStatus.OK) {
 			responseEntity = sendHttp(API_NOTEBOOK_STR.concat(zeppelinId).concat("/paragraph/").concat(paragraphId),
@@ -750,7 +778,7 @@ public class NotebookServiceImpl implements NotebookService {
 	@Override
 	public ResponseEntity<String> runAllParagraphs(String zeppelinId)
 			throws URISyntaxException, IOException {
-		return sendHttp("/api/notebook/job/".concat(zeppelinId), HttpMethod.POST, "");
+		return sendHttp(API_JOB_STR.concat(zeppelinId), HttpMethod.POST, "");
 	}
 
 	@Override
@@ -759,12 +787,25 @@ public class NotebookServiceImpl implements NotebookService {
 		return sendHttp(API_NOTEBOOK_STR.concat(zeppelinId).concat("/paragraph/").concat(paragraphId), HttpMethod.GET,
 				"");
 	}
+	
+	@Override
+	public String getParagraphOutputMessage(String zeppelinId, String paragraphId) throws URISyntaxException, IOException {
+		String rawData = null;
+		ResponseEntity<String> paragraphResult = getParagraphResult(zeppelinId, paragraphId);
+		JsonObject responseBody = new JsonParser().parse(paragraphResult.getBody()).getAsJsonObject();
+		JsonObject paragraphBody = responseBody.getAsJsonObject("body");
+		JsonObject results = paragraphBody.getAsJsonObject("results");
+		JsonArray msgs = results.getAsJsonArray("msg");
+		JsonObject data = msgs.get(0).getAsJsonObject();
+		rawData = data.get("data").getAsString();
+		return rawData;
+	}
 
 	@Override
 	public ResponseEntity<String> getAllParagraphStatus(String zeppelinId)
 			throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-		responseEntity = sendHttp("/api/notebook/job/".concat(zeppelinId), HttpMethod.GET, "");
+		responseEntity = sendHttp(API_JOB_STR.concat(zeppelinId), HttpMethod.GET, "");
 
 		return responseEntity;
 	}
@@ -822,7 +863,7 @@ public class NotebookServiceImpl implements NotebookService {
 				throw new NotebookServiceException(Error.PERMISSION_DENIED, ERROR_USERACCESS_PROPR);
 			}
 			
-			if (!user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.toString())) {
+			if (!userService.isUserAnalytics(user)) {
 				log.error(ERROR_USERACCESS_ROL);
 				throw new NotebookServiceException(Error.PERMISSION_DENIED, ERROR_USERACCESS_ROL);
 			}
@@ -968,8 +1009,8 @@ public class NotebookServiceImpl implements NotebookService {
 				
 		try {
 			
-			if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || 
-					(user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.toString()) 
+			if (userService.isUserAdministrator(user) || 
+					(userService.isUserAdministrator(user)
 							&& !isSharedInterpreterConfiguration(interpreterName))) {
 		
 				responseEntity = restartInterpreter(interpreterName, body);
@@ -1061,8 +1102,8 @@ public class NotebookServiceImpl implements NotebookService {
 		for (Map.Entry<String, String> entry : notebookInterpreters.entrySet()) {
 			String key = "Interpreter " + entry.getKey();		
 			try {
-				if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || 
-					(user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.toString()) 
+				if (userService.isUserAdministrator(user) || 
+					(userService.isUserAnalytics(user)
 							&& !isSharedInterpreterConfiguration(entry.getKey(), entry.getValue()))) {
 					ResponseEntity<String> responseEntity = restartInterpreter(entry.getKey(), entry.getValue(), body);
 					if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -1137,7 +1178,8 @@ public class NotebookServiceImpl implements NotebookService {
 		return interpreterList;
 	}
 	
-	private Map<String, String> getNotebookInterpreters(String notebookId) throws URISyntaxException, IOException {
+	@Override
+	public Map<String, String> getNotebookInterpreters(String notebookId) throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
 		
 		responseEntity = sendHttp(API_NOTEBOOK_STR.concat(notebookId), HttpMethod.GET, "");
@@ -1148,18 +1190,18 @@ public class NotebookServiceImpl implements NotebookService {
 
 		try {
 			JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
-		
 			JSONArray paragraphs = jsonResponse.getJSONObject("body").getJSONArray("paragraphs");
 		
 			for(int i=0; i< paragraphs.length(); i++) {
 				JSONObject object = paragraphs.getJSONObject(i);
 				if (!object.isNull("text")) {
 					String text = object.getString("text");
+					
 					String firstLine = text.split("\n")[0];
 					if (firstLine.startsWith("%")) {
 						String nameInterpreter;
 						if (firstLine.contains(".")) {
-							nameInterpreter = firstLine.substring(1).split(".")[0];
+							nameInterpreter = firstLine.substring(1).split("\\.")[0];
 						} else {
 							nameInterpreter = firstLine.substring(1);
 						} 

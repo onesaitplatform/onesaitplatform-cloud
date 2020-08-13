@@ -39,6 +39,11 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepository", unless = "#result==null or #result.size()==0", key = "#p0.id")
 	List<ClientPlatformOntology> findByClientPlatform(ClientPlatform clientPlatform);
+	
+	@Cacheable(cacheNames = "ClientPlatformOntologyRepositoryByClientPlatformAndInsertAccess", unless = "#result == null")
+	@Query("SELECT o " + "FROM ClientPlatformOntology AS o " + "WHERE o.access != 'QUERY' AND "
+			+ "o.clientPlatform.identification = :clientPlatformId")
+	List<ClientPlatformOntology> findByClientPlatformAndInsertAccess(@Param("clientPlatformId") String clientPlatformId);
 
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepository", unless = "#result==null or #result.size()==0", key = "#p0.id")
 	List<ClientPlatformOntology> findById(String id);

@@ -1,0 +1,413 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ontology",
+    "type": "object",
+    "required": [
+        "ontology"
+    ],
+    "properties": {
+        "ontology": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel test_carlos_16",
+        "type": "object",
+        "required": [
+            "point",
+            "linestring",
+            "polygon",
+            "myltipoint",
+            "multilinestring",
+            "multipolygon"
+        ],
+        "properties": {
+            "point": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "number",
+                                "maximum": 180,
+                                "minimum": -180
+                            },
+                            {
+                                "type": "number",
+                                "maximum": 90,
+                                "minimum": -90
+                            }
+                        ],
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Point"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "linestring": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "minItems": 2,
+                        "items": [
+                            {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 2,
+                                "items": [
+                                    {
+                                        "type": "number",
+                                        "maximum": 180,
+                                        "minimum": -180
+                                    },
+                                    {
+                                        "type": "number",
+                                        "maximum": 90,
+                                        "minimum": -90
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 2,
+                                "items": [
+                                    {
+                                        "type": "number",
+                                        "maximum": 180,
+                                        "minimum": -180
+                                    },
+                                    {
+                                        "type": "number",
+                                        "maximum": 90,
+                                        "minimum": -90
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "LineString"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "polygon": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "array",
+                                "minItems": 4,
+                                "items": [
+                                    {
+                                        "type": "array",
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "items": [
+                                            {
+                                                "type": "number",
+                                                "maximum": 180,
+                                                "minimum": -180
+                                            },
+                                            {
+                                                "type": "number",
+                                                "maximum": 90,
+                                                "minimum": -90
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "items": [
+                                            {
+                                                "type": "number",
+                                                "maximum": 180,
+                                                "minimum": -180
+                                            },
+                                            {
+                                                "type": "number",
+                                                "maximum": 90,
+                                                "minimum": -90
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "items": [
+                                            {
+                                                "type": "number",
+                                                "maximum": 180,
+                                                "minimum": -180
+                                            },
+                                            {
+                                                "type": "number",
+                                                "maximum": 90,
+                                                "minimum": -90
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "items": [
+                                            {
+                                                "type": "number",
+                                                "maximum": 180,
+                                                "minimum": -180
+                                            },
+                                            {
+                                                "type": "number",
+                                                "maximum": 90,
+                                                "minimum": -90
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Polygon"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "myltipoint": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "array",
+                                "minItems": 2,
+                                "maxItems": 2,
+                                "items": [
+                                    {
+                                        "type": "number",
+                                        "maximum": 180,
+                                        "minimum": -180
+                                    },
+                                    {
+                                        "type": "number",
+                                        "maximum": 90,
+                                        "minimum": -90
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "MultiPoint"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "multilinestring": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "array",
+                                "minItems": 2,
+                                "items": [
+                                    {
+                                        "type": "array",
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "items": [
+                                            {
+                                                "type": "number",
+                                                "maximum": 180,
+                                                "minimum": -180
+                                            },
+                                            {
+                                                "type": "number",
+                                                "maximum": 90,
+                                                "minimum": -90
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "array",
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "items": [
+                                            {
+                                                "type": "number",
+                                                "maximum": 180,
+                                                "minimum": -180
+                                            },
+                                            {
+                                                "type": "number",
+                                                "maximum": 90,
+                                                "minimum": -90
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "MultiLineString"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "multipolygon": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "array",
+                                "items": [
+                                    {
+                                        "type": "array",
+                                        "minItems": 4,
+                                        "items": [
+                                            {
+                                                "type": "array",
+                                                "minItems": 2,
+                                                "maxItems": 2,
+                                                "items": [
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 180,
+                                                        "minimum": -180
+                                                    },
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 90,
+                                                        "minimum": -90
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "array",
+                                                "minItems": 2,
+                                                "maxItems": 2,
+                                                "items": [
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 180,
+                                                        "minimum": -180
+                                                    },
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 90,
+                                                        "minimum": -90
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "array",
+                                                "minItems": 2,
+                                                "maxItems": 2,
+                                                "items": [
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 180,
+                                                        "minimum": -180
+                                                    },
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 90,
+                                                        "minimum": -90
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "array",
+                                                "minItems": 2,
+                                                "maxItems": 2,
+                                                "items": [
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 180,
+                                                        "minimum": -180
+                                                    },
+                                                    {
+                                                        "type": "number",
+                                                        "maximum": 90,
+                                                        "minimum": -90
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "MultiPolygon"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    },
+    "description": "testing",
+    "additionalProperties": true
+}

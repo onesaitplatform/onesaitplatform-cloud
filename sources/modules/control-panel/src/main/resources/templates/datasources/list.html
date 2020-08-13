@@ -117,7 +117,7 @@
 																<span class="input-group-addon">
 																	<i class="fa fa-tag font-grey-mint"></i>
 																</span>															
-																<input id="name" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+																<input id="identification" th:placeholder="#{gadgets.name}" name="identification" class="form-control" type="text" maxlength="50" value=""/>
 															</div>
 														</div>
 													</div>
@@ -126,8 +126,8 @@
 															<div class="input-group">
 																<span class="input-group-addon">
 																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>
-																<input id="type" th:placeholder="#{gadgets.type}" name="type" class="form-control" type="text" maxlength="45" value=""/>
+																</span>															
+																<input id="description" th:placeholder="#{gadgets.description}" name="description" class="form-control" type="text" maxlength="50" value=""/>
 															</div>
 														</div>
 													</div>
@@ -191,7 +191,7 @@
 																	<!-- VIEW -->
 																	<span th:title="#{gen.view}" class="btn btn-xs btn-outline btn-circle no-border blue tooltips" data-container="body" data-placement="bottom"	th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/datasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-outline btn-circle no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/datasources/update/${datasource.id}/|(form)} + '=' + '\');'"><i class="la la-edit  font-hg"></i></span>																	
+																	<span  class="btn btn-xs btn-outline btn-circle no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'showNavigationConfirmDialogDatasource(\'' + @{|/datasources/update/${datasource.id}/|(form)} + '=' + '\', \'' + ${datasource.id} + '\');'"><i class="la la-edit  font-hg"></i></span>																	
 																	<!-- DELETE -->
 																	<span  class="btn btn-xs btn-outline btn-circle no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteConfirmation(\''+${datasource.id}+'\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
@@ -272,6 +272,27 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
+	var showNavigationConfirmDialogDatasource = function(url, id){	
+		// 
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		$.ajax({
+			url: "getGadgetsUsingDatasource/" + id,
+			headers: { [csrf_header]: csrf_value },
+			type: 'GET',
+			dataType: 'json',
+			contentType: 'application/json',
+			mimeType: 'application/json',
+			success: function (gadgetNames) {		 
+				if (gadgetNames.length>0){
+					HeaderController.showNavigationConfirmDialogDatasource(url, gadgetNames);
+				} else {
+					navigateUrl(url);
+				}
+			}
+		});
+	}	
+
 	var  deleteConfirmation = function (id){
 		
 		showConfirmDeleteDialog(id);	
@@ -282,10 +303,21 @@
 	var showConfirmDeleteDialog = function(id){	
 		$('#delete_datasource_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
-		HeaderController.showConfirmDialogDatasource('delete_datasource_form');	
 		
+		showGadgetsUsingDatasourceConfirm(id);
 	}	
 
+	var showGadgetsUsingDatasourceConfirm = function(id){	
+		// 
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		$.ajax({ url: "getGadgetsUsingDatasource/" + id, headers: { [csrf_header]: csrf_value }, type: 'GET', dataType: 'json', contentType: 'application/json', mimeType: 'application/json',
+			success: function (gadgetNames) {			 
+						HeaderController.showConfirmDialogDatasource('delete_datasource_form', gadgetNames);	
+			}
+		});
+	}	
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -350,5 +382,3 @@
 	
 </body>
 </html> 
--->
-  

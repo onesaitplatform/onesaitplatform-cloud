@@ -42,5 +42,5 @@ public class FlowEngineInvokeRestApiOperationRequest {
 	private List<Map<String, String>> operationInputParams;
 	@Getter
 	@Setter
-	private String authentication;
+	private String domainName;
 }

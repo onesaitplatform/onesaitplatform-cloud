@@ -27,7 +27,7 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 
 @Controller
 @RequestMapping("monitoringui")
-@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 public class MonitoringUIController {
 	@Autowired
 	private IntegrationResourcesService resourcesService;

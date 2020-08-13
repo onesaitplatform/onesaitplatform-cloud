@@ -69,10 +69,12 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID {
 		if (!(o instanceof ClientPlatformOntology))
 			return false;
 		final ClientPlatformOntology that = (ClientPlatformOntology) o;
-		return getClientPlatform() != null
+		return getClientPlatform() != null && that.getClientPlatform() != null
+				&& getClientPlatform().getIdentification() != null
+				&& that.getClientPlatform().getIdentification() != null
 				&& getClientPlatform().getIdentification().equals(that.getClientPlatform().getIdentification())
-				&& null!= getOntology() 
-				&& null!= that.getOntology()
+				&& null != getOntology() && null != that.getOntology() && null != getOntology().getIdentification()
+				&& null != that.getOntology().getIdentification()
 				&& getOntology().getIdentification().equals(that.getOntology().getIdentification());
 	}
 
@@ -80,9 +82,10 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((getClientPlatform() == null) ? 0 : getClientPlatform().getIdentification().hashCode());
-		result = prime * result + ((getOntology() == null || getOntology().getIdentification() == null) ? 0 : getOntology().getIdentification().hashCode());
+		result = prime * result + ((getClientPlatform() == null || getClientPlatform().getIdentification() == null) ? 0
+				: getClientPlatform().getIdentification().hashCode());
+		result = prime * result + ((getOntology() == null || getOntology().getIdentification() == null) ? 0
+				: getOntology().getIdentification().hashCode());
 		return result;
 	}
 

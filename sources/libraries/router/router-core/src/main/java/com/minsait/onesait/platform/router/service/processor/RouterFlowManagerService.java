@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.router.service.processor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -37,8 +39,13 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.hazelcast.core.IQueue;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.ApiOperation;
+import com.minsait.onesait.platform.config.model.Subscription;
+import com.minsait.onesait.platform.config.services.subscription.SubscriptionService;
+import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.models.ErrorResult;
 import com.minsait.onesait.platform.router.service.app.model.AdviceNotificationModel;
@@ -51,11 +58,13 @@ import com.minsait.onesait.platform.router.service.app.model.OperationModel.Sour
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
 import com.minsait.onesait.platform.router.service.app.service.AdviceNotificationService;
-import com.minsait.onesait.platform.router.service.app.service.KafkaTopicNotificationService;
+import com.minsait.onesait.platform.router.service.app.service.KafkaTopicKsqlNotificationService;
+import com.minsait.onesait.platform.router.service.app.service.KafkaTopicOntologyNotificationService;
 import com.minsait.onesait.platform.router.service.app.service.RouterCrudService;
 import com.minsait.onesait.platform.router.service.app.service.RouterCrudServiceException;
 import com.minsait.onesait.platform.router.service.app.service.RulesEngineNotificationService;
 import com.minsait.onesait.platform.router.service.app.service.advice.AdviceServiceImpl;
+import com.minsait.onesait.platform.router.subscription.SubscriptionManager;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,6 +90,12 @@ public class RouterFlowManagerService {
 	@Value("${onesaitplatform.router.notifications.pool.queue.rulesengine:-1}")
 	private int rulesEngineThreadPoolQueue;
 
+	@Value("${onesaitplatform.router.notifications.pool.subscription:10}")
+	private int subscriptionThreadPool;
+
+	@Value("${onesaitplatform.router.notifications.pool.queue.subscription:-1}")
+	private int subscriptionThreadPoolQueue;
+
 	@Autowired
 	private RouterCrudService routerCrudService;
 
@@ -96,9 +111,26 @@ public class RouterFlowManagerService {
 	@Autowired
 	private RulesEngineNotificationService rulesEngineNotificationService;
 
+	@Autowired
+	private SubscriptionService subscriptionService;
+
+	@Autowired
+	private SubscriptionManager subscriptorManager;
+
+	@Autowired
+	private NoderedAuthenticationService noderedAthService;
+
+	@Autowired
+	@Qualifier("notificationAdviceNodeRED")
+	private IQueue<NotificationCompositeModel> notificationAdviceNodeRED;
+
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	private ExecutorService noderedNotificatorExecutor;
 	private ExecutorService kafkaNotificatorExecutor;
 	private ExecutorService rulesEngineNotificatorExecutor;
+	private ExecutorService subscriptionNotificatorExecutor;
+	private ExecutorService noderedNotificatorProcessor;
+
 	private static final String ERROR_MESSAGE_STR = "{ \"error\" : { \"message\" : \"";
 
 	@PostConstruct
@@ -106,22 +138,46 @@ public class RouterFlowManagerService {
 		if (noderedThreadPoolQueue < 0) {
 			noderedNotificatorExecutor = Executors.newFixedThreadPool(noderedThreadPool);
 		} else {
-			final BlockingQueue q = new ArrayBlockingQueue(noderedThreadPoolQueue);
+			final BlockingQueue<Runnable> q = new ArrayBlockingQueue<>(noderedThreadPoolQueue);
 			noderedNotificatorExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
 		}
 
 		if (kafkaThreadPoolQueue < 0) {
 			kafkaNotificatorExecutor = Executors.newFixedThreadPool(kafkaThreadPool);
 		} else {
-			final BlockingQueue q = new ArrayBlockingQueue(kafkaThreadPoolQueue);
+			final BlockingQueue<Runnable> q = new ArrayBlockingQueue<>(kafkaThreadPoolQueue);
 			kafkaNotificatorExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
 		}
 		if (rulesEngineThreadPoolQueue < 0) {
 			rulesEngineNotificatorExecutor = Executors.newFixedThreadPool(rulesEngineThreadPool);
 		} else {
-			final BlockingQueue q = new ArrayBlockingQueue(rulesEngineThreadPoolQueue);
+			final BlockingQueue<Runnable> q = new ArrayBlockingQueue<>(rulesEngineThreadPoolQueue);
 			rulesEngineNotificatorExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
 		}
+		if (subscriptionThreadPoolQueue < 0) {
+			subscriptionNotificatorExecutor = Executors.newFixedThreadPool(subscriptionThreadPool);
+		} else {
+			final BlockingQueue<Runnable> q = new ArrayBlockingQueue<>(subscriptionThreadPoolQueue);
+			subscriptionNotificatorExecutor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
+		}
+
+		noderedNotificatorProcessor = Executors.newSingleThreadExecutor();
+		noderedNotificatorProcessor.execute(() -> {
+			while (true) {
+				try {
+					final NotificationCompositeModel notificationModel = notificationAdviceNodeRED.take();
+					log.debug("Notification evaluatioin. Ontology: {}, type: {}, message: {}",
+							notificationModel.getNotificationModel().getOperationModel().getOntologyName(),
+							notificationModel.getNotificationModel().getOperationModel().getOperationType(),
+							notificationModel.getNotificationModel().getOperationModel().getBody());
+					// process notificationModel
+
+					notifyNoderedNotificationNodes(notificationModel);
+				} catch (final Exception e1) {
+					log.error("Interrupted Disconnected Clients Queue listening", e1);
+				}
+			}
+		});
 	}
 
 	@PreDestroy
@@ -129,6 +185,8 @@ public class RouterFlowManagerService {
 		noderedNotificatorExecutor.shutdown();
 		kafkaNotificatorExecutor.shutdown();
 		rulesEngineNotificatorExecutor.shutdown();
+		subscriptionNotificatorExecutor.shutdown();
+		noderedNotificatorProcessor.shutdown();
 	}
 
 	ObjectMapper mapper = new ObjectMapper();
@@ -140,12 +198,16 @@ public class RouterFlowManagerService {
 
 		try {
 			final NotificationCompositeModel result = executeCrudOperations(compositeModel);
+			if (result.getOperationResultModel().isStatus()) {
+				log.info("Check if there are any subscriptor to this ontology that should be notified.");
+			}
 
 			// if OK notify NodeRED scripts and Kafka subscriptors
 			if (compositeModel.getOperationResultModel().isStatus()) {
 				notifyScriptsAndNodereds(compositeModel);
 				notifyRulesEngine(compositeModel);
 				notifyKafkaTopics(result);
+				notifySubscriptors(model);
 			}
 
 			return result.getOperationResultModel();
@@ -177,6 +239,20 @@ public class RouterFlowManagerService {
 			return output;
 		}
 
+	}
+
+	public OperationResultModel notifyModules(NotificationModel model) {
+		// TO-DO es necesario el result?
+
+		final NotificationCompositeModel compositeModel = new NotificationCompositeModel();
+		compositeModel.setNotificationModel(model);
+		log.debug("startNotifyModules: advice model arrived");
+		notifyScriptsAndNodereds(compositeModel);
+		notifyRulesEngine(compositeModel);
+		notifyKafkaTopics(compositeModel);
+		notifySubscriptors(model);
+
+		return new OperationResultModel();
 	}
 
 	public NotificationCompositeModel executeCrudOperations(NotificationCompositeModel compositeModel)
@@ -246,12 +322,17 @@ public class RouterFlowManagerService {
 				.getBeansOfType(AdviceNotificationService.class);
 
 		final Iterator<Entry<String, AdviceNotificationService>> iterator = map.entrySet().iterator();
-		while (iterator.hasNext()) {
-			final Entry<String, AdviceNotificationService> item = iterator.next();
-			final AdviceNotificationService service = item.getValue();
-			final List<AdviceNotificationModel> list = service.getAdviceNotificationModel(ontologyName, messageType);
-			if (list != null && !list.isEmpty())
-				listNotifications.addAll(list);
+		try {
+			while (iterator.hasNext()) {
+				final Entry<String, AdviceNotificationService> item = iterator.next();
+				final AdviceNotificationService service = item.getValue();
+				final List<AdviceNotificationModel> list = service.getAdviceNotificationModel(ontologyName,
+						messageType);
+				if (list != null && !list.isEmpty())
+					listNotifications.addAll(list);
+			}
+		} catch (final Exception e) {
+			log.error("Error while obtaining node red notifications {}", e.getMessage());
 		}
 
 		log.debug("getScriptsAndNodereds: End");
@@ -260,13 +341,82 @@ public class RouterFlowManagerService {
 
 	}
 
+	private void notifySubscriptors(NotificationModel model) {
+		final List<Subscription> subscriptions = subscriptionService
+				.findByOntology(model.getOperationModel().getOntologyName());
+		if (!subscriptions.isEmpty()) {
+			log.info("There are {} subscriptions for the ontology {}", subscriptions.size(),
+					model.getOperationModel().getOntologyName());
+			final String vertical = MultitenancyContextHolder.getVerticalSchema();
+			final String tenant = MultitenancyContextHolder.getTenantName();
+			for (final Subscription subscription : subscriptions) {
+				subscriptionNotificatorExecutor.execute(() -> {
+					try {
+						MultitenancyContextHolder.setTenantName(tenant);
+						MultitenancyContextHolder.setVerticalSchema(vertical);
+						log.debug("notifySubscriptors: Begin");
+
+						subscriptorManager.notifySubscriptors(subscription,
+								objectMapper.readTree(model.getOperationModel().getBody()));
+
+						MultitenancyContextHolder.clear();
+						log.debug("notifySubscriptors: END");
+					} catch (final Exception e) {
+						log.error("Error Notifing suscriptor Event. {}", e);
+					}
+
+				});
+			}
+		}
+	}
+
+	private void notifyNoderedNotificationNodes(NotificationCompositeModel compositeModel) {
+		
+		// check if necesary to send
+		if (Boolean.TRUE.equals(compositeModel.getDiscardAfterElapsedTimeEnabled())) {
+			// compare timestamps
+			Date now = new Date();
+			Date notifCreationTS = compositeModel.getOriginalNotificationTimestamp();
+			Integer timeElapsed = Math.toIntExact((now.getTime() - notifCreationTS.getTime()) / 1000);
+			if (timeElapsed > compositeModel.getMaxRetryElapsedTime()) {
+				// discard message
+				log.debug(
+						"Notification message wil be discarted. Elapsed time:{}, Max time allowed: {}, Ontology: {}, Type: {}, Message: {}",
+						timeElapsed, compositeModel.getMaxRetryElapsedTime(),
+						compositeModel.getNotificationModel().getOperationModel().getOntologyName(),
+						compositeModel.getNotificationModel().getOperationModel().getOperationType(),
+						compositeModel.getNotificationModel().getOperationModel().getBody());
+				return;
+			}
+		}
+		// try to send notification model
+		try {
+			// Check NodeRED Authentication
+			compositeModel.setHeaderAuthValue(noderedAthService.getNoderedAuthAccessToken(
+					compositeModel.getDomainOwner(), compositeModel.getDomainIdentification()));
+			adviceServiceImpl.execute(compositeModel);
+		} catch (Exception e) {
+			// If not successfully, requeue
+			log.error("Error sending NodeRED Notification");
+			if(compositeModel.getRetryOnFaialureEnabled()) {
+				compositeModel.setRetriedNotification(true);
+				notificationAdviceNodeRED.add(compositeModel);
+			}
+		}
+
+	}
+
 	private void notifyScriptsAndNodereds(NotificationCompositeModel compositeModel) {
 
 		// Notification to Scripts in NodeRED
 		final List<AdviceNotificationModel> lendpoints = getScriptsAndNodereds(compositeModel);
+		final String vertical = MultitenancyContextHolder.getVerticalSchema();
+		final String tenant = MultitenancyContextHolder.getTenantName();
 		for (final AdviceNotificationModel entity : lendpoints) {
 			noderedNotificatorExecutor.execute(() -> {
 				try {
+					MultitenancyContextHolder.setTenantName(tenant);
+					MultitenancyContextHolder.setVerticalSchema(vertical);
 					log.debug("adviceScriptsAndNodereds: Begin");
 
 					final NotificationCompositeModel compositeModelTemp = new NotificationCompositeModel();
@@ -295,8 +445,17 @@ public class RouterFlowManagerService {
 					}
 					compositeModelTemp.setHeaderAuthKey(entity.getUrlAuthkey());
 					compositeModelTemp.setHeaderAuthValue(entity.getUrlAuthValue());
-					adviceServiceImpl.execute(compositeModelTemp);
-
+					Date originalNotificationTimestamp = new Date();// current date
+					compositeModelTemp.setOriginalNotificationTimestamp(originalNotificationTimestamp);
+					compositeModelTemp.setMaxRetryElapsedTime(entity.getMaxRetryElapsedTime());
+					compositeModelTemp.setRetryOnFaialureEnabled(entity.getRetryOnFaialureEnabled());
+					compositeModelTemp.setDiscardAfterElapsedTimeEnabled(entity.getDiscardAfterElapsedTimeEnabled());
+					compositeModelTemp.setDomainIdentification(entity.getDomainIdentification());
+					compositeModelTemp.setDomainOwner(entity.getDomainOwner());
+					compositeModelTemp.setRetriedNotification(false);
+					// set to the queue
+					notificationAdviceNodeRED.add(compositeModelTemp);
+					MultitenancyContextHolder.clear();
 					log.debug("adviceScriptsAndNodereds: END");
 				} catch (final Exception e) {
 					log.error("Error processing Script Event", e);
@@ -304,7 +463,6 @@ public class RouterFlowManagerService {
 
 			});
 		}
-
 	}
 
 	private String appendOIDForSQL(String query, String objectId) {
@@ -329,30 +487,61 @@ public class RouterFlowManagerService {
 
 		if (messageType == OperationType.POST || messageType == OperationType.INSERT) {
 
-			final Map<String, KafkaTopicNotificationService> map = applicationContext
-					.getBeansOfType(KafkaTopicNotificationService.class);
+			// KSQL Notification to ORIGINS
+			notifyKafkaKsqlTopics(ontologyName, payload);
 
-			final Iterator<Entry<String, KafkaTopicNotificationService>> iterator = map.entrySet().iterator();
-
-			while (iterator.hasNext()) {
-				final Entry<String, KafkaTopicNotificationService> item = iterator.next();
-
-				kafkaNotificatorExecutor.execute(() -> {
-					final KafkaTopicNotificationService service = item.getValue();
-					final List<String> list = service.getKafkaTopicNotification(ontologyName);
-					if (list != null && !list.isEmpty()) {
-						for (final String kafkaTopic : list) {
-							kafkaTemplate.send(kafkaTopic, payload);
-						}
-					}
-
-				});
-
-			}
+			// Kafka notification to Ontology's Notification Topic
+			notifyKafkaOntologyTopics(ontologyName, payload);
 		}
 
 		log.debug("getKafkaTopicToNotify: End");
 
+	}
+
+	private void notifyKafkaKsqlTopics(String ontologyName, String payload) {
+		final Map<String, KafkaTopicKsqlNotificationService> ksqlMap = applicationContext
+				.getBeansOfType(KafkaTopicKsqlNotificationService.class);
+
+		final Iterator<Entry<String, KafkaTopicKsqlNotificationService>> ksqlIterator = ksqlMap.entrySet().iterator();
+
+		while (ksqlIterator.hasNext()) {
+			final Entry<String, KafkaTopicKsqlNotificationService> item = ksqlIterator.next();
+
+			kafkaNotificatorExecutor.execute(() -> {
+				final KafkaTopicKsqlNotificationService service = item.getValue();
+				final List<String> list = service.getKafkaTopicKsqlNotification(ontologyName);
+				if (list != null && !list.isEmpty()) {
+					for (final String kafkaTopic : list) {
+						kafkaTemplate.send(kafkaTopic, payload);
+					}
+				}
+
+			});
+		}
+
+	}
+
+	private void notifyKafkaOntologyTopics(String ontologyName, String payload) {
+
+		final Map<String, KafkaTopicOntologyNotificationService> kafkaMap = applicationContext
+				.getBeansOfType(KafkaTopicOntologyNotificationService.class);
+
+		final Iterator<Entry<String, KafkaTopicOntologyNotificationService>> kafkaIterator = kafkaMap.entrySet()
+				.iterator();
+
+		while (kafkaIterator.hasNext()) {
+			final Entry<String, KafkaTopicOntologyNotificationService> item = kafkaIterator.next();
+
+			kafkaNotificatorExecutor.execute(() -> {
+				final KafkaTopicOntologyNotificationService service = item.getValue();
+				final String kafkaTopic = service.getKafkaTopicOntologyNotification(ontologyName);
+				if (kafkaTopic != null) {
+					kafkaTemplate.send(kafkaTopic, payload);
+				}
+
+			});
+
+		}
 	}
 
 	public void notifyRulesEngine(NotificationCompositeModel compositeModel) {
@@ -365,7 +554,14 @@ public class RouterFlowManagerService {
 		final Source source = compositeModel.getNotificationModel().getOperationModel().getSource();
 		if ((messageType == OperationType.POST || messageType == OperationType.INSERT)
 				&& rulesEngineNotificationService.notifyToEngine(ontology) && !Source.RULES_ENGINE.equals(source)) {
-			rulesEngineNotificatorExecutor.execute(() -> rulesEngineNotificationService.notify(ontology, payload));
+			final String vertical = MultitenancyContextHolder.getVerticalSchema();
+			final String tenant = MultitenancyContextHolder.getTenantName();
+			rulesEngineNotificatorExecutor.execute(() -> {
+				MultitenancyContextHolder.setTenantName(tenant);
+				MultitenancyContextHolder.setVerticalSchema(vertical);
+				rulesEngineNotificationService.notify(ontology, payload);
+				MultitenancyContextHolder.clear();
+			});
 		}
 
 		log.debug("rulesEngineNotifications: End");

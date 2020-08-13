@@ -63,16 +63,14 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyCommandMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyIndicationMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
-import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.router.RouterServiceGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.processor.DeviceManager;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 
@@ -181,14 +179,14 @@ public class StompWebSocketTest {
 		stompSession.send("/stomp/message/" + uuid, SSAPMessageGenerator.generateJoinMessageWithToken());
 		SSAPMessage<SSAPBodyReturnMessage> response = completableFutureMessage.get(5, TimeUnit.SECONDS);
 
-		// Sends Subscription message and waits form response
-		completableFutureMessage = new CompletableFuture<>();
-		final SSAPMessage<SSAPBodySubscribeMessage> subscription = SSAPMessageGenerator.generateSubscriptionMessage(
-				Person.class.getSimpleName(), session.getSessionKey(), SSAPQueryType.SQL, "SELECT * FROM Person");
-		stompSession.send("/stomp/message/" + uuid, subscription);
-		response = completableFutureMessage.get(5, TimeUnit.SECONDS);
-
-		// Avice indication simulated by calling advice IotBroker rest service
+//		// Sends Subscription message and waits form response
+//		completableFutureMessage = new CompletableFuture<>();
+//		final SSAPMessage<SSAPBodySubscribeMessage> subscription = SSAPMessageGenerator.generateSubscriptionMessage(
+//				Person.class.getSimpleName(), session.getSessionKey(), SSAPQueryType.SQL, "SELECT * FROM Person");
+//		stompSession.send("/stomp/message/" + uuid, subscription);
+//		response = completableFutureMessage.get(5, TimeUnit.SECONDS);
+//
+//		// Avice indication simulated by calling advice IotBroker rest service
 		final NotificationCompositeModel model = RouterServiceGenerator.generateNotificationCompositeModel(
 				response.getBody().getData().at("/subscriptionId").asText(), subject, session);
 		final String content = mapper.writeValueAsString(model);

@@ -35,11 +35,6 @@ public class ApiDTO implements Serializable {
 	@Setter
 	private String identification;
 
-	@ApiModelProperty(value = "GraviteeId")
-	@Getter
-	@Setter
-	private String graviteeId;
-
 	@ApiModelProperty(value = "API Version Number")
 	@Getter
 	@Setter

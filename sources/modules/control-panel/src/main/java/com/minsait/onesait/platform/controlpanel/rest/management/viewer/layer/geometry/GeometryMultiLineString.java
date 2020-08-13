@@ -22,9 +22,7 @@ public class GeometryMultiLineString extends Geometry {
 	private List<List<Double[]>> coordinates;
 
 	public GeometryMultiLineString() {
-		super();
 		this.coordinates = new ArrayList<>();
-		this.type = GeometryType.MULTILINE_STRING;
 	}
 
 	public List<List<Double[]>> getCoordinates() {
@@ -33,10 +31,6 @@ public class GeometryMultiLineString extends Geometry {
 
 	public void setCoordinates(List<List<Double[]>> coordinates) {
 		this.coordinates = coordinates;
-	}
-
-	public GeometryType getType() {
-		return type;
 	}
 
 	@Override

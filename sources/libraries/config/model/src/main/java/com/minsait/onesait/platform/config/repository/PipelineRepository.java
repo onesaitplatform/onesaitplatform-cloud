@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.model.DataflowInstance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,6 +33,8 @@ public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 	Pipeline findById(String id);
 
 	List<Pipeline> findByUser(User user);
+
+	List<Pipeline> findByInstance(DataflowInstance instance);
 
 	@Query("SELECT o FROM Pipeline AS o WHERE (o.user=:user OR o.isPublic=TRUE OR o.id IN (SELECT uo.pipeline.id FROM PipelineUserAccess AS uo WHERE uo.user=:user)) ORDER BY o.identification ASC")
 	List<Pipeline> findByUserAndAccess(@Param("user") User user);

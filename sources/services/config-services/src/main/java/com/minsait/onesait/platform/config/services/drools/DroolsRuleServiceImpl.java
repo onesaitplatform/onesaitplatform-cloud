@@ -105,9 +105,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 		final List<DroolsRule> rules = new ArrayList<>();
 
-		activeDomains.forEach(d -> {
-			rules.addAll(droolsRuleRepository.findByUser(d.getUser()));
-		});
+		activeDomains.forEach(d -> rules.addAll(droolsRuleRepository.findByUser(d.getUser())));
 
 		return rules;
 
@@ -150,10 +148,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	public DroolsRuleDomain changeDomainState(String id) {
 		final DroolsRuleDomain domain = getDomain(id);
 		if (domain != null) {
-			if (domain.isActive())
-				domain.setActive(false);
-			else
-				domain.setActive(true);
+			domain.setActive(!domain.isActive());
 			return droolsRuleDomainRepository.save(domain);
 		}
 		return null;
@@ -178,6 +173,13 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	}
 
 	@Override
+	@Transactional
+	public void updateActive(String identification, boolean active) {
+		droolsRuleRepository.updateActiveByIdentification(active, identification);
+
+	}
+
+	@Override
 	public DroolsRule create(DroolsRule rule, String userId) {
 		if (rule.getType().equals(Type.ONTOLOGY)) {
 
@@ -185,8 +187,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 					ontologyRepository.findByIdentification(rule.getSourceOntology().getIdentification()));
 			rule.setTargetOntology(
 					ontologyRepository.findByIdentification(rule.getTargetOntology().getIdentification()));
-			if (!droolsRuleRepository
-					.findBySourceOntologyAndUserAndActiveTrue(rule.getSourceOntology(), userService.getUser(userId))
+			if (!droolsRuleRepository.findBySourceOntologyAndUser(rule.getSourceOntology().getIdentification(), userId)
 					.isEmpty())
 				throw new GenericRuntimeOPException(
 						"Only one Rule entity is allowed per user for the SAME source ontology. Add rules for this ontology to the main .drl file instead.");
@@ -208,10 +209,17 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 		rule.setType(ruleDb.getType());
 		ruleDb.setDRL(rule.getDRL());
 		if (ruleDb.getType().equals(Type.ONTOLOGY)) {
+			final String previousSource = ruleDb.getSourceOntology().getIdentification();
+			if (!previousSource.equals(rule.getSourceOntology().getIdentification())
+					&& !droolsRuleRepository.findBySourceOntologyAndUser(rule.getSourceOntology().getIdentification(),
+							ruleDb.getUser().getUserId()).isEmpty())
+				throw new GenericRuntimeOPException(
+						"Only one Rule entity is allowed per user for the SAME source ontology. Add rules for this ontology to the main .drl file instead.");
 			ruleDb.setSourceOntology(
 					ontologyRepository.findByIdentification(rule.getSourceOntology().getIdentification()));
 			ruleDb.setTargetOntology(
 					ontologyRepository.findByIdentification(rule.getTargetOntology().getIdentification()));
+
 		}
 		return droolsRuleRepository.save(ruleDb);
 	}
@@ -220,13 +228,24 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	public boolean hasUserEditPermission(String identification, String userId) {
 		final DroolsRule ruleDb = droolsRuleRepository.findByIdentification(identification);
 		final User user = userService.getUser(userId);
-		return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()) || user.equals(ruleDb.getUser()));
+		return (userService.isUserAdministrator(user) || user.equals(ruleDb.getUser()));
 	}
 
 	@Override
 	public boolean hasUserPermissionOnDomain(String id, String userId) {
 		final DroolsRuleDomain domain = getDomain(id);
 		final User user = userService.getUser(userId);
-		return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()) || user.equals(domain.getUser()));
+		return (userService.isUserAdministrator(user) || user.equals(domain.getUser()));
+	}
+
+	@Override
+	public List<DroolsRuleDomain> getAllDomains() {
+		return droolsRuleDomainRepository.findAll();
+	}
+
+	@Override
+	@Transactional
+	public void changeDomainState(String userId, boolean active) {
+		droolsRuleDomainRepository.updateActiveByUserId(active, userId);
 	}
 }

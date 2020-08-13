@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -56,11 +57,11 @@ public class ApiOperation extends AuditableEntityWithUUID {
 	@Setter
 	private Api api;
 
-	@OneToMany(mappedBy = "apiOperation", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "apiOperation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
-	private Set<ApiQueryParameter> apiqueryparameters;
+	private Set<ApiQueryParameter> apiqueryparameters = new HashSet<>();
 
 	@Column(name = "IDENTIFICATION", length = 50, nullable = false)
 	@NotNull

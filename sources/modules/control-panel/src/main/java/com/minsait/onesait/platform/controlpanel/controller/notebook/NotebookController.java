@@ -24,15 +24,18 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,6 +55,7 @@ import com.minsait.onesait.platform.config.repository.NotebookUserAccessReposito
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
+import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -79,9 +83,15 @@ public class NotebookController {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private JWTService jwtService;
+	
+	@Value("${onesaitplatform.analytics.notebook.platformAuth}")
+	private boolean platformAuth;
 
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/createNotebook")
 	@ResponseBody
 	public ResponseEntity<String> createNotebook(@RequestParam("name") String name) {
@@ -103,7 +113,7 @@ public class NotebookController {
 	}
 
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/cloneNotebook")
 	@ResponseBody
 	public ResponseEntity<String> cloneNotebook(@RequestParam("name") String name, @RequestParam("idzep") String idzep) {
@@ -127,7 +137,7 @@ public class NotebookController {
 	}
 	
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/renameNotebook")
 	@ResponseBody
 	public ResponseEntity<String> renameNotebook(@RequestParam("name") String name, @RequestParam("idzep") String idzep) {
@@ -152,7 +162,7 @@ public class NotebookController {
 	}
 
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/importNotebook")
 	@ResponseBody
 	public ResponseEntity<String> importNotebook(@RequestParam("name") String name, @RequestParam("data") String data) {
@@ -174,7 +184,7 @@ public class NotebookController {
 	}
 	
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/importNotebookFromJupyter")
 	@ResponseBody
 	public ResponseEntity<String> importNotebookFromJupyter(@RequestParam("name") String name, @RequestParam("data") String data) {
@@ -197,7 +207,7 @@ public class NotebookController {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/exportNotebook/{id}", produces = "text/html")
 	@ResponseBody
 	public ResponseEntity<byte[]> exportNotebook(@PathVariable("id") String id, Model uiModel) {
@@ -208,7 +218,7 @@ public class NotebookController {
 	}
 
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String removeNotebook(@PathVariable("id") String id, Model uiModel, RedirectAttributes ra) {
 		try {
@@ -221,7 +231,7 @@ public class NotebookController {
 		return "redirect:/notebooks/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel) {
 
@@ -262,7 +272,7 @@ public class NotebookController {
 	}
 
 	@Transactional
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/auth", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<NotebookUserAccess> createAuthorization(@RequestParam String accesstype,
 			@RequestParam String notebook, @RequestParam String user) {
@@ -289,28 +299,47 @@ public class NotebookController {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/app/api/security/ticket")
 	@ResponseBody
-	public String loginAppOrGetWSToken() {
-		if (utils.isAdministrator()) {
-			return notebookService.loginOrGetWSTokenAdmin();
-		} else {
-			return notebookService.loginOrGetWSToken();
+	public ResponseEntity<String> loginAppOrGetWSToken(@CookieValue(value = "platformbearer", required=false) String platformbearer) {
+		if(!platformAuth) {
+			if (utils.isAdministrator()) {
+				return new ResponseEntity<>(notebookService.loginOrGetWSTokenAdmin(),HttpStatus.OK);
+			} else if (!"ROLE_ANONYMOUS".equals(utils.getRole())){
+				return  new ResponseEntity<>(notebookService.loginOrGetWSToken(),HttpStatus.OK);
+			} else {
+				return  new ResponseEntity<>("Not authorized",HttpStatus.UNAUTHORIZED);
+			}
 		}
-
+		else {
+			String username, token;
+			if(platformbearer == null || platformbearer.equals("")) {
+				username = utils.getUserId();
+				token = utils.getCurrentUserOauthToken();
+			}
+			else{
+				OAuth2Authentication info = (OAuth2Authentication) jwtService.getAuthentication(platformbearer);
+				username = info.getUserAuthentication().getName();
+				token = platformbearer;
+			}
+			try {
+				return new ResponseEntity<>(notebookService.loginOrGetWSTokenByBearer(username,"Bearer " + token),HttpStatus.OK);
+			}
+			catch(Exception e) {
+				return new ResponseEntity<>("Token error, message: " +  e.getMessage(),HttpStatus.UNAUTHORIZED);
+			}
+		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
-	@GetMapping(value = { "/app/api/interpreter/**", "/app/api/configurations/**", "/app/api/credential/**",
-			"/app/api/version" })
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@GetMapping(value = { "/app/api/interpreter/**", "/app/api/configurations/**", "/app/api/credential/**" })
 	@ResponseBody
 	public ResponseEntity<String> adminAppRest(Model uiModel, HttpServletRequest request)
 			throws URISyntaxException, IOException {
 		return notebookService.sendHttp(request, HttpMethod.GET, "");
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = { "/app/api/interpreter/**",
 			"/app/api/helium/**" }, headers = "Accept=application/json")
 	@ResponseBody
@@ -320,7 +349,7 @@ public class NotebookController {
 		return notebookService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body);
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = { "/app/api/interpreter/**",
 			"/app/api/helium/**" }, headers = "Accept=application/json")
 	@ResponseBody
@@ -330,7 +359,7 @@ public class NotebookController {
 		return notebookService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body);
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping(value = { "/app/api/interpreter/**",
 			"/app/api/helium/**" }, headers = "Accept=application/json")
 	@ResponseBody
@@ -340,25 +369,30 @@ public class NotebookController {
 		return notebookService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body);
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
-	@GetMapping(value = { "/app/api/notebook/**", "/app/api/helium/**" })
+	//@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@GetMapping(value = { "/app/api/notebook/**", "/app/api/helium/**", "/app/api/version" })
 	@ResponseBody
 	public ResponseEntity<String> analyAppRest(Model uiModel, HttpServletRequest request)
 			throws URISyntaxException, IOException {
 		return notebookService.sendHttp(request, HttpMethod.GET, "");
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/app/")
 	public String indexAppRedirectNoPath(Model uiModel, HttpServletRequest request) {
 		return "notebooks/index";
 	}
 	
-	@GetMapping(value = "/nameByIdZep/{id}", produces = "text/html")
+	@GetMapping(value = "/app/nameByIdZep/{id}", produces = "text/html")
 	@ResponseBody
-	public ResponseEntity<String> nameByIdZep(Model model, @PathVariable("id") String id) {
+	public ResponseEntity<String> nameByIdZep(Model model, @PathVariable("id") String id, @CookieValue(value = "platformbearer", required=false) String platformbearer) {
 		try {
-			return new ResponseEntity<>(notebookService.notebookNameByIdZep(id, utils.getUserId()),HttpStatus.OK);
+			if(platformbearer == null || platformbearer.equals("")) {
+				return new ResponseEntity<>(notebookService.notebookNameByIdZep(id, utils.getUserId()),HttpStatus.OK);
+			}
+			else {
+				OAuth2Authentication info = (OAuth2Authentication) jwtService.getAuthentication(platformbearer);
+				return new ResponseEntity<>(notebookService.notebookNameByIdZep(id, info.getUserAuthentication().getName()),HttpStatus.OK);
+			}
 		}
 		catch(NotebookServiceException e) {
 			switch(e.getError()) {
@@ -373,7 +407,7 @@ public class NotebookController {
 		}
 	}
 	
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PutMapping(value = { "/app/api/interpreter/setting/restart/**"
 			 }, headers = "Accept=application/json")
 	@ResponseBody

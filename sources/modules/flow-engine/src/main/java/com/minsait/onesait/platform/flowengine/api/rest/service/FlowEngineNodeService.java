@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 
@@ -25,7 +26,6 @@ import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRes
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookParagraphDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.UserDomainValidationRequest;
@@ -51,7 +51,7 @@ public interface FlowEngineNodeService {
 	public String submitQuery(String ontology, String queryType, String query, String authentication)
 			throws JsonProcessingException, NotFoundException;
 
-	public String submitInsert(String ontology, String data, String authentication)
+	public String submitInsert(String ontology, String data, String domainName)
 			throws JsonProcessingException, NotFoundException;
 
 	public List<DigitalTwinTypeDTO> getDigitalTwinTypes(String authentication);
@@ -67,5 +67,12 @@ public interface FlowEngineNodeService {
 	public String getNotebookJSONDataByUser(String notebookId, String authentication);
 	
 	public ResponseEntity<String> invokeNotebook(NotebookInvokeDTO noebookInvocationData);
+	
+	public List<String> getPipelinesByUser(String authentication);
+	
+	public ResponseEntity<String> getPipelineStatus(String domainName, String idPipeline);
 
+	public ResponseEntity<String> stopDataflow(String domainName, String pipelineIdentification);
+	
+	public ResponseEntity<String> startDataflow(String domainName, String pipelineIdentification, String parameters, boolean resetOrigin);
 }

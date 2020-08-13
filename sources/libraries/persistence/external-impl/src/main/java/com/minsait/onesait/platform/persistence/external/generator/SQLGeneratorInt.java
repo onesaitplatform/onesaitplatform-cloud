@@ -14,20 +14,27 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator;
 
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
 
 public interface SQLGeneratorInt {
-	String generate(SelectStatement selectStatement);
+	PreparedStatement generate(SelectStatement selectStatement, boolean withParams);
 
-	String generate(InsertStatement insert);
+	PreparedStatement generate(InsertStatement insert, boolean withParams);
 
-	String generate(DeleteStatement deleteStatement);
+	PreparedStatement generate(DeleteStatement deleteStatement, boolean withParams);
 
-	String generate(UpdateStatement updateStatement);
+	PreparedStatement generate(UpdateStatement updateStatement, boolean withParams);
 
+	PreparedStatement generate(DropStatement dropStatement);
+	
+	PreparedStatement generate(CreateStatement createStatement);
+	
 	SelectStatement buildSelect();
 
 	InsertStatement buildInsert();
@@ -35,4 +42,11 @@ public interface SQLGeneratorInt {
 	UpdateStatement buildUpdate();
 
 	DeleteStatement buildDelete();
+
+	DropStatement buildDrop();
+	
+	CreateStatement buildCreate();
+
+	
+	
 }

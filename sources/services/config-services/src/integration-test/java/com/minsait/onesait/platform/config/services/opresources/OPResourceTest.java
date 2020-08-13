@@ -36,7 +36,7 @@ import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.Project.ProjectType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.AppRepository;
@@ -83,8 +83,7 @@ public class OPResourceTest {
 		realm.setProject(pdb);
 		realm = appRepository.save(realm);
 		final OPResource resource = ((Set<OPResource>) resourceService.getResources("developer", "")).iterator().next();
-		final ProjectResourceAccess pra = ProjectResourceAccess.builder().access(ResourceAccessType.VIEW)
-				.appRole(realm.getAppRoles().iterator().next()).project(pdb).resource(resource).build();
+		final ProjectResourceAccess pra = new ProjectResourceAccess(null,ResourceAccessType.VIEW,resource, pdb,realm.getAppRoles().iterator().next());
 		pdb.getProjectResourceAccesses().add(pra);
 		pdb = projectRepository.save(pdb);
 		Assert.assertTrue(!resourceService.hasAccess(user.getUserId(), resource.getId(), ResourceAccessType.MANAGE));

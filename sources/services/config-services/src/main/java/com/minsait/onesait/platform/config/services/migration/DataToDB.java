@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.OneToMany;
 
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -40,6 +41,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DataToDB {
+
+	private static final String PROJECT = "com.minsait.onesait.platform.config.model.Project";
+	private static final String PIPELINE = "com.minsait.onesait.platform.config.model.Pipeline";
+	private static final String NOTEBOOK = "com.minsait.onesait.platform.config.model.Notebook";
+	private static final String PROJECT_RESOURCE_ACCESS = "com.minsait.onesait.platform.config.model.ProjectResourceAccess";
+	private static final String WARN_MSG = "The entity is already in the database, nothing was done";
 
 	private class EntityCache {
 		private Map<Class<?>, Map<Serializable, Object>> cache = new HashMap<>();
@@ -85,11 +92,11 @@ public class DataToDB {
 	EntityCache entities = new EntityCache();
 	EntityCache entitiesWithErrors = new EntityCache();
 
-	public LoadEntityResult getEntitiesFromData(MigrationConfiguration config, DataFromDB data, EntityManager em)
+	public LoadEntityResult getEntitiesFromData(MigrationConfiguration config, DataFromDB data, EntityManager em,
+			Boolean override)
 			throws NoSuchFieldException, IllegalAccessException, InstantiationException, ClassNotFoundException {
 
 		MigrationErrors allErrors = new MigrationErrors();
-
 		for (int i = 0; i < config.size(); i++) {
 			Instance inst = config.getInstance(i);
 			Class<?> clazz = inst.getClazz();
@@ -97,17 +104,15 @@ public class DataToDB {
 
 			log.debug("Loading class from file: " + clazz.getName() + " id: " + id);
 
-			if (!entities.exist(clazz, id)) {
-				if (OPResource.class.isAssignableFrom(clazz)
-						|| clazz.getName().equals("com.minsait.onesait.platform.config.model.Project")) {
+			if (!entities.exist(clazz, id) && !clazz.getName().equals(NOTEBOOK) && !clazz.getName().equals(PIPELINE)) {
+				if (OPResource.class.isAssignableFrom(clazz) || clazz.getName().equals(PROJECT)) {
 					List<Object> result = new ArrayList<>();
-					if (!clazz.getSimpleName().equals("Api") && !clazz.getName()
-							.equals("com.minsait.onesait.platform.config.model.ProjectResourceAccess")) {
+					if (!clazz.getSimpleName().equals("Api") && !clazz.getName().equals(PROJECT_RESOURCE_ACCESS)) {
 						result = em
 								.createQuery("SELECT c FROM " + clazz.getSimpleName()
 										+ " c WHERE c.identification = :identification")
 								.setParameter("identification", inst.getIdentification()).getResultList();
-					} else {
+					} else if (clazz.getSimpleName().equals("Api")) {
 						result = em
 								.createQuery("SELECT c FROM " + clazz.getSimpleName()
 										+ " c WHERE c.identification = :identification AND c.numversion = :numversion")
@@ -115,12 +120,12 @@ public class DataToDB {
 								.setParameter("numversion", inst.getVersion()).getResultList();
 					}
 
-					if (result.isEmpty()) {
+					if (result.isEmpty() || (!result.isEmpty() && override)) {
 						Object dbInstance = em.find(clazz, id);
-						if (dbInstance != null) {
-							allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
-									MigrationError.ErrorType.WARN,
-									"The entity is already in the database, nothing was done"));
+						if (dbInstance != null && !override) {
+							allErrors.addError(new MigrationError(
+									new Instance(clazz, id, inst.getIdentification(), inst.getVersion()), null,
+									MigrationError.ErrorType.WARN, WARN_MSG));
 						} else {
 							MigrationErrors entityErrors = new MigrationErrors();
 							EntityCache visited = new EntityCache();
@@ -133,25 +138,26 @@ public class DataToDB {
 							}
 						}
 					} else {
-						allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
-								MigrationError.ErrorType.WARN,
-								"The entity is already in the database, nothing was done"));
+						allErrors.addError(
+								new MigrationError(new Instance(clazz, id, inst.getIdentification(), inst.getVersion()),
+										null, MigrationError.ErrorType.WARN, WARN_MSG));
 					}
 				} else {
-					List<Object> result = new ArrayList<>();
-					result = em.createQuery("SELECT c FROM " + clazz.getSimpleName() + " c WHERE c.id = :id")
+					List<Object> result = em
+							.createQuery("SELECT c FROM " + clazz.getSimpleName() + " c WHERE c.id = :id")
 							.setParameter("id", inst.getId()).getResultList();
 
-					if (result.isEmpty()) {
+					if (result.isEmpty() || (!result.isEmpty() && override)) {
 						Object dbInstance = em.find(clazz, id);
-						if (dbInstance != null) {
-							allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
-									MigrationError.ErrorType.WARN,
-									"The entity is already in the database, nothing was done"));
+						if (dbInstance != null && !override) {
+							allErrors.addError(new MigrationError(
+									new Instance(clazz, id, inst.getIdentification(), inst.getVersion()), null,
+									MigrationError.ErrorType.WARN, WARN_MSG));
 						} else {
 							MigrationErrors entityErrors = new MigrationErrors();
 							EntityCache visited = new EntityCache();
 							Object instance = getEntityFromData(clazz, id, data, em, entityErrors, visited, config);
+
 							allErrors.addErrors(entityErrors);
 							if (instance instanceof MigrationError) {
 								entitiesWithErrors.add(clazz, id, instance);
@@ -160,9 +166,9 @@ public class DataToDB {
 							}
 						}
 					} else {
-						allErrors.addError(new MigrationError(new Instance(clazz, id, null, null), null,
-								MigrationError.ErrorType.WARN,
-								"The entity is already in the database, nothing was done"));
+						allErrors.addError(
+								new MigrationError(new Instance(clazz, id, inst.getIdentification(), inst.getVersion()),
+										null, MigrationError.ErrorType.WARN, WARN_MSG));
 					}
 				}
 
@@ -185,34 +191,45 @@ public class DataToDB {
 			return visited.get(clazz, id);
 		} else {
 			Map<String, Object> instanceData = data.getInstanceData(clazz, id);
+			clazz = data.getOPResourceClass(clazz, id);
 			Object instance = clazz.newInstance();
 			EntityCache newVisited = new EntityCache(visited);
 			newVisited.add(clazz, id, instance);
 			Map<String, Field> allFields = MigrationUtils.getAllFields(clazz);
 			Set<String> unOrderedFields = instanceData.keySet();
 			List<String> orderedFields = orderFields(unOrderedFields, allFields, em);
-			Instance rootInstance = new Instance(clazz, id, null, null);
+			String identification = instanceData.get("identification") != null
+					? instanceData.get("identification").toString()
+					: null;
+			String version = instanceData.get("numversion") != null ? instanceData.get("numversion").toString() : null;
+			Instance rootInstance = new Instance(clazz, id, identification, version);
+			log.debug("### getEntityFromData ### Instance: {}", rootInstance.toString());
 			for (String fieldName : orderedFields) {
 				Field field = allFields.get(fieldName);
-				if (!Modifier.isFinal(field.getModifiers())) {
-					boolean accessible = field.isAccessible();
-					field.setAccessible(true);
-					Object value = getCorrectValue(instanceData.get(fieldName), field.getType(), field.getGenericType(),
-							data, em, errors, newVisited, config, rootInstance);
-					if (value instanceof MigrationError) {
-						MigrationError errorReturned = (MigrationError) value;
-						Instance instanceThatNeedsIt = new Instance(clazz, id, null, null);
-						MigrationError migrationError = new MigrationError(instanceThatNeedsIt,
-								errorReturned.getNeededInstance(), MigrationError.ErrorType.ERROR,
-								"The instance depends on a non available entity");
-						errors.addError(migrationError);
-						return migrationError;
-					} else {
-						field.set(instance, value);
-					}
+				if (!field.isAnnotationPresent(OneToMany.class)) {
+					if (!Modifier.isFinal(field.getModifiers())) {
+						boolean accessible = field.isAccessible();
+						field.setAccessible(true);
+						Object value = getCorrectValue(instanceData.get(fieldName), field.getType(),
+								field.getGenericType(), data, em, errors, newVisited, config, rootInstance);
+						if (value instanceof MigrationError) {
+							MigrationError errorReturned = (MigrationError) value;
+							Instance instanceThatNeedsIt = new Instance(clazz, id, identification, version);
+							MigrationError migrationError = new MigrationError(instanceThatNeedsIt,
+									errorReturned.getNeededInstance(), MigrationError.ErrorType.ERROR,
+									"The instance depends on a non available entity");
+							errors.addError(migrationError);
+							return migrationError;
+						} else {
+							field.set(instance, value);
+						}
 
-					field.setAccessible(accessible);
+						field.setAccessible(accessible);
+					}
+				} else {
+					log.debug("@OneToMany annotation.");
 				}
+
 			}
 			return instance;
 		}
@@ -271,7 +288,8 @@ public class DataToDB {
 							if (!config.contains(fieldType, sValue) && !entities.exist(fieldType, sValue)
 									&& !entitiesWithErrors.exist(fieldType, sValue)) {
 
-								Instance instance = new Instance(fieldType, sValue, null, null);
+								Instance instance = new Instance(fieldType, sValue,
+										MigrationUtils.getIdentificationField(entity), null);
 								config.add(instance);
 
 								MigrationError error = new MigrationError(rootInstance, instance,
@@ -281,7 +299,9 @@ public class DataToDB {
 							}
 							return entityFromData;
 						} else {
-							Instance instance = new Instance(fieldType, sValue, null, null);
+
+							Instance instance = new Instance(fieldType, sValue,
+									MigrationUtils.getIdentificationField(entity), null);
 							MigrationError error = new MigrationError(null, instance, MigrationError.ErrorType.ERROR,
 									"Mandatory entity");
 							errors.addError(error);

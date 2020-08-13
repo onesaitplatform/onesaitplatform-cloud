@@ -56,4 +56,8 @@ public interface LayerService {
 
 	String getQueryParamsAndRefresh(String layer);
 
+	Boolean checkExist(String layerIdentification);
+
+	List<Layer> checkAllLayersByCriteria(String userId, String identification, String description);
+
 }

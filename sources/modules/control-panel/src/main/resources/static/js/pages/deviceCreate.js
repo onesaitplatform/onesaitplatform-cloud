@@ -176,6 +176,9 @@ var DeviceCreateController = function() {
 			$(this).valid();
 		});
 
+		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+		
 		// set current language and formats
 		currentLanguage = deviceCreateReg.language || LANGUAGE[0];
 		currentFormat = (currentLanguage == 'es') ? 'dd/mm/yyyy' : 'mm/dd/yyyy';

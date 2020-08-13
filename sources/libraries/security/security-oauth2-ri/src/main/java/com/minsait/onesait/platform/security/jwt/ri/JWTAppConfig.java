@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 @Configuration
@@ -40,11 +39,6 @@ public class JWTAppConfig {
 	DataSource dataSource;
 
 	@Bean
-	public TokenStore tokenStore() {
-		return new JdbcTokenStore(dataSource);
-	}
-
-	@Bean
 	public JwtAccessTokenConverter jwtAccessTokenConverter() {
 		final JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
 		jwtAccessTokenConverter.setSigningKey(signingKey);
@@ -53,9 +47,9 @@ public class JWTAppConfig {
 
 	@Bean
 	@Primary
-	public CustomTokenService tokenServices() {
+	public CustomTokenService tokenServices(TokenStore tokenStore) {
 		final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-		defaultTokenServices.setTokenStore(tokenStore());
+		defaultTokenServices.setTokenStore(tokenStore);
 		defaultTokenServices.setSupportRefreshToken(true);
 		defaultTokenServices.setReuseRefreshToken(true);
 

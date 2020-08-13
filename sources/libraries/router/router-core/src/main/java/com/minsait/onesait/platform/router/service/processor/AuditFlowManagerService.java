@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.router.service.processor;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,16 +26,17 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.IQueue;
 import com.minsait.onesait.platform.audit.bean.AuditConst;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
 import com.minsait.onesait.platform.business.services.user.UserOperationsService;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -52,13 +54,15 @@ public class AuditFlowManagerService {
 	private RouterCrudService routerCrudService;
 
 	@Autowired
-	private UserService userService;
+	private UserDetailsService userDetailsService;
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
 	private UserOperationsService userOperationsService;
 	@Autowired
 	private IntegrationResourcesService resourcesServices;
+	@Autowired
+	private MultitenancyService masterUserService;
 	@Autowired
 	@Qualifier("auditQueue")
 	private IQueue<String> auditQueue;
@@ -121,10 +125,12 @@ public class AuditFlowManagerService {
 			final AuditParameters commonParams = getAuditParameters(jsonObj);
 			if (commonParams.getUser() != null) {
 				if (!AuditConst.ANONYMOUS_USER.equals(commonParams.getUser())) {
-					final User user = userService.getUser(commonParams.getUser());
-					if (user == null) {
-						log.info("The user {} does not exists so change to anonymous user",commonParams.getUser());
+					final Optional<MasterUser> user = masterUserService.findUser(commonParams.getUser());
+					if (!user.isPresent()) {
+						log.info("The user {} does not exists so change to anonymous user", commonParams.getUser());
 						commonParams.setUser(AuditConst.ANONYMOUS_USER);
+					} else {
+						userDetailsService.loadUserByUsername(commonParams.getUser());
 					}
 				}
 

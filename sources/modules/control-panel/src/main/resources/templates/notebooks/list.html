@@ -55,6 +55,15 @@
 				});
 			}
 			
+			var createMicroService = function(identification){
+				navigateUrl('/controlpanel/microservices/create' +
+				"?" +
+				"name=" + identification + "&" +
+				"notebook=" + identification + "&" +
+				 "template=NOTEBOOK_ARCHETYPE"
+				);
+			}
+			
 			var showCreateNotebookDialog = function(){
 				$.confirm({
 					icon: 'fas fa-chart-pie',
@@ -65,6 +74,10 @@
 					draggable: true,
 					dragWindowGap: 100,
 					backgroundDismiss: true,
+					onContentReady: function () {
+						// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+						$("#newNotebook").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+					},
 					closeIcon: true,
 					buttons: {
 						close: {
@@ -508,6 +521,8 @@
 																	
 																	<span th:if="${notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.private}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.private}" th:onclick="'javascript:makePublic(\''+${notebook.id}+'\')'"><i class="la la-user-times font-hg"></i></span>
 																	
+																	<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" th:title="#{notebook.deploy}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{notebook.deploy}" th:onclick="'javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-hg"></i></span>
+																	
 																	<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{gen.deleteBtn}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{gen.deleteBtn}" th:onclick="'javascript:showRemoveNotebookDialog(\'' + ${notebook.identification} + '\',\'' + ${notebook.idzep} + '\');'">
 																		<i class="la la-trash font-hg"></i>
 																		<form th:id="command + ${notebook.identification}" action="list.html" th:action="@{|/notebooks/${notebook.identification}|}" method="post" style="display:none">
@@ -539,6 +554,9 @@
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"/>
 	<script th:src="@{/static/js/layout.js}"/>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
 	
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>

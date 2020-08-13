@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -34,6 +35,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -91,21 +93,40 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		endpoints.tokenStore(tokenStore);
 		endpoints.accessTokenConverter(jwtAccessTokenConverter);
 		endpoints.reuseRefreshTokens(false);
+		endpoints.tokenServices(defaultTokenServices(tokenStore, tokenEnhancerChain));
 
+	}
+
+	@Bean
+	@Primary
+	DefaultTokenServices defaultTokenServices(TokenStore tokenStore, TokenEnhancerChain tokenEnhancerChain) {
+		final DefaultTokenServices tokenServices = new DefaultTokenServices();
+		tokenServices.setTokenStore(tokenStore);
+		tokenServices.setTokenEnhancer(tokenEnhancerChain);
+		tokenServices.setClientDetailsService(clientDetailsService());
+		tokenServices.setAuthenticationManager(new ProviderManager(
+				Stream.of(authProvider, authProviderLdap).filter(Objects::nonNull).collect(Collectors.toList())));
+		tokenServices.setReuseRefreshToken(false);
+		tokenServices.setSupportRefreshToken(true);
+		return tokenServices;
 	}
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+
 		clients.withClientDetails(clientDetailsService());
 	}
+
 	@Bean
+	// @ConditionalOnMissingBean(ClientDetailsService.class)
 	public ClientDetailsService clientDetailsService() {
 		return new CustomClientDetailsService();
 	}
 
 	@Bean
+	// @ConditionalOnMissingBean(TokenEnhancer.class)
 	public TokenEnhancer tokenEnhancer() {
-		return new CustomTokenEnhancer();
+		return new ExtendedTokenEnhancer();
 	}
 
 }

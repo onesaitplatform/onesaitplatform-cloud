@@ -18,7 +18,7 @@
  */
 
 angular.module('dataCollectorApp.common')
-  .factory('api', function($rootScope, $http, $q) {
+  .factory('api', ["$rootScope", "$http", "$q", function($rootScope, $http, $q) {
     var authdata = 'Basic ' + btoa("admin" + ':' + "admin");
     $http.defaults.headers.common['Authorization'] = authdata;
     var apiVersion = 'v1',
@@ -1716,4 +1716,4 @@ angular.module('dataCollectorApp.common')
     };
 
     return api;
-  });
+  }]);

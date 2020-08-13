@@ -231,6 +231,17 @@ var gadget= [ {
 			]
 		},
 		options:{}
+	},{
+		type : "datadiscovery",
+		disableOnGroup : true, 
+		icon : "/controlpanel/static/images/dashboards/datadiscovery.png",
+		attributes : [],
+		series : {
+			maxseries : 0,
+			options : []
+		},
+		options: [
+		]
 	}
 
 	];

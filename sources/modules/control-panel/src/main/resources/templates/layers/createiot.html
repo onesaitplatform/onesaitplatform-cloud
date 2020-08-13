@@ -216,9 +216,27 @@
 																						<select class="form-control fields" id="fields" th:field="*{geometryField}" onchange="LayerCreateController.changeField()">
 																						</select>
 																					</div>
-																					<div class="col-md-3">
+																					<div id="normalType" class="col-md-3" style="display:none;">
 																						<label th:text="#{layer.geometry.type}" > Geometry Type </label><span class="required"> *</span>
-																						<input type="text" class="form-control" th:field="*{geometryType}" readonly="readonly"/>
+																						<input type="text" class="form-control" id="geometryType" readonly="readonly"/>
+																					</div>
+																					<div id="virtualType" class="col-md-3 col-sm-6 col-xs-12" style="display:none;">
+																						<div class="input-group input-group-sm">
+																							<label th:text="#{layer.geometry.type}" > Geometry Type </label><span class="required"> *</span>
+																							<select class="selectpicker select show-tick form-control" id="geometryTypeVirtual" onchange="LayerCreateController.changeFieldAux()" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{layer.geometry.type} +'...'">
+																							  <optgroup th:label="#{database.generic}">
+																								<option value="Point">Point</option>
+																								<option value="LineString">LineString</option>
+																								<option value="Polygon">Polygon</option>
+																							  </optgroup>											
+																							</select>
+																						</div>
+																						<span></span>
+																						<div class="alert alert-info alert-dismissable">
+																							<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																							<i class="fa fa-info-circle"></i>
+																							<span th:text="#{layer.virtual.type.info}"> info.</span>
+																						</div>	
 																					</div>
 																					<div class="form-group col-md-4" id="checkHeatMap" style="display:none;">
 																						<label class="" th:text="#{layer.isheatmap} + ':'">is heatMap</label>
@@ -499,6 +517,7 @@
 			"heatMapMin" : [[${layer?.heatMapMin}]],
 			"heatMapRadius" :[[${layer?.heatMapRadius}]],
 			"geometryField" :[[${layer?.geometryField}]],
+			"geometryType": [[${layer?.geometryType}]],
 			"weightField" :[[${layer?.weightField}]],
 			"refreshTime" :[[${layer?.refreshTime}]],
 			"innerColor" :[[${layer?.innerColor}]],

@@ -29,10 +29,16 @@ public interface ViewerService {
 
 	Viewer create(Viewer viewer, String baseMap);
 
-	Boolean hasUserViewPermission(String id, String userId, String userIdToken);
+	Boolean hasUserViewPermission(String id, String userId);
 
 	Viewer getViewerById(String id, String userId);
 
 	void deleteViewer(Viewer viewer, String userId);
+
+	Boolean checkExist(Viewer viewer);
+
+	List<Viewer> checkAllViewerByCriteria(String userId, String identification, String description);
+
+	Viewer getViewerPublicById(String id);
 
 }

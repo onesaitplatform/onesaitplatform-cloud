@@ -1,29 +1,43 @@
+master:
+   datasource:
+      url: ${CONFIGDBMASTERURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+     
+
+
 onesaitplatform:
    init:
       configdb: ${LOADCONFIGDB}
       mongodb: ${LOADMONGODB}
       elasticdb: ${LOADELASTICDB}
       mailconfig: ${LOADMAILCONFIG}
+      multitenant.update-mode: ${UPDATE_MODE_MULTITENANT}
    database.mongodb:
       database: ${REALTIMEDBNAME}
-      servers: ${REALTIMEDBSERVERS} 
-      authenticationDatabase: ${REALTIMEDBAUTHDB}               
+      servers: ${REALTIMEDBSERVERS}
+      authenticationDatabase: ${REALTIMEDBAUTHDB}
       useAuth: ${REALTIMEDBUSEAUTH}
       username: ${REALTIMEDBUSER}
       password: ${REALTIMEDBPASS}
-      writeConcern: ${REALTIMEDBWRITECONCERN}      
+      writeConcern: ${REALTIMEDBWRITECONCERN}
    database.elasticsearch:
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
       url: ${ELASTICDBHOST}
       port: 9300
-   server.name: ${SERVER_NAME}  
-   server.controlpanelservice: ${SERVER_NAME}      
+   webproject:
+      rootfolder.path: /usr/local/webprojects/
+      baseurl: https://${SERVER_NAME}/web/
+   controlpanel:
+      url: https://${SERVER_NAME}/controlpanel
+   server.name: ${SERVER_NAME}
+   server.controlpanelservice: ${SERVER_NAME}
 spring:
-   datasource:  
+   datasource:
       url: ${CONFIGDBURL}
       username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}  
+      password: ${CONFIGDBPASS}
    data.mongodb:
-      host: ${REALTIMEDBSERVERS}   
+      host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
-      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}         
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}

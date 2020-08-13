@@ -116,7 +116,7 @@ public class MarketAssetHelper {
 		// If the user is not the owner nor Admin an exception is launch to redirect to
 		// list view
 		if (!marketAsset.getUser().equals(user)
-				&& !user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+				&& !userService.isUserAdministrator(user)) {
 			log.error(USER_NOT_ALLOW_STR);
 			throw new GenericOPException(USER_NOT_ALLOW_STR);
 		}

@@ -134,4 +134,8 @@ public class LayerDTO {
 	@Setter
 	private String north;
 
+	@Getter
+	@Setter
+	private Boolean isVirtual;
+
 }

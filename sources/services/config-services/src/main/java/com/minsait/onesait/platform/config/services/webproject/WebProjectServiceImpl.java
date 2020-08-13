@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -35,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.Role;
@@ -69,7 +71,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 	private String rootFolder;
 
 	@Override
-	public List<WebProject> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
+	public List<WebProjectDTO> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
 			String description) {
 		List<WebProject> webProjects;
 		final User user = userService.getUser(userId);
@@ -77,7 +79,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			webProjects = webProjectRepository.findByIdentificationContainingAndDescriptionContaining(identification,
 					description);
 		} else {
@@ -85,7 +87,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 					identification, description);
 		}
 
-		return webProjects;
+		return webProjects.stream().map(WebProjectDTO::convert).collect(Collectors.toList());
 	}
 
 	@Override
@@ -94,7 +96,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 		final List<String> identifications = new ArrayList<>();
 		final User user = userService.getUser(userId);
 
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			webProjects = webProjectRepository.findAllByOrderByIdentificationAsc();
 		} else {
 			webProjects = webProjectRepository.findByUserOrderByIdentificationAsc(user);
@@ -125,16 +127,16 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	@Override
-	public void createWebProject(WebProject webProject, String userId) {
+	public void createWebProject(WebProjectDTO webProject, String userId) {
 		if (!webProjectExists(webProject.getIdentification())) {
 			log.debug("Web Project does not exist, creating..");
 			final User user = userService.getUser(userId);
-			webProject.setUser(user);
-			if (webProject.getMainFile().isEmpty()) {
-				webProject.setMainFile("index.html");
+			final WebProject wp = WebProjectDTO.convert(webProject, user);
+			if (wp.getMainFile().isEmpty()) {
+				wp.setMainFile("index.html");
 			}
-			createFolderWebProject(webProject.getIdentification(), userId);
-			webProjectRepository.save(webProject);
+			createFolderWebProject(wp.getIdentification(), userId);
+			webProjectRepository.save(wp);
 
 		} else {
 			throw new WebProjectServiceException(
@@ -143,12 +145,12 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	@Override
-	public WebProject getWebProjectById(String webProjectId, String userId) {
+	public WebProjectDTO getWebProjectById(String webProjectId, String userId) {
 		final WebProject webProject = webProjectRepository.findById(webProjectId);
 		final User user = userService.getUser(userId);
 		if (webProject != null) {
 			if (hasUserPermissionToEditWebProject(user, webProject)) {
-				return webProject;
+				return WebProjectDTO.convert(webProject);
 			} else {
 				throw new WebProjectServiceException(USER_UNAUTH);
 			}
@@ -159,7 +161,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	public boolean hasUserPermissionToEditWebProject(User user, WebProject webProject) {
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
 			return (webProject.getUser().getUserId().equals(user.getUserId()));
@@ -172,15 +174,17 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	@Override
-	public void updateWebProject(WebProject webProject, String userId) {
+	public void updateWebProject(WebProjectDTO webProject, String userId) {
 		final WebProject wp = webProjectRepository.findById(webProject.getId());
 		final User user = userService.getUser(userId);
 
 		if (wp != null) {
 			if (hasUserPermissionToEditWebProject(user, wp)) {
 				if (webProjectExists(wp.getIdentification())) {
-					wp.setDescription(webProject.getDescription());
-					wp.setMainFile(webProject.getMainFile());
+					if (!StringUtils.isEmpty(webProject.getDescription()))
+						wp.setDescription(webProject.getDescription());
+					if (!StringUtils.isEmpty(webProject.getMainFile()))
+						wp.setMainFile(webProject.getMainFile());
 					updateFolderWebProject(webProject.getIdentification(), userId);
 					webProjectRepository.save(wp);
 				} else {
@@ -196,13 +200,13 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	@Override
-	public void deleteWebProject(WebProject webProject, String userId) {
-		final WebProject wp = webProjectRepository.findById(webProject.getId());
+	public void deleteWebProject(String webProjectId, String userId) {
+		final WebProject wp = webProjectRepository.findById(webProjectId);
 		final User user = userService.getUser(userId);
 
 		if (hasUserPermissionToEditWebProject(user, wp)) {
 			deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
-			webProjectRepository.delete(webProject);
+			webProjectRepository.delete(wp);
 		} else {
 			throw new WebProjectServiceException(USER_UNAUTH);
 		}
@@ -362,23 +366,23 @@ public class WebProjectServiceImpl implements WebProjectService {
 		final String path = rootFolder;
 		final String fileName = identification + ".zip";
 
-		ByteArrayOutputStream zipByte = new ByteArrayOutputStream();
-		ZipOutputStream zipOut = new ZipOutputStream(zipByte);
+		final ByteArrayOutputStream zipByte = new ByteArrayOutputStream();
+		final ZipOutputStream zipOut = new ZipOutputStream(zipByte);
 
 		final File fileToZip = new File(path + identification);
 
 		log.debug("Zipping file: " + path + fileName);
-		
+
 		try {
 			if (fileToZip.isDirectory()) {
-				File[] fileList = fileToZip.listFiles();
-				for (File file : fileList) {
+				final File[] fileList = fileToZip.listFiles();
+				for (final File file : fileList) {
 					zipFile(file, file.getName(), zipOut);
 				}
 			}
 			zipOut.close();
 			zipByte.close();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(ERROR_ZIPPING_FILES + e);
 			throw new WebProjectServiceException(ERROR_ZIPPING_FILES + e);
 		}
@@ -387,7 +391,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	private void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
-		
+
 		try {
 			if (fileToZip.isDirectory()) {
 				if (fileName.endsWith("/")) {
@@ -397,31 +401,46 @@ public class WebProjectServiceImpl implements WebProjectService {
 					zipOut.putNextEntry(new ZipEntry(fileName + "/"));
 					zipOut.closeEntry();
 				}
-				File[] fileList = fileToZip.listFiles();
-				for (File file : fileList) {
+				final File[] fileList = fileToZip.listFiles();
+				for (final File file : fileList) {
 					zipFile(file, fileName + "/" + file.getName(), zipOut);
 				}
 				return;
 			}
 			copyFilesToZip(fileToZip, fileName, zipOut);
-			
-		} catch (IOException e) {
+
+		} catch (final IOException e) {
 			log.error(ERROR_ZIPPING_FILES + e);
 			throw e;
-		} 	
+		}
 	}
-	
-	private void copyFilesToZip (File fileToZip,  String fileName, ZipOutputStream zipOut) throws IOException {
-		
+
+	private void copyFilesToZip(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+
 		try (FileInputStream fis = new FileInputStream(fileToZip)) {
-			ZipEntry zipEntry = new ZipEntry(fileName);
+			final ZipEntry zipEntry = new ZipEntry(fileName);
 			zipOut.putNextEntry(zipEntry);
 
 			IOUtils.copy(fis, zipOut);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error(ERROR_ZIPPING_FILES + e);
 			throw e;
-		}		
+		}
+	}
+
+	@Override
+	public WebProjectDTO getWebProjectByName(String name, String userId) {
+		final WebProject webProject = webProjectRepository.findByIdentification(name);
+		final User user = userService.getUser(userId);
+		if (webProject != null) {
+			if (hasUserPermissionToEditWebProject(user, webProject)) {
+				return WebProjectDTO.convert(webProject);
+			} else {
+				throw new WebProjectServiceException(USER_UNAUTH);
+			}
+		} else {
+			return null;
+		}
 	}
 
 }

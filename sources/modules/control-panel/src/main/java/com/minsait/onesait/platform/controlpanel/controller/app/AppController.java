@@ -66,7 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/apps")
-@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 @Slf4j
 public class AppController {
 

@@ -14,6 +14,11 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.helper;
 
+import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
+import com.minsait.onesait.platform.persistence.external.generator.model.common.Constraint;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
+
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public interface SQLHelper {
@@ -27,5 +32,19 @@ public interface SQLHelper {
 	String addLimit(final String query, final long limit);
 
 	String addLimit(final String query, final long limit, final long offset);
+
+	ColumnRelational getColumnWithSpecs(ColumnRelational col);
+
+	String getFieldTypeString(String fieldOspType);
+
+	Constraint getContraintWithSpecs(Constraint constaint);
+
+	CreateStatement parseCreateStatementConstraints(CreateStatement statement);
+
+	CreateStatement parseCreateStatementColumns(CreateStatement statement);
+
+	CreateStatement getCreateStatementWithConstraints(CreateStatement createStatement);
+
+	String parseGeometryFields(String query, String ontology) throws JSQLParserException;
 
 }

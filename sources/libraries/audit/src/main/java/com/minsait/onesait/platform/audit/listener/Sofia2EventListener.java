@@ -81,12 +81,14 @@ public class Sofia2EventListener {
 			log.info("Authentication success event for user {}", event.getAuthentication().getPrincipal().toString());
 			s2event.setOperationType(OperationType.LOGIN.name());
 		} else { // OAuth Token generation after login
-			log.info("OAuth Authentication success event for user {}", event.getAuthentication().getPrincipal().toString());
+			log.info("OAuth Authentication success event for user {}",
+					event.getAuthentication().getPrincipal().toString());
 			s2event.setOperationType(OperationType.LOGIN_OAUTH.name());
 		}
 
+		s2event.setModule(Module.CONTROLPANEL);
 		s2event.setOtherType(AuthenticationSuccessEvent.class.getName());
-		s2event.setUser((String) event.getAuthentication().getPrincipal());
+		s2event.setUser(event.getAuthentication().getName());
 		s2event.setResultOperation(ResultOperationType.SUCCESS);
 		if (event.getAuthentication().getDetails() != null) {
 			final Object details = event.getAuthentication().getDetails();
@@ -99,15 +101,18 @@ public class Sofia2EventListener {
 	@EventListener
 	@Async
 	public void handleAuthenticationFailureBadCredentialsEvent(AuthenticationFailureBadCredentialsEvent event) {
-		log.info("authentication failure bad credentials event for user {}", event.getAuthentication().getPrincipal().toString());
+		log.info("authentication failure bad credentials event for user {}",
+				event.getAuthentication().getPrincipal().toString());
 
-		final String message = "Login Failed (Incorrect Credentials) for User: "+ event.getAuthentication().getPrincipal().toString();
+		final String message = "Login Failed (Incorrect Credentials) for User: "
+				+ event.getAuthentication().getPrincipal().toString();
 
 		final OPAuthAuditEvent s2event = OPEventFactory.builder().build().createAuditAuthEvent(EventType.SECURITY,
 				message);
 
 		s2event.setOperationType(OperationType.LOGIN.name());
-		s2event.setUser((String) event.getAuthentication().getPrincipal());
+		s2event.setModule(Module.CONTROLPANEL);
+		s2event.setUser(event.getAuthentication().getName());
 		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
 
 		s2event.setResultOperation(ResultOperationType.ERROR);
@@ -123,14 +128,15 @@ public class Sofia2EventListener {
 	@EventListener
 	@Async
 	public void handleAuthorizationFailureEvent(AuthorizationFailureEvent errorEvent) {
-		log.info("authorization failure  event for user {} ",errorEvent.getAuthentication().getPrincipal().toString());
+		log.info("authorization failure  event for user {} ", errorEvent.getAuthentication().getPrincipal().toString());
 
 		final OPAuthAuditEvent s2event = OPEventFactory.builder().build().createAuditAuthEvent(EventType.SECURITY,
 				"Login Failed (AuthorizationFailure) for User: "
 						+ errorEvent.getAuthentication().getPrincipal().toString());
 
 		s2event.setOperationType(OperationType.LOGIN.name());
-		s2event.setUser((String) errorEvent.getAuthentication().getPrincipal());
+		s2event.setModule(Module.CONTROLPANEL);
+		s2event.setUser(errorEvent.getAuthentication().getName());
 		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
 
 		s2event.setResultOperation(ResultOperationType.ERROR);

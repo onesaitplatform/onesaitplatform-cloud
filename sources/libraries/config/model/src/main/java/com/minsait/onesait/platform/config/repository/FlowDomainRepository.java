@@ -21,6 +21,7 @@ import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.FlowDomain;
 
@@ -39,4 +40,14 @@ public interface FlowDomainRepository extends JpaRepository<FlowDomain, String> 
 	@Modifying
 	@Transactional
 	void deleteByIdentification(String identification);
+
+	@Modifying
+	@Transactional
+	@Query("UPDATE FlowDomain d SET d.autorecover = :autorecover WHERE d.id = :id")
+	void saveAutorecover(@Param("autorecover") boolean autorecover, @Param("id") String id);
+
+	@Modifying
+	@Transactional
+	@Query("UPDATE FlowDomain d SET d.state = :state WHERE d.id = :id")
+	void saveState(@Param("state") String state, @Param("id") String id);
 }

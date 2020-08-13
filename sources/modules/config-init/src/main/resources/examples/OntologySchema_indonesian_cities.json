@@ -1,0 +1,18 @@
+{
+   "properties":{
+      "kabko":{
+         "type":"string"
+      },
+      "lat":{
+         "type":"number"
+      },
+      "long":{
+         "type":"number"
+      }
+   },
+   "type":"object",
+   "description":"Info indonesian_cities",
+   "$schema":"http://json-schema.org/draft-04/schema#",
+   "title":"indonesian_cities",
+   "additionalProperties":true
+}

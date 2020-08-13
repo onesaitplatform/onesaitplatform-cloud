@@ -96,14 +96,16 @@ public class QueryToolRestController {
 		try {
 			if (ontologyService.hasUserPermissionForQuery(utils.getUserId(), ontologyIdentification)) {
 				final ManageDBRepository manageDB = manageFactory.getInstance(ontologyIdentification);
-				if (manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty()) {
+				if (!ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
+						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)
+						&& manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty() 
+							) {
 					manageDB.createTable4Ontology(ontologyIdentification, "{}", null);
 				}
 				query = query.replace(CONTEXT_USER, utils.getUserId());
 				if (queryType.toUpperCase().equals(QUERY_SQL)
 						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
-					queryResult = queryToolService.querySQLAsJson(utils.getUserId(), ontologyIdentification, query,
-							offset);
+					queryResult = queryToolService.querySQLAsJson(utils.getUserId(), ontologyIdentification, query,	offset);
 
 					return new ResponseEntity<>(queryResult, HttpStatus.OK);
 

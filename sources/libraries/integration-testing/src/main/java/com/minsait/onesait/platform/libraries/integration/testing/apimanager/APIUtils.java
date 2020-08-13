@@ -18,30 +18,27 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
+import java.util.Base64;
 
-import javax.transaction.Transactional;
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestComponent;
-import org.springframework.util.CollectionUtils;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.config.model.Api;
-import com.minsait.onesait.platform.config.model.Api.ApiCategories;
-import com.minsait.onesait.platform.config.model.Api.ApiStates;
-import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserToken;
-import com.minsait.onesait.platform.config.repository.ApiRepository;
-import com.minsait.onesait.platform.config.repository.DataModelRepository;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.config.repository.UserTokenRepository;
-import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -53,78 +50,100 @@ import lombok.extern.slf4j.Slf4j;
 @TestComponent
 public class APIUtils {
 
-	private static final String API_IDENTIFICATION_EXTERNAL = "pet-store";
-	private static final String API_JSON = "APISensorTag.json";
-	private static final String SWAGGER_JSON = "PetStoreSwagger.yml";
-	private static final String SENSOR_TAG = "SensorTag";
-	private static final String SENSOR_TAG_SCHEMA_FILE = "SensorTagSchema";
-	private static final String EMPTY_BASE = "EmptyBase";
+	public static final String API_IDENTIFICATION_EXTERNAL = "pet-store";
+	public static final String API_JSON = "APISensorTag.json";
+	public static final String API_PET_STORE_JSON = "APIPetStore.json";
+	public static final String SENSOR_TAG = "SensorTag";
+
+	public static final String SENSOR_TAG_JSON = "SensorTag.json";
+	public static final String API_SENSOR_TAG_JSON = "APISensorTag.json";
+	public static final String API_SENSOR_TAG = "sensor-tag";
+
+	public static final String EMPTY_BASE = "EmptyBase";
+	public static final String OAUTH_TOKEN_ENDPOINT = "/oauth/token";
+	public static final String GRANT_TYPE = "grant_type";
+	public static final String SCOPE = "openid";
+	public static final String SCOPE_DEFAULT = "openid";
+	public static final String GRANT_TYPE_PASSWORD = "password";
+	public static final String USER_DEV = "developer";
+	public static final String USER_PASS = "Changed2019!";
+	public static final String USER = "username";
+
+	@Value("${client-id}")
+	private String clientId;
+	@Value("${client-secret}")
+	private String clientSecret;
 
 	@Autowired
-	private DataModelRepository dataModelRepository;
-	@Autowired
-	private ApiRepository apiRepository;
-	@Autowired
-	private OntologyRepository ontologyRepository;
-	@Autowired
-	private UserTokenRepository tokenRepository;
-	@Autowired
-	private ObjectMapper mapper;
+	private TestRestTemplate template;
+	private final ObjectMapper mapper = new ObjectMapper();
+	@Getter
+	@Setter
+	private String token;
 
-	public ApiDTO readInternalAPIDTO(User user) throws IOException {
-		final ApiDTO api = mapper.readValue(loadFromResources(API_JSON), ApiDTO.class);
-		api.setOntologyId(createTestOntology(user).getId());
-		return api;
+	@Value("${apimanager}")
+	private String apiManager;
+
+	@Value("${oauth-server}")
+	private String oauthServer;
+
+	@Value("${controlpanel}")
+	private String controlpanel;
+
+	@Value("${username:developer}")
+	private String username;
+	@Value("${password:Changed2019!}")
+	private String pass_word;
+
+	private static final String API_APIS = "/api/apis";
+	private static final String API_ONTOLOGIES = "/api/ontologies";
+
+	@PostConstruct
+	public void setUp() {
+		fetchOauthToken(username, pass_word);
 	}
 
-	public Api createExternalAPI(User user, ApiType type) {
-		final Api apiTest = new Api();
-		apiTest.setIdentification(API_IDENTIFICATION_EXTERNAL);
-		apiTest.setUser(user);
-		apiTest.setApiType(type);
-		apiTest.setCategory(ApiCategories.ALL);
-		apiTest.setDescription("Test api");
-		apiTest.setNumversion(1);
-		apiTest.setState(ApiStates.CREATED);
-
-		apiTest.setSwaggerJson(loadFromResources(SWAGGER_JSON));
-
-		return apiRepository.save(apiTest);
+	public void createInternalAPI() throws IOException {
+		final JsonNode ontology = mapper.readValue(loadFromResources(SENSOR_TAG_JSON), JsonNode.class);
+		create(controlpanel + API_ONTOLOGIES, ontology);
+		final JsonNode api = mapper.readValue(loadFromResources(API_SENSOR_TAG_JSON), JsonNode.class);
+		create(controlpanel + API_APIS, api);
 	}
 
-	@Transactional
-	public void deleteAPITest(Api api) {
-		apiRepository.delete(api);
-		if (api.getOntology() != null)
-			ontologyRepository.delete(api.getOntology());
-	}
-
-	@Transactional
-	private Ontology createTestOntology(User user) {
-		final Ontology sensorTag = new Ontology();
-		sensorTag.setIdentification(SENSOR_TAG);
-		sensorTag.setUser(user);
-		sensorTag.setDataModel(dataModelRepository.findByIdentification(EMPTY_BASE).get(0));
-		sensorTag.setJsonSchema(loadFromResources(SENSOR_TAG_SCHEMA_FILE));
-		sensorTag.setActive(true);
-		sensorTag.setMetainf("");
-		sensorTag.setDescription("Sensor tag");
-		sensorTag.setPublic(false);
-		return ontologyRepository.save(sensorTag);
+	public void createExternalAPI() throws IOException {
+		final JsonNode api = mapper.readValue(loadFromResources(API_PET_STORE_JSON), JsonNode.class);
+		create(controlpanel + API_APIS, api);
 
 	}
 
-	public String getUserToken(User user) {
-		final List<UserToken> tokens = tokenRepository.findByUser(user);
-		if (CollectionUtils.isEmpty(tokens)) {
-			final UserToken token = new UserToken();
-			token.setUser(user);
-			token.setToken(UUID.randomUUID().toString());
-			return tokenRepository.save(token).getToken();
+	private void create(String path, JsonNode api) {
+		template.exchange(path, HttpMethod.POST, new HttpEntity<>(api, headers()), String.class);
+	}
 
-		} else {
-			return tokens.get(0).getToken();
-		}
+	private void delete(String path) {
+		template.exchange(path, HttpMethod.DELETE, new HttpEntity<>(headers()), String.class);
+	}
+
+	public void deleteResources() {
+		delete(controlpanel + API_APIS + "/" + API_SENSOR_TAG + "?version=1");
+		delete(controlpanel + API_APIS + "/" + API_IDENTIFICATION_EXTERNAL + "?version=1");
+		delete(controlpanel + API_ONTOLOGIES + "/" + SENSOR_TAG);
+	}
+
+	public void fetchOauthToken(String user, String pass) {
+		final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add(GRANT_TYPE, GRANT_TYPE_PASSWORD);
+		params.add(SCOPE, SCOPE_DEFAULT);
+		params.add(GRANT_TYPE_PASSWORD, pass);
+		params.add(USER, user);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.AUTHORIZATION, "Basic "
+				+ Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8)));
+		token = "Bearer "
+				+ template
+						.exchange(oauthServer + OAUTH_TOKEN_ENDPOINT, HttpMethod.POST,
+								new HttpEntity<>(params, headers), JsonNode.class)
+						.getBody().get("access_token").asText();
 	}
 
 	public String loadFromResources(String name) {
@@ -145,5 +164,13 @@ public class APIUtils {
 				return null;
 			}
 		}
+	}
+
+	public HttpHeaders headers() {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		headers.add(HttpHeaders.AUTHORIZATION, getToken());
+		return headers;
 	}
 }

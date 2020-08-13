@@ -6,7 +6,7 @@ FROM onesaitplatform/baseimage:latest
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="flowengine"	
+	  module.name="flowengine"
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
@@ -16,14 +16,17 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
 	SERVERNAME=localhost \
 	PROTOCOL=https \
     REALTIMEDBSERVERS=realtimedb:27017 \
-    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+		CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+		CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
-    ELASTICDBPORT=9200 \    
-    AUDITGLOBALNOTIFY=false \    
+    ELASTICDBPORT=9200 \
+    AUDITGLOBALNOTIFY=false \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
@@ -51,7 +54,7 @@ ADD *-exec.jar app.jar
 ADD Flow-Engine-Manager /opt/nodeRed/Flow-Engine-Manager
 
 # create onesait user/group
-RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
@@ -62,9 +65,8 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local && \
     chmod -R 777 /opt/nodeRed
-    
+
 VOLUME ["/tmp", "/var/log/platform-logs"]
-    
 
 EXPOSE 10000 20100 5050
 

@@ -512,6 +512,9 @@
     <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
     <script th:src="@{/static/vendor/jquery-ui/jquery-ui.min.js}" type="text/javascript"></script>
 	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	
 		
 	<!-- TEMPLATE CONTROLLER  -->	
 
@@ -536,13 +539,17 @@
 			useCurrent: true
 		});
 	}
+	
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification-form").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	
 	var defaultOption=[[#{simulation.choose}]];
 	// LOAD DATA TO USE IN MENUCONTROLLER
 	// MENU CONTROLLER LOAD AND INIT ITSELF
 	$( document ).ready(function() {
 		
 		currentFormat =  'MM/DD/YYYY HH:mm:ss';    
-
+				
 		$("#tabs").tabs();
 	    
 		//initialize event handler on checkbox

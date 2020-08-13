@@ -22,6 +22,15 @@ public class DataDTO {
 	@Getter
 	@Setter
 	private String options[];
+	@Getter
+	@Setter
+	private String ds;
+	@Getter
+	@Setter
+	private String dsFieldValue;
+	@Getter
+	@Setter
+	private String dsFieldDes;
 
 	@Getter
 	@Setter

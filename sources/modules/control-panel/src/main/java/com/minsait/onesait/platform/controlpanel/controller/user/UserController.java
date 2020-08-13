@@ -30,6 +30,7 @@ import org.springframework.mail.MailSendException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,15 +46,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.business.services.user.UserOperationsService;
+import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.mail.MailService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,6 +89,12 @@ public class UserController {
 	@Qualifier("cachePendingResetPassword")
 	private Map<String, String> cachePendingResetPassword;
 
+	@Autowired
+	private MultitenancyService multitenancyService;
+
+	@Autowired
+	private ConfigurationService configurationService;
+
 	@Value("${onesaitplatform.user.registry.validation.url:http://localhost:18000/controlpanel/users/validateNewUser/}")
 	private String validationUrlNewUser;
 
@@ -103,18 +114,18 @@ public class UserController {
 	private static final String OBSOLETE_STR = "obsolete";
 	private static final String REDIRECT_LOGIN = "redirect:/login";
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createForm(Model model) {
 		populateFormData(model);
 		model.addAttribute("user", new User());
 		model.addAttribute("passwordPattern", passwordPattern);
-
+		model.addAttribute("tenants", multitenancyService.getTenantsForCurrentVertical());
 		return "users/create";
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		if (!utils.getUserId().equals(id)) {
@@ -133,6 +144,7 @@ public class UserController {
 		}
 		populateFormData(model);
 		model.addAttribute("AccessToUpdate", bool);
+		model.addAttribute("tenants", multitenancyService.getTenantsForCurrentVertical());
 
 		final User user = userService.getUser(id);
 		// If user does not exist redirect to create
@@ -226,6 +238,16 @@ public class UserController {
 			if ((!newPass.isEmpty()) && (!repeatPass.isEmpty())) {
 				if (newPass.equals(repeatPass) && utils.paswordValidation(newPass)) {
 					user.setPassword(newPass);
+					final Configuration configuration = configurationService
+							.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+					final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+							.fromYaml(configuration.getYmlConfig()).get("Authentication");
+					final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig
+							.get("numberLastEntriesToCheck");
+
+					if (!multitenancyService.isValidPass(user.getUserId(), newPass, numberLastEntriesToCheck)) {
+						throw new UserServiceException("Password not valid because it has already been used before");
+					}
 					userService.updatePassword(user);
 					if (utils.isAdministrator()) {
 						final String defaultMessage = "Your password has been changed. Your new password for onesait Platform: ";
@@ -260,10 +282,10 @@ public class UserController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/create")
 	public String create(@Valid User user, BindingResult bindingResult, RedirectAttributes redirect,
-			HttpServletRequest request) {
+			HttpServletRequest request, @RequestParam(value = "tenant", required = false) String tenant) {
 		if (bindingResult.hasErrors()) {
 
 			final StringBuilder builder = new StringBuilder();
@@ -276,6 +298,9 @@ public class UserController {
 			return REDIRECT_USER_CREATE;
 		}
 		try {
+			if (!StringUtils.isEmpty(tenant)) {
+				MultitenancyContextHolder.setTenantName(tenant);
+			}
 			final String newPass = request.getParameter("newpasswordbox");
 			final String repeatPass = request.getParameter("repeatpasswordbox");
 			if (!userService.emailExists(user)) {
@@ -305,7 +330,7 @@ public class UserController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String userId,
 			@RequestParam(required = false) String fullName, @RequestParam(required = false) String roleType,
@@ -326,11 +351,12 @@ public class UserController {
 
 		if ((userId == null) && (email == null) && (fullName == null) && (active == null) && (roleType == null)) {
 			log.debug("No params for filtering, loading all users");
-			model.addAttribute("users", userService.getAllUsers());
+			model.addAttribute("users", userService.getAllUsersList());
 
 		} else {
 			log.debug("Params detected, filtering users...");
-			model.addAttribute("users", userService.getAllUsersByCriteria(userId, fullName, email, roleType, active));
+			model.addAttribute("users",
+					userService.getAllUsersByCriteriaList(userId, fullName, email, roleType, active));
 		}
 
 		return "users/list";
@@ -398,6 +424,12 @@ public class UserController {
 				utils.addRedirectMessage("login.error.email.duplicate", redirectAttributes);
 				return REDIRECT_LOGIN;
 			}
+			if (userService.userExists(user)) {
+				log.debug("There is already an user with this identifier");
+				utils.addRedirectMessage("login.error.username", redirectAttributes);
+				return REDIRECT_LOGIN;
+			}
+
 			if (!userService.emailExists(user)) {
 
 				try {
@@ -585,11 +617,11 @@ public class UserController {
 				final String newPassword = UUID.randomUUID().toString().toUpperCase().substring(0, 2)
 						+ UUID.randomUUID().toString().substring(0, 10) + "$";
 				user.setPassword(newPassword);
-
+				userService.updatePassword(user);
 				log.info("Send new password to user by email {}", user.getEmail());
 				mailService.sendMail(user.getEmail(), "Password reset onesait Platform",
 						"Your new password for user: " + user.getUserId() + " is : ".concat(newPassword));
-				userService.updatePassword(user);
+
 				utils.addRedirectMessage("user.reset.success", redirectAttributes);
 				log.debug("Pass reset");
 				return REDIRECT_LOGIN;

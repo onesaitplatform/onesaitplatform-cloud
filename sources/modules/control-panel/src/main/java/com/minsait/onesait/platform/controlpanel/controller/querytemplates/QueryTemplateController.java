@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.dto.OntologyForList;
@@ -71,17 +72,28 @@ public class QueryTemplateController {
 	@Autowired
 	private EntityDeletionService entityDeletionService;
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@RequestMapping(value = "/list", produces = "text/html")
-	public String list(Model uiModel, HttpServletRequest request) {
-
-		List<QueryTemplate> templates = this.queryTemplateService.getAllQueryTemplates();
+	public String list(Model uiModel, HttpServletRequest request, @RequestParam(required = false) String name) {
+		if (name != null && name.equals("")) {
+			name = null;
+		}
+		
+		List<QueryTemplate> templates = new ArrayList<>();
+		if (name == null) {
+			log.debug("No params for filtering, loading all query templates");
+			templates = this.queryTemplateService.getAllQueryTemplates();
+		} else {
+			log.debug("Params detected, filtering query templates...");
+			templates = this.queryTemplateService.getQueryTemplateByCriteria(name);
+		}
+		
 		uiModel.addAttribute("templates", templates);
 		return "querytemplates/list";
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createQueryTemplate(Model model) {
 		model.addAttribute(TEMPLATE_STR, new QueryTemplate());
@@ -183,7 +195,7 @@ public class QueryTemplateController {
 		return REDIRECT_TEMPLATE_LIST;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		this.entityDeletionService.deleteQueryTemplate(id);

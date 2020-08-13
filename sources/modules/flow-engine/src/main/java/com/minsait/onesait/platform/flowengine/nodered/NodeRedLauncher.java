@@ -15,6 +15,11 @@
 package com.minsait.onesait.platform.flowengine.nodered;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +68,11 @@ public class NodeRedLauncher {
 	@Value("${onesaitplatform.flowengine.launcher.logging.append: false}")
 	private Boolean logAppend;
 
+	@Value("${onesaitplatform.flowengine.launcher.lock.path:/tmp}")
+	private String lockFilePath;
+	@Value("${onesaitplatform.flowengine.launcher.lock.prefix:FlowEngine_}")
+	private String lockFilePrefix;
+
 	private ExecutorService exService = Executors.newSingleThreadExecutor();
 
 	@Autowired
@@ -73,13 +83,6 @@ public class NodeRedLauncher {
 
 	@PostConstruct
 	public void init() {
-
-		// Stop the flow engine in case it is still up
-		try {
-			nodeRedAdminClient.stopFlowEngine();
-		} catch (Exception e) {
-			log.warn("Could not stop Flow Engine.");
-		}
 
 		if (null != nodePath && null != nodeRedLauncherPath) {
 			NodeRedLauncherExecutionThread launcherThread = new NodeRedLauncherExecutionThread(this.nodePath,
@@ -104,10 +107,13 @@ public class NodeRedLauncher {
 		private int failsBeforeStopMillis;
 
 		private boolean stop;
+		private boolean lockAvailable;
 		private long lastFailTimestamp;
 		private int consecutiveFails;
 		private Boolean loggingEnabled;
 		private String logPath;
+		private FileChannel channel;
+		private FileLock lock;
 
 		public NodeRedLauncherExecutionThread(String nodePath, String launcherJob, String workingPath,
 				int maxFailsNumber, int failsBeforeStopMillis, Boolean enableDebugging, String logPath) {
@@ -127,18 +133,67 @@ public class NodeRedLauncher {
 		public void stop() {
 			this.stop = true;
 			nodeRedMonitor.stopMonitor();
+			try {
+				lock.release();
+				channel.close();
+			} catch (IOException e) {
+				log.error("Error closing channel on locked file.");
+			}
+
 		}
 
 		@Override
 		public void run() {
 
+			nodeRedAdminClient.resetSynchronizedWithBDC();
+			nodeRedMonitor.stopMonitor();
 			CommandLine commandLine = new CommandLine(this.nodePath);
 			commandLine.addArgument(this.launcherJob);
 			DefaultExecutor executor = new DefaultExecutor();
 			executor.setExitValue(0);
 			executor.setWorkingDirectory(new File(this.workingPath));
 
+			// check if lock is available
+			File file = new File(lockFilePath + "/" + lockFilePrefix + ".txt");
+
+			try {
+				channel = new RandomAccessFile(file, "rw").getChannel();
+			} catch (FileNotFoundException e1) {
+				try {
+					boolean creation = file.createNewFile();
+					if (creation) {
+						channel = new RandomAccessFile(file, "rw").getChannel();
+					} else {
+						this.stop();
+					}
+				} catch (IOException e) {
+					// Error while creating file to lock
+					log.error("Error creating lock. Message = {}, Cause = {}", e.getMessage(), e.getCause());
+					this.stop();
+				}
+			}
+
+			lockAvailable = false;
+			while (!lockAvailable && !stop) {
+				try {
+					lock = channel.tryLock();
+					if (null != lock) {
+						lockAvailable = true;
+					} else {
+						TimeUnit.SECONDS.sleep(rebootDelay);
+					}
+				} catch (Exception e) {
+					this.stop();
+					log.error("Erroor while waiting to check lock.");
+				}
+			}
+
 			while (!stop) {
+				try {
+					nodeRedAdminClient.stopFlowEngine();
+				} catch (Exception e) {
+					log.warn("Could not stop Flow Engine.");
+				}
 				try {
 					nodeRedAdminClient.resetSynchronizedWithBDC();
 					nodeRedMonitor.stopMonitor();
@@ -160,8 +215,8 @@ public class NodeRedLauncher {
 						}
 					};
 					if (loggingEnabled) {
-						executor.setStreamHandler(new PumpStreamHandler(
-								new RolloverFileOutputStream(logPath + File.separator + "yyyy_mm_dd.debug.log", logAppend, debugRatainDays)));
+						executor.setStreamHandler(new PumpStreamHandler(new RolloverFileOutputStream(
+								logPath + File.separator + "yyyy_mm_dd.debug.log", logAppend, debugRatainDays)));
 					}
 					executor.execute(commandLine, handler);
 					nodeRedMonitor.startMonitor();

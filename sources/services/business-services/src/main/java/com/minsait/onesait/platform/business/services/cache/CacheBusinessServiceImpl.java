@@ -35,6 +35,7 @@ import com.minsait.onesait.platform.config.model.Cache.Type;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.CacheRepository;
 import com.minsait.onesait.platform.config.services.cache.CacheService;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,10 +92,19 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 	private <K, V> Cache createMap(Cache cache) {
 		createCacheObject(cache);
 
-		hazelcastInstance.<K, V>getMap(cache.getIdentification());
+		hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cache.getIdentification());
 
 		return cache;
 	}
+	
+	@Override
+	public List<Cache> getByIdentificationLikeOrderByIdentification(String identification) {
+		if (identification==null) {
+			identification = "";
+		}
+		return cacheRepository.findAllByIdentificationLikeOrderByIdentificationAsc(identification);
+	}
+
 
 	public List<String> findCachesWithIdentification(String identification) {
 		List<Cache> caches;
@@ -118,6 +128,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 
 	public void deleteCacheById(String identification) {
 		final Cache cache = cacheRepository.findCacheByIdentification(identification);
+		hazelcastInstance.getMap(Tenant2SchemaMapper.getCachePrefix() + identification).destroy();
 		cacheRepository.delete(cache);
 	}
 
@@ -145,7 +156,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 		maxSizeConfig.setSize(cache.getSize());
 		maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.valueOf(cache.getMaxSizePolicy().toString()));
 
-		MapConfig mapConfig = new MapConfig(cache.getIdentification());
+		MapConfig mapConfig = new MapConfig(Tenant2SchemaMapper.getCachePrefix() + cache.getIdentification());
 		mapConfig.setMaxSizeConfig(maxSizeConfig);
 		mapConfig.setEvictionPolicy(EvictionPolicy.valueOf(cache.getEvictionPolicy().toString()));
 		return mapConfig;
@@ -155,7 +166,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 	@Transactional
 	public <K, V> void deleteMap(String identification, User user) throws CacheBusinessServiceException {
 		cacheService.deleteByIdentificationAndUser(identification, user);
-		hazelcastInstance.<K, V>getMap(identification).destroy();
+		hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + identification).destroy();
 	}
 
 	@Override
@@ -164,7 +175,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 		Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
 
 		if (cacheCnf != null) {
-			hazelcastInstance.<K, V>getMap(cacheCnf.getIdentification()).put(key, value);
+			hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).put(key, value);
 		} else {
 			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,
 					MSG_NOT_EXIST_HEADER + identification + MSG_NOT_EXIST_FOOTER);
@@ -177,7 +188,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 		Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
 
 		if (cacheCnf != null) {
-			hazelcastInstance.<K, V>getMap(cacheCnf.getIdentification()).putAll(map);
+			hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).putAll(map);
 		} else {
 			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,
 					MSG_NOT_EXIST_HEADER + identification + MSG_NOT_EXIST_FOOTER);
@@ -190,7 +201,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 		Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
 
 		if (cacheCnf != null) {
-			return hazelcastInstance.<K, V>getMap(cacheCnf.getIdentification()).get(key);
+			return hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).get(key);
 		} else {
 			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,
 					MSG_NOT_EXIST_HEADER + identification + MSG_NOT_EXIST_FOOTER);
@@ -202,7 +213,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 		Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
 
 		if (cacheCnf != null) {
-			IMap<K, V> map = hazelcastInstance.<K, V>getMap(identification);
+			IMap<K, V> map = hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + identification);
 			return map.getAll(map.keySet());
 		} else {
 			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,
@@ -216,7 +227,7 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 		Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
 
 		if (cacheCnf != null) {
-			IMap<K, V> map = hazelcastInstance.<K, V>getMap(identification);
+			IMap<K, V> map = hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + identification);
 			return map.getAll(keys);
 		} else {
 			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,

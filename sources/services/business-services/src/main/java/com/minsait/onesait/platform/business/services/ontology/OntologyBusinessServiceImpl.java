@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,17 @@ import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyDBRepository;
+import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
+import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicService;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicServiceException;
 
@@ -64,12 +70,22 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	private MetricsManager metricsManager;
 
 	static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";
+	static final String ERROR_KAFKA_TOPIC = "Error creationg kafka topic";
 
 	@Autowired
-	private VirtualOntologyDBRepository virtualRepo;
+	private VirtualOntologyOpsDBRepository virtualRepo;
 
 	@Value("${onesaitplatform.database.hadoop.enabled:false}")
 	private boolean hadoopEnable;
+
+	@Autowired
+	private EntityDeletionService entityDeleteionService;
+
+	@Autowired
+	private CosmosDBManageDBRepository cosmosManageRepository;
+
+	@Autowired
+	private CosmosDBBasicOpsDBRepository cosmosBasicOpsRepository;
 
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
@@ -105,7 +121,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 		if (ontology.isAllowsCreateTopic()) {
 			if (kafkaService != null) {
-				topicCreated = kafkaService.createTopicForOntology(ontologyName);
+				topicCreated = kafkaService.createInputTopicForOntology(ontologyName);
 			}
 
 			if (topicCreated) {
@@ -114,16 +130,30 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 				metricsManagerLogControlPanelOntologyCreation(userId, "KO");
 
 				throw new OntologyBusinessServiceException(
-						OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR,
-						"Error creationg kafka topic");
+						OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
 			}
 		}
 
-		this.prepareOntologyRtdbToHdb(ontology);
+		if (ontology.isAllowsCreateNotificationTopic()) {
+			if (kafkaService != null) {
+				topicCreated = kafkaService.createNotificationTopicForOntology(ontologyName);
+			}
 
-		this.invokeCreateOntology(ontology, config, topicCreated);
+			if (topicCreated) {
+				ontology.setNotificationTopic(kafkaService.getNotificationTopicName(ontologyName));
+			} else {
+				metricsManagerLogControlPanelOntologyCreation(userId, "KO");
 
-		this.invokeCreateOntologyLogic(ontology, config, topicCreated);
+				throw new OntologyBusinessServiceException(
+						OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
+			}
+		}
+
+		prepareOntologyRtdbToHdb(ontology);
+
+		invokeCreateOntology(ontology, config, topicCreated);
+
+		invokeCreateOntologyLogic(ontology, config, topicCreated);
 	}
 
 	private void prepareOntologyRtdbToHdb(Ontology ontology) {
@@ -139,51 +169,83 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	private void invokeCreateOntology(Ontology ontology, OntologyConfiguration config, boolean topicCreated)
 			throws OntologyBusinessServiceException {
-		final String ontologyName = ontology.getIdentification();
 		try {
 			ontologyService.createOntology(ontology, config);
 		} catch (final Exception e) {
-			try {
-				if (topicCreated) {
-					kafkaService.deleteTopic(ontologyName);
-				}
-			} catch (final Exception e2) {
+			rollBackInvokeCreateOntology(e, ontology, config, topicCreated);
 
-				throw new OntologyBusinessServiceException(
-						OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR_UNCLEAN,
-						"Error creating the ontology, it was not possible to undo the kafka topic creation", e);
+		}
+
+	}
+
+	private void rollBackInvokeCreateOntology(Exception e, Ontology ontology, OntologyConfiguration config,
+			boolean topicCreated) throws OntologyBusinessServiceException {
+		final String errorRollingBack = "Error creating the ontology";
+		final String errorRollingBackKafka = "it was not possible to undo the kafka topic creation";
+		String errorMsg = errorRollingBack;
+
+		try {
+			if (topicCreated) {
+				kafkaService.deleteTopic(ontology.getIdentification());
 			}
-
-			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
-					"Error creating the ontology configuration: " + e.getMessage(), e);
+		} catch (final Exception e2) {
+			errorMsg = errorRollingBack + ", " + errorRollingBackKafka;
+			throw new OntologyBusinessServiceException(
+					OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR_UNCLEAN, errorMsg, e);
 		}
 
 	}
 
 	private void invokeCreateOntologyLogic(Ontology ontology, OntologyConfiguration config, boolean topicCreated)
 			throws OntologyBusinessServiceException {
-		final String ontologyName = ontology.getIdentification();
 		try {
 
 			ontologyLogicService.createOntology(ontology, config == null ? null : configToConfigMap(config));
 		} catch (final Exception e) {
-			try {
-				if (topicCreated) {
-					kafkaService.deleteTopic(ontologyName);
-				}
-				ontologyService.delete(ontology);
-			} catch (final Exception e2) {
-
-				throw new OntologyBusinessServiceException(
-						OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR_UNCLEAN,
-						"Error creating the persistence infrastructure for ontology, it was not possible to undo the ontology configuration and/or the kafka topic creation");
-			}
-
-			throw new OntologyBusinessServiceException(
-					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
-					"Error creating the persistence infrastructure for ontology: " + e.getMessage(), e);
+			rollBackInvokeCreateOntologyLogic(e, ontology, config, topicCreated, true);
 		}
 
+	}
+
+	private void rollBackInvokeCreateOntologyLogic(Exception e, Ontology ontology, OntologyConfiguration config,
+			boolean topicCreated, boolean externalTableCreated) throws OntologyBusinessServiceException {
+		boolean raiseException = false;
+		final String errorRollingBack = "Error creating the persistence infrastructure for ontology";
+		final String errorRollingBackKafka = "it was not possible to undo the ontology configuration and/or the kafka topic creation";
+		final String errorRollingBackExternalTable = "it was not possible to undo the ontology configuration and/or the external table creation";
+		String errorMsg = errorRollingBack;
+
+		try {
+			if (topicCreated) {
+				kafkaService.deleteTopic(ontology.getIdentification());
+			}
+			ontologyService.delete(ontology);
+		} catch (final Exception e2) {
+			errorMsg = errorRollingBack + ", " + errorRollingBackKafka;
+			raiseException = true;
+		}
+
+		try {
+			if (externalTableCreated) {
+				ontologyLogicService.removeOntology(ontology);
+			}
+		} catch (final Exception e3) {
+			errorMsg = errorRollingBack + ", " + errorRollingBackExternalTable;
+
+			if (raiseException) {
+				errorMsg = errorRollingBack + ", " + errorRollingBackKafka + " and " + errorRollingBackExternalTable;
+			}
+			raiseException = true;
+		}
+
+		if (raiseException) {
+			throw new OntologyBusinessServiceException(
+					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR_UNCLEAN,
+					errorMsg + ": " + e.getMessage());
+		}
+
+		throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+				errorRollingBack + ": " + e.getMessage(), e);
 	}
 
 	@Override
@@ -216,7 +278,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					if (!field.equalsIgnoreCase(field) && Character.isUpperCase(field.charAt(0))) {
 						((ObjectNode) schemaSubTree).set("datos", prop.getValue());
 						// Add required
-						ArrayNode required = ((ObjectNode) schemaSubTree).putArray("required");
+						final ArrayNode required = ((ObjectNode) schemaSubTree).putArray("required");
 						required.add(prop.getKey());
 						final String newString = "{\"type\": \"string\",\"$ref\": \"#/datos\"}";
 						final JsonNode newNode = mapper.readTree(newString);
@@ -239,6 +301,16 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
+	public List<String> getStringSupportedFieldDataTypes() {
+		return virtualRepo.getStringSupportedFieldDataTypes();
+	}
+
+	@Override
+	public List<String> getStringSupportedConstraintTypes() {
+		return virtualRepo.getStringSupportedConstraintTypes();
+	}
+
+	@Override
 	public String getInstance(String datasource, String collection) {
 		final List<String> result = virtualRepo.getInstanceFromTable(datasource, "select * from " + collection);
 		if (!result.isEmpty()) {
@@ -253,27 +325,51 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		return virtualRepo.getTableMetadata(datasource, collection);
 	}
 
+	@Override
+	public String getSqlTableDefinitionFromSchema(final String ontology, final String schema,
+			final VirtualDatasourceType datasource) {
+		// implements logic for EmptyBase schema and VirtualSchema
+		return virtualRepo.getSqlTableDefinitionFromSchema(ontology, schema, datasource);
+	}
+
+	@Override
+	public String getSQLCreateTable(CreateStatement statement, VirtualDatasourceType datasource) {
+		return virtualRepo.getSQLCreateStatment(statement, datasource);
+	}
+
 	/***
 	 * Generate config map with all specific params for internal database
 	 */
 	private HashMap<String, String> configToConfigMap(OntologyConfiguration config) {
+		final HashMap<String, String> cmap = new HashMap<>();
+		// relational
+		cmap.put("allowsCreateTable", String.valueOf(config.isAllowsCreateTable()));
+		if (config.getSqlStatement() != null) {
+			cmap.put("sqlStatement", config.getSqlStatement());
+		}
+
+		// kudu
 		if (config.getEnablePartitionIndexes() != null || "false".equals(config.getEnablePartitionIndexes())) {
-			HashMap<String, String> cmap = new HashMap<>();
 			cmap.put("partitions", config.getPartitions());
 			cmap.put("primarykey", config.getPrimarykey());
 			cmap.put("npartitions", config.getNpartitions());
-			return cmap;
-		} else {
-			return null;
+
 		}
+		if (!StringUtils.isEmpty(config.getPartitionKey())) {
+			cmap.put("partitionKey", config.getPartitionKey());
+		}
+		if (!StringUtils.isEmpty(config.getUniqueKeys())) {
+			cmap.put("uniqueKeys", config.getUniqueKeys());
+		}
+		return cmap;
 	}
 
 	@Override
 	public HashMap<String, String> getAditionalDBConfig(Ontology ontology) {
-		HashMap<String, String> dbProperties = new HashMap<>();
+		final HashMap<String, String> dbProperties = new HashMap<>();
 		try {
 			dbProperties.putAll(ontologyLogicService.getAdditionalDBConfig(ontology));
-		} catch (OntologyLogicServiceException e) {
+		} catch (final OntologyLogicServiceException e) {
 			log.error("There was a problem getting DB config of ontology ", e);
 		}
 		return dbProperties;
@@ -303,6 +399,30 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 				}
 			}
 		}
+		if (ontology.isAllowsCreateTopic()) {
+			Boolean topicCreated = false;
+			if (kafkaService != null) {
+				topicCreated = kafkaService.createInputTopicForOntology(ontology.getIdentification());
+				if (Boolean.TRUE.equals(topicCreated)) {
+					ontology.setTopic(kafkaService.getTopicName(ontology.getIdentification()));
+				} else {
+					throw new OntologyBusinessServiceException(
+							OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
+				}
+			}
+		}
+		if (ontology.isAllowsCreateNotificationTopic()) {
+			Boolean notificationTopicCreated = false;
+			if (kafkaService != null) {
+				notificationTopicCreated = kafkaService.createNotificationTopicForOntology(ontology.getIdentification());
+				if (Boolean.TRUE.equals(notificationTopicCreated)) {
+					ontology.setNotificationTopic(kafkaService.getNotificationTopicName(ontology.getIdentification()));
+				} else {
+					throw new OntologyBusinessServiceException(
+							OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -314,6 +434,17 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		if (null != metricsManager) {
 			metricsManager.logControlPanelOntologyCreation(userId, result);
 		}
+	}
+
+	@Override
+	public void deleteOntology(String id, String userId) {
+		final Ontology o = ontologyService.getOntologyById(id, userId);
+		// IF IT'S A COSMOSDB COLLECTION AND NO RECORDS REMOVE IT
+		if (RtdbDatasource.COSMOS_DB.equals(o.getRtdbDatasource())
+				&& cosmosBasicOpsRepository.count(o.getIdentification()) == 0)
+			cosmosManageRepository.removeTable4Ontology(o.getIdentification());
+		entityDeleteionService.deleteOntology(id, userId);
+
 	}
 
 }

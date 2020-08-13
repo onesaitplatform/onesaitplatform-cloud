@@ -23,16 +23,22 @@ import lombok.Setter;
 
 public class ImportData {
 
-	@Getter @Setter private String fileName;
-	
+	@Getter
+	@Setter
+	private String fileName;
+	@Getter
+	@Setter
+	private Boolean override;
+
 	@Getter
 	private MultipartFile content;
 
 	public void setContent(MultipartFile content) {
 		this.content = content;
 	}
-	
-	@Getter @Setter
+
+	@Getter
+	@Setter
 	private List<String> classes;
 
 }

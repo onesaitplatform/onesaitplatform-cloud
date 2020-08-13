@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,8 +29,8 @@ import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 
-import com.minsait.onesait.platform.config.model.App;
-import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppList;
+import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 
 public class CustomClientDetailsService implements ClientDetailsService {
@@ -49,12 +51,13 @@ public class CustomClientDetailsService implements ClientDetailsService {
 	private String scopes;
 
 	@Override
+	@Transactional
 	public ClientDetails loadClientByClientId(String clientId) {
 
 		final Collection<String> types = Arrays.asList(grantType.split("\\s*,\\s*"));
 		final Collection<String> scopeList = Arrays.asList(scopes.split("\\s*,\\s*"));
 
-		final App app = appRepository.findByIdentification(clientId);
+		final AppList app = appRepository.findAppListByIdentification(clientId);
 		final BaseClientDetails details = new BaseClientDetails();
 		details.setClientId(clientId);
 		details.setClientSecret(clientSecret);
@@ -62,7 +65,7 @@ public class CustomClientDetailsService implements ClientDetailsService {
 		details.setAuthorizedGrantTypes(types);
 		details.setScope(scopeList);
 		if (!clientId.equals(defaultClientId)) {
-			final Set<GrantedAuthority> authorities = app.getAppRoles().stream().map(AppRole::getName)
+			final Set<GrantedAuthority> authorities = app.getAppRoles().stream().map(AppRoleList::getName)
 					.map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 			details.setAuthorities(authorities);
 

@@ -24,6 +24,7 @@ import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.factory.BasicOpsDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 
@@ -48,30 +49,31 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 		return ontologyRepository.findByIdentification(ontologyId);
 	}
 
+	@Override
 	public MultiDocumentOperationResult updateNative(RtdbDatasource dataSource, String collection, String query,
 			String data, boolean includeIds) {
 		return basicOpsDBRepositoryFactory.getInstance(dataSource).updateNative(collection, query, data, includeIds);
 	}
 
+	@Override
 	public MultiDocumentOperationResult deleteNative(RtdbDatasource dataSource, String collection, String query,
 			boolean includeIds) {
 		return basicOpsDBRepositoryFactory.getInstance(dataSource).deleteNative(collection, query, includeIds);
 	}
 
+	@Override
 	public long countNative(RtdbDatasource dataSource, String collectionName, String query) {
 		return basicOpsDBRepositoryFactory.getInstance(dataSource).countNative(collectionName, query);
 	}
 
 	@Override
-	public String insert(String ontology, String schema, String instance) {
-		return basicOpsDBRepositoryFactory.getInstance(ontology).insert(ontology, schema, instance);
+	public String insert(String ontology, String instance) {
+		return basicOpsDBRepositoryFactory.getInstance(ontology).insert(ontology, instance);
 	}
 
 	@Override
-	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
-			boolean includeIds) {
-		return basicOpsDBRepositoryFactory.getInstance(ontology).insertBulk(ontology, schema, instances, order,
-				includeIds);
+	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
+		return basicOpsDBRepositoryFactory.getInstance(ontology).insertBulk(ontology, instances, order, includeIds);
 	}
 
 	@Override
@@ -179,6 +181,46 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 	@Override
 	public long countNative(String collectionName, String query) {
 		return basicOpsDBRepositoryFactory.getInstance(collectionName).countNative(collectionName, query);
+	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String collectionName, String updateStmt)
+			throws DBPersistenceException {
+		return basicOpsDBRepositoryFactory.getInstance(collectionName)
+				.queryUpdateTransactionCompensationNative(collectionName, updateStmt);
+	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String collectionName, String query, String data)
+			throws DBPersistenceException {
+		return basicOpsDBRepositoryFactory.getInstance(collectionName).queryUpdateTransactionCompensationNative(query,
+				data);
+	}
+
+	@Override
+	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
+			throws DBPersistenceException {
+		return basicOpsDBRepositoryFactory.getInstance(ontologyName)
+				.queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(ontologyName, objectId);
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
+			throws DBPersistenceException {
+		return basicOpsDBRepositoryFactory.getInstance(collection).queryDeleteTransactionCompensationNative(collection,
+				query);
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection) {
+		return basicOpsDBRepositoryFactory.getInstance(collection).queryDeleteTransactionCompensationNative(collection);
+	}
+
+	@Override
+	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
+			throws DBPersistenceException {
+		return basicOpsDBRepositoryFactory.getInstance(collection)
+				.queryDeleteTransactionCompensationNativeById(collection, objectId);
 	}
 
 }

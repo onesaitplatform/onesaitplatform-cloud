@@ -23,9 +23,7 @@ public class GeometryLinestring extends Geometry {
 	private List<Double[]> coordinates;
 
 	public GeometryLinestring() {
-		super();
 		this.coordinates = new ArrayList<>();
-		this.type = GeometryType.LINE_STRING;
 	}
 
 	public List<Double[]> getCoordinates() {
@@ -34,10 +32,6 @@ public class GeometryLinestring extends Geometry {
 
 	public void setCoordinates(List<Double[]> coordinates) {
 		this.coordinates = coordinates;
-	}
-
-	public GeometryType getType() {
-		return type;
 	}
 
 	@Override

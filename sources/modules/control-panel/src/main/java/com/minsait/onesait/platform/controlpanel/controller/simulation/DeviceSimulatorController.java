@@ -39,15 +39,20 @@ import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulatio
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
+import com.minsait.onesait.platform.config.services.exceptions.SimulationServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.DataSchemaValidationException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
+import com.minsait.onesait.platform.controlpanel.controller.app.AppController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.quartz.services.simulation.SimulationService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
 @RequestMapping("devicesimulation")
+@Slf4j
 public class DeviceSimulatorController {
 
 	@Autowired
@@ -68,14 +73,14 @@ public class DeviceSimulatorController {
 	private static final String SIMULATORS_STR = "simulators";
 	private static final String ERROR_403 = "error/403";
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("list")
 	public String list(Model model) {
 
 		return "simulator/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("data")
 	public @ResponseBody List<DeviceSimulationDTO> data() {
 		List<ClientPlatformInstanceSimulation> simulations = null;
@@ -92,7 +97,7 @@ public class DeviceSimulatorController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("create")
 	public String createForm(Model model) {
 		final List<String> clients = deviceSimulationService.getClientsForUser(utils.getUserId()).stream()
@@ -105,7 +110,7 @@ public class DeviceSimulatorController {
 		return "simulator/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("update/{id}")
 	public String updateForm(Model model, @PathVariable("id") String id) {
 
@@ -132,17 +137,22 @@ public class DeviceSimulatorController {
 		return "simulator/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping("create")
-	public String create(Model model, @RequestParam String identification, @RequestParam String jsonMap,
+	public String create(Model model, RedirectAttributes redirect, @RequestParam String identification, @RequestParam String jsonMap,
 			@RequestParam String ontology, @RequestParam String clientPlatform, @RequestParam String token,
 			@RequestParam int interval, @RequestParam String jsonInstances, @RequestParam String instancesMode)
 			throws IOException {
 
-		simulationService.createSimulation(identification, interval, utils.getUserId(),
-
-				simulationService.getDeviceSimulationJson(identification, clientPlatform, token, ontology, jsonMap,
-						jsonInstances, instancesMode));
+		try {
+			simulationService.createSimulation(identification, interval, utils.getUserId(),
+					simulationService.getDeviceSimulationJson(identification, clientPlatform, token, ontology, jsonMap,
+							jsonInstances, instancesMode));
+		} catch (SimulationServiceException e) {
+			log.debug("Cannot create simulation");
+			utils.addRedirectException(e, redirect);
+			return "redirect:/devicesimulation/create";
+		}
 
 		return "redirect:/devicesimulation/list";
 	}
@@ -195,7 +205,7 @@ public class DeviceSimulatorController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping("update/{id}")
 	public String update(Model model, @PathVariable("id") String id, @RequestParam String identification,
 			@RequestParam String jsonMap, @RequestParam String ontology, @RequestParam String clientPlatform,
@@ -230,7 +240,7 @@ public class DeviceSimulatorController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("{id}")
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);

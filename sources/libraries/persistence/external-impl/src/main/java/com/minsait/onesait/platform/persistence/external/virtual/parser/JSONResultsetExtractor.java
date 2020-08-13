@@ -72,7 +72,7 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 				JSONObject obj = new JSONObject();
 
 				for (int i = 1; i < numColumns + 1; i++) {
-					String columnName = rsmd.getColumnName(i);
+					String columnName = rsmd.getColumnLabel(i);
 					String tableName = (hiveRS ? null : rsmd.getTableName(i));
 					if (tableName == null || tableName.equals("")) {
 						tableName = table;
@@ -113,7 +113,7 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 				}
 			}
 		} else if (rowType == java.sql.Types.INTEGER || rowType == java.sql.Types.SMALLINT) {
-			int value = rs.getInt(columnName);
+			Integer value = rs.getObject(columnName) != null ? rs.getInt(columnName) : null;
 			getRecurrence(columnName, obj, value, false);
 		} else if (rowType == java.sql.Types.DOUBLE) {
 			getRecurrence(columnName, obj, rs.getDouble(columnName), false);

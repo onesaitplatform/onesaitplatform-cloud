@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.ontologydata;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -72,9 +72,13 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 
 	private static final String ENCRYPT_PROPERTY = "encrypted";
 	private static final String ENCRYPT_WORD = "$ENCRYPT(";
+	private static final String DELIMITER = ")";
+	private static final String ESCAPE_CHAR = "\\";
+	private static final String REGEX = "(?<!" + Pattern.quote(ESCAPE_CHAR) + ")" + Pattern.quote(DELIMITER);
 	private static final String OBJECT_TYPE = "object";
 	private static final String ARRAY_TYPE = "array";
 	private static final String TYPE_WORD = "type";
+	private static final String SLASH = "/";
 
 	// This is a basic functionality, it has to be improved. For instance,
 	// initVector should be random. Review AES best practices to improve this class.
@@ -638,10 +642,10 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 				final JsonNode schema = mapperI.readTree(ontology.getJsonSchema());
 				final String reference = refJsonSchema(schema);
 				final String parentNode = reference.equals("") ? PROP_STR + "."
-						: reference.replace("/", "") + ".properties.";
-				final String path = reference.equals("") ? File.pathSeparator + PROP_STR
-						: reference + File.pathSeparator + PROP_STR;
+						: reference.replace(SLASH, "") + ".properties.";
+				final String path = reference.equals("") ? SLASH + PROP_STR : reference + SLASH + PROP_STR;
 				final JsonNode properties = schema.at(path);
+
 				properties.fields().forEachRemaining(e -> {
 					if (e.getValue().path(TYPE_WORD).asText().equals(type))
 						map.put(e.getKey(), parentNode + e.getKey());
@@ -680,14 +684,16 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 		try {
 			int firstInd;
 			String firstPart;
+			String dataToEncryptEscaped;
 			String dataToEncrypt;
 			String datosEnc;
 			while (query.contains(ENCRYPT_WORD)) {
 				firstInd = query.indexOf(ENCRYPT_WORD);
 				firstPart = query.substring(firstInd + ENCRYPT_WORD.length());
-				dataToEncrypt = firstPart.split("\\)")[0];
+				dataToEncryptEscaped = firstPart.split(REGEX)[0];
+				dataToEncrypt = dataToEncryptEscaped.replace(ESCAPE_CHAR + DELIMITER, DELIMITER);
 				datosEnc = BasicEncryption.encrypt(KEY, INIT_VECTOR, dataToEncrypt);
-				query = query.replace(ENCRYPT_WORD + dataToEncrypt + ')', datosEnc);
+				query = query.replace(ENCRYPT_WORD + dataToEncryptEscaped + ')', datosEnc);
 			}
 			return query;
 		} catch (GenericOPException e) {
@@ -695,5 +701,4 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 			return query;
 		}
 	}
-
 }

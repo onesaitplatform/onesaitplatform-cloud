@@ -1,0 +1,20 @@
+{
+    "identification": "SensorTag",
+    "jsonSchema": "{\n    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n   \"title\": \"SensorTag\",\n   \"type\": \"object\",\n   \"required\": [\n        \"SensorTag\"\n    ],\n    \"properties\": {\n        \"SensorTag\": {\n            \"type\": \"string\",\n            \"$ref\": \"#/datos\"\n        }\n    },\n    \"datos\": {\n        \"description\": \"Properties for DataModel SensorTag\",\n        \"type\": \"object\",\n        \"required\": [\n            \"temperature\",\n            \"humidity\",\n            \"id\"\n        ],\n        \"properties\": {\n            \"temperature\": {\n                \"type\": \"number\"\n            },\n            \"humidity\": {\n                \"type\": \"number\"\n            },\n            \"id\": {\n                \"type\": \"string\"\n            }\n        }\n    },\n    \"description\": \"sensot\",\n    \"additionalProperties\": true\n}",
+    "template": "EmptyBase",
+    "templateCategory": "GENERAL",
+    "active": true,
+    "rtdbClean": false,
+    "rtdbCleanLapse": "NEVER",
+    "rtdbToHdb": false,
+    "rtdbToHdbStorage": null,
+    "description": "AirCOMeter",
+    "metainf": "AirCOMeter",
+    "rtdbDatasource": "MONGO",
+    "allowsCypherFields": false,
+    "allowsCreateTopic": false,
+    "owner": "developer",
+    "createdAt": "2020-02-24 10:51:41.0",
+    "updatedAt": "2020-02-24 10:51:41.0",
+    "public": true
+ }

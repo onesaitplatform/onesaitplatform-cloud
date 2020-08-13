@@ -78,14 +78,14 @@ public class DigitalTwinTypeController {
 		return this.digitalTwinTypeService.getAllIdentifications();
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		digitalTwinTypeService.populateCreateNewType(model, utils.getUserId());
 		return "digitaltwintypes/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		DigitalTwinType type = digitalTwinTypeService.getDigitalTwinTypeById(id);
@@ -98,7 +98,7 @@ public class DigitalTwinTypeController {
 		return "digitaltwintypes/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/create")
 	@Transactional
 	public String createDigitalTwinType(Model model, @Valid DigitalTwinType digitalTwinType,
@@ -143,14 +143,14 @@ public class DigitalTwinTypeController {
 		return REDIRECT_DIG_TWIN_TYPE_LIST;
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list")
 	public String list(Model model) {
 		model.addAttribute("digitalTwinTypes", digitalTwinTypeService.getDigitalTwinTypesByUserId(utils.getUserId()));
 		return "digitaltwintypes/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/show/{id}", produces = "text/html")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		DigitalTwinType type = digitalTwinTypeService.getDigitalTwinTypeById(id);
@@ -173,7 +173,7 @@ public class DigitalTwinTypeController {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDigitalTwinType(Model model, @PathVariable("id") String id,
 			@Valid DigitalTwinType digitalTwinType, BindingResult bindingResult, RedirectAttributes redirect,
@@ -204,7 +204,7 @@ public class DigitalTwinTypeController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 

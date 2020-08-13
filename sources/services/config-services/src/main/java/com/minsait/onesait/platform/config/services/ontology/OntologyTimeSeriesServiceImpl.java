@@ -15,10 +15,12 @@
 package com.minsait.onesait.platform.config.services.ontology;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,15 +40,12 @@ import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesReposito
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesWindowRepository;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 @Service
 public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService {
 
-	private static final String STATUS_STR = "status";
-	private static final String CAUSE_STR = "cause";
-	private static final String ERROR_STR = "error";
 	private static final String STATS_STR = "_stats";
 
 	@Autowired
@@ -65,21 +64,43 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 	private OntologyTimeSeriesWindowRepository ontologyTimeSeriesWindowRepository;
 
 	@Override
+	public OntologyTimeSeries getOntologyByOntology(Ontology ontology) {
+		return ontologyTimeSeriesRepository.findByOntologyIdentificaton(ontology.getIdentification());
+	}
+
+	@Override
+	public List<OntologyTimeSeriesProperty> getTimeSeriesPropertiesByOntologyTimeSeries(
+			OntologyTimeSeries ontologyTimeSeries) {
+		Set<OntologyTimeSeriesProperty> properties = ontologyTimeSeriesPropertyRepository
+				.findByOntologyTimeSeries(ontologyTimeSeries);
+		return properties.stream().collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OntologyTimeSeriesWindow> getTimeSeriesWindowByOntologyTimeSeries(
+			OntologyTimeSeries ontologyTimeSeries) {
+		Set<OntologyTimeSeriesWindow> windows = ontologyTimeSeriesWindowRepository
+				.findByOntologyTimeSeries(ontologyTimeSeries);
+		return windows.stream().collect(Collectors.toList());
+	}
+
+	@Override
 	@Transactional
-	public ResponseEntity<Map<String, String>> createOntologyTimeSeries(OntologyTimeSeriesDTO ontologyTimeSeriesDTO,
-			HttpServletRequest request) {
-		final Map<String, String> response = new HashMap<>();
+	public Ontology createOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO,
+			OntologyConfiguration config, boolean parseProperties, boolean parseWindow) {
 
 		if (ontologyService.existsOntology(ontologyTimeSeriesDTO.getIdentification())) {
-			response.put(STATUS_STR, ERROR_STR);
-			response.put(CAUSE_STR, "Exists another ontology with this identification");
-			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-
+			throw new OntologyServiceException("Ontology already exists",
+					OntologyServiceException.Error.EXISTING_ONTOLOGY);
 		}
 
 		final Ontology ontology = new Ontology();
-		ontologyTimeSeriesDTO.setTimeSeriesProperties();
-		ontologyTimeSeriesDTO.setTimeSeriesWindow();
+		if (parseProperties) {
+			ontologyTimeSeriesDTO.setTimeSeriesProperties();
+		}
+		if (parseWindow) {
+			ontologyTimeSeriesDTO.setTimeSeriesWindow();
+		}
 		ontology.setJsonSchema(ontologyTimeSeriesDTO.getJsonSchema());
 		ontology.setActive(ontologyTimeSeriesDTO.isActive());
 		ontology.setPublic(ontologyTimeSeriesDTO.isPublic());
@@ -93,13 +114,11 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 		ontology.setOntologyKPI(null);
 		ontology.setIdentification(ontologyTimeSeriesDTO.getIdentification());
 
-		final OntologyConfiguration config = new OntologyConfiguration(request);
-
 		ontologyService.createOntology(ontology, config);
 
 		final OntologyTimeSeries oTS = new OntologyTimeSeries();
 		oTS.setOntology(ontology);
-		oTS.setId(ontology.getId());
+		// oTS.setId(ontology.getId());
 		ontologyTimeSeriesRepository.save(oTS);
 
 		for (final OntologyTimeSeriesProperty oTSP : ontologyTimeSeriesDTO.getTimeSeriesProperties()) {
@@ -130,27 +149,31 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			stats.setRtdbToHdbStorage(RtdbToHdbStorage.MONGO_GRIDFS);
 			stats.setOntologyKPI(null);
 			stats.setIdentification(ontologyTimeSeriesDTO.getIdentification() + STATS_STR);
-			final OntologyConfiguration config2 = new OntologyConfiguration(request);
 
-			ontologyService.createOntology(stats, config2);
+			ontologyService.createOntology(stats, config);
 		}
-		response.put("redirect", "/controlpanel/ontologies/list");
-		response.put(STATUS_STR, "ok");
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		return ontology;
 	}
 
-	// @Override
+	@Override
+	public ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO,
+			String sessionUserId, OntologyConfiguration config) {
+		return updateOntologyTimeSeries(ontologyTimeSeriesDTO, sessionUserId, config, true, true);
+	}
+
 	@Override
 	@Transactional
-	public ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesDTO ontologyTimeSeriesDTO, String sessionUserId,
-			OntologyConfiguration config) {
+	public ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO,
+			String sessionUserId, OntologyConfiguration config, boolean cleanProperties, boolean cleanWindow) {
 		final Map<String, String> response = new HashMap<>();
 
 		final Ontology ontologyDb = ontologyRepository.findById(ontologyTimeSeriesDTO.getId());
 		final User sessionUser = userService.getUser(sessionUserId);
 
-		ontologyTimeSeriesDTO.setTimeSeriesProperties();
-		ontologyTimeSeriesDTO.setTimeSeriesWindow();
+		if (cleanProperties)
+			ontologyTimeSeriesDTO.setTimeSeriesProperties();
+		if (cleanWindow)
+			ontologyTimeSeriesDTO.setTimeSeriesWindow();
 
 		if (ontologyDb != null) {
 			ontologyDb.setJsonSchema(ontologyTimeSeriesDTO.getJsonSchema());
@@ -168,88 +191,30 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 		} else
 			throw new OntologyServiceException("Ontology does not exist");
 
-		final OntologyTimeSeries oTS = ontologyTimeSeriesRepository.findById(ontologyTimeSeriesDTO.getId());
-		Set<OntologyTimeSeriesProperty> ontologyTSPDb = ontologyTimeSeriesPropertyRepository
-				.findByOntologyTimeSeries(oTS);
-		Set<OntologyTimeSeriesWindow> ontologyTSWDb = ontologyTimeSeriesWindowRepository.findByOntologyTimeSeries(oTS);
+		OntologyTimeSeries oTS = ontologyTimeSeriesRepository.findByOntology(ontologyDb).get(0);
+		oTS.setTimeSeriesProperties(new HashSet<OntologyTimeSeriesProperty>());
+		oTS.setTimeSeriesWindows(new HashSet<OntologyTimeSeriesWindow>());
 
-		boolean flag = true;
-		// Check and add new
 		for (final OntologyTimeSeriesProperty oTSP : ontologyTimeSeriesDTO.getTimeSeriesProperties()) {
-			for (final OntologyTimeSeriesProperty oTSPDB : ontologyTSPDb) {
-				if (oTSP.getPropertyType().equals(oTSPDB.getPropertyType())
-						&& oTSP.getPropertyDataType().equals(oTSPDB.getPropertyDataType())
-						&& oTSP.getPropertyName().equals(oTSPDB.getPropertyName())) {
-					flag = false;
-				}
-			}
 			oTSP.setOntologyTimeSeries(oTS);
-			if (flag) {
-				ontologyTimeSeriesPropertyRepository.save(oTSP);
-			}
-			flag = true;
+			oTS.getTimeSeriesProperties().add(oTSP);
 		}
 
-		ontologyTSPDb = ontologyTimeSeriesPropertyRepository.findByOntologyTimeSeries(oTS);
-		// Check and remove old
-		for (final OntologyTimeSeriesProperty oTSPDB : ontologyTSPDb) {
-			for (final OntologyTimeSeriesProperty oTSP : ontologyTimeSeriesDTO.getTimeSeriesProperties()) {
-				if (oTSP.getPropertyType().equals(oTSPDB.getPropertyType())
-						&& oTSP.getPropertyDataType().equals(oTSPDB.getPropertyDataType())
-						&& oTSP.getPropertyName().equals(oTSPDB.getPropertyName())) {
-					flag = false;
-				}
-			}
-			if (flag) {
-				ontologyTimeSeriesPropertyRepository.deleteByMyId(oTSPDB.getId());
-			}
-			flag = true;
-		}
-
-		// Check and add new
 		for (final OntologyTimeSeriesWindow oTSW : ontologyTimeSeriesDTO.getTimeSeriesWindow()) {
-			for (final OntologyTimeSeriesWindow oTSWDB : ontologyTSWDb) {
-				if (oTSW.getWindowType().equals(oTSWDB.getWindowType())
-						&& oTSW.getFrecuencyUnit().equals(oTSWDB.getFrecuencyUnit())
-						&& oTSW.getFrecuency().equals(oTSWDB.getFrecuency())
-						&& oTSW.getAggregationFunction().equals(oTSWDB.getAggregationFunction())
-						&& oTSW.isBdh() == oTSWDB.isBdh()) {
-					flag = false;
-				}
-			}
-			if (flag) {
-				oTSW.setOntologyTimeSeries(oTS);
-				ontologyTimeSeriesWindowRepository.save(oTSW);
-			}
-			flag = true;
+			oTSW.setOntologyTimeSeries(oTS);
+			oTS.getTimeSeriesWindows().add(oTSW);
 		}
 
-		ontologyTSWDb = ontologyTimeSeriesWindowRepository.findByOntologyTimeSeries(oTS);
-		// Check and remove old
-		for (final OntologyTimeSeriesWindow oTSWDB : ontologyTSWDb) {
-			for (final OntologyTimeSeriesWindow oTSW : ontologyTimeSeriesDTO.getTimeSeriesWindow()) {
-				if (oTSW.getWindowType().equals(oTSWDB.getWindowType())
-						&& oTSW.getFrecuencyUnit().equals(oTSWDB.getFrecuencyUnit())
-						&& oTSW.getFrecuency().equals(oTSWDB.getFrecuency())
-						&& oTSW.getAggregationFunction().equals(oTSWDB.getAggregationFunction())
-						&& oTSW.isBdh() == oTSWDB.isBdh()) {
-					flag = false;
-				}
-			}
-			if (flag) {
-				ontologyTimeSeriesWindowRepository.deleteByMyId(oTSWDB.getId());
-			}
-			flag = true;
-		}
+		ontologyTimeSeriesRepository.save(oTS);
 
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 
 	// @Override
 	@Override
-	public OntologyTimeSeriesDTO generateOntologyTimeSeriesDTO(Ontology ontology) {
+	public OntologyTimeSeriesServiceDTO generateOntologyTimeSeriesDTO(Ontology ontology) {
 		final OntologyTimeSeries ontologyTimeSeries = ontologyTimeSeriesRepository.findByOntology(ontology).get(0);
-		final OntologyTimeSeriesDTO otsDTO = new OntologyTimeSeriesDTO();
+		final OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
 		otsDTO.setActive(ontology.isActive());
 		otsDTO.setIdentification(ontology.getIdentification());
 		otsDTO.setAllowsCypherFields(ontology.isAllowsCypherFields());
@@ -271,4 +236,5 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 		otsDTO.setTimeSeriesWindow(ontologyTimeSeriesWindowRepository.findByOntologyTimeSeries(ontologyTimeSeries));
 		return otsDTO;
 	}
+
 }

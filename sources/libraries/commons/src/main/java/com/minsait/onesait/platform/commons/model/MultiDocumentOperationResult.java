@@ -27,6 +27,7 @@ public class MultiDocumentOperationResult {
 
 	private static final String COUNT_PROPERTY = "count";
 	private static final String IDS_PROPERTY = "ids";
+	private static final String DATA_PROPERTY = "data";
 
 	@Getter
 	@Setter
@@ -40,6 +41,7 @@ public class MultiDocumentOperationResult {
 	@Setter
 	private String strIds;
 
+	@Override
 	public String toString() {
 		return this.toJSONObject().toString();
 	}
@@ -56,25 +58,66 @@ public class MultiDocumentOperationResult {
 
 	public static MultiDocumentOperationResult fromJSONObject(JSONObject obj) {
 		MultiDocumentOperationResult result = new MultiDocumentOperationResult();
-
-		if (obj.get(COUNT_PROPERTY) instanceof Integer) {
-			result.setCount((Integer) obj.get(COUNT_PROPERTY));
-		} else if ((obj.get(COUNT_PROPERTY) instanceof Long)) {
-			result.setCount((Long) obj.get(COUNT_PROPERTY));
-		}
-
-		if (obj.has(IDS_PROPERTY) && null != obj.get(IDS_PROPERTY)) {
-			ArrayList<String> ids = new ArrayList<>();
-
-			JSONArray lIds = (JSONArray) obj.get(IDS_PROPERTY);
-			for (int i = 0; i < lIds.length(); i++) {
-				ids.add(lIds.getString(i));
-			}
+		
+		
+		if (obj.has(DATA_PROPERTY) && obj.get(DATA_PROPERTY) instanceof JSONArray) {
+			//TIMESERIES
+			
+			List<String> ids = new ArrayList<>();
+			JSONArray data = obj.getJSONArray(DATA_PROPERTY);
+			int len = data.length();
+			
+			result.setCount(len);
+			
 			result.setIds(ids);
-
-			result.setStrIds(obj.get(IDS_PROPERTY).toString());
+		} else {
+			//NON TIMESERIES
+			if (obj.has(DATA_PROPERTY) && obj.getJSONObject(DATA_PROPERTY).has(IDS_PROPERTY)
+					&& null != obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY)) {
+				if (obj.getJSONObject(DATA_PROPERTY).get(COUNT_PROPERTY) instanceof Integer) {
+					result.setCount((Integer) obj.getJSONObject(DATA_PROPERTY).get(COUNT_PROPERTY));
+				} else if ((obj.getJSONObject(DATA_PROPERTY).get(COUNT_PROPERTY) instanceof Long)) {
+					result.setCount((Long) obj.getJSONObject(DATA_PROPERTY).get(COUNT_PROPERTY));
+				}
+			} else if (!obj.has(DATA_PROPERTY) && obj.has(IDS_PROPERTY) && null != obj.get(IDS_PROPERTY)) {
+				if (obj.get(COUNT_PROPERTY) instanceof Integer) {
+					result.setCount((Integer) obj.get(COUNT_PROPERTY));
+				} else if ((obj.get(COUNT_PROPERTY) instanceof Long)) {
+					result.setCount((Long) obj.get(COUNT_PROPERTY));
+				}
+			}
+	
+			if (obj.has(DATA_PROPERTY) && obj.getJSONObject(DATA_PROPERTY).has(IDS_PROPERTY)
+					&& null != obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY)) {
+				ArrayList<String> ids = new ArrayList<>();
+	
+				JSONArray lIds = (JSONArray) obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY);
+				for (int i = 0; i < lIds.length(); i++) {
+					ids.add(lIds.getString(i));
+				}
+				result.setIds(ids);
+	
+				result.setStrIds(obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY).toString());
+			} else if (!obj.has(DATA_PROPERTY) && obj.has(IDS_PROPERTY) && null != obj.get(IDS_PROPERTY)) {
+				ArrayList<String> ids = new ArrayList<>();
+	
+				JSONArray lIds = (JSONArray) obj.get(IDS_PROPERTY);
+				for (int i = 0; i < lIds.length(); i++) {
+					ids.add(lIds.getString(i));
+				}
+				result.setIds(ids);
+	
+				result.setStrIds(obj.get(IDS_PROPERTY).toString());
+			}
+	
+			if (!obj.has(DATA_PROPERTY) && !obj.has(IDS_PROPERTY)) {
+				if (obj.get(COUNT_PROPERTY) instanceof Integer) {
+					result.setCount((Integer) obj.get(COUNT_PROPERTY));
+				} else if ((obj.get(COUNT_PROPERTY) instanceof Long)) {
+					result.setCount((Long) obj.get(COUNT_PROPERTY));
+				}
+			}
 		}
-
 		return result;
 	}
 

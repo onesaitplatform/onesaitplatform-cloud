@@ -22,7 +22,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-@ComponentScan("com.minsait.onesait.platform.config")
+@ComponentScan(basePackages = { "com.minsait.onesait.platform.config", "com.minsait.onesait.platform.multitenant" })
 @EnableConfigurationProperties
 public class ConfigDbEntitiesApplication {
 

@@ -17,7 +17,7 @@
  * Service for providing access to the Preview/Snapshot utility functions.
  */
 angular.module('dataCollectorApp.common')
-  .service('previewService', function(api, $q, $translate, $timeout) {
+  .service('previewService', ["api", "$q", "$translate", "$timeout", function(api, $q, $translate, $timeout) {
 
     var self = this,
       translations;
@@ -440,4 +440,4 @@ angular.module('dataCollectorApp.common')
         });
     };
 
-  });
+  }]);

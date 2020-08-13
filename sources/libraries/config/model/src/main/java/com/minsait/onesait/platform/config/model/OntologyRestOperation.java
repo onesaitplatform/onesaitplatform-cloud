@@ -14,12 +14,18 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -94,5 +100,11 @@ public class OntologyRestOperation extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private DefaultOperationType defaultOperationType;
+	
+	@OneToMany(mappedBy = "operationId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@Getter
+	@Setter
+	private Set<OntologyRestOperationParam> parameters = new HashSet<>();
 
 }

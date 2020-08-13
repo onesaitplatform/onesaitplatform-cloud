@@ -1,11 +1,11 @@
 FROM onesaitplatform/baseimage:latest
 
 # metadata
-LABEL platform.image.name="semantic-inf-broker"	
+LABEL platform.image.name="semantic-inf-broker"
 
 ADD *-exec.jar app.jar
 
-# Timezone 
+# Timezone
 RUN apk add --no-cache tzdata
 
 # logs folder
@@ -13,16 +13,16 @@ RUN mkdir -p /var/log/platform-logs && \
 	mkdir ./target
 
 # create sofia user/group
-RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 	
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait ./target && \    
+    chown -R onesait:onesait ./target && \
     chown onesait:onesait app.jar && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
-    
+
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
 EXPOSE 20000
@@ -39,13 +39,14 @@ ENV SERVER_NAME=localhost \
     REALTIMEDBUSER=platformadmin \
     REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
-    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+		CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+		CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
-    ELASTICDBHOST=elasticdb \
-    ELASTICDBPORT=9200 \ 
     AUDITGLOBALNOTIFY=false \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
@@ -69,7 +70,8 @@ ENV SERVER_NAME=localhost \
     OP_LOG_LEVEL=INFO \
     NOTIFICATION_POOL_NODERED=50 \
     NOTIFICATION_POOL_KAFKA=50 \
-    NOTIFICATION_POOL_RULESENGINE=50 
+    NOTIFICATION_POOL_RULESENGINE=50 \
+    ELASTICSEARCH_ENABLED=false
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh

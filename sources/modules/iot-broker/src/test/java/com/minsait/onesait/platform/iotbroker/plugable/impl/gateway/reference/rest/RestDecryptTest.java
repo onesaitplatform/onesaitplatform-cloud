@@ -31,11 +31,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RestDecryptTest {

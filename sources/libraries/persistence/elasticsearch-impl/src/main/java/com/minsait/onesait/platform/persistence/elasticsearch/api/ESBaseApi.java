@@ -18,125 +18,101 @@ import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.GetIndexResponse;
+import org.elasticsearch.client.indices.PutMappingRequest;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.JestResult;
-import io.searchbox.client.config.HttpClientConfig;
-import io.searchbox.core.DocumentResult;
-import io.searchbox.core.Update;
-import io.searchbox.indices.CreateIndex;
-import io.searchbox.indices.DeleteIndex;
-import io.searchbox.indices.aliases.GetAliases;
-import io.searchbox.indices.mapping.PutMapping;
+import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Conditional(ElasticsearchEnabledCondition.class)
 @Slf4j
 public class ESBaseApi {
 
-	private JestClient httpClient;
-
-	private static final String START_QUERY = "{\r\n";
-	private static final String SIZE_JSON = "  \"size\": [SIZE]\r\n";
-
-	@Value("${onesaitplatform.database.elasticsearch.cluster.name:onesaitplatform_rtdb_es}")
-	private String clusterName;
-
-	@Value("${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint:http://localhost:9300}")
-	private String httpEndpoint;
-
-	public static final String QUERY_ALL_SIZE = START_QUERY + SIZE_JSON + "  ,\"from\": 0\r\n" + "  ,\"query\":\r\n"
-			+ "   {\r\n" + "    \"match_all\": {}\r\n" + "   }\r\n" + "}";
-
-	public static final String QUERY_ALL_SIZE_FROM_TO = START_QUERY + SIZE_JSON + "  ,\"from\": [FROM]\r\n"
-			+ "  ,\"query\":\r\n" + "   {\r\n" + "    \"match_all\": {}\r\n" + "   }\r\n" + "}";
-
-	public static final String QUERY_ALL_SIZE_FROM_TO_QUERY = START_QUERY + SIZE_JSON + "  ,\"from\": [FROM]\r\n"
-			+ "  ,[QUERY] }";
-
-	public static final String QUERY_ALL = START_QUERY + "\"query\" : {\r\n" + "    \"match_all\" : {}\r\n" + "  }\r\n"
-			+ "}";
+	@Autowired
+	private RestHighLevelClient hlClient;
 
 	@PostConstruct
 	void initializeIt() {
-		try {
-			JestClientFactory factory = new JestClientFactory();
-			factory.setHttpClientConfig(new HttpClientConfig.Builder(httpEndpoint).multiThreaded(true).build());
-			httpClient = factory.getObject();
-		} catch (Exception e) {
-			log.error(String.format("Cannot Instantiate ElasticSearch Rest Client due to : %s ", e.getMessage()));
-		}
 
 	}
 
-	public String createIndex(String index) {
-		JestResult result = null;
+	public boolean createIndex(String index) {
 		try {
-			result = getHttpClient().execute(new CreateIndex.Builder(index).build());
+		    CreateIndexRequest request = new CreateIndexRequest(index);
+		    request.settings(Settings.builder()); //TODO add advanced index creation: shards, replicas, etc.
+		    
+		    //TODO mappings for properties can be provided
+		    
+		    CreateIndexResponse createIndexResponse = hlClient.indices().create(request, RequestOptions.DEFAULT);
+
+		    //TODO change return data or use void
+		    return createIndexResponse.isAcknowledged();
 		} catch (IOException e) {
 			log.error("Error Creating Index " + e.getMessage());
-			return null;
+			return false;
 		}
-		return result.getJsonString();
 	}
 
-	public String getIndexes() {
-		JestResult result = null;
+	public String[] getIndexes() {		
 		try {
-			result = getHttpClient().execute(new GetAliases.Builder().build());
+		    GetIndexRequest request = new GetIndexRequest("*");
+		    GetIndexResponse response = hlClient.indices().get(request, RequestOptions.DEFAULT);
+		    return response.getIndices();
 		} catch (IOException e) {
 			log.error("Error getIndexes ", e);
-			return null;
+			return new String[0];
 		}
-		return result.getJsonString();
 	}
 
-	public String updateIndex(String index, String type, String id, String jsonData) {
+	//TODO check if this method was thought for documents or indices
+	public String updateDocument(String index, String id, String jsonData) {
 		try {
-			DocumentResult result = getHttpClient()
-					.execute(new Update.Builder(jsonData).index(index).type(type).id(id).build());
-			return result.getJsonString();
+		    UpdateRequest request = new UpdateRequest(index, id);
+		    request.doc(jsonData, XContentType.JSON);
+		    UpdateResponse updateResponse = hlClient.update(
+		            request, RequestOptions.DEFAULT);
+		    return updateResponse.getResult().toString();
 		} catch (IOException e) {
 			log.error("UpdateIndex", e);
 			return null;
 		}
 	}
 
-	public boolean createType(String index, String type, String dataMapping) {
-		try {
-			String result = prepareIndex(index, type, dataMapping);
-			log.info("Create Type result :" + result);
-		} catch (IOException e) {
-			log.error("Error Creating Type " + e.getMessage());
-			return false;
-		}
-		return true;
-
-	}
-
 	public boolean deleteIndex(String index) {
-		DeleteIndex indicesExists = new DeleteIndex.Builder(index).build();
+	    DeleteIndexRequest request = new DeleteIndexRequest(index);
 		try {
-			JestResult result = getHttpClient().execute(indicesExists);
-			log.info("Delete index result :" + result.isSucceeded());
-			return true;
+		    AcknowledgedResponse deleteIndexResponse = hlClient.indices().delete(request, RequestOptions.DEFAULT);
+			log.info("Delete index result :" + deleteIndexResponse.isAcknowledged());
+			return deleteIndexResponse.isAcknowledged();
 		} catch (IOException e) {
 			log.error("Error Deleting Type " + e.getMessage());
 			return false;
 		}
 	}
 
-	private String prepareIndex(String index, String type, String dataMapping) throws IOException {
-		PutMapping putMapping = new PutMapping.Builder(index, type, dataMapping).build();
-		JestResult result = getHttpClient().execute(putMapping);
-		return result.getJsonString();
-	}
-
-	public JestClient getHttpClient() {
-		return httpClient;
+	public boolean prepareIndex(String index, String dataMapping) throws IOException {
+	    
+	    PutMappingRequest request = new PutMappingRequest(index);
+	    request.source(dataMapping, XContentType.JSON);
+	    AcknowledgedResponse putMappingResponse = hlClient.indices().putMapping(request, RequestOptions.DEFAULT);
+	    return putMappingResponse.isAcknowledged();
+	    
 	}
 
 }

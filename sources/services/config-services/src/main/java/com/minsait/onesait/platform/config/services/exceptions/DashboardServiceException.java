@@ -18,7 +18,22 @@ public class DashboardServiceException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
+	public static enum ErrorType {
+		NOT_FOUND, UNAUTHORIZED
+	};
+
+	private ErrorType errorType;
+
 	public DashboardServiceException(String message) {
 		super(message);
+	}
+
+	public DashboardServiceException(ErrorType type, String message) {
+		super(message);
+		errorType = type;
+	}
+
+	public ErrorType getErrorType() {
+		return errorType;
 	}
 }

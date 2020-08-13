@@ -58,6 +58,8 @@ public class KuduTableGenerator {
 	private static final String FORMAT = "format";
 	private static final String PRIMARY_KEY = "primarykey";
 	private static final String PARTITIONS = "partitions";
+	private static final String NPARTITIONS = "npartitions";
+	private static final String DEFAULT_NPARTITIONS = "1";
 
 	public KuduTable builTable(String ontologyName, String schema, Map<String, String> config) {
 
@@ -95,6 +97,49 @@ public class KuduTableGenerator {
 
 		return requiredProperties;
 	}
+	
+	private void parseConfigMap(Map<String, String> cmap) {
+		if (!cmap.containsKey(NPARTITIONS)) {
+			cmap.put(NPARTITIONS, DEFAULT_NPARTITIONS);
+		}
+		if (!cmap.containsKey(PRIMARY_KEY)) {
+			cmap.put(PRIMARY_KEY, null);
+		}
+		if (!cmap.containsKey(PARTITIONS)) {
+			cmap.put(PARTITIONS, null);
+		}
+		
+	}
+	
+	private String[] getPrimaryKeyFromConfigMap(Map<String, String> cmap) {
+		String[] primarykey;
+		if (cmap.get(PRIMARY_KEY) == null) {
+			primarykey = new String[] { "_id" };
+		}
+		else if (!cmap.get(PRIMARY_KEY).equals(cmap.get(PRIMARY_KEY).toLowerCase())) {// Check if field is lowercase
+			log.error("Error: primarykey fields must be lowercase");
+			throw new DBPersistenceException("In KUDU ontology, the primarykey fields must be lowercase");
+		} 
+		else {
+			primarykey = cmap.get(PRIMARY_KEY).trim().split("\\s*,\\s*");
+		}
+		return primarykey;
+	}
+	
+	private String[] getPartitionsFromConfigMap(Map<String, String> cmap) {
+		String[] partition;
+		if (cmap.get(PARTITIONS) == null) {
+			partition = null;
+		}
+		else if (!cmap.get(PARTITIONS).equals(cmap.get(PARTITIONS).toLowerCase())) {// Check if field is lowercase
+			log.error("Error: partitions fields must be lowercase");
+			throw new DBPersistenceException("In KUDU ontology, the partitions fields must be lowercase");
+		}
+		else {
+			partition = cmap.get(PARTITIONS).trim().split("\\s*,\\s*");
+		}
+		return partition;
+	}
 
 	public KuduTable build(String name, JSONObject props, List<String> requiredProperties, Map<String, String> cmap) {
 
@@ -106,27 +151,39 @@ public class KuduTableGenerator {
 			log.error("Error naming the ontology");
 			throw new DBPersistenceException("In KUDU ontology, ontology name must be lowercase");
 		}
-
+		
 		if (cmap == null) {
 			npartitions = 1;// No partition
 			primarykey = new String[] { "_id" };
 			partition = null;
 		} else {
-			npartitions = Integer.valueOf(cmap.get("npartitions"));
-
-			if (!cmap.get(PRIMARY_KEY).equals(cmap.get(PRIMARY_KEY).toLowerCase())) {// Check if field is lowercase
-				log.error("Error: primarykey fields must be lowercase");
-				throw new DBPersistenceException("In KUDU ontology, the primarykey fields must be lowercase");
-			}
-
-			if (!cmap.get(PARTITIONS).equals(cmap.get(PARTITIONS).toLowerCase())) {// Check if field is lowercase
-				log.error("Error: partitions fields must be lowercase");
-				throw new DBPersistenceException("In KUDU ontology, the partitions fields must be lowercase");
-			}
-
-			primarykey = cmap.get(PRIMARY_KEY).trim().split("\\s*,\\s*");
-			partition = cmap.get(PARTITIONS).trim().split("\\s*,\\s*");
+			parseConfigMap(cmap);
+			npartitions = Integer.valueOf(cmap.get(NPARTITIONS));
+			primarykey = getPrimaryKeyFromConfigMap(cmap);
+			partition = getPartitionsFromConfigMap(cmap);
 		}
+		
+		// old parsisin, remaining just in case above does not work properly
+//		if (cmap == null) {
+//			npartitions = 1;// No partition
+//			primarykey = new String[] { "_id" };
+//			partition = null;
+//		} else {
+//			npartitions = Integer.valueOf(cmap.get(NPARTITIONS));
+//
+//			if (!cmap.get(PRIMARY_KEY).equals(cmap.get(PRIMARY_KEY).toLowerCase())) {// Check if field is lowercase
+//				log.error("Error: primarykey fields must be lowercase");
+//				throw new DBPersistenceException("In KUDU ontology, the primarykey fields must be lowercase");
+//			}
+//
+//			if (!cmap.get(PARTITIONS).equals(cmap.get(PARTITIONS).toLowerCase())) {// Check if field is lowercase
+//				log.error("Error: partitions fields must be lowercase");
+//				throw new DBPersistenceException("In KUDU ontology, the partitions fields must be lowercase");
+//			}
+//
+//			primarykey = cmap.get(PRIMARY_KEY).trim().split("\\s*,\\s*");
+//			partition = cmap.get(PARTITIONS).trim().split("\\s*,\\s*");
+//		}
 
 		final KuduTable table = new KuduTable(name, numReplicas, addresses, primarykey, partition, npartitions,
 				includeKudutableName);

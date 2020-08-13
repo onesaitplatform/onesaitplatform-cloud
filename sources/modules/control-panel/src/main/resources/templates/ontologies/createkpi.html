@@ -94,7 +94,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home </a></li>
+						<li><a th:href="@{/}">Home </a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/ontologies/list}"> <span th:text="#{ontology.breadcrumb.list}">Ontologies </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:if="${ontology?.id} == null" th:text="#{ontology.breadcrumb.kpi.create}">New KPI</span>
@@ -635,6 +635,7 @@
 		"removeBtn" : [[#{gen.deleteBtn}]],
 		"addpropertyBtn" : [[#{ontology.addproperty}]],
 		"updateSchemaBtn" : [[#{ontology.updateschema}]],
+		"executeQuery" : [[#{ontology.kpi.executeQuery}]],
 		"validations" : {
 			"duplicates": [[#{ontology.valid.duplicates}]],
 			"tplschema": [[#{ontology.valid.tplschema}]],
@@ -650,7 +651,9 @@
 			"authuser": [[#{ontology.valid.auths.user}]],
 			"noinstances": [[#{ontology.valid.noinstances}]],
 			"datamodelchange" : [[#{ontology.confirm.datamodel}]],
-			"invalidQuery" : [[#{ontology.valid.query.error}]]
+			"invalidQuery" : [[#{ontology.valid.query.error}]],
+			"invalidSchema" : [[#{ontology.valid.schema}]],
+			"greaterthan" : [[#{gen.greaterthan}]]
 		}
 	};
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
@@ -826,6 +829,7 @@
 			
 		
 		});
+		$("#name").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
 	});
 	//]]>
 	</script>

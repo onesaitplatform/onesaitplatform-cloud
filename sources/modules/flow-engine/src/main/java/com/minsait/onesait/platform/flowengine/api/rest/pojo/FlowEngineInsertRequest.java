@@ -29,6 +29,6 @@ public class FlowEngineInsertRequest {
 	private String data;
 	@Getter
 	@Setter
-	private String authentication;
+	private String domainName;
 
 }

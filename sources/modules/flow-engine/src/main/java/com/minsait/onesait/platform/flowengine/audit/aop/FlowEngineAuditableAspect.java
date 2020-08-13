@@ -91,24 +91,24 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 
 	}
 
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontologyIdentificator, queryType, query, authentication,..)"
+	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontologyIdentificator, queryType, query, domainName,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.submitQuery(..))")
 	public void processSubmitQuery(JoinPoint joinPoint, FlowEngineAuditable auditable, String ontologyIdentificator,
-			String queryType, String query, String authentication, String retVal) {
+			String queryType, String query, String domainName, String retVal) {
 
 		final FlowEngineAuditEvent event = flowEngineAuditProcessor.getQueryEvent(ontologyIdentificator, query,
-				queryType, retVal, authentication);
+				queryType, retVal, domainName);
 
 		eventProducer.publish(event);
 	}
 
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontology, data, authentication,..)"
+	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontology, data, domainName,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.submitInsert(..))")
 	public void processInsert(JoinPoint joinPoint, FlowEngineAuditable auditable, String ontology, String data,
-			String authentication, String retVal) {
+			String domainName, String retVal) {
 
 		final FlowEngineAuditEvent event = flowEngineAuditProcessor.getInsertEvent(ontology, data, retVal,
-				authentication);
+				domainName);
 
 		eventProducer.publish(event);
 	}
@@ -149,10 +149,10 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 		}
 	}
 
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,queryType,query,authentication,..)"
+	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,queryType,query,domainName,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.nodered.communication.NodeRedAdminClientImpl.submitQuery(..))", throwing = "ex")
 	public void doRecoveryActionsFlowEngineNodeQuery(JoinPoint joinPoint, FlowEngineAuditable auditable, Exception ex,
-			String ontology, String queryType, String query, String authentication) {
+			String ontology, String queryType, String query, String domainName) {
 
 		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
 
@@ -161,7 +161,7 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 			String message = EXCEPTION_DETECTED + method.getName() + ", " + "operation query on ontology " + ontology
 					+ " with query " + query;
 
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, authentication, ex);
+			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, domainName, ex);
 
 			eventProducer.publish(event);
 		} catch (Exception e) {
@@ -169,10 +169,10 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 		}
 	}
 
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,data,authentication,..)"
+	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,data,domainName,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.nodered.communication.NodeRedAdminClientImpl.submitInsert(..))", throwing = "ex")
 	public void doRecoveryActionsFlowEngineNodeInsert(JoinPoint joinPoint, FlowEngineAuditable auditable, Exception ex,
-			String ontology, String data, String authentication) {
+			String ontology, String data, String domainName) {
 		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
 
 		try {
@@ -180,7 +180,7 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Operation insert on ontology " + ontology
 					+ " with data " + data;
 
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, authentication, ex);
+			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, domainName, ex);
 
 			eventProducer.publish(event);
 		} catch (Exception e) {

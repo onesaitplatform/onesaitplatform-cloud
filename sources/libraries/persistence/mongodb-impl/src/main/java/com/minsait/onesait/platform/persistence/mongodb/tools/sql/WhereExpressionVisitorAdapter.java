@@ -24,6 +24,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
@@ -94,10 +95,10 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	public void visit(OrExpression or) {
 		if (!isFirstOr()) {
 			setFirstOr(true);
-			setOrsInQuery(or.toString().toLowerCase().split(OR_SPLITTER).length);
+			setOrsInQuery(orsInQuery(or, 2));
 		}
 
-		if (or.toString().toLowerCase().split(OR_SPLITTER).length <= 2) {
+		if (orsInQuery(or, 2) <= 2) {
 			if (!builder.toString().endsWith("{"))
 				builder.append("{");
 			builder.append("$or:[");
@@ -106,7 +107,7 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 		super.visit(or);
 		Sql2NativeTool.removeIfLastCharacterIsComma(builder);
 
-		if (or.toString().toLowerCase().split(OR_SPLITTER).length == getOrsInQuery()) {
+		if (orsInQuery(or, 2) == getOrsInQuery()) {
 			builder.append("]");
 			builder.append("}");
 			setFirstOr(false);
@@ -118,16 +119,16 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 	public void visit(AndExpression and) {
 		if (!isFirstAnd()) {
 			setFirstAnd(true);
-			setAndsInQuery(and.toString().toLowerCase().split(AND_SPLITTER).length);
+			setAndsInQuery(andsInQuery(and, 2));
 		}
-		if (and.toString().toLowerCase().split(AND_SPLITTER).length <= 2) {
+		if (andsInQuery(and, 2) <= 2) {
 			if (!builder.toString().endsWith("{"))
 				builder.append("{");
 			builder.append("$and:[");
 		}
 		super.visit(and);
 		Sql2NativeTool.removeIfLastCharacterIsComma(builder);
-		if (and.toString().toLowerCase().split(AND_SPLITTER).length == getAndsInQuery()) {
+		if (andsInQuery(and, 2) == getAndsInQuery()) {
 			builder.append("]");
 			builder.append("}");
 			setFirstAnd(false);
@@ -139,78 +140,90 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 
 	@Override
 	public void visit(NotEqualsTo net) {
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("{");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("{");
 		builder.append("'" + net.getLeftExpression() + "'");
 		builder.append(":{$ne:");
 		super.visit(net);
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("}");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("}");
 		builder.append(",");
 
 	}
 
 	@Override
 	public void visit(EqualsTo eq) {
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("{");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("{");
 		builder.append("'" + eq.getLeftExpression() + "'");
 		builder.append(":{$eq:");
 		super.visit(eq);
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("}");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("}");
 		builder.append(",");
 
 	}
 
 	@Override
 	public void visit(GreaterThan gt) {
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("{");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("{");
 		builder.append("'" + gt.getLeftExpression() + "'");
 		builder.append(":{$gt:");
 		super.visit(gt);
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("}");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("}");
 		builder.append(",");
 
 	}
 
 	@Override
 	public void visit(GreaterThanEquals gte) {
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("{");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("{");
 		builder.append("'" + gte.getLeftExpression() + "'");
 		builder.append(":{$gte:");
 		super.visit(gte);
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("}");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("}");
 		builder.append(",");
 
 	}
 
 	@Override
 	public void visit(MinorThan lt) {
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("{");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("{");
 		builder.append("'" + lt.getLeftExpression() + "'");
 		builder.append(":{$lt:");
 		super.visit(lt);
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("}");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("}");
 		builder.append(",");
 
 	}
 
 	@Override
 	public void visit(MinorThanEquals lte) {
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("{");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("{");
 		builder.append("'" + lte.getLeftExpression() + "'");
 		builder.append(":{$lte:");
 		super.visit(lte);
-		if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR) != -1)
-			builder.append("}");
+		// if (builder.lastIndexOf(DOLLAR_AND) != -1 || builder.lastIndexOf(DOLLAR_OR)
+		// != -1)
+		builder.append("}");
 		builder.append(",");
 
 	}
@@ -283,5 +296,31 @@ public class WhereExpressionVisitorAdapter extends ExpressionVisitorAdapter {
 
 	private boolean getBooleanValue(String value) {
 		return Boolean.valueOf(value.split("\\.")[1]).booleanValue();
+	}
+
+	private int orsInQuery(OrExpression or, int count) {
+		final Expression left = or.getLeftExpression();
+		final Expression right = or.getRightExpression();
+		if (left instanceof OrExpression)
+			count = orsInQuery((OrExpression) left, count);
+		if (right instanceof OrExpression)
+			count = orsInQuery((OrExpression) right, count);
+		return count;
+
+	}
+
+	private int andsInQuery(AndExpression or, int count) {
+		final Expression left = or.getLeftExpression();
+		final Expression right = or.getRightExpression();
+		if (left instanceof AndExpression) {
+			count++;
+			count = andsInQuery((AndExpression) left, count);
+		}
+		if (right instanceof AndExpression) {
+			count++;
+			count = andsInQuery((AndExpression) right, count);
+		}
+		return count;
+
 	}
 }

@@ -17,6 +17,9 @@ package com.minsait.onesait.platform.config.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.User;
@@ -26,4 +29,8 @@ public interface DroolsRuleDomainRepository extends JpaRepository<DroolsRuleDoma
 	List<DroolsRuleDomain> findByActiveTrue();
 
 	DroolsRuleDomain findByUser(User user);
+
+	@Modifying
+	@Query("update DroolsRuleDomain drd set drd.active = :active where drd.user.userId = :userId")
+	int updateActiveByUserId(@Param("active") boolean active, @Param("userId") String userId);
 }

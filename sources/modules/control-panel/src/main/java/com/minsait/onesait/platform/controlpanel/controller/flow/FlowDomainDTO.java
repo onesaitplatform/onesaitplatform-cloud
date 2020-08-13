@@ -42,5 +42,15 @@ public class FlowDomainDTO {
 	@Getter
 	@Setter
 	private String identification;
+	
+	@Getter
+	@Setter
+	private Boolean autorecover;
+	
+	@Getter
+	@Setter
+	private String thresholds;
+	
+
 
 }

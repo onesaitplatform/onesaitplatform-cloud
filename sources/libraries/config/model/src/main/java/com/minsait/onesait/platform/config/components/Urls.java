@@ -43,23 +43,21 @@ public class Urls {
 	private RouterStandAlone routerStandAlone;
 
 	private ApiManager apiManager;
-	
+
 	private Notebook notebook;
 
 	private Controlpanel controlpanel;
 
 	private DigitalTwinBroker digitalTwinBroker;
-	
+
 	private DashboardEngine dashboardEngine;
 
 	private Domain domain;
-
-	private Gravitee gravitee;
 
 	private MonitoringUI monitoringUI;
 
 	private RulesEngine rulesEngine;
 
-	private BPMEngine bpmEngine;
+	private ReportEngine reportEngine;
 
 }

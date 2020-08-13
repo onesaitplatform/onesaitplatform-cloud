@@ -22,6 +22,6 @@ public interface ActionNotifier {
 	//
 	// public void notifyCustomMessage(JSONObject message);
 
-	public void notifyActionMessage(JSONObject message);
+	public void notifyActionMessage(String apiKey, JSONObject message);
 
 }

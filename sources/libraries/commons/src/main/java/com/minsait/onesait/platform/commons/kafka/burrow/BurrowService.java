@@ -176,27 +176,31 @@ public class BurrowService {
 			BurrowOffsetWindow[] partitions = rawTopicInfo.getTopics().get(topic);
 			for (int partition = 0; partition < partitions.length; partition++) {
 				BurrowOffsetInstant[] windows = partitions[partition].getOffsets();
-				Long millis = windows[windows.length - 1].getTimestamp();
+				if (windows != null && windows.length != 0 && windows[windows.length - 1] != null) {
 
-				Date d = new Date(millis);
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
-				String timestamp = sdf.format(d);
+					Long millis = windows[windows.length - 1].getTimestamp();
 
-				Long offset = windows[windows.length - 1].getOffset();
-				Long lag = windows[windows.length - 1].getLag();
-				String status = "OK";
-				BurrowGroupStatusResponse consumerStatus = getClientGroupStatus(cluster, consumer);
-				for (BurrowPartitionStatusDetail detail : consumerStatus.getStatus().getPartitions()) {
-					if (detail.getTopic().equals(topic) && detail.getPartition() == partition) {
-						// this topic/partition its not OK
-						status = detail.getStatus();
-						lag = detail.getCurrentLag();
+					Date d = new Date(millis);
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+					String timestamp = sdf.format(d);
+
+					Long offset = windows[windows.length - 1].getOffset();
+					Long lag = windows[windows.length - 1].getLag();
+					String status = "OK";
+					BurrowGroupStatusResponse consumerStatus = getClientGroupStatus(cluster, consumer);
+					for (BurrowPartitionStatusDetail detail : consumerStatus.getStatus().getPartitions()) {
+						if (detail.getTopic().equals(topic) && detail.getPartition() == partition) {
+							// this topic/partition its not OK
+							status = detail.getStatus();
+							lag = detail.getCurrentLag();
+						}
 					}
-				}
 
-				KafkaMonitoringTopicInfo partitionInfo = KafkaMonitoringTopicInfo.builder().topic(topic)
-						.partition(partition).status(status).timestamp(timestamp).offset(offset).lag(lag).build();
-				result.add(partitionInfo);
+					KafkaMonitoringTopicInfo partitionInfo = KafkaMonitoringTopicInfo.builder().topic(topic)
+							.partition(partition).status(status).timestamp(timestamp).offset(offset).lag(lag).build();
+					result.add(partitionInfo);
+
+				}
 			}
 		}
 		return result;

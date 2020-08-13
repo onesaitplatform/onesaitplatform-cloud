@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('HeaderController', function (
+  .controller('HeaderController', ["$scope", "$rootScope", "$timeout", "_", "api", "$translate", "$location", "authService", "pipelineService", "pipelineConstant", "$modal", "$q", "$route", function (
     $scope, $rootScope, $timeout, _, api, $translate, $location, authService, pipelineService, pipelineConstant,
     $modal, $q, $route
   ) {
@@ -544,4 +544,4 @@ angular
       }
     });
 
-  });
+  }]);

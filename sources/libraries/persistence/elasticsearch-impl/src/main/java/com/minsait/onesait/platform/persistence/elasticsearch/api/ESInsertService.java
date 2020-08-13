@@ -14,45 +14,47 @@
  */
 package com.minsait.onesait.platform.persistence.elasticsearch.api;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.DocWriteResponse.Result;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.commons.model.BulkWriteResult;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResultType;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
+import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
 import com.minsait.onesait.platform.persistence.util.JSONPersistenceUtilsElasticSearch;
 
-import io.searchbox.core.Bulk;
-import io.searchbox.core.BulkResult;
-import io.searchbox.core.Index;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Conditional(ElasticsearchEnabledCondition.class)
 @Slf4j
 public class ESInsertService {
 
 	@Autowired
-	ESBaseApi connector;
-	@Autowired
 	private OntologyDataService ontologyDataService;
 	@Autowired
 	private ObjectMapper mapper;
+    @Autowired
+    private RestHighLevelClient hlClient;
 
 	private static final String GEOMERY_STR = "geometry";
 	private static final String GEOMERYCOLLECTION_STR = "geometrycollection";
@@ -67,7 +69,7 @@ public class ESInsertService {
 	private static final String DATE = "$date";
 	private static final String SOURCE = "source";
 
-	private String fixPosibleNonCapitalizedGeometryPoint(String s, String schema, String index) {
+	private String fixPosibleNonCapitalizedGeometryPoint(String s, String index) {
 		try {
 			final JsonObject o = new JsonParser().parse(s).getAsJsonObject();
 			if (o.get(SOURCE) != null && o.get(SOURCE).getAsString().equals("AUDIT"))
@@ -135,88 +137,73 @@ public class ESInsertService {
 		return s;
 
 	}
+	
+	private BulkResponse bulkInsert(String index, List<String> jsonDocs) {
+	    BulkRequest bulkRequest = new BulkRequest();
+	    for (String json : jsonDocs) {
+	        bulkRequest.add(new IndexRequest(index).source(json, XContentType.JSON));
+	    }
+	    return executeBulkInsert(bulkRequest);
+	}
+	
+	private BulkResponse executeBulkInsert(BulkRequest bulkRequest) {
+	    try {
+            return hlClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            log.error("Error inserting bulk documents ", e);
+            return null;
+        }
+    }
 
-	public ComplexWriteResult load(String index, String type, List<String> jsonDoc, String jsonSchema) {
+    public ComplexWriteResult bulkInsert(String index, List<String> jsonDocs, String jsonSchema) {
+        	    	   
+		List<String> parsedJson = new ArrayList<>(jsonDocs.size());	
 
-		final List<BulkWriteResult> listResult = new ArrayList<>();
-
-		final List<Index> list = new ArrayList<>();
-		for (String s : jsonDoc) {
+		for (String s : jsonDocs) {
 
 			s = s.replaceAll("\\n", "");
 			s = s.replaceAll("\\r", "");
 
-			s = fixPosibleNonCapitalizedGeometryPoint(s, jsonSchema, index);
+			s = fixPosibleNonCapitalizedGeometryPoint(s, index);
 			s = fixPosibleDollarDates(s, jsonSchema, index);
-			final Index i = new Index.Builder(s).index(index).type(type).build();
-			list.add(i);
+			parsedJson.add(s);
 		}
 
-		final Bulk bulk = new Bulk.Builder().addAction(list).build();
-		BulkResult result;
-		try {
-			result = connector.getHttpClient().execute(bulk);
-
-			final JsonArray object = result.getJsonObject().get("items").getAsJsonArray();
-
-			for (int i = 0; i < object.size(); i++) {
-				final JsonElement element = object.get(i);
-				final JsonObject o = element.getAsJsonObject();
-				final JsonObject the = o.get("index").getAsJsonObject();
-				final String id = the.get("_id").getAsString();
-				final String created = the.get("result").getAsString();
-
-				final BulkWriteResult bulkr = new BulkWriteResult();
-				bulkr.setId(id);
-				bulkr.setErrorMessage(created);
-				bulkr.setOk(true);
-				listResult.add(bulkr);
-			}
-		} catch (final IOException e) {
-			log.error("Error executing http request " + e.getMessage(), e);
-		} catch (final Exception e) {
-			log.error("Error Loading document " + e.getMessage(), e);
+		BulkResponse bulkResponse = bulkInsert(index, parsedJson);
+		
+		List<BulkWriteResult> listResult = new ArrayList<>();
+		
+		for (BulkItemResponse bulkItemResponse : bulkResponse) { 
+		    DocWriteResponse itemResponse = bulkItemResponse.getResponse(); 
+		    final BulkWriteResult bulkr = new BulkWriteResult();		    
+		    bulkr.setId(itemResponse.getId());
+		    bulkr.setErrorMessage(itemResponse.toString());
+		    bulkr.setOk(itemResponse.getResult().equals(Result.CREATED));
+		    
+//		    switch (bulkItemResponse.getOpType()) {
+//		    case INDEX:    
+//		    case CREATE:
+//		        IndexResponse indexResponse = (IndexResponse) itemResponse;		        
+//                bulkr.setId(indexResponse.getId());
+//                bulkr.setErrorMessage(indexResponse.toString());
+//                bulkr.setOk(indexResponse.getResult().equals(Result.CREATED));
+//                listResult.add(bulkr);
+//		        break;
+//		    case UPDATE:   
+//		        UpdateResponse updateResponse = (UpdateResponse) itemResponse;		        
+//		        break;
+//		    case DELETE:   
+//		        DeleteResponse deleteResponse = (DeleteResponse) itemResponse;
+//		    }
+		    
+		    listResult.add(bulkr);
 		}
-
-		log.info("Documents have been inserted..." + listResult.size());
 
 		ComplexWriteResult complexWriteResult = new ComplexWriteResult();
 		complexWriteResult.setType(ComplexWriteResultType.BULK);
 		complexWriteResult.setData(listResult);
 
 		return complexWriteResult;
-
-	}
-
-	public static String readAllBytes(String filePath) {
-		String content = "";
-		try {
-			content = new String(Files.readAllBytes(Paths.get(filePath)));
-		} catch (final IOException e) {
-			log.error(e.getMessage());
-		}
-		return content;
-	}
-
-	public static List<String> readLines(File file) {
-		if (!file.exists()) {
-			return new ArrayList<>();
-		}
-
-		final List<String> results = new ArrayList<>();
-
-		try (BufferedReader reader = new BufferedReader(new FileReader(file));) {
-
-			String line = reader.readLine();
-			while (line != null) {
-				results.add(line);
-				line = reader.readLine();
-			}
-			return results;
-		} catch (final Exception e) {
-			return new ArrayList<>();
-		}
-
 	}
 
 }

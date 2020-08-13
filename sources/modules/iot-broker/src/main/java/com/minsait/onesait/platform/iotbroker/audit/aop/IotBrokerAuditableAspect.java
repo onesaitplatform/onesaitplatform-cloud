@@ -53,7 +53,7 @@ public class IotBrokerAuditableAspect extends BaseAspect {
 			final SSAPMessage<SSAPBodyReturnMessage> returnVal = (SSAPMessage<SSAPBodyReturnMessage>) joinPoint
 					.proceed();
 			event = auditProcessor.completeEventWithResponseMessage(returnVal, event);
-			eventProducer.publish(event);
+			// eventProducer.publish(event);
 			return returnVal;
 		} catch (final Throwable e) {
 			log.error("Error processTx by:", e);
@@ -68,7 +68,7 @@ public class IotBrokerAuditableAspect extends BaseAspect {
 		log.debug("execute aspect iotborkerauditable method doRecoveryActions");
 		try {
 			final OPAuditError event = auditProcessor.getErrorEvent(message, info, ex);
-			eventProducer.publish(event);
+			// eventProducer.publish(event);
 		} catch (final Exception e) {
 			log.error("error auditing doRecoveryActions", e);
 		}

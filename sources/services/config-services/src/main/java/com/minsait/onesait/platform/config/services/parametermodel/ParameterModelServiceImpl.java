@@ -69,7 +69,7 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 				for (String param : parameters) {
 					JSONObject json = new JSONObject(param);
 
-					ParameterModel.Type type = ParameterModel.Type.valueOf(json.getString("type"));
+					ParameterModel.Type type = ParameterModel.Type.valueOf(json.getString("type").toUpperCase());
 
 					ParameterModel paramModel = new ParameterModel();
 					paramModel.setIdentification(json.getString(ID_STR));

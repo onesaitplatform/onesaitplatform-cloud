@@ -22,7 +22,6 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,8 +50,8 @@ public class OntologyJsonWrapper {
 				json = (Map<String, Object>) json.values().iterator().next();
 			}
 		} catch (final Exception e) {
-			log.error("Error deserializing JSON String");
-			throw new GenericRuntimeOPException("Invalid JSON input");
+			log.error("Error deserializing JSON String, returning original json");
+			// throw new GenericRuntimeOPException("Invalid JSON input");
 		}
 	}
 

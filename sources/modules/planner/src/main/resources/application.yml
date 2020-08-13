@@ -8,6 +8,7 @@ spring:
       test-while-idle: true
       test-on-borrow: true
       validation-query: SELECT 1
+      validationQueryTimeout: 5
       # Number of ms to wait before throwing an exception if no connection is available.
       max-wait: 10000
       # Maximum number of active connections that can be allocated from this pool at the same time.
@@ -30,6 +31,7 @@ quartz:
       test-while-idle: true
       test-on-borrow: true
       validation-query: SELECT 1
+      validationQueryTimeout: 5
       # Number of ms to wait before throwing an exception if no connection is available.
       max-wait: 10000
       # Maximum number of active connections that can be allocated from this pool at the same time.

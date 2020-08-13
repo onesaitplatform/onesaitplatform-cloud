@@ -31,6 +31,7 @@ import com.minsait.onesait.platform.config.repository.KsqlRelationRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlRelationServiceException;
 import com.minsait.onesait.platform.config.services.ksql.resource.KsqlResourceService;
 import com.minsait.onesait.platform.config.services.ksql.resource.pojo.KsqlResourceForUpdate;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +41,9 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 
 	@Autowired
 	private KsqlResourceService ksqlResourceService;
+	
+	@Autowired
+	private UserService userService;
 
 	@Autowired
 	private KsqlRelationRepository ksqlRelationRepository;
@@ -210,7 +214,7 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(sessionUser)) {
 			ksqlRelations = ksqlRelationRepository
 					.findByKsqlFlowIdAndKsqlResourceIdentificationContainingAndKsqlResourceDescriptionContaining(id,
 							identification, description);

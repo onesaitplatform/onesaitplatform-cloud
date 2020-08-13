@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -27,6 +26,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
 @SpringBootApplication
@@ -34,11 +34,12 @@ import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 @EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
 @ComponentScan(basePackages = { "com.minsait.onesait.platform.router" })
 @EnableAsync
-@EnableCaching
 public class SemanticInfBrokerApplication extends WebMvcConfigurerAdapter {
 
 	@Autowired
-	CorrelationInterceptor logInterceptor;
+	private CorrelationInterceptor logInterceptor;
+	@Autowired
+	private MultitenancyInterceptor multitenancyInterceptor;
 
 	@Configuration
 	@Profile("default")
@@ -55,6 +56,7 @@ public class SemanticInfBrokerApplication extends WebMvcConfigurerAdapter {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(logInterceptor);
+		registry.addInterceptor(multitenancyInterceptor);
 	}
 
 }

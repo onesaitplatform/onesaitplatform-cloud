@@ -24,6 +24,7 @@ import org.jeasy.rules.annotation.Priority;
 import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
@@ -52,7 +53,7 @@ public class SecurityOntologyRule extends DefaultRuleBase {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Ontology ontology = (Ontology) data.get(Constants.ONTOLOGY);
 
-		return ((request != null && ontology != null) && canExecuteRule(facts)) ;
+		return request != null && ontology != null && canExecuteRule(facts);
 	}
 
 	@Action
@@ -67,7 +68,7 @@ public class SecurityOntologyRule extends DefaultRuleBase {
 
 		if (!ontologyPermission) {
 			stopAllNextRules(facts, "User has no permission to use Ontology " + ontology.getIdentification(),
-					DefaultRuleBase.ReasonType.SECURITY);
+					DefaultRuleBase.ReasonType.SECURITY, HttpStatus.FORBIDDEN);
 		}
 
 	}

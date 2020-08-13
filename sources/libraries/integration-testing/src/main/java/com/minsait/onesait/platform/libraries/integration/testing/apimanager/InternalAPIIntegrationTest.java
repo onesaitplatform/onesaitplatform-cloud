@@ -19,17 +19,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
@@ -39,105 +33,64 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.minsait.onesait.platform.commons.testing.IntegrationTest;
-import com.minsait.onesait.platform.config.model.Api;
-import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.UserRepository;
-import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
-import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
-import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
-import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
+import com.minsait.onesait.platform.libraries.integration.testing.IntegrationTestingApp;
 
 import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = IntegrationTestingApp.class)
 @Slf4j
-@Category(IntegrationTest.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@EnableAutoConfiguration
-public class InternalAPIIntegrationTest {
+public class InternalAPIIntegrationTest extends AbstractTestNGSpringContextTests {
 
 	@Autowired
 	private APIUtils apiUtils;
-	@Autowired
-	private UserRepository userRepository;
+
 	@Autowired
 	private ObjectMapper mapper;
-	@Autowired
-	private ApiManagerService apimanagerService;
-
-	private Api petStore;
-	private Api sensorTag;
-	private User user;
 
 	private int nInstances = 0;
 
-	private static final String X_OP_APIKEY = "X-OP-APIKey";
 	private static final String JSON_PATH_TEMPERATURE = "temperature";
 	private static final String JSON_PATH_OID = "_id";
 	private static final String JSON_PATH_COUNT = "count";
 
+	@Autowired
 	private TestRestTemplate restTemplate;
 
 	@Value("${apimanager:http://localhost:19100/api-manager}")
 	private String apiManager;
+
+	@Value("${oauth-server:http://localhost:21000/oauth-server}")
+	private String oauthServer;
+
 	private static final String BASE_URL = "/server/api/v1/";
 	private static final String PATH_GET_CRITICAL = "/critical/%d";
 	private static final String PATH_UPDATE_OID = "/update/%s";
 	private static final String PATH_DELETE_ALLL = "/delete";
-	private static final String PATH_CREATE_API_REST = "/services/management/apis";
-
-	private static final String ADMIN = "administrator";
 
 	private static final String DATASET_SENSOR_TAG = "SensorTagInstances.json";
 
-	@Autowired
-	@Qualifier("MongoBasicOpsDBRepository")
-	private BasicOpsDBRepository basicOps;
-	@Autowired
-	@Qualifier("MongoManageDBRepository")
-	private ManageDBRepository manageDb;
-
-	@Before
+	@BeforeClass
 	public void setUp() throws IOException {
-		if (restTemplate == null)
-			restTemplate = new TestRestTemplate();
-		if (user == null)
-			user = userRepository.findByUserId(ADMIN);
-		if (petStore == null)
-			petStore = apiUtils.createExternalAPI(user, ApiType.EXTERNAL_FROM_JSON);
-		if (sensorTag == null) {
-			final ApiDTO apiDTO = apiUtils.readInternalAPIDTO(user);
-			createApi(apiDTO);
-			sensorTag = apimanagerService.getApiByIdentificationVersionOrId(apiDTO.getIdentification(),
-					String.valueOf(apiDTO.getVersion()));
-		}
+		apiUtils.createExternalAPI();
+		apiUtils.createInternalAPI();
 		if (nInstances == 0)
 			loadSampleData();
 	}
 
-	public void createApi(ApiDTO api) {
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(X_OP_APIKEY, apiUtils.getUserToken(user));
-		restTemplate.exchange(apiManager + PATH_CREATE_API_REST, HttpMethod.POST, new HttpEntity<>(api, headers),
-				String.class);
-
-	}
-
-	@After
+	@AfterClass
 	public void tearDown() {
-		removeSampleData();
-		apiUtils.deleteAPITest(petStore);
-		apiUtils.deleteAPITest(sensorTag);
+		apiUtils.deleteResources();
 	}
 
 	@Test
@@ -146,77 +99,61 @@ public class InternalAPIIntegrationTest {
 		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
 		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
 
-		final ResponseEntity<String> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers), String.class);
+		final ResponseEntity<String> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG), HttpMethod.GET,
+				new HttpEntity<>(null, headers), String.class);
 		assertTrue(response.getStatusCode().equals(HttpStatus.FORBIDDEN));
-	}
-
-	@Test
-	public void When_GetAllMethodIsInvoked_Expect_NOntologyInstancesFetched() {
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(X_OP_APIKEY, apiUtils.getUserToken(user));
-
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers), ArrayNode.class);
-		assertTrue(response.getStatusCode().equals(HttpStatus.OK));
-		assertNotNull(response.getBody());
-		assertTrue(response.getBody().size() == nInstances);
-
 	}
 
 	@Test
 	public void When_GetByIdIsInvoked_Then_OneInstanceIsFetched() {
 
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 		assertTrue(response.getStatusCode().equals(HttpStatus.OK));
 		final JsonNode instance = response.getBody().get(0);
 
 		final ResponseEntity<ArrayNode> responseSingleResult = restTemplate.exchange(
-				getURL(sensorTag.getIdentification() + "/" + instance.path(JSON_PATH_OID).asText()), HttpMethod.GET,
-				new HttpEntity<>(null, headers()), ArrayNode.class);
+				getURL(APIUtils.API_SENSOR_TAG + "/" + instance.path(JSON_PATH_OID).asText()), HttpMethod.GET,
+				new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 		assertTrue(responseSingleResult.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(responseSingleResult.getBody() != null && responseSingleResult.getBody().get(0) != null);
-		assertTrue(responseSingleResult.getBody().get(0).path(sensorTag.getOntology().getIdentification()).path("id")
-				.asText().equals(instance.path(sensorTag.getOntology().getIdentification()).path("id").asText()));
+		assertTrue(responseSingleResult.getBody().get(0).path(APIUtils.SENSOR_TAG).path("id").asText()
+				.equals(instance.path(APIUtils.SENSOR_TAG).path("id").asText()));
 
 	}
 
 	@Test
 	public void When_UpdateByIdIsInvoked_Then_OneInstanceIsUpdated() {
 
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 
 		final JsonNode instance = response.getBody().get(0);
 		final String id = instance.path(JSON_PATH_OID).asText();
-		((ObjectNode) instance.path(sensorTag.getOntology().getIdentification())).put(JSON_PATH_TEMPERATURE, 125);
+		((ObjectNode) instance.path(APIUtils.SENSOR_TAG)).put(JSON_PATH_TEMPERATURE, 125);
 		((ObjectNode) instance).remove(JSON_PATH_OID);
 		final ResponseEntity<JsonNode> responseSingleResult = restTemplate.exchange(
-				getURL(sensorTag.getIdentification() + "/" + id), HttpMethod.PUT, new HttpEntity<>(instance, headers()),
-				JsonNode.class);
+				getURL(APIUtils.API_SENSOR_TAG + "/" + id), HttpMethod.PUT,
+				new HttpEntity<>(instance, apiUtils.headers()), JsonNode.class);
 
 		assertTrue(responseSingleResult.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(responseSingleResult.getBody() != null);
-		assertTrue(responseSingleResult.getBody().path(sensorTag.getOntology().getIdentification())
-				.path(JSON_PATH_TEMPERATURE).asInt() == instance.path(sensorTag.getOntology().getIdentification())
-						.path(JSON_PATH_TEMPERATURE).asInt());
+		assertTrue(responseSingleResult.getBody().path(APIUtils.SENSOR_TAG).path(JSON_PATH_TEMPERATURE)
+				.asInt() == instance.path(APIUtils.SENSOR_TAG).path(JSON_PATH_TEMPERATURE).asInt());
 
 	}
 
 	@Test
 	public void When_UpdateByIdSQLIsInvoked_Then_OneInstanceIsUpdated() {
 
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 
 		final JsonNode instance = response.getBody().get(0);
 		final String id = instance.path(JSON_PATH_OID).asText();
 		final ResponseEntity<JsonNode> responseSingleResult = restTemplate.exchange(
-				getURL(sensorTag.getIdentification()) + String.format(PATH_UPDATE_OID, id), HttpMethod.GET,
-				new HttpEntity<>(null, headers()), JsonNode.class);
+				getURL(APIUtils.API_SENSOR_TAG) + String.format(PATH_UPDATE_OID, id), HttpMethod.GET,
+				new HttpEntity<>(null, apiUtils.headers()), JsonNode.class);
 
 		assertTrue(responseSingleResult.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(responseSingleResult.getBody() != null);
@@ -227,14 +164,14 @@ public class InternalAPIIntegrationTest {
 	@Test
 	public void When_InsertInstanceWithBadSchema_Expect_500() {
 
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 
 		final JsonNode instance = response.getBody().get(0);
-		((ObjectNode) instance.path(sensorTag.getOntology().getIdentification())).remove(JSON_PATH_TEMPERATURE);
+		((ObjectNode) instance.path(APIUtils.SENSOR_TAG)).remove(JSON_PATH_TEMPERATURE);
 		((ObjectNode) instance).remove(JSON_PATH_OID);
-		final ResponseEntity<String> responseSingleResult = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.POST, new HttpEntity<>(instance, headers()), String.class);
+		final ResponseEntity<String> responseSingleResult = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.POST, new HttpEntity<>(instance, apiUtils.headers()), String.class);
 
 		assertTrue(responseSingleResult.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR));
 
@@ -243,13 +180,13 @@ public class InternalAPIIntegrationTest {
 	@Test
 	public void When_InsertInstance_Expect_200() {
 
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 
 		final JsonNode instance = response.getBody().get(0);
 		((ObjectNode) instance).remove(JSON_PATH_OID);
-		final ResponseEntity<String> responseSingleResult = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.POST, new HttpEntity<>(instance, headers()), String.class);
+		final ResponseEntity<String> responseSingleResult = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.POST, new HttpEntity<>(instance, apiUtils.headers()), String.class);
 
 		assertTrue(responseSingleResult.getStatusCode().equals(HttpStatus.OK));
 
@@ -260,8 +197,8 @@ public class InternalAPIIntegrationTest {
 
 		final int criticalTempValue = 80;
 		final ResponseEntity<ArrayNode> response = restTemplate.exchange(
-				getURL(sensorTag.getIdentification()) + String.format(PATH_GET_CRITICAL, criticalTempValue),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+				getURL(APIUtils.API_SENSOR_TAG) + String.format(PATH_GET_CRITICAL, criticalTempValue), HttpMethod.GET,
+				new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 
 		assertTrue(response.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(response.getBody().size() >= 1 && response.getBody().size() < nInstances);
@@ -270,13 +207,13 @@ public class InternalAPIIntegrationTest {
 
 	@Test
 	public void When_DeleteById_Expect_InstanceDeleted() {
-		final ResponseEntity<ArrayNode> reference = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
+		final ResponseEntity<ArrayNode> reference = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
 
 		final JsonNode instance = reference.getBody().get(0);
 		final ResponseEntity<JsonNode> response = restTemplate.exchange(
-				getURL(sensorTag.getIdentification()) + "/" + instance.path(JSON_PATH_OID).asText(), HttpMethod.DELETE,
-				new HttpEntity<>(null, headers()), JsonNode.class);
+				getURL(APIUtils.API_SENSOR_TAG) + "/" + instance.path(JSON_PATH_OID).asText(), HttpMethod.DELETE,
+				new HttpEntity<>(null, apiUtils.headers()), JsonNode.class);
 
 		assertTrue(response.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(response.getBody().path(JSON_PATH_COUNT).asInt() == 1);
@@ -284,23 +221,26 @@ public class InternalAPIIntegrationTest {
 	}
 
 	@Test
+	public void A_When_GetAllMethodIsInvoked_Expect_NOntologyInstancesFetched() {
+
+		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG),
+				HttpMethod.GET, new HttpEntity<>(null, apiUtils.headers()), ArrayNode.class);
+		assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+		assertNotNull(response.getBody());
+		assertTrue(response.getBody().size() == nInstances);
+
+	}
+
+	@Test
 	public void Z_When_RequestingDELETECustomQuery_Then_AllInstancesAreDeleted() {
 
 		final ResponseEntity<JsonNode> response = restTemplate.exchange(
-				getURL(sensorTag.getIdentification()) + PATH_DELETE_ALLL, HttpMethod.GET,
-				new HttpEntity<>(null, headers()), JsonNode.class);
+				getURL(APIUtils.API_SENSOR_TAG) + PATH_DELETE_ALLL, HttpMethod.GET,
+				new HttpEntity<>(null, apiUtils.headers()), JsonNode.class);
 
 		assertTrue(response.getStatusCode().equals(HttpStatus.OK));
 		assertTrue(response.getBody().path(JSON_PATH_COUNT).asInt() == nInstances);
 
-	}
-
-	private HttpHeaders headers() {
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(X_OP_APIKEY, apiUtils.getUserToken(user));
-		return headers;
 	}
 
 	private void loadSampleData() {
@@ -310,16 +250,15 @@ public class InternalAPIIntegrationTest {
 
 			assert instances != null;
 			nInstances = instances.size();
-			instances.forEach(i -> basicOps.insert(sensorTag.getOntology().getIdentification(),
-					sensorTag.getOntology().getJsonSchema(), i.toString()));
+			instances.forEach(this::insertInstance);
 		} catch (final Exception e) {
 			log.error("Could not load sample data for test");
 		}
 	}
 
-	private void removeSampleData() {
-		basicOps.delete(sensorTag.getOntology().getIdentification(), false);
-		manageDb.removeTable4Ontology(sensorTag.getOntology().getIdentification());
+	private void insertInstance(JsonNode instance) {
+		restTemplate.exchange(getURL(APIUtils.API_SENSOR_TAG), HttpMethod.POST,
+				new HttpEntity<>(instance, apiUtils.headers()), String.class);
 	}
 
 	private String getURL(String apiIdentification) {

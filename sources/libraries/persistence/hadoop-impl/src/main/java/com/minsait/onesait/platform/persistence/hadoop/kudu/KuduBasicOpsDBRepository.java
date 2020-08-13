@@ -140,7 +140,8 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 		}
 	}
 
-	public String insert(String ontology, String schema, String instance) {
+	@Override
+	public String insert(String ontology, String instance) {
 		try {
 			KuduTable ktable = kuduClient.openTable(impalaPrefix + ontology);
 			KuduSession session = kuduClient.newSession();
@@ -156,8 +157,7 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	}
 
 	@Override
-	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
-			boolean includeIds) {
+	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
 		List<BulkWriteResult> resultAux = new ArrayList<>();
 		List<BulkWriteResult> result = new ArrayList<>();
 		List<DBPersistenceException> errors = new ArrayList<>();
@@ -516,4 +516,46 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 			String body) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
 	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String ontology, String updateStmt)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public List<String> queryUpdateTransactionCompensationNative(String collection, String query, String data)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public List<String> queryDeleteTransactionCompensationNative(String collection) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
+			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
 }

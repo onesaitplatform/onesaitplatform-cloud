@@ -70,7 +70,7 @@ public class DigitalTwinDisplayController {
 	private static final String SORT_TIMESTAMP = "'}).sort({timestamp: -1}).limit(";
 	ObjectMapper mapper = new ObjectMapper();
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("show")
 	public String show(Model model) {
 		List<DigitalTwinType> types = this.typeService.getDigitalTwinTypesByUserId(utils.getUserId());
@@ -78,7 +78,7 @@ public class DigitalTwinDisplayController {
 		return "digitaltwindisplay/show";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/getDevices/{typeId}")
 	public @ResponseBody List<String> getDevices(Model model, @PathVariable("typeId") String typeId) {
 		try {
@@ -89,7 +89,7 @@ public class DigitalTwinDisplayController {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping("executeQuery")
 	public String executeQuery(Model model, @RequestParam String type, @RequestParam String device,
 			@RequestParam String offset, @RequestParam String operation, @RequestParam String eventName,

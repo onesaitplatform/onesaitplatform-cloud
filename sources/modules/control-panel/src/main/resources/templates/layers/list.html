@@ -105,7 +105,7 @@
 									</div>
 									<div class="col-md-12">
 									<!-- SEARCH FORM -->
-										<form id="form_category" class="" role="form" method="get">											
+										<form id="form_layer" action="list.html" th:action="@{/layers/list}" class="" role="form" method="get">											
 											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
 												<div class="row">
 													<div class="col-md-2 col-sm-4 col-xs-12">
@@ -139,14 +139,15 @@
 										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
 									</div>
 									<!-- ONTOLOGY LIST -->
-									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+									<div class="col-md-12">						
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																				
 											<div>
 												<!-- DATATABLE DANDELION CONF.  -->												
-												<table id="categories" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+												<table id="layers" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
+															<th class="titulo-columnas text-center"> <span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
@@ -157,6 +158,8 @@
 														<tr th:each="layer : ${layers}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${layer.identification}"></td>
+															<!-- USER -->
+															<td class="text-center " th:text="${layer.user.userId}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-xxs" th:title="${layer.description}" th:text="${layer.description}"></td>
 															<!-- DATE -->
@@ -175,14 +178,28 @@
 																	<span  th:if="${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/update/${layer.id}|} + '\');'"><i class="la la-edit font-hg"></i></span>
 																	
 																	<!-- CRUD -->
-																	<span th:if="${layer.ontology} !=null AND ${layer.query} ==null AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{crud.crud}" th:data-original-title="#{crud.crud}" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/crud/${layer.id}/|} + '\');'"><i class="la la-database font-hg"></i></span>
+																	<span th:if="${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{crud.crud}" th:data-original-title="#{crud.crud}" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/crud/${layer.id}/|} + '\');'"><i class="la la-database font-hg"></i></span>
 																	<!-- DELETE -->
 																    <span th:if="${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteLayer(\'' + ${layer.id} + '\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
 															</td>
 														</tr>
 													</tbody>
-												</table>												
+												</table>	
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														 <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.identification}"> identification </label>
+														<label class="toggle-vis" data-column="1" th:text="#{ontology.userId}"> Owner </label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
+														<label class="toggle-vis" data-column="3" th:text="#{ontology.createdAt}"> Created At</label>
+														<label class="toggle-vis" data-column="4" th:text="#{ontology.updatedAt}"> Updated At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}" > Options</label>															
+													</div>
+												</div>												
 											</div>
 										</div>											
 									</div>
@@ -311,10 +328,6 @@
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
-		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 2,6,7 ],
-		$.each([ 6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 	

@@ -22,6 +22,12 @@ import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceExceptio
 import com.minsait.onesait.platform.persistence.interfaces.QueryAsTextDBRepository;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 
 @Component("QueryAsTextVirtualDBImpl")
 @Scope("prototype")
@@ -44,7 +50,19 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 	@Override
 	public String queryNativeAsJson(String ontology, String query) {
 		try {
-			return this.virtualRelationalOntologyOps.queryNativeAsJson(ontology, query);
+			Statement statement = CCJSqlParserUtil.parse(query);
+			
+			if (statement instanceof Select) {
+				return this.virtualRelationalOntologyOps.queryNativeAsJson(ontology, query);
+			} else if (statement instanceof Insert) {
+				return this.virtualRelationalOntologyOps.insertNative(ontology, query, false).toString();
+			} else if (statement instanceof Update) {
+				return this.virtualRelationalOntologyOps.updateNative(ontology, query, false).toString();
+			} else if (statement instanceof Delete) {
+				return this.virtualRelationalOntologyOps.deleteNative(ontology, query, false).toString();
+			}
+		
+			return "";
 		} catch (Exception e) {
 			log.error("Error queryNativeAsJson:" + e.getMessage(), e);
 			throw new DBPersistenceException(e);

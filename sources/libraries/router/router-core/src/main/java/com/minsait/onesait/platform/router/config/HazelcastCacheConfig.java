@@ -15,49 +15,51 @@
 package com.minsait.onesait.platform.router.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
-import com.hazelcast.spring.cache.HazelcastCacheManager;
 import com.minsait.onesait.platform.audit.notify.EventSenderImpl;
-import com.minsait.onesait.platform.router.config.hazelcast.ClusterMembershipListener;
-import com.minsait.onesait.platform.router.config.hazelcast.HzDistributedObjectListener;
-import com.minsait.onesait.platform.router.config.hazelcast.NodeLifecycleListener;
-
-import lombok.extern.slf4j.Slf4j;
+import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
+import com.minsait.onesait.platform.router.transaction.OntologyStatus;
+import com.minsait.onesait.platform.router.transaction.operation.Transaction;
 
 @Configuration
-@EnableCaching
-@Slf4j
 public class HazelcastCacheConfig {
+
+	@Bean(name = "disconectedClientsQueue")
+	public IQueue<String> hazelcastDisconectedClientsQueue() {
+		return hazelcastInstance.getQueue("disconectedClientsQueue");
+	}
+
+	@Bean(name = "disconectedClientsSubscription")
+	public IQueue<String> hazelcastDisconectedClientsSubscription() {
+		return hazelcastInstance.getQueue("disconectedClientsSubscription");
+	}
 
 	@Bean(name = "auditQueue")
 	public IQueue<String> hazelcastAuditQueue() {
 		return hazelcastInstance.getQueue(EventSenderImpl.AUDIT_QUEUE_NAME);
 	}
 
+	@Bean(name = "transactionalOperations")
+	public IMap<String, Transaction> transactionalOperations() {
+		return hazelcastInstance.getMap("transactionalOperations");
+	}
+
+	@Bean(name = "lockedOntologies")
+	public IMap<String, OntologyStatus> lockedOntologies() {
+		return hazelcastInstance.getMap("lockedOntologies");
+	}
+	
+	@Bean(name = "notificationAdviceNodeRED")
+	public IQueue<NotificationCompositeModel> notificationAdviceNodeRED() {
+		return hazelcastInstance.getQueue("notificationAdviceNodeRED");
+	}
+
 	@Autowired
 	HazelcastInstance hazelcastInstance;
-
-	@Bean
-	CacheManager cacheManager() {
-		if (hazelcastInstance != null) {
-			hazelcastInstance.getCluster().addMembershipListener(new ClusterMembershipListener());
-			final HzDistributedObjectListener sample = new HzDistributedObjectListener();
-			hazelcastInstance.addDistributedObjectListener(sample);
-			hazelcastInstance.getLifecycleService().addLifecycleListener(new NodeLifecycleListener());
-			final CacheManager manager = new HazelcastCacheManager(hazelcastInstance);
-			log.info("Configured Global Cache Manager: Name : {}", manager.toString());
-			return manager;
-		} else {
-			log.info("NO Op Cache will be configured");
-			return new NoOpCacheManager();
-		}
-	}
 
 }

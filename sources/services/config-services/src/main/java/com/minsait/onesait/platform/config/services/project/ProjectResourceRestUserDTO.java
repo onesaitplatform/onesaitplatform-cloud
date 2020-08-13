@@ -16,7 +16,7 @@ package com.minsait.onesait.platform.config.services.project;
 
 import javax.validation.constraints.NotNull;
 
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 
 import io.swagger.annotations.ApiModelProperty;

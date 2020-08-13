@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/datamodels")
-@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 @Slf4j
 public class DataModelController {
 

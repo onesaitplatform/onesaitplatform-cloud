@@ -26,6 +26,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 @Service
 public class GadgetTemplateServiceImpl implements GadgetTemplateService {
@@ -35,6 +36,9 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private UserService userService;
 
 	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
 
@@ -50,9 +54,17 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		User user = this.userRepository.findByUserId(userId);
 
 		if (user.getRole().getId().equals(ADMINISTRATOR)) {
-			gadgetTemplates = this.gadgetTemplateRepository.findAll();
+			if (identification==null) {
+				gadgetTemplates = this.gadgetTemplateRepository.findAll();
+			} else {
+				gadgetTemplates = this.gadgetTemplateRepository.findByIdentificationContaining(identification);
+			}
 		} else {
-			gadgetTemplates = this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrue(user.getUserId());
+			if (identification==null) {
+				gadgetTemplates = this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrue(user.getUserId());
+			} else {
+				gadgetTemplates = this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrueAndIdentificationLike(user.getUserId(), identification);
+			}
 		}
 
 		return gadgetTemplates;
@@ -81,7 +93,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	@Override
 	public boolean hasUserPermission(String id, String userId) {
 		User user = userRepository.findByUserId(userId);
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			Log.info("user has permission");
 			return true;
 		} else {
@@ -126,7 +138,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	public GadgetTemplate getGadgetTemplateByIdentification(String identification, String userId) {
 		User user = this.userRepository.findByUserId(userId);
 		GadgetTemplate gadgetTemplate;
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			gadgetTemplate = this.gadgetTemplateRepository.findByIdentification(identification);
 		} else {
 			gadgetTemplate = this.gadgetTemplateRepository

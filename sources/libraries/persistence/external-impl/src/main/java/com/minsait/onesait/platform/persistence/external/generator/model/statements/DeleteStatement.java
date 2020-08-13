@@ -72,9 +72,9 @@ public class DeleteStatement implements SQLStatement {
 	}
 
 	@Override
-	public String generate() {
+	public PreparedStatement generate(boolean withParams) {
 		if(sqlGenerator != null) {
-			return sqlGenerator.generate(this);
+			return sqlGenerator.generate(this, withParams);
 		} else {
 			throw new IllegalStateException("SQL Generator service is not set, use SQLGenerator instance to generate or build the statement instead");
 		}

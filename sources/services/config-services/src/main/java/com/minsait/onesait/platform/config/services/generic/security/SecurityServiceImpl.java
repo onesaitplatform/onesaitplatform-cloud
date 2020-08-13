@@ -31,7 +31,7 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.exceptions.SecurityServiceException;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
@@ -59,6 +59,11 @@ public class SecurityServiceImpl implements SecurityService {
 	private static final String METHOD_INVOCATION_TARGET_ERROR = "Security service for %s, user: %s, invoke method invocation target";
 	private static final String METHOD_ACCESS_DENIED_ERROR = "Security service for %s, user: %s, can't access to method";
 
+	//On Ontologies we manage differentes permissions
+	private static final String ONT_AUTH_ALL = "ALL";
+	private static final String ONT_AUTH_QUERY = "QUERY";
+	private static final String ONT_AUTH_INSERT = "INSERT";
+	
 	@Autowired
 	private OPResourceService resourceService;
 
@@ -160,6 +165,11 @@ public class SecurityServiceImpl implements SecurityService {
 				switch (meatAccessType) {
 				case EDITSTR:
 					return EDITSTR;
+				//On Ontologies authorizations calls ALL, INSERT and QUERY and not EDIT and VIEW
+				case ONT_AUTH_ALL:
+					return ONT_AUTH_ALL;
+				case ONT_AUTH_INSERT:
+					return ONT_AUTH_INSERT;
 				case VIEWSTR:
 				default:
 					break;
@@ -176,6 +186,9 @@ public class SecurityServiceImpl implements SecurityService {
 				if (isPublic) {
 					return VIEWSTR;
 				}
+			}
+			if (meatAccessType != null) {
+				return ONT_AUTH_QUERY;
 			}
 			return null;
 		}

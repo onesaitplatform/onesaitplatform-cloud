@@ -76,7 +76,7 @@ public class VideoBrokerController {
 	}
 
 	@GetMapping("create")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(Model model) {
 		model.addAttribute("videoCapture", new VideoCapture());
 		populateForm(model);
@@ -84,7 +84,7 @@ public class VideoBrokerController {
 	}
 
 	@GetMapping("update/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String update(Model model, @PathVariable("id") String id) {
 		if (!videoBrokerService.hasUserAccess(id, utils.getUserId()))
 			return "error/403";
@@ -94,7 +94,7 @@ public class VideoBrokerController {
 	}
 
 	@PostMapping("create")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createVideoCapture(Model model, @Valid VideoCapture videoCapture,
 			@RequestParam("new") boolean newOntology, BindingResult bindingResult, RedirectAttributes redirect) {
 
@@ -129,7 +129,7 @@ public class VideoBrokerController {
 	}
 
 	@PutMapping("update/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String update(Model model, @Valid VideoCapture videoCapture, @PathVariable("id") String id) {
 		if (!videoBrokerService.hasUserAccess(id, utils.getUserId()))
 			return "error/403";
@@ -142,7 +142,7 @@ public class VideoBrokerController {
 	}
 
 	@DeleteMapping("{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<?> delete(@PathVariable("id") String id) {
 		if (!videoBrokerService.hasUserAccess(id, utils.getUserId()))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);

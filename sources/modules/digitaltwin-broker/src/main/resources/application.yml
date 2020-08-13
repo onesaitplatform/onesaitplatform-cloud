@@ -6,10 +6,29 @@ management.security.enabled: false
 server:
    port: 19300
    contextPath: /digitaltwinbroker
+   
+master: 
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
 spring:
   application.name: onesaitplatform-digitaltwin-broker
   datasource:
-    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
     username: root
     password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
     driver-class-name: com.mysql.jdbc.Driver
@@ -17,6 +36,7 @@ spring:
     # Validate the connection before borrowing it from the pool.
     test-on-borrow: true
     validation-query: SELECT 1
+    validationQueryTimeout: 5
     test-while-idle: true       
     # Number of ms to wait before throwing an exception if no connection is available.
     max-wait: 10000
@@ -43,8 +63,7 @@ onesaitplatform: #Config onesaitplatform specific
   audit.global.notify: true
   digitaltwin.broker:
       rest:
-        enable: true
-        swaggerhost: localhost:19300   
+        enable: true  
   router.alternativeURL: http://localhost:20000/router/router/
         
 ## LOGGING CONF

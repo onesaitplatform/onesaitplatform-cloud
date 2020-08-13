@@ -222,7 +222,7 @@ public class MigrationServiceTest {
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData);
+		LoadEntityResult result = migrationService.loadData(config, readData, false);
 
 		MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(Lists.newArrayList(result.getAllObjects()), errors);
@@ -249,7 +249,7 @@ public class MigrationServiceTest {
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData);
+		LoadEntityResult result = migrationService.loadData(config, readData, false);
 
 		MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(Lists.newArrayList(result.getAllObjects()), errors);
@@ -283,7 +283,7 @@ public class MigrationServiceTest {
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData);
+		LoadEntityResult result = migrationService.loadData(config, readData, false);
 
 		MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(Lists.newArrayList(result.getAllObjects()), errors);
@@ -314,7 +314,7 @@ public class MigrationServiceTest {
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData);
+		LoadEntityResult result = migrationService.loadData(config, readData, false);
 
 		assertTrue("The device should be imported", result.getAllObjects().size() == 1);
 	}
@@ -339,7 +339,7 @@ public class MigrationServiceTest {
 			}
 		}
 
-		LoadEntityResult importResult = migrationService.loadData(config, data);
+		LoadEntityResult importResult = migrationService.loadData(config, data, false);
 
 		Map<Serializable, Object> devicesData = importResult.getEntities().get(ClientPlatformInstance.class);
 		Object deviceData = devicesData.get("TEST-DEVICE");
@@ -457,7 +457,7 @@ public class MigrationServiceTest {
 			}
 		}
 
-		LoadEntityResult importDataIntoDB = migrationService.loadData(config, readData);
+		LoadEntityResult importDataIntoDB = migrationService.loadData(config, readData, false);
 		List<Object> allObjects = importDataIntoDB.getAllObjects();
 		Predicate<MigrationError> typeWarnings = error -> error.getType() == MigrationError.ErrorType.WARN;
 		assertTrue("There should be 0 warnings", importDataIntoDB.getErrors().getErrors(typeWarnings).size() == 0);

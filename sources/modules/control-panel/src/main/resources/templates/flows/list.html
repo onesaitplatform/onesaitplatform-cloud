@@ -151,7 +151,7 @@
 								</div>
 								<div class="actions margin-right-20">
 									<div class="btn-group">												
-										<button th:if="${domains==null or domains.empty}" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../flows/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button  th:if="${domains==null or domains.empty}" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../flows/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>
 							</div>
@@ -212,6 +212,7 @@
 															<th dt:property="state"  dt:renderFunction="dtRenderState" class="titulo-columnas" th:text="#{domain.state}">State</th>
 															<th dt:property="cpu" dt:renderFunction="dtRenderNonNullCpu" class="titulo-columnas" th:text="#{domain.cpu.use}">Cpu</th>
 															<th dt:property="memory" dt:renderFunction="dtRenderNonNullMem" class="titulo-columnas" th:text="#{domain.memory}">memory</th>
+															<th dt:property="memory" dt:renderFunction="dtRenderNonNullReboot" class="titulo-columnas" th:text="#{domain.reboot.on.failure}">Reboot on failure</th>
 															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
@@ -336,14 +337,24 @@
 			return row.memory;
 	}
 	
+	var dtRenderNonNullReboot = function(data, type, row){	
+		if(row.autorecover == null || row.autorecover == false ){
+			return '<td class="text-center" ><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>';                                
+	    } else {
+	    	return '<td class="text-center" ><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i></td>';
+	    }
+	}       
+
+	
 	var dtRenderOptions = function (data, type, row) {
 		var html= '<div class="grupo-iconos text-center">';
-		if(row.state == 'STOP') {
-			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="getDomainStartFragment(\'' + row.domain + '\')"><i class="la la-play-circle font-hg"></i></span>';
-		}else
+		if(row.state == 'START') {
 			html +='<span th:title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.stop+'" onclick="getDomainStopFragment(\'' + row.domain + '\')"><i class="la la-stop font-hg"></i></span>';
+		}else
+			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="getDomainStartFragment(\'' + row.domain + '\')"><i class="la la-play-circle font-hg"></i></span>';
 		if(row.state == 'START' && active == true)
 			html+= '<a  href="/controlpanel/flows/show/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>'
+		html+= '<a  href="/controlpanel/flows/update/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>'
 		html+= '<span data-id="' + row.id + '" onclick="deleteFlowDomainConfirmation(\''+row.domain+'\');" class="icon-microservice-trash btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'																											
 		html+= '</div>';
 		return html;

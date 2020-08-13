@@ -14,6 +14,9 @@
  */
 package com.minsait.onesait.platform.controlpanel.security;
 
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN;
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN_PARAMS;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -47,6 +50,7 @@ import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginMana
 import com.minsait.onesait.platform.controlpanel.rest.management.login.model.RequestLogin;
 import com.minsait.onesait.platform.controlpanel.security.twofactorauth.TwoFactorAuthService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import jline.internal.Log;
@@ -56,11 +60,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Securityhandler implements AuthenticationSuccessHandler {
 
-	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
-	private static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
 	private static final String URI_CONTROLPANEL = "/controlpanel";
 	private static final String URI_MAIN = "/main";
 	private static final String URI_VERIFY = "/verify";
+	private static final String URI_TENANT_PROMOTE = "/promote";
 
 	@Autowired
 	private LoginManagementController controller;
@@ -78,22 +81,28 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 	@Autowired
 	private IntegrationResourcesService integrationResourcesService;
+	@Autowired
+	private MultitenancyService multitenancyService;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException {
 
 		final HttpSession session = request.getSession();
+		multitenancyService.resetFailedAttemp(authentication.getName());
 		if (session != null) {
 			loadMenuAndUrlsToSession(request);
 			generateTokenOauth2ForControlPanel(request, authentication);
 			if (authentication.getAuthorities().toArray()[0].toString()
 					.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
-				twoFactorAuthService.newVerificationRequest(authentication.getPrincipal().toString());
+				twoFactorAuthService.newVerificationRequest(authentication.getName());
 				response.sendRedirect(request.getContextPath() + URI_VERIFY);
+			} else if (authentication.getAuthorities().toArray()[0].toString()
+					.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
+				response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
 			}
 			final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
-			if (redirectUrl != null) {
+			if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
 				// we do not forget to clean this attribute from session
 				session.removeAttribute(BLOCK_PRIOR_LOGIN);
 				// then we redirect
@@ -118,14 +127,13 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			oauthRequest.setUsername(username);
 			try {
 				request.getSession().setAttribute("oauthToken",
-						(controller.postLoginOauth2(oauthRequest).getBody().getValue()));
+						controller.postLoginOauth2(oauthRequest).getBody().getValue());
 			} catch (final Exception e) {
 
 				Log.error(e.getMessage());
 			}
 		} else if (authentication != null && authentication.isAuthenticated()) {
-			request.getSession().setAttribute("oauthToken",
-					(controller.postLoginOauthNopass(authentication).getValue()));
+			request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
 		}
 	}
 
@@ -134,8 +142,9 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 		// Remove PrettyPrinted
 		final String menu = utils.validateAndReturnJson(jsonMenu);
 		utils.setSessionAttribute(request, "menu", menu);
-		if (request.getSession().getAttribute("apis") == null)
+		if (request.getSession().getAttribute("apis") == null) {
 			utils.setSessionAttribute(request, "apis", integrationResourcesService.getSwaggerUrls());
+		}
 	}
 
 	@Bean
@@ -163,7 +172,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			@Override
 			protected boolean shouldNotFilter(HttpServletRequest request) {
 				final String path = request.getServletPath();
-				return path.startsWith(URI_VERIFY) || path.startsWith("/login");
+				return path.startsWith(URI_VERIFY) || path.startsWith("/login") || path.startsWith("/oauth");
 
 			}
 		});
@@ -174,17 +183,57 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 		return filter;
 	}
 
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.multitenancy.enabled", havingValue = "true")
+	public FilterRegistrationBean preverifiedTenantUsersFilter() {
+		final FilterRegistrationBean filter = new FilterRegistrationBean();
+		filter.setFilter(new OncePerRequestFilter() {
+
+			@Override
+			protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+					FilterChain filterChain) throws ServletException, IOException {
+				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+				if (auth != null && auth.getAuthorities().toArray()[0].toString()
+						.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
+					log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
+					response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
+				} else {
+					filterChain.doFilter(request, response);
+				}
+			}
+
+			@Override
+			protected boolean shouldNotFilter(HttpServletRequest request) {
+				final String path = request.getServletPath();
+				return path.startsWith(URI_TENANT_PROMOTE) || path.startsWith("/login") || path.startsWith("/oauth");
+
+			}
+		});
+
+		filter.addUrlPatterns("/*");
+		filter.setName("preverifiedTenantUsersFilter");
+		filter.setOrder(Ordered.LOWEST_PRECEDENCE);
+		return filter;
+	}
+
 	// added for oauth flows
 	@SuppressWarnings("unchecked")
 	private String getEncodedParametersFromPreviousRequest(HttpSession session) {
 		try {
+			log.debug("Retrieving parameters from request to session");
 			final Map<String, String[]> params = (Map<String, String[]>) session.getAttribute(BLOCK_PRIOR_LOGIN_PARAMS);
-			if (params.isEmpty())
+			if (params.isEmpty()) {
+				log.debug("No params retrieved from request to session");
 				return "";
-			return "?" + URLEncodedUtils.format(params.entrySet().stream()
+			}
+
+			final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 					.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
 					StandardCharsets.UTF_8);
+			log.debug("Retrieved parameters from request to session: {}", serializedParams);
+			return serializedParams;
 		} catch (final Exception e) {
+			log.debug("Could not retrieve params from session");
 			return "";
 		}
 	}

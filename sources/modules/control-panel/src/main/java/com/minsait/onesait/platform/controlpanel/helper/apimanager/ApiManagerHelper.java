@@ -15,19 +15,15 @@
 package com.minsait.onesait.platform.controlpanel.helper.apimanager;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
@@ -83,8 +79,6 @@ public class ApiManagerHelper {
 	private static final String ENDPOINT_BASE_STR = "endpointBase";
 	private static final String OPERATIONS_STR = "operations";
 	private static final String CLIENTS_STR = "clients";
-	@Value("${gravitee.enable}")
-	private boolean graviteeOn;
 
 	// To populate the List Api Form
 	public void populateApiManagerListForm(Model uiModel) {
@@ -96,7 +90,6 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(USERS_STR, users);
 		uiModel.addAttribute("states", Api.ApiStates.values());
 		uiModel.addAttribute("auths", userApiRepository.findByUser(user));
-		uiModel.addAttribute("graviteeOn", graviteeOn);
 	}
 
 	// To populate the Create Api Form
@@ -104,9 +97,9 @@ public class ApiManagerHelper {
 		List<OntologyDTO> ontologies;
 
 		ontologies = ontologyService.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
-		
+
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
-		uiModel.addAttribute(API_ENDPOINT_STR,"");
+		uiModel.addAttribute(API_ENDPOINT_STR, "");
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 
@@ -114,7 +107,6 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(OPERATIONS_STR, new ArrayList<String>());
 		uiModel.addAttribute("ontologies", ontologies);
 		uiModel.addAttribute("api", new Api());
-		uiModel.addAttribute("graviteeOn", graviteeOn);
 	}
 
 	// To populate de Api Create Form
@@ -129,14 +121,9 @@ public class ApiManagerHelper {
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
-		
-		if (api.getGraviteeId()==null) {
-			uiModel.addAttribute(API_ENDPOINT_STR, 
-					resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
-		} else {
-			uiModel.addAttribute(API_ENDPOINT_STR, 
-					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/").concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
-		}
+
+		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
+				.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
 				ServiceUrl.SWAGGERJSON));
@@ -174,14 +161,9 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(OPERATIONS_STR, operations);
-		
-		if (api.getGraviteeId()==null) {
-			uiModel.addAttribute(API_ENDPOINT_STR, 
-					resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
-		} else {
-			uiModel.addAttribute(API_ENDPOINT_STR, 
-					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/").concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
-		}
+
+		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
+				.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 
 		uiModel.addAttribute("api", api);
 		if (apiManagerService.postProcess(api))

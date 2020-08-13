@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.digitaltwin.device;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ import org.springframework.ui.Model;
 
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
@@ -37,6 +38,9 @@ import com.minsait.onesait.platform.config.services.exceptions.DigitalTwinServic
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDigitalTwinDeviceToken;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterDigitalTwinDeviceTokenRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,6 +59,9 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Autowired
 	private OPResourceService resourceService;
+
+	@Autowired
+	private MasterDigitalTwinDeviceTokenRepository masterTokenRepository;
 
 	@Override
 	public List<String> getAllIdentifications() {
@@ -187,7 +194,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 	@Override
 	public List<String> getDigitalTwinDevicesIdsByUser(String userId) {
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return digitalTwinDeviceRepo.findAllIds();
 		} else {
 			return digitalTwinDeviceRepo.findIdsByUser(userService.getUser(userId));
@@ -198,7 +205,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 	@Override
 	public List<String> getDigitalTwinDevicesIdsByUserAndTypeId(String userId, String typeId) {
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return digitalTwinDeviceRepo.findIdsByTypeId(digitalTwinTypeRepo.findByIdentification(typeId));
 		} else {
 			return digitalTwinDeviceRepo.findIdsByUserAndTypeId(user, digitalTwinTypeRepo.findByIdentification(typeId));
@@ -223,7 +230,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 	@Override
 	public List<DigitalTwinDevice> getAllByUserId(String userId) {
 		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (userService.isUserAdministrator(user)) {
 			return digitalTwinDeviceRepo.findAll();
 		} else {
 			return digitalTwinDeviceRepo.findByUser(user);
@@ -235,7 +242,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 	public boolean hasUserEditAccess(String id, String userId) {
 		final User user = userService.getUser(userId);
 		final OPResource resource = resourceService.getResourceById(id);
-		if (resource.getUser().equals(user) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (resource.getUser().equals(user) || userService.isUserAdministrator(user))
 			return true;
 		else
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
@@ -245,10 +252,26 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 	public boolean hasUserAccess(String id, String userId) {
 		final User user = userService.getUser(userId);
 		final OPResource resource = resourceService.getResourceById(id);
-		if (resource.getUser().equals(user) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (resource.getUser().equals(user) || userService.isUserAdministrator(user))
 			return true;
 		else
 			return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
+	}
+
+	@Override
+	public DigitalTwinDevice getDigitalTwinDevicebyName(String apiKey, String name) {
+		final Optional<MasterDigitalTwinDeviceToken> token = Optional
+				.ofNullable(masterTokenRepository.findByTokenName(apiKey));
+		token.ifPresent(t -> {
+			MultitenancyContextHolder.setTenantName(t.getTenant());
+			MultitenancyContextHolder.setVerticalSchema(t.getVerticalSchema());
+		});
+		return digitalTwinDeviceRepo.findByIdentification(name);
+	}
+
+	@Override
+	public DigitalTwinDevice save(DigitalTwinDevice digitalTwinDevice) {
+		return digitalTwinDeviceRepo.save(digitalTwinDevice);
 	}
 
 }

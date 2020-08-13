@@ -15,17 +15,34 @@
 /*******************************************************************************
  * © Indra Sistemas, S.A.
  * 2013 - 2018  SPAIN
- * 
+ *
  * All rights reserved
  ******************************************************************************/
 package com.minsait.onesait.platform.commons.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(Include.NON_NULL)
+@Getter
+@Setter
 public class ComplexWriteResult {
 
 	private ComplexWriteResultType type;
 	private List<? extends DBResult> data;
+	private int totalWritten;
+	private List<Object> failedData;
 
 	public ComplexWriteResultType getType() {
 		return type;

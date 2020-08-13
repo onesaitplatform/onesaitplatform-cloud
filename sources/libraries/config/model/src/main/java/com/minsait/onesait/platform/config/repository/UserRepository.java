@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import com.minsait.onesait.platform.config.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -80,21 +81,21 @@ public interface UserRepository extends JpaRepository<User, String> {
 	@Transactional
 	void deleteByUserId(String userId);
 
-	@Query("SELECT o FROM User AS o WHERE o.role !='ADMINISTRATOR'")
+	@Query("SELECT o FROM User AS o WHERE o.role !='ROLE_ADMINISTRATOR'")
 	List<User> findUsersNoAdmin();
 
 	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE %:userId% OR o.fullName LIKE %:fullName% OR o.email LIKE %:email% OR o.role.name =:role)")
 	List<User> findByUserIdOrFullNameOrEmailOrRoleType(@Param("userId") String userId,
 			@Param("fullName") String fullName, @Param("email") String email, @Param("role") String role);
 
-	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE %:userId% OR o.fullName LIKE %:fullName% OR o.email LIKE %:email% OR o.role.name =:role) AND (o.active=:active)")
-	List<User> findByUserIdOrFullNameOrEmailOrRoleTypeAndActive(@Param("userId") String userId,
+	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE %:userId% OR o.fullName LIKE %:fullName% OR o.email LIKE %:email% OR o.role.name =:role OR o.active=:active)")
+	List<User> findByUserIdOrFullNameOrEmailOrRoleTypeOrActive(@Param("userId") String userId,
 			@Param("fullName") String fullName, @Param("email") String email, @Param("role") String role,
 			@Param("active") boolean active);
 
-	@Query("SELECT o FROM User AS o WHERE (o.userId != :userId AND o.role.id != :rolId) ORDER BY o.userId)")
+	@Query("SELECT o FROM User AS o WHERE (o.userId != :userId AND o.role.id != :rolId) ORDER BY o.userId")
 	List<User> findUserByIdentificationAndNoRol(@Param("userId") String userId, @Param("rolId") String rolId);
 
-	@Query("SELECT o FROM User AS o WHERE (o.userId != :userId AND o.role.id = :rolId) ORDER BY o.userId)")
+	@Query("SELECT o FROM User AS o WHERE (o.userId != :userId AND o.role.id = :rolId) ORDER BY o.userId")
 	List<User> findUserByIdentificationAndRol(@Param("userId") String userId, @Param("rolId") String rolId);
 }

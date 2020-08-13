@@ -22,16 +22,19 @@
 		<title th:text="#{name.app}"/>
 
 		<!-- STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
+		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
 		
 		<!-- PLUGINS -->
 		<!-- JSON EDITOR -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		
+		<!-- JQUERY, only for embedded mode with no header -->
+		<script sec:authorize="!isAuthenticated()" th:src="@{/static/vendor/jquery/jquery.min.js}"/>
 		
 	</head>	
 	
@@ -42,25 +45,22 @@
 	<div class="page-wrapper">
 	
 		<!-- BEGIN HEADER INCLUDE -->
-		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top" style="display:none"></div>
+		<div sec:authorize="isAuthenticated()" th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top" style="display:none"></div>
 		<!-- END HEADER --> 
 		
 		<!-- HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"> </div>
 			
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
-		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper" style="display:none;padding-left:0px"></div>
+		<div sec:authorize="isAuthenticated()" th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper" style="display:none;padding-left:0px"></div>
 		<!-- END SIDEBAR -->
 			
 		<!-- BEGIN CONTENT -->
-		<div class="page-content-wrapper">
+		<div class="page-content-wrapper" style="background-color:rgb(249, 249, 251)">
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
 				<span id="dummyHiddenName" th:value="notebookname"></span>
-                <div class="alert alert-success display-hide">
-					<span th:text="${globalMessage}"></span>
-				</div>		
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20" style="display:none">
@@ -79,10 +79,21 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">
+				<div class="row mainrow">
 					<div id="angularAPP"></div>
 					<script>
 						var urlChanged=false;
+						var bearer = null;
+						if (window.location.href.split("?").length>1){
+							if(window.location.href.split("?")[1].split("=").length>1 ){
+								bearer = decodeURI(window.location.href.split("?")[1].split("=")[1])
+							}
+						}
+						if(bearer!=null){
+							const date = new Date()
+							date.setMinutes(date.getMinutes() + 1);
+							document.cookie = "platformbearer=" + bearer + '; expires=' + date.toUTCString();
+						}
 						$(document).ready(function(){
 							$.get("/controlpanel/static/notebooks/startapp.html").done(function(data){
 								var readyhash = '/controlpanel/notebooks/app/' + location.hash
@@ -90,6 +101,9 @@
 								var contentAndHook = data.replace("html ","div ");
 								$("#angularAPP").html(contentAndHook);
 								$(".navbar-inverse").parent().remove();
+								jQuery.fn.size = function() {//compatibility with controlpanel jquery version and menu
+								    return this.length;
+								};
 								var observer = new MutationObserver(fnHandler),
 										elTarget = document.querySelector("#angularAPP"),
 										objConfig = {
@@ -107,6 +121,8 @@
 								
 								function fnHandler () {
 									$(".dropdown-toggle:not(#close-session)").dropdown();
+
+									$(".dropdown.navbar-right").dropdown();
 
 									$(".dropdown.navbar-right").on("click",function(){
 										$(this).addClass("open");
@@ -171,28 +187,33 @@
 									/*Notebook editor view*/
 									if(location.hash.indexOf("#/notebook")!==-1){
 										/*iFrame view*/
-										if(location.hash.substring(location.hash.length-8)==="asIframe"){
+										if(location.hash.substring(location.hash.length-8)==="asIframe" || bearer!=null){
 											$(".page-content").css("cssText","margin: 0px !important;padding-top:0px !important");
 											$("body").css("background-color","transparent");
 											$(".notebookContent").css("padding-top","0px");
 											$(".row").css("margin","0px");
+											$(".mainrow").css("margin-top","-55px");
 											$("#main").css("margin-top", "50px").css("height","initial");
+											$(".noteAction.headroom--top").css("top","10px","!important");
+											$(".noteAction.headroom--pinned").css("top","10px","!important");
 										}
 										/*Notebook view*/
 										else{
-											notebookId = location.hash.substring(location.hash.indexOf("#/notebook/")+11).split(/[\s,?]+/)[0]
 											$(".page-header,footer,.page-sidebar-wrapper,.page-bar").css("display","block");
-											$("body").css("background-color","#212529");
+											$("body").css("color","#000");
 											$(".noteAction").css("width", "calc(100% - 70px)","important");	
 											$(".noteAction").css("margin-left", "60px","important");
 											$(".row").css("margin","initial");
-											$("#main").css("margin-top", "initial").css("height","100%").css("width","100%");
-											
+											$("#main").css("margin-top", "initial").css("height","100%").css("width","100%");	
+										}
+										
+										if(location.hash.substring(location.hash.length-8)!=="asIframe"){
+											notebookId = location.hash.substring(location.hash.indexOf("#/notebook/")+11).split(/[\s,?]+/)[0]
 											if(loadname){
 												loadname = false;
 												$.get(
 													{
-														url:"../nameByIdZep/"+notebookId,
+														url:"../app/nameByIdZep/"+notebookId,
 														dataType:"text"
 												}).done(function(data){
 													loadnameresponse = '<b class="form-control-static2 ellipsis">' + data + '</b>';		
@@ -214,7 +235,6 @@
 									}
 									/*No notebook view, configurations, interpreters,...*/
 									else{
-										$("body").css("background-color","#212529");
 										$(".page-header,footer,.page-sidebar-wrapper,.page-bar").css("display","block");
 										$("#main").css("width","calc(100% - 70px)","important").css("height","initial");;
 									}
@@ -226,7 +246,10 @@
 					</script>
 					<style>
 						.noteAction.headroom--top{
-							top: 100px !important
+							top: 100px
+						}
+						.noteAction.headroom--pinned{
+							top: 75px
 						}
 						.noteAction{
 							z-index: 1 !important
@@ -242,20 +265,20 @@
 	<!-- END MAIN PAGE WRAPPER -->
 	
 	<!-- FOOTER INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer" style="display:none"> </footer>
+	<footer sec:authorize="isAuthenticated()" th:include="fragments/footer::#footerFragment" class="page-footer" style="display:none"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/js/app.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/js/layout.js}"/>
 
 	<!-- PLUGINS -->
 	
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/json/jsoneditor.js}"/>
 	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
 		

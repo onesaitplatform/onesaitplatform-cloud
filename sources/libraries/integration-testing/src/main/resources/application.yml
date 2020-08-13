@@ -1,0 +1,17 @@
+apimanager: https://development.onesaitplatform.com/api-manager
+oauth-server: https://development.onesaitplatform.com/oauth-server
+controlpanel: https://development.onesaitplatform.com/controlpanel
+microservice: https://development.onesaitplatform.com/restaurants
+
+client-id: GovConsole
+client-secret: onesaitplatform
+username: developer
+password: Changed2019!
+logging:
+   level:
+      com.minsait: INFO
+      org.springframework: INFO
+      org.eclipse.jetty: ERROR
+      
+      
+   

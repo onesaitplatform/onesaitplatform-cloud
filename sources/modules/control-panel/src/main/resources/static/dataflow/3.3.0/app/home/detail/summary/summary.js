@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('SummaryController', function (
+  .controller('SummaryController', ["$scope", "$rootScope", "$modal", "$http", "pipelineConstant", "$filter", "authService", "$timeout", function (
     $scope, $rootScope, $modal, $http, pipelineConstant, $filter, authService, $timeout
   ) {
     var chartList = [
@@ -494,9 +494,9 @@ angular
       updateSummaryData();
     }
 
-  })
+  }])
 
-  .controller('SummarySettingsModalInstanceController', function ($scope, $modalInstance, availableCharts, selectedCharts) {
+  .controller('SummarySettingsModalInstanceController', ["$scope", "$modalInstance", "availableCharts", "selectedCharts", function ($scope, $modalInstance, availableCharts, selectedCharts) {
     angular.extend($scope, {
       showLoading: false,
       common: {
@@ -516,5 +516,5 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  });
+  }]);
 

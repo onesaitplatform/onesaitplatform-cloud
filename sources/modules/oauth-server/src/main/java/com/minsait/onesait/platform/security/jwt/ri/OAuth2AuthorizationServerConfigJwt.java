@@ -130,6 +130,10 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 				headers.setAll(responseEntity.getHeaders().toSingleValueMap());
 
 				HttpStatus responseCode = responseEntity.getStatusCode();
+				if (body.getMessage() == null) {
+					return new ResponseEntity<>(body, headers, responseCode);
+				}
+
 				if (body.getMessage().contains(PSW_INCORRECT))
 					responseCode = HttpStatus.BAD_REQUEST;
 				else if (body.getMessage().contains(USER_NOT_FOUND))
@@ -161,7 +165,6 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 						throw OAuth2Exception.create(OAuth2Exception.ACCESS_DENIED, "User is not in clientId/Realm");
 					}
 				}
-
 			}
 
 			@Override

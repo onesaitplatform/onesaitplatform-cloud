@@ -51,8 +51,7 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 	private static final String ITEMS_STR = "items.";
 
 	@Override
-	public void validate(OperationModel operationModel)
-			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+	public void validate(OperationModel operationModel) throws IOException, GenericOPException {
 		final String ontologyName = operationModel.getOntologyName();
 		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
 		final JsonNode dataNode = mapper.readTree(operationModel.getBody());
@@ -60,7 +59,7 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 			((ArrayNode) dataNode).elements().forEachRemaining(i -> {
 				try {
 					validateReferences(ontology, i.toString(), true);
-				} catch (DBPersistenceException | OntologyDataUnauthorizedException | GenericOPException e) {
+				} catch (GenericOPException e) {
 					log.error("Cannot validate references ", e);
 				}
 			});
@@ -69,8 +68,7 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 
 	}
 
-	void validateReferences(Ontology ontology, String instance, boolean validateInstance)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+	void validateReferences(Ontology ontology, String instance, boolean validateInstance) throws GenericOPException {
 		try {
 			final JsonNode inst = mapper.readTree(instance);
 			final JsonNode schema = mapper.readTree(ontology.getJsonSchema());

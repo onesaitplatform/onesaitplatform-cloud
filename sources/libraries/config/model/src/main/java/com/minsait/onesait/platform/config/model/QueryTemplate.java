@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
@@ -44,21 +45,25 @@ public class QueryTemplate extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	@NotNull
+	@Column(name = "NAME")
 	private String name;
 
 	@Getter
 	@Setter
+	@Column(name = "DESCRIPTION")
 	private String description;
 
 	@Getter
 	@Setter
 	@Lob
+	@Column(name = "QUERY_SELECTOR")
 	@NotNull
 	private String querySelector;
 
 	@Getter
 	@Setter
 	@Lob
+	@Column(name = "QUERY_GENERATOR")
 	@NotNull
 	private String queryGenerator;
 
@@ -71,6 +76,7 @@ public class QueryTemplate extends AuditableEntityWithUUID {
 
 	@Getter
 	@Setter
+	@Column(name = "TYPE")
 	@NotNull
 	private QueryType type;
 

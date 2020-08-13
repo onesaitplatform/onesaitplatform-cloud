@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.ModelExecution;
+import com.minsait.onesait.platform.config.services.model.ModelExecutionService;
 import com.minsait.onesait.platform.config.services.model.ModelService;
-import com.minsait.onesait.platform.config.services.model.execution.ModelExecutionService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -59,7 +59,7 @@ public class ExecutionModelController {
 	private String notebookUrl;
 
 	private static final String REDIRECT_MODELS_LIST = "redirect:/models/list";
-	private static final String ID_EXECUTION_STR = "?idExecution=";
+	private static final String ID_EXECUTION_STR = "?id_ejec=";
 	private static final String NOTEBOOK_STR = "#/notebook/";
 	private static final String AS_IFRAME_STR = "?asIframe";
 	private static final String PARAGRAPH_STR = "/paragraph/";
@@ -68,7 +68,7 @@ public class ExecutionModelController {
 	@PostConstruct
 	public void init() {
 		notebookUrl = resourcesService.getUrl(Module.NOTEBOOK, ServiceUrl.URL);
-		dashboardUrl = resourcesService.getUrl(Module.DASHBOARDENGINE, ServiceUrl.EDIT);
+		dashboardUrl = resourcesService.getUrl(Module.DASHBOARDENGINE, ServiceUrl.ONLYVIEW);
 	}
 	
 	@GetMapping(value = "/list/{id}", produces = "text/html")
@@ -195,7 +195,7 @@ public class ExecutionModelController {
 				model.addAttribute("parameters2", parametersDTO2);
 				if (execution2.getModel().getDashboard() != null) {
 					String url2 = dashboardUrl + execution2.getModel().getDashboard().getId() + ID_EXECUTION_STR
-							+ execution1.getIdEject();
+							+ execution2.getIdEject();
 					model.addAttribute("url2", url2);
 				} else if (execution2.getModel().getOutputParagraphId() != null) {
 					String url2 = notebookUrl + NOTEBOOK_STR + execution2.getModel().getNotebook().getIdzep()

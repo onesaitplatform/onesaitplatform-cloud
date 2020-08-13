@@ -1,3 +1,7 @@
+master:
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+     
 spring:
   boot.admin: #Spring Boot Admin Config    
     url: http://monitoringuiservice:18100/monitoring  

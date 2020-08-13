@@ -16,9 +16,13 @@ package com.minsait.onesait.platform.config.services.user;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -35,6 +39,8 @@ import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,6 +64,11 @@ public class UserServiceImpl implements UserService {
 	private UserTokenService userTokenService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
+	@Autowired
+	private MultitenancyService multitenancyService;
+
+	@Value("${onesaitplatform.multitenancy.enabled:false}")
+	private boolean isMultitenancyEnabled;
 
 	@Override
 	public boolean isUserAdministrator(User user) {
@@ -149,28 +160,72 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public List<UserAmplified> getAllUsersList() {
+		final List<UserAmplified> users = userRepository.findAll().stream().map(UserAmplified::new)
+				.collect(Collectors.toList());
+		if (isMultitenancyEnabled) {
+			addTenantInfo(users, getMasterUsersForCurrentVertical());
+
+		}
+		return users;
+	}
+
+	@Override
 	public List<User> getAllUsers() {
 		return userRepository.findAll();
+
+	}
+
+	@Override
+	public List<UserAmplified> getAllActiveUsersList() {
+		final List<UserAmplified> users = userRepository.findAllActiveUsers().stream().map(UserAmplified::new)
+				.collect(Collectors.toList());
+
+		if (isMultitenancyEnabled) {
+			addTenantInfo(users, getActiveMasterUsersForCurrentVertical(true));
+		}
+
+		return users;
 	}
 
 	@Override
 	public List<User> getAllActiveUsers() {
 		return userRepository.findAllActiveUsers();
+
+	}
+
+	private void addTenantInfo(List<UserAmplified> users, final List<MasterUser> masterUsers) {
+
+		final Map<String, String> mapUsers = masterUsers.stream()
+				.collect(Collectors.toMap(MasterUser::getUserId, mu -> mu.getTenant().getName()));
+		users.forEach(u -> {
+			final String tenant = mapUsers.get(u.getUsername());
+			if (!StringUtils.isEmpty(tenant))
+				u.setTenant(tenant);
+		});
+
+	}
+
+	private List<MasterUser> getActiveMasterUsersForCurrentVertical(boolean active) {
+		return multitenancyService.getActiveUsersForCurrentVertical(active);
+	}
+
+	private List<MasterUser> getMasterUsersForCurrentVertical() {
+		return multitenancyService.getUsersForCurrentVertical();
 	}
 
 	@Override
-	public List<User> getAllUsersByCriteria(String userId, String fullName, String email, String roleType,
+	public List<UserAmplified> getAllUsersByCriteriaList(String userId, String fullName, String email, String roleType,
 			Boolean active) {
-		List<User> users;
 
-		if (active != null) {
-			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleTypeAndActive(userId, fullName, email, roleType,
-					active);
-		} else {
-			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleType(userId, fullName, email, roleType);
+		final List<UserAmplified> usersDTO = getAllUsersByCriteria(userId, fullName, email, roleType, active).stream()
+				.map(UserAmplified::new).collect(Collectors.toList());
+
+		if (active == null) {
+			active = true;
 		}
-
-		return users;
+		addTenantInfo(usersDTO, getActiveMasterUsersForCurrentVertical(active));
+		return usersDTO;
 
 	}
 
@@ -184,6 +239,8 @@ public class UserServiceImpl implements UserService {
 
 		if (!userExists(user)) {
 			log.debug("User no exist, creating...");
+			if (user.getRole().getName().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))
+				throw new UserServiceException("Cannot create user with role ROLE_PLATFORM_ADMINISTRATOR");
 			user.setRole(roleRepository.findByName(user.getRole().getName()));
 			userRepository.save(user);
 
@@ -203,6 +260,17 @@ public class UserServiceImpl implements UserService {
 	public void registerRoleDeveloper(User user) {
 
 		user.setRole(getRole(Role.Type.ROLE_DEVELOPER));
+		user.setActive(true);
+		log.debug("Creating user with Role Developer default");
+
+		createUser(user);
+
+	}
+
+	@Override
+	public void registerRoleAdministrator(User user) {
+
+		user.setRole(getRole(Role.Type.ROLE_ADMINISTRATOR));
 		user.setActive(true);
 		log.debug("Creating user with Role Developer default");
 
@@ -246,8 +314,14 @@ public class UserServiceImpl implements UserService {
 			final User userDb = userRepository.findByUserId(user.getUserId());
 			userDb.setEmail(user.getEmail());
 
-			if (user.getRole() != null)
-				userDb.setRole(roleRepository.findByName(user.getRole().getName()));
+			if (user.getRole() != null) {
+				final Role role = roleRepository.findByName(user.getRole().getName());
+				if (userDb.getRole().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())
+						&& role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))
+					throw new UserServiceException("Cannot change role to ROLE_PLATFORM_ADMINISTRATOR");
+				userDb.setRole(role);
+
+			}
 			updateUserProfile(user, userDb);
 			userRepository.save(userDb);
 
@@ -360,6 +434,34 @@ public class UserServiceImpl implements UserService {
 		final List<User> resultSet = userRepository.findByEmail(newMail);
 		return resultSet.isEmpty() || resultSet.get(0).getUserId().equals(userId);
 
+	}
+
+	@Override
+	public boolean deactivateUser(String userId) {
+		final User user = getUser(userId);
+		if (user.isActive()) {
+			user.setActive(false);
+			user.setDateDeleted(null);
+			userRepository.save(user);
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	@Override
+	public List<User> getAllUsersByCriteria(String userId, String fullName, String email, String roleType,
+			Boolean active) {
+		List<User> users;
+
+		if (active != null) {
+			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleTypeOrActive(userId, fullName, email, roleType,
+					active);
+		} else {
+			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleType(userId, fullName, email, roleType);
+		}
+		return users;
 	}
 
 }

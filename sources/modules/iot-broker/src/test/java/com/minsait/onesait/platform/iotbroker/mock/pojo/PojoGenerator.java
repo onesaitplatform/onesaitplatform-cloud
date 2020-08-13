@@ -17,8 +17,8 @@ package com.minsait.onesait.platform.iotbroker.mock.pojo;
 import java.util.UUID;
 
 import com.github.javafaker.Faker;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public class PojoGenerator {
 	public static Person generatePerson() {

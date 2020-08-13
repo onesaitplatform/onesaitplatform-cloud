@@ -14,19 +14,21 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.dashboard.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDTO {
 
 	private static final long serialVersionUID = 1L;
 
-	@Getter
-	@Setter
 	private String userId;
 
-	@Getter
-	@Setter
 	private String fullName;
 
 }

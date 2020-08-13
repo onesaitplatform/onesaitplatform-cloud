@@ -64,7 +64,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	public boolean hasUserPermissionWrite(String id, User user) {
-		return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+		return (userService.isUserAdministrator(user)
 				|| binaryFileRepository.findByUserAndIdWrite(user, id) != null);
 	}
 
@@ -74,7 +74,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 			return (binaryFileRepository.findById(id).isPublic());
 
 		} else {
-			return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+			return (userService.isUserAdministrator(user)
 					|| binaryFileRepository.findByUserAndId(user, id) != null);
 		}
 	}
@@ -107,7 +107,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	public List<BinaryFile> getAllFiles(User user) {
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (userService.isUserAdministrator(user))
 			return binaryFileRepository.findAll();
 		return binaryFileRepository.findByUser(user);
 	}
@@ -131,7 +131,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	public boolean isUserOwner(String fileId, User user) {
 		final BinaryFile file = binaryFileRepository.findById(fileId);
 		if (file.getUser().getUserId().equalsIgnoreCase(user.getUserId())
-				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+				|| userService.isUserAdministrator(user))
 			return true;
 		return false;
 
@@ -183,10 +183,13 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	public boolean canUserEditAccess(User user, String id) {
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (userService.isUserAdministrator(user))
 			return true;
 		final BinaryFile file = accessRepository.findById(id).getBinaryFile();
 		if (file != null) {
+			if (file.getUser().getUserId().equals(user.getUserId())){
+				return true;
+			}
 			if (accessRepository.findByUserAndWriteAccess(file, user) != null)
 				return true;
 		}

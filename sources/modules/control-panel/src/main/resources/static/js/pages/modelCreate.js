@@ -334,7 +334,10 @@ var ModelCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 
 			handleValidation();
-	
+
+			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+			
 			// PROTOTYPEs
 			// ARRAY PROTOTYPE FOR CHECK UNIQUE PROPERTIES.
 			Array.prototype.unique = function() {

@@ -33,11 +33,13 @@ public interface PipelineUserAccessRepository extends JpaRepository<PipelineUser
 
 	List<PipelineUserAccess> findAllByOrderById();
 
+	PipelineUserAccess findById(String Id);
+
 	@Query("SELECT o FROM PipelineUserAccess AS o WHERE o.pipeline=:id")
 	List<PipelineUserAccess> findByPipeline(@Param("id") Pipeline id);
 
 	@Query("SELECT o FROM PipelineUserAccess AS o WHERE o.pipeline=:id AND o.user=:user")
-	List<PipelineUserAccess> findByPipelineAndUser(@Param("id") Pipeline id, @Param("user") User user);
+	PipelineUserAccess findByPipelineAndUser(@Param("id") Pipeline id, @Param("user") User user);
 
 	@Query("SELECT o FROM PipelineUserAccess AS o WHERE o.pipeline=:id AND o.user=:user AND o.pipelineUserAccessType=:pipelineUserAccessType")
 	PipelineUserAccess findByPipelineAndUserAndAccess(@Param("id") Pipeline id, @Param("user") User user,

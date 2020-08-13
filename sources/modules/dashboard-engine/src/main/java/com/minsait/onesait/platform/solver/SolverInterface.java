@@ -18,13 +18,20 @@ import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.dto.socket.FilterStt;
-import com.minsait.onesait.platform.dto.socket.ProjectStt;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.dto.socket.querystt.FilterStt;
+import com.minsait.onesait.platform.dto.socket.querystt.OrderByStt;
+import com.minsait.onesait.platform.dto.socket.querystt.ParamStt;
+import com.minsait.onesait.platform.dto.socket.querystt.ProjectStt;
+import com.minsait.onesait.platform.exception.DashboardEngineException;
 
 public interface SolverInterface {
 
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
-			List<String> group, String executeAs, String ontology)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
+			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
+			String executeAs, String ontology)
+			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException;
+
+	public String buildQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
+			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
+			String executeAs, String ontology);
 }

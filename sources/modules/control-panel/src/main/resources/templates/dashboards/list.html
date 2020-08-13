@@ -121,7 +121,11 @@
 																<span class="input-group-addon">
 																	<i class="fa fa-tag font-grey-mint"></i>
 																</span>
-																<input id="type" th:placeholder="#{gen.type}" name="type" class="form-control" type="text" maxlength="45" value=""/>
+																<select class="form-control" id="type" name="type" >														 
+																	<option value="" text="" selected="selected"></option>
+																	<option value="DASHBOARD" th:text="#{dashboards.list.dashboard}"></option>
+																	<option value="SYNOPTIC" th:text="#{dashboards.list.synoptic}"></option>
+																</select>
 															</div>
 														</div>
 													</div>
@@ -136,7 +140,8 @@
 										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
 									</div>
 									<!-- DASHBOARD LIST -->
-									<div class="col-md-12">											
+									<div class="col-md-12">	
+																			
 										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->												
@@ -151,13 +156,14 @@
 															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>															
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" ><span > ID </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="dashboard : ${dashboards}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left " th:text="${dashboard.identification}"></td>
+															<td class="text-left" th:text="${dashboard.identification}"></td>															
 															<!-- USER -->
 															<td class="text-center " th:text="${dashboard.user.userId}"></td>
 															<!-- DESCRIPTION -->
@@ -175,14 +181,15 @@
 															<!-- UPDATE --> 
 			 												<td class="text-center" th:if="${dashboard.updatedAt!=null}"><span th:text="${#dates.format(dashboard.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.updatedAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${dashboard.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-center " th:text="${dashboard.id}"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
-																	<!-- VIEW -->																															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/view/${dashboard.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																																			
+																	<!-- VIEW -->																																																					
+																	<a  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="#{gen.view}" th:href="'/controlpanel/dashboards/view/'+@{${dashboard.id}}"><i class="la la-eye font-hg"></i></a>
 																	
-																	<!-- Full EDIT -->
-																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit} " th:data-original-title="#{gen.edit} + ' FullScreen'" th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/editfull/${dashboard.id}/|(form)} + '=' + '\');'"><i class="la la-book font-hg"></i></span>
+																	<!-- Full EDIT -->																	
+																	<a  sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-placement="bottom" th:title="#{gen.edit}" th:href="'/controlpanel/dashboards/editfull/'+@{${dashboard.id}(form)}+ '='"><i class="la la-book font-hg"></i></a>
 																	
 																	<!-- EDIT ACCESS-->
 																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.auth.title} " th:data-original-title="#{dashboards.auth.title} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/dashboardconf/${dashboard.id}/|} + '\');'"><i class="la la-cog font-hg"></i></span>
@@ -192,15 +199,14 @@
 																	
 																	<!-- URL -->
 																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="URL Dashboard" data-original-title="URL Dashboard" th:onclick="'javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i></span>
-																    
-																    <!-- EXPORT IMAGE -->
-																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="Export Image" data-original-title="Export Image" th:onclick="'javascript:showExportImageDialog(\''+${dashboard.id}+ '\');'"><i class="la la-file-image-o font-hg"></i></span>
-																    
-																    <!-- EXPORT PDF -->
-																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="Export PDF" data-original-title="Export PDF" th:onclick="'javascript:showExportPDFDialog(\''+${dashboard.id}+ '\');'"><i class="la la-file-pdf-o font-hg"></i></span>
-																
+				
 																    <!-- DOWNLOAD -->																   
-																    <a th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{dashboards.download}" target="_blank" th:href="'/controlpanel/dashboards/exportDashboard/' +  ${dashboard.id}"><i class="la la-download font-hg"></i></a>
+																    <a th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  target="_blank" th:href="'/controlpanel/dashboards/exportDashboard/' +  ${dashboard.id}"><i class="la la-download font-hg"></i></a>
+																    
+																	<!-- IMPORT -->
+																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.import}" data-original-title="Import" th:onclick="'javascript:showImportDashboardTableDialog(\'' + ${dashboard.identification} + '\');'"><i class="la la-upload font-hg"></i></span>
+																    
+																    
 																    <!-- EDIT DASHBOARD JSON-->
 																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.edit.model.json.tooltip} " th:data-original-title="#{dashboards.edit.model.json.tooltip} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>																	
 																
@@ -225,7 +231,8 @@
 														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
 														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
 														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="7" th:text="#{gen.options}"> Options</label>															
+														<label class="toggle-vis" data-column="7"  >ID</label>
+														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>															
 													</div>
 												</div>											
 											</div>
@@ -351,9 +358,12 @@
 	
 	var showDashboardURLDialog = function(url){
 		
+		var tenant =[[${tenant}]];
+		var vertical = [[${vertical}]];
 		
-		
-		
+		if(vertical != null){
+			url = url + '?vertical='+vertical+'&tenant='+tenant;
+		}
 		var editUrl = url.replace("/view/", "/editfull/");
 		var viewIframUrl = url.replace("/view/", "/viewiframe/");
 		var editIframUrl = url.replace("/view/", "/editfulliframe/");
@@ -415,328 +425,7 @@
 		});
 	};
 	
-var showExportImageDialog = function(id){
 
-	
-		var messageExportImage = [[#{dashboards.export.image}]];
-		var messageStandbyTime = [[#{dashboards.export.wait}]];
-		var messageheight= [[#{dashboards.export.height}]];
-		var messagewidth= [[#{dashboards.export.width}]];
-		var messagefullpage= [[#{dashboards.export.fullpage}]];
-		var messagepresetsize= [[#{dashboards.export.presetsize}]];
-		var messageparams= [[#{dashboards.export.params}]];
-		var globalMessage=[[#{dashboards.export.emptyfields}]];
-		
-		$.confirm({
-			icon: 'la la-file-image-o font-hg',
-			title: messageExportImage,
-			theme: 'light',
-			columnClass: 'medium',
-			content:`	
-				<div class="form-body container-fluid">
-				<div id="imagehaserror" class="alert alert-danger display-hide">
-				<span >${globalMessage}</span>
-			    </div>
-					<div class="row">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="imagewaittime" type="number" 
-									required="true" maxlength="100"
-									 class="form-control "  minlength="1" required value="20000" />
-						     </div>
-					    </div>
-				        </div>	
-				        <div class="col-md-5 col-sm-6 col-xs-12">
-						<div class="form-group">							
-						<div class="mt-checkbox-list"> 
-							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" >${messagefullpage}?</div>
-								<input  id="checkboxfullscreen" class="form-control no-remove"  name="checkboxfullscreen" type="checkbox"    />
-								<span></span>
-							</label>
-						</div>
-					    </div>
-				      </div>
-				        
-					 </div>
-					 <div class="row">
-					 <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagepresetsize}</label>
-							  <select id="imageselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthimage()"  >
-							   <option   value="A0 H" >A0 H</option>
-							   <option   value="A0 V" >A0 V</option> 
-							   <option   value="A1 H" >A1 H</option>
-							   <option   value="A1 V" >A1 V</option> 
-							   <option   value="A2 H" >A2 H</option>
-							   <option   value="A2 V" >A2 V</option>
-							   <option   value="A3 H" >A3 H</option>
-							   <option   value="A3 V" >A3 V</option>
-							   <option selected  value="A4 H" >A4 H</option>
-							   <option   value="A4 V" >A4 V</option>
-							   <option   value="A5 H" >A5 H</option>
-							   <option   value="A5 V" >A5 V</option>
-							   <option   value="A6 H" >A6 H</option>
-							   <option   value="A6 V" >A6 V</option>							   
-						      </select>
-					    </div>
-				        </div>		
-						<div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageheight}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="imageheight" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="794" />
-						     </div>
-					    </div>
-				        </div>	
-				        <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagewidth}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="imagewidth" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="1123" />
-						     </div>
-					    </div>
-				        </div>
-				        
-				        
-				        
-					 </div>
-					 <div class="row">
-						 <div class="col-md-12 col-sm-12 col-xs-12">
-							<div class="form-group">
-								<label>${messageparams}</label>														
-								<textarea id="imageparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
-							</div>							
-						</div>
-					</div> 
-				</div>
-				
-						`,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			closeIcon: true,		
-			buttons: {				
-				Send: {
-					text: "Ok",
-					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
-					action: function(){						
-						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);						
-						var imageparams = $('#imageparams').val();
-						var imagewidth = $('#imagewidth').val();
-						var imageheight = $('#imageheight').val();
-						var checkboxfullscreen = $('#checkboxfullscreen').prop('checked');
-						var imagewaittime = $('#imagewaittime').val();
-						var ident = id;
-						var csrf_value = $("meta[name='_csrf']").attr("content");
-						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
-							
-						var data ={};
-						if(typeof imageparams ==='undefined' || imageparams.trim().length===0){
-							data = {
-						    	waittime:imagewaittime,
-						    	height:imageheight,
-						    	width:imagewidth,
-						    	fullpage:checkboxfullscreen	,
-						    	token:token
-						    }
-						}else{
-							data = {
-							    	waittime:imagewaittime,
-							    	height:imageheight,
-							    	width:imagewidth,
-							    	fullpage:checkboxfullscreen,
-							    	params:imageparams,
-							    	token:token
-							    }
-						}
-						var ok = typeof imagewidth!=='undefined' && imagewidth!==null  && imagewidth.trim().length>0
-						&& typeof imageheight!=='undefined' && imageheight!==null  && imageheight.trim().length>0
-						&& typeof imagewaittime!=='undefined' && imagewaittime!==null  && imagewaittime.trim().length>0 ;	
-						if(ok){
-					    	var downloadUrl ='/controlpanel/dashboards/generateDashboardImage/'+id+'?'+ encodeQueryData(data);							    
-					    	var download = document.createElement('a');
-					    	download.href =   downloadUrl;					    	
-					    	download.click();							    	
-					    	return true;						
-						}else{
-							$('#imagehaserror').show();
-							return false;
-						}
-					}											
-				}
-			}
-		});
-	};
-	
-	function encodeQueryData(data) {
-		   const ret = [];
-		   for (let d in data)
-		     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
-		   return ret.join('&');
-		}
-	
-	
-	var showExportPDFDialog = function(id){
-		
-		var messageExportPDF = [[#{dashboards.export.pdf}]];
-		var messageStandbyTime = [[#{dashboards.export.wait}]];
-		var messageheight= [[#{dashboards.export.height}]];
-		var messagewidth= [[#{dashboards.export.width}]];		
-		var messagepresetsize= [[#{dashboards.export.presetsize}]];
-		var messageparams= [[#{dashboards.export.params}]];
-		var globalMessage=[[#{dashboards.export.emptyfields}]];
-		
-		$.confirm({
-			icon: 'la la-file-pdf-o font-hg',
-			title: messageExportPDF,
-			theme: 'light',
-			columnClass: 'medium',
-			content:`	
-				<div class="form-body container-fluid">	
-				<div id="imagehaserror" class="alert alert-danger display-hide">
-				<span >${globalMessage}</span>
-			    </div>
-					<div class="row">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="pdfwaittime" type="number" 
-									required="true" maxlength="100"
-									 class="form-control "  minlength="1" required value="20000" />
-						     </div>
-					    </div>
-				        </div>	
-				        
-					 </div>
-					 <div class="row">
-					 <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagepresetsize}</label>
-							  <select id="pdfselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthpdf()">
-							   <option   value="A0 H" >A0 H</option>
-							   <option   value="A0 V" >A0 V</option> 
-							   <option   value="A1 H" >A1 H</option>
-							   <option   value="A1 V" >A1 V</option> 
-							   <option   value="A2 H" >A2 H</option>
-							   <option   value="A2 V" >A2 V</option>
-							   <option   value="A3 H" >A3 H</option>
-							   <option   value="A3 V" >A3 V</option>
-							   <option selected  value="A4 H" >A4 H</option>
-							   <option   value="A4 V" >A4 V</option>
-							   <option   value="A5 H" >A5 H</option>
-							   <option   value="A5 V" >A5 V</option>
-							   <option   value="A6 H" >A6 H</option>
-							   <option   value="A6 V" >A6 V</option>							   
-						      </select>
-					    </div>
-				        </div>		
-						<div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageheight}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="pdfheight" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="794" />
-						     </div>
-					    </div>
-				        </div>	
-				        <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagewidth}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="pdfwidth" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="1123" />
-						     </div>
-					    </div>
-				        </div>
-				        
-				        
-				        
-					 </div>
-					 <div class="row">
-						 <div class="col-md-12 col-sm-12 col-xs-12">
-							<div class="form-group">
-								<label>${messageparams}</label>														
-								<textarea id="pdfparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
-							</div>							
-						</div>
-					</div> 
-				</div>
-						`,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			closeIcon: true,
-			buttons: {				
-				Ok: {
-					text: "Ok",
-					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
-					action: function(){ 						
-						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);;						
-						var pdfparams = $('#pdfparams').val();
-						var pdfwidth = $('#pdfwidth').val();
-						var pdfheight = $('#pdfheight').val();
-						var checkboxfullscreen = $('#checkboxfullscreen').val();
-						var pdfwaittime = $('#pdfwaittime').val();
-						var ident = id;
-						var csrf_value = $("meta[name='_csrf']").attr("content");
-						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
-						var ok = true;	
-						
-						var data ={};
-						if(typeof pdfparams ==='undefined' || pdfparams.trim().length===0){
-							data = {
-									waittime:pdfwaittime,
-							    	height:pdfheight,
-							    	width:pdfwidth,
-							    	fullpage:checkboxfullscreen,
-							    	token:token			    	
-						    }
-						}else{
-							data = {
-									waittime:pdfwaittime,
-							    	height:pdfheight,
-							    	width:pdfwidth,
-							    	fullpage:checkboxfullscreen,
-							    	token:token,
-							    	params:pdfparams
-							    }
-						}
-						var ok = typeof pdfwidth!=='undefined' && pdfwidth!==null  && pdfwidth.trim().length>0
-							&& typeof pdfheight!=='undefined' && pdfheight!==null  && pdfheight.trim().length>0
-							&& typeof pdfwaittime!=='undefined' && pdfwaittime!==null  && pdfwaittime.trim().length>0 ;	
-						if(ok){
-							var downloadUrl ='/controlpanel/dashboards/generatePDFImage/'+id+'?'+ encodeQueryData(data);							    
-					    	var download = document.createElement('a');
-					    	download.href = downloadUrl;					    	
-					    	download.click();							    	
-					    	return true;
-						} else{
-							$('#imagehaserror').show();
-							return false;
-						}
-						}
-					}											
-				
-			}
-		});
-	};
-	
-	
 	function updateheightwidthimage(){
 		var selected = $('#imageselectsize').val();
 		var dimensions = getDimensions(selected);
@@ -803,6 +492,7 @@ var showExportImageDialog = function(id){
 	}
 	
 	function navigateUrl(url){  window.location.href = url;	}
+	function navigateNewTab(url){ window.open(url, '_blank');  	}
 	
 	var  deleteDashboardConfirmation = function (id){
 	
@@ -910,7 +600,7 @@ var showExportImageDialog = function(id){
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([1,3],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1,3,7],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});	
 	
@@ -918,12 +608,14 @@ var showExportImageDialog = function(id){
 	
 	var showImportDashboardDialog = function(){
 		var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
+		var textOverwrite = [[#{dashboards.overwrite}]];
+		var textimportAuth = [[#{dashboards.importAuthorizations}]];
 		$.confirm({
 			icon: 'fas fa-chart-pie',
 			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' />",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
@@ -938,6 +630,7 @@ var showExportImageDialog = function(id){
 					text: "Ok",
 					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
+						
 						if($("#newImportDashboard").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImportDashboard").val()){
 							console.log("dashboard name or json file empty");
 							return;
@@ -945,7 +638,7 @@ var showExportImageDialog = function(id){
 						var dashboardName = $("#newImportDashboard").val().trim();
 						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
 						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName)){
-							importDashboard(dashboardName,$("#dataJSONImport").val(), dashboardExtension);
+							importDashboard(dashboardName,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));
 						}
 						else{
 							$("#patternAlert").removeClass("hidden");
@@ -957,6 +650,45 @@ var showExportImageDialog = function(id){
 		});
 	}
 
+	var showImportDashboardTableDialog = function(identifier){
+		
+		var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
+		var textOverwrite = [[#{dashboards.overwrite}]];
+		var textimportAuth = [[#{dashboards.importAuthorizations}]];
+		$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: [[#{dashboards.importdashboard}]],
+			theme: 'light',
+			columnClass: 'medium',
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+					action: function() {
+						if(identifier =="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || ! identifier){
+							console.log("json file empty");
+							return;
+						}
+						
+						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
+						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));						
+						
+					}									
+				}
+			}
+		});
+	}
+	
 	function navigateUrl(url,reload){ 
 		if(reload){
 			window.location.reload();
@@ -967,7 +699,7 @@ var showExportImageDialog = function(id){
 		}
 	}
 
-	function importDashboard(name,data,extension){
+	function importDashboard(name,data,extension,overwrite,importAuthcheck){
 		if($("#jsonInputData").val()==="" || $("#newImportDashboard").val()===""){
 			return;//Required params
 		}
@@ -975,7 +707,7 @@ var showExportImageDialog = function(id){
 		console.log(name);
 		console.log(extension);
 		
-		var url = "/controlpanel/dashboards/importDashboard";
+		var url = "/controlpanel/dashboards/importDashboard?overwrite="+overwrite+"&importAuthorizations="+importAuthcheck;
 			//Name inside notebook
 			try {
 				var jsonData = JSON.parse(data)

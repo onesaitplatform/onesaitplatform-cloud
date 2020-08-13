@@ -258,6 +258,9 @@ var AppCreateController = function() {
 		logControl ? console.log('|---> datepickers currentLanguage: '
 				+ currentLanguage) : '';
 
+		// INPUT MASK FOR Realm identification allow only letters, numbers and -_
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+				
 		// authorization tab control 
 		$(".nav-tabs a[href='#tab_2']").on("click", function(e) {
 		  if ($(this).hasClass("disabled")) {

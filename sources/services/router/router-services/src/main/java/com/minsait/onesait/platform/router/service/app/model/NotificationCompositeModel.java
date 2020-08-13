@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.router.service.app.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -39,6 +40,10 @@ public class NotificationCompositeModel implements Serializable {
 	@Getter
 	@Setter
 	private String url;
+	
+	@Getter
+	@Setter
+	private boolean retriedNotification;
 
 	@Getter
 	@Setter
@@ -50,4 +55,32 @@ public class NotificationCompositeModel implements Serializable {
 	@JsonIgnore
 	private String headerAuthValue;
 
+	@Getter
+	@Setter
+	private Date originalNotificationTimestamp;
+	
+	@Getter
+	@Setter
+	@JsonIgnore
+	private Boolean retryOnFaialureEnabled;
+	
+	@Getter
+	@Setter
+	@JsonIgnore
+	private Boolean discardAfterElapsedTimeEnabled;
+
+	@Getter
+	@Setter
+	@JsonIgnore
+	private Integer maxRetryElapsedTime;
+	
+	@Getter
+	@Setter
+	@JsonIgnore
+	private String domainIdentification;
+
+	@Getter
+	@Setter
+	@JsonIgnore
+	private String domainOwner;
 }

@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.config.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.minsait.onesait.platform.config.model.Report;
@@ -30,5 +32,8 @@ public interface ReportRepository extends JpaRepository<Report, String> {
 	List<Report> findByUserAndActiveTrueOrIsPublicTrueAndActiveTrue(User user);
 
 	Report findByIdentificationOrId(String identification, String id);
+
+	@Query("SELECT COUNT(r) FROM Report r JOIN r.resources rs WHERE rs.id= :resourceId")
+	int countByResourceId(@Param("resourceId") String resourceId);
 
 }

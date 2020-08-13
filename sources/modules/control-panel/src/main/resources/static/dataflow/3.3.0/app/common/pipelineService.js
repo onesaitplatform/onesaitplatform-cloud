@@ -17,7 +17,7 @@
  * Service for providing access to the Pipeline utility functions.
  */
 angular.module('dataCollectorApp.common')
-  .service('pipelineService', function(pipelineConstant, api, $q, $translate, $modal, $location, $route, _) {
+  .service('pipelineService', ["pipelineConstant", "api", "$q", "$translate", "$modal", "$location", "$route", "_", function(pipelineConstant, api, $q, $translate, $modal, $location, $route, _) {
 
     var self = this;
     var translations = {};
@@ -848,18 +848,26 @@ angular.module('dataCollectorApp.common')
      * @returns {string}
      */
     this.getStageIconURL = function(stage) {
+      // OnesaitPlatform needs pipelineId
+      var loc = $window.location;
+      var paramDataflow = "";
+      if(loc.pathname.indexOf("/pipeline/") != -1) {
+        var dataflowId = loc.pathname.split("/")[loc.pathname.split("/").length-1] == '' ? loc.pathname.split("/")[loc.pathname.split("/").length-2] : loc.pathname.split("/")[loc.pathname.split("/").length-1]; 
+        paramDataflow = '?pipelineId='+dataflowId;
+      } 
+      
       if (stage.icon) {
-        return api.apiBase + '/definitions/stages/' + stage.library + '/' + stage.name + '/icon';
+        return 'rest/' + api.apiVersion + '/definitions/stages/' + stage.library + '/' + stage.name + '/icon'+paramDataflow;
       } else {
         switch(stage.type) {
           case pipelineConstant.SOURCE_STAGE_TYPE:
-            return 'assets/stage/defaultSource.svg';
+            return 'assets/stage/defaultSource.svg'+paramDataflow;
           case pipelineConstant.PROCESSOR_STAGE_TYPE:
-            return 'assets/stage/defaultProcessor.svg';
+            return 'assets/stage/defaultProcessor.svg'+paramDataflow;
           case pipelineConstant.EXECUTOR_STAGE_TYPE:
-            return 'assets/stage/defaultTarget.svg'; // TODO: Need special icon for exeuctor target
+            return 'assets/stage/defaultTarget.svg'+paramDataflow; // TODO: Need special icon for exeuctor target
           case pipelineConstant.TARGET_STAGE_TYPE:
-            return 'assets/stage/defaultTarget.svg';
+            return 'assets/stage/defaultTarget.svg'+paramDataflow;
         }
       }
     };
@@ -1937,4 +1945,4 @@ angular.module('dataCollectorApp.common')
       return stageInstances;
     };
 
-  });
+  }]);

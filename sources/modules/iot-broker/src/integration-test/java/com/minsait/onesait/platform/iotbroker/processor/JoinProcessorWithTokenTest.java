@@ -37,12 +37,12 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPErrorCode;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthenticationException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 

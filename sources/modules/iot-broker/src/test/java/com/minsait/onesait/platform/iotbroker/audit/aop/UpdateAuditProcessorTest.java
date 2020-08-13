@@ -31,11 +31,11 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateByIdMessag
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.audit.bean.IotBrokerAuditEvent;
 import com.minsait.onesait.platform.iotbroker.audit.processor.UpdateAuditProcessor;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 @RunWith(MockitoJUnitRunner.class)
 @SpringBootTest

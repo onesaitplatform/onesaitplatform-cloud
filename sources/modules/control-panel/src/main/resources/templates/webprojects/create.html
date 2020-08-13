@@ -101,6 +101,12 @@
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
+							</div>							
+							<div class="alert alert-info alert-dismissable">
+								<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+								<i class="fa fa-info-circle"></i> <strong th:text="#{webproject.indexFile}">INDEX</strong>
+								<span th:text="#{webproject.indexFile.info}"> info.</span>
+								<!-- <a href="" class="alert-link"> Documentation: Create a Ontology </a> -->
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								<div class="tab-content">
@@ -182,10 +188,10 @@
 															<span class="sep"></span>
 															
 															<!-- CREATE -->
-															<button th:if="${webproject?.id} == null" id="createBtn" class="btn btn-circle btn-outline btn-primary" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+															<button th:if="${webproject?.id} == null" id="createBtn" class="btn btn-circle btn-outline btn-primary" type="submit" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 															
 															<!-- UPDATE -->
-															<button th:if="${webproject?.id} != null" id="updateBtn" class="btn btn-circle btn-outline btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+															<button th:if="${webproject?.id} != null" id="updateBtn" class="btn btn-circle btn-outline btn-primary" type="submit" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 															
 															
 														</div>

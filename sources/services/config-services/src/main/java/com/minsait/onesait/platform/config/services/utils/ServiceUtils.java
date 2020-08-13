@@ -84,8 +84,13 @@ public class ServiceUtils {
 		}
 	}
 
-
 	public static String getAuditCollectionName(String userId) {
-		return AUDIT_COLLECTION_NAME + userId;
+		if (userId.contains(".")) {
+			String replacedUser = userId.replace(".", "_");
+			return AUDIT_COLLECTION_NAME + replacedUser;
+		} else {
+			return AUDIT_COLLECTION_NAME + userId;
+		}
+
 	}
 }

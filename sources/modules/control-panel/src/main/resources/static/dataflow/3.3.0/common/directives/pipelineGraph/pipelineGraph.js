@@ -26,7 +26,7 @@ angular.module('pipelineGraphDirectives', [])
       templateUrl: 'common/directives/pipelineGraph/pipelineGraph.tpl.html'
     };
   })
-  .controller('PipelineGraphController', function($scope, $rootScope, $element, _, $filter, $location, $modal,
+  .controller('PipelineGraphController', ["$scope", "$rootScope", "$element", "_", "$filter", "$location", "$modal", "pipelineConstant", "$translate", "pipelineService", function($scope, $rootScope, $element, _, $filter, $location, $modal,
                                                   pipelineConstant, $translate, pipelineService){
 
     var showTransition = false;
@@ -1726,8 +1726,8 @@ angular.module('pipelineGraphDirectives', [])
       }
     }
 
-  })
-  .controller('DeleteOriginModalInstanceController', function ($scope, $modalInstance) {
+  }])
+  .controller('DeleteOriginModalInstanceController', ["$scope", "$modalInstance", function ($scope, $modalInstance) {
     angular.extend($scope, {
       yes: function() {
         $modalInstance.close();
@@ -1736,4 +1736,4 @@ angular.module('pipelineGraphDirectives', [])
         $modalInstance.dismiss('cancel');
       }
     });
-  });
+  }]);

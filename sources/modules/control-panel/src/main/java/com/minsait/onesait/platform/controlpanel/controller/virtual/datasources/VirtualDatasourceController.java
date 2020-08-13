@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.business.services.virtual.datasources.VirtualDatasourceService;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
@@ -68,28 +69,29 @@ public class VirtualDatasourceController {
 	private static final String REDIRECT_VIRT_DS_LIST = "redirect:/virtualdatasources/list";
 	private static final String REDIRECT_VIRT_DS_CREATE = "redirect:/virtualdatasources/create";
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
-	public String list(Model model) {
+	public String list(Model model, @RequestParam(required = false, name = "identification") String identification) {
 
-		model.addAttribute("datasources", virtualDatasourceService.getAllDatasources());
+		model.addAttribute("datasources", virtualDatasourceService.getAllByDatasourceNameAndUser(identification, utils.getUserId()));
 		return "virtualdatasources/list";
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String create(Model model) {
+		model.addAttribute("fieldDisabled", "disabled");
 		model.addAttribute(DATASOURCE_STR, new OntologyVirtualDatasource());
 		model.addAttribute("rdbs", VirtualDatasourceType.values());
 		return VIRTUAL_DATASOURCE_CREATE;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("/show/{id}")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
 		try {
-			final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceById(id);
+			final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId());
 			if (datasource != null) {
 				model.addAttribute(DATASOURCE_STR, datasource);
 				return "virtualdatasources/show";
@@ -103,17 +105,16 @@ public class VirtualDatasourceController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		try {
-			final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceById(id);
+			final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id, utils.getUserId());
 			if (datasource != null) {
-
+				model.addAttribute("fieldDisabled", "disabled");
 				model.addAttribute(DATASOURCE_STR, datasource);
 				model.addAttribute("rdbs", VirtualDatasourceType.values());
 				return VIRTUAL_DATASOURCE_CREATE;
-
 			} else {
 				return VIRTUAL_DATASOURCE_CREATE;
 			}
@@ -122,7 +123,7 @@ public class VirtualDatasourceController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/create")
 	@Transactional
 	public String createDatasource(Model model, @Valid OntologyVirtualDatasource datasource,
@@ -138,7 +139,7 @@ public class VirtualDatasourceController {
 			datasource.setUserId(user);
 			virtualDatasourceService.createDatasource(datasource);
 
-		} catch (final OntologyServiceException e) {
+		} catch (final OntologyServiceException | GenericOPException e) {
 			log.error("Cannot create virtual datasource because of:" + e.getMessage(), e);
 			utils.addRedirectException(e, redirect);
 			redirect.addFlashAttribute(DATASOURCE_STR, datasource);
@@ -147,7 +148,7 @@ public class VirtualDatasourceController {
 		return REDIRECT_VIRT_DS_LIST;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDatasource(Model model, @PathVariable("id") String id,
 			@Valid OntologyVirtualDatasource datasource, BindingResult bindingResult, RedirectAttributes redirect) {
@@ -159,8 +160,8 @@ public class VirtualDatasourceController {
 		}
 
 		try {
-			final User user = userService.getUser(utils.getUserId());
-			datasource.setUserId(user);
+			final OntologyVirtualDatasource datasourceOld = virtualDatasourceService.getDatasourceByIdAndUserId(id, utils.getUserId());	
+			datasource.setUserId(datasourceOld.getUserId());
 			this.virtualDatasourceService.updateOntology(datasource);
 		} catch (VirtualDatasourceServiceException e) {
 			log.error("Cannot update datasource", e);
@@ -171,11 +172,11 @@ public class VirtualDatasourceController {
 
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
-		final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceById(id);
+		final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id, utils.getUserId());
 		if (datasource != null) {
 			try {
 				virtualDatasourceService.deleteDatasource(datasource);
@@ -191,7 +192,7 @@ public class VirtualDatasourceController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		List<String> datasources = virtualDatasourceService.getAllIdentifications();
@@ -199,7 +200,7 @@ public class VirtualDatasourceController {
 		return datasources;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/checkConnection")
 	public @ResponseBody ResponseEntity<?> getTables(@RequestParam String datasource, @RequestParam String user,
 			@RequestParam String credentials, @RequestParam String sgdb, @RequestParam String url,
@@ -213,7 +214,7 @@ public class VirtualDatasourceController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/checkConnectionExtern")
 	public @ResponseBody ResponseEntity<?> checkConnectionExtern(@RequestParam String datasource) {
 		Boolean valid;
@@ -225,7 +226,7 @@ public class VirtualDatasourceController {
 		}
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/public")
 	public String changePublic(@RequestParam("datasource") String datasource) {
 		virtualDatasourceService.changePublic(datasource);

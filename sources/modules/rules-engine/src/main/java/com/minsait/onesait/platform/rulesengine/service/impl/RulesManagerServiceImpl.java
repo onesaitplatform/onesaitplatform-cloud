@@ -47,7 +47,7 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageRule(HazelcastRuleObject rule) {
-		log.debug("Manging changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
+		log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
 		final DroolsRule droolsRule = droolsRuleService.getRule(rule.getIdentification());
 		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()))
 			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification());

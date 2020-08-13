@@ -19,11 +19,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,54 +44,54 @@ public class FlowEngineController {
 	@Autowired
 	private FlowEngineNodeService flowEngineNodeService;
 
-	@RequestMapping(value = "/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(value = "/stop", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String stopFlowEngine() {
 		return nodeRedClientAdmin.stopFlowEngine();
 	}
 
-	@RequestMapping(value = "/domain/stop/{domainId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PutMapping(value = "/domain/stop/{domainId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody void stopFlowEngineDomain(@PathVariable(value = "domainId") String domainId) {
 		nodeRedClientAdmin.stopFlowEngineDomain(domainId);
 	}
 
-	@RequestMapping(value = "/domain/start", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(value = "/domain/start", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String startFlowEngineDomain(@RequestBody FlowEngineDomain domain) {
 		return nodeRedClientAdmin.startFlowEngineDomain(domain);
 	}
 
-	@RequestMapping(value = "/domain", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(value = "/domain", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String createFlowengineDomain(@RequestBody FlowEngineDomain domain) {
 		return nodeRedClientAdmin.createFlowengineDomain(domain);
 	}
 
-	@RequestMapping(value = "/domain/{domainId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@DeleteMapping(value = "/domain/{domainId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody void deleteFlowEngineDomain(@PathVariable(value = "domainId") String domainId) {
 		nodeRedClientAdmin.deleteFlowEngineDomain(domainId);
 	}
 
-	@RequestMapping(value = "/domain/{domainId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(value = "/domain/{domainId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody FlowEngineDomain getFlowEngineDomain(@PathVariable(value = "domainId") String domainId) {
 		return nodeRedClientAdmin.getFlowEngineDomain(domainId);
 	}
 
 	// Generic Flow Engine Requests
-	@RequestMapping(value = "/domain/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(value = "/domain/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody List<FlowEngineDomainStatus> getAllFlowEnginesDomains() {
 		return nodeRedClientAdmin.getAllFlowEnginesDomains();
 	}
 
-	@RequestMapping(value = "/domain/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(value = "/domain/status", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody List<FlowEngineDomainStatus> getFlowEngineDomainStatus(@RequestParam List<String> domainList) {
 		return nodeRedClientAdmin.getFlowEngineDomainStatus(domainList);
 	}
 
 	// Synchronization of the active/inactive domains with CDB
-	@RequestMapping(value = "/sync/reset", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PutMapping(value = "/sync/reset", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody void resetSynchronizedWithBDC() {
 		nodeRedClientAdmin.resetSynchronizedWithBDC();
 	}
 
-	@RequestMapping(value = "/sync", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(value = "/sync", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String synchronizeMF(@RequestBody List<FlowEngineDomainStatus> domainList) {
 		return nodeRedClientAdmin.synchronizeMF(domainList);
 	}
@@ -97,5 +99,10 @@ public class FlowEngineController {
 	@PostMapping(value = "/deploy", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<String> externalDeployment(@RequestBody String json) {
 		return flowEngineNodeService.deploymentNotification(json);
+	}
+	
+	@GetMapping(value = "/exportDomainFromFS/{domain}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public @ResponseBody String exportDomainFromFS(@PathVariable(value = "domain") String domain) {
+		return nodeRedClientAdmin.exportDomainFromFS(domain);
 	}
 }

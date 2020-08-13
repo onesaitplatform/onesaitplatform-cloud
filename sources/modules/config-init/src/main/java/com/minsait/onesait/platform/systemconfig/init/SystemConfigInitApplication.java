@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.systemconfig.init;
 
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -22,6 +24,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @SpringBootApplication
 @EnableJpaAuditing
 @ComponentScan("com.minsait.onesait.platform")
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SystemConfigInitApplication {
 
 	public static void main(String[] args) {

@@ -14,25 +14,25 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.report;
 
-import static com.minsait.onesait.platform.controlpanel.services.report.ReportInfoServiceImpl.JSON_DATA_SOURCE_ATT_NAME;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,49 +42,76 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.commons.ssl.SSLUtil;
+import com.minsait.onesait.platform.config.dto.report.ReportParameter;
+import com.minsait.onesait.platform.config.dto.report.ReportType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.controlpanel.controller.reports.model.ParameterMapConverter;
-import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportInfoDto;
-import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportParameter;
-import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportParameterType;
-import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportType;
 import com.minsait.onesait.platform.controlpanel.rest.report.model.ReportDTO;
-import com.minsait.onesait.platform.controlpanel.services.report.ReportInfoService;
-import com.minsait.onesait.platform.controlpanel.services.report.UploadFileException;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
 @Api(value = "Reports", tags = { "Reports REST API" })
 @RestController
 @RequestMapping("api/reports")
 @ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
 		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
-@PreAuthorize("!hasRole('USER')")
+@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+@Slf4j
 public class ReportRestController {
 
 	@Autowired
 	private ReportService reportService;
 
 	@Autowired
-	private ParameterMapConverter parameterMapConverter;
+	private IntegrationResourcesService resourcesService;
 
-	@Autowired
-	private ReportInfoService reportInfoService;
+	private static final String REPORT_API_PATH = "/api/reports";
+	private RestTemplate restTemplate;
 
 	@Autowired
 	private AppWebUtils utils;
+
+	@PostConstruct
+	void setup() {
+		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+		restTemplate.getInterceptors().add((request, body, execution) -> {
+
+			request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
+			try {
+				request.getHeaders().add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER,
+						MultitenancyContextHolder.getVerticalSchema());
+				request.getHeaders().add(Tenant2SchemaMapper.TENANT_HTTP_HEADER,
+						MultitenancyContextHolder.getTenantName());
+			} catch (final Exception e) {
+				log.error("No authentication found, could not add tenant/vertical headers to HTTP request");
+			}
+
+			return execution.execute(request, body);
+		});
+	}
 
 	@ApiOperation(value = "Download report")
 	@PostMapping("{id}/{extension}")
@@ -93,54 +120,58 @@ public class ReportRestController {
 	public ResponseEntity<?> downloadReport(
 			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
 			@ApiParam(value = "Parameters") @RequestBody(required = false) ReportParameter[] params,
-			@ApiParam(value = "Output file format", required = true) @PathVariable("extension") ReportType extension) {
-
-		final Report entity = reportService.findByIdentificationOrId(id);
+			@ApiParam(value = "Output file format", required = true) @PathVariable("extension") ReportType extension)
+			throws UnsupportedEncodingException {
+		final Report entity = reportService.findById(id);
 
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW))
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
 
-		final List<ReportParameter> parameters = Arrays.asList(params);
-		if (!StringUtils.isEmpty(entity.getDataSourceUrl()))
-			parameters.add(ReportParameter.builder().name(JSON_DATA_SOURCE_ATT_NAME).type(ReportParameterType.STRING)
-					.value(entity.getDataSourceUrl()).build());
+		final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH + "/"
+				+ URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/"
+				+ URLEncoder.encode(extension.name(), StandardCharsets.UTF_8.name());
 		try {
-			final Map<String, Object> map = parameters == null ? new HashMap<>()
-					: parameterMapConverter.convert(parameters);
+			final ResponseEntity<byte[]> response = restTemplate.exchange(requestURL, HttpMethod.POST,
+					new HttpEntity<>(params), byte[].class);
 
-			final byte[] content = reportInfoService.generate(entity, extension, map);
-
-			return ResponseEntity.ok()
-					.header(HttpHeaders.CONTENT_DISPOSITION,
-							"attachment; filename=" + entity.getIdentification() + "." + extension.extension())
-					.header(HttpHeaders.CONTENT_TYPE, extension.contentType())
-					.header(HttpHeaders.CACHE_CONTROL, "max-age=60, must-revalidate").contentLength(content.length)
-					.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(content);
-		} catch (final Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			return generateAttachmentResponse(response.getBody(), extension.contentType(),
+					entity.getIdentification() + "." + extension.extension());
+		} catch (final HttpClientErrorException | HttpServerErrorException e) {
+			log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
+			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
 		}
 	}
 
 	@ApiOperation(value = "Retrieve declared parameters in Jasper Template when their default values")
 	@ApiResponses(@ApiResponse(response = ReportParameter[].class, code = 200, message = "OK"))
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<ReportParameter>> parameters(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
+	public ResponseEntity<?> parameters(
+			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id)
+			throws UnsupportedEncodingException {
 
-		final Report report = reportService.findByIdentificationOrId(id);
+		final Report report = reportService.findById(id);
 		if (report == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW))
+		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW)) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 
-		final ReportInfoDto reportInfoDto = reportInfoService.extract(new ByteArrayInputStream(report.getFile()),
-				report.getExtension());
+		final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH + "/"
+				+ URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/parameters";
+		try {
+			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
+					null, new ParameterizedTypeReference<List<ReportParameter>>() {
+					});
 
-		return new ResponseEntity<>(reportInfoDto.getParameters(), HttpStatus.OK);
+			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
+		} catch (final HttpClientErrorException | HttpServerErrorException e) {
+			log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
+			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
+		}
 	}
 
 	@ApiOperation(value = "Get all reports")
@@ -175,8 +206,9 @@ public class ReportRestController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW))
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW)) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 
 		final ReportDTO dto = new ReportDTO();
 		dto.setCreatedAt(entity.getCreatedAt());
@@ -197,6 +229,11 @@ public class ReportRestController {
 			@RequestParam(required = true, value = "isPublic") boolean isPublic,
 			@RequestParam(required = true, value = "file") MultipartFile file) {
 
+		if (!identification.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+			return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+					HttpStatus.BAD_REQUEST);
+		}
+
 		final Report entity = reportService.findByIdentificationOrId(identification);
 		if (entity != null) {
 			return ResponseEntity.badRequest().body("Report ID must be unique");
@@ -209,7 +246,8 @@ public class ReportRestController {
 		try {
 			report.setFile(file.getBytes());
 		} catch (final IOException e) {
-			throw new UploadFileException();
+			log.error("Error while creating Report REST :{}", e);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		report.setExtension(
@@ -241,8 +279,9 @@ public class ReportRestController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE))
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE)) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 
 		if (description != null) {
 			entity.setDescription(description);
@@ -255,7 +294,7 @@ public class ReportRestController {
 			try {
 				entity.setFile(file.getBytes());
 			} catch (final IOException e) {
-				throw new UploadFileException();
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
 
@@ -276,8 +315,9 @@ public class ReportRestController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE))
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE)) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 
 		reportService.delete(entity.getId());
 
@@ -296,8 +336,9 @@ public class ReportRestController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW))
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW)) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION,
@@ -305,6 +346,14 @@ public class ReportRestController {
 				.header(HttpHeaders.CONTENT_TYPE, "application/" + entity.getExtension().toString().toLowerCase())
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=60, must-revalidate").contentLength(entity.getFile().length)
 				.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(entity.getFile());
+
+	}
+
+	private ResponseEntity<?> generateAttachmentResponse(byte[] byteArray, String contentType, String fileName) {
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+				.header(HttpHeaders.CONTENT_TYPE, contentType)
+				.header(HttpHeaders.CACHE_CONTROL, "max-age=60, must-revalidate").contentLength(byteArray.length)
+				.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(byteArray);
 
 	}
 }

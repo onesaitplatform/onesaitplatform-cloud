@@ -33,6 +33,7 @@ import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESInsertService;
+import com.minsait.onesait.platform.persistence.util.ElasticSearchFileUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,8 +59,8 @@ public class ElasticSearchBasicApiTest {
 	@Autowired
 	ESInsertService sSInsertService;
 
-	private String createTestIndex(String index) {
-		final String res = connector.createIndex(index);
+	private boolean createTestIndex(String index) {
+		final boolean res = connector.createIndex(index);
 		log.info("createTestIndex :" + res);
 		return res;
 	}
@@ -69,20 +70,10 @@ public class ElasticSearchBasicApiTest {
 		log.info("teardown process...");
 
 		try {
-			deleteTestIndex(TEST_INDEX_GAME_OF_THRONES);
 			deleteTestIndex(TEST_INDEX_ONLINE);
 		} catch (final Exception e) {
 			log.error("Something happens when deleting indexes :" + e.getMessage());
 		}
-
-	}
-
-	private boolean prepareGameOfThronesIndex() {
-
-		final boolean response = connector.createType(TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES,
-				dataMapping);
-		log.info("prepareGameOfThronesIndex :" + response);
-		return response;
 
 	}
 
@@ -94,27 +85,13 @@ public class ElasticSearchBasicApiTest {
 	@Test
 	public void testCreateTable() {
 		try {
-			deleteTestIndex(TEST_INDEX_ONLINE);
 			createTestIndex(TEST_INDEX_ONLINE);
-			List<String> list = ESInsertService
+			List<String> list = ElasticSearchFileUtil
 					.readLines(new File(this.getClass().getClassLoader().getResource("online.json").toURI()));
 
 			List<String> result = list.stream().filter(x -> x.startsWith("{\"0\"")).collect(Collectors.toList());
 
-			ComplexWriteResult r = sSInsertService.load(TEST_INDEX_ONLINE, TEST_INDEX_ONLINE, result, dataMapping);
-
-			log.info("Loaded Bulk :" + r.getData().size());
-
-			deleteTestIndex(TEST_INDEX_GAME_OF_THRONES);
-			createTestIndex(TEST_INDEX_GAME_OF_THRONES);
-			prepareGameOfThronesIndex();
-
-			list = ESInsertService.readLines(
-					new File(this.getClass().getClassLoader().getResource("game_of_thrones_complex.json").toURI()));
-
-			result = list.stream().filter(x -> x.startsWith("{\"name\":")).collect(Collectors.toList());
-
-			r = sSInsertService.load(TEST_INDEX_GAME_OF_THRONES, TEST_INDEX_GAME_OF_THRONES, result, dataMapping);
+			ComplexWriteResult r = sSInsertService.bulkInsert(TEST_INDEX_ONLINE, result, dataMapping);
 
 			log.info("Loaded Bulk :" + r.getData().size());
 

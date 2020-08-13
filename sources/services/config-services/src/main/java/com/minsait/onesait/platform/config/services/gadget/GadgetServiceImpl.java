@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
@@ -38,6 +38,7 @@ import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,11 +57,12 @@ public class GadgetServiceImpl implements GadgetService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private UserService userService;
 
 	@Autowired
 	private OPResourceService resourceService;
-
-	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
 
 	@Override
 	public List<Gadget> findAllGadgets() {
@@ -72,7 +74,7 @@ public class GadgetServiceImpl implements GadgetService {
 		List<Gadget> gadgets;
 		final User user = userRepository.findByUserId(userId);
 
-		if (user.getRole().getId().equals(GadgetServiceImpl.ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			if (type != null && identification != null) {
 
 				gadgets = gadgetRepository.findByIdentificationContainingAndTypeContaining(identification, type);
@@ -132,20 +134,32 @@ public class GadgetServiceImpl implements GadgetService {
 		if (gadgetRepository.findByIdentification(gadget.getIdentification()) == null) {
 			gadgetRepository.save(gadget);
 		}
-
 	}
 
 	@Override
 	public List<Gadget> getUserGadgetsByType(String userID, String type) {
 		final User user = userRepository.findByUserId(userID);
 		final List<Gadget> gadgets = gadgetRepository.findByTypeOrderByIdentificationAsc(type);
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			return gadgets;
 		} else {
-			return gadgets.stream()
-					.filter(g -> g.getUser().getUserId().equals(userID)
-							|| resourceService.hasAccess(userID, g.getId(), ResourceAccessType.VIEW))
-					.collect(Collectors.toList());
+
+			List<String> resourceIdList = new ArrayList<String>();
+			for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
+				Gadget g = (Gadget) iterator.next();
+				resourceIdList.add(g.getId());
+			}
+			Map<String, ResourceAccessType> midrat = resourceService.getResourcesAccessMapByUserAndResourceIdList(user,
+					resourceIdList);
+
+			List<Gadget> result = new ArrayList<Gadget>();
+			for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
+				Gadget g = (Gadget) iterator.next();
+				if (g.getUser().getUserId().equals(userID) || (midrat.get(g.getId()) != null)) {
+					result.add(g);
+				}
+			}
+			return result;
 		}
 	}
 
@@ -158,7 +172,7 @@ public class GadgetServiceImpl implements GadgetService {
 	public boolean hasUserPermission(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
 		final Gadget gadget = gadgetRepository.findById(id);
-		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (gadget.getUser().getUserId().equals(userId)) {
 			return true;
@@ -310,7 +324,7 @@ public class GadgetServiceImpl implements GadgetService {
 
 		if (gadgetMeasures != null && datasourceId != null) {
 			for (Iterator<GadgetMeasure> iterator = gadgetMeasures.iterator(); iterator.hasNext();) {
-				GadgetMeasure gadgetMeasure = (GadgetMeasure) iterator.next();
+				GadgetMeasure gadgetMeasure = iterator.next();
 				gadgetMeasure.setGadget(g);
 				gadgetMeasure.setDatasource(gadgetDatasourceService.getGadgetDatasourceById(datasourceId));
 				gadgetMeasureRepository.save(gadgetMeasure);
@@ -327,7 +341,7 @@ public class GadgetServiceImpl implements GadgetService {
 
 		if (gadgetMeasures != null && datasource != null) {
 			for (Iterator<GadgetMeasure> iterator = gadgetMeasures.iterator(); iterator.hasNext();) {
-				GadgetMeasure gadgetMeasure = (GadgetMeasure) iterator.next();
+				GadgetMeasure gadgetMeasure = iterator.next();
 				gadgetMeasure.setGadget(g);
 				gadgetMeasure.setDatasource(datasource);
 				gadgetMeasureRepository.save(gadgetMeasure);
@@ -351,6 +365,16 @@ public class GadgetServiceImpl implements GadgetService {
 			gadget.setUser(gadgetDB.getUser());
 			saveGadgetAndMeasures(gadget, datasourceId, newMeasures);
 		}
+	}
+
+	@Override
+	public Gadget getGadgetByIdentification(String userID, String gadgetIdentification) {
+		return gadgetRepository.findByIdentification(gadgetIdentification);
+	}
+
+	@Override
+	public List<String> getGadgetTypes() {
+		return gadgetRepository.findGadgetTypes();
 	}
 
 }

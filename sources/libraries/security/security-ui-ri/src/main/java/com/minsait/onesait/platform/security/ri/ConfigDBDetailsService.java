@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.security.ri;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,10 +24,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.UserRepository;
-import com.minsait.onesait.platform.config.repository.UserTokenRepository;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserTokenRepository;
+import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,9 +42,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ConfigDBDetailsService implements UserDetailsService {
 
 	@Autowired
+	private MasterUserRepository masterUserRepository;
+	@Autowired
+	private MasterUserTokenRepository masterUserTokenRepository;
+	@Autowired
 	private UserRepository userRepository;
 	@Autowired
-	private UserTokenRepository tokenRepository;
+	private VerticalResolver tenantDBResolver;
 
 	@Value("${onesaitplatform.authentication.twofa:false}")
 	private boolean tfaEnabled;
@@ -44,35 +56,49 @@ public class ConfigDBDetailsService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) {
 
-		final User user = userRepository.findByUserId(username);
+		final MasterUser user = masterUserRepository.findByUserId(username);
 
 		if (user == null) {
 			log.info("LoadUserByUserName: User not found by name: {}", username);
 			throw new UsernameNotFoundException("User not found by name: " + username);
 		}
 
-		return toUserDetails(user);
+		String role = Role.Type.ROLE_PREVERIFIED_TENANT_USER.name();
+		Vertical vertical = null;
+		final String tenant = user.getTenant().getName();
+		if (tenantDBResolver.hasSingleTenantSchemaAssociated(user) || MultitenancyContextHolder.isForced()) {
+
+			vertical = tenantDBResolver.getSingleVerticalIfPossible(user);
+			MultitenancyContextHolder.setVerticalSchema(vertical.getSchema());
+			MultitenancyContextHolder.setTenantName(tenant);
+			role = userRepository.findByUserId(user.getUserId()).getRole().getId();
+
+		}
+
+		return toUserDetails(user.getUserId(), user.getPassword(), vertical, tenant, role);
 	}
 
 	public UserDetails loadUserByUserToken(String token) {
 
-		final UserToken userToken = tokenRepository.findByToken(token);
+		final MasterUserToken userToken = masterUserTokenRepository.findByToken(token);
 
 		if (userToken == null) {
 			log.info("LoadUserByUserToken: User not found by token: {}", token);
 			return null;
 		}
 
-		return org.springframework.security.core.userdetails.User.withUsername(userToken.getUser().getUserId())
-				.password(userToken.getUser().getPassword())
-				.authorities(new SimpleGrantedAuthority(userToken.getUser().getRole().getId())).build();
+		MultitenancyContextHolder.setVerticalSchema(userToken.getVertical().getSchema());
+		MultitenancyContextHolder.setTenantName(userToken.getTenant().getName());
 
+		return toUserDetails(userToken.getMasterUser().getUserId(), userToken.getMasterUser().getPassword(),
+				userToken.getVertical(), userToken.getTenant().getName(),
+				userRepository.findByUserId(userToken.getMasterUser().getUserId()).getRole().getId());
 	}
 
-	private UserDetails toUserDetails(User userObject) {
-		return org.springframework.security.core.userdetails.User.withUsername(userObject.getUserId())
-				.password(userObject.getPassword())
-				.authorities(new SimpleGrantedAuthority(userObject.getRole().getId())).build();
+	private org.springframework.security.core.userdetails.User toUserDetails(String username, String password,
+			Vertical vertical, String tenant, String role) {
+		return new UserPrincipal(username, password, Arrays.asList(new SimpleGrantedAuthority(role)), vertical, tenant);
+
 	}
 
 }

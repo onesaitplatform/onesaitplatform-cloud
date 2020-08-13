@@ -287,8 +287,12 @@
 				
 				if(json.result!="error" && json.result.startsWith("http")){
 					idEject = json.idEject;
+					var urloutput = json.result;
+					if(idEject && json.result.indexOf("/dashboards/")!=-1){//Dashboard output, add id_ejec
+						urloutput = json.result + "?id_ejec=" + idEject; 
+					}
 					$("#runBtn").attr("disabled", "disabled");
-					$("#iframe").attr("src",json.result);
+					$("#iframe").attr("src",urloutput);
 				}
 				
 				$("#runBtn").removeAttr("disabled");
@@ -324,7 +328,6 @@
 	      			clone();
 	      			$("#runBtn").removeAttr("disabled");
 	      			$("#saveBtn").removeAttr("disabled");
-	      			$.alert({title: 'SUCCESS!', theme: 'light',  content: messageOk});
 	            }
 	        },
 	        cancel: function () {
@@ -338,9 +341,10 @@
 	function clone(){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		var modelId =  [[${modelId}]];
 		
 		$.ajax({
-  		    url: "save/" + window.location.href.split("/")[window.location.href.split("/").length -1],
+  		    url: window.location.origin + "/controlpanel/models/run/save/" + modelId,
   		  	headers: {
 				[csrf_header]: csrf_value
 		    },
@@ -352,14 +356,20 @@
   				executionDescription :$("#executionDescription").val()
   				},
   			success: function(result) {
-  				
-  				var json = JSON.parse(result);
+  				var json;
+  				if(typeof result === "string"){
+  					json = {result:result};
+  				}
+  				else{
+  					json = JSON.parse(result);
+  				}
   				
   				if(json.result!="error" && json.result.startsWith("http")){
   					idEject = json.idEject;
   					$("#runBtn").attr("disabled", "disabled");
   					$("#saveBtn").removeAttr("disabled");
   					$("#iframe").attr("src",json.result);
+  					$.alert({title: 'SUCCESS!', theme: 'light',  content: messageOk});
   				}else{
   					$.alert({title: 'ERROR!', theme: 'light',  content: messageKo}); 
   					return false;

@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -38,8 +37,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.hazelcast.core.ITopic;
-import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -54,10 +51,6 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 public class DomainRuleController {
 
 	@Autowired
-	@Qualifier("topicChangedDomains")
-	private ITopic<String> topicDomains;
-
-	@Autowired
 	private DroolsRuleService droolsRuleService;
 	@Autowired
 	private AppWebUtils utils;
@@ -68,19 +61,17 @@ public class DomainRuleController {
 
 	@Autowired
 	private BusinessRuleService businessRuleService;
-	
+
 	private static final String DOMANI_ID = "domainId";
 	private static final String ERROR_403 = "error/403";
 	private static final String REDIRECT_RULEDOMAINS = "redirect:/rule-domains/";
 
 	@GetMapping("list")
 	public String list(Model model) {
-		DroolsRuleDomain domain = droolsRuleService.getUserDomain(utils.getUserId());
-		if (domain == null) {
-			domain = droolsRuleService.createDomain(utils.getUserId());
-			HazelcastRuleDomainObject.builder().id(domain.getId()).userId(domain.getUser().getUserId()).build().toJson()
-					.ifPresent(s -> topicDomains.publish(s));
-		}
+		final DroolsRuleDomain domain = droolsRuleService.getUserDomain(utils.getUserId());
+		if (domain == null)
+			businessRuleService.createDomain(utils.getUserId());
+
 		model.addAttribute("domains", domains());
 		return "rules/list";
 	}
@@ -163,11 +154,7 @@ public class DomainRuleController {
 		if (!droolsRuleService.hasUserPermissionOnDomain(id, utils.getUserId()))
 			return ERROR_403;
 		final List<DroolsRule> rules = droolsRuleService.getAllRules(domain.getUser());
-		model.addAttribute("rules",
-				rules.stream().map(r -> RuleDTO.builder().id(r.getId()).drl(r.getDRL()).type(r.getType().name())
-						.inputOntology(r.getSourceOntology() != null ? r.getSourceOntology().getIdentification() : null)
-						.identification(r.getIdentification()).active(r.isActive()).build())
-						.collect(Collectors.toList()));
+		model.addAttribute("rules", rules.stream().map(RuleDTO::convert).collect(Collectors.toList()));
 		model.addAttribute(DOMANI_ID, id);
 		return "rules/rules";
 	}
@@ -175,11 +162,7 @@ public class DomainRuleController {
 	@PostMapping("{id}/start-stop")
 	public ResponseEntity<String> startStop(@PathVariable("id") String id) {
 		if (droolsRuleService.hasUserPermissionOnDomain(id, utils.getUserId())) {
-			final DroolsRuleDomain domain = droolsRuleService.changeDomainState(id);
-			if (domain != null)
-				HazelcastRuleDomainObject.builder().id(domain.getId()).userId(domain.getUser().getUserId()).build()
-						.toJson().ifPresent(s -> topicDomains.publish(s));
-
+			businessRuleService.changeDomainState(id);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);

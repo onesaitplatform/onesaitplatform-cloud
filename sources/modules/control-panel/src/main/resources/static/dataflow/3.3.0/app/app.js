@@ -15,7 +15,7 @@
  */
 
 angular.module('dataCollectorApp')
-  .config(function(
+  .config(["$routeProvider", "$locationProvider", "$translateProvider", "$provide", "tmhDynamicLocaleProvider", "uiSelectConfig", "$httpProvider", "AnalyticsProvider", function(
     $routeProvider, $locationProvider, $translateProvider, $provide, tmhDynamicLocaleProvider, uiSelectConfig,
     $httpProvider, AnalyticsProvider
   ) {
@@ -63,8 +63,20 @@ angular.module('dataCollectorApp')
     uiSelectConfig.theme = 'bootstrap';
 
     //Reload the page when the server is down.
-    $httpProvider.interceptors.push(function($q, $rootScope) {
+    $httpProvider.interceptors.push(["$q", "$rootScope", function($q, $rootScope) {
       return {
+        request: function(config) {
+          // OnesaitPlatform headers
+          var loc = window.location.pathname;
+          if(loc.indexOf("/pipeline/") != -1 || loc.indexOf("/logs/") != -1) {
+            var parts = loc.split("/");
+            var partsLength = parts.length;
+            var dataflowId = parts[partsLength-1] == '' ? parts[partsLength-2] : parts[partsLength-1];
+            config.headers['X-Streamsets-ID'] = dataflowId;
+          }
+    
+          return config;
+        },
         response: function(response) {
           return response;
         },
@@ -88,7 +100,7 @@ angular.module('dataCollectorApp')
           return $q.reject(rejection);
         }
       };
-    });
+    }]);
 
     AnalyticsProvider.setAccount('UA-60917135-1');
     AnalyticsProvider.trackPages(false);
@@ -97,8 +109,8 @@ angular.module('dataCollectorApp')
     AnalyticsProvider.useAnalytics(true);
     AnalyticsProvider.delayScriptTag(true);
 
-  })
-  .run(function ($location, $rootScope, $modal, api, pipelineConstant, $localStorage, contextHelpService, $modalStack,
+  }])
+  .run(["$location", "$rootScope", "$modal", "api", "pipelineConstant", "$localStorage", "contextHelpService", "$modalStack", "$timeout", "$translate", "authService", "userRoles", "configuration", "Analytics", "$q", "editableOptions", "$http", function ($location, $rootScope, $modal, api, pipelineConstant, $localStorage, contextHelpService, $modalStack,
                  $timeout, $translate, authService, userRoles, configuration, Analytics, $q, editableOptions, $http) {
 
     var defaultTitle = 'StreamSets | Data Collector';
@@ -138,10 +150,6 @@ angular.module('dataCollectorApp')
     };
 
     $http.defaults.headers.common['X-Requested-By'] = 'Data Collector' ;
-    
-    //Add header with Dataflow ID
-    var dataflowId= loc.pathname.split("/")[loc.pathname.split("/").length-1] == '' ? loc.pathname.split("/")[loc.pathname.split("/").length-2] : loc.pathname.split("/")[loc.pathname.split("/").length-1]; 
-    $http.defaults.headers.common['X-Streamsets-ID'] = dataflowId ;
 
     $rootScope.pipelineConstant = pipelineConstant;
     $rootScope.$storage = $localStorage.$default({
@@ -844,4 +852,4 @@ angular.module('dataCollectorApp')
       return unloadMessage;
     };
 
-  });
+  }]);

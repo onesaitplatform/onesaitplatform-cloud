@@ -22,7 +22,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -56,11 +55,20 @@ public class OntologyVirtual extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private OntologyVirtualDatasource datasourceId;
+	
+	@Column(name = "DATASOURCE_TABLE_NAME", length = 128, nullable = true)
+	@Getter
+	@Setter
+	private String datasourceTableName;
 
 	@Column(name = "OBJECT_ID", length = 50, nullable = true)
-	@NotNull
 	@Getter
 	@Setter
 	private String objectId;
+
+	@Column(name = "OBJECT_GEOMETRY", length = 512, nullable = true)
+	@Getter
+	@Setter
+	private String objectGeometry;
 
 }

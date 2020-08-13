@@ -14,23 +14,12 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,13 +33,6 @@ import lombok.Setter;
 public abstract class ProjectParent extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
-
-	@Fetch(FetchMode.JOIN)
-	@ManyToMany(cascade = { CascadeType.ALL }, mappedBy = "projects", fetch = FetchType.LAZY)
-	@Getter
-	@Setter
-	@JsonIgnore
-	private Set<User> users = new HashSet<>();
 
 	@ManyToOne
 	@JoinColumn(name = "WEB_PROJECT_ID", referencedColumnName = "ID")
@@ -75,24 +57,5 @@ public abstract class ProjectParent extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private User user;
-	
-	/*public ProjectParent() {};
-	
-	public ProjectParent(String id, String identification, String description, User user, User userAllowed, ProjectType projectType, WebProject webProject, Date createAt, Date updateAt) {
-		Set<User> suser = new HashSet<User>();
-		if(userAllowed != null) {
-			suser.add(userAllowed);
-		}
-		this.setId(id);
-		this.setIdentification(identification);
-		this.setDescription(description);
-		this.setUser(user);
-		this.setUsers(suser);
-		this.setType(projectType);
-		this.setWebProject(webProject);
-		this.setCreatedAt(createAt);
-		this.setUpdatedAt(updateAt);
-		
-	}*/
-	
+
 }

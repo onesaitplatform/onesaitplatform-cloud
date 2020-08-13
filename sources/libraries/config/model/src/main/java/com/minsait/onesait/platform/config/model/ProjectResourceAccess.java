@@ -14,10 +14,7 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -28,11 +25,8 @@ import org.hibernate.annotations.FetchMode;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,29 +34,10 @@ import lombok.Setter;
 @Entity
 @Table(name = "PROJECT_RESOURCE_ACCESS")
 @Configurable
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
-public class ProjectResourceAccess extends AuditableEntityWithUUID {
+public class ProjectResourceAccess extends ProjectResourceAccessParent {
 
 	private static final long serialVersionUID = 1L;
-
-	public enum ResourceAccessType {
-		VIEW, MANAGE
-	}
-
-	@Column(name = "ACCESS", nullable = false)
-	@Enumerated(EnumType.STRING)
-	@Getter
-	@Setter
-	private ResourceAccessType access;
-
-	@JsonIgnore
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
-	@Getter
-	@Setter
-	private User user;
 
 	@JsonIgnore
 	@ManyToOne(fetch = FetchType.EAGER)
@@ -73,7 +48,7 @@ public class ProjectResourceAccess extends AuditableEntityWithUUID {
 
 	@JsonIgnore
 	@Fetch(FetchMode.JOIN)
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
@@ -86,37 +61,77 @@ public class ProjectResourceAccess extends AuditableEntityWithUUID {
 	@Setter
 	private AppRole appRole;
 
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
+	@Getter
+	@Setter
+	private User user;
+
+	public ProjectResourceAccess(User user, ResourceAccessType access, OPResource resource, Project project,
+			AppRole appRole) {
+		super(access);
+		this.resource = resource;
+		this.project = project;
+		this.appRole = appRole;
+		this.user = user;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 
-		if (obj == null)
+		if (obj == null) {
 			return false;
+		}
 
-		if (this.getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 
 		final ProjectResourceAccess that = (ProjectResourceAccess) obj;
-		if (that != null && getAppRole() != null && that.getAppRole() != null)
-			return (getAppRole().getId().equals(that.getAppRole().getId())
+		if (that != null && getAppRole() != null && that.getAppRole() != null) {
+			return getAppRole().getId().equals(that.getAppRole().getId())
 					&& getResource().getId().equals(that.getResource().getId())
-					&& getProject().getId().equals(that.getProject().getId()));
-		else if (that != null && getUser() != null && that.getUser() != null)
-			return (getUser().getUserId().equals(that.getUser().getUserId())
+					&& getProject().getId().equals(that.getProject().getId());
+		} else if (that != null && getUser() != null && that.getUser() != null) {
+			return getUser().getUserId().equals(that.getUser().getUserId())
 					&& getResource().getId().equals(that.getResource().getId())
-					&& getProject().getId().equals(that.getProject().getId()));
-		else
+					&& getProject().getId().equals(that.getProject().getId());
+		} else {
 			return super.equals(obj);
+		}
 	}
 
 	@Override
 	public int hashCode() {
-		if (getAppRole() != null)
+		if (getAppRole() != null) {
 			return java.util.Objects.hash(getAppRole().getId(), getResource().getId(), getProject().getId());
-
-		else if (getUser() != null)
+		} else if (getUser() != null) {
 			return java.util.Objects.hash(getUser().getUserId(), getResource().getId(), getProject().getId());
-		else
+		} else {
 			return super.hashCode();
+		}
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		if (resource != null && resource.getIdentification() != null) {
+			sb.append(" Resource : " + resource.getIdentification());
+		}
+		if (getAccess() != null) {
+			sb.append(" Access : " + getAccess().name());
+		}
+		if (user != null) {
+			sb.append(" User : " + user.getUserId());
+		}
+		if (appRole != null) {
+			sb.append(" AppRole : " + appRole.getName());
+		}
+		if (project != null) {
+			sb.append(" Project : " + project.getIdentification());
+		}
+
+		return sb.toString();
+	}
 }

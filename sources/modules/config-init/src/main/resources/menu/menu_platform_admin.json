@@ -1,0 +1,55 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_PLATFORM_ADMIN",
+	"noSession": "/console/login",
+	"navigation": [
+		
+		{
+			"title": {
+				"EN": "MULTITENANCY ADMINISTRATION",
+				"ES": "ADMINISTRACIÓN MULTITENANT"
+			},
+			"icon": "flaticon-cogwheel-2",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Platform Verticals",
+						"ES": "Verticales de plataforma"
+					},
+					"icon": "",
+					"url": "/controlpanel/multitenancy/verticals"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "MARKET PLACE",
+				"ES": "MARKET PLACE"
+			},
+			"icon": "flaticon-cart",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Market",
+						"ES": "Mi Market"
+					},
+					"icon": "",
+					"url": "/controlpanel/marketasset/list"
+				}
+			]
+		},
+		
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		}
+	]
+}

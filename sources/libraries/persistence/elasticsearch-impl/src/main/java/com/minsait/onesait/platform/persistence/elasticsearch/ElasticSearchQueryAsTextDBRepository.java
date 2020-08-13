@@ -16,14 +16,17 @@ package com.minsait.onesait.platform.persistence.elasticsearch;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.interfaces.QueryAsTextDBRepository;
 
 @Component("QueryAsTextElasticSearchDBRepository")
 @Scope("prototype")
+@Conditional(ElasticsearchEnabledCondition.class)
 public class ElasticSearchQueryAsTextDBRepository implements QueryAsTextDBRepository {
 
 	@Autowired

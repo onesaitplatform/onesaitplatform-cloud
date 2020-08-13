@@ -64,4 +64,7 @@ public interface GadgetRepository extends JpaRepository<Gadget, String> {
 			+ "WHERE (g.user=:user AND g.identification=:identification)  ORDER BY g.identification ASC")
 	List<Gadget> existByIdentificationUser(@Param("user") User user, @Param("identification") String identification);
 
+	@Query("SELECT distinct(g.type) FROM Gadget AS g ORDER BY g.type")
+	List<String> findGadgetTypes();
+	
 }

@@ -32,14 +32,15 @@ import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.DeviceManager;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -63,7 +64,7 @@ public class LogProcessor implements MessageTypeProcessor {
 	private OntologyBusinessService ontologyBussinessService;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message)
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info)
 			throws OntologyBusinessServiceException, IOException {
 		final SSAPMessage<SSAPBodyLogMessage> logMessage = (SSAPMessage<SSAPBodyLogMessage>) message;
 		final SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
