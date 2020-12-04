@@ -202,10 +202,10 @@ public class Ontology extends OPResource {
 	@Setter
 	private boolean allowsCreateTopic;
 
-	@Column(name = "TOPIC", length = 256)
-	@Getter
-	@Setter
-	private String topic;
+//	@Column(name = "TOPIC", length = 256)
+//	@Getter
+//	@Setter
+//	private String topic;
 
 	@Column(name = "ALLOW_CREATE_NOTIFICATION_TOPIC", nullable = false, columnDefinition = "BIT")
 	@NotNull
@@ -213,10 +213,10 @@ public class Ontology extends OPResource {
 	@Setter
 	private boolean allowsCreateNotificationTopic;
 
-	@Column(name = "NOTIFICATION_TOPIC", length = 256)
-	@Getter
-	@Setter
-	private String notificationTopic;
+//	@Column(name = "NOTIFICATION_TOPIC", length = 256)
+//	@Getter
+//	@Setter
+//	private String notificationTopic;
 
 	@Column(name = "PARTITION_KEY", length = 256, nullable = true)
 	@Getter

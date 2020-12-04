@@ -60,6 +60,10 @@ public class Api extends OPResource {
 		IOT, EXTERNAL, INTERNAL_ONTOLOGY, EXTERNAL_FROM_JSON, NODE_RED
 	}
 
+	public enum ClientJS {
+		REACT_JS
+	}
+
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID")

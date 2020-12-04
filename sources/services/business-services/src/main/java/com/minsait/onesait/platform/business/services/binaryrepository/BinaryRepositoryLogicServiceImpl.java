@@ -43,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicService {
 
 	private static final String DONT_HAVE_ACCESS = "You don't have access to this resource";
+	private static final String FORBIDDEN = "This file cannot be paginated";
 
 	@Autowired
 	private BinaryRepositoryFactory binaryRepositoryFactory;
@@ -160,6 +161,51 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 	}
 
 	@Override
+	public String downloadForPagination(String fileId, Long startLine, Long maxLines, Boolean skipHeaders)
+			throws IOException, BinaryRepositoryException {
+		if (binaryFileService.hasUserPermissionRead(fileId,
+				userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName()))) {
+
+			final BinaryFile file = binaryFileService.getFile(fileId);
+			if (checkMimeType(file.getMime())) {
+				// changeTenant for file
+				final String currentTenat = MultitenancyContextHolder.getTenantName();
+				multitenancyService.findUser(file.getUser().getUserId())
+						.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+				String dataFile = binaryRepositoryFactory.getInstance(binaryFileService.getFile(fileId).getRepository())
+						.getBinaryFileForPaginate(fileId, startLine, maxLines, skipHeaders);
+				MultitenancyContextHolder.setTenantName(currentTenat);
+				return dataFile;
+			} else {
+				throw new BinaryRepositoryException(FORBIDDEN);
+			}
+		} else {
+			throw new BinaryRepositoryException(DONT_HAVE_ACCESS);
+		}
+	}
+
+	@Override
+	public Boolean closePagination(String fileId) throws IOException, BinaryRepositoryException {
+		if (binaryFileService.hasUserPermissionRead(fileId,
+				userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName()))) {
+
+			final BinaryFile file = binaryFileService.getFile(fileId);
+
+			// changeTenant for file
+			final String currentTenat = MultitenancyContextHolder.getTenantName();
+			multitenancyService.findUser(file.getUser().getUserId())
+					.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+			Boolean isOk = binaryRepositoryFactory.getInstance(binaryFileService.getFile(fileId).getRepository())
+					.closePaginate(fileId);
+			MultitenancyContextHolder.setTenantName(currentTenat);
+			return isOk;
+
+		} else {
+			throw new BinaryRepositoryException(DONT_HAVE_ACCESS);
+		}
+	}
+
+	@Override
 	public BinaryFileData getBinaryFileWOPermission(String fileId) throws IOException, BinaryRepositoryException {
 		final BinaryFile file = binaryFileService.getFile(fileId);
 		// changeTenant for file
@@ -185,6 +231,19 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 		} else {
 			throw new BinaryRepositoryException(DONT_HAVE_ACCESS);
 		}
+	}
+
+	private Boolean checkMimeType(String type) {
+		if (type.equals("text/plain") || type.equals("text/css") || type.equals("application/msword")
+				|| type.equals("text/html") || type.equals("text/javascript") || type.equals("application/json")
+				|| type.equals("application/javascript")
+				|| type.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+				|| type.equals("text/csv") || type.equals("application/vnd.ms-excel")
+				|| type.equals("application/vnd.oasis.opendocument.spreadsheet")
+				|| type.equals("application/vnd.oasis.opendocument.text")) {
+			return true;
+		}
+		return false;
 	}
 
 }

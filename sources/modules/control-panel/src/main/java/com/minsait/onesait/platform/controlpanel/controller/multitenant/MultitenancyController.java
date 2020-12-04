@@ -48,6 +48,7 @@ import com.minsait.onesait.platform.multitenant.config.services.MultitenancyServ
 public class MultitenancyController {
 
 	private static final String VERTICAL = "vertical";
+	private static final String VERTICALS = "verticals";
 	@Autowired
 	private MultitenancyService multitenancyService;
 	@Autowired
@@ -56,7 +57,7 @@ public class MultitenancyController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")
 	@GetMapping("verticals")
 	public String list(Model model) {
-
+		model.addAttribute(VERTICALS, verticals());
 		return "multitenancy/verticals/list";
 	}
 
@@ -65,6 +66,7 @@ public class MultitenancyController {
 	public String tenants(Model model) {
 		final Optional<Vertical> vertical = multitenancyService
 				.getVertical(MultitenancyContextHolder.getVerticalSchema());
+		model.addAttribute("tenants", tenants(vertical.get().getName()));
 		model.addAttribute(VERTICAL, vertical.get());
 		return "multitenancy/tenants/list";
 	}
@@ -109,6 +111,7 @@ public class MultitenancyController {
 	public String showTenant(@PathVariable("name") String tenant, Model model) {
 		final Optional<Tenant> t = multitenancyService.getTenant(tenant);
 		if (t.isPresent()) {
+			model.addAttribute("users", users(tenant));
 			model.addAttribute("tenant", t.get());
 			return "multitenancy/tenants/create";
 		}
@@ -160,6 +163,7 @@ public class MultitenancyController {
 		if (!vertical.isPresent())
 			return "error/404";
 		else {
+			model.addAttribute("tenants", tenants(vertical.get().getName()));
 			model.addAttribute(VERTICAL, vertical.get());
 			model.addAttribute("verticalsAvailable", multitenancyService.getAllTenants().stream()
 					.map(t -> TenantDTO.builder().name(t.getName()).build()).filter(t -> !vertical.get().getTenants()

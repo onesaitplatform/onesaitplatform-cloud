@@ -27,8 +27,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface GadgetDatasourceRepository extends JpaRepository<GadgetDatasource, String> {
 
-	GadgetDatasource findById(String Id);
-
 	GadgetDatasource findByIdentification(String identification);
 
 	List<GadgetDatasource> findByUser(User user);
@@ -79,5 +77,8 @@ public interface GadgetDatasourceRepository extends JpaRepository<GadgetDatasour
 	List<GadgetDatasourceForList> findForListByUserAndIdentificationContainingAndDescriptionContaining(
 			@Param("user") User user, @Param("identification") String identification,
 			@Param("description") String description);
+
+	@Query("SELECT o.identification FROM GadgetDatasource AS o where o.ontology.identification=:ontology ORDER BY o.identification ASC")
+	List<String> findIdentificationByOntology(@Param("ontology") String ontology);
 
 }

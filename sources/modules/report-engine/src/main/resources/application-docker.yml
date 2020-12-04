@@ -1,36 +1,33 @@
 server: ## Config Web Server
    port: 18400
 onesaitplatform:
-    camunda:
-       admin-user: ${CAMUNDA_ADMIN_USER}
+   database.mongodb:
+      authenticationDatabase: ${REALTIMEDBAUTHDB}
+      useAuth: ${REALTIMEDBUSEAUTH}
+      username: ${REALTIMEDBUSER}
+      password: ${REALTIMEDBPASS}
 
 master:
    datasource:
-      url: ${CONFIGDBMASTERURL}
+     hikari:
+      jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      max-active: ${CONFIGDB_MAX_ACTIVE}
-      max-idle: ${CONFIGDB_MAX_IDLE}
+      
      
 
 spring: ## General Config
    boot.admin: #Spring Boot Admin Config
-      url: http://monitoringuiservice:18100/monitoring
-      client.service-url: http://reportengine:${server.port}${server.contextPath}/
-   datasource: ## JPA Config
-      url: ${CONFIGDBURL}
+      client.url: http://monitoringuiservice:18100/monitoring
+      client.instance.service-url: http://reportengine:${server.port}${server.servlet.contextPath}/
+   datasource:
+     hikari:
+      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
-      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
-      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
-      max-wait: ${DS_MAX_WAIT}
-      initial-size: ${DS_INITIAL_SIZE}
-      max-active: ${DS_MAX_ACTIVE}
-      max-idle: ${DS_MAX_IDLE}
-      min-idle: ${DS_MIN_IDLE}
-      removeAbandoned: ${DS_REMOVE_ABANDONED}
-      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
+      connection-timeout: ${DS_MAX_WAIT_MILLIS}
+      maximum-pool-size: ${DS_MAX_ACTIVE}
+      minimum-idle: ${DS_MIN_IDLE}
 
 logging:
    path: /var/log/platform-logs

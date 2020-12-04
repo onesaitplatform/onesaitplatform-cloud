@@ -373,8 +373,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		final List<String> result = new ArrayList<>();
 		try {
 			final MongoIterable<BasicDBObject> cursor = queryNativeMongo(ontology, query, offset, limit);
-			for (final BasicDBObject obj : cursor)
+			for (final BasicDBObject obj : cursor) {
 				result.add(obj.toJson());
+			}
 			return result;
 		} catch (final DBPersistenceException e) {
 			log.error("find", e, query, ontology);
@@ -412,8 +413,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			final BasicDBObject o = mongoDbConnector.findById(Tenant2SchemaMapper.getRtdbSchema(), collection,
 					objectId);
-			if (o != null)
+			if (o != null) {
 				return o.toJson();
+			}
 			return null;
 		} catch (final Exception e) {
 			log.error("findById", e, objectId);
@@ -428,7 +430,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String findAllAsJson(String ontology, int limit) {
-		return JSON.serialize(findAll(ontology));
+		return JSON.serialize(findAll(ontology, limit));
 	}
 
 	@Override
@@ -441,8 +443,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		final List<String> result = new ArrayList<>();
 		log.debug("findAll", collection, limit);
 		for (final BasicDBObject obj : mongoDbConnector.findAll(Tenant2SchemaMapper.getRtdbSchema(), collection, 0,
-				limit, getExecutionTimeout()))
+				limit, getExecutionTimeout())) {
 			result.add(obj.toJson());
+		}
 		return result;
 	}
 
@@ -481,9 +484,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			if (e.getCause().getClass().equals(ResourceAccessException.class)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 				return "{}";
-			}
-			else
+			} else {
 				throw e;
+			}
 		} catch (final Exception e) {
 			log.error(QUASAR_QUERY_ERROR + query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
@@ -505,9 +508,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			if (e.getCause().getClass().equals(ResourceAccessException.class)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 				return "{}";
-			}
-			else
+			} else {
 				throw e;
+			}
 		} catch (final Exception e) {
 			log.error(QUASAR_QUERY_ERROR + query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);

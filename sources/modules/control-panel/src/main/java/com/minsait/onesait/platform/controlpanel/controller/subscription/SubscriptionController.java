@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -44,6 +45,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.subscription.SubscriptionService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -85,6 +87,9 @@ public class SubscriptionController {
 
 	@Autowired
 	private OntologyService ontologyService;
+
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
@@ -146,6 +151,8 @@ public class SubscriptionController {
 
 		model.addAttribute(SUBSCRIPTION_STR, subscriotionDto);
 		model.addAttribute(ONTOLOGIES_STR, ontologyService.getAllOntologies(utils.getUserId()));
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
 
 		return SUBSCRIPTIONS_CREATE;
 
@@ -186,6 +193,8 @@ public class SubscriptionController {
 		formateSubscriptionDTOToSubscription(subscriptionDto, subscription);
 
 		subscriptionService.createSubscription(subscription);
+
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 
 		response.put(REDIRECT, REDIRECT_CONTROLPANEL_SUBSCRIPTIONS_LIST);
 		response.put(STATUS_STR, "ok");
@@ -292,4 +301,9 @@ public class SubscriptionController {
 		return subscriotionDto;
 	}
 
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free dashboard resource ", id);
+	}
 }

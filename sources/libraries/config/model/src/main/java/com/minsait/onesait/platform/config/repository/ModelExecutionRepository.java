@@ -24,8 +24,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface ModelExecutionRepository extends JpaRepository<ModelExecution, String> {
 
-	ModelExecution findById(String id);
-
 	List<ModelExecution> findByUser(User user);
 
 	List<ModelExecution> findByModel(Model model);
@@ -33,7 +31,7 @@ public interface ModelExecutionRepository extends JpaRepository<ModelExecution, 
 	ModelExecution findByIdentification(String identification);
 
 	ModelExecution findByIdentificationAndUser(String identification, User user);
-	
+
 	ModelExecution findByIdEject(String executionId);
 
 }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
@@ -115,15 +116,15 @@ public class ApiManagerHelper {
 		// POPULATE API TAB
 		populateApiManagerCreateForm(uiModel);
 
-		final Api api = apiRepository.findById(apiId);
+		final Api api = apiManagerService.getById(apiId);
 
 		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 
-		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
-				.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
 				ServiceUrl.SWAGGERJSON));
@@ -152,7 +153,7 @@ public class ApiManagerHelper {
 	public void populateApiManagerShowForm(Model uiModel, String apiId) {
 
 		// POPULATE API TAB
-		final Api api = apiRepository.findById(apiId);
+		final Api api = apiManagerService.getById(apiId);
 
 		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
@@ -161,9 +162,8 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(OPERATIONS_STR, operations);
-
 		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
-				.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+					.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 
 		uiModel.addAttribute("api", api);
 		if (apiManagerService.postProcess(api))
@@ -300,7 +300,7 @@ public class ApiManagerHelper {
 	}
 
 	public void populateApiManagerInvokeForm(Model model, String apiId) {
-		final Api api = apiRepository.findById(apiId);
+		final Api api = apiManagerService.getById(apiId);
 
 		model.addAttribute("api", api);
 		model.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));

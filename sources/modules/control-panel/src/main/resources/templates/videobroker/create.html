@@ -310,14 +310,12 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" />
-	<script th:src="@{/static/js/layout.js}" />
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
 
 	<!-- PLUGINS -->
-	<script
-		th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
-	<script
-		th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" />
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'"
 		th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"

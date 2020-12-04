@@ -42,9 +42,7 @@ public class OPAuditEvent implements Serializable {
 
 	public enum OperationType {
 
-		LOGIN, LOGIN_OAUTH, LOGOUT, JOIN, LEAVE, INSERT, UPDATE, DELETE, QUERY, SUBSCRIBE, UNSUBSCRIBE, INDICATION,
-		COMMAND, START, STOP, LOG, START_TRANSACTION, COMMIT_TRANSACTION, ROLLBACK_TRANSACTION, EXECUTION,
-		OAUTH_TOKEN_GENERATION, OAUTH_TOKEN_CHECK, OAUTH_TOKEN_REFRESH, OAUTH_TOKEN_REVOCATION, OAUTH_TOKEN_OIDC
+		LOGIN, LOGIN_OAUTH, LOGOUT, JOIN, LEAVE, INSERT, UPDATE, DELETE, QUERY, SUBSCRIBE, UNSUBSCRIBE, INDICATION, COMMAND, START, STOP, LOG, START_TRANSACTION, COMMIT_TRANSACTION, ROLLBACK_TRANSACTION, EXECUTION, OAUTH_TOKEN_GENERATION, OAUTH_TOKEN_CHECK, OAUTH_TOKEN_REFRESH, OAUTH_TOKEN_REVOCATION, OAUTH_TOKEN_OIDC, NOTEBOOK_INVOCATION, SEND_MAIL, API_INVOCATION, START_DATAFLOW, STOP_DATAFLOW, CKECK_STATUS_DATAFLOW, KPI_EXECUTION
 
 	}
 
@@ -130,11 +128,13 @@ public class OPAuditEvent implements Serializable {
 				+ "]";
 	}
 
+	private static final ObjectMapper mapper = new ObjectMapper();
+	
 	public String toJson() {
 
 		final String json = "";
 		try {
-			return new ObjectMapper().writeValueAsString(this);
+			return mapper.writeValueAsString(this);
 		} catch (final JsonProcessingException e) {
 			log.error("Error parsing audit event ", e);
 		}

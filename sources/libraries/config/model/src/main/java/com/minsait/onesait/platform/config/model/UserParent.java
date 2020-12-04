@@ -130,7 +130,7 @@ public class UserParent extends AuditableEntity {
 
 	@JsonIgnore
 	public boolean isAdmin() {
-		return this.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
+		return getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
 	}
 
 	@Override

@@ -18,6 +18,22 @@ var InternationalizationCreateController = function() {
 	var navigateUrl = function(url) {
 		window.location.href = url;
 	}
+	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/internationalizations/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
 	// DELETE INTERNATIONALIZATION
 	var deleteInternationalizationConfirmation = function(internationalizationId) {
 		console.log('deleteInternationalizationConfirmation() -> formId: ' + internationalizationId);
@@ -478,7 +494,10 @@ var InternationalizationCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';
 			navigateUrl(url);
 		},
-
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';			
+			freeResource(id,url);
+		},
 		loadJsonFromDoc : function(files) {
 			loadJsonFromDoc(files);
 		},

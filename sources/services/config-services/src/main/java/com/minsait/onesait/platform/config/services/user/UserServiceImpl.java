@@ -369,7 +369,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	Role getRole(Role.Type roleType) {
-		return roleRepository.findById(roleType.name());
+		return roleRepository.findById(roleType.name()).orElse(null);
 	}
 
 	@Override
@@ -407,7 +407,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Role getUserRoleById(String roleId) {
-		return roleRepository.findById(roleId);
+		return roleRepository.findById(roleId).orElse(null);
 	}
 
 	@Override

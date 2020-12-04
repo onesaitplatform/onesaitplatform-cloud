@@ -40,11 +40,13 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import lombok.Getter;
 
 @Component
 public class MetricsManagerImpl implements MetricsManager {
 
 	@Value("${onesaitplatform.metrics.enabled:true}")
+	@Getter
 	private boolean metricsEnabled;
 
 	private static final String METRICS_USAGE_ONTOLOGY_KEY = "onesaitplatform.ontology.usage";

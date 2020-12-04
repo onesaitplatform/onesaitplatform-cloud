@@ -51,9 +51,7 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 	private static final String ITEMS_STR = "items.";
 
 	@Override
-	public void validate(OperationModel operationModel) throws IOException, GenericOPException {
-		final String ontologyName = operationModel.getOntologyName();
-		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
+	public void validate(OperationModel operationModel, Ontology ontology) throws IOException, GenericOPException {
 		final JsonNode dataNode = mapper.readTree(operationModel.getBody());
 		if (dataNode.isArray()) {
 			((ArrayNode) dataNode).elements().forEachRemaining(i -> {

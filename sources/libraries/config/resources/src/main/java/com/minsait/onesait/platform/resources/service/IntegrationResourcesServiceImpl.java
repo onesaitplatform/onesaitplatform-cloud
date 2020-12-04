@@ -14,16 +14,26 @@
  */
 package com.minsait.onesait.platform.resources.service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import com.minsait.onesait.platform.commons.ActiveProfileDetector;
+import com.minsait.onesait.platform.config.components.AllConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
+import com.minsait.onesait.platform.config.components.ModulesUrls;
 import com.minsait.onesait.platform.config.components.Urls;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 
@@ -32,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@Lazy(value = true)
 public class IntegrationResourcesServiceImpl implements IntegrationResourcesService {
 
 	@Autowired
@@ -45,17 +56,16 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	@Getter
 	private GlobalConfiguration globalConfiguration;
 
+	private static final String ENDPOINTS_PREFIX_FILE = "endpoints-";
+	private static final String GLOBAL_CONFIG_PREFIX_FILE = "global-config-";
+	private static final String YML_SUFFIX = ".yml";
+
 	public enum ServiceUrl {
-		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY,
-		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL;
+		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY, MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL;
 	}
 
 	public enum Module {
-		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"),
-		ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"),
-		DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"),
-		RULES_ENGINE("rulesEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
-		REPORT_ENGINE("reportEngine");
+	IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"), ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"), DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"), RULES_ENGINE("rulesEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"), REPORT_ENGINE("reportEngine");
 
 		String moduleString;
 
@@ -260,8 +270,47 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	}
 
 	private void loadConfigurations() {
-		urls = configurationService.getEndpointsUrls(profile);
-		globalConfiguration = configurationService.getGlobalConfiguration(profile);
+		try {
+			urls = configurationService.getEndpointsUrls(profile);
+		} catch (final Exception e) {
+			log.warn(
+					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
+			urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
+					.getOnesaitplatform().get("urls");
+		}
 
+		globalConfiguration = configurationService.getGlobalConfiguration(profile);
+		if (globalConfiguration == null) {
+			log.warn(
+					"No OP global configuration found, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
+			globalConfiguration = getConfigurationFromResource(GLOBAL_CONFIG_PREFIX_FILE + profile + YML_SUFFIX,
+					AllConfiguration.class).getOnesaitplatform();
+		}
+
+	}
+
+	private <T> T getConfigurationFromResource(String name, Class<T> clazz) {
+		final String config = loadFromResources(name);
+		final Constructor constructor = new Constructor(AllConfiguration.class);
+		final Yaml yaml = new Yaml(constructor);
+		return yaml.loadAs(config, clazz);
+	}
+
+	private String loadFromResources(String name) {
+		try {
+			return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(name).toURI())),
+					StandardCharsets.UTF_8);
+
+		} catch (final Exception e) {
+			try {
+				return new String(IOUtils.toString(getClass().getClassLoader().getResourceAsStream(name)).getBytes(),
+						StandardCharsets.UTF_8);
+			} catch (final IOException e1) {
+				log.error("**********************************************");
+				log.error("Error loading resource: " + name + ".Please check if this error affect your database");
+				log.error(e.getMessage());
+				return null;
+			}
+		}
 	}
 }

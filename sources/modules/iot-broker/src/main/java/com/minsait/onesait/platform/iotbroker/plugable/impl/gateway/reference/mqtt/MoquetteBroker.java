@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,15 +40,19 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
+import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUnsubscribeMessage;
 import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;
 import com.minsait.onesait.platform.comms.protocol.json.Exception.SSAPParseException;
 import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.repository.SubscriptorRepository;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
 import com.minsait.onesait.platform.iotbroker.processor.MessageProcessor;
 import com.minsait.onesait.platform.iotbroker.processor.impl.UnsubscribeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import io.moquette.BrokerConstants;
 import io.moquette.interception.AbstractInterceptHandler;
@@ -127,6 +132,9 @@ public class MoquetteBroker {
 
 	@Autowired
 	private SubscriptorRepository subscriptorRepository;
+	
+	@Autowired
+	SecurityPluginManager securityPluginManager;
 
 	@Autowired
 	@Qualifier("notification")
@@ -199,9 +207,9 @@ public class MoquetteBroker {
 
 			List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
 			for (Subscriptor subscriptor : subscriptors) {
-				unsubscribe.process(
-						SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId()),
-						getGatewayInfo());
+				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
+				final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+				unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 			}
 			final MqttPublishMessage message = MqttMessageBuilders.publish()
 					.topicName(outboundTopic + "/" + msg.getClientID()).retained(false).qos(MqttQoS.EXACTLY_ONCE)
@@ -224,9 +232,9 @@ public class MoquetteBroker {
 
 			List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
 			for (Subscriptor subscriptor : subscriptors) {
-				unsubscribe.process(
-						SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId()),
-						getGatewayInfo());
+				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
+				final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+				unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 			}
 
 			try {
@@ -255,8 +263,9 @@ public class MoquetteBroker {
 								for (String client : clients) {
 									List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(client);
 									for (Subscriptor subscriptor : subscriptors) {
-										unsubscribe.process(SSAPMessageGenerator.generateRequestUnsubscribeMessage(null,
-												subscriptor.getSubscriptionId()), getGatewayInfo());
+										SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
+										final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+										unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 									}
 								}
 							}

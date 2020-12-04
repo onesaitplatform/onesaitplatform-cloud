@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,10 +54,12 @@ import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;
 import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.repository.SubscriptorRepository;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
 import com.minsait.onesait.platform.iotbroker.processor.MessageProcessor;
 import com.minsait.onesait.platform.iotbroker.processor.impl.UnsubscribeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,6 +73,9 @@ public class StompWebSocketHandler implements ApplicationListener<SessionConnect
 
 	@Autowired
 	MessageProcessor processor;
+	
+	@Autowired
+	SecurityPluginManager securityPluginManager;
 	
 	@Autowired
 	private UnsubscribeProcessor unsubscribe;
@@ -145,7 +151,9 @@ public class StompWebSocketHandler implements ApplicationListener<SessionConnect
 					} else {
 						Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(entry.getValue().getNotificationMessage().getBody().getSubscriptionId());
 						log.info("Unsubscribing " + subscriptor.getSubscriptionId());
-						unsubscribe.process(SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId()), getGatewayInfo());
+						SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
+						final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+						unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 						
 						subscriptorRepository.delete(subscriptor);
 						messageNotification.remove(entry.getKey());
@@ -237,7 +245,9 @@ public class StompWebSocketHandler implements ApplicationListener<SessionConnect
 		List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(event.getSessionId());
 		
 		for (Subscriptor subscriptorClient : subscriptors) {
-			unsubscribe.process(SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptorClient.getSubscriptionId()), getGatewayInfo());
+			SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptorClient.getSubscriptionId());
+			final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+			unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 		}
 
 	}

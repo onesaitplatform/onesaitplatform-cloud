@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.mail.MessagingException;
-import javax.transaction.Transactional;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,7 +223,6 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 	}
 
 	@Override
-	@Transactional
 	public ResponseEntity<String> deploymentNotification(String json) {
 		final ObjectMapper mapper = new ObjectMapper();
 		FlowEngineDeployerApis deployedAPisInfo;

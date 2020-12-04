@@ -25,8 +25,6 @@ import com.minsait.onesait.platform.config.model.ParameterModel;
 
 public interface ParameterModelRepository extends JpaRepository<ParameterModel, String> {
 
-	ParameterModel findById(String id);
-
 	List<ParameterModel> findByIdentification(String identification);
 
 	List<ParameterModel> findByIdentificationContaining(String identification);

@@ -95,6 +95,7 @@ EXPOSE 24000
 ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     SERVER_NAME=localhost \
     KAFKAENABLED=true \
+    KAFKABROKERS=none \    
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     KAFKAUSER=VideoBrokerClient\
@@ -105,6 +106,17 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     DBADDPROPS="" \
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64:/usr/local/opencv/lib \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
-    HZ_ZOOKEEPER_URL=zookeeper:2181
+    HZ_ZOOKEEPER_URL=zookeeper:2181 \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \
+    JDBCPROTOCOL="jdbc:mysql:" \
+    DBADDPROPS="" \
+    AUDITGLOBALNOTIFY=false \
+    MAXCONN=100 \
+    MAXCONNROUTE=100 \
+    OP_LOG_LEVEL=INFO 
 
+    
 ENTRYPOINT java $JAVA_OPTS -Djava.library.path=/usr/local/opencv/lib -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

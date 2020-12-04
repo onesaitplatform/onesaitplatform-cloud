@@ -465,6 +465,37 @@
 									<div class="col-md-12">											
 										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right">
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{gen.name}"	data-column="0"> Identification</label>
+														<label class="toggle-vis"
+															th:text="#{dataflow.status}" data-column="1"> Status</label>
+														<label class="toggle-vis"
+														th:text="#{dataflow.instance}" data-column="2"> Instance</label>
+														<label class="toggle-vis"
+														th:text="#{gen.owner}" data-column="3">Owner</label>
+														<label class="toggle-vis"
+															th:text="#{gen.public}" data-column="4"> Public</label>
+															
+															<label class="toggle-vis"
+															th:text="#{gen.created}" data-column="5"> Created At</label>
+															
+															<label class="toggle-vis"
+															th:text="#{gen.updated}" data-column="6"> Updated At</label>
+															
+															<label class="toggle-vis"
+															th:text="#{gen.options}" data-column="7"> Options</label>
+													</div>
+												</div>
+											
+											
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="pipelines" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
@@ -558,16 +589,16 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -596,16 +627,26 @@
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			var column = $('#pipelines').DataTable().column( $(this).attr('data-column') ); 
+			column.visible( ! column.visible() );
+			$(this).toggleClass('text-muted line-through');			
+		});	
 		
 	});
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		
 		
 	});
 	

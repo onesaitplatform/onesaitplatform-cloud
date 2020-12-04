@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -83,6 +84,7 @@ import com.minsait.onesait.platform.config.services.subcategory.SubcategoryServi
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.EditorDTO;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDTO;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
@@ -128,6 +130,9 @@ public class DashboardController {
 	@Autowired
 	private CategoryRelationRepository categoryRelationRepository;
 
+	@Autowired()
+	private ResourcesInUseService resourcesInUseService;
+
 	@Autowired(required = false)
 	private JWTService jwtService;
 
@@ -144,6 +149,7 @@ public class DashboardController {
 	private static final String IFRAME = "iframe";
 	private static final String SYNOPT = "synop";
 	private static final String IOTBROKERURL = "iotbrokerurl";
+	private static final String RESOURCEINUSE = "resourceinuse";
 	private static final String FIXED = "fixed";
 	private static final String ERROR_DASHBOARD_IMAGE = "Error generating Dashboard Image";
 	private static final String ERROR_DASHBOARD_PDF = "Error generating Dashboard PDF";
@@ -284,8 +290,11 @@ public class DashboardController {
 
 			id = dashboardService.cloneDashboard(dashboardService.getDashboardById(dashboardId, userId), identification,
 					userService.getUser(userId));
-
-			final Dashboard dashboard = dashboardRepository.findById(id);
+			final Optional<Dashboard> opt = dashboardRepository.findById(id);
+			if (!opt.isPresent()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+			final Dashboard dashboard = opt.get();
 			return new ResponseEntity<>(dashboard.getId(), HttpStatus.OK);
 		} catch (final Exception e) {
 			log.error(e.getMessage());
@@ -361,6 +370,7 @@ public class DashboardController {
 				throw new DashboardServiceException(
 						"Cannot update Dashboard that does not exist or don't have permission");
 			}
+			resourcesInUseService.removeByUser(id, utils.getUserId());
 			return REDIRECT_DASHB_LIST;
 
 		} catch (final DashboardServiceException e) {
@@ -404,7 +414,7 @@ public class DashboardController {
 			final List<DashboardUserAccess> userAccess = dashboardService.getDashboardUserAccesses(dashboard);
 			if (userAccess != null && !userAccess.isEmpty()) {
 				final ArrayList<DashboardAccessDTO> list = new ArrayList<>();
-				for (DashboardUserAccess dua : userAccess) {
+				for (final DashboardUserAccess dua : userAccess) {
 					if (userIsActive(dua.getUser().getUserId())) {
 						final DashboardAccessDTO daDTO = new DashboardAccessDTO();
 						daDTO.setAccesstypes(dua.getDashboardUserAccessType().getName());
@@ -434,7 +444,8 @@ public class DashboardController {
 			model.addAttribute(CATEGORIES, categoryService.findAllCategories());
 			model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
 			model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
-
+			model.addAttribute(RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+			resourcesInUseService.put(id, utils.getUserId());
 			return DASHB_CREATE;
 		} else {
 			return "redirect:/dashboards/list";
@@ -449,9 +460,28 @@ public class DashboardController {
 
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@GetMapping(value = "/headerlibs/{id}", produces = "text/plain")
+	public @ResponseBody String getHeaderLibsById(@PathVariable("id") String id) {
+		return dashboardService.getDashboardById(id, utils.getUserId()).getHeaderlibs();
+	}
+
 	@GetMapping(value = "/model/{id}", produces = "application/json")
 	public @ResponseBody String getModelById(@PathVariable("id") String id) {
-		return dashboardService.getDashboardById(id, utils.getUserId()).getModel();
+		final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
+		final JSONObject dashboardModel = new JSONObject(dashboard.getModel());
+		return dashboardModel.toString();
+	}
+
+	@GetMapping(value = "/i18n/{id}", produces = "application/json")
+	public @ResponseBody String getI18NById(@PathVariable("id") String id) {
+		return dashboardService.getAllInternationalizationJSON(dashboardService.getDashboardById(id, utils.getUserId())).toString();
+	}
+
+	@GetMapping(value = "/bunglemodel/{id}", produces = "application/json")
+	public @ResponseBody DashboardExportDTO getBungleModelById(@PathVariable("id") String id) {
+		DashboardExportDTO dashboard = dashboardService.lightExportDashboardDTO(id, utils.getUserId());
+		return dashboard;
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -470,6 +500,10 @@ public class DashboardController {
 
 			final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
 			model.addAttribute(IOTBROKERURL, url);
+			// add to the model if a user is using the dashboard
+			model.addAttribute(RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+			resourcesInUseService.put(id, utils.getUserId());
+			log.info("in use dashboard resource ", id);
 			return REDIRECT_DASHBOARDS_VIEW;
 		} else {
 			return REDIRECT_ERROR_403;
@@ -513,12 +547,22 @@ public class DashboardController {
 		return "{\"ok\":true}";
 	}
 
+
+
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@PutMapping(value = "/saveheaderlibs/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.TEXT_HTML_VALUE)
+	public @ResponseBody String updateDashboardHeaderLibs(@PathVariable("id") String id,
+			@RequestBody String headerlibs) {
+		dashboardService.saveDashboardHeaderLibs(id, headerlibs, utils.getUserId());
+		return "{\"ok\":true}";
+	}
+
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String deleteDashboard(@PathVariable("id") String id) {
 
 		try {
-			i18nRepository.delete(i18nRepository.findByOPResourceId(id));
+			i18nRepository.deleteAll(i18nRepository.findByOPResourceId(id));
 			dashboardService.deleteDashboard(id, utils.getUserId());
 		} catch (final RuntimeException e) {
 			return "{\"ok\":false, \"error\":\"" + e.getMessage() + "\"}";
@@ -530,7 +574,7 @@ public class DashboardController {
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes ra) {
 		try {
-			i18nRepository.delete(i18nRepository.findByOPResourceId(id));
+			i18nRepository.deleteAll(i18nRepository.findByOPResourceId(id));
 			dashboardService.deleteDashboard(id, utils.getUserId());
 		} catch (final RuntimeException e) {
 			utils.addRedirectException(e, ra);
@@ -710,7 +754,7 @@ public class DashboardController {
 		final List<User> users = userService.getAllActiveUsers();
 		final ArrayList<UserDTO> userList = new ArrayList<>();
 		if (users != null && !users.isEmpty()) {
-			for (User user : users) {
+			for (final User user : users) {
 				final UserDTO uDTO = new UserDTO();
 				uDTO.setUserId(user.getUserId());
 				uDTO.setFullName(user.getFullName());
@@ -727,7 +771,7 @@ public class DashboardController {
 
 	private void createModifyI18nResource(String dashboardId, DashboardCreateDTO dashboard) {
 		final String i18n = dashboard.getI18n();
-		i18nRepository.delete(i18nRepository.findByOPResourceId(dashboardId));
+		i18nRepository.deleteAll(i18nRepository.findByOPResourceId(dashboardId));
 		if (!i18n.isEmpty()) {
 			final String[] internationIds = i18n.split(",");
 			for (final String internationId : internationIds) {
@@ -801,6 +845,13 @@ public class DashboardController {
 				"attachment; filename=\"" + dashboardExportDTO.getIdentification() + ".json\"");
 
 		return new ResponseEntity<>(dashboardJSONObject.getBytes(StandardCharsets.UTF_8), headers, HttpStatus.OK);
+
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 
 	}
 

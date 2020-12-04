@@ -4,14 +4,15 @@
 #server.ssl.key-store-password: localhost
 #server.ssl.key-alias: localhost
 
-server: ## Config Web Server
-   port: 18000
-   contextPath: /controlpanel
+
+   
+server: 
    max-http-header-size: 10000000
-   tomcat:
-      access_log_enabled: true
-      basedir: target/tomcat
+   port: 18000    
    jetty.max-http-post-size: 20000000
+   servlet:
+      contextPath: /controlpanel
+
       
 ldap:
   url: ldap://localhost:10389/
@@ -39,30 +40,26 @@ ldap:
   rolesmemberattribute: member
 
 # all access to actuator endpoints without security
-management.security.enabled: false
-management.endpoints.enabled: true
+
+
 
 master: 
    datasource:
-      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-      username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      driver-class-name: com.mysql.jdbc.Driver
-      test-while-idle: true
-      test-on-borrow: true
-      validation-query: SELECT 1
-      validationQueryTimeout: 5
-      # Number of ms to wait before throwing an exception if no connection is available.
-      max-wait: 10000
-      # Maximum number of active connections that can be allocated from this pool at the same time.
-      max-active: 2
-      initial-size: 1
-      max-idle: 2
-      min-idle: 1
-      removeAbandoned: true
+      hikari: 
+        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+        username: root
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        pool-name: master-hikari-pool
+        minimum-idle: 1
+        maximum-pool-size: 2
+        connection-timeout: 10000
 edge.base.url: https://watergylab.homedns.org
 
 onesaitplatform: #Config onesait Platform specific
+   resourcesinuse:
+      cache:
+         resourcesInUseTime: 5
    multitenancy:
       enabled: true
    authentication:
@@ -75,6 +72,12 @@ onesaitplatform: #Config onesait Platform specific
         purgatory_time_minutes: 5
       default_password: ENC(CuRLX3QJtxVhyxmPckWXs93L0FR7NnYj)
       provider: configdb
+      X509:
+        id_att: SERIALNUMBER
+        id_att_regex: (.*?)(?:,|$)
+        cn_regex: CN=\"(.*?)(?:\"|$)
+        admin_user_id: 51503283G
+        id_hash: true
       cas:
         base_url: http://localhost:8080
         service_id: http://localhost:18000/controlpanel/login/cas
@@ -162,6 +165,9 @@ onesaitplatform: #Config onesait Platform specific
    binary-repository:
       filepath: /usr/local/files/
       mimeTypesNotAllowed: octet-stream,x-javascript,application/x-msdownload
+      remove.file.timeout: 1800 #seconds
+      tmp.file.path: /tmp/files/
+      tmp.file.max.size: 10000 #MB
    database.elasticsearch.enabled: false
    database.mongodb:
       database: onesaitplatform_rtdb
@@ -233,7 +239,8 @@ onesaitplatform: #Config onesait Platform specific
    iotbroker.plugable:
      gateway:
       kafka:
-        enable: true
+        enable: false
+        brokers: none
         host: localhost
         port: 9095
         user: admin
@@ -293,7 +300,7 @@ onesaitplatform: #Config onesait Platform specific
    user.reset.validation.url: http://localhost:18000/controlpanel/users/validateResetPassword/
    secure.cookie: false
    secure.x-frame-options: true
-   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    mailService:
       mailSupport: support@onesaitplatform.com
    queryTool:
@@ -318,23 +325,16 @@ spring: ## General Config
       # suffix: .html
       # template-resolver-order:
       # view-names:
-   datasource: ## JPA Config
-      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+   datasource:
+     hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      driver-class-name: com.mysql.jdbc.Driver
-      test-while-idle: true
-      test-on-borrow: true
-      validation-query: SELECT 1      
-      validationQueryTimeout: 5
-      # Number of ms to wait before throwing an exception if no connection is available.
-      max-wait: 10000
-      # Maximum number of active connections that can be allocated from this pool at the same time.
-      max-active: 30
-      initial-size: 10
-      max-idle: 30
-      min-idle: 10
-      removeAbandoned: true
+      connection-timeout: 10000
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      minimum-idle: 10
+      maximum-pool-size: 30
+
      
    jpa:
       open-in-view: false
@@ -358,34 +358,31 @@ spring: ## General Config
             #  native_client_group: onesaitplatform
             #  native_client_password: onesaitplatform
                        
-   boot.admin: #Spring Boot Admin Config    
-      url: http://localhost:18100/monitoring
-      username: operations
-      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+   boot.admin: #Spring Boot Admin Config   
+      client.url: http://localhost:18100/monitoring
+      client.username: operations
+      client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
       client.metadata.user.name: ${spring.boot.admin.username}
       client.metadata.user.password: ${spring.boot.admin.password}
-   http:
+   servlet:
       multipart:
          max-file-size: 200Mb
          max-request-size: 200Mb
+
+management.endpoints.web.exposure.include: "*"
+management.endpoint.health.show-details: always       
+
 quartz:      
    datasource:
-      url: "@onesaitplatform.quartzURL@"
-      #url: jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-      username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      driver-class-name: com.mysql.jdbc.Driver
-      test-while-idle: true
-      test-on-borrow: true
-      validation-query: SELECT 1
-      validationQueryTimeout: 5
-      # Number of ms to wait before throwing an exception if no connection is available.
-      max-wait: 10000
-      # Maximum number of active connections that can be allocated from this pool at the same time.
-      initial-size: 3
-      max-active: 10
-      max-idle: 10
-      min-idle: 3
+     hikari: 
+        jdbc-url: "@onesaitplatform.quartzURL@"
+        username: root
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        connection-timeout: 10000
+        minimum-idle: 3
+        maximum-pool-size: 10
+    
    jpa:
       ## Hibernate Properties
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
@@ -424,7 +421,7 @@ logging:
       org.springframework: INFO
       org.springframework.security: INFO
       org.apache.kafka: ERROR
-      org.eclipse.jetty: ERROR
+      org.eclipse.jetty: WARN
       com.hazelcast: INFO
       com.github.dandelion.datatables: ERROR
 
@@ -432,7 +429,7 @@ cloud-gateway:
   user: operations
   password: operations
   url: https://development.onesaitplatform.com
-
+    
 captcha:
   enable: false
   token: 6Lc40JkUAAAAANyTpMrn9JNwKsiNRCY0bZ32cWIh
@@ -446,6 +443,7 @@ dynamic-load-balancer:
   url: http://localhost:8000/nginx 
   
 csrf:
-  enable: true
-  
-jasypt.encryptor.password: onesait
+  enable: false
+
+jasypt.encryptor.password: onesait  
+

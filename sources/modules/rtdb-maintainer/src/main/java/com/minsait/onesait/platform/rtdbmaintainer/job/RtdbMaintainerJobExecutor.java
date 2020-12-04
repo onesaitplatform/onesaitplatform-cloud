@@ -34,9 +34,12 @@ public class RtdbMaintainerJobExecutor implements BatchGenericExecutor {
 	OKPIJob oKPIJob;
 	@Autowired
 	ExpirationUsersPassJob expirationUsersPassJob;
+	@Autowired
+	ExpirationResetUsersPassJob expirationResetUsersPassJob;
 
 	private static final String OKPI_JOB_KEY = "Ontology KPI";
 	private static final String JOB_EXPIRATION_USERS_PASS = "ExpirationUsersPassJob";
+	private static final String JOB_EXPIRATION_RESET_USERS_PASS = "ExpirationResetUsersPassJob";
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -45,6 +48,8 @@ public class RtdbMaintainerJobExecutor implements BatchGenericExecutor {
 				oKPIJob.execute(context);
 			} else if (context.getJobDetail().getKey().toString().contains(JOB_EXPIRATION_USERS_PASS)) {
 				expirationUsersPassJob.execute(context);
+			} else if (context.getJobDetail().getKey().toString().contains(JOB_EXPIRATION_RESET_USERS_PASS)) {
+				expirationResetUsersPassJob.execute(context);
 			} else {
 				rtdbMaintainerJob.execute(context);
 			}

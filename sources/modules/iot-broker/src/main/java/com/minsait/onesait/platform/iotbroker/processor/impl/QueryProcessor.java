@@ -34,7 +34,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -55,17 +54,14 @@ public class QueryProcessor implements MessageTypeProcessor {
 	private RouterService routerService;
 	@Autowired
 	ObjectMapper objectMapper;
-	@Autowired
-	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 
 		final SSAPMessage<SSAPBodyQueryMessage> queryMessage = (SSAPMessage<SSAPBodyQueryMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
-		final Optional<IoTSession> session = securityPluginManager.getSession(queryMessage.getSessionKey());
 
 		String user = null;
 

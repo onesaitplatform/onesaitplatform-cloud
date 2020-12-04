@@ -205,13 +205,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	<script type="text/javascript" th:inline="javascript">	
 	
@@ -386,12 +386,12 @@
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([1,3],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([1,3],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});	
 

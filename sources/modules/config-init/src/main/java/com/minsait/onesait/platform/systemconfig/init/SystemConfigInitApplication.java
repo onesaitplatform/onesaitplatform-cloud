@@ -23,7 +23,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-@ComponentScan("com.minsait.onesait.platform")
+@ComponentScan(basePackages = "com.minsait.onesait.platform.systemconfig")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SystemConfigInitApplication {
 

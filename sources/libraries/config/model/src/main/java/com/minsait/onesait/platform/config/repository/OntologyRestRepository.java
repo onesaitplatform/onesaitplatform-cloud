@@ -23,8 +23,6 @@ import com.minsait.onesait.platform.config.model.OntologyRest;
 
 public interface OntologyRestRepository extends JpaRepository<OntologyRest, String> {
 
-	OntologyRest findById(String id);
-
 	OntologyRest findByOntologyId(Ontology ontology);
 
 	@Transactional

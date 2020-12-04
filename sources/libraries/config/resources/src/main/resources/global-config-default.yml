@@ -1,0 +1,37 @@
+onesaitplatform:
+  env:
+    database:
+      execution-timeout: !!java.lang.Long 10000
+      queries-limit: 2000
+      mongodb-servers: localhost:27017
+      mongodb-database: onesaitplatform_rtdb
+      mongodb-socket-timeout: 5000
+      mongodb-connect-timeout: 30000
+      mongodb-max-wait-time: 5000
+      mongodb-pool-size: 10
+      mongodb-read-from-secondaries: false
+      mongodb-write-concern: UNACKNOWLEDGED
+      mongodb-ssl-enabled: false
+      mongodb-use-quasar: true
+      mongodb-quasar-timeout: 10000
+      mongodb-quasar-compile: true
+      mongodb-quasar-allow-mapreduce: true
+      elasticsearch:
+        sql:
+          endpoint: http://localhost:9200
+        dump:
+          path: /tmp/export/
+          elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
+        enabled: true
+        servers:
+          -
+            host: localhost
+            port: 9200
+            protocol: http
+    files:
+      allowed-extensions: jasper
+      max-size: !!java.lang.Long 60000000
+    iotbroker:
+      session-expiration: !!java.lang.Long 600000
+    audit:
+      ignore: false

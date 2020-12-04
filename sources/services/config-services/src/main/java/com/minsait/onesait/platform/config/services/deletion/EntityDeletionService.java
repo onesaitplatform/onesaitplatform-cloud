@@ -31,7 +31,7 @@ public interface EntityDeletionService {
 
 	void deleteToken(Token token);
 
-	void deleteDeviceSimulation(ClientPlatformInstanceSimulation simulation) throws Exception;
+	void deleteDeviceSimulation(ClientPlatformInstanceSimulation simulation);
 
 	void revokeAuthorizations(Ontology ontology);
 

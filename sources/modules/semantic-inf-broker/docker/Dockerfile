@@ -31,6 +31,7 @@ EXPOSE 20000
 
 ENV SERVER_NAME=localhost \
     KAFKAENABLED=false \
+    KAFKABROKERS=none \    
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \

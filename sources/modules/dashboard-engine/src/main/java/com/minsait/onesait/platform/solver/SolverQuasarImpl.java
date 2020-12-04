@@ -20,9 +20,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.dto.socket.querystt.FilterStt;
 import com.minsait.onesait.platform.dto.socket.querystt.ProjectStt;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -78,6 +82,38 @@ public class SolverQuasarImpl extends SolverSQLImpl {
 			}
 			return selectItemOverwrite;
 		}
+	}
+
+	@Override
+	protected List<Expression> buildGroupByV2(List<String> groups, String prefix, List<SelectItem> realproject,
+			List<Expression> groupex) throws JSQLParserException {
+
+		if (groups == null || groups.isEmpty()) {
+			return groupex;
+		} else {
+			List<Expression> groupexaux = (groupex != null && !groupex.isEmpty() ? groupex
+					: new ArrayList<Expression>());
+
+			for (String group : groups) {
+				Column col = new Column(findEndParamV2(group, realproject));
+				groupexaux.add(col);
+			}
+			return groupexaux;
+		}
+	}
+
+	@Override
+	protected Expression buildExpFromFilter(FilterStt f, List<SelectItem> realproject, String prefix)
+			throws JSQLParserException {
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix);
+		sb.append(findEndParamV2(f.getField(), realproject));
+		sb.append(" ");
+		sb.append(f.getOp());
+		sb.append(" ");
+		sb.append(f.getExp());
+		Column col = new Column(sb.toString());
+		return col;
 	}
 
 }

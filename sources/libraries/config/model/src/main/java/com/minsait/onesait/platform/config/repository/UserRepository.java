@@ -18,7 +18,9 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
-import com.minsait.onesait.platform.config.model.Role;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,42 +29,46 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface UserRepository extends JpaRepository<User, String> {
 
-	@Override
-
-	<S extends User> List<S> save(Iterable<S> entities);
+	public static final String USER_REPOSITORY = "UserRepository";
 
 	@Override
+	@CacheEvict(cacheNames = USER_REPOSITORY, allEntries = true)
+	<S extends User> List<S> saveAll(Iterable<S> entities);
 
+	@Override
+	@CacheEvict(cacheNames = USER_REPOSITORY, allEntries = true)
 	void flush();
 
 	@Override
-
+	@CachePut(cacheNames = USER_REPOSITORY, key = "#p0.userId")
 	<S extends User> S saveAndFlush(S entity);
 
 	@SuppressWarnings("unchecked")
 	@Override
-
+	@CachePut(cacheNames = USER_REPOSITORY, key = "#p0.userId")
 	User save(User entity);
 
 	@Override
 	@Transactional
+	@CacheEvict(cacheNames = USER_REPOSITORY, key = "#p0.userId")
 	void delete(User id);
 
-	@Override
 	@Transactional
-	void delete(Iterable<? extends User> entities);
+	@CacheEvict(cacheNames = USER_REPOSITORY, key = "#p0")
+	void deleteByUserId(String userId);
 
 	@Override
 	@Transactional
+	@CacheEvict(cacheNames = USER_REPOSITORY, allEntries = true)
+	void deleteAll(Iterable<? extends User> entities);
+
+	@Override
+	@Transactional
+	@CacheEvict(cacheNames = USER_REPOSITORY, allEntries = true)
 	void deleteAll();
 
 	@Override
-
 	List<User> findAll();
-
-	@Override
-
-	List<User> findAll(Iterable<String> ids);
 
 	@Query("SELECT o FROM User AS o WHERE o.active=true")
 	List<User> findAllActiveUsers();
@@ -72,14 +78,14 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	int countByEmail(String email);
 
-	User findByUserId(String userId);
-
 	User findUserByEmail(String email);
 
+	@Cacheable(cacheNames = USER_REPOSITORY, unless = "#result == null", key = "#p0")
 	User findByUserIdAndPassword(String userId, String password);
 
 	@Transactional
-	void deleteByUserId(String userId);
+	@Cacheable(cacheNames = USER_REPOSITORY, unless = "#result == null", key = "#p0")
+	User findByUserId(String userId);
 
 	@Query("SELECT o FROM User AS o WHERE o.role !='ROLE_ADMINISTRATOR'")
 	List<User> findUsersNoAdmin();

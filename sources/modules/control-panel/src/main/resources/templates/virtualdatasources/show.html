@@ -237,12 +237,12 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
 	
@@ -255,16 +255,16 @@
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 	
 	<!-- JSON EDITOR -->
-	<script th:src="@{/static/vendor/json/json2.min.js}"/>
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
 	
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">

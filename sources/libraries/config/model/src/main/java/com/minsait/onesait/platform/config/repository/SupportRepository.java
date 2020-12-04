@@ -32,6 +32,4 @@ public interface SupportRepository extends JpaRepository<SupportRequest, String>
 	@Override
 	void delete(SupportRequest id);
 
-	SupportRequest findById(String id);
-
 }

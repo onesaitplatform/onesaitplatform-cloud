@@ -157,7 +157,7 @@ public class OntologyDTO {
 		this.rtdbDatasource = ontology.getRtdbDatasource();
 		this.rtdbToHdb = ontology.isRtdbToHdb();
 		this.rtdbToHdbStorage = ontology.getRtdbToHdbStorage();
-		this.topic = ontology.getTopic();
+		//this.topic = ontology.getTopic();
 		this.xmlDiagram = ontology.getXmlDiagram();
 		this.dataModel = DataModelDTO.fromDataModel(ontology.getDataModel());
 		this.authorizations = new ArrayList<>();

@@ -64,6 +64,7 @@ import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.rollback.RollbackController;
 import com.minsait.onesait.platform.controlpanel.helper.gis.viewer.ViewerHelper;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -104,6 +105,9 @@ public class ViewerController {
 
 	@Autowired(required = false)
 	private JWTService jwtService;
+
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	private static final String REDIRECT_VIEWERS_VIEW = "viewers/view";
@@ -272,7 +276,7 @@ public class ViewerController {
 		}
 
 		viewerService.create(viewer, viewerDTO.getBaseLayer());
-
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(REDIRECT, LIST);
 		response.put(STATUS, "ok");
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -312,6 +316,9 @@ public class ViewerController {
 		model.addAttribute("layersTypes", layersTypes);
 		model.addAttribute("tecnology", viewer.getBaseLayer().getTechnology());
 		model.addAttribute("layersInUse", layers);
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
+
 		return "viewers/create";
 	}
 
@@ -514,6 +521,12 @@ public class ViewerController {
 			log.error("Error processing the template loades. {}", e.getMessage());
 		}
 		return null;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

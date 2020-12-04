@@ -40,6 +40,7 @@ public class RtdbMaintainerConfiguration implements ApplicationListener<Applicat
 
 	private static final String JOB_NAME = "RtdbMaintainerJob";
 	private static final String JOB_EXPIRATION_USERS_PASS = "ExpirationUsersPassJob";
+	private static final String JOB_EXPIRATION_RESET_USERS_PASS = "ExpirationResetUsersPassJob";
 
 	@Override
 	public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -47,6 +48,8 @@ public class RtdbMaintainerConfiguration implements ApplicationListener<Applicat
 		initializeRtdbMaintainerJob();
 
 		initializeUsersPassJob();
+
+		initializeResetUsersPassJob();
 
 	}
 
@@ -64,19 +67,20 @@ public class RtdbMaintainerConfiguration implements ApplicationListener<Applicat
 
 		final TaskOperation taskOperation = new TaskOperation();
 		taskOperation.setJobName(JOB_NAME + "-" + SchedulerType.BATCH.toString());
-		if (!taskService.checkExists(taskOperation)) {
-			final TaskInfo task = new TaskInfo();
-			task.setSchedulerType(SchedulerType.BATCH);
-			task.setCronExpression(cron);
-			task.setSingleton(true);
-			task.setJobName(JOB_NAME);
-			task.setUsername("administrator");
-			final Map<String, Object> jobContext = new HashMap<>();
-			jobContext.put("timeout", timeout);
-			jobContext.put("timeUnit", timeUnit);
-			task.setData(jobContext);
-			taskService.addJob(task);
+		if (taskService.checkExists(taskOperation)) {
+			taskService.unscheduledFromAnonymous(taskOperation);
 		}
+		final TaskInfo task = new TaskInfo();
+		task.setSchedulerType(SchedulerType.BATCH);
+		task.setCronExpression(cron);
+		task.setSingleton(true);
+		task.setJobName(JOB_NAME);
+		task.setUsername("administrator");
+		final Map<String, Object> jobContext = new HashMap<>();
+		jobContext.put("timeout", timeout);
+		jobContext.put("timeUnit", timeUnit);
+		task.setData(jobContext);
+		taskService.addJob(task);
 
 	}
 
@@ -111,6 +115,39 @@ public class RtdbMaintainerConfiguration implements ApplicationListener<Applicat
 		jobContext.put("timeLifePass", timeLifePass);
 		jobContext.put("noticesDaysBefore", noticesDaysBefore);
 		jobContext.put("maxInactiveDays", maxInactiveDays);
+		task.setData(jobContext);
+		taskService.addJob(task);
+	}
+
+	private void initializeResetUsersPassJob() {
+
+		final Configuration configuration = configurationService.getConfiguration(Configuration.Type.EXPIRATIONUSERS,
+				"default", null);
+
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+				.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
+		final String cron = (String) ymlExpirationUsersPassConfig.get("cron");
+		final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
+
+		// expiration task manage passwords and users
+		final TaskOperation taskManageUsersOperation = new TaskOperation();
+		taskManageUsersOperation
+				.setJobName(JOB_EXPIRATION_RESET_USERS_PASS + "-" + SchedulerType.EXPIRATIONRESETUSER.toString());
+
+		if (taskService.checkExists(taskManageUsersOperation)) {
+			taskService.unscheduledFromAnonymous(taskManageUsersOperation);
+		}
+		// one minute for test "0 0/1 * 1/1 * ? *"
+
+		final TaskInfo task = new TaskInfo();
+		task.setSchedulerType(SchedulerType.EXPIRATIONRESETUSER);
+		task.setCronExpression(cron);
+		task.setSingleton(true);
+		task.setJobName(JOB_EXPIRATION_RESET_USERS_PASS);
+		task.setUsername("administrator");
+		final Map<String, Object> jobContext = new HashMap<>();
+		jobContext.put("hours", hours);
 		task.setData(jobContext);
 		taskService.addJob(task);
 	}

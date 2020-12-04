@@ -25,10 +25,7 @@ import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleObject;
 import com.minsait.onesait.platform.rulesengine.service.RulesManagerService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Configuration
-@Slf4j
 public class HazelcastCacheConfig {
 
 	@Autowired

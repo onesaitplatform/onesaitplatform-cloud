@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -78,7 +79,7 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 
 	@Override
 	public MarketAsset getMarketAssetById(String id) {
-		return marketAssetRepository.findById(id);
+		return marketAssetRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -98,48 +99,50 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 	@Override
 	public void updateMarketAsset(String id, MarketAsset marketAsset, String userId) throws GenericOPException {
 
-		final MarketAsset marketAssetMemory = marketAssetRepository.findById(id);
-		final User user = userService.getUser(userId);
+		marketAssetRepository.findById(id).ifPresent(marketAssetMemory -> {
+			final User user = userService.getUser(userId);
 
-		// If the user is not the owner nor Admin an exception is launch to redirect to
-		// list view
-		if (!marketAsset.getUser().getUserId().equals(userId)
-				&& !user.getRole().toString().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
-			log.error("User is not allow to perform this operation");
-			throw new GenericOPException("User is not allow to perform this operation");
-		}
+			// If the user is not the owner nor Admin an exception is launch to redirect to
+			// list view
+			if (!marketAsset.getUser().getUserId().equals(userId)
+					&& !user.getRole().toString().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+				log.error("User is not allow to perform this operation");
+				throw new RuntimeException("User is not allow to perform this operation");
+			}
 
-		marketAssetMemory.setIdentification(marketAsset.getIdentification());
+			marketAssetMemory.setIdentification(marketAsset.getIdentification());
 
-		marketAssetMemory.setUser(marketAsset.getUser());
+			marketAssetMemory.setUser(marketAsset.getUser());
 
-		marketAssetMemory.setPublic(marketAsset.isPublic());
-		marketAssetMemory.setMarketAssetType(marketAsset.getMarketAssetType());
-		marketAssetMemory.setPaymentMode(marketAsset.getPaymentMode());
-		marketAssetMemory.setState(MarketAsset.MarketAssetState.PENDING);
+			marketAssetMemory.setPublic(marketAsset.isPublic());
+			marketAssetMemory.setMarketAssetType(marketAsset.getMarketAssetType());
+			marketAssetMemory.setPaymentMode(marketAsset.getPaymentMode());
+			marketAssetMemory.setState(MarketAsset.MarketAssetState.PENDING);
 
-		marketAssetMemory.setJsonDesc(marketAsset.getJsonDesc());
+			marketAssetMemory.setJsonDesc(marketAsset.getJsonDesc());
 
-		if (marketAsset.getContentId() == null || "".equals(marketAsset.getContentId())) {
-			marketAssetMemory.setContent(null);
-			marketAssetMemory.setContentId(null);
-		} else if (marketAsset.getContent() != null && marketAsset.getContent().length > 0) {
-			marketAssetMemory.setContent(marketAsset.getContent());
-			marketAssetMemory.setContentId(marketAsset.getContentId());
-		}
+			if (marketAsset.getContentId() == null || "".equals(marketAsset.getContentId())) {
+				marketAssetMemory.setContent(null);
+				marketAssetMemory.setContentId(null);
+			} else if (marketAsset.getContent() != null && marketAsset.getContent().length > 0) {
+				marketAssetMemory.setContent(marketAsset.getContent());
+				marketAssetMemory.setContentId(marketAsset.getContentId());
+			}
 
-		if (marketAsset.getImageType() == null || "".equals(marketAsset.getImageType())) {
-			marketAssetMemory.setImage(null);
-			marketAssetMemory.setImageType(null);
-		} else if (marketAsset.getImage() != null && marketAsset.getImage().length > 0) {
-			marketAssetMemory.setImage(marketAsset.getImage());
-			marketAssetMemory.setImageType(marketAsset.getImageType());
-		}
+			if (marketAsset.getImageType() == null || "".equals(marketAsset.getImageType())) {
+				marketAssetMemory.setImage(null);
+				marketAssetMemory.setImageType(null);
+			} else if (marketAsset.getImage() != null && marketAsset.getImage().length > 0) {
+				marketAssetMemory.setImage(marketAsset.getImage());
+				marketAssetMemory.setImageType(marketAsset.getImageType());
+			}
 
-		marketAssetMemory.setCreatedAt(marketAsset.getCreatedAt());
-		marketAssetMemory.setUpdatedAt(marketAsset.getUpdatedAt());
+			marketAssetMemory.setCreatedAt(marketAsset.getCreatedAt());
+			marketAssetMemory.setUpdatedAt(marketAsset.getUpdatedAt());
 
-		marketAssetRepository.save(marketAssetMemory);
+			marketAssetRepository.save(marketAssetMemory);
+		});
+
 	}
 
 	private List<MarketAsset> filterByUserOrAproved(List<MarketAsset> marketAssetList, User user) {
@@ -156,33 +159,35 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 
 	@Override
 	public byte[] getImgBytes(String id) {
-		final MarketAsset market = marketAssetRepository.findById(id);
+		final MarketAsset market = marketAssetRepository.findById(id).orElse(new MarketAsset());
 		return market.getImage();
 	}
 
 	@Override
 	public byte[] getContent(String id) {
-		final MarketAsset marketAsset = marketAssetRepository.findById(id);
+		final MarketAsset marketAsset = marketAssetRepository.findById(id).orElse(new MarketAsset());
 		return marketAsset.getContent();
 	}
 
 	@Override
 	public void downloadDocument(String id, HttpServletResponse response) {
-		final MarketAsset marketAsset = marketAssetRepository.findById(id);
 
-		final InputStream bis = new ByteArrayInputStream(marketAsset.getContent());
-		final String name = marketAsset.getContentId();
-		response.setContentType("application/octet-stream");
+		marketAssetRepository.findById(id).ifPresent(marketAsset -> {
+			final InputStream bis = new ByteArrayInputStream(marketAsset.getContent());
+			final String name = marketAsset.getContentId();
+			response.setContentType("application/octet-stream");
 
-		ServletOutputStream out;
-		try {
-			response.setHeader("Content-Disposition", "filename=" + name);
-			out = response.getOutputStream();
-			IOUtils.copy(bis, out);
-			response.flushBuffer();
-		} catch (final IOException e) {
-			log.error("Exception reached " + e.getMessage(), e);
-		}
+			ServletOutputStream out;
+			try {
+				response.setHeader("Content-Disposition", "filename=" + name);
+				out = response.getOutputStream();
+				IOUtils.copy(bis, out);
+				response.flushBuffer();
+			} catch (final IOException e) {
+				log.error("Exception reached " + e.getMessage(), e);
+			}
+		});
+
 	}
 
 	@Override
@@ -197,26 +202,29 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 			log.error("Exception reached " + e.getMessage(), e);
 		}
 
-		final MarketAsset marketAsset = marketAssetRepository.findById(id);
+		final Optional<MarketAsset> opt = marketAssetRepository.findById(id);
+		if (opt.isPresent()) {
+			final MarketAsset marketAsset = opt.get();
 
-		marketAsset.setRejectionReason(rejectReason);
-		marketAsset.setState(MarketAssetState.valueOf(state));
+			marketAsset.setRejectionReason(rejectReason);
+			marketAsset.setState(MarketAssetState.valueOf(state));
 
-		marketAssetRepository.save(marketAsset);
+			marketAssetRepository.save(marketAsset);
 
+		}
 		return state;
 	}
 
 	@Override
 	public void delete(String id, String userId) {
 		final User user = userService.getUser(userId);
-		final MarketAsset marketAssetToDelete = marketAssetRepository.findById(id);
+		marketAssetRepository.findById(id).ifPresent(marketAssetToDelete -> {
+			if (userService.isUserAdministrator(user) || marketAssetToDelete.getUser().equals(user)) {
+				marketAssetToDelete.setDeletedAt(new Date());
+				marketAssetRepository.save(marketAssetToDelete);
+			}
+		});
 
-		if (userService.isUserAdministrator(user)
-				|| marketAssetToDelete.getUser().equals(user)) {
-			marketAssetToDelete.setDeletedAt(new Date());
-			marketAssetRepository.save(marketAssetToDelete);
-		}
 	}
 
 	@Override
@@ -225,38 +233,40 @@ public class MarketAssetServiceImpl implements MarketAssetService {
 		final List<UserRatings> userRatings = userRatingRepository.findByMarketAssetAndUser(marketAssetId, userId);
 
 		if (userRatings != null && !userRatings.isEmpty()) {
-			userRatingRepository.delete(userRatings);
+			userRatingRepository.deleteAll(userRatings);
 		}
 
 		final User user = userService.getUser(userId);
-		final MarketAsset marketAsset = marketAssetRepository.findById(marketAssetId);
+		marketAssetRepository.findById(marketAssetId).ifPresent(marketAsset -> {
+			final UserRatings newUserRatings = new UserRatings();
 
-		final UserRatings newUserRatings = new UserRatings();
+			newUserRatings.setMarketAsset(marketAsset);
+			newUserRatings.setUser(user);
 
-		newUserRatings.setMarketAsset(marketAsset);
-		newUserRatings.setUser(user);
+			newUserRatings.setValue(Double.parseDouble(rate));
 
-		newUserRatings.setValue(Double.parseDouble(rate));
+			userRatingRepository.save(newUserRatings);
+		});
 
-		userRatingRepository.save(newUserRatings);
 	}
 
 	@Override
 	public void createComment(String marketAssetId, String userId, String title, String comment) {
 		final User user = userService.getUser(userId);
-		final MarketAsset marketAsset = marketAssetRepository.findById(marketAssetId);
+		marketAssetRepository.findById(marketAssetId).ifPresent(marketAsset -> {
+			final UserComment userComment = new UserComment();
+			userComment.setMarketAsset(marketAsset);
+			userComment.setUser(user);
+			userComment.setTitle(title);
+			userComment.setComment(comment);
 
-		final UserComment userComment = new UserComment();
-		userComment.setMarketAsset(marketAsset);
-		userComment.setUser(user);
-		userComment.setTitle(title);
-		userComment.setComment(comment);
+			userCommentRepository.save(userComment);
+		});
 
-		userCommentRepository.save(userComment);
 	}
 
 	@Override
 	public void deleteComment(String id) {
-		userCommentRepository.delete(id);
+		userCommentRepository.deleteById(id);
 	}
 }

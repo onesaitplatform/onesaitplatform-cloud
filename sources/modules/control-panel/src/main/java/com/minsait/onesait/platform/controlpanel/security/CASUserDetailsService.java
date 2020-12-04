@@ -105,7 +105,7 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 	private User importUserToDB(String username, Map<String, Object> attributes) {
 		final User user = new User();
 
-		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()));
+		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()).orElse(null));
 		user.setUserId(username);
 		user.setActive(true);
 		user.setEmail((String) attributes.get(mail));

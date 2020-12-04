@@ -13,7 +13,7 @@
     
     <appender name="stdoutAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%boldGreen(${LOG_FILE}) %d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
         </encoder>
         <target>System.out</target>
     </appender>
@@ -23,7 +23,7 @@
             <level>WARN</level>
         </filter>
         <encoder>
-            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%boldGreen(${LOG_FILE}) %d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
         </encoder>
         <target>System.out</target>
     </appender>
@@ -38,7 +38,7 @@
 			<totalSizeCap>500MB</totalSizeCap>
 		</rollingPolicy>
         <encoder>
-            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%boldGreen(${LOG_FILE}) %d{HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
         </encoder>
     </appender>
     

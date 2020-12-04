@@ -8,7 +8,7 @@ ExpirationUsersPass:
   #  maximum number of days of inactivity
   maxInactiveDays: 30 
 Authentication:
-   limitFailedAttemp: 3
+   limitFailedAttemp: 5
    numberLastEntriesToCheck: 5
 ResetUserPass:
    # hours of validity of the temporary password

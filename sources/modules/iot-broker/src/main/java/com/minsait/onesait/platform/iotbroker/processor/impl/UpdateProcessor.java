@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.mongodb.util.JSON;
-import oracle.net.aso.n;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +36,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -60,20 +57,18 @@ public class UpdateProcessor implements MessageTypeProcessor {
 	private RouterService routerService;
 	@Autowired
 	ObjectMapper objectMapper;
-	@Autowired
-	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 
 		if (SSAPMessageTypes.UPDATE.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyUpdateMessage> processUpdate = (SSAPMessage<SSAPBodyUpdateMessage>) message;
-			return processUpdate(processUpdate);
+			return processUpdate(processUpdate, session);
 		}
 
 		if (SSAPMessageTypes.UPDATE_BY_ID.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyUpdateByIdMessage> processUpdate = (SSAPMessage<SSAPBodyUpdateByIdMessage>) message;
-			return processUpdateById(processUpdate);
+			return processUpdateById(processUpdate, session);
 		}
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage;
@@ -83,14 +78,13 @@ public class UpdateProcessor implements MessageTypeProcessor {
 
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processUpdate(SSAPMessage<SSAPBodyUpdateMessage> updateMessage) {
+	private SSAPMessage<SSAPBodyReturnMessage> processUpdate(SSAPMessage<SSAPBodyUpdateMessage> updateMessage, Optional<IoTSession> session) {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
 
 		final String sessionkey = updateMessage.getSessionKey();
-		final Optional<IoTSession> session = securityPluginManager.getSession(sessionkey);
 
 		String user = null;
 		String deviceTemplate = null;
@@ -154,12 +148,11 @@ public class UpdateProcessor implements MessageTypeProcessor {
 		return responseMessage;
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processUpdateById(SSAPMessage<SSAPBodyUpdateByIdMessage> updateMessage) {
+	private SSAPMessage<SSAPBodyReturnMessage> processUpdateById(SSAPMessage<SSAPBodyUpdateByIdMessage> updateMessage, Optional<IoTSession> session) {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
-		final Optional<IoTSession> session = securityPluginManager.getSession(updateMessage.getSessionKey());
 
 		String user = null;
 		String deviceTemplate = null;

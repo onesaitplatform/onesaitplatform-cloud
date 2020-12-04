@@ -56,7 +56,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public List<DroolsRule> getRulesForOntology(String ontology) {
-		return getRulesForOntology(ontologyRepository.findByIdentification(ontology));
+		return droolsRuleRepository.findBySourceOntologyIdentificationAndActiveTrue(ontology);
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public DroolsRuleDomain getDomain(String id) {
-		return droolsRuleDomainRepository.findOne(id);
+		return droolsRuleDomainRepository.findById(id).orElse(null);
 	}
 
 	@Override

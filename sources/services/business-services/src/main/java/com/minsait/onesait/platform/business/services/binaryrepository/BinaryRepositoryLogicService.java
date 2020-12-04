@@ -40,4 +40,9 @@ public interface BinaryRepositoryLogicService {
 
 	public BinaryFileData getBinaryFileWOPermission(String fileId) throws IOException, BinaryRepositoryException;
 
+	public String downloadForPagination(String fileId, Long startLine, Long maxLines, Boolean skipHeaders)
+			throws IOException, BinaryRepositoryException;
+
+	public Boolean closePagination(String fileId) throws IOException, BinaryRepositoryException;
+
 }

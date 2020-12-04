@@ -60,6 +60,8 @@ public interface DashboardService {
 
 	void saveDashboardModel(String id, String model, String userId);
 
+	void saveDashboardHeaderLibs(String id, String HeaderLibs, String userId);
+
 	List<DashboardUserAccess> getDashboardUserAccesses(Dashboard dashboard);
 
 	String saveUpdateAccess(DashboardCreateDTO dashboard, String userId);
@@ -115,6 +117,8 @@ public interface DashboardService {
 	long getClientMaxHeartbeatTime();
 
 	DashboardExportDTO exportDashboardDTO(String dashboardId, String userId);
+
+	DashboardExportDTO lightExportDashboardDTO(String dashboardId, String userId);
 
 	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
 	// usersAccessType, boolean updated);

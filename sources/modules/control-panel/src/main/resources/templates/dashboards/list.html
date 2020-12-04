@@ -144,6 +144,23 @@
 																			
 										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
+														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}"> Owner</label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gadgets.type}"> Type</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
+														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="7"  >ID</label>
+														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>															
+													</div>
+												</div>			
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="dashboards" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
@@ -199,7 +216,7 @@
 																	
 																	<!-- URL -->
 																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="URL Dashboard" data-original-title="URL Dashboard" th:onclick="'javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i></span>
-				
+																
 																    <!-- DOWNLOAD -->																   
 																    <a th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  target="_blank" th:href="'/controlpanel/dashboards/exportDashboard/' +  ${dashboard.id}"><i class="la la-download font-hg"></i></a>
 																    
@@ -218,23 +235,7 @@
 													</tbody>
 												</table>
 												
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
-														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}"> Owner</label>
-														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
-														<label class="toggle-vis" data-column="3" th:text="#{gadgets.type}"> Type</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
-														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="7"  >ID</label>
-														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>															
-													</div>
-												</div>											
+																				
 											</div>
 										</div>											
 									</div>
@@ -257,13 +258,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 
 	
@@ -425,7 +426,166 @@
 		});
 	};
 	
-
+	function encodeQueryData(data) {
+		   const ret = [];
+		   for (let d in data)
+		     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+		   return ret.join('&');
+		}
+	
+	
+	var showExportPDFDialog = function(id){
+		
+		var messageExportPDF = [[#{dashboards.export.pdf}]];
+		var messageStandbyTime = [[#{dashboards.export.wait}]];
+		var messageheight= [[#{dashboards.export.height}]];
+		var messagewidth= [[#{dashboards.export.width}]];		
+		var messagepresetsize= [[#{dashboards.export.presetsize}]];
+		var messageparams= [[#{dashboards.export.params}]];
+		var globalMessage=[[#{dashboards.export.emptyfields}]];
+		
+		$.confirm({
+			icon: 'la la-file-pdf-o font-hg',
+			title: messageExportPDF,
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="form-body container-fluid">	
+				<div id="imagehaserror" class="alert alert-danger display-hide">
+				<span >${globalMessage}</span>
+			    </div>
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfwaittime" type="number" 
+									required="true" maxlength="100"
+									 class="form-control "  minlength="1" required value="20000" />
+						     </div>
+					    </div>
+				        </div>	
+				        
+					 </div>
+					 <div class="row">
+					 <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagepresetsize}</label>
+							  <select id="pdfselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthpdf()">
+							   <option   value="A0 H" >A0 H</option>
+							   <option   value="A0 V" >A0 V</option> 
+							   <option   value="A1 H" >A1 H</option>
+							   <option   value="A1 V" >A1 V</option> 
+							   <option   value="A2 H" >A2 H</option>
+							   <option   value="A2 V" >A2 V</option>
+							   <option   value="A3 H" >A3 H</option>
+							   <option   value="A3 V" >A3 V</option>
+							   <option selected  value="A4 H" >A4 H</option>
+							   <option   value="A4 V" >A4 V</option>
+							   <option   value="A5 H" >A5 H</option>
+							   <option   value="A5 V" >A5 V</option>
+							   <option   value="A6 H" >A6 H</option>
+							   <option   value="A6 V" >A6 V</option>							   
+						      </select>
+					    </div>
+				        </div>		
+						<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageheight}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfheight" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="794" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagewidth}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfwidth" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="1123" />
+						     </div>
+					    </div>
+				        </div>
+				        
+				        
+				        
+					 </div>
+					 <div class="row">
+						 <div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label>${messageparams}</label>														
+								<textarea id="pdfparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
+							</div>							
+						</div>
+					</div> 
+				</div>
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {				
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 						
+						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);;						
+						var pdfparams = $('#pdfparams').val();
+						var pdfwidth = $('#pdfwidth').val();
+						var pdfheight = $('#pdfheight').val();
+						var checkboxfullscreen = $('#checkboxfullscreen').val();
+						var pdfwaittime = $('#pdfwaittime').val();
+						var ident = id;
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
+						var ok = true;	
+						
+						var data ={};
+						if(typeof pdfparams ==='undefined' || pdfparams.trim().length===0){
+							data = {
+									waittime:pdfwaittime,
+							    	height:pdfheight,
+							    	width:pdfwidth,
+							    	fullpage:checkboxfullscreen,
+							    	token:token			    	
+						    }
+						}else{
+							data = {
+									waittime:pdfwaittime,
+							    	height:pdfheight,
+							    	width:pdfwidth,
+							    	fullpage:checkboxfullscreen,
+							    	token:token,
+							    	params:pdfparams
+							    }
+						}
+						var ok = typeof pdfwidth!=='undefined' && pdfwidth!==null  && pdfwidth.trim().length>0
+							&& typeof pdfheight!=='undefined' && pdfheight!==null  && pdfheight.trim().length>0
+							&& typeof pdfwaittime!=='undefined' && pdfwaittime!==null  && pdfwaittime.trim().length>0 ;	
+						if(ok){
+							var downloadUrl ='/controlpanel/dashboards/generatePDFImage/'+id+'?'+ encodeQueryData(data);							    
+					    	var download = document.createElement('a');
+					    	download.href = downloadUrl;					    	
+					    	download.click();							    	
+					    	return true;
+						} else{
+							$('#imagehaserror').show();
+							return false;
+						}
+						}
+					}											
+				
+			}
+		});
+	};
+	
+	
 	function updateheightwidthimage(){
 		var selected = $('#imageselectsize').val();
 		var dimensions = getDimensions(selected);
@@ -595,12 +755,12 @@
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([1,3,7],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([1,3,7],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});	
 	
@@ -615,7 +775,7 @@
 			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder=''/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,

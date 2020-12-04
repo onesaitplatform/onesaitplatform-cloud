@@ -65,7 +65,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	public Report findById(String id) {
 		log.debug("INI. Find report by Id: {}", id);
-		return reportRepository.findOne(id);
+		return reportRepository.findById(id).orElse(null);
 	}
 
 	@Transactional
@@ -79,7 +79,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	public void disable(String id) {
 		log.debug("INI. Disable report id: {}", id);
-		final Report entity = reportRepository.findOne(id);
+		final Report entity = reportRepository.findById(id).orElse(null);
 
 		if (entity != null) {
 			log.debug("Disable > Find report {}", entity);
@@ -91,7 +91,7 @@ public class ReportServiceImpl implements ReportService {
 	@Transactional
 	@Override
 	public void delete(String id) {
-		reportRepository.delete(id);
+		reportRepository.deleteById(id);
 
 	}
 
@@ -141,7 +141,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	@Transactional
 	public void addBinaryFileToResource(Report report, String binaryFileId) {
-		final BinaryFile file = binaryFileRepository.findById(binaryFileId);
+		final BinaryFile file = binaryFileRepository.findById(binaryFileId).orElse(null);
 		if (file != null) {
 			report.getResources().removeIf(bf -> bf.getId().equals(file.getId()));
 			report.getResources().add(file);

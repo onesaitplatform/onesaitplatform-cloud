@@ -27,9 +27,6 @@ import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 public interface ApiOperationRepository extends JpaRepository<ApiOperation, String> {
 
 	@Override
-	<S extends ApiOperation> List<S> save(Iterable<S> entities);
-
-	@Override
 	void flush();
 
 	@Override
@@ -46,8 +43,6 @@ public interface ApiOperationRepository extends JpaRepository<ApiOperation, Stri
 	@Override
 	@Transactional
 	void deleteAll();
-
-	public ApiOperation findById(String id);
 
 	public List<ApiOperation> findByIdentificationIgnoreCase(String identification);
 
@@ -71,7 +66,7 @@ public interface ApiOperationRepository extends JpaRepository<ApiOperation, Stri
 	public List<ApiOperation> findAllByApi(Api api);
 
 	public List<ApiOperation> findByApiAndOperation(Api api, Type operation);
-	
+
 	public List<ApiOperation> findByApiAndIdentification(Api api, String identification);
 
 }

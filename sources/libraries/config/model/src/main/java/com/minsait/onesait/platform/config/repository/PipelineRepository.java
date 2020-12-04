@@ -16,21 +16,20 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.DataflowInstance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 
+	@Override
 	List<Pipeline> findAll();
 
 	Pipeline findByIdentification(String pipelineId);
-	
-	Pipeline findById(String id);
 
 	List<Pipeline> findByUser(User user);
 

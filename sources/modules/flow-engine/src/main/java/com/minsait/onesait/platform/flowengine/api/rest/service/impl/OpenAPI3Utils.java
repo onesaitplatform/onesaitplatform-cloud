@@ -62,6 +62,7 @@ public class OpenAPI3Utils {
 	private RestTemplate template;
 	@Autowired
 	IntegrationResourcesService resourcesService;
+	final Map<String, Components> cacheExternalReferences = new HashMap<>();
 
 	private static final String DEFAULT_RESPONSE_DESC = "Other status code";
 
@@ -75,7 +76,6 @@ public class OpenAPI3Utils {
 			String opMethodFilter) {
 		final List<RestApiOperationDTO> operationNames = new ArrayList<>();
 
-		final Map<String, Components> cacheExternalReferences = new HashMap<>();
 		final OpenAPI openAPI = getOpenAPI(openApi);
 		openAPI.getPaths().entrySet().forEach(p -> {
 			final PathItem path = p.getValue();

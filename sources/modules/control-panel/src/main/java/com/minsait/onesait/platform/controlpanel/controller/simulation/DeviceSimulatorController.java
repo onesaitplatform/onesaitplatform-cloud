@@ -44,7 +44,7 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.DataSchemaValidationException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
-import com.minsait.onesait.platform.controlpanel.controller.app.AppController;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.quartz.services.simulation.SimulationService;
 
@@ -69,6 +69,8 @@ public class DeviceSimulatorController {
 	private SimulationService simulationService;
 	@Autowired
 	private EntityDeletionService entityDeletionService;
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	private static final String SIMULATORS_STR = "simulators";
 	private static final String ERROR_403 = "error/403";
@@ -76,7 +78,7 @@ public class DeviceSimulatorController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("list")
 	public String list(Model model) {
-
+		model.addAttribute(SIMULATORS_STR, data());
 		return "simulator/list";
 	}
 
@@ -84,10 +86,11 @@ public class DeviceSimulatorController {
 	@GetMapping("data")
 	public @ResponseBody List<DeviceSimulationDTO> data() {
 		List<ClientPlatformInstanceSimulation> simulations = null;
-		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			simulations = deviceSimulationService.getAllSimulations();
-		else
+		} else {
 			simulations = deviceSimulationService.getSimulationsForUser(utils.getUserId());
+		}
 
 		return simulations.stream()
 				.map(s -> DeviceSimulationDTO.builder().active(s.isActive())
@@ -134,21 +137,24 @@ public class DeviceSimulatorController {
 				.getClientOntologiesIdentification(simulation.getClientPlatform().getIdentification()));
 		model.addAttribute("tokens", deviceSimulationService
 				.getClientTokensIdentification(simulation.getClientPlatform().getIdentification()));
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
+
 		return "simulator/create";
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping("create")
-	public String create(Model model, RedirectAttributes redirect, @RequestParam String identification, @RequestParam String jsonMap,
-			@RequestParam String ontology, @RequestParam String clientPlatform, @RequestParam String token,
-			@RequestParam int interval, @RequestParam String jsonInstances, @RequestParam String instancesMode)
-			throws IOException {
+	public String create(Model model, RedirectAttributes redirect, @RequestParam String identification,
+			@RequestParam String jsonMap, @RequestParam String ontology, @RequestParam String clientPlatform,
+			@RequestParam String token, @RequestParam int interval, @RequestParam String jsonInstances,
+			@RequestParam String instancesMode) throws IOException {
 
 		try {
 			simulationService.createSimulation(identification, interval, utils.getUserId(),
 					simulationService.getDeviceSimulationJson(identification, clientPlatform, token, ontology, jsonMap,
 							jsonInstances, instancesMode));
-		} catch (SimulationServiceException e) {
+		} catch (final SimulationServiceException e) {
 			log.debug("Cannot create simulation");
 			utils.addRedirectException(e, redirect);
 			return "redirect:/devicesimulation/create";
@@ -191,15 +197,17 @@ public class DeviceSimulatorController {
 
 		List<ClientPlatformInstanceSimulation> simulations = null;
 		if (simulation != null) {
-			if (simulation.isActive())
+			if (simulation.isActive()) {
 				simulationService.unscheduleSimulation(simulation);
-			else
+			} else {
 				simulationService.scheduleSimulation(simulation);
+			}
 		}
-		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			simulations = deviceSimulationService.getAllSimulations();
-		else
+		} else {
 			simulations = deviceSimulationService.getSimulationsForUser(utils.getUserId());
+		}
 		model.addAttribute("simulations", simulations);
 		return "simulator/list :: simulations";
 
@@ -227,6 +235,7 @@ public class DeviceSimulatorController {
 								jsonMap, jsonInstances, instancesMode),
 
 						simulation);
+				resourcesInUseService.removeByUser(id, utils.getUserId());
 				return "redirect:/devicesimulation/list";
 			} else {
 				utils.addRedirectMessage("simulation.update.isactive", redirect);
@@ -271,12 +280,12 @@ public class DeviceSimulatorController {
 		JsonNode node;
 		try {
 			node = mapper.readTree(json);
-			if (node.isArray())
+			if (node.isArray()) {
 				node.forEach(n -> {
 					ontologyDataService.checkOntologySchemaCompliance(n,
 							ontologyService.getOntologyByIdentification(ontology, utils.getUserId()));
 				});
-			else {
+			} else {
 
 				ontologyDataService.checkOntologySchemaCompliance(node,
 						ontologyService.getOntologyByIdentification(ontology, utils.getUserId()));
@@ -289,4 +298,11 @@ public class DeviceSimulatorController {
 		return "ok";
 
 	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free dashboard resource ", id);
+	}
+
 }

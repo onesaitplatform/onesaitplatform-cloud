@@ -32,14 +32,14 @@ public class DashboardConfServiceImpl implements DashboardConfService {
 
 	@Override
 	public List<DashboardConf> findAllDashboardConf() {
-		return this.dashboardConfRepository.findAll();
+		return dashboardConfRepository.findAll();
 	}
 
 	@Override
 	public List<String> getAllIdentifications() {
-		List<DashboardConf> dashboardConfs = this.dashboardConfRepository.findAllByOrderByIdentificationAsc();
-		List<String> names = new ArrayList<>();
-		for (DashboardConf dc : dashboardConfs) {
+		final List<DashboardConf> dashboardConfs = dashboardConfRepository.findAllByOrderByIdentificationAsc();
+		final List<String> names = new ArrayList<>();
+		for (final DashboardConf dc : dashboardConfs) {
 			names.add(dc.getIdentification());
 		}
 		return names;
@@ -47,28 +47,28 @@ public class DashboardConfServiceImpl implements DashboardConfService {
 
 	@Override
 	public DashboardConf getDashboardConfById(String id) {
-		return this.dashboardConfRepository.findById(id);
+		return dashboardConfRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public List<DashboardConf> getDashboardConfByIdentification(String identification) {
-		return this.dashboardConfRepository.findByIdentification(identification);
+		return dashboardConfRepository.findByIdentification(identification);
 	}
 
 	@Override
 	public void saveDashboardConf(DashboardConf dashboardConf) {
 		try {
 			dashboardConfRepository.save(dashboardConf);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new DashboardConfServiceException("Cannot create dashboard configuration");
 		}
 	}
 
 	@Override
 	public void deleteDashboardConf(String id) {
-		DashboardConf dc = this.dashboardConfRepository.findById(id);
+		final DashboardConf dc = dashboardConfRepository.findById(id).orElse(null);
 		if (dc != null) {
-			this.dashboardConfRepository.delete(dc);
+			dashboardConfRepository.delete(dc);
 		} else
 			throw new DashboardConfServiceException("Cannot delete dashboard configuration that does not exist");
 	}

@@ -25,6 +25,24 @@ var DashboardsCreateController = function() {
 	var navigateUrl = function(url) {
 		window.location.href = url;
 	}
+	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/dashboards/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
+	
+	
 	// DELETE DASHBOARD
 	var deleteDashboardConfirmation = function(dashboardId){
 		console.log('deleteDashoardConfirmation() -> formId: '+ dashboardId);		
@@ -315,6 +333,10 @@ var DashboardsCreateController = function() {
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';	
+			freeResource(id,url); 
 		},
 		
 		getFieldsFromQueryResult: function (jsonString){

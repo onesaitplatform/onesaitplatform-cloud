@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology.model
 import javax.validation.constraints.NotNull;
 
 import com.minsait.onesait.platform.config.model.Ontology;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

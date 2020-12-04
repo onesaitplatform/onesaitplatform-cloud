@@ -17,7 +17,9 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology.model
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.validation.constraints.NotNull;
+
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.Constraint;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;

@@ -42,15 +42,15 @@ public class InterceptorCommon {
 		session.removeAttribute(SESSION_ATTR_PREVIOUS_AUTH);
 	}
 
+	public static void clearMultitenancyContext() {
+		MultitenancyContextHolder.clear();
+	}
+
 	public static void setPreviousAuthenticationOnSession(HttpSession session) {
 		if (session.getAttribute(SESSION_ATTR_PREVIOUS_AUTH) == null) {
 			session.setAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH,
 					SecurityContextHolder.getContext().getAuthentication());
 		}
-	}
-
-	public static void clearMultitenancyContext() {
-		MultitenancyContextHolder.clear();
 	}
 
 }

@@ -40,8 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomInvalidSessionStrategy implements InvalidSessionStrategy {
 
-	// TO-DO adapt Spring Boot 2
-	@Value("${server.contextPath:/controlpanel}")
+	@Value("${server.servlet.contextPath:/controlpanel}")
 	private String contextPath;
 	private String destination;
 	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();

@@ -29,7 +29,6 @@ import org.springframework.ui.Model;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
@@ -142,7 +141,7 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Override
 	public void getDigitalTwinToUpdate(Model model, String id) {
-		final DigitalTwinDevice digitalTwinDevice = digitalTwinDeviceRepo.findById(id);
+		final DigitalTwinDevice digitalTwinDevice = digitalTwinDeviceRepo.findById(id).orElse(null);
 		if (digitalTwinDevice != null) {
 			model.addAttribute("digitaltwindevice", digitalTwinDevice);
 			model.addAttribute("logic", digitalTwinDevice.getTypeId().getLogic());
@@ -154,20 +153,22 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 
 	@Override
 	public DigitalTwinDevice getDigitalTwinDeviceById(String id) {
-		return digitalTwinDeviceRepo.findById(id);
+		return digitalTwinDeviceRepo.findById(id).orElse(null);
 	}
 
 	@Override
 	@Transactional
 	public void updateDigitalTwinDevice(DigitalTwinDevice digitalTwinDevice, HttpServletRequest httpServletRequest) {
 		// Update DigitalTwinDevice
-		final DigitalTwinDevice digitalTwinDeviceDb = digitalTwinDeviceRepo.findById(digitalTwinDevice.getId());
-		final User user = digitalTwinDeviceDb.getUser();
-		final String id = digitalTwinDeviceDb.getId();
-		digitalTwinDevice.setUser(user);
-		digitalTwinDevice.setId(id);
-		digitalTwinDeviceRepo.deleteById(digitalTwinDeviceDb.getId());
-		createDigitalTwinDevice(digitalTwinDevice, httpServletRequest);
+		digitalTwinDeviceRepo.findById(digitalTwinDevice.getId()).ifPresent(digitalTwinDeviceDb -> {
+			final User user = digitalTwinDeviceDb.getUser();
+			final String id = digitalTwinDeviceDb.getId();
+			digitalTwinDevice.setUser(user);
+			digitalTwinDevice.setId(id);
+			digitalTwinDeviceRepo.deleteById(digitalTwinDeviceDb.getId());
+			createDigitalTwinDevice(digitalTwinDevice, httpServletRequest);
+		});
+
 	}
 
 	@Override
@@ -234,6 +235,17 @@ public class DigitalTwinDeviceServiceImpl implements DigitalTwinDeviceService {
 			return digitalTwinDeviceRepo.findAll();
 		} else {
 			return digitalTwinDeviceRepo.findByUser(user);
+		}
+
+	}
+	
+	@Override
+	public List<DigitalTwinDevice> getAllByUserIdAndIdentification(String userId, String identification) {
+		final User user = userService.getUser(userId);
+		if (userService.isUserAdministrator(user)) {
+			return digitalTwinDeviceRepo.findByIdentificationContaining(identification);
+		} else {
+			return digitalTwinDeviceRepo.findByUserAndIdentificationLike(user, identification);
 		}
 
 	}

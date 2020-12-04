@@ -39,8 +39,7 @@ public interface BinaryFileRepository extends JpaRepository<BinaryFile, String> 
 	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) ORDER BY bf.fileName ASC")
 	List<BinaryFile> findByUser(@Param("user") User user);
 
-	BinaryFile findById(String id);
-
+	@Override
 	@Transactional
 	void deleteById(String id);
 

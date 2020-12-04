@@ -71,7 +71,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 	@Override
 	public List<OntologyTimeSeriesProperty> getTimeSeriesPropertiesByOntologyTimeSeries(
 			OntologyTimeSeries ontologyTimeSeries) {
-		Set<OntologyTimeSeriesProperty> properties = ontologyTimeSeriesPropertyRepository
+		final Set<OntologyTimeSeriesProperty> properties = ontologyTimeSeriesPropertyRepository
 				.findByOntologyTimeSeries(ontologyTimeSeries);
 		return properties.stream().collect(Collectors.toList());
 	}
@@ -79,7 +79,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 	@Override
 	public List<OntologyTimeSeriesWindow> getTimeSeriesWindowByOntologyTimeSeries(
 			OntologyTimeSeries ontologyTimeSeries) {
-		Set<OntologyTimeSeriesWindow> windows = ontologyTimeSeriesWindowRepository
+		final Set<OntologyTimeSeriesWindow> windows = ontologyTimeSeriesWindowRepository
 				.findByOntologyTimeSeries(ontologyTimeSeries);
 		return windows.stream().collect(Collectors.toList());
 	}
@@ -167,7 +167,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			String sessionUserId, OntologyConfiguration config, boolean cleanProperties, boolean cleanWindow) {
 		final Map<String, String> response = new HashMap<>();
 
-		final Ontology ontologyDb = ontologyRepository.findById(ontologyTimeSeriesDTO.getId());
+		final Ontology ontologyDb = ontologyRepository.findById(ontologyTimeSeriesDTO.getId()).orElse(null);
 		final User sessionUser = userService.getUser(sessionUserId);
 
 		if (cleanProperties)

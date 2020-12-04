@@ -91,7 +91,7 @@ public class EntityListener {
 				final Date createDate = new Date();
 				master.setFailedAtemps(0);
 				master.setLastPswdUpdate(createDate);
-				master.setResetPass(createDate);
+				master.setResetPass(null);
 				master.setLastLogin(createDate);
 				masterUserRepository.save(master);
 				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder().masterUser(master)
@@ -116,7 +116,7 @@ public class EntityListener {
 				final Date createDate = new Date();
 				master.setFailedAtemps(0);
 				master.setLastPswdUpdate(createDate);
-				master.setResetPass(createDate);
+				master.setResetPass(null);
 			}
 			master = masterUserRepository.save(master);
 			if (changePass) {

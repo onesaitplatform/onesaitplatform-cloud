@@ -31,6 +31,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -56,12 +58,13 @@ public class AppRole extends AppRoleParent {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<AppRole> childRoles = new HashSet<>();
+	private Set<AppRoleChild> childRoles = new HashSet<>();
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private Set<AppUser> appUsers = new HashSet<>();
 
 }

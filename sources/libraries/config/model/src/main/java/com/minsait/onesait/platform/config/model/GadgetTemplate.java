@@ -42,6 +42,11 @@ public class GadgetTemplate extends OPResource {
 	@Setter
 	private String description;
 
+	@Column(name = "TYPE", length = 100)
+	@Getter
+	@Setter
+	private String type;
+
 	@Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT")
 	@Getter
 	@Setter
@@ -60,4 +65,11 @@ public class GadgetTemplate extends OPResource {
 	@Getter
 	@Setter
 	private String templateJS;
+
+	@Column(name = "HEADERLIBS")
+	@Lob
+	@Type(type = "org.hibernate.type.TextType")
+	@Getter
+	@Setter
+	private String headerlibs;
 }

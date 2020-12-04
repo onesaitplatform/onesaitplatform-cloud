@@ -42,9 +42,7 @@ public class ClientIdParameterProxyFilter extends GenericFilterBean {
 	private static String clientId = "client_id";
 
 	private static final String VERTICAL = "vertical";
-	private static final String TENANT = "tenant";
-	private static final String ERROR_MSG_MULTITENANCY = "Request must contain vertical and tenant parameters.";
-	private static final String ERROR_MSG_VERTICAL = "Request must contain vertical and tenant parameters.";
+
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean multitenancyEnabled;
 

@@ -4,8 +4,8 @@ onesaitplatform:
 
 spring:
    boot.admin: #Spring Boot Admin Config    
-      url: http://monitoringuiservice:18100/monitoring    
-      client.service-url: http://cacheservice:${server.port}${server.contextPath}/ 
+      client.url: http://monitoringuiservice:18100/monitoring    
+      client.instance.service-url: http://cacheservice:${server.port}${server.servlet.contextPath}/ 
 
 logging:
    path: /var/log/platform-logs

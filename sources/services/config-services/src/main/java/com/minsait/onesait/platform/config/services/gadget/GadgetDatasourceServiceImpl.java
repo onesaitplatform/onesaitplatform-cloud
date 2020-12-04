@@ -15,9 +15,7 @@
 package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -109,7 +107,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public GadgetDatasource getGadgetDatasourceById(String id) {
-		return gadgetDatasourceRepository.findById(id);
+		return gadgetDatasourceRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -117,9 +115,9 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())){
-			throw new GadgetDatasourceServiceException(
-					"The query: "+gadgetDatasource.getQuery()+" is not for the ontology selected: "+gadgetDatasource.getOntology().getIdentification()) ;
+		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
+			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
+					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
 		}
 		if (!gadgetDatasourceExists(gadgetDatasource)) {
 			log.debug("Gadget datasource no exist, creating...");
@@ -141,12 +139,16 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())){
-			throw new GadgetDatasourceServiceException(
-					"The query: "+gadgetDatasource.getQuery()+" is not for the ontology selected: "+gadgetDatasource.getOntology().getIdentification()) ;
+		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
+			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
+					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
 		}
 		if (gadgetDatasourceExists(gadgetDatasource)) {
-			final GadgetDatasource gadgetDatasourceDB = gadgetDatasourceRepository.findById(gadgetDatasource.getId());
+			final GadgetDatasource gadgetDatasourceDB = gadgetDatasourceRepository.findById(gadgetDatasource.getId())
+					.orElse(new GadgetDatasource());
+			if (gadgetDatasourceDB.getIdentification() == null) {
+				gadgetDatasourceDB.setIdentification(gadgetDatasource.getIdentification());
+			}
 			gadgetDatasourceDB.setConfig(gadgetDatasource.getConfig());
 			gadgetDatasourceDB.setDbtype(gadgetDatasource.getDbtype());
 			gadgetDatasourceDB.setDescription(gadgetDatasource.getDescription());
@@ -164,7 +166,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Override
 	public void deleteGadgetDatasource(String gadgetDatasourceId, String userId) {
 		if (hasUserEditPermission(gadgetDatasourceId, userId)) {
-			final GadgetDatasource gadgetDatasource = gadgetDatasourceRepository.findById(gadgetDatasourceId);
+			final GadgetDatasource gadgetDatasource = gadgetDatasourceRepository.findById(gadgetDatasourceId)
+					.orElse(null);
 			if (gadgetDatasource != null) {
 				gadgetDatasourceRepository.delete(gadgetDatasource);
 			} else {
@@ -179,8 +182,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		final User user = userRepository.findByUserId(userId);
 		if (userService.isUserAdministrator(user)) {
 			return true;
-		} else if (gadgetDatasourceRepository.findById(id).getUser().getUserId().equals(userId)) {
-			return true;
+		} else if (gadgetDatasourceRepository.findById(id).isPresent()) {
+			return gadgetDatasourceRepository.findById(id).get().getUser().getUserId().equals(userId);
 		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
 		}
@@ -193,9 +196,11 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public String getAccessType(String id, String userId) {
+		if (!gadgetDatasourceRepository.findById(id).isPresent())
+			return null;
 		final User user = userRepository.findByUserId(userId);
 		if (userService.isUserAdministrator(user)
-				|| gadgetDatasourceRepository.findById(id).getUser().getUserId().equals(userId)
+				|| gadgetDatasourceRepository.findById(id).get().getUser().getUserId().equals(userId)
 				|| resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE)) {
 			return ResourceAccessType.MANAGE.toString();
 		} else if (resourceService.hasAccess(userId, id, ResourceAccessType.VIEW)) {
@@ -225,15 +230,15 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		List<GadgetDatasourceForList> datasourcesForList = new ArrayList<>();
-		
+
 		if (userService.isUserAdministrator(user)) {
 			datasourcesForList = gadgetDatasourceRepository.findAllForListByOrderByIdentificationAsc();
 		} else {
 			datasourcesForList = gadgetDatasourceRepository.findForListByUserOrderByIdentificationAsc(user);
 			securityService.setSecurityToInputList(datasourcesForList, user, "GadgetDatasource");
 		}
-		List<GadgetDatasourceDTOForList> dtos = new ArrayList<>();
-		for (GadgetDatasourceForList temp : datasourcesForList) {
+		final List<GadgetDatasourceDTOForList> dtos = new ArrayList<>();
+		for (final GadgetDatasourceForList temp : datasourcesForList) {
 			if (temp.getAccessType() != null) {
 
 				final GadgetDatasourceDTOForList obj = new GadgetDatasourceDTOForList();
@@ -259,7 +264,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user) {
-		final String query = gadgetDatasourceRepository.findById(datasourceId).getQuery();
+		final String query = gadgetDatasourceRepository.findById(datasourceId).orElse(null).getQuery();
 
 		final int i = query.toLowerCase().lastIndexOf(LIMIT_LOWERCASE);
 		if (i == -1) {// Add limit add the end
@@ -276,7 +281,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public boolean isGroupDatasourceById(String id) {
-		GadgetDatasource datasource = gadgetDatasourceRepository.findById(id);
+		final GadgetDatasource datasource = gadgetDatasourceRepository.findById(id).orElse(null);
 		return datasource.getQuery().toLowerCase().indexOf(" group by ") != -1;
 	}
 
@@ -285,7 +290,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		final JSONArray elements = new JSONArray();
 		final JSONObject element = new JSONObject();
 
-		final GadgetDatasource datasource = gadgetDatasourceRepository.findById(datasourceId);
+		final GadgetDatasource datasource = gadgetDatasourceRepository.findById(datasourceId).orElse(null);
 
 		if (datasource != null) {
 			element.put("id", datasource.getOntology().getId());
@@ -310,7 +315,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 			for (int i = 1; i < list.length; i++) {
 				if (!list[i].startsWith(OPEN_PARENTHESIS)) {
 					int indexOf = list[i].toLowerCase().indexOf(BLANK_CHARACTER, 0);
-					int indexOfCloseBracket = list[i].toLowerCase().indexOf(CLOSE_PARENTHESIS, 0);
+					final int indexOfCloseBracket = list[i].toLowerCase().indexOf(CLOSE_PARENTHESIS, 0);
 					indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf) ? indexOfCloseBracket
 							: indexOf;
 					if (indexOf == -1) {
@@ -339,13 +344,13 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		}
 		return null;
 	}
-	
-	private Boolean isOntologyOnQuery (String ontology, String query) {
-		query = query.replace("\n", "");		
+
+	private Boolean isOntologyOnQuery(String ontology, String query) {
+		query = query.replace("\n", "");
 		while (query.contains("  ")) {
 			query = query.replace("  ", " ");
 		}
-		
+
 		if (query.toLowerCase().indexOf("from ") == -1 && query.toLowerCase().indexOf("update ") == -1
 				&& query.toLowerCase().indexOf("join ") == -1)
 			return false;
@@ -353,18 +358,20 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 				&& query.toLowerCase().indexOf("update " + ontology.toLowerCase()) == -1
 				&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1)
 			return false;
-		
+
 		return true;
 	}
 
 	@Override
-	public List<Object> getGadgetsUsingDatasource(String id) {
-		List<GadgetMeasure> gadgetMeasureList = gadgetMeasureRepository.findByDatasource(id);
-		HashMap<String, String> gadgetsIdentification = new HashMap<>();
-		for (GadgetMeasure gadgetMeasure : gadgetMeasureList) {
-			gadgetsIdentification.put(gadgetMeasure.getGadget().getIdentification(), gadgetMeasure.getGadget().getIdentification());
+	public List<String> getGadgetsUsingDatasource(String id) {
+		final List<GadgetMeasure> gadgetMeasureList = gadgetMeasureRepository.findByDatasource(id);
+		final HashMap<String, String> gadgetsIdentification = new HashMap<>();
+		for (final GadgetMeasure gadgetMeasure : gadgetMeasureList) {
+			gadgetsIdentification.put(gadgetMeasure.getGadget().getIdentification(),
+					gadgetMeasure.getGadget().getIdentification());
 		}
-		return Arrays.asList(gadgetsIdentification.keySet().toArray());
+		List<String> identificatinoList = new ArrayList<>(gadgetsIdentification.keySet());
+		return identificatinoList;
 	}
 
 }

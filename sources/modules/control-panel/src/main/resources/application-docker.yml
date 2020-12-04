@@ -1,10 +1,10 @@
 master:
    datasource:
-      url: ${CONFIGDBMASTERURL}
+     hikari:
+      jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      max-active: ${CONFIGDB_MAX_ACTIVE}
-      max-idle: ${CONFIGDB_MAX_IDLE}
+      maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
 edge.base.url: {EDGE_BASE_URL}  
 onesaitplatform:
    multitenancy:
@@ -17,6 +17,12 @@ onesaitplatform:
       twofa:
         enabled: ${TWOFA_ENABLED}
       provider: ${AUTH_PROVIDER}
+      X509:
+        id_att: ${X509_ID_ATT}
+        id_att_regex: ${X509_ID_REGEX}
+        cn_regex: ${X509_CN_REGEX}
+        admin_user_id: ${X509_ADMIN_ID}
+        id_hash: ${X509_HASH_ID}
       cas:
         base_url: ${CAS_BASEURL}
         service_id: https://${SERVER_NAME}/controlpanel/login/cas
@@ -104,6 +110,7 @@ onesaitplatform:
      gateway:
       kafka:
         enable: ${KAFKAENABLED}
+        brokers: ${KAFKABROKERS}
         host: ${KAFKAHOST}
         port: ${KAFKAPORT}
         user: admin
@@ -129,7 +136,7 @@ onesaitplatform:
    user.reset.validation.url: http://${SERVER_NAME}/controlpanel/users/validateResetPassword/
    secure.cookie: true
    secure.x-frame-options: ${SECURE_XFRAMEOPTIONS}
-   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    queryTool:
@@ -164,22 +171,16 @@ ldap:
 
 spring:
    datasource:
-      url: ${CONFIGDBURL}${DBADDPROPS}
+     hikari:
+      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
-      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
-      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
-      max-wait: ${DS_MAX_WAIT}
-      initial-size: ${DS_INITIAL_SIZE}
-      max-active: ${DS_MAX_ACTIVE}
-      max-idle: ${DS_MAX_IDLE}
-      min-idle: ${DS_MIN_IDLE}
-      removeAbandoned: ${DS_REMOVE_ABANDONED}
-      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
+      connection-timeout: ${DS_MAX_WAIT_MILLIS}
+      maximum-pool-size: ${DS_MAX_ACTIVE}
+      minimum-idle: ${DS_MIN_IDLE}
    boot.admin: #Spring Boot Admin Config
-      url: http://monitoringuiservice:18100/monitoring
-      client.service-url: http://controlpanelservice:${server.port}${server.contextPath}/
+      client.url: http://monitoringuiservice:18100/monitoring
+      client.instance.service-url: http://controlpanelservice:${server.port}${server.servlet.contextPath}/
    http:
       multipart:
          max-file-size: ${HTTP_MAX_FILE_SIZE}
@@ -190,7 +191,7 @@ spring:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
 quartz:
     datasource:
-      url: ${SCHEDULERDBBURL}${DBADDPROPS}
+      hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
 ## LOGGING CONF
 logging:
    path: /var/log/platform-logs
@@ -212,3 +213,4 @@ dynamic-load-balancer:
 
 csrf:
   enable: ${CSRF_ON}
+

@@ -15,24 +15,31 @@
 package com.minsait.onesait.platform.monitoring.configs;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 
-import de.codecentric.boot.admin.notify.Notifier;
-import de.codecentric.boot.admin.notify.RemindingNotifier;
+import de.codecentric.boot.admin.server.domain.entities.InstanceRepository;
+import de.codecentric.boot.admin.server.notify.CompositeNotifier;
+import de.codecentric.boot.admin.server.notify.LoggingNotifier;
+import de.codecentric.boot.admin.server.notify.Notifier;
+import de.codecentric.boot.admin.server.notify.RemindingNotifier;
+import de.codecentric.boot.admin.server.notify.filter.FilteringNotifier;
 
 @Configuration
 @EnableScheduling
 public class NotifierConfiguration {
-
 	@Autowired
-	private Notifier notifier;
+	private InstanceRepository repository;
+	@Autowired
+	private ObjectProvider<List<Notifier>> otherNotifiers;
 
 	@Value("${onesaitplatform.reminder.periodInMins:5}")
 	private long reminderPeriodinMins;
@@ -43,18 +50,29 @@ public class NotifierConfiguration {
 	@Value("${onesaitplatform.reminder.statuses:DOWN}")
 	private String statuses;
 
+	@Value("${onesaitplatform.reminder.eachInMs}")
+	private long reminderCheckInterval;
+
+	@Bean
+	public FilteringNotifier filteringNotifier() {
+		final CompositeNotifier delegate = new CompositeNotifier(otherNotifiers.getIfAvailable(Collections::emptyList));
+		return new FilteringNotifier(delegate, repository);
+	}
+
+	@Bean
+	public LoggingNotifier notifier() {
+		return new LoggingNotifier(repository);
+	}
+
 	@Primary
 	@Bean
 	public RemindingNotifier remindingNotifier() {
-		RemindingNotifier myNotifier = new RemindingNotifier(notifier);
-		myNotifier.setReminderPeriod(Duration.ofMinutes(reminderPeriodinMins).toMillis());
+		final RemindingNotifier myNotifier = new RemindingNotifier(filteringNotifier(), repository);
+		myNotifier.setReminderPeriod(Duration.ofMinutes(reminderPeriodinMins));
 		myNotifier.setEnabled(enabled);
 		myNotifier.setReminderStatuses(statuses.split(","));
+		myNotifier.setCheckReminderInverval(Duration.ofSeconds(reminderCheckInterval));
 		return myNotifier;
 	}
 
-	@Scheduled(fixedRateString = "${onesaitplatform.reminder.eachInMs}")
-	public void remind() {
-		remindingNotifier().sendReminders();
-	}
 }

@@ -21,8 +21,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 import com.minsait.onesait.platform.config.model.EventsDigitalTwinType;
 
-public interface EventsDigitalTwinTypeRepository extends JpaRepository<EventsDigitalTwinType, String>{
-	
+public interface EventsDigitalTwinTypeRepository extends JpaRepository<EventsDigitalTwinType, String> {
+
 	List<EventsDigitalTwinType> findByNameIgnoreCase(String name);
 
 	List<EventsDigitalTwinType> findByDescription(String description);
@@ -34,13 +34,11 @@ public interface EventsDigitalTwinTypeRepository extends JpaRepository<EventsDig
 	List<EventsDigitalTwinType> findByDescriptionContaining(String description);
 
 	List<EventsDigitalTwinType> findByNameContaining(String name);
-	
+
 	List<EventsDigitalTwinType> findByNameLikeAndDescriptionLike(String name, String description);
-	
+
 	List<EventsDigitalTwinType> findByNameContainingAndDescriptionContaining(String name, String description);
-	
-	EventsDigitalTwinType findById(String id);
-	
+
 	List<EventsDigitalTwinType> findByTypeId(DigitalTwinType digitalTwinType);
 
 }

@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.security.jwt.ri;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +27,6 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
@@ -37,6 +37,7 @@ import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.model.AppUserList;
 import com.minsait.onesait.platform.config.repository.AppRoleRepository;
 import com.minsait.onesait.platform.config.repository.AppUserRepository;
+import com.minsait.onesait.platform.config.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,17 +49,22 @@ public class TokenUtil {
 	private AppUserRepository userRepo;
 	@Autowired
 	private AppRoleRepository roleRepository;
+	@Autowired
+	private UserRepository userRepository;
 
 	private static final String PRINCIPAL = "principal";
 	private static final String USER_NAME = "user_name";
 	private static final String NAME = "name";
+
+	private static final String TENANT = "tenant";
+	private static final String VERICALS = "verticals";
 
 	public String[] extractAndDecodeHeader(String header) throws IOException {
 
 		final byte[] base64Token = header.substring(6).getBytes("UTF-8");
 		byte[] decoded;
 		try {
-			decoded = Base64.decode(base64Token);
+			decoded = Base64.getDecoder().decode(base64Token);
 		} catch (final IllegalArgumentException e) {
 			throw new BadCredentialsException("Failed to decode basic authentication token");
 		}
@@ -122,6 +128,14 @@ public class TokenUtil {
 		if (clientToken.getResourceIds() != null && !clientToken.getResourceIds().isEmpty()) {
 			response.put(DefaultAccessTokenConverter.AUD, clientToken.getResourceIds());
 		}
+
+		if (token.getAdditionalInformation().containsKey(TENANT)) {
+			response.put(TENANT, token.getAdditionalInformation().get(TENANT));
+		}
+
+		if (token.getAdditionalInformation().containsKey(VERICALS)) {
+			response.put(VERICALS, token.getAdditionalInformation().get(VERICALS));
+		}
 		return response;
 	}
 
@@ -140,6 +154,9 @@ public class TokenUtil {
 
 			for (final AppRoleList role : roles) {
 				rolesList.add(role.getName());
+			}
+			if (rolesList.isEmpty()) {
+				rolesList.add(userRepository.findByUserId(userId).getRole().getId());
 			}
 
 			response.put(DefaultAccessTokenConverter.AUTHORITIES, rolesList);

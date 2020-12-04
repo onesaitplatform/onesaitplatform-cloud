@@ -16,23 +16,23 @@ package com.minsait.onesait.platform.config.model.base;
 
 import java.io.Serializable;
 
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.UUIDGenerator;
 
-public class AuditableEntityWithUUIDGenerator extends UUIDGenerator {  
-    
+public class AuditableEntityWithUUIDGenerator extends UUIDGenerator {
+
 	private static final String ENTITY_NAME = "AuditableEntityWithUUID";
-	
-    @Override
-    public Serializable generate(SessionImplementor session, Object obj) {  
-    	Serializable id = session
-                .getEntityPersister(ENTITY_NAME, obj)
-                .getIdentifier(obj, session);
-    	
-    	if (id == null || "".equals(id)) {  
-    		return super.generate(session, obj);
-    	} else {
-    		return id;    		 
-    	}  
-    }
-}  
+
+	@Override
+	public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
+		final Serializable id = session.getEntityPersister(ENTITY_NAME, object).getIdentifier(object, session);
+
+		if (id == null || "".equals(id)) {
+			return super.generate(session, object);
+		} else {
+			return id;
+		}
+	}
+
+}

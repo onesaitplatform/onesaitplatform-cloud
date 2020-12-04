@@ -18,17 +18,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.minsait.onesait.platform.config.dto.NotebookForList;
-import com.minsait.onesait.platform.config.model.*;
-import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +46,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.model.Notebook;
+import com.minsait.onesait.platform.config.model.NotebookUserAccess;
+import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent;
+import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
@@ -56,11 +60,11 @@ import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException.Error;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
+import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import com.minsait.onesait.platform.config.services.notebook.configuration.NotebookServiceConfiguration;
 import com.minsait.onesait.platform.config.services.notebook.conversion.JupyterConverterImpl;
 import com.minsait.onesait.platform.config.services.notebook.dto.NotebookOspInfoDTO;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
-import com.minsait.onesait.platform.config.services.token.TokenService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +84,7 @@ public class NotebookServiceImpl implements NotebookService {
 
 	@Autowired
 	private OPResourceService resourceService;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -89,7 +93,7 @@ public class NotebookServiceImpl implements NotebookService {
 
 	@Autowired
 	private NotebookUserAccessTypeRepository notebookUserAccessTypeRepository;
-	
+
 	@Autowired
 	private JupyterConverterImpl jupyterConverter;
 
@@ -131,7 +135,7 @@ public class NotebookServiceImpl implements NotebookService {
 	private static final String USER2 = "User ";
 	private static final String UNABLE_TO_GET_INTERPRETER = "Unable to get interpreter ";
 	private static final String UNABLE_TO_GET_DEFAULT_INTERPRETER = "Unable to get default interpreter";
-	
+
 	private String encryptRestUserpass() {
 		String key = configuration.getRestUsername() + ":" + configuration.getRestPass();
 		final String encryptedKey = new String(Base64.encode(key.getBytes()), StandardCharsets.UTF_8);
@@ -223,24 +227,60 @@ public class NotebookServiceImpl implements NotebookService {
 
 	@Override
 	public Notebook createEmptyNotebook(String name, String userId) {
-		
+
 		final User user = userRepository.findByUserId(userId);
-		if(!existNotebookIdentification(name)) {
+		if (!existNotebookIdentification(name)) {
 			return sendZeppelinCreatePost("/api/notebook", NAME_STR + name + "'}", name, user);
-		}
-		else {
+		} else {
 			log.error(DUPLICATE_NOTEBOOK_NAME);
 			throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME);
 		}
 	}
-	
+
 	@Override
 	public Notebook importNotebook(String name, String data, String userId) {
 		return importNotebook(name, data, userId, false, false);
 	}
-	
+
 	@Override
-	public Notebook importNotebook(String name, String data, String userId, boolean overwrite, boolean importAuthorizations) {
+	public Notebook importNotebook(String name, String data, String userId, boolean overwrite,
+			boolean importAuthorizations) {
+		Notebook nt = null;
+		final User user = userRepository.findByUserId(userId);
+		final boolean isUserAdmin = userService.isUserAdministrator(user);
+		User importingUser = user;
+		User notebookOwner = null;
+		// if admin: import with user owner
+		final NotebookOspInfoDTO ospNotebookInfo = getOspInfoFromNotebook(data);
+		if (importAuthorizations && ospNotebookInfo != null) {
+			notebookOwner = userRepository.findByUserId(ospNotebookInfo.getOwner());
+			if (notebookOwner != null && isUserAdmin) {
+				importingUser = notebookOwner;
+			}
+		}
+
+		if (existNotebookIdentification(name) && overwrite) {
+			final Notebook ntExists = getNotebook(name);
+			if (ntExists.getUser().equals(user) || isUserAdmin) {
+				log.info("Removing notebook %s by overwrite in import", ntExists.getIdentification());
+				nt = updateNotebook(ntExists.getIdentification(), userId, data, importAuthorizations);
+			} else {
+				log.error(ERROR_USER_CANNOT_OVERWRITE_NOTEBOOK, user.getUserId(), ntExists.getIdentification());
+				throw new NotebookServiceException(Error.PERMISSION_DENIED, String
+						.format(ERROR_USER_CANNOT_OVERWRITE_NOTEBOOK, user.getUserId(), ntExists.getIdentification()));
+			}
+		} else if (!existNotebookIdentification(name)) {
+			nt = createNotebook(name, data, importingUser.getUserId(), importAuthorizations);
+		} else {
+			log.error(DUPLICATE_NOTEBOOK_NAME);
+			throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME, DUPLICATE_NOTEBOOK_NAME);
+		}
+		return nt;
+	}
+
+	@Override
+	public Notebook importNotebookData(String name, String data, String userId, boolean overwrite,
+			boolean importAuthorizations) {
 		Notebook nt = null;
 		User user = userRepository.findByUserId(userId);
 		boolean isUserAdmin = userService.isUserAdministrator(user);
@@ -254,77 +294,65 @@ public class NotebookServiceImpl implements NotebookService {
 				importingUser = notebookOwner;
 			}
 		}
-		
-		if (existNotebookIdentification(name) && overwrite) {
-			Notebook ntExists = getNotebook(name);
-			if (ntExists.getUser().equals(user) || isUserAdmin) {
-				log.info("Removing notebook %s by overwrite in import", ntExists.getIdentification());
-				nt = updateNotebook(ntExists.getIdentification(), userId, data, importAuthorizations);
-			}
-			else {
-				log.error(ERROR_USER_CANNOT_OVERWRITE_NOTEBOOK, user.getUserId(), ntExists.getIdentification());
-				throw new NotebookServiceException(Error.PERMISSION_DENIED, String.format(ERROR_USER_CANNOT_OVERWRITE_NOTEBOOK, user.getUserId(), ntExists.getIdentification()));
-			}
-		}
-		else if (!existNotebookIdentification(name)) {
-			nt = createNotebook(name, data, importingUser.getUserId(), importAuthorizations);
-		}
-		else {
-			log.error(DUPLICATE_NOTEBOOK_NAME);
-			throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME, DUPLICATE_NOTEBOOK_NAME);
-		}
+
+		Notebook ntExists = getNotebook(name);
+
+		log.info("Removing notebook %s by overwrite in import", ntExists.getIdentification());
+		nt = updateNotebook(ntExists.getIdentification(), userId, data, importAuthorizations);
+
 		return nt;
 	}
-	
+
 	private Notebook updateNotebook(String notebookId, String userId, String data, boolean importAuthorizations) {
 		Notebook nt = null;
-		Notebook notebookOld = getNotebook(notebookId, userId);
-		String idzepOld = notebookOld.getIdzep();
-		String nameOld = notebookOld.getIdentification();
-		User user = userRepository.findByUserId(userId);
+		final Notebook notebookOld = getNotebook(notebookId, userId);
+		final String idzepOld = notebookOld.getIdzep();
+		final String nameOld = notebookOld.getIdentification();
+		final User user = userRepository.findByUserId(userId);
 		// create new notebook in zeppelin and update idzep in config db
-		String idZ = sendZeppelinCreatePostWithoutDBC(API_IMPORT_STR, data, nameOld, user);
+		final String idZ = sendZeppelinCreatePostWithoutDBC(API_IMPORT_STR, data, nameOld, user);
 		notebookOld.setIdzep(idZ);
 		nt = notebookRepository.save(notebookOld);
 		// update user accesses
-		NotebookOspInfoDTO ospNotebookInfo = getOspInfoFromNotebook(data);
+		final NotebookOspInfoDTO ospNotebookInfo = getOspInfoFromNotebook(data);
 		if (importAuthorizations && ospNotebookInfo != null) {
-			JsonArray userAccesses = ospNotebookInfo.getAuthorizations();
-			List<NotebookUserAccess> notebookUSerAcc = notebookUserAccessRepository.findByNotebook(notebookOld);
+			final JsonArray userAccesses = ospNotebookInfo.getAuthorizations();
+			final List<NotebookUserAccess> notebookUSerAcc = notebookUserAccessRepository.findByNotebook(notebookOld);
 			notebookUserAccessRepository.deleteInBatch(notebookUSerAcc);
 			createUserAccess(nt.getIdentification(), userAccesses);
 		}
 		// remove old notebook in zeppelin
-		ResponseEntity<String> responseEntity = null;
+		final ResponseEntity<String> responseEntity = null;
 		try {
 			sendHttp(API_NOTEBOOK_STR + idzepOld, HttpMethod.DELETE, "");
 		} catch (URISyntaxException | IOException e) {
-			log.warn("Not possible to delete deprecated notebook " + nameOld +  "("+ idzepOld +") after update notebook: " + responseEntity, e);
+			log.warn("Not possible to delete deprecated notebook " + nameOld + "(" + idzepOld
+					+ ") after update notebook: " + responseEntity, e);
 		}
 		return nt;
-		
+
 	}
-	
+
 	private Notebook createNotebook(String name, String data, String userId, boolean importAuthorizations) {
-		User user = userRepository.findByUserId(userId);
-		Notebook nt = sendZeppelinCreatePost(API_IMPORT_STR, data, name, user);
-		
+		final User user = userRepository.findByUserId(userId);
+		final Notebook nt = sendZeppelinCreatePost(API_IMPORT_STR, data, name, user);
+
 		// create user accesses
-		NotebookOspInfoDTO ospNotebookInfo = getOspInfoFromNotebook(data);
+		final NotebookOspInfoDTO ospNotebookInfo = getOspInfoFromNotebook(data);
 		if (importAuthorizations && ospNotebookInfo != null) {
-			JsonArray userAccesses = ospNotebookInfo.getAuthorizations();
+			final JsonArray userAccesses = ospNotebookInfo.getAuthorizations();
 			createUserAccess(name, userAccesses);
 		}
-		
+
 		return nt;
 	}
-	
+
 	public List<String> createUserAccess(String name, JsonArray userAccesses) {
 		List<String> created = null;
 		if (userAccesses != null && userAccesses.size() > 0) {
-			List<String> userIds = new ArrayList<>();
-			List<String> accessTypes = new ArrayList<>();
-			for (JsonElement notebookUserAcc: userAccesses) {
+			final List<String> userIds = new ArrayList<>();
+			final List<String> accessTypes = new ArrayList<>();
+			for (final JsonElement notebookUserAcc : userAccesses) {
 				userIds.add(notebookUserAcc.getAsJsonObject().get("userId").getAsString());
 				accessTypes.add(notebookUserAcc.getAsJsonObject().get("accessType").getAsString().toUpperCase());
 			}
@@ -333,38 +361,35 @@ public class NotebookServiceImpl implements NotebookService {
 		}
 		return created;
 	}
-	
+
 	@Override
 	public Notebook importNotebookFromJupyter(String name, String data, String userId) {
 		return importNotebookFromJupyter(name, data, userId, false, false);
 	}
-	
+
 	@Override
-	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite, boolean importAuthorizations)	{
+	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite,
+			boolean importAuthorizations) {
 		String formatedData;
 		try {
 			formatedData = jupyterConverter.jupyterNotebookToZeppelinNotebook(data, name);
-		}
-		catch (Exception e) {
+		} catch (final Exception e) {
 			log.error(INVALID_FORMAT_NOTEBOOK);
 			throw new NotebookServiceException(Error.INVALID_FORMAT_NOTEBOOK, e.getMessage());
 		}
 		return importNotebook(name, formatedData, userId, overwrite, importAuthorizations);
-			
-		
-		
+
 	}
 
 	@Override
 	public Notebook cloneNotebook(String name, String idzep, String userId) {
-		
+
 		final Notebook nt = notebookRepository.findByIdzep(idzep);
 		final User user = userRepository.findByUserId(userId);
 		if (hasUserPermissionInNotebook(nt, userId)) {
-			if(!existNotebookIdentification(name)) {
+			if (!existNotebookIdentification(name)) {
 				return sendZeppelinCreatePost(API_NOTEBOOK_STR + idzep, NAME_STR + name + "'}", name, user);
-			}
-			else {
+			} else {
 				log.error(DUPLICATE_NOTEBOOK_NAME);
 				throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME, DUPLICATE_NOTEBOOK_NAME);
 			}
@@ -373,16 +398,15 @@ public class NotebookServiceImpl implements NotebookService {
 			throw new NotebookServiceException(Error.PERMISSION_DENIED, PERMISSION_DENIED);
 		}
 	}
-	
+
 	@Override
 	public void renameNotebook(String name, String idzep, String userId) {
 		log.info("Renaming notebook " + idzep + " for user: " + userId + " to " + name);
 		final Notebook nt = notebookRepository.findByIdzep(idzep);
 		if (hasUserPermissionForNotebook(nt.getIdzep(), userId)) {
-			if(!existNotebookIdentification(name)) {
+			if (!existNotebookIdentification(name)) {
 				rename(name, nt);
-			}
-			else {
+			} else {
 				log.error(DUPLICATE_NOTEBOOK_NAME);
 				throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME, DUPLICATE_NOTEBOOK_NAME);
 			}
@@ -402,14 +426,15 @@ public class NotebookServiceImpl implements NotebookService {
 			return null;
 		}
 	}
-	
+
+	@Override
 	public HttpHeaders exportHeaders(String notebookNameFile) {
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.TEXT_PLAIN);
 		headers.set("Content-Disposition", "attachment; filename=\"" + notebookNameFile + ".json\"");
 		return headers;
 	}
-	
+
 	@Override
 	public JSONObject exportNotebook(String id, String user) {
 		final Notebook nt = getNotebook(id);
@@ -420,12 +445,13 @@ public class NotebookServiceImpl implements NotebookService {
 		if (hasUserPermissionInNotebook(nt, user)) {
 			try {
 				responseEntity = sendHttp(API_EXPORT_STR + nt.getIdzep(), HttpMethod.GET, "");
-				
+
 				if (responseEntity == null) {
 					log.error(ERROR_NOTEBOOK_NOT_FOUND_ZEPPELIN, nt.getIdzep());
-					throw new NotebookServiceException(Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE, ERROR_NOTEBOOK_NOT_FOUND_ZEPPELIN);
+					throw new NotebookServiceException(Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE,
+							ERROR_NOTEBOOK_NOT_FOUND_ZEPPELIN);
 				}
-				
+
 			} catch (final URISyntaxException e) {
 				log.error(URI_POST_ERROR);
 				throw new NotebookServiceException(URI_POST2_ERROR + e);
@@ -438,18 +464,21 @@ public class NotebookServiceImpl implements NotebookService {
 
 			if (statusCode != 200) {
 				log.error("Exception executing export notebook, status code: " + statusCode);
-				throw new NotebookServiceException(Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE, "Exception executing export notebook, status code: " + statusCode);
+				throw new NotebookServiceException(Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE,
+						"Exception executing export notebook, status code: " + statusCode);
 			}
 
 			try {
-				JSONObject responseJSONObject = new JSONObject(responseEntity.getBody());
+				final JSONObject responseJSONObject = new JSONObject(responseEntity.getBody());
 				notebookJSONObject = new JSONObject(responseJSONObject.getString("body"));
-				if (isUserOwnerOfNotebook(userObj, nt) || userObj.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				if (isUserOwnerOfNotebook(userObj, nt)
+						|| userObj.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 					setOspInfoInNotebook(id, notebookJSONObject);
 				}
 			} catch (final JSONException e) {
 				log.error("Exception parsing answer in download notebook");
-				throw new NotebookServiceException(Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE, "Exception parsing answer in download notebook: ", e);
+				throw new NotebookServiceException(Error.BAD_RESPONSE_FROM_NOTEBOOK_SERVICE,
+						"Exception parsing answer in download notebook: ", e);
 			}
 			return notebookJSONObject;
 
@@ -460,30 +489,30 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 
 	@Override
-	public void removeNotebookByIdZep(String idZep, String user){
-		
-		Notebook nt = notebookRepository.findByIdzep(idZep);
-		if (null!=nt) {
-			removeNotebook(nt.getIdentification(),user);
+	public void removeNotebookByIdZep(String idZep, String user) {
+
+		final Notebook nt = notebookRepository.findByIdzep(idZep);
+		if (null != nt) {
+			removeNotebook(nt.getIdentification(), user);
 		} else {
 			log.error("Error delete notebook, not exist");
 			throw new NotebookServiceException("Error delete notebook, not exist");
 		}
 	}
-	
+
 	@Override
-	public void removeNotebookOnlyZeppelin(String idZep, String user){
+	public void removeNotebookOnlyZeppelin(String idZep, String user) {
 		ResponseEntity<String> responseEntity;
 		try {
 			responseEntity = sendHttp(API_NOTEBOOK_STR + idZep, HttpMethod.DELETE, "");
 		} catch (final URISyntaxException e) {
 			log.error("The URI of the endpoint is invalid in delete notebook");
 			throw new NotebookServiceException("The URI of the endpoint is invalid in delete notebook: " + e);
-		}catch (final IOException e) {
+		} catch (final IOException e) {
 			log.error(POST_ERROR);
 			throw new NotebookServiceException("Exception in POST in delete notebook: ", e);
 		}
-		
+
 		final int statusCode = responseEntity.getStatusCodeValue();
 
 		if (statusCode != 200) {
@@ -491,7 +520,7 @@ public class NotebookServiceImpl implements NotebookService {
 			throw new NotebookServiceException(POST_EXECUTING_DELETE_ERROR + statusCode);
 		}
 	}
-	
+
 	@Override
 	public void removeNotebook(String id, String user) {
 		ResponseEntity<String> responseEntity;
@@ -523,8 +552,8 @@ public class NotebookServiceImpl implements NotebookService {
 				log.error(POST_EXECUTING_DELETE_ERROR + statusCode);
 				throw new NotebookServiceException(POST_EXECUTING_DELETE_ERROR + statusCode);
 			}
-			
-			for (NotebookUserAccess nua: notebookUserAccessRepository.findByNotebook(nt)) {
+
+			for (final NotebookUserAccess nua : notebookUserAccessRepository.findByNotebook(nt)) {
 				notebookUserAccessRepository.delete(nua);
 			}
 
@@ -535,7 +564,7 @@ public class NotebookServiceImpl implements NotebookService {
 			throw new NotebookServiceException(Error.PERMISSION_DENIED, "Error delete notebook, permission denied");
 		}
 	}
-	
+
 	@Override
 	public String loginOrGetWSToken() {
 		return loginOrGetWSTokenWithUserPass(configuration.getZeppelinShiroUsername(),
@@ -547,10 +576,10 @@ public class NotebookServiceImpl implements NotebookService {
 		return loginOrGetWSTokenWithUserPass(configuration.getZeppelinShiroAdminUsername(),
 				configuration.getZeppelinShiroAdminPass());
 	}
-	
+
 	@Override
 	public String loginOrGetWSTokenByBearer(String user, String bearertoken) {
-		return loginOrGetWSTokenWithUserPass(user,bearertoken);
+		return loginOrGetWSTokenWithUserPass(user, bearertoken);
 	}
 
 	private String loginOrGetWSTokenWithUserPass(String username, String password) {
@@ -599,8 +628,8 @@ public class NotebookServiceImpl implements NotebookService {
 			throws URISyntaxException, IOException {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 		headers.add("Authorization", encryptRestUserpass());
-		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(
-				body, headers);
+		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
+				headers);
 		log.debug("Sending method " + httpMethod.toString() + " Notebook");
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
@@ -626,7 +655,7 @@ public class NotebookServiceImpl implements NotebookService {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public Notebook getNotebookByZepId(String notebookZepId, String userId) {
 		final Notebook nt = notebookRepository.findByIdzep(notebookZepId);
@@ -651,22 +680,20 @@ public class NotebookServiceImpl implements NotebookService {
 	public List<NotebookForList> getNotebooksAndByProjects(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		List<NotebookForList> notebookForLists = notebookRepository.findAllNotebookList();
-		if(user.isAdmin()){
+		if (user.isAdmin()) {
 			return notebookForLists;
-		}
-		else{
+		} else {
 			securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
-			return notebookForLists.stream()
-					.filter(n -> "EDIT".equals(n.getAccessType())).collect(Collectors.toList());
+			return notebookForLists.stream().filter(n -> "EDIT".equals(n.getAccessType())).collect(Collectors.toList());
 		}
 	}
-	
+
 	@Override
 	public boolean hasUserPermissionCreateNotebook(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		return hasUserPermissionCreateNotebook(user);
 	}
-	
+
 	private boolean hasUserPermissionCreateNotebook(User user) {
 		return (userService.isUserAdministrator(user) || userService.isUserAnalytics(user));
 	}
@@ -681,20 +708,22 @@ public class NotebookServiceImpl implements NotebookService {
 		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId()) || nt.isPublic())
 			return true;
 		else { // TO-DO differentiate between access MANAGE/VIEW
-			for (NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt, user)) {
+			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
+					user)) {
 				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
 					return true;
 				}
 			}
-			return resourceService.hasAccess(user.getUserId(),nt.getId(), ProjectResourceAccessParent.ResourceAccessType.VIEW);
+			return resourceService.hasAccess(user.getUserId(), nt.getId(),
+					ProjectResourceAccessParent.ResourceAccessType.VIEW);
 		}
 	}
-	
+
 	@Override
 	public boolean isUserOwnerOfNotebook(String userId, Notebook notebook) {
 		return notebook.getUser().getUserId().equals(userId);
 	}
-	
+
 	@Override
 	public boolean isUserOwnerOfNotebook(User user, Notebook notebook) {
 		return notebook.getUser().getUserId().equals(user.getUserId());
@@ -716,28 +745,30 @@ public class NotebookServiceImpl implements NotebookService {
 			return this.hasUserPermissionInNotebook(nt, userId);
 		return false;
 	}
-	
+
+	@Override
 	public NotebookOspInfoDTO getOspInfoFromNotebook(String notebookJson) {
 		NotebookOspInfoDTO ospInfo = null;
 		try {
-			ospInfo = NotebookOspInfoDTO.fromJson(notebookJson);			
-		} catch (ParseException e) {
+			ospInfo = NotebookOspInfoDTO.fromJson(notebookJson);
+		} catch (final ParseException e) {
 			log.warn(WARNING_NOT_POSSIBLE_EXTRACT_OSP_INFO + ": " + e.getMessage());
 		}
 		return ospInfo;
 	}
-	
+
+	@Override
 	public NotebookOspInfoDTO getOspInfoFromDB(String notebookId) {
 		NotebookOspInfoDTO ospInfo = null;
 		try {
-			Notebook nt = getNotebook(notebookId);
-			String owner = nt.getUser().getUserId();
-			JsonArray authorizations = new JsonArray();
-			List<NotebookUserAccess> usersAccessType = notebookUserAccessRepository.findByNotebook(nt);
-			for (NotebookUserAccess uat: usersAccessType) {
-				String userAccessType = uat.getUser().getUserId();
-				String nameAccessType = uat.getNotebookUserAccessType().getName();
-				JsonObject jsonAccessType = new JsonObject();
+			final Notebook nt = getNotebook(notebookId);
+			final String owner = nt.getUser().getUserId();
+			final JsonArray authorizations = new JsonArray();
+			final List<NotebookUserAccess> usersAccessType = notebookUserAccessRepository.findByNotebook(nt);
+			for (final NotebookUserAccess uat : usersAccessType) {
+				final String userAccessType = uat.getUser().getUserId();
+				final String nameAccessType = uat.getNotebookUserAccessType().getName();
+				final JsonObject jsonAccessType = new JsonObject();
 				jsonAccessType.addProperty("userId", userAccessType);
 				jsonAccessType.addProperty("accessType", nameAccessType);
 				authorizations.add(jsonAccessType);
@@ -745,7 +776,7 @@ public class NotebookServiceImpl implements NotebookService {
 			ospInfo = new NotebookOspInfoDTO();
 			ospInfo.setOwner(owner);
 			ospInfo.setAuthorizations(authorizations);
-		} catch (ParseException e) {
+		} catch (final ParseException e) {
 			log.warn(WARNING_NOT_POSSIBLE_EXTRACT_OSP_INFO + ": " + e.getMessage());
 		}
 		return ospInfo;
@@ -753,21 +784,21 @@ public class NotebookServiceImpl implements NotebookService {
 
 	public boolean setOspInfoInNotebook(String notebookId, JSONObject notebookJSONObject) {
 		boolean done = false;
-		NotebookOspInfoDTO ospInfo = getOspInfoFromDB(getNotebook(notebookId).getId());
+		final NotebookOspInfoDTO ospInfo = getOspInfoFromDB(getNotebook(notebookId).getId());
 		if (ospInfo != null) {
-			JSONObject ospJson = new JSONObject(ospInfo.toJson().toString());
+			final JSONObject ospJson = new JSONObject(ospInfo.toJson().toString());
 			notebookJSONObject.put(NotebookOspInfoDTO.OSP_INFO, ospJson);
 			done = true;
 		}
 		return done;
 	}
-	
+
 	@Override
 	public ResponseEntity<String> runParagraph(String zeppelinId, String paragraphId, String body)
 			throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-		responseEntity = sendHttp(API_RUN_STR.concat(zeppelinId).concat("/").concat(paragraphId),
-				HttpMethod.POST, body);
+		responseEntity = sendHttp(API_RUN_STR.concat(zeppelinId).concat("/").concat(paragraphId), HttpMethod.POST,
+				body);
 		if (responseEntity.getStatusCode() == HttpStatus.OK) {
 			responseEntity = sendHttp(API_NOTEBOOK_STR.concat(zeppelinId).concat("/paragraph/").concat(paragraphId),
 					HttpMethod.GET, "");
@@ -776,8 +807,7 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 
 	@Override
-	public ResponseEntity<String> runAllParagraphs(String zeppelinId)
-			throws URISyntaxException, IOException {
+	public ResponseEntity<String> runAllParagraphs(String zeppelinId) throws URISyntaxException, IOException {
 		return sendHttp(API_JOB_STR.concat(zeppelinId), HttpMethod.POST, "");
 	}
 
@@ -787,29 +817,29 @@ public class NotebookServiceImpl implements NotebookService {
 		return sendHttp(API_NOTEBOOK_STR.concat(zeppelinId).concat("/paragraph/").concat(paragraphId), HttpMethod.GET,
 				"");
 	}
-	
+
 	@Override
-	public String getParagraphOutputMessage(String zeppelinId, String paragraphId) throws URISyntaxException, IOException {
+	public String getParagraphOutputMessage(String zeppelinId, String paragraphId)
+			throws URISyntaxException, IOException {
 		String rawData = null;
-		ResponseEntity<String> paragraphResult = getParagraphResult(zeppelinId, paragraphId);
-		JsonObject responseBody = new JsonParser().parse(paragraphResult.getBody()).getAsJsonObject();
-		JsonObject paragraphBody = responseBody.getAsJsonObject("body");
-		JsonObject results = paragraphBody.getAsJsonObject("results");
-		JsonArray msgs = results.getAsJsonArray("msg");
-		JsonObject data = msgs.get(0).getAsJsonObject();
+		final ResponseEntity<String> paragraphResult = getParagraphResult(zeppelinId, paragraphId);
+		final JsonObject responseBody = new JsonParser().parse(paragraphResult.getBody()).getAsJsonObject();
+		final JsonObject paragraphBody = responseBody.getAsJsonObject("body");
+		final JsonObject results = paragraphBody.getAsJsonObject("results");
+		final JsonArray msgs = results.getAsJsonArray("msg");
+		final JsonObject data = msgs.get(0).getAsJsonObject();
 		rawData = data.get("data").getAsString();
 		return rawData;
 	}
 
 	@Override
-	public ResponseEntity<String> getAllParagraphStatus(String zeppelinId)
-			throws URISyntaxException, IOException {
+	public ResponseEntity<String> getAllParagraphStatus(String zeppelinId) throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
 		responseEntity = sendHttp(API_JOB_STR.concat(zeppelinId), HttpMethod.GET, "");
 
 		return responseEntity;
 	}
-	
+
 	@Override
 	public List<NotebookUserAccess> getUserAccess(String notebookId) {
 		final Notebook notebook = getNotebook(notebookId);
@@ -818,73 +848,76 @@ public class NotebookServiceImpl implements NotebookService {
 
 	@Override
 	public List<String> createUserAccess(String notebookId, List<String> userIds, List<String> accessTypes) {
-		List<String> created = new ArrayList<>();
-		
+		final List<String> created = new ArrayList<>();
+
 		if (userIds.size() != accessTypes.size()) {
 			return created;
 		}
-		
-		for (int i=0; i < userIds.size(); i++) {
+
+		for (int i = 0; i < userIds.size(); i++) {
 			try {
-				String userId = userIds.get(i);
-				NotebookUserAccessType accessType = notebookUserAccessTypeRepository.findUserAccessTypeByName(accessTypes.get(i).toUpperCase());
-				String accessTypeId = accessType.getId();
+				final String userId = userIds.get(i);
+				final NotebookUserAccessType accessType = notebookUserAccessTypeRepository
+						.findUserAccessTypeByName(accessTypes.get(i).toUpperCase());
+				final String accessTypeId = accessType.getId();
 				createUserAccess(notebookId, userId, accessTypeId);
 				created.add(OK);
-			} catch (DataIntegrityViolationException e) {
+			} catch (final DataIntegrityViolationException e) {
 				created.add(ERROR_ACCESS_EXISTS);
-			} catch (NotebookServiceException e) {
+			} catch (final NotebookServiceException e) {
 				created.add(e.getMessage());
-			} catch (NullPointerException e) {
+			} catch (final NullPointerException e) {
 				created.add(ERROR_ACCESS_NOT_EXISTS);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				created.add(e.getMessage());
 			}
 		}
-		
+
 		return created;
 	}
-	
+
 	@Override
 	public NotebookUserAccess createUserAccess(String notebookId, String userId, String accessType) {
 		NotebookUserAccess notebookUserAccess = null;
-		
+
 		if (!(notebookId.equals("")) && !(userId.equals("")) && !(accessType.equals(""))) {
 			final User user = userRepository.findByUserId(userId);
 			final Notebook notebook = getNotebook(notebookId);
-			
+
 			if (user == null) {
 				log.error(ERROR_USER_NOT_FOUND);
 				throw new NotebookServiceException(Error.NOT_FOUND, ERROR_USER_NOT_FOUND);
 			}
-			
+
 			if (user.equals(notebook.getUser())) {
 				log.error(ERROR_USERACCESS_PROPR);
 				throw new NotebookServiceException(Error.PERMISSION_DENIED, ERROR_USERACCESS_PROPR);
 			}
-			
+
 			if (!userService.isUserAnalytics(user)) {
 				log.error(ERROR_USERACCESS_ROL);
 				throw new NotebookServiceException(Error.PERMISSION_DENIED, ERROR_USERACCESS_ROL);
 			}
-			
-			final NotebookUserAccessType notebookUserAccessType = notebookUserAccessTypeRepository.findById(accessType);
-			notebookUserAccess = new NotebookUserAccess();
-			notebookUserAccess.setNotebook(notebook);
-			notebookUserAccess.setUser(user);
-			notebookUserAccess.setNotebookUserAccessType(notebookUserAccessType);
-			notebookUserAccessRepository.save(notebookUserAccess);
+			if (notebookUserAccessTypeRepository.findById(accessType).isPresent()) {
+				final NotebookUserAccessType notebookUserAccessType = notebookUserAccessTypeRepository
+						.findById(accessType).get();
+				notebookUserAccess = new NotebookUserAccess();
+				notebookUserAccess.setNotebook(notebook);
+				notebookUserAccess.setUser(user);
+				notebookUserAccess.setNotebookUserAccessType(notebookUserAccessType);
+				notebookUserAccessRepository.save(notebookUserAccess);
+			}
 
 		}
-		
+
 		return notebookUserAccess;
-		
+
 	}
-	
+
 	@Override
 	public Notebook getNotebook(String notebookId) {
 		Notebook notebook = null;
-		notebook = notebookRepository.findById(notebookId);
+		notebook = notebookRepository.findById(notebookId).orElse(null);
 		// search notebook by ids -> retro-compatibility
 		if (notebook == null) {
 			notebook = notebookRepository.findByIdentification(notebookId);
@@ -898,45 +931,47 @@ public class NotebookServiceImpl implements NotebookService {
 		}
 		return notebook;
 	}
-	
+
 	@Override
 	public List<String> deleteUserAccess(String notebookId, List<String> userIds, List<String> accessTypes) {
-		List<String> deleted = new ArrayList<>();
-		
+		final List<String> deleted = new ArrayList<>();
+
 		if (userIds.size() != accessTypes.size()) {
 			return deleted;
 		}
-		
-		Notebook nt = getNotebook(notebookId);
-		
-		for (int i=0; i < userIds.size(); i++) {
+
+		final Notebook nt = getNotebook(notebookId);
+
+		for (int i = 0; i < userIds.size(); i++) {
 			try {
-				String userId = userIds.get(i);
-				User user = userRepository.findByUserId(userId);
+				final String userId = userIds.get(i);
+				final User user = userRepository.findByUserId(userId);
 				if (user == null) {
 					log.error(ERROR_USER_NOT_FOUND);
 					throw new NotebookServiceException(ERROR_USER_NOT_FOUND);
 				}
-				NotebookUserAccessType accessType = notebookUserAccessTypeRepository.findUserAccessTypeByName(accessTypes.get(i).toUpperCase());
+				final NotebookUserAccessType accessType = notebookUserAccessTypeRepository
+						.findUserAccessTypeByName(accessTypes.get(i).toUpperCase());
 				if (accessType == null) {
 					log.error(ERROR_ACCESS_NOT_EXISTS);
 					throw new NotebookServiceException(ERROR_ACCESS_NOT_EXISTS);
 				}
-				NotebookUserAccess notebookAccess = notebookUserAccessRepository.findByNotebookAndUserAndAccess(nt, user, accessType);
+				final NotebookUserAccess notebookAccess = notebookUserAccessRepository
+						.findByNotebookAndUserAndAccess(nt, user, accessType);
 				deleteUserAccess(notebookAccess);
 				deleted.add(OK);
-			} catch (NotebookServiceException e) {
+			} catch (final NotebookServiceException e) {
 				deleted.add(e.getMessage());
-			} catch (NullPointerException e) {
+			} catch (final NullPointerException e) {
 				deleted.add(ERROR_ACCESS_TYPE_NOT_FOUND);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				deleted.add(e.getMessage());
 			}
 		}
-		
+
 		return deleted;
 	}
-	
+
 	@Override
 	public void deleteUserAccess(NotebookUserAccess notebookUserAcc) {
 		deleteUserAccess(notebookUserAcc.getId());
@@ -944,137 +979,135 @@ public class NotebookServiceImpl implements NotebookService {
 
 	@Override
 	public void deleteUserAccess(String notebookUserAccessId) {
-		notebookUserAccessRepository.delete(notebookUserAccessId);
+		notebookUserAccessRepository.deleteById(notebookUserAccessId);
 	}
 
+	@Override
 	public String notebookNameByIdZep(String idzep, String userId) {
-		
-		Notebook nt = notebookRepository.findByIdzep(idzep);
+
+		final Notebook nt = notebookRepository.findByIdzep(idzep);
 		if (hasUserPermissionInNotebook(nt, userId)) {
 			return nt.getIdentification();
-		}
-		else {
+		} else {
 			log.error(PERMISSION_DENIED);
 			throw new NotebookServiceException(Error.PERMISSION_DENIED, PERMISSION_DENIED);
 		}
 	}
-	
+
 	private void rename(String name, Notebook nt) {
-		
-		/** NO RENAME IN ZEPPELIN 0.8.1, Change when rest api rename available**/
-		/*ResponseEntity<String> rstr = sendHttp(API_NOTEBOOK_STR.concat(nt.getIdzep()).concat("/rename"), HttpMethod.PUT, NAME_STR + name + "'}");
-		if(rstr.getStatusCode() == HttpStatus.OK) {
-			nt.setIdentification(name);
-			notebookRepository.save(nt);
-			return true;
-		}*/
+
+		/** NO RENAME IN ZEPPELIN 0.8.1, Change when rest api rename available **/
+		/*
+		 * ResponseEntity<String> rstr =
+		 * sendHttp(API_NOTEBOOK_STR.concat(nt.getIdzep()).concat("/rename"),
+		 * HttpMethod.PUT, NAME_STR + name + "'}"); if(rstr.getStatusCode() ==
+		 * HttpStatus.OK) { nt.setIdentification(name); notebookRepository.save(nt);
+		 * return true; }
+		 */
 		nt.setIdentification(name);
 		notebookRepository.save(nt);
 	}
-	
+
 	private boolean existNotebookIdentification(String identification) {
 		final Notebook nt = notebookRepository.findByIdentification(identification);
-		return nt!=null;
+		return nt != null;
 	}
 
-	private  ResponseEntity<String> restartInterpreter(String interpreterName, String interpreterId, String body) 
+	private ResponseEntity<String> restartInterpreter(String interpreterName, String interpreterId, String body)
 			throws URISyntaxException, IOException {
-	
+
 		ResponseEntity<String> responseEntity;
-		
-		responseEntity = sendHttp(API_INTERPRETER_RESTART_STR.concat(interpreterId),
-				HttpMethod.PUT, body);
-		
+
+		responseEntity = sendHttp(API_INTERPRETER_RESTART_STR.concat(interpreterId), HttpMethod.PUT, body);
+
 		if (responseEntity.getStatusCode() == HttpStatus.OK) {
 			log.info("Interpreter " + interpreterName + " restarted successfully.");
-			JSONObject responseBody = new JSONObject().put("status","OK");
+			final JSONObject responseBody = new JSONObject().put("status", "OK");
 			return new ResponseEntity<>(responseBody.toString(), responseEntity.getHeaders(), HttpStatus.OK);
 		}
-		
-		return responseEntity;	
+
+		return responseEntity;
 	}
-	
+
 	@Override
-	public ResponseEntity<String> restartInterpreter(String interpreterName, String body) 
+	public ResponseEntity<String> restartInterpreter(String interpreterName, String body)
 			throws URISyntaxException, IOException {
-		
+
 		final String interpreterId = getInterpreterId(interpreterName);
 		return restartInterpreter(interpreterName, interpreterId, body);
 	}
-	
+
 	@Override
 	public ResponseEntity<String> restartInterpreter(String interpreterName, String body, User user)
 			throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-				
+
 		try {
-			
-			if (userService.isUserAdministrator(user) || 
-					(userService.isUserAdministrator(user)
-							&& !isSharedInterpreterConfiguration(interpreterName))) {
-		
+
+			if (userService.isUserAdministrator(user)
+					|| (userService.isUserAdministrator(user) && !isSharedInterpreterConfiguration(interpreterName))) {
+
 				responseEntity = restartInterpreter(interpreterName, body);
-				
+
 			} else {
 				log.error(USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + interpreterName);
-				JSONObject responseBody = new JSONObject().put("error",USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER+ interpreterName + ". Check interpreter configuration.");
-				HttpHeaders responseHeaders = new HttpHeaders();
+				final JSONObject responseBody = new JSONObject().put("error",
+						USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + interpreterName
+								+ ". Check interpreter configuration.");
+				final HttpHeaders responseHeaders = new HttpHeaders();
 				responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
 				return new ResponseEntity<>(responseBody.toString(), responseHeaders, HttpStatus.UNAUTHORIZED);
 			}
-			
-		} catch (NotebookServiceException e) {
+
+		} catch (final NotebookServiceException e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
+
 		return responseEntity;
 	}
-	
-	private String getInterpreterId(String interpreterName) 
-			throws URISyntaxException, IOException {
+
+	private String getInterpreterId(String interpreterName) throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-		
+
 		responseEntity = sendHttp(API_INTERPRETER_SETTING_STR, HttpMethod.GET, "");
-		
+
 		try {
-			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());		
+			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
 			final JSONArray body = jsonResponse.getJSONArray("body");
-			
-			for(int i=0; i< body.length(); i++) {
-				JSONObject object = body.getJSONObject(i);
+
+			for (int i = 0; i < body.length(); i++) {
+				final JSONObject object = body.getJSONObject(i);
 				if (object != null && object.getString("name").equals(interpreterName)) {
-						return object.getString("id");
+					return object.getString("id");
 				}
 			}
-            
-		} catch (JSONException e) {
+
+		} catch (final JSONException e) {
 			log.error(UNABLE_TO_GET_INTERPRETER + interpreterName + " id to restart");
-			throw new NotebookServiceException(UNABLE_TO_GET_INTERPRETER + interpreterName + " id");	
+			throw new NotebookServiceException(UNABLE_TO_GET_INTERPRETER + interpreterName + " id");
 		}
-		
+
 		return interpreterName;
 	}
-	
-	private boolean isSharedInterpreterConfiguration(String interpreterName) 
-			throws URISyntaxException, IOException {
+
+	private boolean isSharedInterpreterConfiguration(String interpreterName) throws URISyntaxException, IOException {
 
 		final String interpreterId = getInterpreterId(interpreterName);
-		
+
 		return isSharedInterpreterConfiguration(interpreterName, interpreterId);
 	}
-	
-	private boolean isSharedInterpreterConfiguration(String interpreterName, String interpreterId) 
+
+	private boolean isSharedInterpreterConfiguration(String interpreterName, String interpreterId)
 			throws URISyntaxException, IOException {
-		
+
 		ResponseEntity<String> responseEntity;
-		
-		responseEntity = sendHttp(API_INTERPRETER_SETTING_STR.concat(interpreterId),
-				HttpMethod.GET, "");
-		
+
+		responseEntity = sendHttp(API_INTERPRETER_SETTING_STR.concat(interpreterId), HttpMethod.GET, "");
+
 		try {
-			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());				
+			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
 			final JSONObject interpreterConfiguration = jsonResponse.getJSONObject("body").getJSONObject("option");
-			
+
 			if (interpreterConfiguration.isNull("perNote")) {
 				return true;
 			} else {
@@ -1083,144 +1116,147 @@ public class NotebookServiceImpl implements NotebookService {
 					return true;
 				}
 			}
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			log.error(UNABLE_TO_GET_INTERPRETER + interpreterName + " configuration to restart");
 			throw new NotebookServiceException(UNABLE_TO_GET_INTERPRETER + interpreterName + " configuration");
-		}	
-		
+		}
+
 		return false;
 	}
-	
+
 	@Override
-	public ResponseEntity<String> restartAllInterpretersNotebook(String notebookId, String body, User user) 
+	public ResponseEntity<String> restartAllInterpretersNotebook(String notebookId, String body, User user)
 			throws URISyntaxException, IOException {
-		
-		JSONObject responseBody = new JSONObject();
-		
+
+		final JSONObject responseBody = new JSONObject();
+
 		final Map<String, String> notebookInterpreters = getNotebookInterpreters(notebookId);
 
-		for (Map.Entry<String, String> entry : notebookInterpreters.entrySet()) {
-			String key = "Interpreter " + entry.getKey();		
+		for (final Map.Entry<String, String> entry : notebookInterpreters.entrySet()) {
+			final String key = "Interpreter " + entry.getKey();
 			try {
-				if (userService.isUserAdministrator(user) || 
-					(userService.isUserAnalytics(user)
-							&& !isSharedInterpreterConfiguration(entry.getKey(), entry.getValue()))) {
-					ResponseEntity<String> responseEntity = restartInterpreter(entry.getKey(), entry.getValue(), body);
+				if (userService.isUserAdministrator(user) || (userService.isUserAnalytics(user)
+						&& !isSharedInterpreterConfiguration(entry.getKey(), entry.getValue()))) {
+					final ResponseEntity<String> responseEntity = restartInterpreter(entry.getKey(), entry.getValue(),
+							body);
 					if (responseEntity.getStatusCode() == HttpStatus.OK) {
 						responseBody.put(key, "OK");
 					} else {
 						responseBody.put(key, ERROR + responseEntity.getBody());
 					}
-				
+
 				} else {
-					log.error(USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + entry.getKey() + ". Check interpreter configuration.");
+					log.error(USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + entry.getKey()
+							+ ". Check interpreter configuration.");
 					responseBody.put(key, ERROR + USER2 + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER);
-				}			
-			} catch (Exception e) {
+				}
+			} catch (final Exception e) {
 				responseBody.put(key, ERROR + e);
 			}
 		}
-		HttpHeaders responseHeaders = new HttpHeaders();
+		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
 		return new ResponseEntity<>(responseBody.toString(), responseHeaders, HttpStatus.OK);
 	}
-	
+
 	private String getDefaultInterpreter() throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-		
+
 		responseEntity = sendHttp(API_INTERPRETER_SETTING_STR, HttpMethod.GET, "");
 		try {
 			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
 			final JSONArray interpreters = jsonResponse.getJSONArray("body");
-		
-			for(int i=0; i < interpreters.length(); i++) {
-				JSONObject object = interpreters.getJSONObject(i);
-				String name = object.getString("name");
-				JSONArray interpreterGroup = object.getJSONArray("interpreterGroup");
-				for (int j=0; j<interpreterGroup.length(); j++) {
+
+			for (int i = 0; i < interpreters.length(); i++) {
+				final JSONObject object = interpreters.getJSONObject(i);
+				final String name = object.getString("name");
+				final JSONArray interpreterGroup = object.getJSONArray("interpreterGroup");
+				for (int j = 0; j < interpreterGroup.length(); j++) {
 					if (interpreterGroup.getJSONObject(j).getBoolean("defaultInterpreter")) {
 						return name;
 					}
 				}
 			}
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			log.error(UNABLE_TO_GET_DEFAULT_INTERPRETER);
-			throw new NotebookServiceException(UNABLE_TO_GET_DEFAULT_INTERPRETER);	
+			throw new NotebookServiceException(UNABLE_TO_GET_DEFAULT_INTERPRETER);
 		}
-		
+
 		log.error(UNABLE_TO_GET_DEFAULT_INTERPRETER);
 		return "";
 	}
-	
+
 	private Map<String, String> getAllInterpretersNameAndId() throws URISyntaxException, IOException {
-		
+
 		ResponseEntity<String> responseEntity;
 		responseEntity = sendHttp(API_INTERPRETER_SETTING_STR, HttpMethod.GET, "");
-		Map<String, String> interpreterList = new HashMap<>();
-		
+		final Map<String, String> interpreterList = new HashMap<>();
+
 		try {
 			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
 			final JSONArray interpreters = jsonResponse.getJSONArray("body");
-	
-			for(int i=0; i< interpreters.length(); i++) {
-				JSONObject object = interpreters.getJSONObject(i);
-				String id = object.getString("id");
-				String name = object.getString("name");
+
+			for (int i = 0; i < interpreters.length(); i++) {
+				final JSONObject object = interpreters.getJSONObject(i);
+				final String id = object.getString("id");
+				final String name = object.getString("name");
 				if (!interpreterList.containsKey(name)) {
 					interpreterList.put(name, id);
 				}
 			}
-		} catch (JSONException e) {
+		} catch (final JSONException e) {
 			log.error("Unable to get default interpreter list");
 			throw new NotebookServiceException("Unable to get default interpreter list");
 		}
-		
+
 		return interpreterList;
 	}
-	
+
 	@Override
 	public Map<String, String> getNotebookInterpreters(String notebookId) throws URISyntaxException, IOException {
 		ResponseEntity<String> responseEntity;
-		
+
 		responseEntity = sendHttp(API_NOTEBOOK_STR.concat(notebookId), HttpMethod.GET, "");
 
 		final Map<String, String> listInterpreters = getAllInterpretersNameAndId();
 		final String defaultInterpreter = getDefaultInterpreter();
-		Map<String, String> notebookInterpreters = new HashMap<>();
+		final Map<String, String> notebookInterpreters = new HashMap<>();
 
 		try {
-			JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
-			JSONArray paragraphs = jsonResponse.getJSONObject("body").getJSONArray("paragraphs");
-		
-			for(int i=0; i< paragraphs.length(); i++) {
-				JSONObject object = paragraphs.getJSONObject(i);
+			final JSONObject jsonResponse = new JSONObject(responseEntity.getBody());
+			final JSONArray paragraphs = jsonResponse.getJSONObject("body").getJSONArray("paragraphs");
+
+			for (int i = 0; i < paragraphs.length(); i++) {
+				final JSONObject object = paragraphs.getJSONObject(i);
 				if (!object.isNull("text")) {
-					String text = object.getString("text");
-					
-					String firstLine = text.split("\n")[0];
+					final String text = object.getString("text");
+
+					final String firstLine = text.split("\n")[0];
 					if (firstLine.startsWith("%")) {
 						String nameInterpreter;
 						if (firstLine.contains(".")) {
 							nameInterpreter = firstLine.substring(1).split("\\.")[0];
 						} else {
 							nameInterpreter = firstLine.substring(1);
-						} 
-						if (!notebookInterpreters.containsKey(nameInterpreter) && listInterpreters.containsKey(nameInterpreter)) {
+						}
+						if (!notebookInterpreters.containsKey(nameInterpreter)
+								&& listInterpreters.containsKey(nameInterpreter)) {
 							notebookInterpreters.put(nameInterpreter, listInterpreters.get(nameInterpreter));
-						} else if (!notebookInterpreters.containsKey(nameInterpreter) && !notebookInterpreters.containsKey(defaultInterpreter)) {
+						} else if (!notebookInterpreters.containsKey(nameInterpreter)
+								&& !notebookInterpreters.containsKey(defaultInterpreter)) {
 							notebookInterpreters.put(defaultInterpreter, listInterpreters.get(defaultInterpreter));
 						}
 					} else if (!notebookInterpreters.containsKey(defaultInterpreter)) {
 						notebookInterpreters.put(defaultInterpreter, listInterpreters.get(defaultInterpreter));
 					}
 				}
-			} 
-		}catch (JSONException e) {
+			}
+		} catch (final JSONException e) {
 			log.error("Unable to get interpreter notebook list");
 			throw new NotebookServiceException("Unable to get interpreter notebook list");
 		}
-		
+
 		return notebookInterpreters;
 	}
-		
+
 }

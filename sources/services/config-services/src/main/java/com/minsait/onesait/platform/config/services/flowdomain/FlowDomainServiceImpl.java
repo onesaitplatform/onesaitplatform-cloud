@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.flowdomain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -128,9 +129,10 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	@Override
 	public void deleteFlowdomain(String domainIdentification) {
 		final FlowDomain domain = domainRepository.findByIdentification(domainIdentification);
-		if (resourceService.isResourceSharedInAnyProject(domain))
+		if (resourceService.isResourceSharedInAnyProject(domain)) {
 			throw new OPResourceServiceException(
 					"This Flow Domain is shared within a Project, revoke access from project prior to deleting");
+		}
 		deleteFlowDomainFlows(domainIdentification, domain.getUser());
 		domainRepository.deleteByIdentification(domainIdentification);
 	}
@@ -215,30 +217,44 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 
 	@Override
 	public FlowDomain getFlowDomainById(String id) {
-		return domainRepository.findOne(id);
+		return domainRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public boolean hasUserManageAccess(String id, String userId) {
-		final FlowDomain domain = domainRepository.findOne(id);
-		if (domain.getUser().getUserId().equals(userId))
+		final Optional<FlowDomain> opt = domainRepository.findById(id);
+		if (!opt.isPresent()) {
+			return false;
+		}
+		final FlowDomain domain = opt.get();
+		if (domain.getUser().getUserId().equals(userId)) {
 			return true;
-		else if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		} else if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return true;
-		else {
+		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
 		}
 	}
 
 	@Override
 	public boolean hasUserViewAccess(String id, String userId) {
-		final FlowDomain domain = domainRepository.findOne(id);
-		if (domain.getUser().getUserId().equals(userId))
+
+		final Optional<FlowDomain> opt = domainRepository.findById(id);
+		if (!opt.isPresent()) {
+			return false;
+		}
+		final FlowDomain domain = opt.get();
+		if (domain.getUser().getUserId().equals(userId)) {
 			return true;
-		else if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		} else if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return true;
-		else {
+		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
 		}
+	}
+
+	@Override
+	public List<Flow> getFlows(FlowDomain domain) {
+		return flowRepository.findByFlowDomain_Identification(domain.getIdentification());
 	}
 }

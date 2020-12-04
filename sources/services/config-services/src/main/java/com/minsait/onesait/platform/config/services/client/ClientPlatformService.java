@@ -23,6 +23,7 @@ import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.client.dto.DeviceCreateDTO;
+import com.minsait.onesait.platform.config.services.device.dto.ClientPlatformDTO;
 
 public interface ClientPlatformService {
 
@@ -59,4 +60,8 @@ public interface ClientPlatformService {
 	public Token createClientTokenWithAccessType(Map<Ontology, AccessType> ontologies, ClientPlatform clientPlatform);
 
 	public Ontology createDeviceLogOntology(ClientPlatform client);
+
+	public ClientPlatformDTO parseClientPlatform(ClientPlatform clientPlatform);
+
+	public ClientPlatform update(ClientPlatform clientPlatform);
 }

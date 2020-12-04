@@ -5,11 +5,7 @@
 		<parent>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-parent</artifactId>
-<<<<<<< HEAD
-			<version>2.0.0-ce</version>
-=======
-			<version>v1.6.1-rc3</version>
->>>>>>> 1.6.1-rc3
+			<version>2.1.4-gradius</version>
 			<relativePath>../../..</relativePath>
 		</parent>
         <properties>

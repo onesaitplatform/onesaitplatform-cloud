@@ -34,6 +34,8 @@ import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Path;
@@ -157,6 +159,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		addCustomHeaderToPaths(swagger);
 		swagger.setHost(null);
 		swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
+
 		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
@@ -166,6 +169,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		final Server server = new Server();
 
 		server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
+
 		openAPI.setServers(Arrays.asList(server));
 		MultitenancyContextHolder.clear();
 		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
@@ -206,6 +210,8 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	private String getApiBasePath(Api api, String numVersion) {
 		return BASE_PATH + "/v" + numVersion + "/" + api.getIdentification();
 	}
+
+	
 
 	/**
 	 * Add Authentication Header to Swagger instance.

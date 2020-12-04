@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.iotbroker.processor.impl;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,7 @@ import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorExce
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +47,7 @@ public class LeaveProcessor implements MessageTypeProcessor {
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 		final String sessionKey = message.getSessionKey();
 
 		securityManager.closeSession(sessionKey);

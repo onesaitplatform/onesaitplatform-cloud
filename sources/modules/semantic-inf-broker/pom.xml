@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.0.0-ce</version>
+		<version>2.1.4-gradius</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-semantic-inf-broker</artifactId>
@@ -21,53 +22,54 @@
 		<version.spring-cloud>1.4.3.RELEASE</version.spring-cloud>
 	</properties>
 	<dependencies>
-		<!-- To overwrite MySQL version-->
+		<!-- To overwrite MySQL version -->
+		
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
-	
+
 		<!-- onesaitplatform -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-core</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-audit</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-metrics-aggregator</artifactId>
 			<version>${onesaitplatform.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
-      			<exclusion>
-         			<groupId>org.springframework.boot</groupId>
-         			<artifactId>spring-boot-starter-tomcat</artifactId>
-      			</exclusion>
-   			</exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-   			<groupId>org.springframework.boot</groupId>
-   			<artifactId>spring-boot-starter-jetty</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -112,44 +114,24 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-		
-		
 
 
-		<!-- 
-		NOT USED
-		
-		<dependency>
-			<groupId>io.hawt</groupId>
-			<artifactId>hawtio-springboot</artifactId>
-			<version>${version.hawtio}</version>
-		</dependency>
-		
-		metrics
-		<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-core</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-graphite</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-annotation</artifactId>
-		</dependency>
-		 -->
-		
+		<!-- NOT USED <dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId> 
+			<version>${version.hawtio}</version> </dependency> metrics <dependency> <groupId>io.dropwizard.metrics</groupId> 
+			<artifactId>metrics-core</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
+			<artifactId>metrics-graphite</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
+			<artifactId>metrics-annotation</artifactId> </dependency> -->
+
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -166,17 +148,17 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-		    <!-- skip deployment -->	
-		    <plugin>
-		      <groupId>org.apache.maven.plugins</groupId>
-		      <artifactId>maven-deploy-plugin</artifactId>
-		      <version>2.7</version>
-		      <configuration>
-		          <skip>true</skip>
-		      </configuration>
-		    </plugin>				
-		    
+
+			<!-- skip deployment -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.7</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 

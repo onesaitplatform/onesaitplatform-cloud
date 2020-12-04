@@ -44,6 +44,7 @@ import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,9 @@ public class WebProjectController {
 
 	@Autowired
 	private AppWebUtils utils;
+
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
@@ -126,6 +130,9 @@ public class WebProjectController {
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 
 		if (webProject != null) {
+			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+					resourcesInUseService.isInUse(id, utils.getUserId()));
+			resourcesInUseService.put(id, utils.getUserId());
 			model.addAttribute("webproject", webProject);
 			return WEBPROJ_CREATE;
 		} else {
@@ -150,6 +157,7 @@ public class WebProjectController {
 			utils.addRedirectMessage("webproject.update.error", redirect);
 			return "redirect:/webprojects/update/" + id;
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_WEBPROJ_LIST;
 
 	}
@@ -221,6 +229,12 @@ public class WebProjectController {
 				"attachment; filename=\"" + webProject.getIdentification() + ".zip\"");
 
 		return new ResponseEntity<>(zipFile, headers, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

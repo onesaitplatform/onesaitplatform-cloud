@@ -29,6 +29,7 @@ import javax.validation.Valid;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -89,6 +90,9 @@ public class ProjectController {
 	private DashboardService dashboardService;
 	@Autowired
 	private GadgetDatasourceService datasourceService;
+	/*
+	 * @Autowired private ResourcesInUseService resourcesInUseService;
+	 */
 
 	private static final String ALL_USERS = "ALL";
 	private static final String PROJECT_OBJ_STR = "projectObj";
@@ -97,6 +101,8 @@ public class ProjectController {
 	private static final String PROJ_FRAG_USERTAB = "project/fragments/users-tab";
 	private static final String PROJ_FRAG_RESTAB = "project/fragments/resources-tab";
 	private static final String ACCESSES = "accesses";
+	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
+	private String rootWWW;
 
 	@GetMapping("list")
 
@@ -122,6 +128,7 @@ public class ProjectController {
 		model.addAttribute("urlsMap", getUrlsMap());
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		model.addAttribute("userRole", utils.getRole());
+		model.addAttribute("rootWWW", rootWWW);
 		if (utils.getRole().equals("ROLE_ADMINISTRATOR") || isCreator) {
 			final Set<ProjectResourceAccess> pr = projectService.getById(projectId).getProjectResourceAccesses();
 			final Collection<List<ProjectResourceAccess>> prfil = pr.stream()
@@ -160,6 +167,12 @@ public class ProjectController {
 		populateUsertabData(model, id);
 		model.addAttribute("projectTypes", Project.ProjectType.values());
 		model.addAttribute("resourceTypes", Resources.values());
+		/*
+		 * model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+		 * resourcesInUseService.isInUse(id, utils.getUserId()));
+		 * resourcesInUseService.put(id, utils.getUserId());
+		 */
+
 		return "project/create";
 	}
 
@@ -178,6 +191,7 @@ public class ProjectController {
 	public String updateProject(Model model, @Valid ProjectDTO project, @PathVariable("id") String id) {
 		if (!projectService.isUserAuthorized(id, utils.getUserId()))
 			return ERROR_403;
+		/* resourcesInUseService.removeByUser(id, utils.getUserId()); */
 		projectService.updateWithParameters(project);
 		return REDIRECT_PROJ_LIST;
 	}

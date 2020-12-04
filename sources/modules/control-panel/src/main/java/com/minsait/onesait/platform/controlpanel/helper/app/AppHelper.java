@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppRoleChild;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.User;
@@ -138,7 +139,7 @@ public class AppHelper {
 		if (app.getChildApps() != null && !app.getChildApps().isEmpty()) {
 			for (final AppRole role : app.getAppRoles()) {
 				if (role.getChildRoles() != null && !role.getChildRoles().isEmpty()) {
-					for (final AppRole childRole : role.getChildRoles()) {
+					for (final AppRoleChild childRole : role.getChildRoles()) {
 						final AppAssociatedCreateDTO associatedAppDTO = new AppAssociatedCreateDTO();
 						associatedAppDTO.setId(role.getName() + ':' + childRole.getName());
 						associatedAppDTO.setFatherAppId(app.getIdentification());
@@ -285,7 +286,7 @@ public class AppHelper {
 	private void asociateChildRoles(List<AppAssociatedCreateDTO> appsAssociatedList, App app) {
 		for (final AppRole fatherAppRole : app.getAppRoles()) {
 			if (fatherAppRole.getChildRoles() != null && !fatherAppRole.getChildRoles().isEmpty()) {
-				for (final AppRole childAppRole : fatherAppRole.getChildRoles()) {
+				for (final AppRoleChild childAppRole : fatherAppRole.getChildRoles()) {
 					final AppAssociatedCreateDTO appAssociatedDTO = new AppAssociatedCreateDTO();
 					appAssociatedDTO.setId(fatherAppRole.getName() + ':' + childAppRole.getName());
 					appAssociatedDTO.setFatherAppId(app.getIdentification());

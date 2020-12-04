@@ -12,15 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.minsait.onesait.platform.config.components;
+package com.minsait.onesait.platform.controlpanel.services.resourcesinuse;
 
+import java.io.Serializable;
+import java.util.Date;
+
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class Gravitee {
+@Builder
+public class VerificationInUse implements Serializable {
 
-	private String ui;
-	private String management;
-	private String gateway;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	private String id;
+	private String userId;
+	private Date expirationDate;
 
 }

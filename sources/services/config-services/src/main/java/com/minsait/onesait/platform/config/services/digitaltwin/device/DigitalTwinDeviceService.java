@@ -29,6 +29,8 @@ public interface DigitalTwinDeviceService {
 	List<DigitalTwinDevice> getAll();
 
 	List<DigitalTwinDevice> getAllByUserId(String userId);
+	
+	List<DigitalTwinDevice> getAllByUserIdAndIdentification(String userId, String identification);
 
 	List<String> getAllDigitalTwinTypeNames();
 

@@ -28,8 +28,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTimeSeries, String> {
 
-	OntologyTimeSeries findById(String id);
-
 	@Query("SELECT o FROM OntologyTimeSeries AS o WHERE o.ontology.user=:user")
 	List<OntologyTimeSeries> findByUser(@Param("user") User user);
 
@@ -38,6 +36,7 @@ public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTime
 	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
 	void deleteByOntology(Ontology ontology);
 
+	@Override
 	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
 	void deleteById(String id);
 
@@ -46,14 +45,14 @@ public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTime
 
 	@Cacheable(cacheNames = "IsOntologyTimeSeriesByIdentification", unless = "#result == null")
 	default Boolean isTimeSeries(String ontologyIdentification) {
-		OntologyTimeSeries result = this.findByOntologyIdentificaton(ontologyIdentification);
+		final OntologyTimeSeries result = findByOntologyIdentificaton(ontologyIdentification);
 		return result != null;
 
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
+	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification","OntologyTimeSeriesPropertyRepositoryByOntologyIdentification" }, allEntries = true)
 	OntologyTimeSeries save(OntologyTimeSeries entity);
 
 }

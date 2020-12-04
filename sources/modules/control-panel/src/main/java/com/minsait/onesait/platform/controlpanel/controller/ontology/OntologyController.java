@@ -100,6 +100,7 @@ import com.minsait.onesait.platform.config.services.templates.QueryTemplateServi
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyVirtualDataSourceDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.sql.CreateStatementDTO;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
@@ -159,6 +160,8 @@ public class OntologyController {
 	private DataModelService dataModelService;
 	@Autowired
 	private QueryTemplateService queryTemplateService;
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
@@ -224,8 +227,8 @@ public class OntologyController {
 			description = null;
 		}
 
-		final List<OntologyDTO> ontologies = ontologyConfigService
-				.getOntologiesForListByUserPropietary(utils.getUserId(), identification, description);
+		List<OntologyDTO> ontologies = ontologyConfigService.getOntologiesForListByUserPropietary(utils.getUserId(),
+				identification, description);
 
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", true);
@@ -537,6 +540,12 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(USERS, users);
 
+				// InUseService
+				if (resourcesInUseService != null) {
+					model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+							resourcesInUseService.isInUse(id, utils.getUserId()));
+					resourcesInUseService.put(id, utils.getUserId());
+				}
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
 					final OntologyRest ontologyRest = ontologyConfigService.getOntologyRestByOntologyId(ontology);
 					populateRestForm(model, ontologyRest);
@@ -606,6 +615,10 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(PROPERTY_NAMES, getPropertyNames(otsDTO.getTimeSeriesProperties()));
 				model.addAttribute(USERS, users);
+
+				model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+						resourcesInUseService.isInUse(id, utils.getUserId()));
+				resourcesInUseService.put(id, utils.getUserId());
 
 				return ONTOLOGIES_CREATE_TS;
 			} else {
@@ -734,6 +747,7 @@ public class OntologyController {
 
 			}
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(STATUS_STR, "ok");
 		response.put(REDIRECT_STR, "/controlpanel/ontologies/show/" + id);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -764,6 +778,7 @@ public class OntologyController {
 			response.put(CAUSE_STR, e.getMessage());
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(STATUS_STR, "ok");
 		response.put(REDIRECT_STR, "/controlpanel/ontologies/show/" + id);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -1392,6 +1407,18 @@ public class OntologyController {
 			propertyNames.add(otsp.getPropertyName());
 		}
 		return propertyNames;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
+	}
+
+	@GetMapping(value = "/getResourcesAssociated/{id}")
+	public @ResponseBody Map<String, List<String>> getResourcesAssociated(@PathVariable("id") String id) {
+
+		return ontologyConfigService.getResourcesFromOntology(ontologyRepository.findById(id).get());
 	}
 
 }

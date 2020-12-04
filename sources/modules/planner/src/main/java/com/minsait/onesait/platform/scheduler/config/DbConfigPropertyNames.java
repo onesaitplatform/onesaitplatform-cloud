@@ -15,17 +15,18 @@
 package com.minsait.onesait.platform.scheduler.config;
 
 public class DbConfigPropertyNames {
-	
-	public static final String JPA_PROPERTY 							= "jpa";
-	public static final String DATASOURCE_PROPERTY 						= "datasource";
-	public static final String SCHEDULER_PARENT_PROPERTY 				= "quartz";
-	public static final String SCHEDULER_JPA_PROPERTY 					= SCHEDULER_PARENT_PROPERTY + "." + JPA_PROPERTY;
-	public static final String SCHEDULER_DATASOURCE_PROPERTY 			= SCHEDULER_PARENT_PROPERTY + "." + DATASOURCE_PROPERTY;
-	public static final String SCHEDULER_DATASOURCE_NAME 				= "quartzDatasource";
-	public static final String SCHEDULER_ENTITY_MANAGER_FACTORY_NAME 	= "quartzEntityManagerFactory";
-	public static final String SCHEDULER_TRANSACTION_MANAGER_NAME 		= "quartzTransactionManager";
-	public static final String SCHEDULER_BASE_PACKAGE 					= "com.minsait.onesait.platform.scheduler";
-	
-	private DbConfigPropertyNames () {}
+
+	public static final String JPA_PROPERTY = "jpa";
+	public static final String DATASOURCE_PROPERTY = "datasource.hikari";
+	public static final String SCHEDULER_PARENT_PROPERTY = "quartz";
+	public static final String SCHEDULER_JPA_PROPERTY = SCHEDULER_PARENT_PROPERTY + "." + JPA_PROPERTY;
+	public static final String SCHEDULER_DATASOURCE_PROPERTY = SCHEDULER_PARENT_PROPERTY + "." + DATASOURCE_PROPERTY;
+	public static final String SCHEDULER_DATASOURCE_NAME = "quartzDatasource";
+	public static final String SCHEDULER_ENTITY_MANAGER_FACTORY_NAME = "quartzEntityManagerFactory";
+	public static final String SCHEDULER_TRANSACTION_MANAGER_NAME = "quartzTransactionManager";
+	public static final String SCHEDULER_BASE_PACKAGE = "com.minsait.onesait.platform.scheduler";
+
+	private DbConfigPropertyNames() {
+	}
 
 }

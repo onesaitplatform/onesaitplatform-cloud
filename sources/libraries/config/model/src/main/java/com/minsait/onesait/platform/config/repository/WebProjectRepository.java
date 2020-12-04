@@ -23,8 +23,6 @@ import com.minsait.onesait.platform.config.model.WebProject;
 
 public interface WebProjectRepository extends JpaRepository<WebProject, String> {
 
-	WebProject findById(String id);
-
 	WebProject findByIdentification(String identification);
 
 	List<WebProject> findByIdentificationContainingAndDescriptionContaining(String identification, String description);

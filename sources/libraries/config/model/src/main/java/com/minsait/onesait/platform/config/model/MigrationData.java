@@ -42,7 +42,7 @@ public class MigrationData extends OPResource {
 	@Column(name = "FILE_NAME")
 	private String fileName;
 
-	@Column(name = "FILE", length = 100000)
+	@Column(name = "FILE", length = 100000000)
 	@Lob
 	@Type(type = "org.hibernate.type.BinaryType")
 	@Getter

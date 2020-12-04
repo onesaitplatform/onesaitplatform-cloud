@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.digitaltwin.type;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -145,8 +147,23 @@ public class DigitalTwinTypeController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list")
-	public String list(Model model) {
-		model.addAttribute("digitalTwinTypes", digitalTwinTypeService.getDigitalTwinTypesByUserId(utils.getUserId()));
+	public String list(Model model, HttpServletRequest request,
+			@RequestParam(required = false, name = "identification") String identification) {
+		
+		// Scaping "" string values for parameters
+		if (identification != null && identification.equals("")) {
+		   identification = null;
+		}
+		
+        List<DigitalTwinType> digitaltwinstypes = new ArrayList<>();
+		
+		if(identification == null) {
+			digitaltwinstypes = digitalTwinTypeService.getDigitalTwinTypesByUserId(utils.getUserId());
+		}else {
+			digitaltwinstypes = digitalTwinTypeService.getDigitalTwinTypesByUserIdAndIdentification(utils.getUserId(), identification);
+		}
+		
+		model.addAttribute("digitalTwinTypes", digitaltwinstypes);
 		return "digitaltwintypes/list";
 	}
 

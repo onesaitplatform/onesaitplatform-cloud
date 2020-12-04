@@ -32,7 +32,7 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public void deleteDataModel(String id) {
-		dataModelRepository.delete(id);
+		dataModelRepository.deleteById(id);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public DataModel getDataModelById(String dataModelId) {
-		return dataModelRepository.findById(dataModelId);
+		return dataModelRepository.findById(dataModelId).orElse(null);
 	}
 
 	@Override
@@ -72,14 +72,14 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public void updateDataModel(DataModel datamodel) {
-		DataModel oldDataModel = this.dataModelRepository.findById(datamodel.getId());
+		final DataModel oldDataModel = dataModelRepository.findById(datamodel.getId()).orElse(null);
 		if (oldDataModel != null) {
 			oldDataModel.setIdentification(datamodel.getIdentification());
 			oldDataModel.setLabels(datamodel.getLabels());
 			oldDataModel.setType(datamodel.getType());
 			oldDataModel.setDescription(datamodel.getDescription());
 			oldDataModel.setJsonSchema(datamodel.getJsonSchema());
-			this.dataModelRepository.save(oldDataModel);
+			dataModelRepository.save(oldDataModel);
 		}
 	}
 

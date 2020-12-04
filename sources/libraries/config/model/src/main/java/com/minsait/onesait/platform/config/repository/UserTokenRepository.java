@@ -27,10 +27,6 @@ public interface UserTokenRepository extends JpaRepository<UserToken, String> {
 
 	@Override
 
-	<S extends UserToken> List<S> save(Iterable<S> entities);
-
-	@Override
-
 	void flush();
 
 	@Override
@@ -53,8 +49,6 @@ public interface UserTokenRepository extends JpaRepository<UserToken, String> {
 	List<UserToken> findByUser(User user);
 
 	UserToken findByToken(String token);
-
-	UserToken findById(String id);
 
 	UserToken findByUserAndToken(String user, String token);
 

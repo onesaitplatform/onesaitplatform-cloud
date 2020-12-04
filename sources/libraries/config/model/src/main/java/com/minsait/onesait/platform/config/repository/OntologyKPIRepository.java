@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -28,8 +29,9 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface OntologyKPIRepository extends JpaRepository<OntologyKPI, String> {
 
+	@Override
 	@Cacheable(cacheNames = "OntologyKPIRepository", unless = "#result == null")
-	OntologyKPI findById(String id);
+	Optional<OntologyKPI> findById(String id);
 
 	@Cacheable(cacheNames = "OntologyKPIRepositoryByUser", unless = "#result == null", key = "#p0.userId")
 	List<OntologyKPI> findByUser(User user);
@@ -46,18 +48,12 @@ public interface OntologyKPIRepository extends JpaRepository<OntologyKPI, String
 	@Transactional
 	void deleteByOntology(Ontology ontology);
 
-	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
-			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
-			"OntologyRepositoryByIdentification" }, allEntries = true)
-	@Transactional
-	void deleteById(String id);
-
 	@Override
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
 			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
 			"OntologyRepositoryByIdentification" }, allEntries = true)
 	@Transactional
-	void delete(String id);
+	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",

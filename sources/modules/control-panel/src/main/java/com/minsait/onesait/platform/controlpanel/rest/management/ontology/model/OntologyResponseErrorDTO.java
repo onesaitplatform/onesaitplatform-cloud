@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.controlpanel.rest.management.ontology.model;
 
 import java.io.Serializable;
+
 import org.springframework.http.HttpStatus;
 
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;

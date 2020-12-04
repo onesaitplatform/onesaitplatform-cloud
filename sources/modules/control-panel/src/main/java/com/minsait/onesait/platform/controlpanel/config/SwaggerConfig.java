@@ -130,24 +130,6 @@ public class SwaggerConfig {
 	}
 
 	@Bean
-	public Docket clientplatform() {
-
-		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
-		final List<Parameter> aParameters = new ArrayList<>();
-		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
-				.build();
-		aParameters.add(aParameterBuilder.build());
-		return new Docket(DocumentationType.SWAGGER_2).groupName("Clientplatform").select()
-				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorClientplatform()).build()
-				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
-	}
-
-	@SuppressWarnings("unchecked")
-	private Predicate<String> buildPathSelectorClientplatform() {
-		return or(regex("/api/clientplatform.*"));
-	}
-
-	@Bean
 	public Docket devices() {
 
 		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
@@ -724,6 +706,7 @@ public class SwaggerConfig {
 	private Predicate<String> buildPathSelectorRules() {
 		return or(regex("/api/rules.*"));
 	}
+	
 
 	@Bean
 	public Docket moduleNotifications() {
@@ -792,4 +775,27 @@ public class SwaggerConfig {
 	private Predicate<String> buildPathSelectorGadgetManagement() {
 		return or(regex("/api/gadgets.*"));
 	}
+	
+	@Bean
+	public Docket importToolAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Import tool").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorImportTool()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorImportTool() {
+		return or(regex("/api/importtool.*"));
+	}
+
 }

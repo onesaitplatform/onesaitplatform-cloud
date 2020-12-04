@@ -119,7 +119,7 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	}
 
 	@Bean
-	public WebResponseExceptionTranslator webResponseExceptionTranslator() {
+	public WebResponseExceptionTranslator<OAuth2Exception> webResponseExceptionTranslator() {
 		return new DefaultWebResponseExceptionTranslator() {
 
 			@Override

@@ -114,7 +114,9 @@ var addTenant = function(obj){
     	var i = foundIndex(selTenant,'tenants',tenantsToChoose);
     	tenantsToChoose.splice(i, 1);
     	mountTable();
-    	Tenant.List.reloadTable();
+    	//Tenant.List.reloadTable();
+    	window.location.href = window.location.href +'#tab_2';
+    	location.reload();
     	
     }).fail(function(error) {
     	

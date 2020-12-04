@@ -22,7 +22,6 @@ import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
 
 public interface PipelineUserAccessTypeRepository extends JpaRepository<PipelineUserAccessType, String> {
 
-	PipelineUserAccessType findById(String id);
-
+	@Override
 	List<PipelineUserAccessType> findAll();
 }

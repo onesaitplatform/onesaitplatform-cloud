@@ -50,6 +50,7 @@ import com.minsait.onesait.platform.config.services.gadget.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
@@ -78,6 +79,9 @@ public class GadgetDatasourceController {
 
 	@Autowired
 	private AppWebUtils utils;
+
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	private static final String DATASOURCE_STR = "datasource";
 	private static final String DATASOURCE_ONT_SEL_STR = "datasourceOntologySelected";
@@ -211,6 +215,9 @@ public class GadgetDatasourceController {
 			}
 			model.addAttribute(DATASOURCE_ONT_SEL_STR, ontologyIdentification);
 			model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
+			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+					resourcesInUseService.isInUse(id, utils.getUserId()));
+			resourcesInUseService.put(id, utils.getUserId());
 			return "datasources/create";
 		} else {
 			return "error/404";
@@ -278,6 +285,7 @@ public class GadgetDatasourceController {
 			utils.addRedirectException(e, redirect);
 			return "redirect:/datasources/update/" + id;
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_DATAS_LIST;
 	}
 
@@ -291,9 +299,9 @@ public class GadgetDatasourceController {
 		}
 		return REDIRECT_DATAS_LIST;
 	}
-	
+
 	@GetMapping(value = "/getGadgetsUsingDatasource/{id}", produces = "application/json")
-	public @ResponseBody List<Object> getGadgetsUsingDatasource(@PathVariable("id") String id) {
+	public @ResponseBody List<String> getGadgetsUsingDatasource(@PathVariable("id") String id) {
 		return this.gadgetDatasourceService.getGadgetsUsingDatasource(id);
 	}
 
@@ -316,13 +324,13 @@ public class GadgetDatasourceController {
 			return null;
 		}
 	}
-	
+
 	@GetMapping(value = "/isGroupDatasourceById/{id}", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<Boolean> isGroupDatasourceByIdentification(@PathVariable("id") String id) {
 		boolean isGroup = this.gadgetDatasourceService.isGroupDatasourceById(id);
 		if (this.gadgetDatasourceService.hasUserPermission(id, utils.getUserId())) {
-			return new ResponseEntity<>(isGroup,HttpStatus.OK);
+			return new ResponseEntity<>(isGroup, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
@@ -450,5 +458,11 @@ public class GadgetDatasourceController {
 			}
 		}
 		return listOntologies;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 }

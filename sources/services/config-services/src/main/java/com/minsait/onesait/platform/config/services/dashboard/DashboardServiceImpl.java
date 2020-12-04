@@ -21,10 +21,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import com.minsait.onesait.platform.config.model.*;
+import com.minsait.onesait.platform.config.repository.*;
+import com.minsait.onesait.platform.config.services.dashboardapi.dto.GadgetTemplateDTO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,34 +54,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.dto.DashboardForList;
-import com.minsait.onesait.platform.config.model.Category;
-import com.minsait.onesait.platform.config.model.CategoryRelation;
-import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-import com.minsait.onesait.platform.config.model.DashboardUserAccess;
-import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
-import com.minsait.onesait.platform.config.model.Gadget;
-import com.minsait.onesait.platform.config.model.GadgetDatasource;
-import com.minsait.onesait.platform.config.model.GadgetMeasure;
-import com.minsait.onesait.platform.config.model.I18nResources;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.Role;
-import com.minsait.onesait.platform.config.model.Subcategory;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.repository.CategoryRelationRepository;
-import com.minsait.onesait.platform.config.repository.CategoryRepository;
-import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
-import com.minsait.onesait.platform.config.repository.DashboardRepository;
-import com.minsait.onesait.platform.config.repository.DashboardUserAccessRepository;
-import com.minsait.onesait.platform.config.repository.DashboardUserAccessTypeRepository;
-import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
-import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
-import com.minsait.onesait.platform.config.repository.GadgetRepository;
-import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.category.CategoryService;
 import com.minsait.onesait.platform.config.services.categoryrelation.CategoryRelationService;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAccessDTO;
@@ -125,6 +104,8 @@ public class DashboardServiceImpl implements DashboardService {
 	private DashboardConfRepository dashboardConfRepository;
 	@Autowired
 	private GadgetRepository gadgetRepository;
+	@Autowired
+	private GadgetTemplateRepository gadgetTemplateRepository;
 	@Autowired
 	private GadgetDatasourceRepository gadgetDatasourceRepository;
 	@Autowired
@@ -179,6 +160,7 @@ public class DashboardServiceImpl implements DashboardService {
 	private static final String LAYERS = "layers";
 	private static final String GRIDBOARD = "gridboard";
 	private static final String DATASOURCE = "datasource";
+	private static final String TEMPLATE = "template";
 	private static final String ERROR_SAVING_DASHBOARD_FORBIDDEN = "Cannot update Dashboard that does not exist or don't have permission";
 	private static final String JSON_PARSE_EXCEPTION = "Json parse exception";
 	private static final String JSON_MAPPING_EXCEPTION = "Json mapping exception";
@@ -204,7 +186,7 @@ public class DashboardServiceImpl implements DashboardService {
 								identification, description);
 				securityService.setSecurityToInputList(dashboardsForList, sessionUser, "Dashboard");
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
 
@@ -261,7 +243,7 @@ public class DashboardServiceImpl implements DashboardService {
 				}
 				securityService.setSecurityToInputList(dashboardsForList, sessionUser, "Dashboard");
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
 
@@ -295,12 +277,13 @@ public class DashboardServiceImpl implements DashboardService {
 	@Transactional
 	@Override
 	public void deleteDashboard(String dashboardId, String userId) {
-		final Dashboard dashboard = dashboardRepository.findById(dashboardId);
+		final Dashboard dashboard = dashboardRepository.findById(dashboardId).orElse(null);
 
 		if (dashboard != null && hasUserEditPermission(dashboardId, userId)) {
-			if (resourceService.isResourceSharedInAnyProject(dashboard))
+			if (resourceService.isResourceSharedInAnyProject(dashboard)) {
 				throw new OPResourceServiceException(
 						"This Dashboard is shared within a Project, revoke access from project prior to deleting");
+			}
 			final CategoryRelation categoryRelation = categoryRelationRepository.findByTypeId(dashboard.getId());
 			if (categoryRelation != null) {
 
@@ -319,10 +302,11 @@ public class DashboardServiceImpl implements DashboardService {
 	@Override
 	public String deleteDashboardAccess(String dashboardId, String userId) {
 
-		final Dashboard d = dashboardRepository.findById(dashboardId);
-		if (resourceService.isResourceSharedInAnyProject(d))
+		final Dashboard d = dashboardRepository.findById(dashboardId).orElse(null);
+		if (resourceService.isResourceSharedInAnyProject(d)) {
 			throw new OPResourceServiceException(
 					"This Dashboard is shared within a Project, revoke access from project prior to deleting");
+		}
 		dashboardUserAccessRepository.deleteByDashboard(d);
 		return d.getId();
 
@@ -331,14 +315,14 @@ public class DashboardServiceImpl implements DashboardService {
 	@Override
 	public String deleteDashboardUserAccess(List<DashboardUserAccessDTO> dtos, String dashboardIdentification,
 			boolean deleteAll) {
-		JSONObject response = new JSONObject();
-		for (DashboardUserAccessDTO dto : dtos) {
-			String key = dto.getUserId();
+		final JSONObject response = new JSONObject();
+		for (final DashboardUserAccessDTO dto : dtos) {
+			final String key = dto.getUserId();
 			String value = "";
 			String error = "ERROR: Invalid input data:";
 			boolean e = false;
 
-			User user = userRepository.findByUserId(dto.getUserId());
+			final User user = userRepository.findByUserId(dto.getUserId());
 			if (user == null) {
 				error += "User not found.";
 				e = true;
@@ -347,7 +331,7 @@ public class DashboardServiceImpl implements DashboardService {
 			if (deleteAll) {
 				dashUA = getDashboardUserAccessByIdentificationAndUser(dashboardIdentification, user);
 			} else {
-				List<DashboardUserAccessType> accessType = dashboardUserAccessTypeRepository
+				final List<DashboardUserAccessType> accessType = dashboardUserAccessTypeRepository
 						.findByName(dto.getAccessType());
 				if (accessType == null || accessType.isEmpty()) {
 					error += "The access type does not exist.";
@@ -378,7 +362,12 @@ public class DashboardServiceImpl implements DashboardService {
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return true;
 		} else {
-			return dashboardRepository.findById(id).getUser().getUserId().equals(userId);
+			final Optional<Dashboard> d = dashboardRepository.findById(id);
+			if (d.isPresent()) {
+				return d.get().getUser().getUserId().equals(userId);
+			} else {
+				return false;
+			}
 		}
 	}
 
@@ -388,31 +377,34 @@ public class DashboardServiceImpl implements DashboardService {
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return true;
 		} else {
-			DashboardForList dfl = dashboardRepository.findForListById(id);
-			ArrayList<DashboardForList> ldfl = new ArrayList<DashboardForList>();
+			final DashboardForList dfl = dashboardRepository.findForListById(id);
+			final ArrayList<DashboardForList> ldfl = new ArrayList<>();
 			ldfl.add(dfl);
 			securityService.setSecurityToInputList(ldfl, user, "Dashboard");
-			return ldfl.get(0).getAccessType().equals("EDIT");
+			return ldfl.get(0).getAccessType() == null ? false : ldfl.get(0).getAccessType().equals("EDIT");
 		}
 	}
 
 	@Override
 	public boolean hasUserViewPermission(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
-
-		if (dashboardRepository.findById(id).isPublic()) {
+		final Optional<Dashboard> d = dashboardRepository.findById(id);
+		if (!d.isPresent()) {
+			return false;
+		}
+		if (d.get().isPublic()) {
 			return true;
 		} else if (userId.equals(ANONYMOUSUSER) || user == null) {
-			return dashboardRepository.findById(id).isPublic();
+			return d.get().isPublic();
 		} else if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return true;
 		} else {
-			final boolean propietary = dashboardRepository.findById(id).getUser().getUserId().equals(userId);
+			final boolean propietary = d.get().getUser().getUserId().equals(userId);
 			if (propietary) {
 				return true;
 			}
-			final DashboardUserAccess userAuthorization = dashboardUserAccessRepository
-					.findByDashboardAndUser(dashboardRepository.findById(id), user);
+			final DashboardUserAccess userAuthorization = dashboardUserAccessRepository.findByDashboardAndUser(d.get(),
+					user);
 
 			if (userAuthorization != null) {
 				switch (DashboardUserAccessType.Type
@@ -469,16 +461,18 @@ public class DashboardServiceImpl implements DashboardService {
 	@Override
 	public void saveDashboard(String id, Dashboard dashboard, String userId) {
 		if (hasUserEditPermission(id, userId)) {
-			final Dashboard dashboardEnt = dashboardRepository.findById(dashboard.getId());
-			dashboardEnt.setCustomcss(dashboard.getCustomcss());
-			dashboardEnt.setCustomjs(dashboard.getCustomjs());
-			dashboardEnt.setDescription(dashboard.getDescription());
-			dashboardEnt.setJsoni18n(dashboard.getJsoni18n());
-			dashboardEnt.setModel(dashboard.getModel());
-			dashboardEnt.setPublic(dashboard.isPublic());
-			dashboardEnt.setHeaderlibs(dashboard.getHeaderlibs());
-			dashboardEnt.setType(dashboard.getType());
-			dashboardRepository.save(dashboardEnt);
+			dashboardRepository.findById(dashboard.getId()).ifPresent(dashboardEnt -> {
+				dashboardEnt.setCustomcss(dashboard.getCustomcss());
+				dashboardEnt.setCustomjs(dashboard.getCustomjs());
+				dashboardEnt.setDescription(dashboard.getDescription());
+				dashboardEnt.setJsoni18n(dashboard.getJsoni18n());
+				dashboardEnt.setModel(dashboard.getModel());
+				dashboardEnt.setPublic(dashboard.isPublic());
+				dashboardEnt.setHeaderlibs(dashboard.getHeaderlibs());
+				dashboardEnt.setType(dashboard.getType());
+				dashboardRepository.save(dashboardEnt);
+			});
+
 		} else {
 			throw new DashboardServiceException(ERROR_SAVING_DASHBOARD_FORBIDDEN);
 		}
@@ -494,22 +488,32 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	@Override
+	public void saveDashboardHeaderLibs(String id, String HeaderLibs, String userId) {
+		if (hasUserEditPermission(id, userId)) {
+			dashboardRepository.saveHeaderLibs(HeaderLibs, id);
+		} else {
+			throw new DashboardServiceException(ERROR_SAVING_DASHBOARD_FORBIDDEN);
+		}
+	}
+
+	@Override
 	public Dashboard getDashboardById(String id, String userId) {
-		return dashboardRepository.findById(id);
+		return dashboardRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public Dashboard getDashboardByIdentification(String identification, String userId) {
-		if (!dashboardRepository.findByIdentification(identification).isEmpty())
+		if (!dashboardRepository.findByIdentification(identification).isEmpty()) {
 			return dashboardRepository.findByIdentification(identification).get(0);
-		else
+		} else {
 			return null;
+		}
 	}
 
 	@Override
 	public Dashboard getDashboardEditById(String id, String userId) {
 		if (hasUserEditPermission(id, userId)) {
-			return dashboardRepository.findById(id);
+			return dashboardRepository.findById(id).orElse(null);
 		}
 		throw new DashboardServiceException("Cannot view Dashboard that does not exist or don't have permission");
 	}
@@ -521,8 +525,8 @@ public class DashboardServiceImpl implements DashboardService {
 
 	@Override
 	public boolean dashboardExistsById(String id) {
-		final Dashboard dash = dashboardRepository.findById(id);
-		return dash != null && dash.getId().length() != 0;
+		final Optional<Dashboard> dash = dashboardRepository.findById(id);
+		return dash.isPresent() && dash.get().getId().length() != 0;
 	}
 
 	@Override
@@ -555,13 +559,12 @@ public class DashboardServiceImpl implements DashboardService {
 
 	private void cloneI18nResource(Dashboard originalDashboard, Dashboard cloneDashboard, User user) {
 
-		List<I18nResources> i18nRRList = i18nRR.findByOPResourceId(originalDashboard.getId());
+		final List<I18nResources> i18nRRList = i18nRR.findByOPResourceId(originalDashboard.getId());
 
 		if (!i18nRRList.isEmpty()) {
-			OPResource opr = this.getDashboardById(cloneDashboard.getId(), user.getUserId());
-			for (Iterator<I18nResources> iterator = i18nRRList.iterator(); iterator.hasNext();) {
-				I18nResources i18nResources = iterator.next();
-				I18nResources i18nRe = new I18nResources();
+			final OPResource opr = getDashboardById(cloneDashboard.getId(), user.getUserId());
+			for (final I18nResources i18nResources : i18nRRList) {
+				final I18nResources i18nRe = new I18nResources();
 				i18nRe.setI18n(i18nResources.getI18n());
 				i18nRe.setOpResource(opr);
 				i18nRR.save(i18nRe);
@@ -581,10 +584,10 @@ public class DashboardServiceImpl implements DashboardService {
 			log.error("Could not read image");
 		}
 
-		User sessionUser = userRepository.findByUserId(userId);
+		final User sessionUser = userRepository.findByUserId(userId);
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_USER.toString())
 				|| sessionUser.getRole().getId().equals(Role.Type.ROLE_DATAVIEWER.toString())) {
-			this.metricsManagerLogControlPanelDashboardsCreation(userId, "KO");
+			metricsManagerLogControlPanelDashboardsCreation(userId, "KO");
 			throw new DashboardServiceException(DASH_CREATE_AUTH_EXCEPT);
 		}
 		d.setDescription(dashboard.getDescription());
@@ -598,7 +601,8 @@ public class DashboardServiceImpl implements DashboardService {
 		if (dashboard.getDashboardConfId() == null) {
 			model = dashboardConfRepository.findByIdentification("default").get(0).getModel();
 		} else {
-			model = dashboardConfRepository.findById(dashboard.getDashboardConfId()).getModel();
+			model = dashboardConfRepository.findById(dashboard.getDashboardConfId()).orElse(new DashboardConf())
+					.getModel();
 		}
 		d.setModel(model);
 
@@ -649,12 +653,13 @@ public class DashboardServiceImpl implements DashboardService {
 		final User sessionUser = userRepository.findByUserId(userId);
 		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_USER.toString())
 				|| sessionUser.getRole().getId().equals(Role.Type.ROLE_DATAVIEWER.toString())) {
-			this.metricsManagerLogControlPanelDashboardsCreation(userId, "KO");
+			metricsManagerLogControlPanelDashboardsCreation(userId, "KO");
 			throw new DashboardServiceException(DASH_CREATE_AUTH_EXCEPT);
 		}
 
-		if (dashboardExists(dashboard.getIdentification()))
+		if (dashboardExists(dashboard.getIdentification())) {
 			throw new DashboardServiceException("Dashboard already exists in Database");
+		}
 
 		final Dashboard dAux = getNewDashboard(dashboard, userId);
 
@@ -668,8 +673,7 @@ public class DashboardServiceImpl implements DashboardService {
 			if (dashboard.getAuthorizations() != null) {
 				final List<DashboardAccessDTO> access = objectMapper.readValue(dashboard.getAuthorizations(),
 						objectMapper.getTypeFactory().constructCollectionType(List.class, DashboardAccessDTO.class));
-				for (final Iterator<DashboardAccessDTO> iterator = access.iterator(); iterator.hasNext();) {
-					final DashboardAccessDTO dashboardAccessDTO = iterator.next();
+				for (final DashboardAccessDTO dashboardAccessDTO : access) {
 					final DashboardUserAccess dua = new DashboardUserAccess();
 					dua.setDashboard(dAux);
 					final List<DashboardUserAccessType> managedTypes = dashboardUserAccessTypeRepository
@@ -711,18 +715,18 @@ public class DashboardServiceImpl implements DashboardService {
 
 	@Override
 	public String insertDashboardUserAccess(Dashboard dashboard, List<DashboardUserAccessDTO> dtos, boolean updated) {
-		JSONObject response = new JSONObject();
-		for (DashboardUserAccessDTO dto : dtos) {
-			String key = dto.getUserId();
+		final JSONObject response = new JSONObject();
+		for (final DashboardUserAccessDTO dto : dtos) {
+			final String key = dto.getUserId();
 			String value = "";
 			String error = "ERROR. Invalid input data: ";
 			boolean e = false;
-			User user = userRepository.findByUserId(dto.getUserId());
+			final User user = userRepository.findByUserId(dto.getUserId());
 			if (user == null) {
 				error += "User not found.";
 				e = true;
 			}
-			DashboardUserAccess dUA = getDashboardUserAccessByIdentificationAndUser(dashboard.getIdentification(),
+			final DashboardUserAccess dUA = getDashboardUserAccessByIdentificationAndUser(dashboard.getIdentification(),
 					user);
 			if (!updated && dUA != null) {
 				error += "The authorization already exists.";
@@ -733,7 +737,7 @@ public class DashboardServiceImpl implements DashboardService {
 				e = true;
 			}
 
-			List<DashboardUserAccessType> accessType = dashboardUserAccessTypeRepository
+			final List<DashboardUserAccessType> accessType = dashboardUserAccessTypeRepository
 					.findByName(dto.getAccessType());
 			if (accessType == null || accessType.isEmpty()) {
 				error += "Access type not found.";
@@ -742,7 +746,7 @@ public class DashboardServiceImpl implements DashboardService {
 			if (!e) {
 				DashboardUserAccess uA;
 
-				Date currentDate = new Date();
+				final Date currentDate = new Date();
 				if (updated) {
 					uA = dUA;
 					uA.setDashboardUserAccessType(accessType.get(0));
@@ -769,13 +773,13 @@ public class DashboardServiceImpl implements DashboardService {
 	@Transactional
 	@Override
 	public String cleanDashboardAccess(DashboardCreateDTO dashboard, String userId) {
-		if (!dashboardExistsById(dashboard.getId())) {
+		final Optional<Dashboard> d = dashboardRepository.findById(dashboard.getId());
+		if (!d.isPresent()) {
 			throw new DashboardServiceException(DASH_NOT_EXIST);
 		} else {
 
-			final Dashboard d = dashboardRepository.findById(dashboard.getId());
-			dashboardUserAccessRepository.deleteByDashboard(d);
-			return d.getId();
+			dashboardUserAccessRepository.deleteByDashboard(d.get());
+			return dashboard.getId();
 
 		}
 	}
@@ -783,21 +787,19 @@ public class DashboardServiceImpl implements DashboardService {
 	@Transactional
 	@Override
 	public String saveUpdateAccess(DashboardCreateDTO dashboard, String userId) {
-		if (!dashboardExistsById(dashboard.getId())) {
+		final Optional<Dashboard> d = dashboardRepository.findById(dashboard.getId());
+		if (!d.isPresent()) {
 			throw new DashboardServiceException(DASH_NOT_EXIST);
 		} else {
-
-			final Dashboard d = dashboardRepository.findById(dashboard.getId());
 
 			try {
 				if (dashboard.getAuthorizations() != null) {
 					final List<DashboardAccessDTO> access = objectMapper.readValue(dashboard.getAuthorizations(),
 							objectMapper.getTypeFactory().constructCollectionType(List.class,
 									DashboardAccessDTO.class));
-					for (final Iterator<DashboardAccessDTO> iterator = access.iterator(); iterator.hasNext();) {
-						final DashboardAccessDTO dashboardAccessDTO = iterator.next();
+					for (final DashboardAccessDTO dashboardAccessDTO : access) {
 						final DashboardUserAccess dua = new DashboardUserAccess();
-						dua.setDashboard(dashboardRepository.findById(dashboard.getId()));
+						dua.setDashboard(d.get());
 						final List<DashboardUserAccessType> managedTypes = dashboardUserAccessTypeRepository
 								.findByName(dashboardAccessDTO.getAccesstypes());
 						final DashboardUserAccessType managedType = managedTypes != null
@@ -807,7 +809,7 @@ public class DashboardServiceImpl implements DashboardService {
 						dashboardUserAccessRepository.save(dua);
 					}
 				}
-				return d.getId();
+				return dashboard.getId();
 
 			} catch (final IOException e) {
 
@@ -820,29 +822,30 @@ public class DashboardServiceImpl implements DashboardService {
 	@Transactional
 	@Override
 	public String updatePublicDashboard(DashboardCreateDTO dashboard, String userId) {
-		if (!dashboardExistsById(dashboard.getId())) {
+		final Optional<Dashboard> d = dashboardRepository.findById(dashboard.getId());
+		if (!d.isPresent()) {
 			throw new DashboardServiceException(DASH_NOT_EXIST);
 		} else {
-			final Dashboard d = dashboardRepository.findById(dashboard.getId());
-			d.setPublic(dashboard.getPublicAccess());
-			d.setDescription(dashboard.getDescription());
-			d.setHeaderlibs(dashboard.getHeaderlibs());
-			d.setIdentification(dashboard.getIdentification());
+
+			d.get().setPublic(dashboard.getPublicAccess());
+			d.get().setDescription(dashboard.getDescription());
+			d.get().setHeaderlibs(dashboard.getHeaderlibs());
+			d.get().setIdentification(dashboard.getIdentification());
 			try {
 				if (dashboard.getImage() != null && !dashboard.getImage().isEmpty()) {
-					d.setImage(dashboard.getImage().getBytes());
+					d.get().setImage(dashboard.getImage().getBytes());
 				} else {
-					d.setImage(null);
+					d.get().setImage(null);
 				}
 			} catch (final IOException e) {
 				log.error(e.getMessage());
 			}
-			final Dashboard dAux = dashboardRepository.save(d);
+			final Dashboard dAux = dashboardRepository.save(d.get());
 
 			if (dashboard.getCategory() != null && dashboard.getSubcategory() != null
 					&& !dashboard.getCategory().isEmpty() && !dashboard.getSubcategory().isEmpty()) {
 
-				CategoryRelation categoryRelation = categoryRelationRepository.findByTypeId(d.getId());
+				CategoryRelation categoryRelation = categoryRelationRepository.findByTypeId(d.get().getId());
 
 				if (categoryRelation == null) {
 					categoryRelation = new CategoryRelation();
@@ -858,13 +861,13 @@ public class DashboardServiceImpl implements DashboardService {
 				categoryRelationRepository.save(categoryRelation);
 			}
 
-			return d.getId();
+			return dashboard.getId();
 		}
 	}
 
 	@Override
 	public byte[] getImgBytes(String id) {
-		final Dashboard d = dashboardRepository.findById(id);
+		final Dashboard d = dashboardRepository.findById(id).orElse(new Dashboard());
 
 		return d.getImage();
 	}
@@ -883,17 +886,16 @@ public class DashboardServiceImpl implements DashboardService {
 	@Override
 	public void updateDashboardSimplified(String id, DashboardSimplifiedDTO dashboard, String userId) {
 		if (hasUserEditPermission(id, userId)) {
-			final Dashboard dashboardEnt = dashboardRepository.findById(id);
-			if (dashboardEnt != null) {
-				if (dashboard.getDescription() != null)
+			dashboardRepository.findById(id).ifPresent(dashboardEnt -> {
+				if (dashboard.getDescription() != null) {
 					dashboardEnt.setDescription(dashboard.getDescription());
-				if (dashboard.getIdentification() != null)
+				}
+				if (dashboard.getIdentification() != null) {
 					dashboardEnt.setIdentification(dashboard.getIdentification());
+				}
 				dashboardEnt.setPublic(dashboard.isPublic());
 				dashboardRepository.save(dashboardEnt);
-			} else {
-				throw new DashboardServiceException(DASH_NOT_EXIST);
-			}
+			});
 		} else {
 			throw new DashboardServiceException(ERROR_SAVING_DASHBOARD_FORBIDDEN);
 		}
@@ -902,25 +904,40 @@ public class DashboardServiceImpl implements DashboardService {
 	@Override
 	public List<Dashboard> getByUserIdOrdered(String userId, DashboardOrder order) {
 		final User sessionUser = userRepository.findByUserId(userId);
-		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
-			return dashboardRepository.findAllByOrderByIdentificationAsc();
-		}
+		boolean isAdmin = sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
 		switch (order) {
 		case CREATED_AT_ASC:
-			return dashboardRepository.findByUserPermissionOrderByCreatedAtAsc(sessionUser);
+			if (isAdmin) {
+				return dashboardRepository.findAllByOrderByCreatedAtAsc();
+			}
+			return dashboardRepository.findByUserPermissionOrderByCreatedAtAsc(sessionUser); 			
 		case CREATED_AT_DESC:
+			if (isAdmin) {
+				return dashboardRepository.findAllByOrderByCreatedAtDesc();
+			}
 			return dashboardRepository.findByUserPermissionOrderByCreatedAtDesc(sessionUser);
 		case MODIFIED_AT_ASC:
+			if (isAdmin) {
+				return dashboardRepository.findAllByOrderByUpdatedAtAsc();
+			}
 			return dashboardRepository.findByUserPermissionOrderByUpdatedAtAsc(sessionUser);
 		case MODIFIED_AT_DESC:
+			if (isAdmin) {
+				return dashboardRepository.findAllByOrderByUpdatedAtDesc();
+			}
 			return dashboardRepository.findByUserPermissionOrderByUpdatedAtDesc(sessionUser);
 		case IDENTIFICATION_DESC:
+			if (isAdmin) {
+				return dashboardRepository.findAllByOrderByIdentificationDesc();
+			}
 			return dashboardRepository.findByUserPermissionOrderByIdentificationDesc(sessionUser);
 		case IDENTIFICATION_ASC:
 		default:
+			if (isAdmin) {
+				return dashboardRepository.findAllByOrderByIdentificationAsc();
+			}
 			return dashboardRepository.findByUserPermissionOrderByIdentificationAsc(sessionUser);
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -961,6 +978,7 @@ public class DashboardServiceImpl implements DashboardService {
 		final ArrayList<String> listDatasourcesID = new ArrayList<>();
 		final ArrayList<String> listDatasourcesIDfromSynop = new ArrayList<>();
 		final ArrayList<String> listGadgetMeasuresID = new ArrayList<>();
+		final ArrayList<String> listGadgetTemplatesID = new ArrayList<>();
 		try {
 			final Map<String, Object> obj = objectMapper.readValue(dashboard.getModel(),
 					new TypeReference<Map<String, Object>>() {
@@ -969,7 +987,7 @@ public class DashboardServiceImpl implements DashboardService {
 
 				((ArrayList<Object>) obj.get(PAGES)).forEach(o -> {
 					final Map<String, Object> page = (Map<String, Object>) o;
-					addGridBoardFromPage(page, listDatasourcesID, listGadgetMeasuresID, listGadgetsID);
+					addGridBoardFromPage(page, listDatasourcesID, listGadgetMeasuresID, listGadgetsID, listGadgetTemplatesID);
 
 				});
 			}
@@ -987,20 +1005,24 @@ public class DashboardServiceImpl implements DashboardService {
 				.filter(Objects::nonNull).collect(Collectors.toList()));
 		dashboard.setGadgetMeasures(listGadgetMeasuresID.stream().map(this::gadgetMeasureToDTO).filter(Objects::nonNull)
 				.collect(Collectors.toList()));
+		dashboard.setGadgetTemplates(listGadgetTemplatesID.stream().map(this::gadgetTemplateToDTO).filter(Objects::nonNull)
+				.collect(Collectors.toList()));
 
 		if (listDatasourcesIDfromSynop != null && listDatasourcesIDfromSynop.size() > 0) {
-			List<String> listSynopId = listDatasourcesIDfromSynop.stream().distinct().collect(Collectors.toList());
+			final List<String> listSynopId = listDatasourcesIDfromSynop.stream().distinct()
+					.collect(Collectors.toList());
 
-			List<GadgetDatasourceDTO> synopList = listSynopId.stream().map(this::gadgetDatasourceToDTObyIdentification)
-					.filter(Objects::nonNull).collect(Collectors.toList());
+			final List<GadgetDatasourceDTO> synopList = listSynopId.stream()
+					.map(this::gadgetDatasourceToDTObyIdentification).filter(Objects::nonNull)
+					.collect(Collectors.toList());
 
 			if (dashboard.getGadgetDatasources() != null && dashboard.getGadgetDatasources().size() > 0) {
 				// remove repeats
-				for (Iterator iter = synopList.iterator(); iter.hasNext();) {
-					GadgetDatasourceDTO synopGadgetDatasourceDTO = (GadgetDatasourceDTO) iter.next();
+				for (final Object element : synopList) {
+					final GadgetDatasourceDTO synopGadgetDatasourceDTO = (GadgetDatasourceDTO) element;
 					boolean found = false;
-					for (Iterator iterator = dashboard.getGadgetDatasources().iterator(); iterator.hasNext();) {
-						GadgetDatasourceDTO gadgetDatasourceDTO = (GadgetDatasourceDTO) iterator.next();
+					for (final Object element2 : dashboard.getGadgetDatasources()) {
+						final GadgetDatasourceDTO gadgetDatasourceDTO = (GadgetDatasourceDTO) element2;
 						if (gadgetDatasourceDTO.getId() == synopGadgetDatasourceDTO.getId()) {
 							found = true;
 						}
@@ -1017,14 +1039,43 @@ public class DashboardServiceImpl implements DashboardService {
 		return dashboard;
 	}
 
+	private DashboardExportDTO lightAddGadgets(DashboardExportDTO dashboard) {
+		final ArrayList<GadgetDTO> listGadgets = new ArrayList<>();
+		final ArrayList<GadgetMeasureDTO> listGadgetMeasures = new ArrayList<>();
+		final ArrayList<GadgetTemplateDTO> listGadgetTemplates = new ArrayList<>();
+		try {
+			final Map<String, Object> obj = objectMapper.readValue(dashboard.getModel(),
+					new TypeReference<Map<String, Object>>() {
+					});
+			if (obj.containsKey(PAGES)) {
+
+				((ArrayList<Object>) obj.get(PAGES)).forEach(o -> {
+					final Map<String, Object> page = (Map<String, Object>) o;
+					lightAddGridBoardFromPage(page, listGadgetMeasures, listGadgets, listGadgetTemplates);
+
+				});
+			}
+		} catch (final Exception e) {
+			log.error(JSON_PARSE_EXCEPTION, e);
+		}
+
+		dashboard.setGadgets(
+				listGadgets.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+		dashboard.setGadgetMeasures(listGadgetMeasures.stream().filter(Objects::nonNull)
+				.collect(Collectors.toList()));
+		dashboard.setGadgetTemplates(listGadgetTemplates.stream().filter(Objects::nonNull)
+				.collect(Collectors.toList()));
+
+		return dashboard;
+	}
+
 	private void addDatasourcesFromSynop(final ArrayList<String> listDatasourcesIDfromSynop,
 			final Map<String, Object> obj) {
 		final Map<String, Object> synop = (Map<String, Object>) obj.get(SYNOPTIC);
 		final ArrayList<Object> conditions = (ArrayList<Object>) synop.get(CONDITIONS);
 		conditions.forEach(svgLabel -> {
-			ArrayList<Object> oSVG = (ArrayList<Object>) svgLabel;
-			for (Iterator iterator = oSVG.iterator(); iterator.hasNext();) {
-				Object o = iterator.next();
+			final ArrayList<Object> oSVG = (ArrayList<Object>) svgLabel;
+			for (final Object o : oSVG) {
 				if (o instanceof Map) {
 					if (((Map<String, Object>) o).containsKey(DATASOURCE)) {
 						listDatasourcesIDfromSynop.add((String) ((Map<String, Object>) o).get(DATASOURCE));
@@ -1037,29 +1088,60 @@ public class DashboardServiceImpl implements DashboardService {
 
 	@SuppressWarnings("unchecked")
 	private void addGridBoardFromPage(Map<String, Object> page, List<String> listDatasourcesID,
-			List<String> listGadgetMeasuresID, List<String> listGadgetsID) {
+			List<String> listGadgetMeasuresID, List<String> listGadgetsID, List<String> listGadgetTemplatesID) {
 		final ArrayList<Object> layers = (ArrayList<Object>) page.get(LAYERS);
 		final Map<String, Object> layer = (Map<String, Object>) layers.get(0);
 		final ArrayList<Object> gridboard = (ArrayList<Object>) layer.get(GRIDBOARD);
 		gridboard.forEach(ob -> {
 			final Map<String, Object> gadget = (Map<String, Object>) ob;
-			if (gadget.containsKey(DATASOURCE)) {
+			if (gadget.containsKey(DATASOURCE)) { //template
 				final Map<String, Object> datasource = (Map<String, Object>) gadget.get(DATASOURCE);
 				final String datasourceId = (String) datasource.get("id");
 				listDatasourcesID.add(datasourceId);
+				if (gadget.containsKey(TEMPLATE)) {
+					listGadgetTemplatesID.add((String) gadget.get(TEMPLATE));
+				}
 			} else if (gadget.containsKey("id")) {
 				final String gadgetId = (String) gadget.get("id");
 				listGadgetsID.add(gadgetId);
 				final List<GadgetMeasure> gadgetMeasures = gadgetMeasureRepository
-						.findByGadget(gadgetRepository.findById(gadgetId));
+						.findByGadget(gadgetRepository.findById(gadgetId).orElse(null));
 				if (!CollectionUtils.isEmpty(gadgetMeasures)) {
 					for (final GadgetMeasure gadgetMeasure : gadgetMeasures) {
 						listGadgetMeasuresID.add(gadgetMeasure.getId());
 					}
-					final String datasource = gadgetMeasureRepository.findByGadget(gadgetRepository.findById(gadgetId))
-							.get(0).getDatasource().getId();
+					final String datasource = gadgetMeasureRepository
+							.findByGadget(gadgetRepository.findById(gadgetId).orElse(null)).get(0).getDatasource()
+							.getId();
 					listDatasourcesID.add(datasource);
 				}
+			}
+		});
+	}
+
+	private void lightAddGridBoardFromPage(Map<String, Object> page,
+									  List<GadgetMeasureDTO> listGadgetMeasures, List<GadgetDTO> listGadgets, List<GadgetTemplateDTO> listGadgetsTemplates) {
+		final ArrayList<Object> layers = (ArrayList<Object>) page.get(LAYERS);
+		final Map<String, Object> layer = (Map<String, Object>) layers.get(0);
+		final ArrayList<Object> gridboard = (ArrayList<Object>) layer.get(GRIDBOARD);
+		gridboard.forEach(ob -> {
+			final Map<String, Object> gadget = (Map<String, Object>) ob;
+			if (gadget.containsKey("id")) {
+				final String gadgetId = (String) gadget.get("id");
+				Gadget g = gadgetRepository.findById(gadgetId).orElse(null);
+				listGadgets.add(gadgetToDTO(g));
+				final List<GadgetMeasure> gadgetMeasures = gadgetMeasureRepository
+						.findByGadget(g);
+				if (!CollectionUtils.isEmpty(gadgetMeasures)) {
+					for (final GadgetMeasure gadgetMeasure : gadgetMeasures) {
+						listGadgetMeasures.add(lightGadgetMeasureToDTO(gadgetMeasure));
+					}
+				}
+			}
+			if (gadget.containsKey("template")) {
+				final String templateId = (String) gadget.get("template");
+				GadgetTemplate gt = gadgetTemplateRepository.findByIdentification(templateId);
+				listGadgetsTemplates.add(gadgetTemplateToDTO(gt));
 			}
 		});
 	}
@@ -1068,7 +1150,7 @@ public class DashboardServiceImpl implements DashboardService {
 	public DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboardimportDTO, String userId,
 			boolean overwrite, boolean importAuthorizations) {
 		Dashboard dashboard = new Dashboard();
-		DashboardImportResponsetDTO dashboardImportResultDTO = new DashboardImportResponsetDTO();
+		final DashboardImportResponsetDTO dashboardImportResultDTO = new DashboardImportResponsetDTO();
 		if (dashboardExists(dashboardimportDTO.getIdentification())) {
 			if (overwrite) {
 				dashboard = dashboardRepository.findByIdentification(dashboardimportDTO.getIdentification()).get(0);
@@ -1120,8 +1202,11 @@ public class DashboardServiceImpl implements DashboardService {
 		includeGadgetDatasoures(dashboardimportDTO, userId);
 		// include GADGET_MEASURES
 		includeGadgetMeasures(dashboardimportDTO);
+		// include GADGET_TEMPLATES
+		includeGadgetTemplates(dashboardimportDTO, userId);
 
-		Dashboard dashboardResponse = dashboardRepository.findByIdentification(dashboard.getIdentification()).get(0);
+		final Dashboard dashboardResponse = dashboardRepository.findByIdentification(dashboard.getIdentification())
+				.get(0);
 
 		if (dashboardResponse != null) {
 			dashboardImportResultDTO.setId(dashboardResponse.getId());
@@ -1135,7 +1220,7 @@ public class DashboardServiceImpl implements DashboardService {
 	private void includeDashboardAuths(DashboardExportDTO dashboard, String id) {
 		for (final DashboardUserAccessDTO dashboardUADTO : dashboard.getDashboardAuths()) {
 			final DashboardUserAccess dashboardUA = new DashboardUserAccess();
-			dashboardUA.setDashboard(dashboardRepository.findById(id));
+			dashboardUA.setDashboard(dashboardRepository.findById(id).orElse(null));
 			final List<DashboardUserAccessType> managedTypes = dashboardUserAccessTypeRepository
 					.findByName(dashboardUADTO.getAccessType());
 			final DashboardUserAccessType managedType = managedTypes != null && !CollectionUtils.isEmpty(managedTypes)
@@ -1165,6 +1250,25 @@ public class DashboardServiceImpl implements DashboardService {
 		}
 	}
 
+	private void includeGadgetTemplates(DashboardExportDTO dashboard, String userId) {
+		for (final GadgetTemplateDTO gadgetTemplateDTO : dashboard.getGadgetTemplates()) {
+			final GadgetTemplate gadgetTemplate = new GadgetTemplate();
+			if (gadgetTemplateRepository.findByIdentification(gadgetTemplateDTO.getIdentification()) == null) {
+				gadgetTemplate.setId(gadgetTemplateDTO.getId());
+				gadgetTemplate.setHeaderlibs(gadgetTemplateDTO.getHeaderlibs());
+				gadgetTemplate.setTemplate(gadgetTemplateDTO.getTemplate());
+				gadgetTemplate.setTemplateJS(gadgetTemplateDTO.getTemplateJS());
+				gadgetTemplate.setDescription(gadgetTemplateDTO.getDescription());
+				gadgetTemplate.setIdentification(gadgetTemplateDTO.getIdentification());
+				gadgetTemplate.setPublic(gadgetTemplateDTO.isPublic());
+				gadgetTemplate.setType(gadgetTemplateDTO.getType());
+				gadgetTemplate.setUser(userRepository.findByUserId(userId));
+
+				gadgetTemplateRepository.save(gadgetTemplate);
+			}
+		}
+	}
+
 	private void includeGadgetDatasoures(DashboardExportDTO dashboard, String userId) {
 		for (final GadgetDatasourceDTO gadgetDSDTO : dashboard.getGadgetDatasources()) {
 			final GadgetDatasource gadgetDS = new GadgetDatasource();
@@ -1180,10 +1284,11 @@ public class DashboardServiceImpl implements DashboardService {
 				gadgetDS.setRefresh(gadgetDSDTO.getRefresh());
 				final OntologyDTO oDTO = gadgetDSDTO.getOntology();
 				if (oDTO.getIdentification() != null
-						&& ontologyRepository.findByIdentification(oDTO.getIdentification()) != null)
+						&& ontologyRepository.findByIdentification(oDTO.getIdentification()) != null) {
 					gadgetDS.setOntology(ontologyRepository.findByIdentification(oDTO.getIdentification()));
-				else
+				} else {
 					gadgetDS.setOntology(null);
+				}
 				gadgetDS.setUser(userRepository.findByUserId(userId));
 				gadgetDatasourceRepository.save(gadgetDS);
 			}
@@ -1193,12 +1298,12 @@ public class DashboardServiceImpl implements DashboardService {
 	private void includeGadgetMeasures(DashboardExportDTO dashboard) {
 		for (final GadgetMeasureDTO gadgetMeasureDTO : dashboard.getGadgetMeasures()) {
 			final GadgetMeasure gadgetMeasure = new GadgetMeasure();
-			if (gadgetMeasureRepository.findById(gadgetMeasureDTO.getId()).isEmpty()) {
+			if (!gadgetMeasureRepository.findById(gadgetMeasureDTO.getId()).isPresent()) {
 				gadgetMeasure.setId(gadgetMeasureDTO.getId());
 				gadgetMeasure.setConfig(gadgetMeasureDTO.getConfig());
-				gadgetMeasure.setGadget(gadgetRepository.findById(gadgetMeasureDTO.getGadget().getId()));
-				gadgetMeasure
-						.setDatasource(gadgetDatasourceRepository.findById(gadgetMeasureDTO.getDatasource().getId()));
+				gadgetMeasure.setGadget(gadgetRepository.findById(gadgetMeasureDTO.getGadget().getId()).orElse(null));
+				gadgetMeasure.setDatasource(
+						gadgetDatasourceRepository.findById(gadgetMeasureDTO.getDatasource().getId()).orElse(null));
 
 				gadgetMeasureRepository.save(gadgetMeasure);
 			}
@@ -1211,7 +1316,11 @@ public class DashboardServiceImpl implements DashboardService {
 	public String getElementsAssociated(String dashboardId) {
 		final JSONArray elements = new JSONArray();
 
-		final Dashboard dashboard = dashboardRepository.findById(dashboardId);
+		final Optional<Dashboard> opt = dashboardRepository.findById(dashboardId);
+		if (!opt.isPresent()) {
+			return null;
+		}
+		final Dashboard dashboard = opt.get();
 		final List<String> added = new ArrayList<>();
 
 		try {
@@ -1251,7 +1360,7 @@ public class DashboardServiceImpl implements DashboardService {
 		if (gadget.containsKey(DATASOURCE)) {
 			final Map<String, Object> datasource = (Map<String, Object>) gadget.get(DATASOURCE);
 			final String datasourceId = (String) datasource.get("id");
-			final GadgetDatasource datasourceObj = gadgetDatasourceRepository.findById(datasourceId);
+			final GadgetDatasource datasourceObj = gadgetDatasourceRepository.findById(datasourceId).orElse(null);
 			final JSONObject e = new JSONObject();
 			e.put("id", datasourceObj.getId());
 			e.put(IDENTIFICATION, datasourceObj.getIdentification());
@@ -1259,8 +1368,8 @@ public class DashboardServiceImpl implements DashboardService {
 			added.add(datasourceObj.getId());
 			elements.put(e);
 		} else if (gadget.containsKey("id") && !added.contains(gadget.get("id").toString())
-				&& gadgetRepository.findById(gadget.get("id").toString()) != null) {
-			final Gadget gadgetObj = gadgetRepository.findById(gadget.get("id").toString());
+				&& gadgetRepository.findById(gadget.get("id").toString()).orElse(null) != null ) {
+			final Gadget gadgetObj = gadgetRepository.findById(gadget.get("id").toString()).orElse(null);
 			JSONObject e = new JSONObject();
 			e.put("id", gadgetObj.getId());
 			e.put(IDENTIFICATION, gadgetObj.getIdentification());
@@ -1268,11 +1377,11 @@ public class DashboardServiceImpl implements DashboardService {
 			added.add(gadgetObj.getId());
 			elements.put(e);
 			final List<GadgetMeasure> gadgetMeasures = gadgetMeasureRepository
-					.findByGadget(gadgetRepository.findById(gadgetObj.getId()));
+					.findByGadget(gadgetRepository.findById(gadgetObj.getId()).orElse(null));
 			if (!gadgetMeasures.isEmpty()) {
 
 				final GadgetDatasource datasourceObj = gadgetMeasureRepository
-						.findByGadget(gadgetRepository.findById(gadgetObj.getId())).get(0).getDatasource();
+						.findByGadget(gadgetRepository.findById(gadgetObj.getId()).orElse(null)).get(0).getDatasource();
 				if (!added.contains(datasourceObj.getId())) {
 					e = new JSONObject();
 					e.put("id", datasourceObj.getId());
@@ -1294,7 +1403,11 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	private GadgetDTO gadgetToDTO(String gadgetId) {
-		final Gadget gadget = gadgetRepository.findById(gadgetId);
+		final Gadget gadget = gadgetRepository.findById(gadgetId).orElse(null);
+		return gadgetToDTO(gadget);
+	}
+
+	private GadgetDTO gadgetToDTO(Gadget gadget) {
 		final GadgetDTO gDto = new GadgetDTO();
 		if (gadget != null) {
 			gDto.setId(gadget.getId());
@@ -1308,8 +1421,29 @@ public class DashboardServiceImpl implements DashboardService {
 		return null;
 	}
 
+	private GadgetTemplateDTO gadgetTemplateToDTO(GadgetTemplate gadgetTemplate) {
+		final GadgetTemplateDTO gtDto = new GadgetTemplateDTO();
+		if (gadgetTemplate != null) {
+			gtDto.setId(gadgetTemplate.getId());
+			gtDto.setTemplate(gadgetTemplate.getTemplate());
+			gtDto.setTemplateJS(gadgetTemplate.getTemplateJS());
+			gtDto.setIdentification(gadgetTemplate.getIdentification());
+			gtDto.setPublic(gadgetTemplate.isPublic());
+			gtDto.setType(gadgetTemplate.getType());
+			gtDto.setDescription(gadgetTemplate.getDescription());
+			gtDto.setHeaderlibs(gadgetTemplate.getHeaderlibs());
+			return gtDto;
+		}
+		return null;
+	}
+
+	private GadgetTemplateDTO gadgetTemplateToDTO(String identification) {
+		final GadgetTemplate gadgetTemplate = gadgetTemplateRepository.findByIdentification(identification);
+		return gadgetTemplateToDTO(gadgetTemplate);
+	}
+
 	private GadgetDatasourceDTO gadgetDatasourceToDTO(String gadgetDSId) {
-		final GadgetDatasource gadgetds = gadgetDatasourceRepository.findById(gadgetDSId);
+		final GadgetDatasource gadgetds = gadgetDatasourceRepository.findById(gadgetDSId).orElse(null);
 		final GadgetDatasourceDTO gDto = new GadgetDatasourceDTO();
 		if (gadgetds != null) {
 			gDto.setId(gadgetds.getId());
@@ -1361,7 +1495,12 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	private GadgetMeasureDTO gadgetMeasureToDTO(String gadgetMeasuresId) {
-		final GadgetMeasure gadgetMeasure = gadgetMeasureRepository.findOne(gadgetMeasuresId);
+		final GadgetMeasure gadgetMeasure = gadgetMeasureRepository.findById(gadgetMeasuresId).orElse(null);
+		return gadgetMeasureToDTO(gadgetMeasure);
+	}
+
+	private GadgetMeasureDTO gadgetMeasureToDTO(GadgetMeasure gadgetMeasure) {
+
 		final GadgetMeasureDTO gDto = new GadgetMeasureDTO();
 		if (gadgetMeasure != null) {
 			gDto.setId(gadgetMeasure.getId());
@@ -1373,18 +1512,38 @@ public class DashboardServiceImpl implements DashboardService {
 		return null;
 	}
 
+	private GadgetMeasureDTO lightGadgetMeasureToDTO(GadgetMeasure gadgetMeasure) {
+
+		final GadgetMeasureDTO gDto = new GadgetMeasureDTO();
+		if (gadgetMeasure != null) {
+			gDto.setId(gadgetMeasure.getId());
+			gDto.setConfig(gadgetMeasure.getConfig());
+			GadgetDTO gdto = new GadgetDTO();
+			gdto.setId(gadgetMeasure.getGadget().getId());
+			gDto.setGadget(gdto);
+			GadgetDatasourceDTO gdsdto = new GadgetDatasourceDTO();
+			gdsdto.setId(gadgetMeasure.getDatasource().getId());
+			gdsdto.setRefresh(gadgetMeasure.getDatasource().getRefresh());
+			gdsdto.setMode(gadgetMeasure.getDatasource().getMode());
+			gdsdto.setIdentification(gadgetMeasure.getDatasource().getIdentification());
+			gDto.setDatasource(gdsdto);
+			return gDto;
+		}
+		return null;
+	}
+
 	@Override
 	public ResponseEntity<byte[]> generateImgFromDashboardId(String id, int waittime, int height, int width,
 			boolean fullpage, String params, String oauthtoken) {
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 
-		HttpHeaders headers = new HttpHeaders();
+		final HttpHeaders headers = new HttpHeaders();
 		headers.set("Accept", MediaType.IMAGE_PNG_VALUE);
 
-		HttpEntity<?> entity = new HttpEntity<>(headers);
+		final HttpEntity<?> entity = new HttpEntity<>(headers);
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(String.format(TO_IMG, dashboardexporturl))
+		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(String.format(TO_IMG, dashboardexporturl))
 				.queryParam("waittime", waittime).queryParam("url", prefixURLView + id).queryParam("fullpage", fullpage)
 				.queryParam("width", width).queryParam("height", height).queryParam("oauthtoken", oauthtoken)
 				.queryParam("dashboardsparams", params);
@@ -1397,7 +1556,7 @@ public class DashboardServiceImpl implements DashboardService {
 			String params, String oauthtoken) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 
-		HttpHeaders headers = new HttpHeaders();
+		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_PDF);
 		headers.add("Access-Control-Allow-Methods", "GET");
 		headers.add("Access-Control-Allow-Headers", "Content-Type");
@@ -1406,9 +1565,9 @@ public class DashboardServiceImpl implements DashboardService {
 		headers.add("Pragma", "no-cache");
 		headers.add("Expires", "0");
 
-		HttpEntity<?> entity = new HttpEntity<>(headers);
+		final HttpEntity<?> entity = new HttpEntity<>(headers);
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(String.format(TO_PDF, dashboardexporturl))
+		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(String.format(TO_PDF, dashboardexporturl))
 				.queryParam("waittime", waittime).queryParam("url", prefixURLView + id).queryParam("width", width)
 				.queryParam("height", height).queryParam("oauthtoken", oauthtoken)
 				.queryParam("dashboardsparams", params);
@@ -1418,17 +1577,18 @@ public class DashboardServiceImpl implements DashboardService {
 
 	@Override
 	public DashboardExportDTO exportDashboardDTO(String dashboardId, String userId) {
-		Dashboard dashboard = getDashboardById(dashboardId, userId);
+		final Dashboard dashboard = getDashboardById(dashboardId, userId);
 		if (dashboard == null || !hasUserEditPermission(dashboardId, userId)) {
 			throw new DashboardServiceException(ErrorType.NOT_FOUND, "NOT FOUND");
 		}
 
-		CategoryRelation categoryRelationship = categoryRelationService.getByIdType(dashboard.getId());
+		final CategoryRelation categoryRelationship = categoryRelationService.getByIdType(dashboard.getId());
 		String categoryIdentification = null;
 		String subCategoryIdentification = null;
 		if (categoryRelationship != null) {
-			Category category = categoryService.getCategoryByIdentification(categoryRelationship.getCategory());
-			Subcategory subcategory = subCategoryService.getSubcategoryById(categoryRelationship.getSubcategory());
+			final Category category = categoryService.getCategoryByIdentification(categoryRelationship.getCategory());
+			final Subcategory subcategory = subCategoryService
+					.getSubcategoryById(categoryRelationship.getSubcategory());
 			categoryIdentification = category.getIdentification();
 			subCategoryIdentification = subcategory.getIdentification();
 		}
@@ -1438,7 +1598,7 @@ public class DashboardServiceImpl implements DashboardService {
 		final List<DashboardUserAccess> dashaccesses = getDashboardUserAccesses(dashboard);
 		final List<DashboardUserAccessDTO> dashAuths = dashAuthstoDTO(dashaccesses);
 
-		DashboardExportDTO dashboardDTO = DashboardExportDTO.builder().id(dashboard.getId())
+		final DashboardExportDTO dashboardDTO = DashboardExportDTO.builder().id(dashboard.getId())
 				.identification(dashboard.getIdentification()).user(dashboard.getUser().getUserId())
 				.category(categoryIdentification).subcategory(subCategoryIdentification).nGadgets(ngadgets)
 				.headerlibs(dashboard.getHeaderlibs()).createdAt(dashboard.getCreatedAt())
@@ -1450,10 +1610,28 @@ public class DashboardServiceImpl implements DashboardService {
 		return dashWGadgets;
 	}
 
+	//Only for visualization purposes
+	@Override
+	public DashboardExportDTO lightExportDashboardDTO(String dashboardId, String userId) {
+		final Dashboard dashboard = getDashboardById(dashboardId, userId);
+		if (dashboard == null || !hasUserEditPermission(dashboardId, userId)) {
+			throw new DashboardServiceException(ErrorType.NOT_FOUND, "NOT FOUND");
+		}
+
+		final DashboardExportDTO dashboardDTO = DashboardExportDTO.builder()
+				.model(dashboard.getModel())
+				.id(dashboard.getId())
+				.build();
+
+		final DashboardExportDTO dashWGadgets = lightAddGadgets(dashboardDTO);
+
+		return dashWGadgets;
+	}
+
 	private List<DashboardUserAccessDTO> dashAuthstoDTO(List<DashboardUserAccess> dashaccesses) {
 		final ArrayList<DashboardUserAccessDTO> dashAuths = new ArrayList<>();
-		for (DashboardUserAccess dashua : dashaccesses) {
-			DashboardUserAccessDTO dashAccDTO = new DashboardUserAccessDTO();
+		for (final DashboardUserAccess dashua : dashaccesses) {
+			final DashboardUserAccessDTO dashAccDTO = new DashboardUserAccessDTO();
 			dashAccDTO.setUserId(dashua.getUser().getUserId());
 			dashAccDTO.setAccessType(dashua.getDashboardUserAccessType().getName());
 			dashAuths.add(dashAccDTO);
@@ -1472,7 +1650,7 @@ public class DashboardServiceImpl implements DashboardService {
 		JSONObject json1, json2;
 		Iterator<?> langs, langs2;
 
-		List<I18nResources> i18nR = i18nRR.findByOPResourceId(dashboard.getId());
+		final List<I18nResources> i18nR = i18nRR.findByOPResourceId(dashboard.getId());
 		if (!i18nR.isEmpty()) {
 			json1 = new JSONObject(i18nR.get(0).getI18n().getJsoni18n());
 			langs = json1.getJSONObject("languages").keys();
@@ -1480,11 +1658,13 @@ public class DashboardServiceImpl implements DashboardService {
 				json2 = new JSONObject(i18nR.get(i).getI18n().getJsoni18n());
 				langs2 = json2.getJSONObject("languages").keys();
 
-				ArrayList<String> sameKeys = getSameKeys(langs, langs2);
+				final ArrayList<String> sameKeys = getSameKeys(langs, langs2);
 				for (int k = 0; k < sameKeys.size(); k++) {
-					Iterator<?> langjson = ((JSONObject) json1.getJSONObject("languages").get(sameKeys.get(k))).keys();
-					Iterator<?> langjson2 = ((JSONObject) json2.getJSONObject("languages").get(sameKeys.get(k))).keys();
-					ArrayList<String> diffKeys = getDifferentKeys(langjson, langjson2);
+					final Iterator<?> langjson = ((JSONObject) json1.getJSONObject("languages").get(sameKeys.get(k)))
+							.keys();
+					final Iterator<?> langjson2 = ((JSONObject) json2.getJSONObject("languages").get(sameKeys.get(k)))
+							.keys();
+					final ArrayList<String> diffKeys = getDifferentKeys(langjson, langjson2);
 					for (int j = 0; j < diffKeys.size(); j++) {
 						json1.getJSONObject("languages").getJSONObject(sameKeys.get(k)).put(diffKeys.get(j), json2
 								.getJSONObject("languages").getJSONObject(sameKeys.get(k)).getString(diffKeys.get(j)));
@@ -1493,7 +1673,7 @@ public class DashboardServiceImpl implements DashboardService {
 
 				langs = json1.getJSONObject("languages").keys();
 				langs2 = json2.getJSONObject("languages").keys();
-				ArrayList<String> diffKeys = getDifferentKeys(langs, langs2);
+				final ArrayList<String> diffKeys = getDifferentKeys(langs, langs2);
 				for (int j = 0; j < diffKeys.size(); j++) {
 					json1.getJSONObject("languages").put(diffKeys.get(j),
 							json2.getJSONObject("languages").getJSONObject(diffKeys.get(j)));
@@ -1511,10 +1691,10 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	private ArrayList<String> getSameKeys(Iterator<?> it1, Iterator<?> it2) {
-		ArrayList<String> sameKeys = new ArrayList<String>();
-		List<?> it1List = IteratorUtils.toList(it1);
+		final ArrayList<String> sameKeys = new ArrayList<>();
+		final List<?> it1List = IteratorUtils.toList(it1);
 		while (it2.hasNext()) {
-			String key = (String) it2.next();
+			final String key = (String) it2.next();
 			;
 			if (it1List.contains(key)) {
 				sameKeys.add(key);
@@ -1524,10 +1704,10 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	private ArrayList<String> getDifferentKeys(Iterator<?> it1, Iterator<?> it2) {
-		ArrayList<String> differentKeys = new ArrayList<String>();
-		List<?> it1List = IteratorUtils.toList(it1);
+		final ArrayList<String> differentKeys = new ArrayList<>();
+		final List<?> it1List = IteratorUtils.toList(it1);
 		while (it2.hasNext()) {
-			String key = (String) it2.next();
+			final String key = (String) it2.next();
 			if (!it1List.contains(key)) {
 				differentKeys.add(key);
 			}

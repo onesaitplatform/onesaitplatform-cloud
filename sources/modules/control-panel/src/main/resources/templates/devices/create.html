@@ -229,6 +229,7 @@
 																			id="label_available" class="description"
 																			th:text="#{device.token}">Token</label></th>
 																		<!--  <th class="titulo-columnas"><label id="label_available" class="description"  th:text="#{device.token.lastconnection}">Last Conecction</label></th>-->
+																		<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" th:text="#{multitenancy.tenant}" > </th>
 																		<th class="titulo-columnas"><label
 																			id="label_available" class="description"
 																			th:text="#{device.token.active}">Active</label></th>
@@ -242,11 +243,24 @@
 																</tbody>																
 															</table>
 														</div>
-														<button th:if="${device.id} != null" type="button"
-															class="btn  btn-circle blue btn-outline  pull-right"
-															id="button4" th:text="#{device.generate.token}"
-															onclick="DeviceCreateController.generateToken()">Generate
-															Token</button>
+														<div class="col-sm-12 col-md-12" th:if="${device.id} != null">
+															<div class="form-group pull-right">
+																<div class="form-group" style="width:250px" th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')} ">
+																	<label th:text="#{multitenancy.tenant} + ':'">Tenant</label>
+																	<div class=" ">
+																		<select name="tenant" id="tenants" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true">
+																			<option th:each="tenant:${tenants}" th:value="${tenant.name}" th:text="${tenant.name}" ></option>
+																		</select>
+																	</div>															
+																</div>
+																<button th:if="${device.id} != null" type="button"
+																	class="btn  btn-circle blue btn-outline pull-right"
+																	id="button4" th:text="#{device.generate.token}"
+																	onclick="DeviceCreateController.generateToken()">Generate
+																	Token</button>
+															</div>
+														</div>
+
 													</div>
 												</div>
 											
@@ -320,7 +334,7 @@
 														id="cancelBtn" type="button"
 														class="btn btn-circle btn-outline blue no-border"
 														name="cancel" th:value="#{gen.cancelBtn}" value="cancel"
-														th:onclick="'javascript:DeviceCreateController.go(\'' + @{/devices/list} + '\');'">
+														th:onclick="'javascript:DeviceCreateController.cancel(\'' + ${device.id} + '\',\'' + @{/devices/list} + '\');'">
 														<i class="la la-arrow-left"></i><span
 															th:text="#{gen.cancelBtn}"> Cancel </span>
 													</button>
@@ -388,14 +402,12 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" />
-	<script th:src="@{/static/js/layout.js}" />
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
 
 	<!-- PLUGINS -->
-	<script
-		th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
-	<script
-		th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" />
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'"
 		th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
@@ -413,17 +425,19 @@
 		type="text/javascript"></script>
 
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 
 	<!-- TEMPLATE CONTROLLER  -->
-	<script th:src="@{/static/js/pages/deviceCreate.js}" />
+	<script th:src="@{/static/js/pages/deviceCreate.js}" ></script>
 
 	<!-- MAIN INIT -->
 	<script th:inline="javascript">
 	
 	
 	var currentLanguage = [[${lang}]];	
-	
+	var multitenancyEnabled= [[${@environment.getProperty('onesaitplatform.multitenancy.enabled')}]]
+	var currentTenant = [[${#authentication.getPrincipal().getTenant()}]]
+
 	var deviceCreateJson = { 
 		"validation_dates" : [[#{device.valid.dateDeleted}]],
 		"close" : [[#{gen.closeBtn}]],		

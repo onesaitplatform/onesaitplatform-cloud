@@ -67,6 +67,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.saml.SAMLAuthenticationProvider;
 import org.springframework.security.saml.SAMLBootstrap;
 import org.springframework.security.saml.SAMLEntryPoint;
@@ -126,6 +127,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.controlpanel.interceptor.BearerTokenFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.MicrosoftTeamsTokenFilter;
+import com.minsait.onesait.platform.controlpanel.interceptor.X509CertFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.XOpAPIKeyFilter;
 import com.minsait.onesait.platform.controlpanel.security.xss.XSSFilter;
 import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
@@ -144,6 +146,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final String SAML = "saml";
 	private static final String CAS = "cas";
+	private static final String X509 = "X509";
 	private static final String CONFIGDB = "configdb";
 
 	@Value("${onesaitplatform.authentication.provider}")
@@ -172,7 +175,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private boolean samlIncludePort;
 	@Value("${server.port}")
 	private int samlServerPort;
-	@Value("${server.contextPath}")
+	@Value("${server.servlet.contextPath}")
 	private String samlContextPath;
 
 	@Value("${csrf.enable}")
@@ -242,8 +245,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/virtualdatasources.*", null),
 					new RegexRequestMatcher("^/querytool.*", null), new RegexRequestMatcher("^/datasources.*", null),
 					new RegexRequestMatcher("^/gadgets.*", null), new RegexRequestMatcher("^/saml.*", null),
-					new RegexRequestMatcher("^/oauth" + ".*", null), new RegexRequestMatcher("^/users/register", null),
-					new RegexRequestMatcher("^/users/reset-password", null));
+					new RegexRequestMatcher("^/oauth" + ".*", null),
+					new RegexRequestMatcher("^/users/register", null),
+					new RegexRequestMatcher("^/users/reset-password", null),
+					new RegexRequestMatcher("^/actuator.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -266,12 +271,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http.headers().frameOptions().disable();
 		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-				.antMatchers("/api/applications", "/api/applications/").permitAll()
-				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token").permitAll()
-				.antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+				.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+				.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 				.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
-				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
+				.antMatchers("/actuator/**", "/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
 				.antMatchers("/nodered/auth/**/**").permitAll()
 				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
 						"/dashboards/viewiframe/**", "/viewers/view/**", "/viewers/viewiframe/**", "/gadgets/**",
@@ -310,6 +314,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
 				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class)
 				.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
 		http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
 
@@ -364,6 +369,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
+	public NoOpPasswordEncoder noopPasswordEncoder() {
+		return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
+	}
+
+	@Bean
 	public FilterRegistrationBean xssPreventFilter() {
 		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
 
@@ -399,7 +409,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Override
-	protected AuthenticationManager authenticationManager() throws Exception {
+	@Bean
+	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return new ProviderManager(Arrays.asList(authenticationProvider));
 	}
 

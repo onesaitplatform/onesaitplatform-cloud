@@ -108,7 +108,7 @@ public class Oauth2IntegrationTest {
 
 	@After
 	public void tearDown() {
-		final App realm = EntitiesCast.castAppList(appRepository.findByIdentificationLike(REALM_ID).get(0),false);
+		final App realm = EntitiesCast.castAppList(appRepository.findByIdentificationLike(REALM_ID).get(0), false);
 		realm.getAppRoles().clear();
 		appRepository.delete(realm);
 		userRepository.deleteByUserId(USERNAME);
@@ -278,7 +278,7 @@ public class Oauth2IntegrationTest {
 		test.setFullName(FULL_NAME);
 		test.setActive(true);
 		test.setEmail(EMAIL);
-		test.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()));
+		test.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()).orElse(null));
 		userRepository.save(test);
 
 	}

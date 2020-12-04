@@ -39,13 +39,10 @@ import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPlu
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
-@Slf4j
 public class SubscribeProcessorTest {
 
 	@Autowired
@@ -77,7 +74,7 @@ public class SubscribeProcessorTest {
 		when(deviceManager.registerActivity(any(), any(), any(), any())).thenReturn(true);
 
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 

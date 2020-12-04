@@ -18,6 +18,11 @@ var ApiCustomOpsController = function() {
 		name_op_edit_customsql = field;
 		loadCustomSql (name_op_edit_customsql);
     }
+
+    function viewEditOp(field) {
+		name_op_edit_customsql = field;
+		viewCustomSql (name_op_edit_customsql);
+	}
 	
     function validateNameOp(field) {
         var RegExPattern = /^[a-zA-Z0-9._-]*$/;
@@ -29,15 +34,29 @@ var ApiCustomOpsController = function() {
     }
     
     function loadParamQuerySQLType() {
-   	 var query = document.getElementById("id_query_op_customsql").value;
-        var error = "";
-        error = isValidQuery(query);
-        if (error==""){
-       	    clearParams();
-       	    showParams(query);
-        } else {
-        	ApiCreateController.showErrorDialog('Error', error);
-        }
+   	 var query = codeEditor.getValue();
+   	 monacoFormat($('#id_customsql_querytype').val(), $("#ontology option:selected").text());
+    }
+    
+    function monacoFormat (queryType, defaultOntology=null) {
+    	if (codeEditor){
+    		switch (queryType){
+    		case 'sql':
+    			monaco.editor.setModelLanguage(codeEditor.getModel(), 'sql');
+    			if (defaultOntology) {
+        			codeEditor.setValue("Select * from "+defaultOntology+" as c limit 3");
+    			}
+    			break;
+    		case 'native':
+    			monaco.editor.setModelLanguage(codeEditor.getModel(), 'javascript');
+    			if (defaultOntology) {
+    				codeEditor.setValue("db."+defaultOntology+".find().limit(3)");
+    			}
+    			break;
+    		default:
+    			break;
+    		}
+    	}
     }
 
     function loadParamsFromQuery(field, op_name) {
@@ -123,7 +142,9 @@ var ApiCustomOpsController = function() {
 			 var param = query.substring(query.indexOf("{$") + 2, query.indexOf("}", query.indexOf("{$")));
 		
 			 if (param.indexOf(":")==-1){
-				 loadParamQuery(param);
+				 if (!isParameterAdded(customsql_queryparam, param)){
+				 	loadParamQuery(param);
+			 	 }
 				 query = query.substring(query.indexOf("}", query.indexOf("{$")) + 1);
 			 } else {
 			    query = query.substring(query.indexOf("{$") + 2, query.length);
@@ -142,6 +163,16 @@ var ApiCustomOpsController = function() {
 		 	$("#customsql_params_div").css({ 'display': "none" });
 		 	$("#customsql_noparam_div").css({ 'display': "block" });
 		 }
+    }
+    
+    function isParameterAdded(customsql_queryparam, param) {
+        for(var i=0; i<customsql_queryparam.length; i+=1){
+            var parameter = customsql_queryparam [i];
+            if (parameter.name == param){
+                return true;
+            }
+        }
+        return false;  	
     }
 
     function loadParamQuery(param) {
@@ -199,7 +230,7 @@ var ApiCustomOpsController = function() {
     	
         var id_type_op_customsql = $('#id_type_op_customsql').val();
         var id_name_op_customsql = $('#id_name_op_customsql').val();
-        var errorQuery = isValidQuery($('#id_query_op_customsql').val());
+        var errorQuery = isValidQuery(codeEditor.getValue());
         var postProcess = myCodeMirrorJs.getValue();
 
         var desc_op_customsql = $('#id_desc_op_customsql').val();
@@ -246,7 +277,7 @@ var ApiCustomOpsController = function() {
     }
 
     function saveParamQueryCustomsql(operation){
-   	 	var queryParameter = {name: "query", condition: "CONSTANT", dataType: "STRING", value: $('#id_query_op_customsql').val() , description: "", headerType: "QUERY"};
+   	 	var queryParameter = {name: "query", condition: "CONSTANT", dataType: "STRING", value: codeEditor.getValue(), description: "", headerType: "QUERY"};
    	 	operation.querystrings.push(queryParameter);
         var targetBDParameter = {name: "targetdb", condition: "CONSTANT", dataType: "STRING", value: $('#id_customsql_targetBD').val() , description: "", headerType: "QUERY"};
         operation.querystrings.push(targetBDParameter);
@@ -395,6 +426,66 @@ var ApiCustomOpsController = function() {
     	}
     }
 
+    
+
+    function viewCustomSql (op_name){
+        if (op_name!=null && op_name!=""){
+            var operation;
+            for(var i=0; i<operations.length; i+=1){
+                var op = operations [i];
+                if (op.identification == op_name){
+                	operation=op;
+                }
+            }
+            $('#id_name_op_customsql').val(operation.identification);
+            $('#id_desc_op_customsql').val(operation.description);
+            
+            for (var i = 0; i < operation.querystrings.length; i++) {
+                if (operation.querystrings [i].name == "query" ){
+                	codeEditor.setValue(operation.querystrings [i].value);
+                	loadParamsFromQuery(operation.querystrings [i].value, op_name);
+                }
+            }
+
+            loadParamsQueryValues(operation.querystrings);
+            
+            if (operation.postprocess!=null && operation.postprocess!=""){
+            	//myCodeMirrorJs.setValue(operation.postprocess);
+            	
+            	
+            	$('#jsImportTextArea').val(operation.postprocess);	
+            	$('#postProcessCheckbox').prop('checked', true);
+            	$('#portletBody').css('display') == "none" ? $('#portletToolPostProcess').click():null;
+            	$('#id_postprocess_op_customsql').show();
+            } else {
+            	$('#id_postprocess_op_customsql').hide();
+            	$('#portletBody').css('display') == "block" ? $('#portletToolPostProcess').click():null;
+            }
+            
+            $('#id_name_op_customsql').prop('disabled', true);
+            loadParamsCustomValues(operation.querystrings);
+        } else {
+        	$('#id_name_op_customsql').val("");
+        	codeEditor.setValue("");
+        	$('#id_desc_op_customsql').val("");
+        			
+        	loadParamsFromQuery("", "");
+        	
+        	myCodeMirrorJs.setValue("");
+        	$('#jsImportTextArea').val("");	
+    		$('#postProcessCheckbox').prop('checked', false);
+    		$('#portletBody').css('display') == "block" ? $('#portletToolPostProcess').click():null;
+            $('#id_name_op_customsql').prop('disabled', false);
+
+        }
+        
+        $('#dialog-customsql').modal('toggle');
+      //  setTimeout(function() {
+      //  	myCodeMirrorJs.refresh();
+      //},600);
+
+    }   
+    
     function loadCustomSql (op_name){
         if (op_name!=null && op_name!=""){
             var operation;
@@ -409,7 +500,7 @@ var ApiCustomOpsController = function() {
 
             for (var i = 0; i < operation.querystrings.length; i++) {
                 if (operation.querystrings [i].name == "query" ){
-                	$('#id_query_op_customsql').val(operation.querystrings [i].value);
+                	codeEditor.setValue(operation.querystrings [i].value);
                 	loadParamsFromQuery(operation.querystrings [i].value, op_name);
                 }
             }
@@ -430,10 +521,10 @@ var ApiCustomOpsController = function() {
             loadParamsCustomValues(operation.querystrings);
         } else {
         	$('#id_name_op_customsql').val("");
-        	$('#id_query_op_customsql').val("");
         	$('#id_desc_op_customsql').val("");
         			
         	loadParamsFromQuery("", "");
+        	monacoFormat('sql', $("#ontology option:selected").text());	
         	
         	myCodeMirrorJs.setValue("");
     		$('#postProcessCheckbox').prop('checked', false);
@@ -461,6 +552,7 @@ var ApiCustomOpsController = function() {
        		 	$('#"id_customsql_formatresult').val(querystrings [i].value);
        	 	} else if (querystrings [i].name == "queryType" ){
        		 	$('#id_customsql_querytype').val(querystrings [i].value);
+       		 	monacoFormat(querystrings [i].value);
        	 	} else {
        		 $('[name = "customsqlParamType_' + querystrings [i].name +"\"").val(querystrings [i].value);
         	}
@@ -513,7 +605,11 @@ var ApiCustomOpsController = function() {
 			logControl ? console.log(LIB_TITLE + ': selectEditCustomOp(field)') : '';
 			selectEditOp(field);
 		},
-		
+		// SELECTS EDIT OPERATION
+		viewEditCustomOp: function(field) {
+			logControl ? console.log(LIB_TITLE + ': viewEditCustomOp(field)') : '';
+			viewEditOp(field);
+		},
 		// REMOVES EDIT OPERATION
 		removeCustomSqlOp: function(field) {
 			logControl ? console.log(LIB_TITLE + ': removeCustomOp(field)') : '';

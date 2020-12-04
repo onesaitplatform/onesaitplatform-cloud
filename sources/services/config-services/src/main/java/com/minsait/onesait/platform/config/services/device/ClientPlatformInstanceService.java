@@ -25,10 +25,8 @@ import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 public interface ClientPlatformInstanceService {
 
 	ClientPlatformInstance getByClientPlatformIdAndIdentification(ClientPlatform clientPlatform, String identification);
+	ClientPlatformInstance getByClientPlatformIdAndIdentification(String clienttPlatformIdentification, String identification);
 
-	void createClientPlatformInstance(ClientPlatformInstance clientPlatformInstance);
-
-	ClientPlatformInstance updateClientPlatformInstance(ClientPlatformInstance clientPlatformInstance);
 
 	void patchClientPlatformInstance(String clientPlatformInstanceId, String tags);
 
@@ -46,5 +44,9 @@ public interface ClientPlatformInstanceService {
 	List<String> getClientPlatformInstanceCommands(ClientPlatformInstance device);
 
 	void deleteClientPlatformInstance(ClientPlatformInstance clientPlatformInstance);
+	int createOrUpdateClientPlatformInstance(ClientPlatformInstance clientPlatformInstance, String cpIdentification);
+	
+	ClientPlatformInstance updateClientPlatformInstance(ClientPlatformInstance clientPlatformInstance,
+			String cpIdentification);
 
 }

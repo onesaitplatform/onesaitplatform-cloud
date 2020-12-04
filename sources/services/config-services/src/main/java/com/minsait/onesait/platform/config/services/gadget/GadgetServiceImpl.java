@@ -57,7 +57,7 @@ public class GadgetServiceImpl implements GadgetService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -126,7 +126,7 @@ public class GadgetServiceImpl implements GadgetService {
 
 	@Override
 	public Gadget getGadgetById(String userID, String gadgetId) {
-		return gadgetRepository.findById(gadgetId);
+		return gadgetRepository.findById(gadgetId).orElse(null);
 	}
 
 	@Override
@@ -144,17 +144,17 @@ public class GadgetServiceImpl implements GadgetService {
 			return gadgets;
 		} else {
 
-			List<String> resourceIdList = new ArrayList<String>();
-			for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
-				Gadget g = (Gadget) iterator.next();
+			final List<String> resourceIdList = new ArrayList<>();
+			for (final Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
+				final Gadget g = (Gadget) iterator.next();
 				resourceIdList.add(g.getId());
 			}
-			Map<String, ResourceAccessType> midrat = resourceService.getResourcesAccessMapByUserAndResourceIdList(user,
-					resourceIdList);
+			final Map<String, ResourceAccessType> midrat = resourceService
+					.getResourcesAccessMapByUserAndResourceIdList(user, resourceIdList);
 
-			List<Gadget> result = new ArrayList<Gadget>();
-			for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
-				Gadget g = (Gadget) iterator.next();
+			final List<Gadget> result = new ArrayList<>();
+			for (final Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
+				final Gadget g = (Gadget) iterator.next();
 				if (g.getUser().getUserId().equals(userID) || (midrat.get(g.getId()) != null)) {
 					result.add(g);
 				}
@@ -165,13 +165,13 @@ public class GadgetServiceImpl implements GadgetService {
 
 	@Override
 	public List<GadgetMeasure> getGadgetMeasuresByGadgetId(String userID, String gadgetId) {
-		return gadgetMeasureRepository.findByGadget(gadgetRepository.findById(gadgetId));
+		return gadgetMeasureRepository.findByGadget(gadgetRepository.findById(gadgetId).orElse(null));
 	}
 
 	@Override
 	public boolean hasUserPermission(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
-		final Gadget gadget = gadgetRepository.findById(id);
+		final Gadget gadget = gadgetRepository.findById(id).orElse(null);
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (gadget.getUser().getUserId().equals(userId)) {
@@ -189,7 +189,7 @@ public class GadgetServiceImpl implements GadgetService {
 	@Override
 	public void deleteGadget(String gadgetId, String userId) {
 		if (hasUserPermission(gadgetId, userId)) {
-			final Gadget gadget = gadgetRepository.findById(gadgetId);
+			final Gadget gadget = gadgetRepository.findById(gadgetId).orElse(null);
 			if (gadget != null) {
 				if (resourceService.isResourceSharedInAnyProject(gadget))
 					throw new OPResourceServiceException(
@@ -211,7 +211,7 @@ public class GadgetServiceImpl implements GadgetService {
 		for (final GadgetMeasure gm : lgmeasure) {
 			gadgetMeasureRepository.delete(gm);
 		}
-		final Gadget gadgetDB = gadgetRepository.findById(gadget.getId());
+		final Gadget gadgetDB = gadgetRepository.findById(gadget.getId()).orElse(null);
 		gadget.setId(gadgetDB.getId());
 		gadget.setUser(gadgetDB.getUser());
 		saveGadgetAndMeasures(gadget, gadgetDatasourceIds, jsonMeasures);
@@ -223,7 +223,7 @@ public class GadgetServiceImpl implements GadgetService {
 		for (final GadgetMeasure gm : lgmeasure) {
 			gadgetMeasureRepository.delete(gm);
 		}
-		final Gadget gadgetDB = gadgetRepository.findById(gadget.getId());
+		final Gadget gadgetDB = gadgetRepository.findById(gadget.getId()).orElse(null);
 		gadget.setId(gadgetDB.getId());
 		gadget.setIdentification(gadgetDB.getIdentification());
 		gadget.setUser(gadgetDB.getUser());
@@ -252,13 +252,13 @@ public class GadgetServiceImpl implements GadgetService {
 
 	@Override
 	public String getElementsAssociated(String gadgetId) {
-		JSONArray elements = new JSONArray();
-		JSONObject ontology = new JSONObject();
-		JSONObject datasource = new JSONObject();
-		Gadget gadget = gadgetRepository.findById(gadgetId);
+		final JSONArray elements = new JSONArray();
+		final JSONObject ontology = new JSONObject();
+		final JSONObject datasource = new JSONObject();
+		final Gadget gadget = gadgetRepository.findById(gadgetId).orElse(null);
 
 		if (gadget != null && !gadgetMeasureRepository.findByGadget(gadget).isEmpty()) {
-			GadgetMeasure gadgetMeasure = gadgetMeasureRepository.findByGadget(gadget).get(0);
+			final GadgetMeasure gadgetMeasure = gadgetMeasureRepository.findByGadget(gadget).get(0);
 			ontology.put("id", gadgetMeasure.getDatasource().getOntology().getId());
 			ontology.put("identification", gadgetMeasure.getDatasource().getOntology().getIdentification());
 			ontology.put("type", gadgetMeasure.getDatasource().getOntology().getClass().getSimpleName());
@@ -323,8 +323,8 @@ public class GadgetServiceImpl implements GadgetService {
 		g = gadgetRepository.save(g);
 
 		if (gadgetMeasures != null && datasourceId != null) {
-			for (Iterator<GadgetMeasure> iterator = gadgetMeasures.iterator(); iterator.hasNext();) {
-				GadgetMeasure gadgetMeasure = iterator.next();
+			for (final Iterator<GadgetMeasure> iterator = gadgetMeasures.iterator(); iterator.hasNext();) {
+				final GadgetMeasure gadgetMeasure = iterator.next();
 				gadgetMeasure.setGadget(g);
 				gadgetMeasure.setDatasource(gadgetDatasourceService.getGadgetDatasourceById(datasourceId));
 				gadgetMeasureRepository.save(gadgetMeasure);
@@ -340,8 +340,8 @@ public class GadgetServiceImpl implements GadgetService {
 		g = gadgetRepository.save(g);
 
 		if (gadgetMeasures != null && datasource != null) {
-			for (Iterator<GadgetMeasure> iterator = gadgetMeasures.iterator(); iterator.hasNext();) {
-				GadgetMeasure gadgetMeasure = iterator.next();
+			for (final Iterator<GadgetMeasure> iterator = gadgetMeasures.iterator(); iterator.hasNext();) {
+				final GadgetMeasure gadgetMeasure = iterator.next();
 				gadgetMeasure.setGadget(g);
 				gadgetMeasure.setDatasource(datasource);
 				gadgetMeasureRepository.save(gadgetMeasure);
@@ -359,11 +359,13 @@ public class GadgetServiceImpl implements GadgetService {
 			for (final GadgetMeasure oldMeasure : oldMeasures) {
 				newMeasures.removeIf(b -> b.getConfig().contains(oldMeasure.getConfig()));
 			}
-			final Gadget gadgetDB = gadgetRepository.findById(gadget.getId());
-			gadget.setId(gadgetDB.getId());
-			gadget.setIdentification(gadgetDB.getIdentification());
-			gadget.setUser(gadgetDB.getUser());
-			saveGadgetAndMeasures(gadget, datasourceId, newMeasures);
+			gadgetRepository.findById(gadget.getId()).ifPresent(gadgetDB -> {
+				gadget.setId(gadgetDB.getId());
+				gadget.setIdentification(gadgetDB.getIdentification());
+				gadget.setUser(gadgetDB.getUser());
+				saveGadgetAndMeasures(gadget, datasourceId, newMeasures);
+			});
+
 		}
 	}
 

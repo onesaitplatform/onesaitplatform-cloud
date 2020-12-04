@@ -148,6 +148,20 @@
 									<div class="col-md-12">											
 										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide  pull-right">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default">
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
+														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}" > Owner</label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.type}"> Type</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>
+													</div>
+												</div>		
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="gadgets" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
@@ -232,20 +246,7 @@
 													</tbody>
 												</table>
 												
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
-														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}" > Owner</label>
-														<label class="toggle-vis" data-column="2" th:text="#{gen.type}"> Type</label>
-														<label class="toggle-vis" data-column="3" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>
-													</div>
-												</div>											
+																					
 											</div>
 										</div>											
 									</div>
@@ -267,13 +268,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -299,7 +300,9 @@
 	var optionName = 'GADGETS';
 	
 	//<![CDATA[
-	function navigateUrl(url){  window.location.href = url;	}
+	function navigateUrl(url){ 
+		
+		window.location.href = url;	}
 	
 	var  deleteConfirmation = function (id){
 		
@@ -308,6 +311,7 @@
 	var deleteUrl = [[@{/gadgets}]];
 	
 	var showConfirmDeleteDialog = function(id){	
+		
 		$('#delete_gadget_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
 		HeaderController.showConfirmDialogGadget('delete_gadget_form');	
@@ -408,12 +412,13 @@
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([ 1 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 	

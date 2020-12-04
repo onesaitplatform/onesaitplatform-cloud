@@ -2,37 +2,24 @@
 ##security.require_ssl: true
 server: ## Config Web Server
    port: 19100
-   contextPath: /api-manager
-   tomcat:
-      access_log_enabled: true
-      basedir: target/tomcat
+   servlet:
+      contextPath: /api-manager
    jetty.max-http-post-size: 20000000      
 
-# all access to actuator endpoints without security
-management.security.enabled: false
-#security.basic.enabled: false
 
-#hawtio.authenticationEnabled: false
-#hawtio.offline: true
   
 master: 
    datasource:
-      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-      username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      driver-class-name: com.mysql.jdbc.Driver
-      test-while-idle: true
-      test-on-borrow: true
-      validation-query: SELECT 1      
-      validationQueryTimeout: 5
-      # Number of ms to wait before throwing an exception if no connection is available.
-      max-wait: 10000
-      # Maximum number of active connections that can be allocated from this pool at the same time.
-      max-active: 2
-      initial-size: 1
-      max-idle: 2
-      min-idle: 1
-      removeAbandoned: true
+      hikari: 
+        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+        username: root
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        pool-name: master-hikari-pool
+        minimum-idle: 1
+        maximum-pool-size: 2
+        connection-timeout: 10000
+     
 onesaitplatform: #Config onesaitplatform specific
    multitenancy:
       enabled: true
@@ -84,45 +71,43 @@ onesaitplatform: #Config onesaitplatform specific
       collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
       enabled: true
 
-    
+      
+management.endpoints.web.exposure.include: "*"
+management.endpoint.health.show-details: always
 spring: ## General Config  
    application.name: onesaitplatform-api-manager
-   boot.admin: #Spring Boot Admin Config    
-      url: http://localhost:18100/monitoring
-      username: operations
-      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+   boot.admin: #Spring Boot Admin Config   
+      client.url: http://localhost:18100/monitoring
+      client.username: operations
+      client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
       client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: $spring.boot.admin.password} 
-   datasource: ## JPA Config
-      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+      client.metadata.user.password: ${spring.boot.admin.password}
+   datasource:
+     hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      driver-class-name: com.mysql.jdbc.Driver
-      test-while-idle: true
-      test-on-borrow: true
-      validation-query: SELECT 1
-      validationQueryTimeout: 5
-      # Number of ms to wait before throwing an exception if no connection is available.
-      max-wait: 10000
-      # Maximum number of active connections that can be allocated from this pool at the same time.
-      max-active: 30
-      initial-size: 10
-      max-idle: 30
-      min-idle: 10
-      removeAbandoned: true
+      connection-timeout: 10000
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      minimum-idle: 5
+      maximum-pool-size: 10
       
    jpa:
       open-in-view: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect   
       # Hibernate ddl auto (create, create-drop, validate, update)
-      hibernate.ddl-auto: validate
+      hibernate.ddl-auto: none
       properties.hibernate.enable_lazy_load_no_trans: true
       show-sql: false
       properties.hibernate.format_sql: true
       properties.hibernate.temp.use_jdbc_metadata_defaults: false
    jmx:
     enabled: true
+   servlet:
+      multipart:
+         max-file-size: 200Mb
+         max-request-size: 200Mb
 spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
 
@@ -142,15 +127,15 @@ security:
     client-secret: onesaitplatform
     grant-type: authorization_code,refresh_token,password
     scopes: openid
-    
-    ## LOGGING CONF
+
+## LOGGING CONF
 logging:
    path: ./target/ 
    file: ${spring.application.name}
    level:
       com.minsait: INFO 
-      org.springframework.boot: INFO
+      org.springframework.boot: WARN
       org.jeasy.rules: ERROR      
-      org.eclipse.jetty: ERROR
+      org.eclipse.jetty: WARN
 #      org.springframework.boot.autoconfigure: DEBUG
 

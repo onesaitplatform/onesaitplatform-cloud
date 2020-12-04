@@ -34,8 +34,6 @@ public interface KsqlResourceRepository extends JpaRepository<KsqlResource, Stri
 
 	KsqlResource findByIdentificationAndIdNot(String identification, String id);
 
-	KsqlResource findById(String identification);
-
 	List<KsqlResource> findByKafkaTopic(String kafkaTopic);
 
 	List<KsqlResource> findByResourceType(FlowResourceType resourceType);
@@ -54,7 +52,7 @@ public interface KsqlResourceRepository extends JpaRepository<KsqlResource, Stri
 	@CacheEvict(cacheNames = "KsqlResourceRepositoryByOntology_IdentificationAndResourceType", allEntries = true)
 	@Modifying
 	@Transactional
-	void delete(String id);
+	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = "KsqlResourceRepositoryByOntology_IdentificationAndResourceType", allEntries = true)

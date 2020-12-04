@@ -183,4 +183,6 @@ public interface OntologyService {
 
 	List<Ontology> getOntologiesByOwner(String sessionUserId);
 
+	Map<String, List<String>> getResourcesFromOntology(Ontology ontology);
+
 }

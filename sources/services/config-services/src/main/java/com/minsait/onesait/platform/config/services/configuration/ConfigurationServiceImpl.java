@@ -47,12 +47,12 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class ConfigurationServiceImpl implements ConfigurationService {
-	
+
 	@Autowired
 	private ConfigurationRepository configurationRepository;
 
 	private static final String DEFAULT = "default";
-	
+
 	@Override
 	public List<Configuration> getAllConfigurations() {
 		return configurationRepository.findAll();
@@ -76,17 +76,14 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public Configuration getConfiguration(String id) {
-		return configurationRepository.findById(id);
+		return configurationRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public Configuration createConfiguration(Configuration configuration) {
-		Configuration oldConfiguration = configurationRepository.findById(configuration.getId());
-		if (oldConfiguration != null)
-			throw new ConfigServiceException(
-					"You cann´t create a Configuration that exists:" + configuration.toString());
-		oldConfiguration = configurationRepository.findByTypeAndEnvironmentAndSuffix(configuration.getType(),
-				configuration.getEnvironment(), configuration.getSuffix());
+
+		Configuration oldConfiguration = configurationRepository.findByTypeAndEnvironmentAndSuffix(
+				configuration.getType(), configuration.getEnvironment(), configuration.getSuffix());
 		if (oldConfiguration != null)
 			throw new ConfigServiceException(
 					"Exist a configuration of this type for the environment and suffix:" + configuration.toString());
@@ -104,25 +101,23 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public void updateConfiguration(Configuration configuration) {
-		final Configuration oldConfiguration = configurationRepository.findById(configuration.getId());
-		if (oldConfiguration != null) {
-			oldConfiguration.setYmlConfig(configuration.getYmlConfig());
-			oldConfiguration.setDescription(configuration.getDescription());
-			oldConfiguration.setSuffix(configuration.getSuffix());
-			oldConfiguration.setEnvironment(configuration.getEnvironment());
-			configurationRepository.save(oldConfiguration);
+		configurationRepository.findById(configuration.getId()).ifPresent(oc -> {
+			oc.setYmlConfig(configuration.getYmlConfig());
+			oc.setDescription(configuration.getDescription());
+			oc.setSuffix(configuration.getSuffix());
+			oc.setEnvironment(configuration.getEnvironment());
+			configurationRepository.save(oc);
+		});
 
-		} else {
-			throw new ConfigServiceException("You cann´t update a Configuration:" + configuration.toString());
-		}
 	}
 
 	@Override
 	public TwitterConfiguration getTwitterConfiguration(String environment, String suffix) {
 		try {
 			final Configuration config = this.getConfiguration(Configuration.Type.TWITTER, environment, suffix);
-			AllConfiguration conf = getAllConfigurationFromDBConfig(config);
-			if (conf==null) return null;
+			final AllConfiguration conf = getAllConfigurationFromDBConfig(config);
+			if (conf == null)
+				return null;
 			return conf.getTwitter();
 		} catch (final Exception e) {
 			log.error("Error getting TwitterConfiguration", e);
@@ -188,7 +183,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public GitlabConfiguration getGitlabConfiguration(String id) {
-		final Configuration config = configurationRepository.findById(id);
+		final Configuration config = configurationRepository.findById(id).orElse(null);
 		if (config == null)
 			return null;
 		return getAllConfigurationFromDBConfig(config).getGitlab();
@@ -210,7 +205,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public RancherConfiguration getRancherConfiguration(String id) {
-		final Configuration config = configurationRepository.findById(id);
+		final Configuration config = configurationRepository.findById(id).orElse(null);
 		if (config == null)
 			return null;
 		return getAllConfigurationFromDBConfig(config).getRancher();
@@ -218,7 +213,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public OpenshiftConfiguration getOpenshiftConfiguration(String id) {
-		final Configuration config = configurationRepository.findById(id);
+		final Configuration config = configurationRepository.findById(id).orElse(null);
 		if (config == null)
 			return null;
 		return getAllConfigurationFromDBConfig(config).getOpenshift();
@@ -236,10 +231,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			return null;
 		return getAllConfigurationFromDBConfig(configuration).getMail();
 	}
-	
+
 	@Override
 	public GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment) {
-		final Configuration configuration = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, environment);
+		final Configuration configuration = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS,
+				environment);
 		if (configuration == null)
 			return null;
 		return getAllConfigurationFromDBConfig(configuration).getGoogleanalytics();

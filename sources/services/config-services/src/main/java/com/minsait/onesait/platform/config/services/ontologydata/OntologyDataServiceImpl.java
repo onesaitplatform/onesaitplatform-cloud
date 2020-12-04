@@ -15,6 +15,9 @@
 package com.minsait.onesait.platform.config.services.ontologydata;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -26,12 +29,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -67,6 +72,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	private OntologyRepository ontologyRepository;
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
+	
+	private final ConcurrentHashMap<String, JsonSchema> schemaCache = new ConcurrentHashMap<>();
 
 	final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
 
@@ -97,21 +104,36 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 
 	@Override
 	public void checkOntologySchemaCompliance(final JsonNode data, final Ontology ontology) {
+		
 		try {
+			String ontologySchema = ontologyRepository.getSchemaAsJsonNode(ontology);
 
-			final JsonNode jsonSchema = mapper.readTree(ontologyRepository.getSchemaAsJsonNode(ontology));
-
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			String sha1 = new String(md.digest(ontologySchema.getBytes(StandardCharsets.UTF_8)));
+			
+			JsonSchema jsonSchema = schemaCache.get(sha1);
+			if (jsonSchema == null) {
+				jsonSchema = createJsonSchema(ontologySchema);
+				schemaCache.put(sha1, jsonSchema);
+			}
 			checkJsonCompliantWithSchema(data, jsonSchema);
 		} catch (final IOException e) {
 			throw new DataSchemaValidationException("Error reading data for checking schema compliance", e);
 		} catch (final ProcessingException e) {
 			throw new DataSchemaValidationException("Error checking data schema compliance", e);
+		} catch (final NoSuchAlgorithmException e) {
+			throw new IllegalStateException("No SHA-1 algoritm was found");
 		}
 	}
-
-	void checkJsonCompliantWithSchema(final JsonNode data, final JsonNode schemaJson) throws ProcessingException {
+	
+	private JsonSchema createJsonSchema(String schema) throws ProcessingException, JsonProcessingException, IOException {
+		final JsonNode jsonSchemaNode = mapper.readTree(schema);
 		final JsonSchemaFactory factoryJson = JsonSchemaFactory.byDefault();
-		final JsonSchema schema = factoryJson.getJsonSchema(schemaJson);
+		return factoryJson.getJsonSchema(jsonSchemaNode);
+	}
+
+	void checkJsonCompliantWithSchema(final JsonNode data, final JsonSchema schema) throws ProcessingException {
+		
 		try {
 			final ProcessingReport report = schema.validate(data);
 			if (report != null && !report.isSuccess()) {
@@ -139,12 +161,11 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 
 	void checkJsonCompliantWithSchema(final String dataString, final String schemaString) {
 		JsonNode dataJson;
-		JsonNode schemaJson;
 
 		try {
 			dataJson = JsonLoader.fromString(dataString);
-			schemaJson = JsonLoader.fromString(schemaString);
-			checkJsonCompliantWithSchema(dataJson, schemaJson);
+			JsonSchema schema = createJsonSchema(schemaString);
+			checkJsonCompliantWithSchema(dataJson, schema);
 
 		} catch (final IOException e) {
 			throw new DataSchemaValidationException("Error reading data for checking schema compliance", e);
@@ -384,10 +405,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	}
 
 	@Override
-	public List<String> preProcessInsertData(OperationModel operationModel, final boolean addContext)
+	public List<String> preProcessInsertData(OperationModel operationModel, final boolean addContext, final Ontology ontology)
 			throws IOException {
-		final String ontologyName = operationModel.getOntologyName();
-		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
 
 		final JsonNode dataNode = objectMapper.readTree(operationModel.getBody());
 

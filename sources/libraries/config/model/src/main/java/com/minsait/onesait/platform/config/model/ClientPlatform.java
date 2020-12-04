@@ -46,7 +46,7 @@ public class ClientPlatform extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
-	@OneToMany(mappedBy = "clientPlatform", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "clientPlatform", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter

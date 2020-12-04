@@ -77,11 +77,7 @@
     	<max-size policy="PER_NODE">300</max-size>
   	</map>
   	
-  	 <map name="cachePendingResetPassword">
-    	<time-to-live-seconds>600</time-to-live-seconds> <!-- 10 minutes -->
-    	<eviction-policy>LRU</eviction-policy>
-    	<max-size policy="PER_NODE">300</max-size>
-  	</map>
+  	
   	
   	<map name="transactionalOperations">
     	<time-to-live-seconds>60</time-to-live-seconds> <!-- 1 minute -->
@@ -92,6 +88,13 @@
   	<map name="lockedOntologies">
     	<eviction-policy>NONE</eviction-policy>
     	<max-size policy="PER_NODE">300</max-size>
+  	</map>
+  	
+  	<map name="IoTSessionRepository">
+    	<eviction-policy>LRU</eviction-policy>
+    	<max-size policy="PER_NODE">20000</max-size>
+    	<time-to-live-seconds>0</time-to-live-seconds>
+    	<max-idle-seconds>86400</max-idle-seconds> <!-- 1 día -->
   	</map>
 
 </hazelcast>

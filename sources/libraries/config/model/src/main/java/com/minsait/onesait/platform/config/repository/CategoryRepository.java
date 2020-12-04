@@ -25,8 +25,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 	Category findById(String id);
 
 	List<Category> findByIdentification(String identification);
+	
+	List<Category> findByIdentificationLike(String identification);
 
 	List<Category> findByDescription(String description);
+	
+	List<Category> findByDescriptionLike(String description);
 
 	List<Category> findByIdentificationContainingAndDescriptionContaining(String identification, String description);
 

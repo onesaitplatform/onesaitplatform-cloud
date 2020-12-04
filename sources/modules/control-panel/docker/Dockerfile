@@ -72,6 +72,7 @@ EXPOSE 18000 5701
 ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
+    KAFKABROKERS=none \    
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
@@ -178,6 +179,13 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     SPLASH_EVERYXHOURS=24 \
     ELASTICSEARCH_ENABLED=false \
     NOTEBOOKPLATFORMAUTH=false \
+    X509_ID_ATT=SERIALNUMBER \
+    X509_ID_REGEX=(.*?)(?:,|$) \
+    X509_CN_REGEX=CN=\"(.*?)(?:\"|$) \
+    X509_ADMIN_ID=51503283G \
+    X509_HASH_ID=false \
     SECURE_XFRAMEOPTIONS=true
+    
+
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar

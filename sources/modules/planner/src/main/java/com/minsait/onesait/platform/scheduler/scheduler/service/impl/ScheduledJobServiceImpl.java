@@ -57,7 +57,7 @@ public class ScheduledJobServiceImpl implements ScheduledJobService {
 	@Modifying
 
 	public void deleteById(Long id) {
-		scheduledJobRepository.delete(id);
+		scheduledJobRepository.deleteById(id);
 	}
 
 }

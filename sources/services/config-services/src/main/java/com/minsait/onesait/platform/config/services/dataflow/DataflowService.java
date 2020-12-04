@@ -18,27 +18,33 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.minsait.onesait.platform.config.model.*;
-import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.minsait.onesait.platform.config.model.DataflowInstance;
+import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.PipelineUserAccess;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
+
 public interface DataflowService {
 
-    List<Pipeline> getPipelinesWithStatus(String userId);
+	List<Pipeline> getPipelinesWithStatus(String userId);
 
-    Pipeline createPipeline(Pipeline pipeline, String userId);
+	Pipeline createPipeline(Pipeline pipeline, String userId);
 
 	void removePipeline(String id, String userId);
 
 	ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String user);
 
-	ResponseEntity<String> sendHttpWithInstance(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String instanceId);
+	ResponseEntity<String> sendHttpWithInstance(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body,
+			String instanceId);
 
 	ResponseEntity<String> sendHttpFile(HttpServletRequest requestServlet, MultipartFile file, String userId);
 
-	ResponseEntity<String> sendHttpFileWithInstance(HttpServletRequest requestServlet, MultipartFile file, String instance);
+	ResponseEntity<String> sendHttpFileWithInstance(HttpServletRequest requestServlet, MultipartFile file,
+			String instance);
 
 	ResponseEntity<byte[]> getyHttpBinary(HttpServletRequest requestServlet, String body, String user);
 
@@ -66,19 +72,22 @@ public interface DataflowService {
 
 	ResponseEntity<String> getPipelinesStatus(String userId);
 
-    ResponseEntity<String> getPipelineConfiguration(String userId, String pipelineIdentification);
+	ResponseEntity<String> getPipelineConfiguration(String userId, String pipelineIdentification);
 
-    ResponseEntity<String> exportPipeline(String userId, String pipelineIdentification);
+	ResponseEntity<String> exportPipeline(String userId, String pipelineIdentification);
 
-	ResponseEntity<String> importPipeline(String userId, String pipelineIdentification, String config, boolean overwrite);
+	ResponseEntity<String> importPipeline(String userId, String pipelineIdentification, String config,
+			boolean overwrite);
 
 	ResponseEntity<String> updatePipeline(String userId, String pipelineIdentification, String config);
 
-	ResponseEntity<String> clonePipeline(String userId, String pipelineIdentificationOri, String pipelineIdentificationDest);
-	
+	ResponseEntity<String> clonePipeline(String userId, String pipelineIdentificationOri,
+			String pipelineIdentificationDest);
+
 	ResponseEntity<String> metricsPipeline(String userId, String pipelineIdentification);
-	
-	ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len, String orderBy, String order, boolean includeStatus);
+
+	ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len,
+			String orderBy, String order, boolean includeStatus);
 
 	PipelineUserAccess createUserAccess(String dataflowId, String userId, String accessType, String userIdAccessTo);
 
@@ -108,11 +117,16 @@ public interface DataflowService {
 
 	DataflowInstance updateDataflowInstance(String identification, InstanceBuilder newInstance);
 
-	void deleteDataflowInstance(DataflowInstance dataflowInstance, DataflowServiceImpl.RemoveInstanceAction action, User user);
+	void deleteDataflowInstance(DataflowInstance dataflowInstance, DataflowServiceImpl.RemoveInstanceAction action,
+			User user);
 
 	void deleteDataflowInstance(String id, String action, String userId);
 
 	ResponseEntity<String> restartDataflowInstance(String instanceId);
 
 	List<User> getFreeAnalyticsUsers();
+
+	ResponseEntity<String> importPipelineData(String userId, String pipelineIdentification, String config,
+			boolean overwrite);
+
 }

@@ -22,11 +22,6 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.MetricsDropwizardAutoConfiguration;
-import org.springframework.boot.actuate.endpoint.MetricsEndpoint;
-import org.springframework.boot.actuate.endpoint.MetricsEndpointMetricReader;
-import org.springframework.boot.actuate.endpoint.PublicMetrics;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -51,14 +46,12 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import com.github.dandelion.core.web.DandelionFilter;
 import com.github.dandelion.core.web.DandelionServlet;
-import com.github.dandelion.datatables.thymeleaf.dialect.DataTablesDialect;
-import com.github.dandelion.thymeleaf.dialect.DandelionDialect;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.controlpanel.converter.YamlHttpMessageConverter;
@@ -77,8 +70,9 @@ import lombok.extern.slf4j.Slf4j;
 @EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
 @EnableMongoRepositories(basePackages = "com.minsait.onesait.platform.persistence.mongodb")
 @ComponentScan(basePackages = { "com.ibm.javametrics.spring", "com.minsait.onesait.platform" }, lazyInit = true)
-@EnableAutoConfiguration(exclude = { MetricsDropwizardAutoConfiguration.class })
-public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
+// @EnableAutoConfiguration(exclude = { MetricsDropwizardAutoConfiguration.class
+// })
+public class ControlPanelWebApplication implements WebMvcConfigurer {
 
 	@Configuration
 	@Profile("default")
@@ -145,23 +139,16 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	 * Exports the all endpoint metrics like those implementing
 	 * {@link PublicMetrics}.
 	 */
-	@Bean
-	public MetricsEndpointMetricReader metricsEndpointMetricReader(MetricsEndpoint metricsEndpoint) {
-		return new MetricsEndpointMetricReader(metricsEndpoint);
-	}
+	// TO-DO review this
+	// @Bean
+	// public MetricsEndpointMetricReader
+	// metricsEndpointMetricReader(MetricsEndpoint metricsEndpoint) {
+	// return new MetricsEndpointMetricReader(metricsEndpoint);
+	// }
 
 	/**
 	 * Dandelion Config Beans
 	 */
-	@Bean
-	public DandelionDialect dandelionDialect() {
-		return new DandelionDialect();
-	}
-
-	@Bean
-	public DataTablesDialect dataTablesDialect() {
-		return new DataTablesDialect();
-	}
 
 	@Bean
 	public DandelionFilter dandelionFilter() {
@@ -169,8 +156,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	}
 
 	@Bean
-	public ServletRegistrationBean dandelionServletRegistrationBean() {
-		return new ServletRegistrationBean(new DandelionServlet(), "/dandelion-assets/*");
+	public ServletRegistrationBean<DandelionServlet> dandelionServletRegistrationBean() {
+		return new ServletRegistrationBean<>(new DandelionServlet(), "/dandelion-assets/*");
 	}
 
 	/**
@@ -216,8 +203,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	}
 
 	@Bean
-	public FilterRegistrationBean filterRegistrationBean() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+	public FilterRegistrationBean<CharacterEncodingFilter> filterRegistrationBean() {
+		final FilterRegistrationBean<CharacterEncodingFilter> registrationBean = new FilterRegistrationBean<>();
 		final CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
 		characterEncodingFilter.setForceEncoding(true);
 		characterEncodingFilter.setEncoding("UTF-8");

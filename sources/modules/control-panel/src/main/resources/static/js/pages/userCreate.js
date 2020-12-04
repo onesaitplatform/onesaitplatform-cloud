@@ -113,7 +113,6 @@ var UserCreateController = function() {
 		
         var form1 = $('#user_create_form');
         var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
 		
 		// set current language
 		currentLanguage = userCreateReg.language || LANGUAGE;
@@ -133,15 +132,14 @@ var UserCreateController = function() {
 				userId:				{ required: true, minlength: 4 },
                 fullName:			{ required: true},
                 email:				{ required: true, email: true },
-                newpasswordbox:		{ required: true, minlength: 7, maxlength: 20 },
-                repeatpasswordbox:	{ required: true, minlength: 7, maxlength: 20,  equalTo : "#newpasswordbox" }, 
+                newpasswordbox:		{ required: true, minlength: 7, maxlength: 128 },
+                repeatpasswordbox:	{ required: true, minlength: 7, maxlength: 128,  equalTo : "#newpasswordbox" }, 
                 roles:				{ required: true },
 				datecreated:		{ date: true, required: true },
 				datedeleted:		{ date: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit              
             	
-            	success1.hide();
                 error1.show();
                 App.scrollTo(error1, -200);
                 
@@ -163,7 +161,6 @@ var UserCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-                success1.show();
                 error1.hide();
                 
 				// date conversion to DDBB format.
@@ -176,12 +173,15 @@ var UserCreateController = function() {
 	                	}
 	                
 	                }else{
+	                	if ($('#datedeleted').val()=="") {
+	                		$('#datedeleted').prop('disabled',true);
+	                	}
+
 	                	form.submit();
 	                }
 					
 				} 
-				else { 
-					success1.hide();
+				else {
 					error1.show();
 					App.scrollTo(error1, -200);
 				}				

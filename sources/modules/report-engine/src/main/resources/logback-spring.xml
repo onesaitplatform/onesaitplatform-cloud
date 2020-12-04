@@ -13,7 +13,7 @@
     
     <appender name="stdoutAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%boldGreen(${LOG_FILE}) %d{HH:mm:ss.SSS} [%thread] %yellow(%X{correlationId})  %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
         </encoder>
         <target>System.out</target>
     </appender>
@@ -23,7 +23,7 @@
             <level>WARN</level>
         </filter>
         <encoder>
-            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%boldGreen(${LOG_FILE}) %d{HH:mm:ss.SSS} [%thread] %yellow(%X{correlationId})  %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
         </encoder>
         <target>System.out</target>
     </appender>
@@ -38,17 +38,18 @@
 			<totalSizeCap>500MB</totalSizeCap>
 		</rollingPolicy>
         <encoder>
-            <pattern>${LOG_FILE} %d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%boldGreen(${LOG_FILE}) %d{HH:mm:ss.SSS} [%thread] %yellow(%X{correlationId})  %highlight(%-5level) %cyan(%logger{50}) - %msg%n</pattern>
         </encoder>
     </appender>
     
-     <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="rollingFileAppender" />
     </appender>
          
     <springProfile name="dev,default">
 	    <root level="INFO">
 	        <appender-ref ref="stdoutAppender" />
+	        <appender-ref ref="rollingFileAppender" />
 	    </root>
     </springProfile>
     <springProfile name="production,docker">

@@ -53,13 +53,10 @@ import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepositor
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
-@Slf4j
 public class InsertProcessorTest {
 
 	@Autowired
@@ -153,7 +150,7 @@ public class InsertProcessorTest {
 			throws AuthorizationException {
 		ssapInsertOperation.setSessionKey(UUID.randomUUID().toString());
 
-		when(securityPluginManager.checkAuthorization(any(), anyString(), anyString())).thenReturn(false);
+		when(securityPluginManager.checkAuthorization(any(), anyString(), any())).thenReturn(false);
 
 		final SSAPMessage<SSAPBodyReturnMessage> responseMessage = insertProcessor.process(ssapInsertOperation,
 				PojoGenerator.generateGatewayInfo());

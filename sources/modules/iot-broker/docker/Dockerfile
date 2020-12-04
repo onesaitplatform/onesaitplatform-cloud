@@ -1,5 +1,6 @@
 FROM onesaitplatform/baseimage:latest
 
+
 # metadata
 LABEL platform.image.name="iotbroker"
 
@@ -33,6 +34,7 @@ EXPOSE 19000 1883 8883
 
 ENV SERVER_NAME=localhost \
     KAFKAENABLED=false \
+    KAFKABROKERS=none \    
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \

@@ -28,6 +28,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.dao.DataAccessException;
@@ -51,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Lazy
 @Slf4j
 @Conditional(HadoopEnabledCondition.class)
+@DependsOn({NameBeanConst.IMPALA_MANAGE_DB_REPO_BEAN_NAME})
 public class KuduManageDBRepository implements ManageDBRepository {
 
 	// Static regex extract info from show create table sentence

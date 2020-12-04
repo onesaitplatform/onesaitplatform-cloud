@@ -166,13 +166,17 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 				// ORA-00933: SQL command not properly ended
 				affected = jdbcTemplate.update(sql.getStatement(), sql.getParams());
 				keyList = new ArrayList<>();
+			} else if(ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.HIVE) || ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.IMPALA) ){
+				jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()));
+				keyList = null;
+				affected = instances.size();
 			} else {
 				final GeneratedKeyHolder holder = new GeneratedKeyHolder();
 				affected = jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()), holder);
 				keyList = holder.getKeyList();
 			}
 
-			if (!keyList.isEmpty()) {
+			if (keyList != null && !keyList.isEmpty()) {
 				switch (ontologyVirtualDatasource.getSgdb()) {
 				case MYSQL:
 				case MARIADB:
@@ -630,8 +634,9 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		case Types.NULL:
 			return null;
 		case Types.BOOLEAN:
-		case Types.TINYINT:
 		case Types.BIT:
+		case Types.TINYINT:
+
 			return Boolean.TRUE;
 		case Types.INTEGER:
 		case Types.SMALLINT:

@@ -17,6 +17,20 @@ var DeviceCreateController = function() {
 		window.location.href = url;
 	}
 
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/devices/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
 	// CLEAN FIELDS FORM
 	var cleanFields = function(formId) {
 		logControl ? console.log('cleanFields() -> ') : '';
@@ -200,7 +214,7 @@ var DeviceCreateController = function() {
 		else {
 			updateMetainfo($('#parameter_metaInfo').val());
 			updateOntologies($("#parameter_clientPlatformOntologies").val());
-			updateTokens($("#parameter_clientPlatformTokens").val());
+			refreshTokens($("#identification").val());
 		}
 
 	}
@@ -354,9 +368,13 @@ var DeviceCreateController = function() {
 		requestData = JSON.stringify(request);
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
+		var url = "/controlpanel/devices/generateToken";
+		if(multitenancyEnabled === 'true' && $('#tenants').val()!=null ){
+			url+='?tenant='+$('#tenants').val();
+		}
+
 		$.ajax({
-			url : "/controlpanel/devices/generateToken",
+			url : url,
 			headers: {
 				[csrf_header]: csrf_value
 		    },
@@ -405,17 +423,24 @@ var DeviceCreateController = function() {
 				if (token.active) {
 					checked = 'checked';
 				}
-				$('#datamodel_tokens > tbody')
-						.append(
-								'<tr data-id="'
-										+ token.id
-										+ '"><td>'
-										+ token.token
-										+ '</td><td><input '+disableButton+' class="form-check-input" type="checkbox" onclick="DeviceCreateController.changeEstatusToken(this);" value="'
-										+ token.active
-										+ '" '
-										+ checked
-										+ '></td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><span th:text="#{gen.deleteBtn}"> Delete </span></button></div></td></tr>');
+				var html = '<tr data-id="'
+					+ token.id
+					+ '"><td>'
+					+ token.token
+					+ '</td>';
+					if(multitenancyEnabled === 'true'){
+						if(token.tenant !=null)
+							html+='<td>'+token.tenant+'</td>';
+						else
+							html+='<td>'+currentTenant+'</td>';
+					}
+					html+='<td><input '+disableButton+' class="form-check-input" type="checkbox" onclick="DeviceCreateController.changeEstatusToken(this);" value="'
+					+ token.active
+					+ '" '
+					+ checked
+					+ '></td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><span th:text="#{gen.deleteBtn}"> Delete </span></button></div></td></tr>';
+				$('#datamodel_tokens > tbody').append(html);
+
 
 			}
 		}
@@ -685,6 +710,10 @@ var DeviceCreateController = function() {
 		go : function(url) {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';
 			navigateUrl(url);
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';			
+			freeResource(id,url);
 		},
 		// DELETE DEVICE
 		deleteDevice : function(id) {

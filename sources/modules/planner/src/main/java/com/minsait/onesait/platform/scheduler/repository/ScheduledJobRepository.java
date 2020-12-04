@@ -24,8 +24,6 @@ import com.minsait.onesait.platform.scheduler.domain.ScheduledJob;
 @Repository
 public interface ScheduledJobRepository extends JpaRepository<ScheduledJob, Long> {
 
-	ScheduledJob findById(Long id);
-
 	List<ScheduledJob> findAllByUserId(String userId);
 
 	ScheduledJob findByJobName(String jobName);

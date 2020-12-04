@@ -226,7 +226,7 @@ public class RulesEngineIntegrationTest {
 		sensorAlarm.setPublic(false);
 		sensorAlarm.setDescription("Sensor alarm");
 
-		ontologyRepository.save(Arrays.asList(sensorTag, sensorAlarm));
+		ontologyRepository.saveAll(Arrays.asList(sensorTag, sensorAlarm));
 
 	}
 

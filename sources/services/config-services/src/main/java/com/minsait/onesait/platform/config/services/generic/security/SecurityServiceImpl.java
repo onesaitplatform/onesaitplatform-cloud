@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -59,11 +60,11 @@ public class SecurityServiceImpl implements SecurityService {
 	private static final String METHOD_INVOCATION_TARGET_ERROR = "Security service for %s, user: %s, invoke method invocation target";
 	private static final String METHOD_ACCESS_DENIED_ERROR = "Security service for %s, user: %s, can't access to method";
 
-	//On Ontologies we manage differentes permissions
+	// On Ontologies we manage differentes permissions
 	private static final String ONT_AUTH_ALL = "ALL";
 	private static final String ONT_AUTH_QUERY = "QUERY";
 	private static final String ONT_AUTH_INSERT = "INSERT";
-	
+
 	@Autowired
 	private OPResourceService resourceService;
 
@@ -74,7 +75,7 @@ public class SecurityServiceImpl implements SecurityService {
 	EntityManager entityManager;
 
 	private Class<?> getEntityClass(String entityName) {
-		for (EntityType<?> entity : entityManager.getMetamodel().getEntities()) {
+		for (final EntityType<?> entity : entityManager.getMetamodel().getEntities()) {
 			if (entityName.equals(entity.getName())) {
 				return entity.getJavaType();
 			}
@@ -85,41 +86,45 @@ public class SecurityServiceImpl implements SecurityService {
 	private void generateUserAccessMap(List<?> listEntitiesUserAccess, String type, Map<String, String> elemAccessMap)
 			throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException {
-		Object entitiesUserAccess = listEntitiesUserAccess.get(0);
-		Method getRepositoryElementMethod = entitiesUserAccess.getClass()
+		final Object entitiesUserAccess = listEntitiesUserAccess.get(0);
+		final Method getRepositoryElementMethod = entitiesUserAccess.getClass()
 				.getMethod(String.format(GETELEMENTFROMUSERACCESS, type));
-		Method getRepositoryAccessTypeMethod = entitiesUserAccess.getClass()
+		final Method getRepositoryAccessTypeMethod = entitiesUserAccess.getClass()
 				.getMethod(String.format(GETELEMENTUSERACCESSFROMUSERACCESS, type));
 		Object entity = getRepositoryElementMethod.invoke(entitiesUserAccess);
 		Object entityUserAccess = getRepositoryAccessTypeMethod.invoke(entitiesUserAccess);
-		Method getEntityIdStr = entity.getClass().getMethod(GETIDFROMELEMENT);
-		Method getUserAccessTypeStr = entityUserAccess.getClass().getMethod(GETNAMEFROMUSERACCESS);
+		final Method getEntityIdStr = entity.getClass().getMethod(GETIDFROMELEMENT);
+		final Method getUserAccessTypeStr = entityUserAccess.getClass().getMethod(GETNAMEFROMUSERACCESS);
 
-		for (Object o : listEntitiesUserAccess) {
+		for (final Object o : listEntitiesUserAccess) {
 			entity = getRepositoryElementMethod.invoke(o);
 			entityUserAccess = getRepositoryAccessTypeMethod.invoke(o);
-			String entityId = (String) getEntityIdStr.invoke(entity);
-			String accessType = (String) getUserAccessTypeStr.invoke(entityUserAccess);
+			final String entityId = (String) getEntityIdStr.invoke(entity);
+			final String accessType = (String) getUserAccessTypeStr.invoke(entityUserAccess);
 			elemAccessMap.put(entityId, accessType);
 		}
 	}
 
 	// Get the map element access type, if there isn't this entity return empty map
 	private Map<String, String> getElementAccessTypeMapByUser(String type, User user) throws SecurityServiceException {
-		Map<String, String> elemAccessMap = new HashMap<>();
-		Class<?> entityUserAccessClass = getEntityClass(String.format(ENTITY_USER_ACCESS, type));
+		final Map<String, String> elemAccessMap = new HashMap<>();
+		final Class<?> entityUserAccessClass = getEntityClass(String.format(ENTITY_USER_ACCESS, type));
 		if (entityUserAccessClass == null) {// Not entity UserAccess Found for element security so we skip this
 			log.debug("Not entity UserAccess found: " + String.format(ENTITY_USER_ACCESS, type)
 					+ ", skipping this security control");
 		} else {
-			Repositories repositories = new Repositories(listableBeanFactory);
+			final Repositories repositories = new Repositories(listableBeanFactory);
 			Object repositoryUserAccessBean;
 			try {
+				final Optional<Object> optI = repositories.getRepositoryFor(entityUserAccessClass);
+				if (!optI.isPresent())
+					throw new SecurityServiceException(
+							"No Repository found for " + entityUserAccessClass.getCanonicalName());
+				repositoryUserAccessBean = optI.get();
 
-				repositoryUserAccessBean = repositories.getRepositoryFor(entityUserAccessClass);
-				Method method = repositoryUserAccessBean.getClass().getMethod(USERACCESSREPOSITORYGETBYUSER,
+				final Method method = repositoryUserAccessBean.getClass().getMethod(USERACCESSREPOSITORYGETBYUSER,
 						User.class);
-				Object listEntitiesUserAccessObject = method.invoke(repositoryUserAccessBean, user);
+				final Object listEntitiesUserAccessObject = method.invoke(repositoryUserAccessBean, user);
 				List<?> listEntitiesUserAccess;
 				if (listEntitiesUserAccessObject instanceof List<?>) {
 					listEntitiesUserAccess = (List<?>) listEntitiesUserAccessObject;
@@ -130,16 +135,16 @@ public class SecurityServiceImpl implements SecurityService {
 				if (!listEntitiesUserAccess.isEmpty()) {
 					generateUserAccessMap(listEntitiesUserAccess, type, elemAccessMap);
 				}
-			} catch (NoSuchMethodException e) {
+			} catch (final NoSuchMethodException e) {
 				log.error(METHOD_NOT_FOUND_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.METHOD_NOT_FOUND, e);
-			} catch (IllegalAccessException e) {
+			} catch (final IllegalAccessException e) {
 				log.error(METHOD_ILLEGAL_ACCESS_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.INVOKE_METHOD_ERROR, e);
-			} catch (IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				log.error(METHOD_ILLEGAL_ARGUMENT_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.INVOKE_METHOD_ERROR, e);
-			} catch (InvocationTargetException e) {
+			} catch (final InvocationTargetException e) {
 				log.error(METHOD_INVOCATION_TARGET_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.INVOKE_METHOD_ERROR, e);
 			}
@@ -152,20 +157,21 @@ public class SecurityServiceImpl implements SecurityService {
 			Method getRepositoryIsPublicMethod)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-		User elementUser = (User) getUserFromElementMethod.invoke(entity);
-		String id = (String) getElementId.invoke(entity);
+		final User elementUser = (User) getUserFromElementMethod.invoke(entity);
+		final String id = (String) getElementId.invoke(entity);
 
 		if (elementUser.getUserId().equals(testUser.getUserId())) {
 			return EDITSTR;
 		} else {
-			String meatAccessType = meat.get(id);
-			ResourceAccessType mratAccessType = mrat.get(id);
+			final String meatAccessType = meat.get(id);
+			final ResourceAccessType mratAccessType = mrat.get(id);
 
 			if (meatAccessType != null) {
 				switch (meatAccessType) {
 				case EDITSTR:
 					return EDITSTR;
-				//On Ontologies authorizations calls ALL, INSERT and QUERY and not EDIT and VIEW
+				// On Ontologies authorizations calls ALL, INSERT and QUERY and not EDIT and
+				// VIEW
 				case ONT_AUTH_ALL:
 					return ONT_AUTH_ALL;
 				case ONT_AUTH_INSERT:
@@ -182,7 +188,7 @@ public class SecurityServiceImpl implements SecurityService {
 				return VIEWSTR;
 			}
 			if (getRepositoryIsPublicMethod != null) {
-				Boolean isPublic = (Boolean) getRepositoryIsPublicMethod.invoke(entity);
+				final Boolean isPublic = (Boolean) getRepositoryIsPublicMethod.invoke(entity);
 				if (isPublic) {
 					return VIEWSTR;
 				}
@@ -196,8 +202,8 @@ public class SecurityServiceImpl implements SecurityService {
 
 	private List<String> generateIdsFromInputRawList(List<?> inputRawList, Method getElementId)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		List<String> lIds = new LinkedList<>();
-		for (Object resource : inputRawList) {
+		final List<String> lIds = new LinkedList<>();
+		for (final Object resource : inputRawList) {
 			lIds.add((String) getElementId.invoke(resource));
 		}
 		return lIds;
@@ -207,42 +213,44 @@ public class SecurityServiceImpl implements SecurityService {
 	public void setSecurityToInputList(List<?> inputRawList, User user, String type) throws SecurityServiceException {
 		if (!inputRawList.isEmpty()) {
 			// Get first element for getting set accesstype
-			Object felement = inputRawList.get(0);
+			final Object felement = inputRawList.get(0);
 			try {
-				Method setElementAccessType = felement.getClass().getMethod(SETELEMENTUSERACCESSTYPE, String.class);
-				Method getElementId = felement.getClass().getMethod(GETIDFROMELEMENT);
-				Method getUserFromElementMethod = felement.getClass().getMethod(GETUSERFROMELEMENT);
+				final Method setElementAccessType = felement.getClass().getMethod(SETELEMENTUSERACCESSTYPE,
+						String.class);
+				final Method getElementId = felement.getClass().getMethod(GETIDFROMELEMENT);
+				final Method getUserFromElementMethod = felement.getClass().getMethod(GETUSERFROMELEMENT);
 				Method getRepositoryIsPublicMethod = null;
 				try {
 					getRepositoryIsPublicMethod = felement.getClass()
 							.getMethod(String.format(GETPUBLICFROMELEMENT, type));
-				} catch (NoSuchMethodException e) {
+				} catch (final NoSuchMethodException e) {
 				}
 
 				// Get all Project Resource access with map por contant access for all resources
-				Map<String, ResourceAccessType> mrat = resourceService.getResourcesAccessMapByUserAndResourceIdList(
-						user, generateIdsFromInputRawList(inputRawList, getElementId));
+				final Map<String, ResourceAccessType> mrat = resourceService
+						.getResourcesAccessMapByUserAndResourceIdList(user,
+								generateIdsFromInputRawList(inputRawList, getElementId));
 
 				// Get all Element Authorization
-				Map<String, String> meat = getElementAccessTypeMapByUser(type, user);
+				final Map<String, String> meat = getElementAccessTypeMapByUser(type, user);
 
-				for (Object o : inputRawList) {
+				for (final Object o : inputRawList) {
 					setElementAccessType.invoke(o, getAccessTypeFromAccessMap(meat, mrat, o, user,
 							getUserFromElementMethod, getElementId, getRepositoryIsPublicMethod));
 				}
-			} catch (NoSuchMethodException e) {
+			} catch (final NoSuchMethodException e) {
 				log.error(METHOD_NOT_FOUND_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.METHOD_NOT_FOUND, e);
-			} catch (SecurityException e) {
+			} catch (final SecurityException e) {
 				log.error(METHOD_ACCESS_DENIED_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.SECURITY_ERROR, e);
-			} catch (IllegalAccessException e) {
+			} catch (final IllegalAccessException e) {
 				log.error(METHOD_ILLEGAL_ACCESS_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.INVOKE_METHOD_ERROR, e);
-			} catch (IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				log.error(METHOD_ILLEGAL_ARGUMENT_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.INVOKE_METHOD_ERROR, e);
-			} catch (InvocationTargetException e) {
+			} catch (final InvocationTargetException e) {
 				log.error(METHOD_INVOCATION_TARGET_ERROR, type, user.getUserId());
 				throw new SecurityServiceException(SecurityServiceException.Error.INVOKE_METHOD_ERROR, e);
 			}

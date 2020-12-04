@@ -43,6 +43,13 @@
 							<th dt:property="fullName" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 						</tr>
 					</thead>
+					<tbody th:remove="all-but-first">
+						<tr th:each="user : ${users}" pages:paginate="10">
+							<td class="text-left " th:text="${user.userId}"></td>
+							<td class="text-left " th:text="${user.fullName}"></td>
+						</tr>
+					
+					</tbody>
 				</table><!-- // DATATABLE DANDELION CONF. -->
 			</div>
 		</div>											

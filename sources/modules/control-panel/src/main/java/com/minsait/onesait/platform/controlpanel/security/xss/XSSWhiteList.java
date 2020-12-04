@@ -39,9 +39,9 @@ public class XSSWhiteList {
 		mWhiteList.put("/dashboardconf/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/gadgets/create", new HashSet<>(Arrays.asList("*")));
 		mWhiteList.put("/gadgettemplates/create",
-				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
+				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "headerlibs", "js")));
 		mWhiteList.put("/gadgettemplates/update",
-				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
+				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "headerlibs", "js")));
 		mWhiteList.put("/querytemplates/create", new HashSet<>(Arrays.asList("querySelector", "queryGenerator", "js")));
 		mWhiteList.put("/querytemplates/update", new HashSet<>(Arrays.asList("querySelector", "queryGenerator", "js")));
 		mWhiteList.put("/apimanager/create",

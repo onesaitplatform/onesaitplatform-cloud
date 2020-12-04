@@ -46,8 +46,11 @@ import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
 import com.minsait.onesait.platform.controlpanel.helper.apimanager.ApiManagerHelper;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,16 +61,14 @@ public class ApiManagerController {
 
 	@Autowired
 	private ApiManagerService apiManagerService;
-
 	@Autowired
 	private ApiManagerHelper apiManagerHelper;
-
 	@Autowired
 	private AppWebUtils utils;
-
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_404 = "error/404";
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
@@ -88,6 +89,8 @@ public class ApiManagerController {
 				|| !apiManagerService.isApiStateValidForEditAuth(id))
 			return ERROR_403;
 		apiManagerHelper.populateApiManagerUpdateForm(model, id);
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
 
 		return "apimanager/create";
 	}
@@ -121,7 +124,6 @@ public class ApiManagerController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(ApiMultipart api, BindingResult bindingResult, HttpServletRequest request,
 			@RequestParam(required = false) String postProcessFx,
-			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some user properties missing");
@@ -151,7 +153,6 @@ public class ApiManagerController {
 			@RequestParam(required = false) String operationsObject,
 			@RequestParam(required = false) String authenticationObject,
 			@RequestParam(required = false) String deprecateApis, @RequestParam(required = false) String postProcessFx,
-			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
 		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())
 				|| !apiManagerService.isApiStateValidForEdit(id))
@@ -168,6 +169,7 @@ public class ApiManagerController {
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
 
+			resourcesInUseService.removeByUser(id, utils.getUserId());
 			return "redirect:/apimanager/show/" + api.getId();
 		} catch (final Exception e) {
 			log.error("Could not update API: {}", e);
@@ -301,6 +303,12 @@ public class ApiManagerController {
 		} catch (final Exception e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

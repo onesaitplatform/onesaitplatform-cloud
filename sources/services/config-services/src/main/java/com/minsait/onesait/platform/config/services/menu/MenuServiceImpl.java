@@ -20,7 +20,6 @@ import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.ConsoleMenu;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ConsoleMenuRepository;
 
@@ -34,24 +33,24 @@ public class MenuServiceImpl implements MenuService {
 	@Override
 	public String loadMenuByRole(User user) {
 		if (user != null)
-			return this.consoleMenuRepository.findByRoleType(user.getRole()).getJson();
+			return consoleMenuRepository.findByRoleType(user.getRole()).getJson();
 		else
 			return null;
 	}
-	
+
 	@Override
 	public void updateMenu(String menuId, String menuJson) {
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById(menuId);
-			
-			menu.setJson(menuJson);
-			menu.setUpdatedAt(new Date());
-			
-			consoleMenuRepository.save(menu);
-		}
-		catch (final RuntimeException e){
+			consoleMenuRepository.findById(menuId).ifPresent(menu -> {
+				menu.setJson(menuJson);
+				menu.setUpdatedAt(new Date());
+
+				consoleMenuRepository.save(menu);
+			});
+
+		} catch (final RuntimeException e) {
 			Log.error("Error updating menu: ", e.getMessage());
 		}
 	}
-	
+
 }

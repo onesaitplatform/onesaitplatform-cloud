@@ -21,13 +21,13 @@
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/jquery-confirm/jquery-confirm.css}"/>
 	
 	<!-- MAIN SCRIPTS  -->
-	<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
-	<script th:src="@{/static/vendor/jquery-confirm/jquery-confirm.js}"/>
-	<script th:src="@{/static/vendor/bootstrap/bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery-confirm/jquery-confirm.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap/bootstrap.js}">	</script>
+	<script th:src="@{/static/vendor/jquery-slimscroll/jquery.slimscroll.min.js}"></script>	
 	
 	<!-- HEADER CONTROLLER JS -->
-	<script th:src="@{/static/js/pages/header.js}"/>	
+	<script th:src="@{/static/js/pages/header.js}"></script>	
 	 
 	<!-- BEGIN HEADER INNER -->
 	<div class="page-header-inner ">
@@ -144,11 +144,11 @@
 					</a>
 					<ul class="dropdown-menu dropdown-menu-default">
 						<li>
-							<spring:message code="global_language_switch" arguments="English" var="lang_label" htmlEscape="false" />
+							<spring:message code="global_language_switch" arguments="English" var="lang_label" htmlEscape="false" ></spring:message>
 							<a th:text="#{head.lang.en}" href='?lang=en'><span>EN</span></a>
 						</li>
 						<li>
-							<spring:message code="global_language_switch" arguments="Espanol" var="lang_label" htmlEscape="false" />
+							<spring:message code="global_language_switch" arguments="Espanol" var="lang_label" htmlEscape="false"></spring:message>
 							<a th:text="#{head.lang.es}" href='?lang=es'><span>ES</span></a>
 						</li>									
 					</ul>
@@ -289,5 +289,78 @@
 		// LOAD DATA TO USE IN HEADERCONTROLLER
 		// HEADER CONTROLLER LOAD AND INIT ITSELF
 	</script>
+	
+	<!-- Message to alert that the resource is in use by another user -->
+	<script th:if="${resourceinuse == true}" th:inline="javascript" >
+	// <![CDATA[
+	$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: "",
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="alert alert-info alert-dismissable">						 
+						<i class="fa fa-info-circle"></i> 
+							<span>`+[[#{gen.resourceinuse}]]+`</span>			
+						</div>					
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				remove: {
+					text:[[#{gen.back}]],					
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 
+						 window.history.back();
+					}
+				},
+				Ok: {
+					text: [[#{gen.continu}]],					
+					btnClass: 'btn btn-sm btn-circle btn-danger',
+					action: function(){ 
+					}											
+				}
+			}
+		});
+	// ]]>
+ </script> 
+ 	<!-- Message to alert that the resource is in use by another user -->
+	<script th:if="${resourceinuseDashboard == true}" th:inline="javascript" >
+	// <![CDATA[
+	$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: "",
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="alert alert-info alert-dismissable">						 
+						<i class="fa fa-info-circle"></i> 
+							<span>`+[[#{gen.resourceinuse}]]+`</span>			
+						</div>					
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				remove: {
+					text:[[#{gen.back}]],					
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 
+						parent.postMessage('{"closeGadgetFromIframe":"close"}', "*");
+					}
+				},
+				Ok: {
+					text: [[#{gen.continu}]],					
+					btnClass: 'btn btn-sm btn-circle btn-danger',
+					action: function(){ 
+					}											
+				}
+			}
+		});
+	// ]]>
+ </script> 
 </div>
 <!-- END HEADER -->

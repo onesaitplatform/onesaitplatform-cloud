@@ -20,14 +20,16 @@ import javax.transaction.Transactional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.ClientPlatformSimplifiedDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface ClientPlatformRepository extends JpaRepository<ClientPlatform, String> {
-
-	ClientPlatform findById(String id);
 
 	List<ClientPlatform> findByIdentificationAndDescription(String identification, String description);
 
@@ -43,20 +45,32 @@ public interface ClientPlatformRepository extends JpaRepository<ClientPlatform, 
 	long countByUser(User user);
 
 	@Cacheable(cacheNames = "ClientPlatformRepository", key = "#p0", unless = "#result == null")
-	ClientPlatform findByIdentification(String identification);	
+	ClientPlatform findByIdentification(String identification);
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification")
+	@Caching( evict = {
+			@CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification"),
+			@CacheEvict(cacheNames = "ClientPlatformSimplified", key = "#p0.identification")
+	})
 	ClientPlatform save(ClientPlatform clientPlatform);
 
 	@Override
-	@CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification")
+	@Caching( evict = {
+			@CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification"),
+			@CacheEvict(cacheNames = "ClientPlatformSimplified", key = "#p0.identification")
+	})
 	@Transactional
 	void delete(ClientPlatform clientPlatform);
 
 	List<ClientPlatform> findByIdentificationLike(String identification);
 
 	List<ClientPlatform> findByUser(User user);
+	
+	@Cacheable(cacheNames = "ClientPlatformSimplified", key = "#p0")
+	@Query("Select new com.minsait.onesait.platform.config.dto.ClientPlatformSimplifiedDTO(cp.id, cp.identification) "
+			+ "FROM ClientPlatform cp "
+			+ "WHERE cp.identification = :identification")
+	ClientPlatformSimplifiedDTO findClientPlatformIdByIdentification(@Param("identification") String identification);
 
 }

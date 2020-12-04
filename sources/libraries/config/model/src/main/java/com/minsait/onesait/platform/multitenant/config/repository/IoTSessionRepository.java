@@ -14,16 +14,21 @@
  */
 package com.minsait.onesait.platform.multitenant.config.repository;
 
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
-
-import javax.transaction.Transactional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 
 public interface IoTSessionRepository extends JpaRepository<IoTSession, String> {
 
@@ -37,10 +42,9 @@ public interface IoTSessionRepository extends JpaRepository<IoTSession, String> 
 	@CachePut(cacheNames = SESSIONS_REPOSITORY, key = "#p0.sessionKey")
 	<S extends IoTSession> S saveAndFlush(S entity);
 
-	@SuppressWarnings("unchecked")
 	@Override
 	@CachePut(cacheNames = SESSIONS_REPOSITORY, key = "#p0.sessionKey")
-	IoTSession save(IoTSession entity);
+	<S extends IoTSession> S save(S entity);
 
 	@Override
 	@CacheEvict(cacheNames = SESSIONS_REPOSITORY, key = "#p0.sessionKey")
@@ -51,10 +55,11 @@ public interface IoTSessionRepository extends JpaRepository<IoTSession, String> 
 	@Transactional
 	void deleteBySessionKey(String sessionKey);
 
+	// @Override
 	@Override
 	@CacheEvict(cacheNames = SESSIONS_REPOSITORY, allEntries = true)
 	@Transactional
-	void delete(String id);
+	void deleteById(String id);
 
 	@Override
 	List<IoTSession> findAll();
@@ -66,5 +71,37 @@ public interface IoTSessionRepository extends JpaRepository<IoTSession, String> 
 
 	@Cacheable(cacheNames = SESSIONS_REPOSITORY, unless = "#result == null", key = "#p0")
 	IoTSession findBySessionKey(String sessionKey);
+	
+	
+	//the method calling this one must deal with the cache updated
+		//for example, a method that returns the session can use this annotation: @CachePut(cacheNames = IoTSessionRepository.SESSIONS_REPOSITORY, key = "#p0.sessionKey", unless = "#result == null")
+		//where the key is the sessionkey of the session passed as parameter.
+	@Transactional
+	@Modifying
+	@Query("UPDATE IoTSession i SET "
+			+ "i.sessionKey = :sessionKey, "
+			+ "i.clientPlatform = :clientPlatform, "
+			+ "i.clientPlatformID = :clientPlatformID, "
+			+ "i.device = :device, "
+			+ "i.token = :token, "
+			+ "i.userID = :userID, "
+			+ "i.userName = :userName, "
+			+ "i.expiration = :expiration, "
+			+ "i.lastAccess = :lastAccess,"
+			+ "i.updatedAt = :updatedAt "
+		+  "WHERE i.id = :id AND i.updatedAt < :updatedAt" )
+	public int updateSession(
+			@Param("id") String id, 
+			@Param("sessionKey") String sessionkey, 
+			@Param("clientPlatform") String clientPlatform, 
+			@Param("clientPlatformID") String clientPlatformID, 
+			@Param("device") String device, 
+			@Param("token") MasterDeviceToken token, 
+			@Param("userID") String userID, 
+			@Param("userName") String userName, 
+			@Param("expiration") long expiration, 
+			@Param("lastAccess") ZonedDateTime lastAccess, 
+			@Param("updatedAt") Date updatedAt);
+	
 
 }

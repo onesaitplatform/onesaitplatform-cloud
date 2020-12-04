@@ -61,6 +61,7 @@ public class CustomFilter extends GenericFilterBean {
 	private static final String AUTH_HEADER_VALUE_PREFIX = "Bearer "; // with trailing space to separate token
 	private static final String AUTH_VALUE_ANONYMOUS = "anonymous";
 	private static final String VERTICAL_PARAMETER = "vertical";
+	private static final String OAUTH2_QUERYPARAM = "oauthtoken";
 
 	private static final String TENANT_PARAMETER = "tenant";
 
@@ -91,12 +92,19 @@ public class CustomFilter extends GenericFilterBean {
 				final TokenResponse details = validateToken(jwt);
 				generateSecurityContextAuthentication(details);
 				log.info("Logged in using JWT");
-
-				return;
+				if(((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")){
+					filterChain.doFilter(servletRequest, servletResponse);
+				}
+				else {
+					return;
+				}
 			} else {
 				if (isAnonymous(httpRequest)) {
 					setMultitenantContext(httpRequest);
 					generateSecurityContextAuthenticationAnonymous();
+					if(((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")){
+						filterChain.doFilter(servletRequest, servletResponse);
+					}
 				} else {
 					log.info("No JWT provided, continue chain or user-pass");
 					filterChain.doFilter(servletRequest, servletResponse);
@@ -118,9 +126,14 @@ public class CustomFilter extends GenericFilterBean {
 
 	/**
 	 * Get the bearer token from the HTTP request. The token is in the HTTP request
+	 * "oauthtoken" queryparams in the form of: "oauthtoken=[token]"
 	 * "Authorization" header in the form of: "Bearer [token]"
 	 */
 	private String getBearerToken(HttpServletRequest request) {
+		final String authParam = request.getParameter(OAUTH2_QUERYPARAM);
+		if(authParam != null){
+			return authParam;
+		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
 		if (authHeader != null && authHeader.startsWith(AUTH_HEADER_VALUE_PREFIX)) {
 			return authHeader.substring(AUTH_HEADER_VALUE_PREFIX.length());
@@ -129,6 +142,10 @@ public class CustomFilter extends GenericFilterBean {
 	}
 
 	private boolean isAnonymous(HttpServletRequest request) {
+		final String authParam = request.getParameter(AUTH_VALUE_ANONYMOUS);
+		if(authParam != null) {
+			return true;
+		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
 		if (authHeader != null && authHeader.equals(AUTH_VALUE_ANONYMOUS)) {
 			return true;

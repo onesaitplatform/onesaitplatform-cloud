@@ -262,7 +262,7 @@ public class CrudController {
 				return new ArrayList<>();
 			}
 		} else {
-			ArrayList list = new ArrayList<>();
+			final ArrayList list = new ArrayList<>();
 			list.add("*");
 			return list;
 		}

@@ -27,12 +27,12 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @SpringBootApplication
-public class Oauth2AuthorizationServerApplication extends WebMvcConfigurerAdapter {
+public class Oauth2AuthorizationServerApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Oauth2AuthorizationServerApplication.class, args);

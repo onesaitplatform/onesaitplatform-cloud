@@ -15,13 +15,18 @@
 
 -->
 <html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+
 	<head>
 		<meta name="_csrf" th:content="${_csrf.token}"/>
 		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
+	    <meta name="description" content="Devices simulation list"/>
+		<meta name="keywords" content=" smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
 		
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -33,8 +38,6 @@
 		
 		<!-- PLUGINS STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
-		
 	</head>	
 	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
@@ -66,7 +69,7 @@
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/devicesimulation/list}"> <span th:text="#{simulation.breadcrumb.prev}">scheduledsearch</span></a></li>						
+						<li><a th:href="@{/devicesimulation/list}"> <span th:text="#{simulation.breadcrumb.prev}">scheduledsearch</span></a></li>	
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -79,19 +82,22 @@
 				<div class="row">
 					<div class="col-md-12">
 					
-						<div class="portlet light">
+						<div class="portlet light ">
 							<div class="portlet-title">
-								<div class="caption">									
+								<div class="caption">
+									
 									<span class="caption-subject " th:text="#{simulation.template.list}"> scheduledsearch</span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
 								<div class="actions margin-right-20">
-									<div class="btn-group">
-										<button type="button" class="btn btn-circle blue btn-outline" onclick="location.href='../devicesimulation/create'" ><span th:text="#{gen.create}">New </span></button>
-									</div>
+									<div class="btn-group">									
+																			
+										<button type="button" class="btn btn-circle blue btn-outline" onclick="location.href='../devicesimulation/create'" ><span th:text="#{gen.create}">New </span></button>									
+									</div>										
 								</div>
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
@@ -101,28 +107,13 @@
 										<!-- ALERT ZONE -->																			
 									</div>
 									
-									<!-- SIMULATIONS LIST -->
+									<!--  LIST -->
 									<div class="col-md-12">											
-										
 										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
-												<!-- Reload button -->
-												<div class="row">
-													<div class="pull-right margin-right-20">
-														<button type="button" id="btn-domains-reload" name="btn-simulations-reload" value="Reload" 
-															class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh"></i>&nbsp;</button>	
-													</div>
-												</div><!-- // Reload button -->
-																							
-												<!-- DATATABLE initCompleteCallback (DT function) -->
-												<div dt:conf="simulations">
-												  	<div dt:confType="callback" dt:type="init" dt:function="initCompleteCallback"></div>
-												</div><!-- // DATATABLE initCompleteCallback (DT function) -->
-																									
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="simulations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/devicesimulation/data}"
-													dt:reloadSelector="#btn-simulations-reload" dt:reloadFunction="reloadSimulationsTable"
-													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
+													  > <!-- dt:dom="l0frtip" -->
 													<thead>
 														<tr class="cabecera-tabla">
 															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
@@ -132,15 +123,50 @@
 															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
+													<tbody th:remove="all-but-first">
+													<tr th:each="simulator : ${simulators}" pages:paginate="10">
+														<td class="text-left " th:text="${simulator.name}"></td>
+														<td class="text-left " th:text="${simulator.device}"></td>
+														<td class="text-left " th:text="${simulator.ontology}"></td>
+														<td class="icon" style="white-space: nowrap">
+															  <div class="grupo-iconos text-center">
+															 <span th:text="1" style="display:none" th:if="${simulator.active}" ></span><i th:if="${simulator.active}"  class="la la-check-circle-o text-primary  font-hg"></i>		
+															 <span th:text="0" style="display:none" th:if="${!simulator.active}" ></span><i th:if="${!simulator.active}"  class="la la-times-circle-o text-danger  font-hg"></i>
+															</div>
+														</td>
+														<td class="text-left " >		
+														 <div class="grupo-iconos text-center">
+															<span th:if="${!simulator.active}"   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom"  th:data-original-title="#{domain.start}" th:onclick="'javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="la la-play-circle font-hg"></i></span>
+															<span th:if="${simulator.active}"   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom"   th:data-original-title="#{gen.stop}" th:onclick="'javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="la la-stop font-hg"></i></span>
+															<a th:if="${!simulator.active}"  th:href="'/controlpanel/devicesimulation/update/'+${simulator.id}"><span   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" ><i class="la la-edit font-hg"></i></span></a>
+															<span th:if="${!simulator.active}"  th:onclick="'javascript:deleteSimulation(\''+${simulator.id}+ '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.deleteBtn}" ><i class="la la-trash font-hg"></i></span>																											
+														</div> 
+														</td>
+													</tr>
+													</tbody>
 												</table><!-- // DATATABLE DANDELION CONF. -->
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
+														<label class="toggle-vis" data-column="1" th:text="#{simulation.client}"> Device</label>
+														<label class="toggle-vis" data-column="2" th:text="#{simulation.ontology}"> Ontology</label>	
+														<label class="toggle-vis" data-column="3" th:text="#{simulation.active}"> active</label>														 
+														<label class="toggle-vis" data-column="9" th:text="#{gen.options}"> Options</label>																									
+													</div>
+												</div>											
 											</div>
-										</div>												
+										</div>											
 									</div>
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
 					</div><!-- END COL-12 -->						
-				</div><!-- END MAIN ROW -->				
+				</div><!-- END MAIN ROW -->					 								
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -150,31 +176,35 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
 	
-
-
+	// TEMPLATE SEARCH FORM.
+	var sname = [[${param.name}]] || '';
+	var stype = [[${param.type}]] || '';
 	
+	sname ? $('#name').val(sname) : sname = '';
+	stype ? $('#type').val(stype) : stype = '';
+	console.log('SEARCHING ... [ Name: ' + sname + ' Type: ' + stype + ']');
+	if (( sname != '') || (stype != '')) { $('#search-toggle').trigger('click'); }
 	
-	// DATATABLES LANGUAJE FROM PROPERTIES.	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 
 	</script>
 	
-	<script th:inline="javascript">
-	var optionName = 'scheduledsearch';
+	<script type="text/javascript"  th:inline="javascript">	
+	var optionName = 'simulations';
 	var constants ={
 			deleteContent: [[#{microservice.delete.confirm}]],
 			go: [[#{microservice.link.go}]],
@@ -184,13 +214,16 @@
 			genUpdate:  [[#{gen.edit}]],
 			genView:  [[#{gen.view}]]
 		};
-	
-	
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
-	function startStopSimulation(id) {
+	function startStopSimulation(id,event,obj) {		
 		var data = {'id': id};
+		var cell = $(obj);
+		var csrfToken = $("meta[name='_csrf']").attr("content");
+		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
+		var headersObj = {};
+		headersObj[csrfHeader] = csrfToken;
 		$.ajax({
        	 	url : '/controlpanel/devicesimulation/startstop?id='+id,  
        	 	headers: headersObj,
@@ -198,14 +231,79 @@
        	 	dataType:"json",
             type : 'POST'
         }).done(function(data) {
-        	reloadSimulationsTable();
+        	reloadSimulationsTable(id,cell);
         }).fail(function(error) {
         	
         }).always(function(){
-        	reloadSimulationsTable();
+        	reloadSimulationsTable(id,cell);
         });
 	}
 
+	function reloadSimulationsTable(id,cell) {		
+		var csrfToken = $("meta[name='_csrf']").attr("content");
+		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
+		var headersObj = {};
+		headersObj[csrfHeader] = csrfToken;		
+		$.ajax({
+       	 	url : '/controlpanel/devicesimulation/data',  
+       	 	headers: headersObj,
+       	 	contentType:"application/json; charset=utf-8",
+       	 	dataType:"json",
+            type : 'GET'
+        }).done(function(data) {
+        	var tr = cell.parent().parent().parent();
+        	var trContent = createRow(data,id);
+        	if(trContent != null){
+        		tr.empty();			
+				tr.append(trContent);
+        	}
+        	$('.tooltip').tooltip('destroy');
+			$('.tooltips').tooltip();
+			var table = $("#simulations").DataTable();
+			
+			
+        });
+	}
+	
+	function createRow(data,id){
+		if(data!== null && typeof data!='undefined' && data.length>0){	
+			for(var i = 0; i<data.length;i++){
+				if(data[i].id===id){
+					return createTrContent(data[i]);
+				}
+			}
+		}
+		return null;
+	}
+	
+	
+	function createTrContent(data){		
+		var html = '<td class="text-left "   >'+data.name+'</td>';
+		html+='<td class="text-left "  >'+data.device+'</td>';
+		html+='<td class="text-left "  >'+data.ontology+'</td>';
+		if(data.active){
+			html+= '<td class="icon" style="white-space: nowrap"><div class="grupo-iconos text-center"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i></div></td>';
+		}else{
+			html+= '<td class="icon" style="white-space: nowrap"><div class="grupo-iconos text-center"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></div></td>';
+		}		
+		html+='<td class="text-left " ><div class="grupo-iconos text-center">';
+		if(!data.active) {
+			html +='<span   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.start+'" onclick="startStopSimulation(\'' + data.id + '\',event,this)"><i class="la la-play-circle font-hg"></i></span>';
+		}else
+			html +='<span   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.stop+'"  onclick="startStopSimulation(\'' + data.id + '\',event,this)"><i class="la la-stop font-hg"></i></span>';
+		if(!data.active)
+			html+= '<a  href="/controlpanel/devicesimulation/update/'+data.id+'"><span data-id="' + data.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>'
+		if(!data.active)
+			html+= '<span data-id="' + data.id + '" onclick="deleteSimulation(\''+data.id+'\');" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'		
+		html+='</div></td> ';
+		return html;
+	}
+	
+	 
+	
+	
+	
+	
 	var  deleteSimulation= function (id){
 		console.log('deleteSimulationConfirmation() -> id: '+ id);
 		
@@ -265,89 +363,42 @@
 			}
 		});
 	}	
-	var headersObj;
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-	
-		var csrfToken = $("meta[name='_csrf']").attr("content");
-		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
-		headersObj = {};
-		headersObj[csrfHeader] = csrfToken;
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
-			var column = $('#simulationsTable').DataTable().column( $(this).attr('data-column') ); 
+			var column = $('#simulations').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
 			$(this).toggleClass('text-muted line-through');			
 		});	
 		
-		// SEARCH FORM RESET
-		$('#reset_user').on('click',function(){
-			$('#form_scheduledsearch')[0].reset();
-			$('#form_scheduledsearch')[0].submit();
-		});
-		
-		// SEARCH FORM
-		$('#search_user').on('click',function(){ $('#form_scheduledsearch')[0].submit(); });
-		
 	});
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
+		
+		$('#simulations').DataTable();
 	});
-	
-	
-	var dtRenderActive = function(data, type, row){
-		if(row.active)
-			return '<span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i>';
-		else
-			return '<span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i>';
-	}
-	
-	var dtRenderOptions = function (data, type, row) {
-		var html= '<div class="grupo-iconos text-center">';
-		if(!row.active) {
-			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="startStopSimulation(\'' + row.id + '\')"><i class="la la-play-circle font-hg"></i></span>';
-		}else
-			html +='<span th:title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.stop+'" onclick="startStopSimulation(\'' + row.id + '\')"><i class="la la-stop font-hg"></i></span>';
-		if(!row.active)
-			html+= '<a  href="/controlpanel/devicesimulation/update/'+row.id+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>'
-		if(!row.active)
-			html+= '<span data-id="' + row.id + '" onclick="deleteSimulation(\''+row.id+'\');" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'																											
-		html+= '</div>';
-		return html;
-	};
-	function reloadSimulationsTable() {
-		var oTable = $('.datatable').dataTable();
-		reloadDataTable(oTable);
-	}
-	
-	function reloadDataTable(oTable) {		
-		oTable.fnClearTable();
-		
-		oTable.DataTable().ajax.reload(function() {
-			initCompleteCallback()
-		}, true);
-		
-		$('.tooltip').tooltip('destroy');
-		$('.tooltips').tooltip();
-	}
-	var initCompleteCallback = function(){
-		//initTableEvents();
-	}
 	
 	//]]>
 	</script>
 	
 </body>
-</html>
+</html> 
   

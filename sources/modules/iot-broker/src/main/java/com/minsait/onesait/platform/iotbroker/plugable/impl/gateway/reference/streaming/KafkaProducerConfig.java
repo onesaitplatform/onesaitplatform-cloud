@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.s
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,9 @@ import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 @EnableKafka
 @Configuration
 public class KafkaProducerConfig {
+	
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
+	private String kafkaBrokers;	
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
@@ -62,9 +66,12 @@ public class KafkaProducerConfig {
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.password:admin-secret}")
 	private String kafkaPassword;
+	
+	private static final String EMPTY_BROKERS = "none";
+	private static final String KAFKA_DEFAULTPORT = "9092";	
 
 	private void applySecurity(Map<String, Object> config) {
-		if (!kafkaPort.contains("9092")) {
+		if (!kafkaPort.contains(KAFKA_DEFAULTPORT) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
 
@@ -77,7 +84,11 @@ public class KafkaProducerConfig {
 	@Bean
 	public ProducerFactory<String, String> producerFactory() {
 		Map<String, Object> configProps = new HashMap<>();
-		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}	
 		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
@@ -94,7 +105,11 @@ public class KafkaProducerConfig {
 	@Bean
 	public ProducerFactory<String, NotificationModel> operationFactory() {
 		Map<String, Object> configProps = new HashMap<>();
-		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}	
 		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 

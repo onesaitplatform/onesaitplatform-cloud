@@ -14,18 +14,15 @@
  */
 package com.minsait.onesait.platform.config.services.subscription;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Subscription;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.SubscriptionRepository;
 import com.minsait.onesait.platform.config.repository.SubscriptorRepository;
 import com.minsait.onesait.platform.config.services.exceptions.SubscriptionServiceException;
@@ -34,12 +31,9 @@ import com.minsait.onesait.platform.config.services.exceptions.SubscriptionServi
 public class SubscriptionServiceImpl implements SubscriptionService {
 
 	private static final String USER_NOT_AUTHORIZED = "The user is not authorized";
-
+	
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
-
-	@Autowired
-	private OntologyRepository ontologyRepository;
 
 	@Autowired
 	private SubscriptorRepository subscriptorRepository;
@@ -51,7 +45,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 	@Override
 	public Subscription findById(String id, User user) {
-		Subscription subscription = subscriptionRepository.findById(id);
+		final Subscription subscription = subscriptionRepository.findById(id).get();
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				|| subscription.getUser().equals(user)) {
 			return subscription;
@@ -60,13 +54,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 		}
 	}
 
+
 	@Override
 	public void deleteSubscription(Subscription subscription, User user) {
 		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				|| subscription.getUser().equals(user)) {
-			List<Subscriptor> subscriptors = subscriptorRepository.findBySubscription(subscription);
+			final List<Subscriptor> subscriptors = subscriptorRepository.findBySubscription(subscription);
 			if (!subscriptors.isEmpty()) {
-				subscriptorRepository.delete(subscriptors);
+				subscriptorRepository.deleteAll(subscriptors);
 			}
 			subscriptionRepository.delete(subscription);
 		} else {
@@ -104,20 +99,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 	@Override
 	public boolean existSubscriptionWithIdentification(String identification) {
-		Integer count = subscriptionRepository.findByIdentification(identification).size();
-		if (count != 0) {
-			return true;
-		}
-		return false;
+		final Integer count = subscriptionRepository.findByIdentification(identification).size();
+		return count != 0;
 	}
 
 	@Override
 	public List<Subscription> findByOntology(String ontologyName) {
-		Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
-		if (ontology == null) {
-			return new ArrayList<>();
-		}
-		return subscriptionRepository.findByOntology(ontology);
+		List<Subscription> subscriptions = subscriptionRepository.findByOntologyIdentification(ontologyName);
+		return subscriptions;
 	}
+
 
 }

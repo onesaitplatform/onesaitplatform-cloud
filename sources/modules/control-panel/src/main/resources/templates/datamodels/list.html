@@ -144,6 +144,18 @@
 												
 													<thead>
 														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" >  </th>
+															<th class="titulo-columnas" > <span id="namefilter" > </span></th>
+															<th class="titulo-columnas" >  </th>						
+															<th  class="titulo-columnas" ><span id="rolefilter"> </span></th>
+															<th class="titulo-columnas" >  </th>
+															<th class="titulo-columnas" >  </th>
+															<th class="titulo-columnas" >  </th>
+															<th class="titulo-columnas" >  </th>																
+															<th class="titulo-columnas" >  </th>
+															<th class="titulo-columnas" >  </th>															
+														</tr>
+														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" > <span th:text="#{datamodel.id}">Identification</span></th>
 															<th dt:filterable="true" dt:sortInitDirection="asc" dt:filterCssClass="input-small" dt:selector="datamodelFilter" class="titulo-columnas" > <span th:text="#{datamodel.name}" >Name</span></th>
 															<th class="titulo-columnas" ><span th:text="#{datamodel.description}" >Description</span></th>						
@@ -194,23 +206,7 @@
 													</tbody>
 												</table>
 												
-												<!-- DATATABLE DANDELION CONF. -->
-												<div dt:conf="datamodels">
-													<div dt:confType="extrahtml" dt:uid="0">
-														<!-- TABLE FILTERS AUX. ROW -->
-														<table id="filteringTable" class="hide">
-																<tr id="filtering" class="hide" role="row">
-																	<th></th>
-																	<th id="datamodelFilter" class="dtFilter"></th>
-																	<th></th>
-																	<th id="roleFilter" class="dtFilter"></th>
-																	<th></th>
-																	<th></th>
-																	<th></th>
-																</tr>
-														</table>
-													</div>
-												</div>
+												
 												
 												
 												
@@ -253,16 +249,16 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.js}"/>
-	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.js}"></script>
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -411,13 +407,12 @@
 		$('#clearFilters').on('click', function(){			
 			yadcf.exResetAllFilters(oTable);		
 		});	
-		
-		
 		// ADJUST CSS FOR DATATABLE FILTERS 
 		var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
 		var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
 		filters.addClass('input-small font-sm');
-		filtersResets.addClass('hide');				
+		filtersResets.addClass('hide');			
+		
 		
 		// INIT row selection
 		handleSingleSelection('datamodels');
@@ -425,7 +420,16 @@
 		// HIDE COLUMNS 4,5,6 (DETELEDAT,CREATEDAT,ACTIVE)		
 		$.each([ 0,2,8 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 				
-		
+		 yadcf.init(oTable, [	 			
+			    {column_number : 1, filter_type: "text",  filter_container_id:"namefilter",filter_default_label: "[[#{apimanager.list.text.placeholder}]]"},				
+			    {column_number : 3,   filter_type: "select",filter_container_id:"rolefilter",filter_default_label: "[[#{apimanager.list.value.placeholder}]]"}				 
+			  ]);
+		 
+		 var filtersResets = $('.yadcf-filter-reset-button');
+		 	 filtersResets.css('margin-left', '10px'); 
+		     filtersResets.html('<i class="fa fa-times"></i>');
+		     filtersResets.addClass("btn btn-default btn-sm");
+		 
 	});
 	
 	//]]>

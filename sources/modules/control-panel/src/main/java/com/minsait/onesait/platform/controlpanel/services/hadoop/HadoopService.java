@@ -25,8 +25,6 @@ import com.minsait.onesait.platform.persistence.hadoop.json.JsonGeneratorFromHiv
 import com.minsait.onesait.platform.persistence.hadoop.json.JsonSchemaHive;
 import com.minsait.onesait.platform.persistence.services.ManageDBPersistenceServiceFacade;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
 public class HadoopService {
 

@@ -25,7 +25,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,7 +47,9 @@ import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.BinaryFileRepository;
+import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 @RestController
@@ -62,6 +64,11 @@ public class BinaryRepositoryRestService {
 	private BinaryRepositoryLogicService binaryRepositoryLogicService;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+
+	@Autowired
+	private BinaryFileService binaryFileService;
+	@Autowired
+	private AppWebUtils webUtils;
 
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
@@ -78,6 +85,17 @@ public class BinaryRepositoryRestService {
 			return new ResponseEntity<>(fileId, HttpStatus.CREATED);
 		} catch (final Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping("/public")
+	@ResponseBody
+	public ResponseEntity<String> changePublic(@RequestParam("id") String fileId) {
+		if (binaryFileService.isUserOwner(fileId, userService.getUser(webUtils.getUserId()))) {
+			binaryFileService.changePublic(fileId);
+			return ResponseEntity.ok().build();
+		} else {
+			return ResponseEntity.badRequest().build();
 		}
 	}
 
@@ -98,7 +116,8 @@ public class BinaryRepositoryRestService {
 	@GetMapping("/")
 	public ResponseEntity<?> getAll() {
 		List<BinaryFileSimpleDTO> binaryFiles;
-		final User user = userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
+
+		final User user = userService.getUser(webUtils.getUserId());
 		if (userService.isUserAdministrator(user)) {
 			binaryFiles = parseToDTO(binaryFileRepository.findAll(), user);
 		} else {
@@ -172,6 +191,41 @@ public class BinaryRepositoryRestService {
 		} catch (final BinaryRepositoryException e) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
+	}
+
+	@GetMapping("/{id}/paginate")
+	public ResponseEntity<String> paginate(@PathVariable("id") String fileId,
+			@RequestParam(value = "startLine", required = true) Long startLine,
+			@RequestParam(value = "maxLines", required = true) Long maxLines,
+			@RequestParam(value = "skipHeaders", required = true) Boolean skipHeaders) {
+		try {
+			final String file = binaryRepositoryLogicService.downloadForPagination(fileId, startLine, maxLines,
+					skipHeaders);
+			return ResponseEntity.ok().body(file);
+
+		} catch (final BinaryRepositoryException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+		} catch (final IOException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+
+	}
+
+	@GetMapping("/{id}/paginate/close")
+	public ResponseEntity<String> closePaginate(@PathVariable("id") String fileId) {
+		try {
+			final boolean isOk = binaryRepositoryLogicService.closePagination(fileId);
+			if (isOk) {
+				return ResponseEntity.ok().build();
+			}
+			return new ResponseEntity<>("Pagination cannot be closed.", HttpStatus.FORBIDDEN);
+
+		} catch (final BinaryRepositoryException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+		} catch (final IOException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		}
+
 	}
 
 	private Long getMaxSize() {

@@ -59,6 +59,7 @@ import com.minsait.onesait.platform.config.services.project.ProjectDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.helper.app.AppHelper;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.security.ldap.ri.service.LdapUserService;
 
@@ -97,6 +98,8 @@ public class AppController {
 	@Value("${ldap.base}")
 	private String ldapBaseDn;
 	private static final String LDAP = "ldap";
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification) {
@@ -143,6 +146,10 @@ public class AppController {
 
 				appHelper.populateAppUpdate(model, app, sessionUser, ldapBaseDn, ldapActive());
 
+				model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+						resourcesInUseService.isInUse(id, utils.getUserId()));
+				resourcesInUseService.put(id, utils.getUserId());
+
 				return "apps/create";
 
 			} else {
@@ -172,9 +179,11 @@ public class AppController {
 						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) {
 					appService.updateApp(appDTO);
 				} else {
+					resourcesInUseService.removeByUser(id, utils.getUserId());
 					return REDIRECT_APPS_LIST;
 				}
 			} else {
+				resourcesInUseService.removeByUser(id, utils.getUserId());
 				return REDIRECT_APPS_LIST;
 			}
 
@@ -183,7 +192,7 @@ public class AppController {
 			utils.addRedirectMessage("app.update.error", redirect);
 			return REDIRECT_APPS_CREATE;
 		}
-
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_APPS_LIST;
 	}
 
@@ -244,7 +253,7 @@ public class AppController {
 			final String appUserId = appService.createUserAccess(appId, userId, roleId);
 			final UserAppCreateDTO appUserDTO = new UserAppCreateDTO();
 			appUserDTO.setId(appUserId);
-			appUserDTO.setRoleName(appRoleRepository.findOne(roleId).getName());
+			appUserDTO.setRoleName(appRoleRepository.findById(roleId).orElse(null).getName());
 			appUserDTO.setUser(userId);
 			appUserDTO.setRoleId(roleId);
 
@@ -265,7 +274,7 @@ public class AppController {
 			final String appUserId = appService.createUserAccess(appId, userId, roleId);
 			final UserAppCreateDTO appUserDTO = new UserAppCreateDTO();
 			appUserDTO.setId(appUserId);
-			appUserDTO.setRoleName(appRoleRepository.findOne(roleId).getName());
+			appUserDTO.setRoleName(appRoleRepository.findById(roleId).orElse(null).getName());
 			appUserDTO.setUser(userId);
 			appUserDTO.setRoleId(roleId);
 

@@ -1,6 +1,2 @@
 onesaitplatform.migrationconfig.classes:
-#  - com.minsait.onesait.platform.config.model.Role
-#  - com.minsait.onesait.platform.config.model.User
-#  - com.minsait.onesait.platform.config.model.App
-#  - com.minsait.onesait.platform.config.model.AppRole
-#  - com.minsait.onesait.platform.config.model.AppUser
+  - com.minsait.onesait.platform.config.model.MigrationData

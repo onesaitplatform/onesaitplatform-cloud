@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.jline.utils.Log;
@@ -118,8 +119,8 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public Layer findById(String id, String userId) {
-		User user = userService.getUser(userId);
-		Layer layer = layerRepository.findById(id);
+		final User user = userService.getUser(userId);
+		final Layer layer = layerRepository.findById(id).orElse(null);
 		if (userService.isUserAdministrator(user) || layer.getUser().equals(user) || layer.isPublic()) {
 			return layer;
 		} else {
@@ -129,7 +130,7 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public void deleteLayer(Layer layer, String userId) {
-		User user = userService.getUser(userId);
+		final User user = userService.getUser(userId);
 		if (userService.isUserAdministrator(user) || layer.getUser().equals(user) || layer.isPublic()) {
 			if (!layer.getViewers().isEmpty()) {
 				throw new LayerServiceException("This Layer is associated to a Viewer.");
@@ -143,11 +144,11 @@ public class LayerServiceImpl implements LayerService {
 	@Override
 	public Map<String, String> getOntologyGeometryFields(String identification, String sessionUserId)
 			throws IOException {
-		Map<String, String> fields = new TreeMap<>();
+		final Map<String, String> fields = new TreeMap<>();
 		final Ontology ontology = getOntologyByIdentification(identification, sessionUserId);
 
 		if (ontology != null) {
-			OntologyVirtual virtual = ontologyService.getOntologyVirtualByOntologyId(ontology);
+			final OntologyVirtual virtual = ontologyService.getOntologyVirtualByOntologyId(ontology);
 			final ObjectMapper mapper = new ObjectMapper();
 
 			JsonNode jsonNode = null;
@@ -181,7 +182,7 @@ public class LayerServiceImpl implements LayerService {
 					} else {
 						if (jsonNode.path(property).get("type").asText().equals("object")) {
 
-							JsonNode jsonNodeAux = jsonNode.path(property).path(PROPERTIES);
+							final JsonNode jsonNodeAux = jsonNode.path(property).path(PROPERTIES);
 
 							if (!jsonNodeAux.path("coordinates").isMissingNode()
 									&& jsonNodeAux.path("coordinates").get("type").asText().equals("array")) {
@@ -212,7 +213,7 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public Layer getLayerByIdentification(String identification, User user) {
-		List<Layer> layers = layerRepository.findByIdentification(identification);
+		final List<Layer> layers = layerRepository.findByIdentification(identification);
 		if (!layers.isEmpty() && (userService.isUserAdministrator(user) || layers.get(0).getUser().equals(user))) {
 			return layers.get(0);
 		} else if (layers.isEmpty()) {
@@ -224,11 +225,13 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public Boolean isLayerInUse(String layerId) {
-		Layer layer = layerRepository.findById(layerId);
-		if (layer.getViewers().isEmpty()) {
-			return false;
+		final Optional<Layer> layer = layerRepository.findById(layerId);
+		if (layer.isPresent()) {
+			return !layer.get().getViewers().isEmpty();
+		} else {
+
+			return true;
 		}
-		return true;
 	}
 
 	@Override
@@ -238,7 +241,7 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public Map<String, String> getLayersTypes(String userId) {
-		Map<String, String> map = new HashMap<>();
+		final Map<String, String> map = new HashMap<>();
 		List<Layer> layers = null;
 		final User sessionUser = userService.getUser(userId);
 
@@ -248,7 +251,7 @@ public class LayerServiceImpl implements LayerService {
 			layers = layerRepository.findByUserOrIsPublicTrue(sessionUser);
 		}
 
-		for (Layer layer : layers) {
+		for (final Layer layer : layers) {
 			if (layer.getOntology() != null && !layer.isHeatMap()) {
 				map.put(layer.getIdentification(), "iot");
 			} else if (layer.getOntology() != null && layer.isHeatMap()) {
@@ -267,49 +270,49 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public String getLayerWms(String layerIdentification) {
-		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 		return URL_CONCAT + layer.getUrl() + "\",\"layerWms\":\"" + layer.getLayerTypeWms() + "\"}";
 	}
 
 	@Override
 	public String getLayerKml(String layerIdentification) {
-		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 		return URL_CONCAT + layer.getUrl() + "\"}";
 	}
 
 	@Override
 	public String getLayerSvgImage(String layerIdentification) {
-		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 		return URL_CONCAT + layer.getUrl() + "\",\"west\":\"" + layer.getWest() + "\" ,\"east\":\"" + layer.getEast()
 				+ "\",\"north\":\"" + layer.getNorth() + "\",\"south\":\"" + layer.getSouth() + "\"}";
 	}
 
 	@Override
 	public List<String> getQueryFields(String query, String ontology, String userId) {
-		List<String> fields = new ArrayList<>();
-		CCJSqlParserManager parserManager = new CCJSqlParserManager();
+		final List<String> fields = new ArrayList<>();
+		final CCJSqlParserManager parserManager = new CCJSqlParserManager();
 		Select select;
 		try {
 			select = (Select) parserManager.parse(new StringReader(query));
 
-			PlainSelect plain = (PlainSelect) select.getSelectBody();
-			List<SelectItem> selectItems = plain.getSelectItems();
+			final PlainSelect plain = (PlainSelect) select.getSelectBody();
+			final List<SelectItem> selectItems = plain.getSelectItems();
 
-			for (SelectItem item : selectItems) {
+			for (final SelectItem item : selectItems) {
 
 				if (!item.toString().equals("c") && !item.toString().equals("*")) {
-					String[] split = item.toString().split("AS");
+					final String[] split = item.toString().split("AS");
 
 					fields.add(split[1].trim());
 				} else {
-					Map<String, String> mapFields = ontologyService.getOntologyFields(ontology, userId);
+					final Map<String, String> mapFields = ontologyService.getOntologyFields(ontology, userId);
 
-					for (Map.Entry<String, String> entry : mapFields.entrySet()) {
-						String field = entry.getKey();
+					for (final Map.Entry<String, String> entry : mapFields.entrySet()) {
+						final String field = entry.getKey();
 						if (!field.contains(".")) {
 							fields.add(field);
 						} else {
-							String fieldAux = field.split("\\.")[0];
+							final String fieldAux = field.split("\\.")[0];
 							if (!fields.contains(fieldAux)) {
 								fields.add(fieldAux);
 							}
@@ -318,9 +321,9 @@ public class LayerServiceImpl implements LayerService {
 				}
 
 			}
-		} catch (JSQLParserException e) {
+		} catch (final JSQLParserException e) {
 			Log.error("Error parsing query of layer. {} - {}", query, e.getMessage());
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.error("Error getting ontology fields from query of layer. {} - {}", query, e.getMessage());
 		}
 		return fields;
@@ -328,7 +331,7 @@ public class LayerServiceImpl implements LayerService {
 
 	@Override
 	public String getQueryParamsAndRefresh(String layerIdentification) {
-		Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 
 		return "{\"params\":" + layer.getQueryParams() + ",\"refresh\":" + layer.getRefreshTime() + "}";
 	}
@@ -344,29 +347,29 @@ public class LayerServiceImpl implements LayerService {
 			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				return allLayers;
 			} else {
-				return this.getLayersWithPermission(allLayers, sessionUser);
+				return getLayersWithPermission(allLayers, sessionUser);
 			}
 		} else if (identification != null) {
 			allLayers = layerRepository.findByIdentificationContaining(identification);
 			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				return allLayers;
 			} else {
-				return this.getLayersWithPermission(allLayers, sessionUser);
+				return getLayersWithPermission(allLayers, sessionUser);
 			}
 		} else {
 			allLayers = layerRepository.findByDescriptionContaining(description);
 			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				return allLayers;
 			} else {
-				return this.getLayersWithPermission(allLayers, sessionUser);
+				return getLayersWithPermission(allLayers, sessionUser);
 			}
 		}
 	}
 
 	private List<Layer> getLayersWithPermission(List<Layer> allLayers, User user) {
-		List<Layer> layersWithAuth = layerRepository.findByUserOrIsPublicTrue(user);
-		List<Layer> layers = new ArrayList<>();
-		for (Layer layer : allLayers) {
+		final List<Layer> layersWithAuth = layerRepository.findByUserOrIsPublicTrue(user);
+		final List<Layer> layers = new ArrayList<>();
+		for (final Layer layer : allLayers) {
 			if (layersWithAuth.contains(layer)) {
 				layers.add(layer);
 			}

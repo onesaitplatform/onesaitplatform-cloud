@@ -116,9 +116,9 @@ public class LdapUserService {
 		user.setActive(true);
 
 		if (groups != null && groups.size() > 0) {
-			user.setRole(this.getRole(groups));
+			user.setRole(getRole(groups));
 		} else {
-			user.setRole(roleRepository.findById(defaultRole));
+			user.setRole(roleRepository.findById(defaultRole).orElse(null));
 		}
 
 		log.debug("Importing user {} from LDAP server", user.getUserId());
@@ -133,12 +133,12 @@ public class LdapUserService {
 	}
 
 	public void updateUserRole(User user, List<String> groups) {
-		Role currentRole = user.getRole();
+		final Role currentRole = user.getRole();
 		Role ldapRole;
 		if (groups != null && groups.size() > 0) {
-			ldapRole = this.getRole(groups);
+			ldapRole = getRole(groups);
 		} else {
-			ldapRole = roleRepository.findById(defaultRole);
+			ldapRole = roleRepository.findById(defaultRole).orElse(null);
 		}
 
 		if (!currentRole.getId().equals(ldapRole.getId())) {
@@ -185,7 +185,7 @@ public class LdapUserService {
 				.search(LdapUtils.emptyLdapName(), filter.encode(), new AttributesMapper<List<String>>() {
 					@Override
 					public List<String> mapFromAttributes(Attributes attributes) throws NamingException {
-						Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+						final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
 						return Collections.list(enMember);
 					}
 				}).get(0);
@@ -219,9 +219,9 @@ public class LdapUserService {
 			final List<List<String>> membersDn = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn),
 					filterAnd.encode(), new LdapGroupMemberFromDNMapper(MEMBER_OF_GROUP));
 
-			List<User> usersInGroup = new ArrayList<User>();
+			final List<User> usersInGroup = new ArrayList<>();
 			membersDn.get(0).stream().forEach(member -> {
-				List<User> currentUser = getAllUsers(member);
+				final List<User> currentUser = getAllUsers(member);
 				if (currentUser != null && !currentUser.isEmpty()) {
 					usersInGroup.add(getAllUsers(member).get(0));
 				}
@@ -253,27 +253,27 @@ public class LdapUserService {
 
 	private Role getRole(List<String> groups) {
 		if (null != administratorDn && groups.contains(administratorDn)) {
-			return roleRepository.findById("ROLE_ADMINISTRATOR");
+			return roleRepository.findById("ROLE_ADMINISTRATOR").orElse(null);
 		} else if (null != datascientistDn && groups.contains(datascientistDn)) {
-			return roleRepository.findById("ROLE_DATASCIENTIST");
+			return roleRepository.findById("ROLE_DATASCIENTIST").orElse(null);
 		} else if (null != dataviewerDn && groups.contains(dataviewerDn)) {
-			return roleRepository.findById("ROLE_DATAVIEWER");
+			return roleRepository.findById("ROLE_DATAVIEWER").orElse(null);
 		} else if (null != developerDn && groups.contains(developerDn)) {
-			return roleRepository.findById("ROLE_DEVELOPER");
+			return roleRepository.findById("ROLE_DEVELOPER").orElse(null);
 		} else if (null != devopsDn && groups.contains(devopsDn)) {
-			return roleRepository.findById("ROLE_DEVOPS");
+			return roleRepository.findById("ROLE_DEVOPS").orElse(null);
 		} else if (null != operationsDn && groups.contains(operationsDn)) {
-			return roleRepository.findById("ROLE_OPERATIONS");
+			return roleRepository.findById("ROLE_OPERATIONS").orElse(null);
 		} else if (null != partnerDn && groups.contains(partnerDn)) {
-			return roleRepository.findById("ROLE_PARTNER");
+			return roleRepository.findById("ROLE_PARTNER").orElse(null);
 		} else if (null != platformAdminDn && groups.contains(platformAdminDn)) {
-			return roleRepository.findById("ROLE_PLATFORM_ADMIN");
+			return roleRepository.findById("ROLE_PLATFORM_ADMIN").orElse(null);
 		} else if (null != sysAdminDn && groups.contains(sysAdminDn)) {
-			return roleRepository.findById("ROLE_SYS_ADMIN");
+			return roleRepository.findById("ROLE_SYS_ADMIN").orElse(null);
 		} else if (null != userDn && groups.contains(userDn)) {
-			return roleRepository.findById("ROLE_USER");
+			return roleRepository.findById("ROLE_USER").orElse(null);
 		} else {
-			return roleRepository.findById(defaultRole);
+			return roleRepository.findById(defaultRole).orElse(null);
 		}
 
 	}

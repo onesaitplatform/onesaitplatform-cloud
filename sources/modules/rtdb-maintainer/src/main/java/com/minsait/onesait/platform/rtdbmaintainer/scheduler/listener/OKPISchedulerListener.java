@@ -17,10 +17,7 @@ package com.minsait.onesait.platform.rtdbmaintainer.scheduler.listener;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.listeners.SchedulerListenerSupport;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,17 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OKPISchedulerListener extends SchedulerListenerSupport {
 
-	@Autowired
-	private DeviceSimulationService deviceSimulationService;
-
 	@Override
 	public void jobUnscheduled(TriggerKey triggerKey) {
-		log.info("job unscheduled");
+		log.debug("job unscheduled");
 	}
 
 	@Override
 	public void triggerFinalized(Trigger trigger) {
-		log.info("job finalized");
+		log.debug("job finalized");
 
 	}
 }

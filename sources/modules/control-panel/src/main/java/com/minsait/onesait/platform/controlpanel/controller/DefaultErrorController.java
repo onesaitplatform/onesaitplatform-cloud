@@ -14,14 +14,14 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller;
 
-import org.springframework.boot.autoconfigure.web.ErrorController;
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 
 @Controller
-public class DefaultErrorController implements ErrorController{
-	
+public class DefaultErrorController implements ErrorController {
+
 	@Override
-    public String getErrorPath() {
-        return "/error";
-    }
+	public String getErrorPath() {
+		return "/error";
+	}
 }

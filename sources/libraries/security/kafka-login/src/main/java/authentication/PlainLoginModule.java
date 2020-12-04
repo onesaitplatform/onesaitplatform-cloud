@@ -26,22 +26,33 @@ import authentication.server.PlainSaslServerProvider;
 
 public class PlainLoginModule implements LoginModule {
 
-
 	private static final Logger log = Logger.getLogger(PlainLoginModule.class.getName());
-	
+
 	private static final String USERNAME_CONFIG = "username";
-	private static final String PASS_CONFIG = "pass"+"word";
+	private static final String PASS_CONFIG = "pass" + "word";
+	private static final String DEFAULT_VERTICAL_CONFIG = "default_vertical";
+	private static final String DEFAULT_TENANT_CONFIG = "default_tenant";
 
 	private static String URL = "";
+	private static String DEFAULT_VERTICAL = "";
+	private static String DEFAULT_TENANT = "";
 
 	static {
 		PlainSaslServerProvider.initialize();
 	}
-	
+
 	public static String getURL() {
-	    return PlainLoginModule.URL;
+		return PlainLoginModule.URL;
 	}
-	
+
+	public static String getDefaultVertical() {
+		return PlainLoginModule.DEFAULT_VERTICAL;
+	}
+
+	public static String getDefaultTenant() {
+		return PlainLoginModule.DEFAULT_TENANT;
+	}
+
 	@Override
 	public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState,
 			Map<String, ?> options) {
@@ -50,10 +61,19 @@ public class PlainLoginModule implements LoginModule {
 		log.info(options.toString());
 		String url = (String) options.get("url");
 		if (url != null) {
-			log.info(url);
+			log.info("URL=" + url);
 			PlainLoginModule.URL = url;
 		}
-
+		String vertical = (String) options.get(DEFAULT_VERTICAL_CONFIG);
+		if (vertical != null) {
+			log.info("DEFAULT_VERTICAL="+vertical);
+			PlainLoginModule.DEFAULT_VERTICAL = vertical;
+		}
+		String tenant = (String) options.get(DEFAULT_TENANT_CONFIG);
+		if (tenant != null) {
+			log.info("DEFAULT_TENANT="+tenant);
+			PlainLoginModule.DEFAULT_TENANT = tenant;
+		}
 		String username = (String) options.get(USERNAME_CONFIG);
 		if (username != null) {
 			subject.getPublicCredentials().add(username);
@@ -61,7 +81,7 @@ public class PlainLoginModule implements LoginModule {
 		String pass = (String) options.get(PASS_CONFIG);
 		if (pass != null) {
 			subject.getPrivateCredentials().add(pass);
-		}	
+		}
 	}
 
 	@Override

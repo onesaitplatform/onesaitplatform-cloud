@@ -101,7 +101,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 		if (ontology != null) {
 			data.put(Constants.IS_EXTERNAL_API, false);
 
-			final ApiOperation customSQL = apiManagerService.getCustomSQL(pathInfo, api);
+			final ApiOperation customSQL = apiManagerService.getCustomSQL(pathInfo, api, null);
 
 			final String objectId = apiManagerService.getObjectidFromPathQuery(pathInfo, customSQL);
 			if (customSQL == null && !StringUtils.isEmpty(objectId)

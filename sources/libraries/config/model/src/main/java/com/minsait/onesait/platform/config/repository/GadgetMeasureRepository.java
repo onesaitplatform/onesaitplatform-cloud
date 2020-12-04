@@ -27,7 +27,7 @@ public interface GadgetMeasureRepository extends JpaRepository<GadgetMeasure, St
 
 	List<GadgetMeasure> findByGadget(Gadget gadget);
 
-	List<GadgetMeasure> findById(String id);
+	List<GadgetMeasure> findAllById(String id);
 
 	@Query("SELECT g " + "FROM GadgetMeasure AS g " + "WHERE g.datasource.id=:datasource")
 	List<GadgetMeasure> findByDatasource(@Param("datasource") String datasource);

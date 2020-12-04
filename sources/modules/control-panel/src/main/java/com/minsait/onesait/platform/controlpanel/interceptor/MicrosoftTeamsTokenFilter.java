@@ -134,7 +134,7 @@ public class MicrosoftTeamsTokenFilter implements Filter {
 		user.setEmail(userId);
 		user.setActive(true);
 		user.setPassword(DEFAULT_IMPORT_PASS_WORD + UUID.randomUUID().toString().substring(1, 5));
-		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()));
+		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()).orElse(null));
 		userService.createUser(user);
 	}
 

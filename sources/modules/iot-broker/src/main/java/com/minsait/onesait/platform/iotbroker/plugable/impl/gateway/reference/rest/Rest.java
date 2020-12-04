@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
@@ -69,7 +69,11 @@ import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPlu
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
 import com.minsait.onesait.platform.iotbroker.processor.MessageProcessor;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -86,7 +90,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*")
 @Api(value = "rest", description = "onesait Platform operations for devices")
-public class Rest extends WebMvcConfigurerAdapter {
+public class Rest implements WebMvcConfigurer {
 
 	@Autowired
 	MessageProcessor processor;
@@ -109,6 +113,8 @@ public class Rest extends WebMvcConfigurerAdapter {
 	private CorrelationInterceptor logInterceptor;
 	@Autowired
 	private MultitenancyInterceptor multitenancyInterceptor;
+	@Autowired
+	private MultitenancyService multitenancyService;
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
@@ -123,6 +129,37 @@ public class Rest extends WebMvcConfigurerAdapter {
 			@ApiParam(value = "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
 			@ApiParam(value = "Desired ClientPlatform id. the value is chosen from user", required = true) @RequestParam(name = "clientPlatformId") String clientPlatformId) {
 
+		final SSAPMessage<SSAPBodyJoinMessage> request = new SSAPMessage<>();
+		request.setBody(new SSAPBodyJoinMessage());
+
+		request.setDirection(SSAPMessageDirection.REQUEST);
+		request.setMessageType(SSAPMessageTypes.JOIN);
+		request.getBody().setToken(token);
+		request.getBody().setDeviceTemplate(clientPlatform);
+		request.getBody().setDevice(clientPlatformId);
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(request, getGatewayInfo());
+		if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
+			return new ResponseEntity<>(response.getBody().getData(), HttpStatus.OK);
+		} else {
+			return formResponseError(response);
+		}
+	}
+
+	@ApiOperation(value = "Logs a client device into onesaitPlatform Kafka cluster with token, vertical and tenant.\nReturns a sessionKey to use in further operations")
+	@GetMapping(value = "/client/kafka/join")
+	public ResponseEntity<?> joinKafka(
+			@ApiParam(value = "Token asociated to client platform", required = true) @RequestParam(name = "token") String token,
+			@ApiParam(value = "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
+			@ApiParam(value = "Desired ClientPlatform id. the value is chosen from user", required = true) @RequestParam(name = "clientPlatformId") String clientPlatformId,
+			@ApiParam(value = "Client platform vertical", required = true) @RequestParam(name = "vertical") String vertical,
+			@ApiParam(value = "Client Platform tenant", required = true) @RequestParam(name = "tenant") String tenant) {
+
+		final SSAPMessage<SSAPBodyReturnMessage> verticalAndTenantResponse = checkVerticalAndTenant(token, vertical,
+				tenant);
+		if (verticalAndTenantResponse != null) {
+			return formResponseError(verticalAndTenantResponse);
+		}
 		final SSAPMessage<SSAPBodyJoinMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyJoinMessage());
 
@@ -581,6 +618,41 @@ public class Rest extends WebMvcConfigurerAdapter {
 		info.setProtocol("REST");
 
 		return info;
+	}
+
+	private SSAPMessage<SSAPBodyReturnMessage> checkVerticalAndTenant(String token, String vertical, String tenant) {
+		MasterDeviceToken deviceToken = multitenancyService.getMasterDeviceToken(token);
+		SSAPMessage<SSAPBodyReturnMessage> errorResponse = null;
+		// IF VRTICAL AND TENANT ARE EMPTY, they correspond to the defaults
+		if (tenant == null || tenant.isEmpty()) {
+			tenant = Tenant2SchemaMapper.DEFAULT_TENANT_NAME;
+		}
+		if (vertical == null || vertical.isEmpty()) {
+			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+		}
+		String tokenVerticalName = "";
+		if (deviceToken != null) {
+			for (Vertical v : multitenancyService.getAllVerticals()) {
+				if (v.getSchema().equals(deviceToken.getVerticalSchema())) {
+					tokenVerticalName = v.getName();
+					break;
+				}
+			}
+		}
+		// CHECK VERTICAL AND TENANT OF TOKEN
+		if (deviceToken == null || !deviceToken.getTenant().equals(tenant) || !tokenVerticalName.equals(vertical)) {
+
+			errorResponse = new SSAPMessage<>();
+			errorResponse.setMessageType(SSAPMessageTypes.JOIN);
+			errorResponse.setDirection(SSAPMessageDirection.ERROR);
+			SSAPBodyReturnMessage body = new SSAPBodyReturnMessage();
+			body.setErrorCode(SSAPErrorCode.AUTHORIZATION);
+			body.setError("Unauthorized access to vertical/tenant for this client/token.");
+			body.setOk(false);
+			errorResponse.setBody(body);
+
+		}
+		return errorResponse;
 	}
 
 }

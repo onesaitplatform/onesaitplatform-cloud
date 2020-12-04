@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 
@@ -59,6 +60,7 @@ import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceExceptio
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
@@ -112,6 +114,21 @@ public class LayersRestImpl implements LayersRest {
 
 	@Autowired
 	private AppWebUtils utils;
+
+	@Autowired
+	private IntegrationResourcesService resourcesService;
+
+	private String defaultQuery;
+
+	@PostConstruct
+	private void postConstruct() {
+		boolean quasarActive = ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+				.get("mongodb-use-quasar")).booleanValue();
+
+		defaultQuery = "select * from ";
+		if (quasarActive)
+			defaultQuery = "select _id,c from ";
+	}
 
 	@Override
 	public ResponseEntity<?> getLayerData(HttpServletRequest request) {
@@ -174,7 +191,12 @@ public class LayersRestImpl implements LayersRest {
 
 						String fieldGeometry = null;
 						if (obj.has("_id")) {
-							String oid = obj.getString("_id");
+							String oid;
+							try {
+								oid = obj.getString("_id");
+							} catch (JSONException e) {
+								oid = obj.getJSONObject("_id").getString("$oid");
+							}
 							feature.setOid(oid);
 						} else {
 							ObjectId objOid = new ObjectId();
@@ -190,7 +212,7 @@ public class LayersRestImpl implements LayersRest {
 							rootObject = obj;
 							fieldGeometry = mapFields.get(geometryField);
 						} else {
-							rootObject = obj.getJSONObject(root);
+							rootObject = root != null ? obj.getJSONObject(root) : obj;
 							fieldGeometry = geometryField;
 						}
 
@@ -662,7 +684,7 @@ public class LayersRestImpl implements LayersRest {
 			String queryResult = null;
 			if (query == null) {
 				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-						"select _id,c from " + ontologyIdentification + " as c", 0);
+						defaultQuery + ontologyIdentification + " as c", 0);
 			} else {
 				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification, query, 0);
 			}

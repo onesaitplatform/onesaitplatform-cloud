@@ -91,7 +91,20 @@ var WebProjectCreateController = function() {
 	var navigateUrl = function(url){
 		window.location.href = url; 
 	}
-	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/webprojects/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
 	// CLEAN FIELDS FORM
 	var cleanFields = function (formId) {
 		logControl ? console.log('cleanFields() -> ') : '';
@@ -149,7 +162,11 @@ var WebProjectCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': uploadZip()') : '';	
 			uploadZip(); 
 		},
-		
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			
+			freeResource(id,url);
+		},
 		submitform: function(){
 		
 			$("#webproject_create_form").submit();

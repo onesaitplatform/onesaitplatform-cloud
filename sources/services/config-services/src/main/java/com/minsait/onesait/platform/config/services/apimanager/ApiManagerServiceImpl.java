@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -104,15 +105,15 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		final User user = userService.getUser(loggeduser);
 
 		// Clean the filter
-		if ((apiId == null || "".equals(apiId))) {
+		if (apiId == null || "".equals(apiId)) {
 			apiId = "";
 		}
 
-		if ((userId == null || "".equals(userId))) {
+		if (userId == null || "".equals(userId)) {
 			userId = "";
 		}
 
-		if ((state == null || "".equals(state))) {
+		if (state == null || "".equals(state)) {
 			apis = apiRepository.findApisByIdentificationOrUserForAdminOrOwnerOrPublicOrPermission(user.getUserId(),
 					user.getRole().getId(), apiId, userId);
 		} else {
@@ -133,7 +134,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				version = api.getNumversion();
 			}
 		}
-		return (version + 1);
+		return version + 1;
 	}
 
 	@Override
@@ -186,12 +187,13 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 			apiRepository.save(api);
 
-			if (operationsJson != null)
+			if (operationsJson != null) {
 				createOperations(api, operationsJson);
+			}
 
 			metricsManagerLogControlPanelApiCreation(api.getUser().getUserId(), OK);
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			metricsManagerLogControlPanelApiCreation(api.getUser().getUserId(), KO);
 			log.error("Error creating API", e);
 			throw e;
@@ -249,58 +251,60 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			deprecateApis(api.getIdentification());
 		}
 
-		final Api apimemory = apiRepository.findById(api.getId());
+		final Optional<Api> opt = apiRepository.findById(api.getId());
+		if (opt.isPresent()) {
+			final Api apimemory = opt.get();
+			final byte[] imagenOriginal = apimemory.getImage();
 
-		final byte[] imagenOriginal = apimemory.getImage();
+			apimemory.setIdentification(api.getIdentification());
+			apimemory.setPublic(api.isPublic());
+			apimemory.setSsl_certificate(api.isSsl_certificate());
+			apimemory.setDescription(api.getDescription());
+			apimemory.setCategory(api.getCategory());
+			apimemory.setEndpointExt(api.getEndpointExt());
+			apimemory.setMetaInf(api.getMetaInf());
 
-		apimemory.setIdentification(api.getIdentification());
-		apimemory.setPublic(api.isPublic());
-		apimemory.setSsl_certificate(api.isSsl_certificate());
-		apimemory.setDescription(api.getDescription());
-		apimemory.setCategory(api.getCategory());
-		apimemory.setEndpointExt(api.getEndpointExt());
-		apimemory.setMetaInf(api.getMetaInf());
-
-		if (api.getCachetimeout() != null) {
-			apimemory.setCachetimeout(api.getCachetimeout());
-		} else {
-			apimemory.setCachetimeout(null);
-		}
-
-		Integer limit = api.getApilimit();
-
-		if (limit != null && limit <= 0) {
-			limit = 1;
-		}
-		apimemory.setApilimit(limit);
-
-		apimemory.setState(api.getState());
-
-		if (api.getImage() != null && api.getImage().length > 0) {
-			apimemory.setImage(api.getImage());
-		} else {
-			apimemory.setImage(imagenOriginal);
-		}
-
-		if (apimemory.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
-			apimemory.setSwaggerJson(api.getSwaggerJson());
-		}
-
-		apiRepository.save(apimemory);
-
-		final ObjectMapper objectMapper = new ObjectMapper();
-
-		List<OperationJson> operationsJson = null;
-
-		try {
-			if (apimemory.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
-				operationsJson = objectMapper.readValue(reformat(operationsObject),
-						new TypeReference<List<OperationJson>>() {
-						});
-				updateOperations(apimemory, operationsJson);
+			if (api.getCachetimeout() != null) {
+				apimemory.setCachetimeout(api.getCachetimeout());
+			} else {
+				apimemory.setCachetimeout(null);
 			}
-		} catch (final IOException e) {
-			log.error(PARSING_ERROR, e);
+
+			Integer limit = api.getApilimit();
+
+			if (limit != null && limit <= 0) {
+				limit = 1;
+			}
+			apimemory.setApilimit(limit);
+
+			apimemory.setState(api.getState());
+
+			if (api.getImage() != null && api.getImage().length > 0) {
+				apimemory.setImage(api.getImage());
+			} else {
+				apimemory.setImage(imagenOriginal);
+			}
+
+			if (apimemory.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
+				apimemory.setSwaggerJson(api.getSwaggerJson());
+			}
+
+			apiRepository.save(apimemory);
+
+			final ObjectMapper objectMapper = new ObjectMapper();
+
+			List<OperationJson> operationsJson = null;
+
+			try {
+				if (apimemory.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
+					operationsJson = objectMapper.readValue(reformat(operationsObject),
+							new TypeReference<List<OperationJson>>() {
+							});
+					updateOperations(apimemory, operationsJson);
+				}
+			} catch (final IOException e) {
+				log.error(PARSING_ERROR, e);
+			}
 		}
 
 	}
@@ -326,23 +330,26 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public void removeAPI(String id) {
+		final Optional<Api> opt = apiRepository.findById(id);
+		if (opt.isPresent()) {
+			final Api apiremove = opt.get();
+			if (resourceService.isResourceSharedInAnyProject(apiremove)) {
+				throw new OPResourceServiceException(
+						"This Api is shared within a Project, revoke access from project prior to deleting");
+			}
+			final List<ApiOperation> apiOperationList = apiOperationRepository.findByApiIdOrderByOperationDesc(id);
 
-		final Api apiremove = apiRepository.findById(id);
-		if (resourceService.isResourceSharedInAnyProject(apiremove))
-			throw new OPResourceServiceException(
-					"This Api is shared within a Project, revoke access from project prior to deleting");
-		final List<ApiOperation> apiOperationList = apiOperationRepository.findByApiIdOrderByOperationDesc(id);
+			apiOperationRepository.deleteAll(apiOperationList);
+			log.debug("API's operation deleted");
 
-		apiOperationRepository.delete(apiOperationList);
-		log.debug("API's operation deleted");
+			final List<UserApi> userApiList = userApiRepository.findByApiId(id);
 
-		final List<UserApi> userApiList = userApiRepository.findByApiId(id);
+			userApiRepository.deleteAll(userApiList);
+			log.debug("API's authorizations deleted");
 
-		userApiRepository.delete(userApiList);
-		log.debug("API's authorizations deleted");
-
-		apiRepository.delete(apiremove);
-		log.debug("API deleted");
+			apiRepository.delete(apiremove);
+			log.debug("API deleted");
+		}
 	}
 
 	private void deprecateApis(String apiId) {
@@ -362,7 +369,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public List<UserApi> getAuthorizations(String apiId, String apiVersion, User user) {
-		Api api = getApiByIdentificationVersionOrId(apiId, apiVersion);
+		final Api api = getApiByIdentificationVersionOrId(apiId, apiVersion);
 
 		if (api == null) {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.NOT_FOUND, ERROR_API_NOT_FOUND);
@@ -377,8 +384,8 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public List<String> updateAuthorizations(String apiId, String version, List<String> usersId, User user) {
-		List<String> updatedAuth = new ArrayList<>();
-		Api api = getApiByIdentificationVersionOrId(apiId, version);
+		final List<String> updatedAuth = new ArrayList<>();
+		final Api api = getApiByIdentificationVersionOrId(apiId, version);
 
 		if (api == null) {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.NOT_FOUND, ERROR_API_NOT_FOUND);
@@ -394,17 +401,17 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 					ERROR_USER_NOT_ALLOWED);
 		}
 
-		for (String userId : usersId) {
+		for (final String userId : usersId) {
 			try {
 				updateAuthorization(api.getId(), userId);
 				updatedAuth.add(OK);
-			} catch (ApiManagerServiceException e) {
+			} catch (final ApiManagerServiceException e) {
 				updatedAuth.add(e.getError().name());
-			} catch (DataIntegrityViolationException e) {
+			} catch (final DataIntegrityViolationException e) {
 				updatedAuth.add(ERROR_USER_ACCESS_EXISTS);
-			} catch (NullPointerException e) {
+			} catch (final NullPointerException e) {
 				updatedAuth.add(ERROR_USER_ACCESS_NOT_FOUND);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				updatedAuth.add(e.getMessage());
 			}
 		}
@@ -417,38 +424,41 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		UserApi userApi = userApiRepository.findByApiIdAndUser(apiId, userId);
 
 		if (userApi == null) {
-			final Api api = apiRepository.findById(apiId);
-			final User user = userRepository.findByUserId(userId);
+			final Optional<Api> opt = apiRepository.findById(apiId);
+			if (opt.isPresent()) {
+				final Api api = opt.get();
+				final User user = userRepository.findByUserId(userId);
 
-			if (user == null) {
-				throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_NOT_FOUND,
-						ERROR_USER_NOT_FOUND);
+				if (user == null) {
+					throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_NOT_FOUND,
+							ERROR_USER_NOT_FOUND);
+				}
+
+				if (user.equals(api.getUser())) {
+					throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_IS_OWNER,
+							ERROR_USER_IS_OWNER);
+				}
+
+				if (!isApiStateValidForEditAuth(api)) {
+					throw new ApiManagerServiceException(ApiManagerServiceException.Error.INVALID_API_STATE,
+							ERROR_API_INVALID_STATE);
+				}
+
+				if (userService.isUserAdministrator(user)) {
+					throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_IS_ADMIN,
+							ERROR_USER_IS_ADMIN);
+				}
+
+				userApi = new UserApi();
+				userApi.setApi(api);
+				userApi.setUser(user);
+
+				api.getUserApiAccesses().removeIf(ua -> ua.getUser().equals(user) && ua.getApi().equals(api));
+				api.getUserApiAccesses().add(userApi);
+				return apiRepository.save(api).getUserApiAccesses().stream()
+						.filter(ua -> ua.getUser().equals(user) && ua.getApi().equals(api)).findFirst().orElse(userApi);
+
 			}
-
-			if (user.equals(api.getUser())) {
-				throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_IS_OWNER,
-						ERROR_USER_IS_OWNER);
-			}
-
-			if (!isApiStateValidForEditAuth(api)) {
-				throw new ApiManagerServiceException(ApiManagerServiceException.Error.INVALID_API_STATE,
-						ERROR_API_INVALID_STATE);
-			}
-
-			if (userService.isUserAdministrator(user)) {
-				throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_IS_ADMIN,
-						ERROR_USER_IS_ADMIN);
-			}
-
-			userApi = new UserApi();
-			userApi.setApi(api);
-			userApi.setUser(user);
-
-			api.getUserApiAccesses().removeIf(ua -> ua.getUser().equals(user) && ua.getApi().equals(api));
-			api.getUserApiAccesses().add(userApi);
-			return apiRepository.save(api).getUserApiAccesses().stream()
-					.filter(ua -> ua.getUser().equals(user) && ua.getApi().equals(api)).findFirst().orElse(userApi);
-
 		}
 		return userApi;
 	}
@@ -456,23 +466,23 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	@Override
 	public List<UserApi> updateAuthorizationAllVersions(String identification, String userId, User user) {
 		// for api+version: if possible: update auth, else: skip update auth
-		List<UserApi> authorizations = new ArrayList<>();
+		final List<UserApi> authorizations = new ArrayList<>();
 
-		User userToAuthorize = userService.getUser(userId);
+		final User userToAuthorize = userService.getUser(userId);
 		if (userToAuthorize == null) {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_NOT_FOUND, ERROR_USER_NOT_FOUND);
 		}
 
-		List<Api> apis = apiRepository.findByIdentificationAndUser(identification, user);
+		final List<Api> apis = apiRepository.findByIdentificationAndUser(identification, user);
 		if (!apis.isEmpty()) {
 			for (final Api api : apis) {
 				if (hasUserEditAccess(api, user)) {
 					try {
-						UserApi userApi = updateAuthorization(api.getId(), userToAuthorize.getUserId());
+						final UserApi userApi = updateAuthorization(api.getId(), userToAuthorize.getUserId());
 						if (userApi != null) {
 							authorizations.add(userApi);
 						}
-					} catch (ApiManagerServiceException e) {
+					} catch (final ApiManagerServiceException e) {
 						log.warn("Not possible create authorization for user {} on api {} - V{}: {}", userId,
 								api.getIdentification(), api.getNumversion(), e.getMessage());
 					}
@@ -484,8 +494,8 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public List<String> removeAuthorizations(String apiId, String version, List<String> usersId, User user) {
-		List<String> removedAuth = new ArrayList<>();
-		Api api = getApiByIdentificationVersionOrId(apiId, version);
+		final List<String> removedAuth = new ArrayList<>();
+		final Api api = getApiByIdentificationVersionOrId(apiId, version);
 
 		if (api == null) {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.NOT_FOUND, ERROR_API_NOT_FOUND);
@@ -501,16 +511,16 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 					ERROR_USER_NOT_ALLOWED);
 		}
 
-		for (String userId : usersId) {
+		for (final String userId : usersId) {
 			try {
-				UserApi userapi = userApiRepository.findByApiIdAndUser(api.getId(), userId);
+				final UserApi userapi = userApiRepository.findByApiIdAndUser(api.getId(), userId);
 				removeAuthorizationById(userapi.getId());
 				removedAuth.add(OK);
-			} catch (DataIntegrityViolationException e) {
+			} catch (final DataIntegrityViolationException e) {
 				removedAuth.add(ERROR_USER_ACCESS_EXISTS);
-			} catch (NullPointerException e) {
+			} catch (final NullPointerException e) {
 				removedAuth.add(ERROR_USER_ACCESS_NOT_FOUND);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				removedAuth.add(e.getMessage());
 			}
 		}
@@ -521,24 +531,28 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	@Override
 	@Modifying
 	public void removeAuthorizationById(String id) {
-		final UserApi userApi = userApiRepository.findById(id);
-		if (!isApiStateValidForEditAuth(userApi.getApi())) {
-			throw new ApiManagerServiceException(ApiManagerServiceException.Error.INVALID_API_STATE,
-					ERROR_API_INVALID_STATE);
-		}
-		userApi.getApi().getUserApiAccesses().remove(userApi);
-		apiRepository.save(userApi.getApi());
+		final Optional<UserApi> opt = userApiRepository.findById(id);
+		opt.ifPresent(ua -> {
+			final UserApi userApi = ua;
+			if (!isApiStateValidForEditAuth(userApi.getApi())) {
+				throw new ApiManagerServiceException(ApiManagerServiceException.Error.INVALID_API_STATE,
+						ERROR_API_INVALID_STATE);
+			}
+			userApi.getApi().getUserApiAccesses().remove(userApi);
+			apiRepository.save(userApi.getApi());
+		});
+
 	}
 
 	@Override
 	public void removeAuthorizationAllVersions(String identification, String userId, User user) {
 		// remove auths where possible, else: skip
-		User userToDeauthorize = userService.getUser(userId);
+		final User userToDeauthorize = userService.getUser(userId);
 		if (userToDeauthorize == null) {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_NOT_FOUND, ERROR_USER_NOT_FOUND);
 		}
 
-		List<Api> apis = apiRepository.findByIdentificationAndUser(identification, user);
+		final List<Api> apis = apiRepository.findByIdentificationAndUser(identification, user);
 		if (apis.isEmpty()) {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_ACCESS_NOT_FOUND,
 					ERROR_USER_ACCESS_NOT_FOUND);
@@ -546,11 +560,11 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 		for (final Api api : apis) {
 			if (hasUserEditAccess(api, user)) {
-				UserApi userApi = userApiRepository.findByApiIdAndUser(api.getId(), userId);
+				final UserApi userApi = userApiRepository.findByApiIdAndUser(api.getId(), userId);
 				if (userApi != null) {
 					try {
 						removeAuthorizationById(userApi.getId());
-					} catch (ApiManagerServiceException e) {
+					} catch (final ApiManagerServiceException e) {
 						log.warn("Not possible remove authorization for user {} on api {} - V{}: {}", userId,
 								api.getIdentification(), api.getNumversion(), e.getMessage());
 					}
@@ -562,16 +576,22 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public byte[] getImgBytes(String id) {
-		final Api api = apiRepository.findById(id);
-
-		return api.getImage();
+		final Optional<Api> api = apiRepository.findById(id);
+		if (api.isPresent()) {
+			return api.get().getImage();
+		} else {
+			throw new ApiManagerServiceException("Api not found");
+		}
 	}
 
 	@Override
 	public void updateState(String id, String state) {
-		final Api api = apiRepository.findById(id);
-		api.setState(Api.ApiStates.valueOf(state));
-		apiRepository.save(api);
+		final Optional<Api> api = apiRepository.findById(id);
+		api.ifPresent(a -> {
+			a.setState(Api.ApiStates.valueOf(state));
+			apiRepository.save(a);
+		});
+
 	}
 
 	@Override
@@ -615,30 +635,44 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	@Override
 	public boolean hasUserEditAccess(String apiId, String userId) {
 		final User user = userService.getUser(userId);
-		final Api api = apiRepository.findById(apiId);
-		return hasUserEditAccess(api, user);
+		final Optional<Api> api = apiRepository.findById(apiId);
+		if (api.isPresent()) {
+			return hasUserEditAccess(api.get(), user);
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean hasUserAccess(Api api, User user) {
-		return (isUserOwnerOrAdmin(user, api))
-				|| ((api.isPublic() || userApiRepository.findByApiIdAndUser(api.getId(), user.getUserId()) != null)
-						&& isApiStateValidForUserAccess(api))
-				|| ((resourceService.hasAccess(user.getUserId(), api.getId(), ResourceAccessType.VIEW))
-						&& isApiStateValidForUserAccess(api));
+		return isUserOwnerOrAdmin(user, api)
+				|| (api.isPublic() || userApiRepository.findByApiIdAndUser(api.getId(), user.getUserId()) != null)
+						&& isApiStateValidForUserAccess(api)
+				|| resourceService.hasAccess(user.getUserId(), api.getId(), ResourceAccessType.VIEW)
+						&& isApiStateValidForUserAccess(api);
 	}
 
 	@Override
 	public boolean hasUserAccess(String apiId, String userId) {
 		final User user = userService.getUser(userId);
-		final Api api = apiRepository.findById(apiId);
-		return hasUserAccess(api, user);
+		final Optional<Api> api = apiRepository.findById(apiId);
+		if (api.isPresent()) {
+			return hasUserAccess(api.get(), user);
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean isApiStateValidForUserAccess(String apiId) {
-		final Api api = apiRepository.findById(apiId);
-		return isApiStateValidForUserAccess(api);
+		final Optional<Api> api = apiRepository.findById(apiId);
+		if (api.isPresent()) {
+			return isApiStateValidForUserAccess(api.get());
+		} else {
+			return false;
+
+		}
+
 	}
 
 	@Override
@@ -649,14 +683,22 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public boolean isApiStateValidForEdit(String apiId) {
-		final Api api = apiRepository.findById(apiId);
-		return isApiStateValidForEdit(api);
+		final Optional<Api> api = apiRepository.findById(apiId);
+		if (api.isPresent()) {
+			return isApiStateValidForEdit(api.get());
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean isApiStateValidForEditAuth(String apiId) {
-		final Api api = apiRepository.findById(apiId);
-		return isApiStateValidForEditAuth(api);
+		final Optional<Api> api = apiRepository.findById(apiId);
+		if (api.isPresent()) {
+			return isApiStateValidForEditAuth(api.get());
+		} else {
+			return false;
+		}
 	}
 
 	@Override
@@ -679,24 +721,26 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public void updateApiPostProcess(String apiId, String postProcessFx) {
-		final Api api = apiRepository.findById(apiId);
-		if (api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
-			// Only one operation should exist for this type of apis
-			ApiOperation operation = apiOperationRepository.findAllByApi(api).stream().findFirst().orElse(null);
-			if (operation != null) {
-				operation.setPostProcess(postProcessFx);
-			} else {
-				operation = new ApiOperation();
-				operation.setIdentification(api.getIdentification());
-				operation.setApi(api);
-				operation.setPostProcess(postProcessFx);
-				operation.setOperation(Type.GET);
-				operation.setDescription("Post process operation");
+		final Optional<Api> api = apiRepository.findById(apiId);
+		api.ifPresent(a -> {
+			if (a.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
+				// Only one operation should exist for this type of apis
+				ApiOperation operation = apiOperationRepository.findAllByApi(a).stream().findFirst().orElse(null);
+				if (operation != null) {
+					operation.setPostProcess(postProcessFx);
+				} else {
+					operation = new ApiOperation();
+					operation.setIdentification(a.getIdentification());
+					operation.setApi(a);
+					operation.setPostProcess(postProcessFx);
+					operation.setOperation(Type.GET);
+					operation.setDescription("Post process operation");
+
+				}
+				apiOperationRepository.save(operation);
 
 			}
-			apiOperationRepository.save(operation);
-
-		}
+		});
 
 	}
 
@@ -705,8 +749,9 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 		if (api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
 			final ApiOperation operation = apiOperationRepository.findAllByApi(api).stream().findFirst().orElse(null);
-			if (operation != null)
+			if (operation != null) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -715,8 +760,9 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	public String getPostProccess(Api api) {
 		if (api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
 			final ApiOperation operation = apiOperationRepository.findAllByApi(api).stream().findFirst().orElse(null);
-			if (operation != null)
+			if (operation != null) {
 				return operation.getPostProcess();
+			}
 		}
 		return "";
 	}
@@ -734,7 +780,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public Api getById(String id) {
-		return apiRepository.findById(id);
+		return apiRepository.findById(id).orElse(null);
 	}
 
 	private Api getApiByIdentificationAndVersion(String apiId, String version) {
@@ -746,7 +792,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			}
 			versionInt = Integer.valueOf(version);
 			api = apiRepository.findByIdentificationAndNumversion(apiId, versionInt);
-		} catch (NumberFormatException e) {
+		} catch (final NumberFormatException e) {
 			log.info("Not possible to convert version str {} to int", version);
 		}
 		return api;
@@ -795,7 +841,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public UserApi getUserApiAccessById(String id) {
-		return userApiRepository.findById(id);
+		return userApiRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -842,11 +888,11 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			createdApi = apiRepository.save(api);
 
 			if (!authentications.isEmpty()) {
-				userApiRepository.save(authentications);
+				userApiRepository.saveAll(authentications);
 			}
 
 			if (!operations.isEmpty()) {
-				for (ApiOperation operation : operations) {
+				for (final ApiOperation operation : operations) {
 					saveApiOperation(operation);
 				}
 			}
@@ -855,7 +901,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 			return createdApi;
 
-		} catch (RuntimeException e) {
+		} catch (final RuntimeException e) {
 			metricsManagerLogControlPanelApiCreation(api, KO);
 			log.error("Error creating API", e);
 			throw e;
@@ -866,7 +912,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	public Api importApiRest(Api api, List<ApiOperation> operations, List<UserApi> authentications, boolean overwrite,
 			String userId) {
 		Api importedApi = null;
-		com.minsait.onesait.platform.config.model.Api existingApi = getApiByIdentificationVersionOrId(
+		final com.minsait.onesait.platform.config.model.Api existingApi = getApiByIdentificationVersionOrId(
 				api.getIdentification(), String.valueOf(api.getNumversion()));
 		final User user = userService.getUser(userId);
 
@@ -899,12 +945,12 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	public Api getLastVersionOfApiByApiAndUser(Api api, User user) {
 		Api lastApi = null;
-		List<Api> existingApisWithIdentificationAndUser = getApisOfOwnerAndIdentification(user,
+		final List<Api> existingApisWithIdentificationAndUser = getApisOfOwnerAndIdentification(user,
 				api.getIdentification());
 		if (!existingApisWithIdentificationAndUser.isEmpty()) {
 
 			lastApi = existingApisWithIdentificationAndUser.get(0);
-			for (Api existingApi : existingApisWithIdentificationAndUser) {
+			for (final Api existingApi : existingApisWithIdentificationAndUser) {
 				if (existingApi.getNumversion() > lastApi.getNumversion()) {
 					lastApi = existingApi;
 				}
@@ -931,13 +977,13 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 						ERROR_MISSING_OPERATIONS);
 			}
 
-			Api lastApi = getLastVersionOfApiByApiAndUser(api, user);
+			final Api lastApi = getLastVersionOfApiByApiAndUser(api, user);
 
 			if (lastApi == null) {
 				throw new ApiManagerServiceException(ApiManagerServiceException.Error.NOT_FOUND, ERROR_API_NOT_FOUND);
 			}
 
-			if (isApiStateValidForEdit(lastApi)) {
+			if (!isApiStateValidForEdit(lastApi)) {
 				throw new ApiManagerServiceException(ApiManagerServiceException.Error.INVALID_API_STATE,
 						ERROR_API_INVALID_STATE);
 			}
@@ -953,11 +999,11 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			updatedApi = apiRepository.save(api);
 
 			if (!authentications.isEmpty()) {
-				userApiRepository.save(authentications);
+				userApiRepository.saveAll(authentications);
 			}
 
 			if (!operations.isEmpty()) {
-				for (ApiOperation operation : operations) {
+				for (final ApiOperation operation : operations) {
 					saveApiOperation(operation);
 				}
 			}
@@ -966,7 +1012,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 			return updatedApi;
 
-		} catch (RuntimeException e) {
+		} catch (final RuntimeException e) {
 			metricsManagerLogControlPanelApiCreation(api, KO);
 			log.error("Error versionating API", e);
 			throw e;
@@ -1009,8 +1055,9 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		}
 		apimemory.setApilimit(limit);
 
-		if (validateState(apimemory.getState(), apinew.getState().toString()) || isImportingApi)
+		if (validateState(apimemory.getState(), apinew.getState().toString()) || isImportingApi) {
 			apimemory.setState(apinew.getState());
+		}
 
 		if (apimemory.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
 			apimemory.setSwaggerJson(apinew.getSwaggerJson());
@@ -1038,7 +1085,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				}
 				apiOperationRepository.delete(apiOperation);
 			}
-			for (ApiOperation operation : operations) {
+			for (final ApiOperation operation : operations) {
 				operation.setApi(api);
 				saveApiOperation(operation);
 			}
@@ -1049,16 +1096,16 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		apiOperationRepository.save(operation);
 
 		if (!operation.getApiqueryparameters().isEmpty()) {
-			apiQueryParameterRepository.save(operation.getApiqueryparameters());
+			apiQueryParameterRepository.saveAll(operation.getApiqueryparameters());
 		}
 	}
 
 	private void updateAuthorizationsRest(Api apimemory, List<UserApi> authentications) {
-		List<UserApi> userapis = userApiRepository.findByApiId(apimemory.getId());
-		for (UserApi userapi : userapis) {
+		final List<UserApi> userapis = userApiRepository.findByApiId(apimemory.getId());
+		for (final UserApi userapi : userapis) {
 			removeAuthorizationById(userapi.getId());
 		}
-		for (UserApi userapinew : authentications) {
+		for (final UserApi userapinew : authentications) {
 			userApiRepository.save(userapinew);
 		}
 	}
@@ -1067,29 +1114,34 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	public boolean validateState(ApiStates oldState, String newState) {
 		switch (newState.toUpperCase()) {
 		case "CREATED": {
-			if (!oldState.equals(ApiStates.CREATED))
+			if (!oldState.equals(ApiStates.CREATED)) {
 				return false;
+			}
 			break;
 		}
 		case "DEVELOPMENT": {
-			if (!oldState.equals(ApiStates.CREATED) && !oldState.equals(ApiStates.DEVELOPMENT))
+			if (!oldState.equals(ApiStates.CREATED) && !oldState.equals(ApiStates.DEVELOPMENT)) {
 				return false;
+			}
 			break;
 		}
 		case "PUBLISHED": {
 			if (!oldState.equals(ApiStates.CREATED) && !oldState.equals(ApiStates.DEVELOPMENT)
-					&& !oldState.equals(ApiStates.PUBLISHED))
+					&& !oldState.equals(ApiStates.PUBLISHED)) {
 				return false;
+			}
 			break;
 		}
 		case "DEPRECATED": {
-			if (!oldState.equals(ApiStates.PUBLISHED) && !oldState.equals(ApiStates.DEPRECATED))
+			if (!oldState.equals(ApiStates.PUBLISHED) && !oldState.equals(ApiStates.DEPRECATED)) {
 				return false;
+			}
 			break;
 		}
 		case "DELETED": {
-			if (!oldState.equals(ApiStates.DEPRECATED) && !oldState.equals(ApiStates.DELETED))
+			if (!oldState.equals(ApiStates.DEPRECATED) && !oldState.equals(ApiStates.DELETED)) {
 				return false;
+			}
 			break;
 		}
 		default: {

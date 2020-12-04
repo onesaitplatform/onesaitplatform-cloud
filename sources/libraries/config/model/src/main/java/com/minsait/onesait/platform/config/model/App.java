@@ -74,7 +74,7 @@ public class App extends AppParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<App> childApps;
+	private Set<AppChild> childApps;
 
 	public App() {
 	};

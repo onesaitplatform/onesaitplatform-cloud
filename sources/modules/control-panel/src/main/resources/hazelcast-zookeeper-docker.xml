@@ -76,10 +76,11 @@
     	<max-size policy="PER_NODE">300</max-size>
   	</map>
   	
-  	 <map name="cachePendingResetPassword">
-    	<time-to-live-seconds>600</time-to-live-seconds> <!-- 10 minutes -->
+  	<map name="IoTSessionRepository">
     	<eviction-policy>LRU</eviction-policy>
-    	<max-size policy="PER_NODE">300</max-size>
+    	<max-size policy="PER_NODE">20000</max-size>
+    	<time-to-live-seconds>0</time-to-live-seconds>
+    	<max-idle-seconds>86400</max-idle-seconds>
   	</map>
 
 </hazelcast>

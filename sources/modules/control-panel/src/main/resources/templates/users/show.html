@@ -63,8 +63,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/users/list}" th:text="#{user.breadcrumb.prev}">Home</a><i class="la la-angle-right"></i></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
 						<li><span th:text="#{user.breadcrumb.show}">Show User</span></li>
 					</ul>						
 				</div>
@@ -133,7 +132,7 @@
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label class="control-label"><span th:text="#{user.dateDeleted} + ':'">Deleted At</span></label>
-															<p class="form-control-static-block " ><span th:if="*{dateDeleted}" th:text="*{dateDeleted}"> User deleting date </span></p>
+															<p class="form-control-static-block " th:text="${#dates.format(user.dateDeleted, 'dd/MM/yyyy')}"><span th:if="*{dateDeleted}" th:text="*{dateDeleted}"> User deleting date </span></p>
 														</div>
 													</div>
 													<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
@@ -143,6 +142,14 @@
 																<span th:if="*{active}"><i class="la la-check-circle-o text-success font-hg"></i></span>
 																<span th:if="!*{active}"><i class="la la-times-circle-o text-danger font-hg"></i></span>
 															</p>
+														</div>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{multitenancy.tenant} + ':'">Tenant</label>
+															<p class="form-control-static-block " th:text="${tenant}"> </p>
 														</div>
 													</div>
 												</div>
@@ -194,8 +201,8 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- TEMPLATE CONTROLLER  -->	
 		

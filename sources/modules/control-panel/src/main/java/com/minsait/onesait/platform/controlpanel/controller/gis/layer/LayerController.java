@@ -55,6 +55,7 @@ import com.minsait.onesait.platform.config.services.exceptions.LayerServiceExcep
 import com.minsait.onesait.platform.config.services.gis.layer.LayerService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
@@ -95,6 +96,9 @@ public class LayerController {
 
 	@Autowired
 	private RouterService routerService;
+
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
@@ -170,6 +174,9 @@ public class LayerController {
 			log.error(NOTPERMISSION);
 			return "error/403";
 		}
+
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
 
 		if (layer.getOntology() != null) {
 			List<OntologyForList> ontologies = ontologyService.getOntologiesForListWithDescriptionAndIdentification(
@@ -318,7 +325,7 @@ public class LayerController {
 			if (ontology != null) {
 				layerService.create(
 						this.buildLayerForOntologyLayer(layerDto, httpServletRequest, ontology, user, layer, true));
-
+				resourcesInUseService.removeByUser(id, utils.getUserId());
 				response.put(REDIRECT, REDIRECT_CONTROLPANEL_LAYERS_LIST);
 				response.put(STATUS, "ok");
 				return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -331,7 +338,7 @@ public class LayerController {
 			}
 		} else {
 			layerService.create(this.buildLayerForExternalLayer(layerDto, httpServletRequest, user, layer, true));
-
+			resourcesInUseService.removeByUser(id, utils.getUserId());
 			response.put(REDIRECT, REDIRECT_CONTROLPANEL_LAYERS_LIST);
 			response.put(STATUS, "ok");
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -646,6 +653,12 @@ public class LayerController {
 		}
 
 		return layer;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

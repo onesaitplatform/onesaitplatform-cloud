@@ -18,7 +18,7 @@
 <div th:fragment="menuFragment" id="menuFragment">
 
 	<!-- MENU CONTROLLER JS -->
-	<script th:src="@{/static/js/pages/menu.js}"/>
+	<script th:src="@{/static/js/pages/menu.js}"></script>
 	
 	<!-- BEGIN SIDEBAR -->
 	<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
@@ -79,7 +79,7 @@
 	<script type="text/javascript" th:inline="javascript"> 
 		
 		// GET REAL-DATA FROM SERVER.
-		var menuJson = JSON.parse([[${session.menu}]]);
+		var menuJson = JSON.parse([[${#session.getAttribute('menu')}]]);
 		var currentLanguage = [[${lang}]];	
 		
 		

@@ -106,14 +106,14 @@
 					}
 				});
 			}
-
+var genName = [[#{gen.name}]];
 			var showImportNotebookDialog = function(){
 				$.confirm({
 					icon: 'fas fa-chart-pie',
 					title: [[#{notebook.importnotebook}]],
 					theme: 'light',
 					columnClass: 'medium',
-					content: "<input class='element text form-control' type='text' id='newImportNotebook' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json,.ipynb' id='jsonInputData' onchange='fileImportChange(this.files[0])' />",
+					content: "<input class='element text form-control' type='text' id='newImportNotebook' placeholder='"+genName+"'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json,.ipynb' id='jsonInputData' onchange='fileImportChange(this.files[0])' />",
 					draggable: true,
 					dragWindowGap: 100,
 					backgroundDismiss: true,
@@ -534,7 +534,31 @@
 															</td>
 														</tr>
 													</tbody>
-												</table>																							
+												</table>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right" >
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{gen.name}" data-column="0">Identification</label>
+														<label class="toggle-vis"
+															th:text="#{gen.owner}" data-column="1">Owner</label>
+														<label class="toggle-vis"
+															th:text="#{gen.public}" data-column="2">Public</label>														
+														<label 
+															class="toggle-vis"
+															th:text="#{gen.created}" data-column="3">Created At</label>														 
+														<label  
+															class="toggle-vis"
+															th:text="#{gen.options}" data-column="4"> Options</label>															
+														 
+													</div>
+												</div>					
+																																			
 											</div>
 										</div>											
 									</div>
@@ -552,16 +576,16 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -582,12 +606,18 @@
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
-		
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			var column = $('#notebooks').DataTable().column( $(this).attr('data-column') ); 
+			column.visible( ! column.visible() );
+			$(this).toggleClass('text-muted line-through');			
+		});	
 	});
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
-		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');

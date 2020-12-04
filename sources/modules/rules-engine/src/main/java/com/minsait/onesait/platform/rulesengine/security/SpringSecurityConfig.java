@@ -28,8 +28,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/advice**").permitAll().and().authorizeRequests().anyRequest()
-				.authenticated().and().csrf().disable();
+		http.authorizeRequests().antMatchers("/advice**", "/health", "/info", "/actuator/**").permitAll().and()
+				.authorizeRequests().anyRequest().authenticated().and().csrf().disable();
 	}
 
 	@Bean

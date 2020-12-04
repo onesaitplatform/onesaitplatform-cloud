@@ -50,19 +50,23 @@ public class OKPISchedulerListenerConfig implements ApplicationListener<ContextR
 	@Autowired
 	private SchedulerListener expirationUsersSchedulerListener;
 
+	@Autowired
+	private SchedulerListener expirationResetUsersSchedulerListener;
+
 	@Override
 
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
 		try {
 
-			batchSchedulerFactory.getScheduler(SchedulerType.OKPI).getListenerManager().
+			batchSchedulerFactory.getScheduler(SchedulerType.OKPI).getListenerManager()
+					.addSchedulerListener(okpiSchedulerListener);
 
-					addSchedulerListener(okpiSchedulerListener);
+			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONUSERS).getListenerManager()
+					.addSchedulerListener(expirationUsersSchedulerListener);
 
-			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONUSERS).getListenerManager().
-
-					addSchedulerListener(expirationUsersSchedulerListener);
+			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONRESETUSER).getListenerManager()
+					.addSchedulerListener(expirationResetUsersSchedulerListener);
 
 		} catch (SchedulerException | NotFoundException e) {
 

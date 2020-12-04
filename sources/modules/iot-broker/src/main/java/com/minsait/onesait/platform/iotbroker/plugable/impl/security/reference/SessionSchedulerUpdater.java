@@ -18,8 +18,6 @@ import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface SessionSchedulerUpdater {
 
-	public void saveSession(String sessionkey, IoTSession session);
-
-	public void notifyDeleteSession(String sessionkey);
+	public void saveSession(IoTSession session);
 
 }

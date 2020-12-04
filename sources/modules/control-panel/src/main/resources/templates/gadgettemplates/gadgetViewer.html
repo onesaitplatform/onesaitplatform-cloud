@@ -25,7 +25,9 @@
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
 	
 	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
-	
+
+	<!--headerlibs-->
+
   	<script th:inline="javascript">
      // <![CDATA[ 
   
@@ -111,5 +113,11 @@
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
 	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
 	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>
+
+	<script type="text/javascript">
+		window.addEventListener('load', function () {
+			window.parent.GadgetsTemplateCreateController.updateComponent();
+		});
+	</script>
 			
 </html> 

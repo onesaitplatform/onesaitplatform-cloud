@@ -77,6 +77,20 @@ function setFieldSimulator(field) {
 }
 function navigateUrl(url){  window.location.href = url;	}
 
+function cancelGo (id,url){
+	console.log('freeResource() -> id: '+ id);
+	$.get("/controlpanel/devicesimulation/freeResource/" + id).done(
+			function(data){
+				console.log('freeResource() -> ok');
+				navigateUrl(url); 
+			}
+		).fail(
+			function(e){
+				console.error("Error freeResource", e);
+				navigateUrl(url); 
+			}
+		)		
+}
 	
 function submitForm(formId) {
 	if($('#interval').val() > 0 && $('#identification-form').val()!=""  && $('#identification-form').val().length > 9){

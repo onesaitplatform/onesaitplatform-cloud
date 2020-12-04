@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.security;
 
-import java.io.UnsupportedEncodingException;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,14 +51,14 @@ public class AppWebUtils {
 	}
 
 	public String getUserId() {
-		Authentication auth = getAuthentication();
+		final Authentication auth = getAuthentication();
 		if (auth == null)
 			return null;
 		return auth.getName();
 	}
 
 	public String getRole() {
-		Authentication auth = getAuthentication();
+		final Authentication auth = getAuthentication();
 		if (auth == null)
 			return null;
 		return auth.getAuthorities().toArray()[0].toString();
@@ -71,7 +69,7 @@ public class AppWebUtils {
 	}
 
 	public void addRedirectMessage(String messageKey, RedirectAttributes redirect) {
-		String message = getMessage(messageKey, "Error processing request");
+		final String message = getMessage(messageKey, "Error processing request");
 		redirect.addFlashAttribute("message", message);
 
 	}
@@ -84,7 +82,7 @@ public class AppWebUtils {
 	public String getMessage(String key, String valueDefault) {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
@@ -95,12 +93,12 @@ public class AppWebUtils {
 	}
 
 	public String validateAndReturnJson(String json) {
-		ObjectMapper objectMapper = new ObjectMapper();
+		final ObjectMapper objectMapper = new ObjectMapper();
 		String formattedJson = null;
 		try {
-			JsonNode tree = objectMapper.readValue(json, JsonNode.class);
+			final JsonNode tree = objectMapper.readValue(json, JsonNode.class);
 			formattedJson = tree.toString();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error reading JSON by:" + e.getMessage(), e);
 		}
 		return formattedJson;
@@ -111,15 +109,15 @@ public class AppWebUtils {
 	}
 
 	public String beautifyJson(String json) throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+		final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
 	}
 
 	public Object getAsObject(String json) throws JsonProcessingException {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
+			final ObjectMapper mapper = new ObjectMapper();
 			return mapper.readValue(json, Object.class);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Impossible to convert to Object, returning the same");
 			return json;
 		}
@@ -132,11 +130,8 @@ public class AppWebUtils {
 		if (enc == null) {
 			enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
 		}
-		try {
-			pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
-		} catch (UnsupportedEncodingException uee) {
-			log.warn("Error encoding path segment " + uee.getMessage());
-		}
+		pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
+
 		return pathSegmentEncode;
 	}
 

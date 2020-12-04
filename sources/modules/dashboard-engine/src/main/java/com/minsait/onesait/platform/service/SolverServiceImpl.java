@@ -14,10 +14,14 @@
  */
 package com.minsait.onesait.platform.service;
 
+
+import java.util.Optional;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -307,7 +311,10 @@ public class SolverServiceImpl implements SolverService {
 		final AccessType access = dashboardCache.getAccess();
 
 		if (access == AccessType.NOCHECKED) {
-			final Dashboard d = dashboardRepository.findById(dashboardId);
+			final Optional<Dashboard> opt = dashboardRepository.findById(dashboardId);
+			if (!opt.isPresent())
+				return false;
+			final Dashboard d = opt.get();
 			if (d.isPublic() || d.getUser().getUserId().equals(utils.getUserId())) {
 				dashboardCache.setAccess(AccessType.ALLOW);
 				return true;

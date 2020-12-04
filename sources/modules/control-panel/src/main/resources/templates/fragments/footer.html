@@ -18,7 +18,7 @@
 <!-- BEGIN FOOTER -->
 <div th:fragment="footerFragment" id="footerFragment">
 <!-- HEADER CONTROLLER JS -->
-	<script th:src="@{/static/js/pages/footer.js}"/>
+	<script th:src="@{/static/js/pages/footer.js}"></script>
 	<div class="container-fluid"
 		style="border-top: 1px solid #CCC; line-height: 25px; padding: 8px;">
 		<div class="row">
@@ -29,7 +29,7 @@
 					<span class="m-link m-link--metal" th:text="#{footer.app}">onesait Platform
 						 © Minsait 2020</span> <span class="sep"></span> <span
 						class="m-link m-link--metal" th:text="'('+#{build.version}+')'">5.2.0</span>
-					<span class="sep"></span> <a target="https://github.com/onesaitplatform" class="m-link m-link--metal"><i
+					<span class="sep"></span> <a href="https://github.com/onesaitplatform" target="_blank" class="m-link m-link--metal"><i
 						class="fa fa-github"></i> <span th:text="#{footer.github}">Project
 							Github</span></a> <span class="sep"></span> <a
 						href="https://choosealicense.com/licenses/apache-2.0/" class="m-link m-link--metal">Legal Conditions</a>
@@ -38,11 +38,11 @@
 			</div>
 			<div class="col-md-3 col-sm-12 col-xs-12">
 				<ul class="social-icons social-icons-circle pull-right">
-					<li><a href="javascript:;" data-original-title="youtube"
+					<li><a href="https://www.youtube.com/channel/UC0pdRMPBw0RIsWCymt_DVNg" target="_blank" data-original-title="youtube"
 						class="youtube"> </a></li>
-					<li><a href="javascript:;" data-original-title="wordpress"
+					<li><a href="https://blog.onesaitplatform.com/" target="_blank" data-original-title="wordpress"
 						class="wordpress"> </a></li>
-					<li><a href="javascript:;" data-original-title="twitter"
+					<li><a href="https://twitter.com/onesaitplatform" target="_blank" data-original-title="twitter"
 						class="twitter"> </a></li>
 				</ul>
 			</div>
@@ -77,9 +77,9 @@
 		</div>
 	</div>
 	<!-- END MODAL TERMS AND CONDITIONS -->
-	<div
-		th:if="!${#arrays.contains(#ctx.httpServletRequest.cookies, 'RELEASE')}"
-		class="modal fade" id="new-release" role="dialog">
+	
+		<div th:if="!${#arrays.contains(#request.getCookies(), 'RELEASE')}"
+		    class="modal fade" id="new-release" role="dialog">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -242,8 +242,7 @@
 
 	</script>
 	<!-- PLUGINS -->
-	<script
-		th:src="@{/static/vendor/jquery-cookie/cookie.js}" />
+	<script th:src="@{/static/vendor/jquery-cookie/cookie.js}" ></script>
 
 
 </div>

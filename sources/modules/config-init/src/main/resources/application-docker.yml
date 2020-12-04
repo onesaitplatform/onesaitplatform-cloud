@@ -1,6 +1,7 @@
 master:
    datasource:
-      url: ${CONFIGDBMASTERURL}
+     hikari:
+      jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
      
@@ -34,10 +35,12 @@ onesaitplatform:
    server.controlpanelservice: ${SERVER_NAME}
 spring:
    datasource:
-      url: ${CONFIGDBURL}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
+      hikari:
+         jdbc-url: ${CONFIGDBURL}
+         username: ${CONFIGDBUSER}
+         password: ${CONFIGDBPASS}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+

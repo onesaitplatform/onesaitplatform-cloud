@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import com.minsait.onesait.platform.config.dto.NotebookForList;
-import com.minsait.onesait.platform.controlpanel.rest.management.notebook.model.NotebookDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +43,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.minsait.onesait.platform.config.dto.NotebookForList;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException;
@@ -56,6 +54,7 @@ import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.NotebookOpsRestServices;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
+import com.minsait.onesait.platform.controlpanel.rest.management.notebook.model.NotebookDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.model.NotebookUserAccessSimplified;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -228,9 +227,10 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final boolean authorized = notebookService.hasUserPermissionCreateNotebook(userId);
 
 		if (!nameCreate.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-		    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+					HttpStatus.BAD_REQUEST);
 		}
-		
+
 		if (authorized) {
 			try {
 				final String id = notebookService.createEmptyNotebook(nameCreate, userId).getIdzep();
@@ -319,8 +319,9 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		List<NotebookForList> nfl = notebookService.getNotebooksAndByProjects(userId);
 
 		if (!nfl.isEmpty()) {
-			return new ResponseEntity<>( nfl.stream().map(temp -> {
-				final NotebookDTO obj = new NotebookDTO(temp.getId(), temp.getIdentification(), temp.getIdzep(), temp.getUser().getUserId(), temp.isPublic(), temp.getAccessType());
+			return new ResponseEntity<>(nfl.stream().map(temp -> {
+				final NotebookDTO obj = new NotebookDTO(temp.getId(), temp.getIdentification(), temp.getIdzep(),
+						temp.getUser().getUserId(), temp.isPublic(), temp.getAccessType());
 				return obj;
 			}).collect(Collectors.toList()), HttpStatus.OK);
 		} else {
@@ -424,6 +425,44 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		if (authorized) {
 			try {
 				final Notebook note = notebookService.importNotebook(notebookName, data, userId, overwrite,
+						importAuthorizations);
+				return new ResponseEntity<>(importNotebookResponse(note).toString(), HttpStatus.OK);
+			} catch (NotebookServiceException e) {
+				if (e.getError().name().equals(Error.DUPLICATE_NOTEBOOK_NAME.toString())) {
+					return new ResponseEntity<>(
+							String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_DUPLICATE_NOTEBOOK_IDENT),
+							HttpStatus.CONFLICT);
+				} else if (e.getError().name().equals(Error.PERMISSION_DENIED.toString())) {
+					return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(),
+							String.format(MSG_USER_NOT_ALLOWED, userId)), HttpStatus.UNAUTHORIZED);
+				}
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_BAD_REQUEST),
+						HttpStatus.BAD_REQUEST);
+			} catch (final Exception e) {
+				return new ResponseEntity<>(
+						String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage(), MSG_INTERNAL_SERVER_ERROR),
+						HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+
+	}
+
+	@ApiOperation(value = "Import notebook")
+	@PostMapping(value = "/importData/{notebookName}")
+	public ResponseEntity<?> importNotebookData(
+			@ApiParam(value = "Notebook Zeppelin Name", required = true) @PathVariable("notebookName") String notebookName,
+			@ApiParam(value = "Overwrite notebook if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@ApiParam(value = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
+			@ApiParam(value = "Input parameters") @RequestBody(required = true) String data) {
+
+		final String userId = utils.getUserId();
+		final boolean authorized = notebookService.hasUserPermissionCreateNotebook(userId);
+
+		if (authorized) {
+			try {
+				final Notebook note = notebookService.importNotebookData(notebookName, data, userId, overwrite,
 						importAuthorizations);
 				return new ResponseEntity<>(importNotebookResponse(note).toString(), HttpStatus.OK);
 			} catch (NotebookServiceException e) {
@@ -663,8 +702,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
 
-			if (!(userService.isUserAdministrator(user)
-					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
+			if (!(userService.isUserAdministrator(user) || notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
 
@@ -712,8 +750,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_FOUND, userId), HttpStatus.BAD_REQUEST);
 			}
 
-			if (!(userService.isUserAdministrator(user)
-					|| notebookService.isUserOwnerOfNotebook(user, notebook))) {
+			if (!(userService.isUserAdministrator(user) || notebookService.isUserOwnerOfNotebook(user, notebook))) {
 				return new ResponseEntity<>(String.format(MSG_USER_NOT_ALLOWED, userId), HttpStatus.UNAUTHORIZED);
 			}
 

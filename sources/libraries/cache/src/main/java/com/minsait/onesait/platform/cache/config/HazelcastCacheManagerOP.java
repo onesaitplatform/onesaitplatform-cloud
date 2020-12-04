@@ -14,6 +14,9 @@
  */
 package com.minsait.onesait.platform.cache.config;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.cache.Cache;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -23,6 +26,13 @@ import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 public class HazelcastCacheManagerOP extends HazelcastCacheManager {
 
 	private static final String SESSIONS_REPOSITORY = "IoTSessionRepository";
+	private static final String VERTICAL_REPOSITORY_SCHEMA = "VerticalRepositorySchema";
+	
+	private static final Set<String> globalCaches = new HashSet<>();
+	static {
+		globalCaches.add(SESSIONS_REPOSITORY);
+		globalCaches.add(VERTICAL_REPOSITORY_SCHEMA);
+	}
 
 	public HazelcastCacheManagerOP(HazelcastInstance hazelcastInstance) {
 		super(hazelcastInstance);
@@ -40,6 +50,6 @@ public class HazelcastCacheManagerOP extends HazelcastCacheManager {
 	}
 
 	private boolean isGlobalCache(String name) {
-		return SESSIONS_REPOSITORY.equals(name);
+		return globalCaches.contains(name);
 	}
 }

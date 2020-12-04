@@ -107,7 +107,6 @@ public class InitMongoDB {
 	private static final String ANDROID_IOT_FRAME = "androidIoTFrame";
 	private static final String METRICS_BASE = "MetricsBase";
 	private static final String SCHEMA_STR = "examples/Restaurants-schema.json";
-
 	private final static String METRICS_INITIAL_TIME = "2019-01-01T00:00:00.000Z";
 
 	@Value("${onesaitplatform.database.mongodb.username:platformadmin}")
@@ -154,50 +153,72 @@ public class InitMongoDB {
 
 	private void deleteCollections() {
 		try {
-			if (connect.collectionExists(mongodb_name, AUDIT_GENERAL))
+			if (connect.collectionExists(mongodb_name, AUDIT_GENERAL)) {
 				connect.dropCollection(mongodb_name, AUDIT_GENERAL);
-			if (connect.collectionExists(mongodb_name, RESTAURANTS_STR))
+			}
+			if (connect.collectionExists(mongodb_name, RESTAURANTS_STR)) {
 				connect.dropCollection(mongodb_name, RESTAURANTS_STR);
-			if (connect.collectionExists(mongodb_name, SUPERMARKETS_STR))
+			}
+			if (connect.collectionExists(mongodb_name, SUPERMARKETS_STR)) {
 				connect.dropCollection(mongodb_name, SUPERMARKETS_STR);
-			if (connect.collectionExists(mongodb_name, HELSINKI_POP))
+			}
+			if (connect.collectionExists(mongodb_name, HELSINKI_POP)) {
 				connect.dropCollection(mongodb_name, HELSINKI_POP);
-			if (connect.collectionExists(mongodb_name, TWIN_LOGS))
+			}
+			if (connect.collectionExists(mongodb_name, TWIN_LOGS)) {
 				connect.dropCollection(mongodb_name, TWIN_LOGS);
-			if (connect.collectionExists(mongodb_name, TWIN_EVENTS))
+			}
+			if (connect.collectionExists(mongodb_name, TWIN_EVENTS)) {
 				connect.dropCollection(mongodb_name, TWIN_EVENTS);
-			if (connect.collectionExists(mongodb_name, TWIN_ACTIONS_TURBINE))
+			}
+			if (connect.collectionExists(mongodb_name, TWIN_ACTIONS_TURBINE)) {
 				connect.dropCollection(mongodb_name, TWIN_ACTIONS_TURBINE);
-			if (connect.collectionExists(mongodb_name, TWIN_PROPERTIES_TURBINE))
+			}
+			if (connect.collectionExists(mongodb_name, TWIN_PROPERTIES_TURBINE)) {
 				connect.dropCollection(mongodb_name, TWIN_PROPERTIES_TURBINE);
-			if (connect.collectionExists(mongodb_name, TICKET_STR))
+			}
+			if (connect.collectionExists(mongodb_name, TICKET_STR)) {
 				connect.dropCollection(mongodb_name, TICKET_STR);
-			if (connect.collectionExists(mongodb_name, ROUTES_STR))
+			}
+			if (connect.collectionExists(mongodb_name, ROUTES_STR)) {
 				connect.dropCollection(mongodb_name, ROUTES_STR);
-			if (connect.collectionExists(mongodb_name, ROUTESEXTEN_STR))
+			}
+			if (connect.collectionExists(mongodb_name, ROUTESEXTEN_STR)) {
 				connect.dropCollection(mongodb_name, ROUTESEXTEN_STR);
-			if (connect.collectionExists(mongodb_name, AIRPORT_DATA))
+			}
+			if (connect.collectionExists(mongodb_name, AIRPORT_DATA)) {
 				connect.dropCollection(mongodb_name, AIRPORT_DATA);
-			if (connect.collectionExists(mongodb_name, ISO3166_1_STR))
+			}
+			if (connect.collectionExists(mongodb_name, ISO3166_1_STR)) {
 				connect.dropCollection(mongodb_name, ISO3166_1_STR);
-			if (connect.collectionExists(mongodb_name, ISO3166_2_STR))
+			}
+			if (connect.collectionExists(mongodb_name, ISO3166_2_STR)) {
 				connect.dropCollection(mongodb_name, ISO3166_2_STR);
-			if (connect.collectionExists(mongodb_name, QA_OVERVIEW_STR))
+			}
+			if (connect.collectionExists(mongodb_name, QA_OVERVIEW_STR)) {
 				connect.dropCollection(mongodb_name, QA_OVERVIEW_STR);
-			if (connect.collectionExists(mongodb_name, PRODUCER_ERRORCAT_STR))
+			}
+			if (connect.collectionExists(mongodb_name, PRODUCER_ERRORCAT_STR)) {
 				connect.dropCollection(mongodb_name, PRODUCER_ERRORCAT_STR);
-			if (connect.collectionExists(mongodb_name, ERRORS_ON_DATE))
+			}
+			if (connect.collectionExists(mongodb_name, ERRORS_ON_DATE)) {
 				connect.dropCollection(mongodb_name, ERRORS_ON_DATE);
-			if (connect.collectionExists(mongodb_name, QA_DETAIL_STR))
+			}
+			if (connect.collectionExists(mongodb_name, QA_DETAIL_STR)) {
 				connect.dropCollection(mongodb_name, QA_DETAIL_STR);
-			if (connect.collectionExists(mongodb_name, ERRORS_TYPE_DATE))
+			}
+			if (connect.collectionExists(mongodb_name, ERRORS_TYPE_DATE)) {
 				connect.dropCollection(mongodb_name, ERRORS_TYPE_DATE);
-			if (connect.collectionExists(mongodb_name, QA_DETAIL_EXTENDED_STR))
+			}
+			if (connect.collectionExists(mongodb_name, QA_DETAIL_EXTENDED_STR)) {
 				connect.dropCollection(mongodb_name, QA_DETAIL_EXTENDED_STR);
-			if (connect.collectionExists(mongodb_name, SITES_STR))
+			}
+			if (connect.collectionExists(mongodb_name, SITES_STR)) {
 				connect.dropCollection(mongodb_name, SITES_STR);
-			if (connect.collectionExists(mongodb_name, METRICS_BASE))
+			}
+			if (connect.collectionExists(mongodb_name, METRICS_BASE)) {
 				connect.dropCollection(mongodb_name, METRICS_BASE);
+			}
 			log.info("Deleted collections...");
 
 		} catch (final Exception e) {

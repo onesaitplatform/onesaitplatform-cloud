@@ -120,6 +120,49 @@
 					"url": "/controlpanel/marketasset/list"
 				}
 			]
+		},
+		
+		{
+			"title": {
+				"EN": "OPEN DATA",
+				"ES": "INFORMACIÓN ABIERTA"
+			},
+			"icon": "flaticon-folder-1",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Open Data Portal",
+						"ES": "Portal de Datos Abiertos"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/access"
+				},
+				{
+					"title": {
+						"EN": "My Organizations",
+						"ES": "Mis Organizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/organizations/list"
+				},
+				{
+					"title": {
+						"EN": "My Datasets",
+						"ES": "Mis Conjuntos de Datos"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/datasets/list"
+				},
+				{
+					"title": {
+						"EN": "My Resources",
+						"ES": "Mis Recursos"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/resources/list"
+				}	
+			]
 		}
 	]
 }

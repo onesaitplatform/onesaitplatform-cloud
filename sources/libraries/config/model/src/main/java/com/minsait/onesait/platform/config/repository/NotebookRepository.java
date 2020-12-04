@@ -30,8 +30,6 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 
 	Notebook findByIdentification(String notebookId);
 
-	Notebook findById(String notebookId);
-
 	@Query("SELECT o FROM Notebook AS o WHERE o.user=:user ORDER BY o.identification ASC")
 	List<Notebook> findByUser(@Param("user") User user);
 

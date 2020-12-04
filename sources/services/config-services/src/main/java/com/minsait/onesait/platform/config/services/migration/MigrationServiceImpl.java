@@ -234,6 +234,7 @@ public class MigrationServiceImpl implements MigrationService {
 				final Object entity = it.next();
 				final Serializable id = MigrationUtils.getId(entity);
 				final Class<?> entityClazz = entity.getClass();
+
 				log.debug("Entity to process: " + entityClazz + ID_STR + id);
 				if (!processedEntities.contains(entity) && !entitiesForTheNextStep.contains(entity)) {
 					doPersistData(entity, entityClazz, id, managedTypes);
@@ -641,7 +642,7 @@ public class MigrationServiceImpl implements MigrationService {
 				// entities and finally the
 				// project itself to avoid persistence problems
 
-				final MigrationConfiguration configAux = new MigrationConfiguration();
+				MigrationConfiguration configAux = new MigrationConfiguration();
 				List<String> users = new ArrayList<>();
 				log.debug("User loading: First the user");
 				for (int i = 0; i < config.size(); i++) {
@@ -653,29 +654,31 @@ public class MigrationServiceImpl implements MigrationService {
 					}
 				}
 
-				final MigrationErrors errors = doImportData(configAux, data, override);
+				final MigrationErrors errors = doImportData(configAux, data, true);
 
-				log.debug("Project loading: Second the resources");
+				configAux = new MigrationConfiguration();
+				log.debug("Project loading: second the project");
 				for (int i = 0; i < config.size(); i++) {
 					final Instance inst = config.getInstance(i);
 					final Class<?> clazz = inst.getClazz();
-					if (!clazz.getName().startsWith(PROJECT)) {
-						configAux.add(inst);
+					if (clazz.getName().equals(PROJECT)) {
+						configAux.addProject(inst.getClazz(), inst.getId(), inst.getIdentification());
 					}
 				}
 
 				errors.addAll(doImportData(configAux, data, override).getErrors());
 
-				log.debug("Project loading: Finally the project");
+				configAux = new MigrationConfiguration();
+				log.debug("Project loading: finally the resources");
 				for (int i = 0; i < config.size(); i++) {
 					final Instance inst = config.getInstance(i);
 					final Class<?> clazz = inst.getClazz();
-					if (!clazz.getName().startsWith(PROJECT)) {
-						config.removeClazz(clazz);
+					if (!clazz.getName().equals(PROJECT) && !clazz.getName().equals(USER_EXPORT)) {
+						configAux.addProject(inst.getClazz(), inst.getId(), inst.getIdentification());
 					}
 				}
 
-				errors.addAll(doImportData(config, data, override).getErrors());
+				errors.addAll(doImportData(configAux, data, override).getErrors());
 
 				createMasterUsers(users);
 
@@ -763,6 +766,7 @@ public class MigrationServiceImpl implements MigrationService {
 			 * persist the data following that order. The correct order can be obtained from
 			 * the messages returned by the persistData. (variable erros).
 			 */
+			log.error("Error importing data", e);
 			final Predicate<MigrationError> persistedEntitiesFilter = error -> error
 					.getType() == MigrationError.ErrorType.INFO && "Entity Persisted".equals(error.getMsg());
 			final List<MigrationError> instancesToBeProcessed = errors.getErrors(persistedEntitiesFilter);

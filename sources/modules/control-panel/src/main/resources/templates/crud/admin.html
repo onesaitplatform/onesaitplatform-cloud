@@ -384,14 +384,14 @@
 
 
 <!-- CORE CONTROLLERS -->
-<script th:src="@{/static/js/app.js}"/>
-<script th:src="@{/static/js/layout.js}"/>
+<script th:src="@{/static/js/app.js}"></script>
+<script th:src="@{/static/js/layout.js}"></script>
 
 <!-- PLUGINS -->
-<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
-<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
-<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"/>
+<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
 
 <script th:inline="javascript">
 	
@@ -537,6 +537,7 @@ function removeExpression(index){
 
 				var t = $('#records').DataTable();
 				t.clear();
+				
 				$dataSetMapped = map_IdFromDataSet(dataSet);
 				for(var i =0; i<$dataSetMapped.length;i++){
 					var buttons = '<div class="grupo-iconos">'+
@@ -554,6 +555,7 @@ function removeExpression(index){
 					t.row.add( [$dataSetMapped[i].id,buttons ,recordText ]);
 
 				}
+				t.order([]);
 				t.draw();
 				$('[data-toggle="tooltip"]').tooltip();
 				$('#mytabs a[href="#tab_table"]').tab('show');
@@ -562,7 +564,7 @@ function removeExpression(index){
 		});
 	}
 	//show all titles and values
-	function createTableFromJson(data){
+	function createTableFromJson(data){		
 		delete data.contextData;
 		delete data.id;
 		delete data._id;
@@ -647,7 +649,8 @@ function removeExpression(index){
 		  success: function(dataSet) {
 				console.log("success findElementForId "+ id);
 				delete dataSet[0].contextData;
-                delete dataSet[0]._id;
+				delete dataSet[0]._id;
+
 				reloadJSONEditor(false,dataSet[0]);
 		  },
 		  error: function(data,status,er) {
@@ -994,7 +997,7 @@ function map_IdFromDataSet(dataSet){
 					if( add ){
 						addWhereExpression('condition'+indexCondition, $.trim(field), $.trim(operator), tempCondition);
 
-		                where = '<li id="condition'+indexCondition+'" class="queryValues" ><div class="input-group"> <input type="text"   style="font-size: smaller; border-right: none;" condition="'+queryCondition+'"  class="form-control bold " value="'+ queryCondition +'"/> <span class="input-group-btn"> <button class="btn btn-default" style="padding-top: 9px; padding-bottom: 9px; border-left: none;border-right: 1px;border-top: 1px;border-bottom: 1px;" onclick="deleteCondition(\'condition'+indexCondition+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px;"></i></button></span></div></li>';
+		                where = '<li id="condition'+indexCondition+'" class="queryValues" ><div class="input-group"> <input type="text" readonly="true"  style="font-size: smaller; border-right: none;" condition="'+queryCondition+'"  class="form-control bold " value="'+ queryCondition +'"/> <span class="input-group-btn"> <button class="btn btn-default" style="padding-top: 9px; padding-bottom: 9px; border-left: none;border-right: 1px;border-top: 1px;border-bottom: 1px;" onclick="deleteCondition(\'condition'+indexCondition+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px;"></i></button></span></div></li>';
 		                indexCondition++;
 						$("#where_ul").append(where);
 						createQuery();
@@ -1144,13 +1147,21 @@ function map_IdFromDataSet(dataSet){
 	function createParametersMap(){
 		var data 			= 	{};
 		data.ontology 		= 	$ontology.identification;
-		data.limit 			= 	parseInt($('#maxvalues').val());
+		data.limit 			= 	 calculateLimit(parseInt($('#maxvalues').val()),parseInt($('#offset').val()));
 		data.offset 		= 	parseInt($('#offset').val());
 		data.where 			= 	Object.keys($conditions).map(k => $conditions[k])
 		data.orderBy 		=	Object.keys($ordersBy).map(k => $ordersBy[k])
 		return data;
 	}
 
+	
+	function calculateLimit(limit,offset){		
+		if(typeof offset!== 'undefined' && offset!=null && offset>0){
+			limit = limit + offset;			
+		}
+		return limit;
+	}
+	
 	function createQuerySql(){
 		
 		// query elements initialization       
@@ -1168,7 +1179,7 @@ function map_IdFromDataSet(dataSet){
 		var offset = 	$('#offset').val();
 		hasCondition 	= false;	
 		hasOrderBy 		= false;
-		
+	
 		
 		//  WHERE
 		if( conditions.length == 1){

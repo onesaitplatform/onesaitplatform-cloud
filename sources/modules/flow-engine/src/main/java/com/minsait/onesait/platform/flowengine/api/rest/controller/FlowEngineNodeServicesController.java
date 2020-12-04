@@ -143,12 +143,6 @@ public class FlowEngineNodeServicesController {
 		return null;
 	}
 
-	@PostMapping(value = "/sendSimpleMail", produces = { "application/javascript", "application/json" })
-	public @ResponseBody String sendsimpleMail(@RequestBody MailRestDTO mailData) {
-		flowEngineNodeService.sendSimpleMail(mailData);
-		return null;
-	}
-
 	@GetMapping(value = "/user/notebooks", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String getNotebooksByUser(@RequestParam String authentication,
 			@RequestParam("callback") String callbackName) throws JsonProcessingException {

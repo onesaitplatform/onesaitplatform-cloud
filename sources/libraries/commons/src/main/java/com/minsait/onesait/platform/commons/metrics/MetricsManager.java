@@ -50,5 +50,7 @@ public interface MetricsManager {
 	void logControlPanelGisViewersCreation(String userIdentification, String result);
 
 	void logControlPanelQueries(String userIdentification, String ontology, String result);
+	
+	public boolean isMetricsEnabled();
 
 }

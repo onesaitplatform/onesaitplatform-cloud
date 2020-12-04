@@ -40,12 +40,13 @@ public interface DigitalTwinDeviceRepository extends JpaRepository<DigitalTwinDe
 
 	List<DigitalTwinDevice> findByIdentificationContaining(String identification);
 
-	DigitalTwinDevice findById(String id);
-
+	@Override
 	@Transactional
 	void deleteById(String id);
 
 	List<DigitalTwinDevice> findByUser(User user);
+	
+	List<DigitalTwinDevice> findByUserAndIdentificationLike(User user, String identification);
 
 	List<DigitalTwinDevice> findByTypeId(DigitalTwinType typeId);
 

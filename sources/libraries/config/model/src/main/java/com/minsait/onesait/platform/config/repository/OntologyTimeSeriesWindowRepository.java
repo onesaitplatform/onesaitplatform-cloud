@@ -29,12 +29,11 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
 
 public interface OntologyTimeSeriesWindowRepository extends JpaRepository<OntologyTimeSeriesWindow, String> {
 
-	OntologyTimeSeriesWindow findById(String id);
-
 	Set<OntologyTimeSeriesWindow> findByOntologyTimeSeries(OntologyTimeSeries ontology);
 
 	void deleteByOntologyTimeSeries(OntologyTimeSeries ontology);
 
+	@Override
 	void deleteById(String id);
 
 	@SuppressWarnings("unchecked")

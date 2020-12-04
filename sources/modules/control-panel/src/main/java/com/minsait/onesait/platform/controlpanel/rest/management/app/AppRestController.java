@@ -432,7 +432,8 @@ public class AppRestController {
 					.filter(u -> u.getUser().getUserId().equals(userId)).findFirst();
 
 			if (appUser.isPresent()) {
-				appService.deleteUserAccess(appUser.get().getId());
+				appDb.getAppRoles().stream().forEach(u -> u.getAppUsers().stream().
+						filter(s -> s.getUser().getUserId().equals(userId)).forEach(p -> appService.deleteUserAccess(p.getId())));
 			} else {
 				return new ResponseEntity<>("Error retrieving user \"" + userId + IN_REALM_STR + identification,
 						HttpStatus.BAD_REQUEST);

@@ -14,6 +14,11 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -22,11 +27,15 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,8 +47,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.business.services.api.APIBusinessService;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
+import com.minsait.onesait.platform.config.model.Api.ClientJS;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.model.UserToken;
@@ -67,6 +79,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+
 @Api(value = "APIs management", tags = { "APIs management service" })
 @RestController
 @RequestMapping("api/apis")
@@ -74,28 +87,20 @@ public class APIManagementController {
 
 	@Autowired
 	ClientPlatformService clientPlatformService;
-
 	@Autowired
 	ApiManagerService apiManagerService;
-
 	@Autowired
 	UserService userService;
-
 	@Autowired
 	UserTokenService userTokenService;
-
 	@Autowired
 	OntologyService ontologyService;
-
 	@Autowired
 	IntegrationResourcesService resourcesService;
-
 	@Autowired
 	AppWebUtils utils;
-
 	@Autowired
 	JWTService jwtService;
-
 	@Autowired
 	ApiDTOConverter apiDTOConverter;
 
@@ -118,16 +123,16 @@ public class APIManagementController {
 		ResponseEntity<?> response;
 		try {
 			final User loggedUser = userService.getUser(utils.getUserId());
-			List<UserApi> usersapi = apiManagerService.getAuthorizations(apiId, apiVersion, loggedUser);
-			List<UserApiSimplifiedResponseDTO> usersapiDto = new ArrayList<>();
-			for (UserApi ua : usersapi) {
+			final List<UserApi> usersapi = apiManagerService.getAuthorizations(apiId, apiVersion, loggedUser);
+			final List<UserApiSimplifiedResponseDTO> usersapiDto = new ArrayList<>();
+			for (final UserApi ua : usersapi) {
 				usersapiDto.add(new UserApiSimplifiedResponseDTO(ua));
 			}
 			response = new ResponseEntity<>(usersapiDto, HttpStatus.OK);
-		} catch (ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+		} catch (final ApiManagerServiceException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			response = new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
 		}
 
@@ -144,22 +149,22 @@ public class APIManagementController {
 		ResponseEntity<?> response;
 		try {
 			final User loggedUser = userService.getUser(utils.getUserId());
-			List<String> usersId = userApiAccesses.stream().map(UserApiSimplifiedInputDTO::getUserId)
+			final List<String> usersId = userApiAccesses.stream().map(UserApiSimplifiedInputDTO::getUserId)
 					.collect(Collectors.toList());
 
-			List<String> created = apiManagerService.updateAuthorizations(apiId, apiVersion, usersId, loggedUser);
+			final List<String> created = apiManagerService.updateAuthorizations(apiId, apiVersion, usersId, loggedUser);
 
-			JSONObject responseInfo = new JSONObject();
-			Iterator<String> i1 = usersId.iterator();
-			Iterator<String> i2 = created.iterator();
+			final JSONObject responseInfo = new JSONObject();
+			final Iterator<String> i1 = usersId.iterator();
+			final Iterator<String> i2 = created.iterator();
 			while (i1.hasNext() && i2.hasNext()) {
 				responseInfo.put(i1.next(), i2.next());
 			}
 			response = new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
-		} catch (ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+		} catch (final ApiManagerServiceException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			response = new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
 		}
 
@@ -176,22 +181,22 @@ public class APIManagementController {
 		ResponseEntity<?> response;
 		try {
 			final User loggedUser = userService.getUser(utils.getUserId());
-			List<String> usersId = userApiAccesses.stream().map(UserApiSimplifiedInputDTO::getUserId)
+			final List<String> usersId = userApiAccesses.stream().map(UserApiSimplifiedInputDTO::getUserId)
 					.collect(Collectors.toList());
 
-			List<String> removed = apiManagerService.removeAuthorizations(apiId, apiVersion, usersId, loggedUser);
+			final List<String> removed = apiManagerService.removeAuthorizations(apiId, apiVersion, usersId, loggedUser);
 
-			JSONObject responseInfo = new JSONObject();
-			Iterator<String> i1 = usersId.iterator();
-			Iterator<String> i2 = removed.iterator();
+			final JSONObject responseInfo = new JSONObject();
+			final Iterator<String> i1 = usersId.iterator();
+			final Iterator<String> i2 = removed.iterator();
 			while (i1.hasNext() && i2.hasNext()) {
 				responseInfo.put(i1.next(), i2.next());
 			}
 			response = new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
-		} catch (ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+		} catch (final ApiManagerServiceException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			response = new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
 		}
 
@@ -207,13 +212,13 @@ public class APIManagementController {
 			@RequestHeader("Authorization") String authorization) {
 
 		ResponseEntity<?> response;
-		List<UserApiSimplifiedResponseDTO> usersapiDto = new ArrayList<>();
+		final List<UserApiSimplifiedResponseDTO> usersapiDto = new ArrayList<>();
 
 		final String loggedUserId = utils.getUserId();
 		final User loggedUser = userService.getUser(loggedUserId);
 
 		try {
-			com.minsait.onesait.platform.config.model.Api api = apiManagerService
+			final com.minsait.onesait.platform.config.model.Api api = apiManagerService
 					.getApiByIdentificationVersionOrId(apiId, apiVersion);
 
 			if (api != null) {
@@ -221,18 +226,19 @@ public class APIManagementController {
 					throw new ApiManagerServiceException(ApiManagerServiceException.Error.PERMISSION_DENIED,
 							ERROR_USER_NOT_ALLOWED);
 				}
-				UserApi userapi = apiManagerService.updateAuthorization(api.getId(), userId);
+				final UserApi userapi = apiManagerService.updateAuthorization(api.getId(), userId);
 				usersapiDto.add(new UserApiSimplifiedResponseDTO(userapi));
 			} else {
-				List<com.minsait.onesait.platform.config.model.Api> apiAllVersions = apiManagerService
+				final List<com.minsait.onesait.platform.config.model.Api> apiAllVersions = apiManagerService
 						.getApisOfOwnerAndIdentification(loggedUser, apiId);
 				if (apiAllVersions.isEmpty()) {
 					throw new ApiManagerServiceException(ApiManagerServiceException.Error.NOT_FOUND,
 							ERROR_API_NOT_FOUND);
 				}
 				// update api+version when possible, else: skip
-				List<UserApi> userapis = apiManagerService.updateAuthorizationAllVersions(apiId, userId, loggedUser);
-				for (UserApi ua : userapis) {
+				final List<UserApi> userapis = apiManagerService.updateAuthorizationAllVersions(apiId, userId,
+						loggedUser);
+				for (final UserApi ua : userapis) {
 					usersapiDto.add(new UserApiSimplifiedResponseDTO(ua));
 				}
 			}
@@ -243,15 +249,15 @@ public class APIManagementController {
 				response = new ResponseEntity<>(usersapiDto, HttpStatus.CREATED);
 			}
 
-		} catch (ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+		} catch (final ApiManagerServiceException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (NullPointerException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO();
+		} catch (final NullPointerException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO();
 			errorDTO.setError(ApiManagerServiceException.Error.NOT_FOUND.name());
 			errorDTO.setMsg(ERROR_API_NOT_FOUND);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return response;
@@ -272,7 +278,7 @@ public class APIManagementController {
 		final User loggedUser = userService.getUser(loggedUserId);
 
 		try {
-			com.minsait.onesait.platform.config.model.Api api = apiManagerService
+			final com.minsait.onesait.platform.config.model.Api api = apiManagerService
 					.getApiByIdentificationVersionOrId(apiId, apiVersion);
 
 			if (api != null) {
@@ -280,7 +286,7 @@ public class APIManagementController {
 					throw new ApiManagerServiceException(ApiManagerServiceException.Error.PERMISSION_DENIED,
 							ERROR_USER_NOT_ALLOWED);
 				}
-				UserApi userapi = apiManagerService.getUserApiByIdAndUser(api.getId(), userId);
+				final UserApi userapi = apiManagerService.getUserApiByIdAndUser(api.getId(), userId);
 				if (userapi == null) {
 					throw new ApiManagerServiceException(ApiManagerServiceException.Error.USER_ACCESS_NOT_FOUND,
 							ERROR_USER_ACCESS_NOT_FOUND);
@@ -292,15 +298,15 @@ public class APIManagementController {
 			}
 			response = new ResponseEntity<>("{\"status\": \"ok\"}", HttpStatus.OK);
 
-		} catch (ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+		} catch (final ApiManagerServiceException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (NullPointerException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO();
+		} catch (final NullPointerException e) {
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO();
 			errorDTO.setError(ApiManagerServiceException.Error.NOT_FOUND.name());
 			errorDTO.setMsg(ERROR_API_NOT_FOUND);
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
@@ -326,7 +332,7 @@ public class APIManagementController {
 		String username = null;
 		try {
 			username = userService.getUserByToken(token).getUserId();
-		} catch (NullPointerException e) {
+		} catch (final NullPointerException e) {
 			return new ResponseEntity<>("The token \"" + token + "\" does not belong to any user.",
 					HttpStatus.BAD_REQUEST);
 		}
@@ -340,11 +346,11 @@ public class APIManagementController {
 		final List<UserToken> tokens = userService.getUserToken(userService.getUser(utils.getUserId()));
 		if (!tokens.isEmpty()) {
 			tokens.sort(Comparator.comparing(UserToken::getCreatedAt).reversed());
-			List<String> tokenList = new ArrayList<>();
-			for (UserToken token : tokens) {
+			final List<String> tokenList = new ArrayList<>();
+			for (final UserToken token : tokens) {
 				tokenList.add(token.getToken());
 			}
-			JSONObject response = new JSONObject();
+			final JSONObject response = new JSONObject();
 			response.put("userTokens", tokenList);
 			return new ResponseEntity<>(response.toString(), HttpStatus.OK);
 		} else {
@@ -372,8 +378,9 @@ public class APIManagementController {
 		final UserToken tokenOj = userTokenService.getTokenByUserAndToken(userService.getUser(utils.getUserId()),
 				token);
 
-		if (tokenOj == null)
+		if (tokenOj == null) {
 			return new ResponseEntity<>("Token with id " + token + " does not exist", HttpStatus.BAD_REQUEST);
+		}
 		try {
 			apiManagerService.removeToken(utils.getUserId(), "{\"token\":\"" + token + "\"}");
 			return new ResponseEntity<>("{\"status\" : \"ok\"}", HttpStatus.OK);
@@ -391,8 +398,8 @@ public class APIManagementController {
 				utils.getUserId());
 		if (!apis.isEmpty()) {
 			final ArrayList<ApiRestDTO> apisdto = new ArrayList<>();
-			for (com.minsait.onesait.platform.config.model.Api api : apis) {
-				ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, true);
+			for (final com.minsait.onesait.platform.config.model.Api api : apis) {
+				final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, true);
 				apisdto.add(apidto);
 			}
 			return new ResponseEntity<>(apisdto, HttpStatus.OK);
@@ -457,6 +464,17 @@ public class APIManagementController {
 			throw new ApiManagerServiceException(ApiManagerServiceException.Error.PERMISSION_DENIED,
 					ERROR_USER_NOT_ALLOWED);
 		}
+		ApiStates state = ApiStates.CREATED;
+		try {
+			if (!StringUtils.isEmpty(apiBody.getStatus())) {
+				state = ApiStates.valueOf(apiBody.getStatus());
+			}
+			if (!state.equals(ApiStates.CREATED) && !state.equals(ApiStates.DEVELOPMENT)) {
+				state = ApiStates.CREATED;
+			}
+		} catch (final Exception e) {
+			log.debug("ApiState not valid, falling back to CREATED");
+		}
 		try {
 			// build api from body
 			if (!apiBody.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
@@ -464,7 +482,8 @@ public class APIManagementController {
 						ERROR_API_IDENTIFICATION_FORMAT);
 			}
 
-			com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user, ApiStates.CREATED);
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user, state);
+
 			List<com.minsait.onesait.platform.config.model.ApiOperation> operations;
 			if (apiBody.getOperations() == null) {
 				operations = null;
@@ -472,8 +491,8 @@ public class APIManagementController {
 				operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(),
 						new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(), api);
 			}
-			List<UserApi> auths = apiDTOConverter.toUserApi(apiBody.getAuthentications(), new ArrayList<UserApi>(),
-					api);
+			final List<UserApi> auths = apiDTOConverter.toUserApi(apiBody.getAuthentications(),
+					new ArrayList<UserApi>(), api);
 
 			// search if exists by identification + version
 			existingApisWithIdentificationAndUser = apiManagerService.getApisOfOwnerAndIdentification(user,
@@ -487,7 +506,7 @@ public class APIManagementController {
 			}
 
 		} catch (final ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			return new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		} catch (final Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -506,13 +525,14 @@ public class APIManagementController {
 			return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.UNAUTHORIZED);
 		}
 
-		com.minsait.onesait.platform.config.model.Api apimemory = apiManagerService
+		final com.minsait.onesait.platform.config.model.Api apimemory = apiManagerService
 				.getApiByIdentificationVersionOrId(apiBody.getIdentification(), String.valueOf(apiBody.getVersion()));
 
-		if (apimemory == null)
+		if (apimemory == null) {
 			return new ResponseEntity<>(
 					"Api \"" + apiBody.getIdentification() + " - v" + apiBody.getVersion() + "\" does not exist",
 					HttpStatus.NOT_FOUND);
+		}
 
 		if (!apiManagerService.isApiStateValidForEdit(apimemory)) {
 			return new ResponseEntity<>(ERROR_API_INVALID_STATE, HttpStatus.FORBIDDEN);
@@ -520,24 +540,29 @@ public class APIManagementController {
 
 		try {
 
-			com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user, ApiStates.CREATED);
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user,
+					ApiStates.valueOf(apiBody.getStatus()));
 
-			if (api.getOntology() == null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY))
+			if (api.getOntology() == null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
 				return new ResponseEntity<>(ERROR_MISSING_ONTOLOGY, HttpStatus.BAD_REQUEST);
-			if (api.getIdentification() == null || api.getIdentification().equals(""))
+			}
+			if (api.getIdentification() == null || api.getIdentification().equals("")) {
 				return new ResponseEntity<>(ERROR_MISSING_API_IDENTIFICATION, HttpStatus.BAD_REQUEST);
+			}
 
-			if (apiBody.getOperations() == null)
+			if (apiBody.getOperations() == null) {
 				return new ResponseEntity<>(ERROR_MISSING_OPERATIONS, HttpStatus.BAD_REQUEST);
-			List<com.minsait.onesait.platform.config.model.ApiOperation> operations = apiDTOConverter.toAPIOperations(
-					apiBody.getOperations(), new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(),
-					apimemory);
+			}
+			final List<com.minsait.onesait.platform.config.model.ApiOperation> operations = apiDTOConverter
+					.toAPIOperations(apiBody.getOperations(),
+							new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(), apimemory);
 
-			List<UserApi> auths = apiDTOConverter.toUserApi(apiBody.getAuthentications(), new ArrayList<UserApi>(),
-					apimemory);
+			final List<UserApi> auths = apiDTOConverter.toUserApi(apiBody.getAuthentications(),
+					new ArrayList<UserApi>(), apimemory);
 
-			String apiId = apiManagerService.updateApiRest(api, apimemory, operations, auths, false);
+			final String apiId = apiManagerService.updateApiRest(api, apimemory, operations, auths, false);
 			api.setId(apiId); // to print in result update (retrocomp)
+
 
 			return new ResponseEntity<>(new ApiSimplifiedResponseDTO(api), HttpStatus.OK);
 
@@ -586,7 +611,7 @@ public class APIManagementController {
 
 		List<UserApi> usersapi = new ArrayList<>();
 		if (apiManagerService.isUserOwnerOrAdmin(user, api)
-				|| (allowEditUsers && apiManagerService.hasUserEditAccess(api, user))) {
+				|| allowEditUsers && apiManagerService.hasUserEditAccess(api, user)) {
 			usersapi = apiManagerService.getUserApiByApiId(api.getId());
 		}
 
@@ -616,15 +641,15 @@ public class APIManagementController {
 				return new ResponseEntity<>(ERROR_API_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
 
-			List<com.minsait.onesait.platform.config.model.Api> apiAllVersions = apiManagerService
+			final List<com.minsait.onesait.platform.config.model.Api> apiAllVersions = apiManagerService
 					.getApisOfOwnerAndIdentification(user, apiId);
 
 			if (apiAllVersions.isEmpty()) {
 				return new ResponseEntity<>(EMPTY_RESPONSE_APIS, HttpStatus.NOT_FOUND);
 			}
 
-			List<ApiRestDTO> allVersionsDTO = new ArrayList<>();
-			for (com.minsait.onesait.platform.config.model.Api apiVers : apiAllVersions) {
+			final List<ApiRestDTO> allVersionsDTO = new ArrayList<>();
+			for (final com.minsait.onesait.platform.config.model.Api apiVers : apiAllVersions) {
 				if (apiManagerService.hasUserAccess(apiVers, user)) {
 					final ApiRestDTO apidtoVersion = apiDTOWithOperationsAndAuthorizations(apiVers, user, false);
 					allVersionsDTO.add(apidtoVersion);
@@ -640,7 +665,7 @@ public class APIManagementController {
 	@ApiOperation(value = "Export all apis")
 	@GetMapping(value = "export/")
 	public ResponseEntity<?> exportAllApis() {
-		List<ApiRestDTO> apisDTO = new ArrayList<>();
+		final List<ApiRestDTO> apisDTO = new ArrayList<>();
 		final User user = userService.getUser(utils.getUserId());
 		List<com.minsait.onesait.platform.config.model.Api> apis;
 		if (userService.isUserAdministrator(user)) {
@@ -650,7 +675,7 @@ public class APIManagementController {
 		}
 
 		if (!apis.isEmpty()) {
-			for (com.minsait.onesait.platform.config.model.Api api : apis) {
+			for (final com.minsait.onesait.platform.config.model.Api api : apis) {
 				final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, false);
 				apisDTO.add(apidto);
 			}
@@ -687,7 +712,7 @@ public class APIManagementController {
 		com.minsait.onesait.platform.config.model.Api createdApi = null;
 
 		try {
-			com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody,
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody,
 					getImportingUser(apiBody, user), ApiStates.valueOf(ApiStates.class, apiBody.getStatus()));
 
 			List<com.minsait.onesait.platform.config.model.ApiOperation> operations;
@@ -704,7 +729,7 @@ public class APIManagementController {
 			createdApi = apiManagerService.importApiRest(api, operations, auths, overwrite, user.getUserId());
 
 		} catch (final ApiManagerServiceException e) {
-			ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+			final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 			return new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		} catch (final Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -725,9 +750,9 @@ public class APIManagementController {
 
 		final User user = userService.getUser(utils.getUserId());
 
-		List<ApiSimplifiedResponseDTO> importedAPIsResponse = new ArrayList<>();
-		for (ApiRestDTO apiBody : apiBodies) {
-			com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody,
+		final List<ApiSimplifiedResponseDTO> importedAPIsResponse = new ArrayList<>();
+		for (final ApiRestDTO apiBody : apiBodies) {
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody,
 					getImportingUser(apiBody, user), ApiStates.valueOf(ApiStates.class, apiBody.getStatus()));
 
 			try {
@@ -747,7 +772,7 @@ public class APIManagementController {
 				createdApi = apiManagerService.importApiRest(api, operations, auths, overwrite, user.getUserId());
 				importedAPIsResponse.add(new ApiSimplifiedResponseDTO(createdApi));
 			} catch (final ApiManagerServiceException e) {
-				ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
+				final ApiResponseErrorDTO errorDTO = new ApiResponseErrorDTO(e);
 				importedAPIsResponse.add(new ApiSimplifiedResponseDTO(api.getId(), api.getIdentification(),
 						api.getNumversion(), errorDTO.getMsg()));
 			} catch (final Exception e) {
@@ -757,6 +782,32 @@ public class APIManagementController {
 		}
 
 		return new ResponseEntity<>(importedAPIsResponse, HttpStatus.OK);
+	}
+
+	@Autowired
+	private APIBusinessService apiBusinessService;
+
+	@ApiOperation(value = "Client")
+	@PostMapping("client-js")
+	public ResponseEntity<ByteArrayResource> generateClientJS(
+			@ApiParam(value = "Target JS framework") @RequestParam("framework") ClientJS framework,
+			@ApiParam(value = "List of API ids") @RequestBody List<String> ids) throws IOException {
+		try {
+			final File file = apiBusinessService.generateJSClient(framework, ids, utils.getUserId());
+			final Path path = Paths.get(file.getAbsolutePath());
+			final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+			FileUtils.cleanDirectory(new File(file.getParent()));
+			return ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=".concat(file.getName()))
+					.header(HttpHeaders.SET_COOKIE, "fileDownload=true")
+					.header(HttpHeaders.CACHE_CONTROL, "max-age=60, must-revalidate")
+					.contentLength(resource.contentLength())
+					.contentType(MediaType.parseMediaType("application/octet-stream")).body(resource);
+		} catch (final Exception e) {
+			log.error("Error while generating JS client", e);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
 	}
 
 }

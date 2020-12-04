@@ -23,11 +23,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.ClientErrorException;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,11 +53,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.ApiOperation;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.model.AppChildExport;
+import com.minsait.onesait.platform.config.model.AppExport;
+import com.minsait.onesait.platform.config.model.AppRoleChildExport;
+import com.minsait.onesait.platform.config.model.AppRoleExport;
+import com.minsait.onesait.platform.config.model.AppUserExport;
+import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
+import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.FlowDomain;
+import com.minsait.onesait.platform.config.model.Gadget;
+import com.minsait.onesait.platform.config.model.GadgetDatasource;
+import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.MigrationData;
 import com.minsait.onesait.platform.config.model.Notebook;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.ProjectExport;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessExport;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.migration.DataFromDB;
 import com.minsait.onesait.platform.config.services.migration.ExportResult;
 import com.minsait.onesait.platform.config.services.migration.Instance;
@@ -136,6 +161,9 @@ public class MigrationController {
 	private static final String NOTEBOOK_DATA = "notebookData";
 	private static final String IDZEP = "idzep";
 	private static final String DATAFLOW_DATA = "dataflowData";
+	private static final String NOTEBOOK = "com.minsait.onesait.platform.config.model.Notebook";
+	private static final String DATAFLOW = "com.minsait.onesait.platform.config.model.Pipeline";
+	private static final String FLOW_DOMAIN = "com.minsait.onesait.platform.config.model.FlowDomain";
 
 	@GetMapping(value = "/show", produces = "text/html")
 	public String show(Model model, HttpServletRequest request) {
@@ -201,8 +229,11 @@ public class MigrationController {
 	public ResponseEntity<String> exportProject(Model model, HttpServletResponse response, HttpServletRequest request,
 			@PathVariable("project") String project)
 			throws IllegalArgumentException, IllegalAccessException, IOException {
-		ExportResult userData = migrationService.exportProject(project);
-		String json = migrationService.getJsonFromData(userData.getData());
+		ExportResult projectData = migrationService.exportProject(project);
+		projectData = this.exportDomain(projectData);
+		projectData = this.exportNotebooks(projectData);
+		projectData = this.exportDataflow(projectData);
+		String json = migrationService.getJsonFromData(projectData.getData());
 		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
 		response.setContentType(APPLICATION_DOWNLOAD);
 		response.setHeader(CONTENT_DISPOSITION, ATTACHMENT);
@@ -307,6 +338,41 @@ public class MigrationController {
 
 		MigrationConfiguration config = new MigrationConfiguration();
 
+		List<Class<?>> sortedClazz = new LinkedList<>();
+		sortedClazz.add(ProjectExport.class);
+		sortedClazz.add(OPResource.class);
+		sortedClazz.add(Pipeline.class);
+		sortedClazz.add(Notebook.class);
+		sortedClazz.add(FlowDomain.class);
+		sortedClazz.add(Ontology.class);
+		sortedClazz.add(OntologyVirtualDatasource.class);
+		sortedClazz.add(OntologyVirtual.class);
+		sortedClazz.add(OntologyTimeSeries.class);
+		sortedClazz.add(OntologyTimeSeriesWindow.class);
+		sortedClazz.add(OntologyTimeSeriesProperty.class);
+		sortedClazz.add(Api.class);
+		sortedClazz.add(ApiOperation.class);
+		sortedClazz.add(ApiQueryParameter.class);
+		sortedClazz.add(GadgetDatasource.class);
+		sortedClazz.add(AppChildExport.class);
+		sortedClazz.add(AppExport.class);
+		sortedClazz.add(AppRoleChildExport.class);
+		sortedClazz.add(AppRoleExport.class);
+		sortedClazz.add(AppUserExport.class);
+		sortedClazz.add(ClientPlatform.class);
+		sortedClazz.add(ClientPlatformInstance.class);
+		sortedClazz.add(ProjectResourceAccessExport.class);
+		sortedClazz.add(Gadget.class);
+		sortedClazz.add(GadgetMeasure.class);
+		sortedClazz.add(Dashboard.class);
+
+		for (Class<?> c : sortedClazz) {
+			for (Serializable id : data.getInstances(c)) {
+				Map<String, Object> result = data.getInstanceData(c, id);
+				config.add(c, id, (Serializable) result.get(IDENTIFICATION), (Serializable) result.get("numversion"));
+			}
+		}
+
 		for (Class<?> clazz : data.getClasses()) {
 			if (importData.getClasses().contains(clazz.getName())) {
 				for (Serializable id : data.getInstances(clazz)) {
@@ -328,6 +394,7 @@ public class MigrationController {
 		model.addAttribute(OTHER_SCHEMA_STR, new ImportData());
 
 		MigrationErrors errors = new MigrationErrors();
+
 		if (importData.getClasses().contains(PROJECT_EXPORT)) {
 			errors = migrationService.importData(config, data, true, false, importData.getOverride());
 		} else if (importData.getClasses().contains(USER)) {
@@ -335,13 +402,21 @@ public class MigrationController {
 		} else {
 			errors = migrationService.importData(config, data, false, false, importData.getOverride());
 		}
-		this.importDomain(data, errors, importData.getOverride());
-		errors = this.importNotebook(data, errors, importData.getOverride());
-		errors = this.importDataflow(data, errors, importData.getOverride());
+
+		if (importData.getClasses().contains(FLOW_DOMAIN)) {
+			this.importDomain(data, errors, importData.getOverride());
+		}
+		if (importData.getClasses().contains(NOTEBOOK)) {
+			errors = this.importNotebook(data, errors, importData.getOverride());
+		}
+		if (importData.getClasses().contains(DATAFLOW)) {
+			errors = this.importDataflow(data, errors, importData.getOverride());
+		}
 
 		model.addAttribute("errors", errors.getErrors());
 
 		return MIGRATION_SHOW;
+
 	}
 
 	@GetMapping(value = "/cleanCache")
@@ -444,7 +519,7 @@ public class MigrationController {
 			Map<String, Object> obj = data.getInstanceData(Notebook.class, id);
 
 			try {
-				ResponseEntity<?> result = notebookController.importNotebook(obj.get(IDENTIFICATION).toString(),
+				ResponseEntity<?> result = notebookController.importNotebookData(obj.get(IDENTIFICATION).toString(),
 						override, true, mapper.writeValueAsString(obj.get(NOTEBOOK_DATA)));
 
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
@@ -504,7 +579,7 @@ public class MigrationController {
 			Map<String, Object> obj = data.getInstanceData(Pipeline.class, id);
 
 			try {
-				ResponseEntity<?> result = dataflowController.importPipeline(obj.get(IDENTIFICATION).toString(),
+				ResponseEntity<?> result = dataflowController.importPipelineData(obj.get(IDENTIFICATION).toString(),
 						override, mapper.writeValueAsString(obj.get(DATAFLOW_DATA)));
 
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
@@ -528,6 +603,11 @@ public class MigrationController {
 								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
 			} catch (UnsupportedEncodingException e) {
 				log.error("Error importing Dataflow data {}. {}", obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+			} catch (ClientErrorException e) {
+				log.error("Error importing Dataflow data {}. {}", obj.get(IDENTIFICATION).toString(), e.getMessage());
 				errors.addError(
 						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
 								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));

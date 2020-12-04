@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.gadgettemplate;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 
 public interface GadgetTemplateService {
 
@@ -41,5 +42,11 @@ public interface GadgetTemplateService {
 
 	public List<GadgetTemplate> getUserGadgetTemplate(String userId);
 
+	public List<GadgetTemplate> getUserGadgetTemplate(String userId, String type);
+
 	GadgetTemplate getGadgetTemplateByIdentification(String identification);
+
+	public List<GadgetTemplateType> getTemplateTypes();
+
+	public GadgetTemplateType getTemplateTypeById(String id);
 }

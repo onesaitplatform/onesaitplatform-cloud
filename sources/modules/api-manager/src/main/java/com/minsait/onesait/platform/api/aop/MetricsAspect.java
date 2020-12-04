@@ -22,10 +22,10 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.metrics.CounterService;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 
 @Aspect
@@ -34,18 +34,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MetricsAspect extends BaseAspect {
 
-	private final CounterService counterService;
-
+	private static final String METHOD = "method";
+	private static final String COUNTER_CALLS = "counter.calls";
 	@Autowired
-	public MetricsAspect(CounterService counterService) {
-		this.counterService = counterService;
-	}
+	private MeterRegistry meterRegistry;
 
 	@Around(value = "execution(* com.minsait.onesait.platform.api.rest.api.*.*(..))")
 	public Object processTx(ProceedingJoinPoint joinPoint) throws java.lang.Throwable {
-
-		counterService.increment("counter.calls." + getMethod(joinPoint) + "." + joinPoint.getSignature());
-
+		meterRegistry.counter(COUNTER_CALLS, METHOD, getMethod(joinPoint).toGenericString()).increment();
 		log.info("Controller @Around for {}, Interceptor Call {}", getMethod(joinPoint), joinPoint.getSignature());
 
 		final long start = System.currentTimeMillis();
@@ -67,8 +63,9 @@ public class MetricsAspect extends BaseAspect {
 
 	@Before("execution(* com.minsait.onesait.platform.api.rest.api.*.*(..))")
 	public void beforeSampleCreation(JoinPoint joinPoint) {
+		meterRegistry.counter(COUNTER_CALLS, METHOD, "beforeSampleCreation").increment();
+		;
 
-		counterService.increment("counter.calls.beforeSampleCreation");
 		log.info("Controller @Before for {}, Method Invoked: {}", getMethod(joinPoint),
 				joinPoint.getSignature().getName());
 
@@ -84,8 +81,8 @@ public class MetricsAspect extends BaseAspect {
 
 	@AfterReturning(pointcut = "execution(* com.minsait.onesait.platform.api.rest.api.*.*(..))", returning = "retVal")
 	public void logServiceAccess(JoinPoint joinPoint, Object retVal) {
-
-		counterService.increment("counter.calls.logServiceAccess");
+		meterRegistry.counter(COUNTER_CALLS, METHOD, "logServiceAccess").increment();
+		;
 
 		log.info("Controller @AfterReturning for {} Completed: {} ", getMethod(joinPoint), joinPoint);
 

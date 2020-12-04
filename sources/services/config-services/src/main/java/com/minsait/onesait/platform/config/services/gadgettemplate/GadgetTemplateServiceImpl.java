@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.config.services.gadgettemplate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.minsait.onesait.platform.config.model.GadgetTemplateType;
+import com.minsait.onesait.platform.config.repository.GadgetTemplateTypeRepository;
 import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,8 +37,11 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	private GadgetTemplateRepository gadgetTemplateRepository;
 
 	@Autowired
+	private GadgetTemplateTypeRepository gadgetTemplateTypeRepository;
+
+	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -44,26 +49,27 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Override
 	public List<GadgetTemplate> findAllGadgetTemplates() {
-		return this.gadgetTemplateRepository.findAll();
+		return gadgetTemplateRepository.findAll();
 	}
 
 	@Override
 	public List<GadgetTemplate> findGadgetTemplateWithIdentificationAndDescription(String identification,
 			String description, String userId) {
 		List<GadgetTemplate> gadgetTemplates;
-		User user = this.userRepository.findByUserId(userId);
+		final User user = userRepository.findByUserId(userId);
 
 		if (user.getRole().getId().equals(ADMINISTRATOR)) {
-			if (identification==null) {
-				gadgetTemplates = this.gadgetTemplateRepository.findAll();
+			if (identification == null) {
+				gadgetTemplates = gadgetTemplateRepository.findAll();
 			} else {
-				gadgetTemplates = this.gadgetTemplateRepository.findByIdentificationContaining(identification);
+				gadgetTemplates = gadgetTemplateRepository.findByIdentificationContaining(identification);
 			}
 		} else {
-			if (identification==null) {
-				gadgetTemplates = this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrue(user.getUserId());
+			if (identification == null) {
+				gadgetTemplates = gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrue(user.getUserId());
 			} else {
-				gadgetTemplates = this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrueAndIdentificationLike(user.getUserId(), identification);
+				gadgetTemplates = gadgetTemplateRepository
+						.findGadgetTemplateByUserAndIsPublicTrueAndIdentificationLike(user.getUserId(), identification);
 			}
 		}
 
@@ -72,9 +78,9 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Override
 	public List<String> getAllIdentifications() {
-		List<GadgetTemplate> gadgetTemplates = this.gadgetTemplateRepository.findAllByOrderByIdentificationAsc();
-		List<String> names = new ArrayList<>();
-		for (GadgetTemplate gadgetTemplate : gadgetTemplates) {
+		final List<GadgetTemplate> gadgetTemplates = gadgetTemplateRepository.findAllByOrderByIdentificationAsc();
+		final List<String> names = new ArrayList<>();
+		for (final GadgetTemplate gadgetTemplate : gadgetTemplates) {
 			names.add(gadgetTemplate.getIdentification());
 		}
 		return names;
@@ -82,23 +88,23 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Override
 	public GadgetTemplate getGadgetTemplateById(String id) {
-		return this.gadgetTemplateRepository.findById(id);
+		return gadgetTemplateRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public GadgetTemplate getGadgetTemplateByIdentification(String identification) {
-		return this.gadgetTemplateRepository.findByIdentification(identification);
+		return gadgetTemplateRepository.findByIdentification(identification);
 	}
 
 	@Override
 	public boolean hasUserPermission(String id, String userId) {
-		User user = userRepository.findByUserId(userId);
+		final User user = userRepository.findByUserId(userId);
 		if (userService.isUserAdministrator(user)) {
 			Log.info("user has permission");
 			return true;
 		} else {
 			Log.info("user has not permission");
-			return gadgetTemplateRepository.findById(id).getUser().getUserId().equals(userId);
+			return gadgetTemplateRepository.findById(id).orElse(null).getUser().getUserId().equals(userId);
 		}
 	}
 
@@ -111,7 +117,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	public void createGadgetTemplate(GadgetTemplate gadgettemplate) {
 		try {
 			gadgetTemplateRepository.save(gadgettemplate);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new GadgetTemplateServiceException("Can not save gadgetTemplate");
 		}
 
@@ -120,9 +126,9 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	@Override
 	public void deleteGadgetTemplate(String id, String userId) {
 		if (hasUserPermission(id, userId)) {
-			GadgetTemplate gadgetTemplate = this.gadgetTemplateRepository.findById(id);
+			final GadgetTemplate gadgetTemplate = gadgetTemplateRepository.findById(id).orElse(null);
 			if (gadgetTemplate != null) {
-				this.gadgetTemplateRepository.delete(gadgetTemplate);
+				gadgetTemplateRepository.delete(gadgetTemplate);
 			} else
 				throw new GadgetTemplateServiceException("Can not delete gadgetTemplate that does not exist");
 		}
@@ -131,20 +137,41 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Override
 	public List<GadgetTemplate> getUserGadgetTemplate(String userId) {
-		return this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrue(userId);
+		return gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrue(userId);
+	}
+
+	@Override
+	public List<GadgetTemplate> getUserGadgetTemplate(String userId, String type) {
+		final User user = userRepository.findByUserId(userId);
+
+		if (user.getRole().getId().equals(ADMINISTRATOR)) {
+			return this.gadgetTemplateRepository.findByType(type);
+		}
+		else {
+			return this.gadgetTemplateRepository.findGadgetTemplateByUserAndIsPublicTrueAndType(userId, type);
+		}
 	}
 
 	@Override
 	public GadgetTemplate getGadgetTemplateByIdentification(String identification, String userId) {
-		User user = this.userRepository.findByUserId(userId);
+		final User user = userRepository.findByUserId(userId);
 		GadgetTemplate gadgetTemplate;
 		if (userService.isUserAdministrator(user)) {
-			gadgetTemplate = this.gadgetTemplateRepository.findByIdentification(identification);
+			gadgetTemplate = gadgetTemplateRepository.findByIdentification(identification);
 		} else {
-			gadgetTemplate = this.gadgetTemplateRepository
+			gadgetTemplate = gadgetTemplateRepository
 					.findGadgetTemplateByUserAndIsPublicTrueAndIdentification(user.getUserId(), identification);
 		}
 		return gadgetTemplate;
 	}
 
+	@Override
+	public List<GadgetTemplateType> getTemplateTypes() {
+		return gadgetTemplateTypeRepository.findAll();
+	}
+
+	@Override
+	public GadgetTemplateType getTemplateTypeById(String id) {
+		return gadgetTemplateTypeRepository.findById(id).orElse(null);
+	}
 }

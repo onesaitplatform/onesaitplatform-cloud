@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.business.services.virtual.datasources;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
@@ -112,7 +113,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
 	@Override
 	public OntologyVirtualDatasource getDatasourceById(final String id) {
-		return ontologyVirtualDatasourceRepository.findById(id);
+		return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -214,7 +215,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	public OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId) {
 		final User sessionUser = userService.getUser(sessionUserId);
 		if (userService.isUserAdministrator(sessionUser)) {
-			return ontologyVirtualDatasourceRepository.findById(id);
+			return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
 		} else {
 			return ontologyVirtualDatasourceRepository.findByIdAndUserId(id, sessionUser);
 		}
@@ -224,7 +225,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	public OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId) {
 		final User sessionUser = userService.getUser(sessionUserId);
 		if (userService.isUserAdministrator(sessionUser)) {
-			return ontologyVirtualDatasourceRepository.findById(id);
+			return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
 		} else {
 			return ontologyVirtualDatasourceRepository.findByIdAndUserIdOrIsPublicTrue(id, sessionUser);
 		}

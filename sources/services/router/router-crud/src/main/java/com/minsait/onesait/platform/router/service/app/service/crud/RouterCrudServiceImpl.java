@@ -90,7 +90,9 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 	@Override
 	@Auditable
 	public OperationResultModel insert(OperationModel operationModel) throws RouterCrudServiceException {
-		log.debug("Insert: {}", operationModel.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Insert: {}", operationModel.toString());
+		}
 		final OperationResultModel result = new OperationResultModel();
 		final String METHOD = operationModel.getOperationType().name();
 		final String ontologyName = operationModel.getOntologyName();
@@ -105,7 +107,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			rtdbDatasource = ontology.getRtdbDatasource();
 
 			try {
-				referencesValidation.validate(operationModel);
+				referencesValidation.validate(operationModel, ontology);
 
 			} catch (final Exception e) {
 				log.error("Could not validate references {}", e.getMessage());
@@ -117,7 +119,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					|| METHOD.equalsIgnoreCase(OperationModel.OperationType.INSERT.name())) {
 
 				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
-					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, false);
+					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, false, ontology);
 					final ComplexWriteResult data = virtualRepo.insertBulk(ontologyName, processedData, true, true);
 					final List<? extends DBResult> results = data.getData();
 					final InsertResult insertResult = new InsertResult();
@@ -140,7 +142,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					output = insertResult.toString();
 				} else {
 
-					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, true);
+					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, true, ontology);
 
 					final ComplexWriteResult data = basicOpsService.insertBulk(ontologyName, processedData, true, true);
 
@@ -233,7 +235,9 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 	@Override
 	@Auditable
 	public OperationResultModel update(OperationModel operationModel) {
-		log.debug("Update: {}", operationModel.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Update: {}", operationModel.toString());
+		}
 		final OperationResultModel result = new OperationResultModel();
 
 		final String method = operationModel.getOperationType().name();

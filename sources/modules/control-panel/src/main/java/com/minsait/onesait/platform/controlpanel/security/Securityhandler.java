@@ -97,23 +97,29 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 					.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
 				twoFactorAuthService.newVerificationRequest(authentication.getName());
 				response.sendRedirect(request.getContextPath() + URI_VERIFY);
+				return;
 			} else if (authentication.getAuthorities().toArray()[0].toString()
 					.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
 				response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
-			}
-			final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
-			if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
-				// we do not forget to clean this attribute from session
-				session.removeAttribute(BLOCK_PRIOR_LOGIN);
-				// then we redirect
-				response.sendRedirect(request.getContextPath() + redirectUrl.replace(URI_CONTROLPANEL, "")
-						.concat(getEncodedParametersFromPreviousRequest(session)));
+
 			} else {
-				response.sendRedirect(request.getContextPath() + URI_MAIN);
+				final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
+				if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
+					// we do not forget to clean this attribute from session
+					session.removeAttribute(BLOCK_PRIOR_LOGIN);
+					// then we redirect
+					response.sendRedirect(request.getContextPath() + redirectUrl.replace(URI_CONTROLPANEL, "")
+							.concat(getEncodedParametersFromPreviousRequest(session)));
+
+				} else {
+					response.sendRedirect(request.getContextPath() + URI_MAIN);
+
+				}
 			}
 
 		} else {
 			response.sendRedirect(request.getContextPath() + URI_MAIN);
+
 		}
 
 	}
@@ -149,8 +155,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 	@Bean
 	@ConditionalOnProperty(value = "onesaitplatform.authentication.twofa.enabled", havingValue = "true")
-	public FilterRegistrationBean preVerifiedUsersFilter() {
-		final FilterRegistrationBean filter = new FilterRegistrationBean();
+	public FilterRegistrationBean<OncePerRequestFilter> preVerifiedUsersFilter() {
+		final FilterRegistrationBean<OncePerRequestFilter> filter = new FilterRegistrationBean<>();
 		filter.setFilter(new OncePerRequestFilter() {
 
 			@Override
@@ -160,11 +166,11 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
 					// FIX-ME CHANGE LOG LEVEL
-					log.info("preVerifiedUsersFilter: true, auth: {}, {}", auth);
+					log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_VERIFY);
 				} else {
 					// FIX-ME CHANGE LOG LEVEL
-					log.info("preVerifiedUsersFilter: false, auth: {}", auth);
+					log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
 					filterChain.doFilter(request, response);
 				}
 			}
@@ -185,8 +191,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 	@Bean
 	@ConditionalOnProperty(value = "onesaitplatform.multitenancy.enabled", havingValue = "true")
-	public FilterRegistrationBean preverifiedTenantUsersFilter() {
-		final FilterRegistrationBean filter = new FilterRegistrationBean();
+	public FilterRegistrationBean<OncePerRequestFilter> preverifiedTenantUsersFilter() {
+		final FilterRegistrationBean<OncePerRequestFilter> filter = new FilterRegistrationBean<>();
 		filter.setFilter(new OncePerRequestFilter() {
 
 			@Override

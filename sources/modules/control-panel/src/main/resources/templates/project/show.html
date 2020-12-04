@@ -125,6 +125,9 @@
 									<li id="tab-log" class=""><a href="#tab_2"
 										data-toggle="tab" aria-expanded="true"><span
 											th:text="#{project.resources}" class="">Resources </span></a></li>
+									<li id="tab-web" th:if="${projectObj.webProject != null}" class=""><a href="#tab_3"
+										data-toggle="tab" aria-expanded="true"><span
+											th:text="#{project.webproject.list}" class="">Web Projects</span></a></li>
 								</ul>
 
 							</div>
@@ -417,7 +420,34 @@
 
 										</table>
 									</div>
-
+									<div th:if="${projectObj.webProject != null}" class="tab-pane " id="tab_3">
+										<table id="web-project-list" class="table table-hover table-striped" dt:table="true">			
+											<thead>
+												<tr class="cabecera-tabla" role="row" >
+													<th class="titulo-columnas text-center" th:text="#{project.resource.identification}">Identification</th>
+													<th class="titulo-columnas text-center" th:text="#{gen.description}">Description</th>
+													<th class="titulo-columnas text-center" th:text="#{gen.url}">Url</th>
+													<th class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
+												</tr>
+											</thead>
+											<tbody>
+												<td class="text-left no-wrap bold" th:text="${projectObj.webProject.identification}"></td>
+												<td class="text-center no-wrap" th:text="${projectObj.webProject.description}"></td>
+												<td class="text-center text-primary" th:text="${rootWWW} + ${projectObj.webProject.identification} + '/' + ${projectObj.webProject.mainFile}"></td>
+												<td class="icon text-center" style="white-space: nowrap">
+													<div class="grupo-iconos text-center">
+														<!-- VIEW -->
+														<span th:title="#{gen.view}"
+															class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+															data-container="body" data-placement="bottom"
+															th:data-original-title="#{gen.view}"
+															th:onclick="'javascript:window.open(\'' + ${rootWWW} + ${projectObj.webProject.identification} + '/' + ${projectObj.webProject.mainFile} + '\');'"><i
+															class="la la-eye font-hg"></i></span>
+													</div>
+												</td>
+											</tbody>														
+										</table>
+									</div>
 
 								</div>
 								<div class="form-actions">
@@ -453,27 +483,22 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" />
-	<script th:src="@{/static/js/layout.js}" />
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" ></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" ></script>
 	<script
 		th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"
 		type="text/javascript"></script>
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}" />
-	<script
-		th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
-	<script
-		th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
-	<script
-		th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" />
-	<script
-		th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" />
-	<script
-		th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" />
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
 
 	<!-- TEMPLATE CONTROLLER  -->
 
@@ -488,9 +513,6 @@
 	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
-
-	
-	
 
 	// REDIRECT
 	function navigateUrl(url){  window.location.href = url;	}
@@ -552,6 +574,67 @@
 		    },
 			type : 'POST'
 		});
+	}
+	
+	var showCloneNotebookDialog = function(initNotebook){
+		$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: [[#{notebook.newnotebook.popup}]],
+			theme: 'light',
+			columnClass: 'medium',
+			content: "<input class='col-md-12 form-control' type=text id='newNotebook'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+					action: function() {
+						if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
+							console.log("notebook empty");
+							return;
+						}
+						
+						var notebookName = $("#newNotebook").val().trim()
+						if(/^[a-zA-Z0-9_ ]+$/.test(notebookName)){
+							cloneNotebook(notebookName,initNotebook);
+						}
+						else{
+							$("#patternAlert").removeClass("hidden");
+							return false;
+						}
+					}										
+				}
+			}
+		});
+	}
+	function cloneNotebook(name,initId){
+		$.post(
+			"/controlpanel/notebooks/cloneNotebook", 
+			{
+				name : name,
+				idzep : initId
+			}
+		).done(function(data){
+			localStorage.setItem("reload","true");//Created notebook, reload forced
+			navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
+		).fail(
+			function(e){
+				if(e.status==409){
+					$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'
+						}
+					)
+				}
+				console.log("Error clone note, message detail, " + " error: " + e.error + ", " + e.responseText);
+			}
+		)
 	}
 	
 	// MAIN WHEN READY

@@ -20,10 +20,14 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Token;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.exceptions.TokenServiceException;
+import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationService;
 
 @Service
 
@@ -31,16 +35,22 @@ public class TokenServiceImpl implements TokenService {
 
 	@Autowired
 	private TokenRepository tokenRepository;
+	@Autowired
+	private ClientPlatformInstanceSimulationRepository simulationRepository;
+	@Autowired
+	private KafkaAuthorizationService kafkaAuthService;
 
 	@Override
 	public Token generateTokenForClient(ClientPlatform clientPlatform) {
 		Token token = new Token();
 		if (clientPlatform.getId() != null) {
 			token.setClientPlatform(clientPlatform);
-			token.setTokenName(UUID.randomUUID().toString().replaceAll("-", ""));
+			token.setTokenName(UUID.randomUUID().toString().replace("-", ""));
 			token.setActive(true);
-			if (this.tokenRepository.findByTokenName(token.getTokenName()) == null) {
-				token = this.tokenRepository.save(token);
+			if (tokenRepository.findByTokenName(token.getTokenName()) == null) {
+				token = tokenRepository.save(token);
+				// Add ACLs for client/topic
+				kafkaAuthService.addAclToClientForNewToken(token);
 			} else {
 				throw new TokenServiceException("Token with value " + token.getTokenName() + " already exists");
 			}
@@ -50,29 +60,38 @@ public class TokenServiceImpl implements TokenService {
 
 	@Override
 	public Token getToken(ClientPlatform clientPlatform) {
-		return this.tokenRepository.findByClientPlatform(clientPlatform).get(0);
+		return tokenRepository.findByClientPlatform(clientPlatform).get(0);
 	}
 
 	@Override
 	public Token getTokenByToken(String token) {
-		return this.tokenRepository.findByTokenName(token);
+		return tokenRepository.findByTokenName(token);
 	}
 
 	@Override
 	public void deactivateToken(Token token, boolean active) {
 		token.setActive(active);
-		this.tokenRepository.save(token);
-
+		tokenRepository.save(token);
+		kafkaAuthService.deactivateToken(token, active);
 	}
 
 	@Override
 	public Token getTokenByID(String id) {
-		return this.tokenRepository.findById(id);
+		return tokenRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public List<Token> getTokens(ClientPlatform clientPlatform) {
-		return this.tokenRepository.findByClientPlatform(clientPlatform);
+		return tokenRepository.findByClientPlatform(clientPlatform);
 	}
 
+	@Override
+	public List<ClientPlatformInstanceSimulation> getSimulations(Token token) {
+		return simulationRepository.findByClientPlatform(token.getClientPlatform());
+	}
+	
+	@Override
+	public ClientPlatformTokenDTO getClientPlatformIdByTokenName(String tokenName) {
+		return this.tokenRepository.findClientPlatformIdByTokenName(tokenName);
+	}
 }

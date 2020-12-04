@@ -131,82 +131,6 @@
 				}
 			]
 		},
-		
-
-		{
-			"title": {
-				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO"
-			},
-			"icon": "flaticon-open-box",
-			"url": "",
-			"submenu": [			
-				{
-					"title": {
-						"EN": "Data to Ontology Import Tools",
-						"ES": "Herramientas de importación de datos a ontología"
-					},
-					"icon": "",
-					"url": "/controlpanel/jsontool/tools"
-				},
-				{
-					"title": {
-						"EN": "My Web Projects",
-						"ES": "Mis Proyectos Web"
-					},
-					"icon": "",
-					"url": "/controlpanel/webprojects/list"
-				},
-				{
-					"title": {
-						"EN": "My Files",
-						"ES": "Mis Ficheros"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
-						"EN": "My REST Services Planner",
-						"ES": "Mis planificador de servicios REST"
-					},
-					"icon": "",
-					"url": "/controlpanel/restplanner/list"
-				},
-				{
-					"title": {
-						"EN": "My Caches",
-						"ES": "Mis cachés"
-					},
-					"icon": "",
-					"url": "/controlpanel/caches/list"
-				},
-                {
-					"title": {
-						"EN": "My Internationalizations",
-						"ES": "Mis internacionalizaciones"
-					},
-					"icon": "",
-					"url": "/controlpanel/internationalizations/list"
-				},
-				{
-					"title": {
-						"EN": "My Control Panel Trees",
-						"ES": "Mis árboles del Panel de Control"
-					},
-					"icon": "",
-					"url": "/controlpanel/categorization/list"
-				},
-				{
-					"title": {
-						"EN": "My JDBC Connections",
-						"ES": "Mis conexiones JDBC"
-					},
-					"icon": "",
-					"url": "/controlpanel/virtualdatasources/list"
-				}
-			]
-		},
 
 		{
 			"title": {
@@ -279,6 +203,80 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindisplay/show"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "Data to Ontology Import Tools",
+						"ES": "Herramientas de importación de datos a ontología"
+					},
+					"icon": "",
+					"url": "/controlpanel/jsontool/tools"
+				},
+				{
+					"title": {
+						"EN": "My Web Projects",
+						"ES": "Mis Proyectos Web"
+					},
+					"icon": "",
+					"url": "/controlpanel/webprojects/list"
+				},
+				{
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "My REST Services Planner",
+						"ES": "Mis planificador de servicios REST"
+					},
+					"icon": "",
+					"url": "/controlpanel/restplanner/list"
+				},
+				{
+					"title": {
+						"EN": "My Caches",
+						"ES": "Mis cachés"
+					},
+					"icon": "",
+					"url": "/controlpanel/caches/list"
+				},
+                {
+					"title": {
+						"EN": "My Internationalizations",
+						"ES": "Mis internacionalizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/internationalizations/list"
+				},
+				{
+					"title": {
+						"EN": "My Control Panel Trees",
+						"ES": "Mis árboles del Panel de Control"
+					},
+					"icon": "",
+					"url": "/controlpanel/categorization/list"
+				},
+				{
+					"title": {
+						"EN": "My JDBC Connections",
+						"ES": "Mis conexiones JDBC"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
 				}
 			]
 		},
