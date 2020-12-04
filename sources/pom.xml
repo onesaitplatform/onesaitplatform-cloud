@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.minsait.onesait.platform</groupId>
 	<artifactId>onesaitplatform-parent</artifactId>
-	<version>2.1.4-gradius</version>
+	<version>2.1.0-ce</version>
 	<packaging>pom</packaging>
 
 	<name>onesaitplatform-parent</name>
 	<description>onesait Platform is the Digital Platform of Minsait, aka Open Platform</description>
 
 	<properties>
-		<onesaitplatform.version>2.1.4-gradius</onesaitplatform.version>
+		<onesaitplatform.version>2.1.0-ce</onesaitplatform.version>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
