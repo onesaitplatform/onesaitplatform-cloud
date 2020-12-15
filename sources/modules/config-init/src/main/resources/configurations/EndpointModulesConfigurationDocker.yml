@@ -44,6 +44,4 @@ onesaitplatform:
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
     reportEngine:
       base: http://reportengine:18400/report-engine
-    openData:
-      base: https://${SERVER_NAME}/opendata
 
