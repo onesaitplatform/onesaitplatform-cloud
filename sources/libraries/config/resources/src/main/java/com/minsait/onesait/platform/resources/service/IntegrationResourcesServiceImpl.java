@@ -275,16 +275,24 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 		} catch (final Exception e) {
 			log.warn(
 					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
-			urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
-					.getOnesaitplatform().get("urls");
+			try{
+				urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
+						.getOnesaitplatform().get("urls");
+			}catch (final Exception e) {
+				log.error("Error while loading default classpath endpoints config", e);
+			}
 		}
 
 		globalConfiguration = configurationService.getGlobalConfiguration(profile);
 		if (globalConfiguration == null) {
 			log.warn(
 					"No OP global configuration found, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
-			globalConfiguration = getConfigurationFromResource(GLOBAL_CONFIG_PREFIX_FILE + profile + YML_SUFFIX,
-					AllConfiguration.class).getOnesaitplatform();
+			try{
+				globalConfiguration = getConfigurationFromResource(GLOBAL_CONFIG_PREFIX_FILE + profile + YML_SUFFIX,
+						AllConfiguration.class).getOnesaitplatform();
+			}catch (final Exception e) {
+				log.error("Error while loading default classpath global config", e);
+			}
 		}
 
 	}
