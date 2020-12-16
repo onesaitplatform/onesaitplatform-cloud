@@ -278,8 +278,8 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 			try{
 				urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
 						.getOnesaitplatform().get("urls");
-			}catch (final Exception e) {
-				log.error("Error while loading default classpath endpoints config", e);
+			}catch (final Exception e1) {
+				log.error("Error while loading default classpath endpoints config", e1);
 			}
 		}
 
@@ -290,8 +290,8 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 			try{
 				globalConfiguration = getConfigurationFromResource(GLOBAL_CONFIG_PREFIX_FILE + profile + YML_SUFFIX,
 						AllConfiguration.class).getOnesaitplatform();
-			}catch (final Exception e) {
-				log.error("Error while loading default classpath global config", e);
+			}catch (final Exception e2) {
+				log.error("Error while loading default classpath global config", e2);
 			}
 		}
 
