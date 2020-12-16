@@ -1,6 +1,6 @@
 #Integration Resources docker
 onesaitplatform:
-  urls: 
+  urls:
     domain:
       base: https://${SERVER_NAME}/
     digitalTwinBroker:
@@ -35,20 +35,10 @@ onesaitplatform:
     monitoringUI:
       base: https://${SERVER_NAME}/monitoring
       embedded: https://${SERVER_NAME}/monitoring/indexNoHeader.html
-    gravitee:      
-      ui: https://${SERVER_NAME}/gravitee/ui/#!
-      management: https://${SERVER_NAME}/gravitee/management
-      gateway: https://${SERVER_NAME}/gravitee/gateway
     rulesEngine:
       base: https://${SERVER_NAME}/rules-engine
       advice: http://rules-engine-service:20200/rules-engine/advice
-    bpmEngine:
-      base: https://${SERVER_NAME}/bpm-engine
-      deployment: https://${SERVER_NAME}/bpm-engine/rest/deployment/create
     dashboardEngine:
       edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
       view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
-    openData:
-      base: https://${SERVER_NAME}/opendata
-
