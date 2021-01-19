@@ -440,6 +440,7 @@ var DeviceCreateController = function() {
 					+ checked
 					+ '></td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><span th:text="#{gen.deleteBtn}"> Delete </span></button></div></td></tr>';
 				$('#datamodel_tokens > tbody').append(html);
+				$('#parameter_clientPlatformTokens').val(tokens)
 
 
 			}
@@ -484,7 +485,10 @@ var DeviceCreateController = function() {
 						content : deviceCreateJson.deviceChangeActiveError
 					});
 					return false;
+				}else{
+					refreshTokens($("#identification").val());
 				}
+
 			},
 			error : function(data, status, er) {
 				$.alert({

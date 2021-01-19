@@ -251,7 +251,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final ClientPlatform cli = clientPlatformRepository.save(ndevice);
 
 			final JSONArray tokensArray = new JSONArray(device.getTokens());
-			Set<Token> tokens = new HashSet<>();
+			final Set<Token> tokens = new HashSet<>();
 			for (int i = 0; i < tokensArray.length(); i++) {
 				final JSONObject token = tokensArray.getJSONObject(i);
 				final Token tokn = new Token();
@@ -329,6 +329,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Transactional
 	public void updateDevice(DeviceCreateDTO device, String userId) {
 		final ClientPlatform ndevice = clientPlatformRepository.findByIdentification(device.getIdentification());
+		final List<Token> tokens = tokenRepository.findByClientPlatform(ndevice);
 		ndevice.setMetadata(device.getMetadata());
 		ndevice.setDescription(device.getDescription());
 		JSONArray ontologies = new JSONArray();
@@ -358,6 +359,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				createAccessForOntology(ontology, ndevice, userId);
 			}
 		}
+		ndevice.getTokens().clear();
+		ndevice.getTokens().addAll(tokens);
 		clientPlatformRepository.save(ndevice);
 		log.debug("stop");
 	}
