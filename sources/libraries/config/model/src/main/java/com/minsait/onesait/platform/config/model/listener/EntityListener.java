@@ -36,6 +36,7 @@ import com.minsait.onesait.platform.multitenant.config.model.MasterUserHistoric;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterDeviceTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterDigitalTwinDeviceTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserHistoricRepository;
@@ -66,6 +67,8 @@ public class EntityListener {
 	private static MasterDigitalTwinDeviceTokenRepository masterDigitalTwinDeviceTokenRepository;
 
 	private static MasterUserConverter converter;
+	
+	private static IoTSessionRepository sessionRepository;
 
 	public static void initialize() {
 		masterUserHistoricRepository = BeanUtil.getBean(MasterUserHistoricRepository.class);
@@ -76,6 +79,7 @@ public class EntityListener {
 		masterDeviceTokenRepository = BeanUtil.getBean(MasterDeviceTokenRepository.class);
 		converter = BeanUtil.getBean(MasterUserConverter.class);
 		masterDigitalTwinDeviceTokenRepository = BeanUtil.getBean(MasterDigitalTwinDeviceTokenRepository.class);
+		sessionRepository = BeanUtil.getBean(IoTSessionRepository.class);
 	}
 
 	@PrePersist
@@ -86,8 +90,9 @@ public class EntityListener {
 				log.warn("Could not add Master user{}, already exists", user.getUserId());
 			} else {
 				final MasterUser master = converter.convert(user);
-				if (master.getTenant() == null)
+				if (master.getTenant() == null) {
 					master.setTenant(getCurrentTenant());
+				}
 				final Date createDate = new Date();
 				master.setFailedAtemps(0);
 				master.setLastPswdUpdate(createDate);
@@ -106,12 +111,14 @@ public class EntityListener {
 		if (o instanceof User) {
 			final User user = (User) o;
 			MasterUser master = converter.convert(user);
-			master.setTenant((masterUserRepository.findByUserId(user.getUserId()).getTenant()));
-			JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
+			master.setTenant(masterUserRepository.findByUserId(user.getUserId()).getTenant());
+			final JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
 
-			String newPass = converter.convertToDatabaseColumn(user.getPassword());
+			final String newPass = converter.convertToDatabaseColumn(user.getPassword());
 
-			boolean changePass = !masterUserRepository.findByUserId(user.getUserId()).getPassword().equals(newPass);
+			final boolean changePass = !masterUserRepository.findByUserId(user.getUserId()).getPassword()
+					.equals(newPass);
+
 			if (changePass) {
 				final Date createDate = new Date();
 				master.setFailedAtemps(0);
@@ -135,6 +142,8 @@ public class EntityListener {
 			masterUserTokenRepository.deleteByToken(((UserToken) object).getToken());
 			log.debug("Created Master User Token");
 		} else if (object instanceof Token) {
+			sessionRepository.findByClientPlatform(((Token) object).getClientPlatform().getIdentification())
+			.forEach(s -> sessionRepository.deleteBySessionKey(s.getSessionKey()));
 			masterDeviceTokenRepository.deleteByTokenName(((Token) object).getTokenName());
 		} else if (object instanceof User) {
 			// avoid deleting master users from non authorized verticals

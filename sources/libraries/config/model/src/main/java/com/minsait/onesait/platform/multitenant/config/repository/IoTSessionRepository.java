@@ -72,6 +72,13 @@ public interface IoTSessionRepository extends JpaRepository<IoTSession, String> 
 	@Cacheable(cacheNames = SESSIONS_REPOSITORY, unless = "#result == null", key = "#p0")
 	IoTSession findBySessionKey(String sessionKey);
 	
+	List<IoTSession> findByClientPlatform(String clientPlatform);
+
+	@Override
+	@CacheEvict(cacheNames = SESSIONS_REPOSITORY, allEntries = true)
+	void deleteAll(Iterable<? extends IoTSession> entities);
+
+	
 	
 	//the method calling this one must deal with the cache updated
 		//for example, a method that returns the session can use this annotation: @CachePut(cacheNames = IoTSessionRepository.SESSIONS_REPOSITORY, key = "#p0.sessionKey", unless = "#result == null")
