@@ -251,14 +251,14 @@
 			<artifactId>simpleclient_dropwizard</artifactId> <version>${version.prometheus}</version> 
 			</dependency> <dependency> <groupId>io.prometheus</groupId> <artifactId>simpleclient_hotspot</artifactId> 
 			<version>${version.prometheus}</version> </dependency> <dependency> <groupId>com.google.guava</groupId> 
-			<artifactId>guava</artifactId> <version>24.0-jre</version> </dependency> 
+			<artifactId>guava</artifactId> <version>29.0-jre</version> </dependency> 
 			<dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId> 
 			<version>${version.hawtio}</version> </dependency> -->
 
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>24.0-jre</version>
+			<version>29.0-jre</version>
 		</dependency>
 
 		<!-- CACHE -->
