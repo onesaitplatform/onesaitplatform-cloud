@@ -408,18 +408,9 @@
 
 	<repositories>
 		<repository>
-			<id>Spring Plugins</id>
-			<url>https://repo.spring.io/plugins-release/</url>
-		</repository>
-		<repository>
 			<id>Jasper</id>
 			<url>https://maven.xwiki.org/externals</url>
 		</repository>
-		<repository>
-			<id>jasper</id>
-			<url>http://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts</url>
-		</repository>
-
 	</repositories>
 
 	<build>

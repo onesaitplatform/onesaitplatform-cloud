@@ -144,7 +144,7 @@
     <repositories>
         <repository>
            <id>cloudera</id>
-           <url>http://repository.cloudera.com/artifactory/cloudera-repos/</url>
+           <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
         </repository>
     </repositories>
 
