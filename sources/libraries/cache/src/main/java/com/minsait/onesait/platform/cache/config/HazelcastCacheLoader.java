@@ -29,6 +29,12 @@ import org.springframework.core.env.Environment;
 
 import com.hazelcast.config.ClasspathXmlConfig;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionConfig;
+import com.hazelcast.config.EvictionConfig.MaxSizePolicy;
+import com.hazelcast.config.EvictionPolicy;
+import com.hazelcast.config.InMemoryFormat;
+import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.Client;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -49,6 +55,12 @@ public class HazelcastCacheLoader {
 
 	@Value("${onesaitplatform.transaction.timeout.seconds:60}")
 	private int transactionTimeout;
+	@Value("${onesaitplatform.oauth.cache.timeout.seconds:900}")
+	private int revokeTokenTimeout;
+	@Value("${onesaitplatform.oauth.cache.size:100000}")
+	private int revokeTokenSize;
+	@Value("${onesaitplatform.oauth.cache.maxsize.policy:PER_NODE}")
+	private String revokeTokenMaxSizePolicy;
 
 	@Bean(name = "globalCache")
 	@Primary
@@ -60,9 +72,16 @@ public class HazelcastCacheLoader {
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
+			config.getMapConfig("revokedTokens").setTimeToLiveSeconds(revokeTokenTimeout)
+			.setMaxSizeConfig(new MaxSizeConfig(revokeTokenSize,
+					com.hazelcast.config.MaxSizeConfig.MaxSizePolicy.valueOf(revokeTokenMaxSizePolicy)))
+			.setEvictionPolicy(EvictionPolicy.LFU);
 		} catch (final Exception e) {
 			log.info("ignoring maps transactionalOperations and lockedOntologies");
 		}
+		addCacheConfig(config, "MasterUserRepository");
+		addCacheConfig(config, "VerticalRepository");
+		addCacheConfig(config, "MasterUserRepositoryLazy");
 
 		return Hazelcast.newHazelcastInstance(config);
 	}
@@ -83,9 +102,16 @@ public class HazelcastCacheLoader {
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
+			config.getMapConfig("revokedTokens").setTimeToLiveSeconds(revokeTokenTimeout)
+			.setMaxSizeConfig(new MaxSizeConfig(revokeTokenSize,
+					com.hazelcast.config.MaxSizeConfig.MaxSizePolicy.valueOf(revokeTokenMaxSizePolicy)))
+			.setEvictionPolicy(EvictionPolicy.LFU);
 		} catch (final Exception e) {
 			log.info("ignoring maps transactionalOperations and lockedOntologies");
 		}
+		addCacheConfig(config, "MasterUserRepository");
+		addCacheConfig(config, "VerticalRepository");
+		addCacheConfig(config, "MasterUserRepositoryLazy");
 		return Hazelcast.newHazelcastInstance(config);
 	}
 
@@ -110,11 +136,11 @@ public class HazelcastCacheLoader {
 						final IQueue<String> disconectedClientsQueue = hazelcastInstance
 								.getQueue("disconectedClientsQueue");
 						disconectedClientsQueue
-								.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
+						.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
 						final IQueue<String> disconectedClientsSubscription = hazelcastInstance
 								.getQueue("disconectedClientsSubscription");
 						disconectedClientsSubscription
-								.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
+						.put(client.getSocketAddress().getAddress().getLocalHost().getHostName());
 						log.info("Cache. Info Added to the queue: " + client.getSocketAddress().getHostName() + ":"
 								+ client.getSocketAddress().getPort());
 					} catch (InterruptedException | UnknownHostException e) {
@@ -130,5 +156,13 @@ public class HazelcastCacheLoader {
 		} else {
 			return new NoOpCacheManager();
 		}
+	}
+
+	private void addCacheConfig(Config config, String cacheName) {
+		final NearCacheConfig nearCacheConfig = new NearCacheConfig().setInMemoryFormat(InMemoryFormat.OBJECT)
+				.setCacheLocalEntries(true).setInvalidateOnChange(false).setTimeToLiveSeconds(600)
+				.setEvictionConfig(new EvictionConfig().setMaximumSizePolicy(MaxSizePolicy.ENTRY_COUNT).setSize(5000)
+						.setEvictionPolicy(EvictionPolicy.LRU));
+		config.getMapConfig(cacheName).setInMemoryFormat(InMemoryFormat.BINARY).setNearCacheConfig(nearCacheConfig);
 	}
 }

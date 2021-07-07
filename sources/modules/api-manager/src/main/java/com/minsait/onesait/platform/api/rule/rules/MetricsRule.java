@@ -24,13 +24,14 @@ import org.jeasy.rules.annotation.Priority;
 import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.metrics.CounterService;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.Constants;
 import com.minsait.onesait.platform.config.model.Api;
+
+import io.micrometer.core.instrument.MeterRegistry;
 
 @Component
 @Rule
@@ -39,7 +40,7 @@ public class MetricsRule extends DefaultRuleBase {
 	private static final String RULE_AUDIT = "rule.audit.";
 
 	@Autowired
-	private CounterService counterService;
+	private MeterRegistry meterRegistry;
 
 	@Priority
 	public int getPriority() {
@@ -48,21 +49,17 @@ public class MetricsRule extends DefaultRuleBase {
 
 	@Condition
 	public boolean existsRequest(Facts facts) {
-		HttpServletRequest request = facts.get(RuleManager.REQUEST);
+		final HttpServletRequest request = facts.get(RuleManager.REQUEST);
 		return ((request != null) && canExecuteRule(facts));
 	}
 
 	@Action
 	public void setFirstDerivedData(Facts facts) {
-		Map<String, Object> data = facts.get(RuleManager.FACTS);
+		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 
-		Api api = (Api) data.get(Constants.API);
-		String method = (String) data.get(Constants.METHOD);
-		String authenticationHeader = (String) data.get(Constants.AUTHENTICATION_HEADER);
-
-		counterService.increment(RULE_AUDIT + api.getIdentification());
-		counterService.increment(RULE_AUDIT + api.getIdentification() + "." + authenticationHeader);
-		counterService.increment(RULE_AUDIT + api.getIdentification() + "." + method);
+		final Api api = (Api) data.get(Constants.API);
+		final String method = (String) data.get(Constants.METHOD);
+		meterRegistry.counter(RULE_AUDIT, "api", api.getIdentification(), "method", method).increment();
 
 	}
 

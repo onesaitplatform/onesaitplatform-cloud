@@ -95,7 +95,7 @@
 										<div class="row">
 											<div class="col-md-12 col-sm-12 grid grid--effect-vega">																										
 												<!-- Creation IoT -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createiot'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createiot'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{layer.create.iot}" >Creation IoT Layer</h3>																
 													<div class="stack">
 														
@@ -112,7 +112,7 @@
 												</a>
 												<!-- end Creation IoT -->		
 												<!-- Creation from External URL -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createexternal'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createexternal'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{layer.create.external}" >Creation from URL</h3>																
 													<div class="stack">
 														<div class="stack__figure">
@@ -144,8 +144,8 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>	
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>	
 
 
 	

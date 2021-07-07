@@ -20,9 +20,11 @@ import java.nio.charset.StandardCharsets;
 
 import javax.annotation.PostConstruct;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
 
 import org.springframework.stereotype.Component;
 
@@ -33,11 +35,18 @@ public class ScriptProcessorFactoryImpl implements ScriptProcessorFactory {
 
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	
+	private ThreadLocal<ScriptEngine> engineHolder;
+	
 	@PostConstruct
 	public void init() {
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
+		engineHolder = new ThreadLocal<ScriptEngine>() {
+			@Override
+			protected ScriptEngine initialValue() {
+				return new ScriptEngineManager().getEngineByName("nashorn");
+			}
+		};
 	}
-
+	
 	@Override
 	public ScriptEngine getScriptEngine() {
 		return engine;
@@ -46,11 +55,14 @@ public class ScriptProcessorFactoryImpl implements ScriptProcessorFactory {
 	@Override
 	public Object invokeScript(String script,Object...data) throws ScriptException{
 		try {
+		
 			String scriptPostprocessFunction = "function postprocess(data){ " + script + " }";
 			ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
 					scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-			engine.eval(new InputStreamReader(scriptInputStream));
-			return ((Invocable)engine).invokeFunction("postprocess", data);
+					
+			engineHolder.get().eval(new InputStreamReader(scriptInputStream));
+			return ((Invocable)engineHolder.get()).invokeFunction("postprocess", data);
+		
 		} catch (NoSuchMethodException e) {
 			throw new ScriptException(e);
 		}

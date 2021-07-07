@@ -38,13 +38,13 @@ EXPOSE 21000
 ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
-    REALTIMEDBAUTHDB=admin \
-	  REALTIMEDBUSEAUTH=true \
-	  REALTIMEDBUSER=platformadmin \
-	  REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
+    REALTIMEDBAUTHDB=admin \ 
+    REALTIMEDBUSEAUTH=true \
+    REALTIMEDBUSER=platformadmin \ 
+    REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
-		CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
-		CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+    CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
     JDBCPROTOCOL="jdbc:mysql:" \
@@ -53,10 +53,18 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     ELASTICDBPORT=9200 \
     LOADCONFIGDB=true \
     LOADMONGODB=false \
+    LOADTESTDATA=false \
     LOADELASTICDB=false \
     LOADMAILCONFIG=false \
+    LOADGRAYLOGDB=false \
     REALTIMEDBNAME=onesaitplatform_rtdb \
     CONTROLPANEL_SERVICE=localhost \
-    UPDATE_MODE_MULTITENANT=true
+    UPDATE_MODE_MULTITENANT=true \
+    GRAYLOG_USER=admin \
+    GRAYLOG_PASS=ENC(WOukGj28rhRwzEa3HDCnH2p4vX3Iur8V) \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201 \
+    GRAYLOG_EXTERNAL_URI=http://log-centralizer:9000
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

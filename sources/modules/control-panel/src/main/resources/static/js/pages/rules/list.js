@@ -7,6 +7,7 @@ RuleDomain.List = (function() {
 	var headersObj = {};
 	headersObj[csrfHeader] = csrfToken;
 	var init = function() {
+		initTableEvents();
 		setTimeout(reloadTooltips, 100);
 	};
 	
@@ -86,7 +87,7 @@ RuleDomain.List = (function() {
 						theme : 'light',
 						content : 'Domain '+ message
 					});
-		        	reloadRuleDomainTable();
+		        	location.reload()
 		        }).fail(function(error) {
 		        	$.alert({
 						title : 'ERROR',

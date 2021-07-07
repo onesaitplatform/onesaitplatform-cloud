@@ -54,7 +54,7 @@ public class AppExport extends AppParent {
 	@Setter
 	private ProjectExport project;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
@@ -65,7 +65,7 @@ public class AppExport extends AppParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppRole> appRoles = new HashSet<>();
+	private Set<AppRoleExport> appRoles = new HashSet<>();
 
 	@JoinTable(name = "app_associated", joinColumns = {
 			@JoinColumn(name = "parent_app", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
@@ -74,13 +74,13 @@ public class AppExport extends AppParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppExport> childApps;
+	private Set<AppChildExport> childApps;
 
 	public AppExport() {
 	};
 
 	public AppExport(String id, String identification, String description, UserExport user, String secret,
-			String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
+			String user_extra_fields, int tokenValiditySeconds, AppRoleExport appRole, Date createAt, Date updateAt) {
 		this.setId(id);
 		this.setIdentification(identification);
 		this.setDescription(description);
@@ -90,7 +90,7 @@ public class AppExport extends AppParent {
 		this.setSecret(secret);
 		this.setUserExtraFields(user_extra_fields);
 		this.setTokenValiditySeconds(tokenValiditySeconds);
-		Set<AppRole> appRoles = new HashSet<AppRole>();
+		Set<AppRoleExport> appRoles = new HashSet<AppRoleExport>();
 		if (appRole != null) {
 			appRoles.add(appRole);
 		}

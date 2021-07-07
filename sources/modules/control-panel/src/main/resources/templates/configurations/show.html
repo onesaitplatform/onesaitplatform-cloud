@@ -94,6 +94,21 @@
 										<form role="form" id="user_view_form" action="view.html" th:object="${configuration}" method="post" class="form">
 											<div class="form-body">
 												<!-- type, userid -->
+												<!-- Json-->
+												<div class="row">												
+													<div class="col-md-4 col-sm-4 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{gen.identification} + ':'"> Identification </label>
+															<p class="form-control-static-block " th:text="*{suffix}"> Suffix </p>
+														</div>
+													</div>	
+													<div class="col-md-8 col-sm-8 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{configuration.description} + ':'">Configuration Description</label>
+															<p class="form-control-static-block " th:text="*{description}"> Description </p>
+														</div>
+													</div>
+												</div>
 												<div class="row">
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
@@ -114,25 +129,10 @@
 														</div>
 													</div>											
 												</div>
-												<!-- Json-->
-												<div class="row">												
-													<div class="col-md-4 col-sm-4 col-xs-12">
-														<div class="form-group">
-															<label class="control-label" th:text="#{configuration.suffix} + ':'"> Suffix </label>
-															<p class="form-control-static-block " th:text="*{suffix}"> Suffix </p>
-														</div>
-													</div>	
-													<div class="col-md-8 col-sm-8 col-xs-12">
-														<div class="form-group">
-															<label class="control-label" th:text="#{configuration.description} + ':'">Configuration Description</label>
-															<p class="form-control-static-block " th:text="*{description}"> Description </p>
-														</div>
-													</div>
-												</div>
 												<div class="row">
 													<div class="col-md-12 col-sm-12 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{configurations.yml}">YML Config</label>														
+															<label class="control-label" th:text="#{configurations.config}">Config</label>														
 															<textarea readonly="true" id="ymlConfig" name="ymlConfig"  th:required="true" th:field="*{ymlConfig}" class="form-control bold autoExpand" rows="6" data-min-rows='5'></textarea>
 														</div>
 													</div>																					
@@ -150,18 +150,18 @@
 																										
 													
 													<!-- REMOVE TO-DO: caducado -->
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline  blue" name="delete"  value="Remove" th:onclick="'deleteConfigurationConfirmation(\'' + ${configuration?.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline  blue" name="delete"  value="Remove" th:onclick="'deleteConfigurationConfirmation(\'' + ${configuration?.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 													
 													<span class="sep no-border">&nbsp;</span>
 													
 													<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} != ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline  blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline  blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#authentication.name} != ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline  blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#authentication.name} == ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline  blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 													
 													<span class="sep">&nbsp;</span>
 													
 													<!-- CREATE -->
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/configurations/} + 'create' + '\');'" > <span th:text="#{gen.createBtn}"> New</span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/configurations/} + 'create' + '\');'" > <span th:text="#{gen.createBtn}"> New</span></button>
 													
 													
 													
@@ -189,12 +189,12 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
-	<script th:src="@{/static/vendor/codemirror/mode/yaml/yaml.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/yaml/yaml.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
 	<!-- TEMPLATE CONTROLLER  -->	
 		
 	<!-- MAIN INIT -->
@@ -223,17 +223,37 @@
 		// init when Document is ready
 		showLog ? console.log('SHOW Configuration ready()...') : '';
 		
-		
 		var myTextArea = document.getElementById('ymlConfig');
-        var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
-        	mode: "text/x-yaml",
-            lineNumbers: false,
-            matchBrackets: true,
-            styleActiveLine: true,
-            theme:"elegant"          
-        });
-		myCodeMirror.setSize("100%", 350);
+		if(isJson($("#ymlConfig").val())){
+			var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+	        	mode: "application/json",
+	            lineNumbers: false,
+	            matchBrackets: true,
+	            styleActiveLine: true,
+	            theme:"elegant"          
+	        });
+			myCodeMirror.setSize("100%", 350);
+		}else{
+			var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+	        	mode: "text/x-yaml",
+	            lineNumbers: false,
+	            matchBrackets: true,
+	            styleActiveLine: true,
+	            theme:"elegant"          
+	        });
+			myCodeMirror.setSize("100%", 350);
+		}
+        
 	});
+	
+	function isJson(str) {
+	    try {
+	        JSON.parse(str);
+	    } catch (e) {
+	        return false;
+	    }
+	    return true;
+	}
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  

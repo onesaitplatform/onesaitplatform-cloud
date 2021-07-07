@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.ontology;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 	@Override
 	public List<OntologyTimeSeriesProperty> getTimeSeriesPropertiesByOntologyTimeSeries(
 			OntologyTimeSeries ontologyTimeSeries) {
-		Set<OntologyTimeSeriesProperty> properties = ontologyTimeSeriesPropertyRepository
+		final Set<OntologyTimeSeriesProperty> properties = ontologyTimeSeriesPropertyRepository
 				.findByOntologyTimeSeries(ontologyTimeSeries);
 		return properties.stream().collect(Collectors.toList());
 	}
@@ -79,7 +80,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 	@Override
 	public List<OntologyTimeSeriesWindow> getTimeSeriesWindowByOntologyTimeSeries(
 			OntologyTimeSeries ontologyTimeSeries) {
-		Set<OntologyTimeSeriesWindow> windows = ontologyTimeSeriesWindowRepository
+		final Set<OntologyTimeSeriesWindow> windows = ontologyTimeSeriesWindowRepository
 				.findByOntologyTimeSeries(ontologyTimeSeries);
 		return windows.stream().collect(Collectors.toList());
 	}
@@ -167,7 +168,7 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 			String sessionUserId, OntologyConfiguration config, boolean cleanProperties, boolean cleanWindow) {
 		final Map<String, String> response = new HashMap<>();
 
-		final Ontology ontologyDb = ontologyRepository.findById(ontologyTimeSeriesDTO.getId());
+		final Ontology ontologyDb = ontologyRepository.findById(ontologyTimeSeriesDTO.getId()).orElse(null);
 		final User sessionUser = userService.getUser(sessionUserId);
 
 		if (cleanProperties)
@@ -235,6 +236,57 @@ public class OntologyTimeSeriesServiceImpl implements OntologyTimeSeriesService 
 				ontologyTimeSeriesPropertyRepository.findByOntologyTimeSeries(ontologyTimeSeries));
 		otsDTO.setTimeSeriesWindow(ontologyTimeSeriesWindowRepository.findByOntologyTimeSeries(ontologyTimeSeries));
 		return otsDTO;
+	}
+	
+	@Override
+	@Transactional
+	public void cloneOntologyTimeSeries(String identification, Ontology ontology, User user, OntologyConfiguration config) {
+		final OntologyTimeSeriesServiceDTO otsDTO = generateOntologyTimeSeriesDTO(ontology);		
+		final Ontology clone = new Ontology();
+		
+		clone.setIdentification(identification);
+		clone.setUser(user);
+		clone.setDescription(ontology.getDescription());
+		clone.setActive(ontology.isActive());
+		clone.setPublic(ontology.isPublic());
+		clone.setDataModel(ontology.getDataModel());
+		clone.setDataModelVersion(ontology.getDataModelVersion());
+		clone.setJsonSchema(ontology.getJsonSchema());
+		clone.setMetainf(ontology.getMetainf());
+		clone.setRtdbToHdbStorage(ontology.getRtdbToHdbStorage());
+		clone.setRtdbDatasource(ontology.getRtdbDatasource());
+		clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
+		
+		ontologyService.createOntology(clone, config);
+		
+		OntologyTimeSeries oTS = new OntologyTimeSeries();
+		oTS.setOntology(clone);
+		oTS.setTimeSeriesProperties(new HashSet<OntologyTimeSeriesProperty>());
+		oTS.setTimeSeriesWindows(new HashSet<OntologyTimeSeriesWindow>());
+
+		for (final OntologyTimeSeriesProperty oTSP : otsDTO.getTimeSeriesProperties()) {
+			OntologyTimeSeriesProperty oTSPClone = new OntologyTimeSeriesProperty();
+			oTSPClone.setPropertyDataType(oTSP.getPropertyDataType());
+			oTSPClone.setPropertyName(oTSP.getPropertyName());
+			oTSPClone.setPropertyType(oTSP.getPropertyType());
+			oTSPClone.setOntologyTimeSeries(oTS);
+			oTS.getTimeSeriesProperties().add(oTSPClone);
+		}
+
+		for (final OntologyTimeSeriesWindow oTSW : otsDTO.getTimeSeriesWindow()) {
+			OntologyTimeSeriesWindow oTSWClone = new OntologyTimeSeriesWindow();
+			oTSWClone.setAggregationFunction(oTSW.getAggregationFunction());
+			oTSWClone.setBdh(oTSW.isBdh());
+			oTSWClone.setFrecuency(oTSW.getFrecuency());
+			oTSWClone.setFrecuencyUnit(oTSW.getFrecuencyUnit());
+			oTSWClone.setRetentionBefore(oTSW.getRetentionBefore());
+			oTSWClone.setRetentionUnit(oTSW.getRetentionUnit());
+			oTSWClone.setWindowType(oTSW.getWindowType());
+			oTSWClone.setOntologyTimeSeries(oTS);
+			oTS.getTimeSeriesWindows().add(oTSWClone);
+		}
+		ontologyTimeSeriesRepository.save(oTS);
+		
 	}
 
 }

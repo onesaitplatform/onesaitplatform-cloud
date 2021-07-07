@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.collections4.IteratorUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

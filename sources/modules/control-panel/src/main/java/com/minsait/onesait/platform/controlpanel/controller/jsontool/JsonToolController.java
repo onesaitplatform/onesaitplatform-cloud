@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -88,7 +89,17 @@ public class JsonToolController {
 		try {
 			ontologyBusinessService.createOntology(ontology, ontology.getUser().getUserId(), null);
 		} catch (final Exception e) {
-			return "{\"result\":\"ko\", \"cause\" :\"" + e.getMessage().replaceAll("\"", "'") + "\"}";
+			if (e.getCause() instanceof com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException) {
+				final JsonObject responseBody = new JsonObject();
+				responseBody.addProperty("result", "ko");
+				responseBody.addProperty("cause", e.getCause().getMessage());
+				return responseBody.toString();
+			} else {
+				final JsonObject responseBody = new JsonObject();
+				responseBody.addProperty("result", "ko");
+				responseBody.addProperty("cause", e.getMessage().replaceAll("\"", "'"));
+				return responseBody.toString();
+			}
 		}
 		final Ontology oDb = ontologyService.getOntologyByIdentification(ontology.getIdentification(),
 				utils.getUserId());
@@ -122,25 +133,36 @@ public class JsonToolController {
 						}
 
 						Integer.parseInt(objMapper.readTree(output).path("count").asText());
-						return "{\"result\":\"ok\", \"inserted\" :" + objMapper.readTree(output).path("count").asText()
-								+ "}";
-
+						final JsonObject responseBody = new JsonObject();
+						responseBody.addProperty("result", "ok");
+						responseBody.addProperty("inserted", objMapper.readTree(output).path("count").asText());
+						return responseBody.toString();
 					} catch (final NumberFormatException | JSONException ne) {
-						return "{\"result\":\"ok\", \"inserted\" :\"\"}";
+						final JsonObject responseBody = new JsonObject();
+						responseBody.addProperty("result", "ok");
+						responseBody.addProperty("inserted", "");
+						return responseBody.toString();
 					}
 
 				} else {
 					log.error("Error insert BULK data:" + response.getMessage());
-					return "{\"result\":\"ERROR\", \"cause\" :\"Error " + response.getMessage() + "\"}";
+					final JsonObject responseBody = new JsonObject();
+					responseBody.addProperty("result", "ERROR");
+					responseBody.addProperty("cause", response.getMessage().replaceAll("\"", "'"));
+					return responseBody.toString();
 				}
 			} catch (final Exception e) {
-				return "{\"result\":\"ERROR\", \"cause\" :\"Error insert BULK data. "
-						+ e.getMessage().replaceAll("\"", "'") + "\"}";
+				final JsonObject responseBody = new JsonObject();
+				responseBody.addProperty("result", "ERROR");
+				responseBody.addProperty("cause", "Error insert BULK data. " + e.getMessage().replaceAll("\"", "'"));
+				return responseBody.toString();
 			}
 
 		} catch (final IOException e) {
-			return "{\"result\":\"ko\", \"cause\" :\"Error parsing JSON. " + e.getMessage().replaceAll("\"", "'")
-					+ "\"}";
+			final JsonObject responseBody = new JsonObject();
+			responseBody.addProperty("result", "ko");
+			responseBody.addProperty("cause", "Error parsing JSON. " + e.getMessage().replaceAll("\"", "'"));
+			return responseBody.toString();
 		}
 
 	}

@@ -19,7 +19,7 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
-import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.model.VerticalParent;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +42,7 @@ public class UserPrincipal extends User {
 	private String tenant;
 
 	public UserPrincipal(String username, String password, Collection<? extends GrantedAuthority> authorities,
-			Vertical vertical, String tenant) {
+			VerticalParent vertical, String tenant) {
 		super(username, password, authorities);
 		verticalSchema = vertical == null ? null : vertical.getSchema();
 		this.vertical = vertical == null ? null : vertical.getName();

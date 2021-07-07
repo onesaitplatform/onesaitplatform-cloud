@@ -59,17 +59,12 @@
 		<div class="page-content-wrapper">
 			
 			<!-- BEGIN CONTENT BODY -->
-			<div class="page-content">
-			
-                <div class="alert alert-success display-hide">
-					<span th:text="${globalMessage}"></span>
-				</div>		
+			<div class="page-content">	
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="la la-angle-right"></i></li>
-						<li><a th:href="@{/users/list}" th:text="#{user.breadcrumb.prev}">Home</a><i class="la la-angle-right"></i></li>
+						<li><a th:href="@{/}">Home</a><i class="la la-angle-right"></i></li>						
 						<li>
 							<span th:if="${user.userId} == null" th:text="#{user.breadcrumb.create}">Show User</span>
 							<span th:if="${user.userId} != null" th:text="#{user.breadcrumb.update}">Update User</span>
@@ -115,7 +110,7 @@
 											<span th:if="${user.userId} != null" class="caption-subject" th:text="#{user.template.password.update}" >Modificar contraseña</span>
 										</a>
 									</li>
-									<li id="tab-simpleData" >
+									<li th:if="${user.userId} != null" id="tab-simpleData" >
 										<a href="#tab3" id="dataUser-tab3" data-toggle="tab" aria-expanded="false"> 
 											<span class="caption-subject " th:text="#{user.template.data.update}">Privacy preferences</span>  
 										</a> 
@@ -182,7 +177,7 @@
 											</div>
 											<!-- Role, created-at, removed-at -->
 											<div class="row">
-												<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')">
+												<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')">
 													<div class="form-group">
 														<label class="control-label" th:text="#{user.rolTypeName} + ':'">Role</label>
 														<select id="roles" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{user.rolTypeName}" th:field="*{role.name}" th:required="true">
@@ -190,12 +185,11 @@
 														</select>
 													</div>
 												</div>
-												<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+												<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 													<div class="form-group">
 														<label class=""> <span th:text="#{user.dateCreated} + ':'">Created At</span></label>
 														<div class=" ">
-															
-															<input id="datecreated" type="text"  th:required="true"  maxlength="50" th:field="*{createdAt}" class="form-control datetime no-remove"  th:readonly="*{createdAt}" th:placeholder="#{user.dateCreated}"/>
+															<input id="datecreated" type="text"  th:required="true"  maxlength="50" th:field="*{createdAt}" class="form-control datetime no-remove"  disabled="disabled" th:placeholder="#{user.dateCreated}"/>
 														</div>
 													</div>
 												</div>
@@ -209,18 +203,19 @@
 													</div> -->
 													<div class="form-group">
 														<label class=""> <span th:text="#{user.dateDeleted} + ':'">Deleted At</span></label>
-														<div class=" ">																														
-															<input id="datedeleted" type="text" maxlength="50"  class="form-control datetime"  />
+														<div class=" ">
+															<input id="datedeleted" th:field="*{dateDeleted}" type="text" maxlength="50" class="form-control datetime"  />
+
 														</div>
 													</div>
 													
 													
 												</div>
-												<div class="col-md-2 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+												<div class="col-md-2 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 													<div class="form-group">
 														<label class="" th:text="#{user.active} + '?'">Active</label>
 														<div class="mt-checkbox-list">
-															<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{user.active.help},data-title=#{user.active}"><div class="inline" th:text="#{user.active}">User Active?</div><i class="la la-info-circle font-lg"></i>
+															<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{user.active.help},data-title=#{user.active}"><div class="inline font-xs" th:text="#{user.active}">User Active?</div><i class="la la-info-circle font-lg"></i>
 																<input id="checkboxactive" name="active" type="checkbox" class="form-control" th:field="*{active}" th:checked="checked"/>
 																<span></span><!-- needed by styles -->
 															</label>																													
@@ -228,7 +223,7 @@
 													</div>
 												</div>
 											</div>
-											<div th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled') AND user.userId == null} " class="row">
+											<div sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')} " class="row">
 												<div class="col-md-4 col-sm-6 col-xs-12">
 													<div class="form-group">
 														<label th:text="#{multitenancy.tenant} + ':'">Tenant</label>
@@ -249,7 +244,7 @@
 														<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><i class="la la-lightbulb-o"></i> <span th:text="#{user.new.password}+ ':'" >Password</span></label>
 														<div class=" ">
 															
-															<input id="newpasswordbox" name="newpasswordbox" type="password" th:required="true" maxlength="30" class="form-control" placeholder="Password"  th:pattern="${passwordPattern}" />   
+															<input id="newpasswordbox" name="newpasswordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password"  th:pattern="${passwordPattern}" />   
 														</div>
 													</div>
 												</div>
@@ -259,7 +254,7 @@
 														<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><i class="la la-lightbulb-o"></i> <span th:text="#{user.repeat.password}+ ':'" >Password</span></label>
 														<div class=" ">
 															
-															<input id="repeatpasswordbox" name="repeatpasswordbox" type="password" th:required="true" maxlength="30" class="form-control" placeholder="Password" data-rule-equalTo="#newpasswordbox"  th:pattern="${passwordPattern}" /> 
+															<input id="repeatpasswordbox" name="repeatpasswordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password" data-rule-equalTo="#newpasswordbox"  th:pattern="${passwordPattern}" /> 
 														</div>
 													</div>
 												</div>													
@@ -320,7 +315,7 @@
 																	
 																			<tbody th:remove="all-but-first">
 																			
-																				<tr th:each="ontology : ${ontologies1}" pages:paginate="10"  th:if="(${#authentication.name} == ${ontology.user.userId})">
+																				<tr th:each="ontology : ${ontologies1}" pages:paginate="10">
 																					<!-- SELECT OPTION -->  
 																					<td class="selected-ontology" style="width:3%;" ><input type="checkbox" name="checboxForgetData" th:onchange="'addToDelete(\'' +${ontology.id} + '\');'" />&nbsp;</td>
 																					<!-- IDENTIFICATION/NAME -->
@@ -406,7 +401,7 @@
 																				</tr>
 																			</thead>
 																			<tbody th:remove="all-but-first">
-																				<tr th:each="ontology : ${ontologies}" pages:paginate="10" th:if="(${#authentication.name} == ${ontology.user.userId})">
+																				<tr th:each="ontology : ${ontologies}" pages:paginate="10">
 																					<!-- IDENTIFICATION/NAME -->
 																					<td class="text-left no-wrap " th:text="${ontology.identification}" style="width:20%;">ID</td>
 																			   		<!-- DESCRIPTION -->
@@ -446,7 +441,11 @@
 																</div>		
 															</div>
 														</div>
-														
+														<!-- REMOVE FOR TAB3 -->
+														<div class="pull-right">
+															<button th:if="${user.userId} != null" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" type="button" th:onclick="'removeDataFunction(ontologiesDelete, \'' + ${user.userId} + '\');'"  value="RemoveTab3_1" id="delete_forgetData" class="btn btn-circle btn-outline blue"  name="delete_forgetData" style="display:none;"  ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+															<button th:if="${user.userId} != null" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" type="button" th:onclick="'revokeDataFunction(ontologiesRevoke, \'' + ${user.userId} + '\');'"  value="RemoveTab3_2" id="delete_consent" class="btn btn-circle btn-outline blue" name="delete_consent" style="display:none;"  > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+														</div>	
 													</div>
 												</div>
 											</div>
@@ -464,12 +463,11 @@
 										</div>										
 										
 										<div class="pull-right">											
-											<!-- REMOVE -->
-											<button th:if="${user.userId} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'UserCreateController.deleteUser(\'' + ${user.userId} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
-											<!-- REMOVE FOR TAB3 -->
-											<button th:if="${user.userId} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" type="button" th:onclick="'removeDataFunction(ontologiesDelete, \'' + ${user.userId} + '\');'"  value="RemoveTab3_1" id="delete_forgetData" class="btn btn-circle btn-outline blue"  name="delete_forgetData" style="display:none;"  ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
-											<button th:if="${user.userId} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" type="button" th:onclick="'revokeDataFunction(ontologiesRevoke, \'' + ${user.userId} + '\');'"  value="RemoveTab3_2" id="delete_consent" class="btn btn-circle btn-outline blue" name="delete_consent" style="display:none;"  > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
-															
+											<!-- DEACTIVATE -->
+											<button th:if="${user.userId} != null AND ${user.active} == true" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'UserCreateController.deleteUser(\'' + ${user.userId} + '\');'" > <span th:text="#{user.deactivateBtn}"> Deactivate </span></button>
+											<!-- DELETE -->
+											<button th:if="${user.userId} != null" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="hardDeleteBtn" type="button" class="btn btn-circle btn-outline blue" name="hardDelete"  value="HardDelete" th:onclick="'UserCreateController.hardDeleteUser(\'' + ${user.userId} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+														
 											<span class="sep">&nbsp;</span>
 											
 											<!-- CREATE -->
@@ -502,15 +500,15 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->	
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 			
 	
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
@@ -523,7 +521,7 @@
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
 		
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/userCreate.js}"/>
+	<script th:src="@{/static/js/pages/userCreate.js}"></script>
 		
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
@@ -540,7 +538,12 @@
 		"dateDeleted" : [[${user.dateDeleted}]],
 		"errorpasswordmsg" : [[#{user.update.error.password}]],
 		"succespasswordmsg" : [[#{user.update.success.password}]],
-		"roleType" : [[${(#strings.arrayJoin(#authentication.authorities,''))}]]
+		"roleType" : [[${(#strings.arrayJoin(#authentication.authorities,''))}]],
+		"deleteTitle" : [[#{gen.deleteBtn}]] || 'Delete',
+		"deleteText" : [[#{user.hardDelete}]] || '',
+		"deleteError" : [[#{user.deleteError}]] || 'Error!',
+		"deactivateTitle" : [[#{user.deactivateBtn}]] || 'Deactivate',
+		"deactivateText" : [[#{user.deactivateText}]] || ''
 	};
 	// LOAD DATA TO USE IN MENUCONTROLLER
 	// MENU CONTROLLER LOAD AND INIT ITSELF
@@ -554,7 +557,12 @@
 	var search = [[${param.identification}]] || [];
 	var description = [[${param.description}]] || '';
 	var prevAccess = [[${AccessToUpdate}]] || false;
-
+	
+	var tenant = [[${tenant}]] || null;
+	
+	if(tenant!=null){
+		$("#tenants").val(tenant).change()
+	}
 	
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	description ? $('#description').val(description) : description = '';
@@ -651,9 +659,14 @@
 	}
 
 	function showButtons(){
-		 	 $('#createBtn').show();
+		 	$('#createBtn').show();
 			$('#updateBtn').show();
-			$('#deleteBtn').show();
+			if(userCreateReg.actionMode === null){
+				$('#deleteBtn').show();
+			}else{
+				$('#deleteBtn').hide();
+			}
+			$('#hardDeleteBtn').show();
 			$('#orText').show();
 			$('#delete_forgetData').hide();
 			$('#delete_consent').hide();
@@ -666,7 +679,7 @@
 		$('#orText').hide();
 		$('#delete_forgetData').hide();
 		$('#delete_consent').hide();
-	
+		$('#hardDeleteBtn').hide();
 }
 	 
 	// MAIN WHEN READY
@@ -717,9 +730,10 @@
 	
 		
 		$('#tab-simpleData').on('click', function(){
-		 $('#createBtn').hide();
+		 	$('#createBtn').hide();
 			$('#updateBtn').hide();
 			$('#deleteBtn').hide();
+			$('#hardDeleteBtn').hide();
 			$('#delete_forgetData').show();
 			$("#delete_consent").hide();
 		});

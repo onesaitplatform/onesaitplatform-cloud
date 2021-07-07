@@ -301,7 +301,7 @@ var HeaderController = function() {
 	}
 
 	// ONTOLOGY-CONFIRM-DIALOG
-	var showConfirmDialogOntologia = function(formId){		
+	var showConfirmDialogOntologia = function(formId, ontologyId){		
 		logControl ? console.log('showConfirmDialogOntologia()...') : '';
 
 		// i18 labels
@@ -309,34 +309,73 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.ontologyConfirm;
 		var Title = headerReg.titleConfirm + ':';		
+		
+		$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
+				function(data){
+					console.log('getResourcesAssociated() -> ok');
+					if(data.apis.length > 0) {
+						Content += "<br><b> APIs: </b>";
+						for(var i=0; i<data.apis.length; i++){
+							Content += "<br>" + data.apis[i];
+						}
+					}
+					if(data.datasources.length > 0) {
+						Content += "<br><b> Datasources: </b>";
+						for(var i=0; i<data.datasources.length; i++){
+							Content += "<br>" + data.datasources[i];
+						}
+					}
+					if(data.layers.length > 0) {
+						Content += "<br><b> Layers: </b>";
+						for(var i=0; i<data.layers.length; i++){
+							Content += "\n" + data.layers[i];
+						}
+					}
+					if(data.subscriptions.length > 0) {
+						Content += "<br><b> Subscriptions: </b>";
+						for(var i=0; i<data.subscriptions.length; i++){
+							Content += "<br>" + data.subscriptions[i];
+						}
+					}
+					if(data.clients.length > 0) {
+						Content += "<br><b> Digital Clients: </b>";
+						for(var i=0; i<data.clients.length; i++){
+							Content += "<br>" + data.clients[i];
+						}
+					}
+					$.confirm({
+						icon: 'fa fa-warning',
+						title: Title,
+						theme: 'light',			
+						columnClass: 'medium',
+						content: Content,
+						draggable: true,
+						dragWindowGap: 100,
+						backgroundDismiss: true,
+						closeIcon: true,
+						buttons: {
+							close: {
+								text: Close,
+								btnClass: 'btn btn-circle btn-outline blue',
+								action: function (){} //GENERIC CLOSE.		
+							},
+							remove: {
+								text: Remove,
+								btnClass: 'btn btn-circle btn-outline btn-primary',
+								action: function(){ 
+									if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+								}
+							}
+						}
+					});
+				}
+			).fail(
+				function(e){
+					console.error("Error getResourcesAssociated", e);
+				}
+			)	
 
 		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			icon: 'fa fa-warning',
-			title: Title,
-			theme: 'light',			
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			closeIcon: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}
-				}
-			}
-		});
-
 	}
 	
 	// LAYER-CONFIRM-DIALOG
@@ -1272,9 +1311,9 @@ var HeaderController = function() {
 		},
 
 		// ONTOLOGY-CONFIRM-DIALOG
-		showConfirmDialogOntologia : function(formId){		
+		showConfirmDialogOntologia : function(formId, ontologyId){		
 			logControl ? console.log('showConfirmDialogOntologia()...') : '';
-			showConfirmDialogOntologia(formId);
+			showConfirmDialogOntologia(formId, ontologyId);
 		},
 		// LAYER-CONFIRM-DIALOG
 		showConfirmDialogLayer : function(formId){		
@@ -1399,7 +1438,7 @@ var HeaderController = function() {
 		showConfirmDialogQueryTemplate : function(formId){		
 			logControl ? console.log('showConfirmDialogQueryTemplate()...') : '';
 			showConfirmDialogQueryTemplate(formId);
-		},
+		}
 	};
 }();
 
@@ -1419,11 +1458,11 @@ jQuery(document).ready(function() {
 			if (img64 != null && img64 != ""){
 				$('#imagen').append("<img id='headerImg' alt='logo' class='logo-default' src='data:image/jpeg;base64, "+img64+"'/>");
 			} else {
-				$('#imagen').append("<img id='headerImg' alt='logo' class='logo-default' src='/controlpanel/static/images/platform_logo.png'/>");
+				$('#imagen').append("<img id='headerImg' alt='logo'  style='width: 90px;    padding-top: 4px;  margin-left: 10px; '   class='logo-default' src='/controlpanel/static/images/logocontrolblue.png'/>");
 			}
 		},
 	    error :  function () {
-	    	$('#imagen').append("<img id='headerImg' alt='logo' class='logo-default' src='/controlpanel/static/images/platform_logo.png'/>");
+	    	$('#imagen').append("<img id='headerImg' alt='logo' style='width:90px;padding-top: 4px;margin-left: 10px;  ' class='logo-default' src='/controlpanel/static/images/logocontrolblue.png'/>");
 	    	}
 	    
 	})

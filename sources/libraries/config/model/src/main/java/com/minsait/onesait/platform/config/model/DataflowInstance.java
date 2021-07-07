@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -36,8 +38,9 @@ import lombok.Setter;
 @Entity
 @Table(name = "dataflow_instances", uniqueConstraints = @UniqueConstraint(name = "instance_ident_UQ", columnNames = {
 		"IDENTIFICATION" }))
-public class DataflowInstance {
+public class DataflowInstance implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUIDGenerator")

@@ -27,7 +27,10 @@ ENV SERVER_NAME=localhost \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
-    ELASTICSEARCH_ENABLED=false
+    ELASTICSEARCH_ENABLED=false \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201
 
 # Timezone
 RUN apk add --no-cache tzdata

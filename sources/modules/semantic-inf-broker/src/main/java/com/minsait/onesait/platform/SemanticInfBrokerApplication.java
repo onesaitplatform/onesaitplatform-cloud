@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
@@ -34,7 +34,7 @@ import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 @EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
 @ComponentScan(basePackages = { "com.minsait.onesait.platform.router" })
 @EnableAsync
-public class SemanticInfBrokerApplication extends WebMvcConfigurerAdapter {
+public class SemanticInfBrokerApplication implements WebMvcConfigurer {
 
 	@Autowired
 	private CorrelationInterceptor logInterceptor;

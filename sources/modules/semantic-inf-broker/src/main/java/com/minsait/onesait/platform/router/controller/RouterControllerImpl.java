@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("router")
 @Slf4j
 public class RouterControllerImpl
-		implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
+implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
 
 	@Autowired
 	@Qualifier("routerServiceImpl")
@@ -82,7 +82,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Insert operation in {}", (dEnd - dStart));
+			log.info("Processed Insert operation in {}", dEnd - dStart);
 		}
 
 	}
@@ -100,7 +100,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Update operation in: {} ", (dEnd - dStart));
+			log.info("Processed Update operation in: {} ", dEnd - dStart);
 		}
 	}
 
@@ -117,7 +117,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Delete operation in: {}", (dEnd - dStart));
+			log.info("Processed Delete operation in: {}", dEnd - dStart);
 		}
 	}
 
@@ -126,7 +126,7 @@ public class RouterControllerImpl
 	@ApiOperation(value = "query")
 	public OperationResultModel query(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
-		log.debug("Query:");
+		log.debug("Query: {} Ontology: {} Type {}",model.getOperationModel().getBody(), model.getOperationModel().getOntologyName(),model.getOperationModel().getQueryType() );
 		try {
 			return routerService.query(model);
 		} catch (final Exception e) {
@@ -134,7 +134,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Query operation in: {} ", (dEnd - dStart));
+			log.info("Processed Query operation in: {} ", dEnd - dStart);
 		}
 	}
 
@@ -151,7 +151,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Subscribe operation in: {} ", (dEnd - dStart));
+			log.info("Processed Subscribe operation in: {} ", dEnd - dStart);
 		}
 	}
 
@@ -168,7 +168,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Unsuscribe operation in: {} ", (dEnd - dStart));
+			log.info("Processed Unsuscribe operation in: {} ", dEnd - dStart);
 		}
 	}
 
@@ -190,7 +190,7 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Advice operation in: {} ", (dEnd - dStart));
+			log.info("Processed Advice operation in: {} ", dEnd - dStart);
 		}
 	}
 
@@ -202,7 +202,7 @@ public class RouterControllerImpl
 		final String result = jwtService.extractToken(input);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed Token operation in: {} ", (dEnd - dStart));
+		log.info("Processed Token operation in: {} ", dEnd - dStart);
 		return result;
 	}
 
@@ -217,7 +217,7 @@ public class RouterControllerImpl
 		eventProducer.publish(event);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed Event operation in: {} ", (dEnd - dStart));
+		log.info("Processed Event operation in: {} ", dEnd - dStart);
 		return input;
 	}
 
@@ -229,7 +229,7 @@ public class RouterControllerImpl
 		final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertEvent operation in: {} ", (dEnd - dStart));
+		log.info("Processed InsertEvent operation in: {} ", dEnd - dStart);
 
 		return result;
 	}
@@ -242,7 +242,7 @@ public class RouterControllerImpl
 		final OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertLog operation in: {}", (dEnd - dStart));
+		log.info("Processed InsertLog operation in: {}", dEnd - dStart);
 
 		return result;
 	}
@@ -255,7 +255,7 @@ public class RouterControllerImpl
 		final OperationResultModel result = routerDigitalTwinService.updateShadow(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed UpdateShadow operation in: {}", (dEnd - dStart));
+		log.info("Processed UpdateShadow operation in: {}", dEnd - dStart);
 
 		return result;
 	}
@@ -268,7 +268,7 @@ public class RouterControllerImpl
 		final OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertAction operation in: {}", (dEnd - dStart));
+		log.info("Processed InsertAction operation in: {}", dEnd - dStart);
 
 		return result;
 	}

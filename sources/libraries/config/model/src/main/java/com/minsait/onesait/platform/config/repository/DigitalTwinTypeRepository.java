@@ -22,7 +22,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType, String>{
+public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType, String> {
 
 	List<DigitalTwinType> findByIdentificationIgnoreCase(String identification);
 
@@ -35,18 +35,20 @@ public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType
 	List<DigitalTwinType> findByDescriptionContaining(String description);
 
 	List<DigitalTwinType> findByIdentificationContaining(String identification);
-	
+
 	List<DigitalTwinType> findByIdentificationLikeAndDescriptionLike(String identification, String description);
-	
-	List<DigitalTwinType> findByIdentificationContainingAndDescriptionContaining(String identification, String description);
-	
-	DigitalTwinType findById(String id);
-	
+
+	List<DigitalTwinType> findByIdentificationContainingAndDescriptionContaining(String identification,
+			String description);
+
+	@Override
 	void deleteById(String id);
-	
+
 	List<DigitalTwinType> findByUser(User user);
 	
+	List<DigitalTwinType> findByUserAndIdentificationLike(User user, String identification);
+
 	@Query("SELECT o.identification FROM DigitalTwinType AS o")
 	List<String> findAllIdentifications();
-	
+
 }

@@ -25,7 +25,8 @@ var WebProjectCreateController = function() {
 			// validation rules
             rules: {
 				identification:		{ required: true, minlength: 5 },
-				description:		{ required: true, minlength: 5 }
+				description:		{ required: true, minlength: 5 },
+				mainFile:			{ required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit  
             	success1.hide();
@@ -44,9 +45,16 @@ var WebProjectCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-                success1.show();
-                error1.hide();                
-                form.submit();				
+            	if ($("#buttonLoadRootZip").val() != ""){
+            		success1.show();
+                    error1.hide();                
+                    form.submit();
+            	} else {
+            		success1.hide();
+					error1.show();
+					App.scrollTo(error1, -200);
+            	}
+                				
             }
         });
     }	
@@ -91,7 +99,20 @@ var WebProjectCreateController = function() {
 	var navigateUrl = function(url){
 		window.location.href = url; 
 	}
-	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/webprojects/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
 	// CLEAN FIELDS FORM
 	var cleanFields = function (formId) {
 		logControl ? console.log('cleanFields() -> ') : '';
@@ -121,6 +142,7 @@ var WebProjectCreateController = function() {
 			var $el = $('#buttonLoadRootZip');
 			$el.wrap('<form>').closest('form').get(0).reset();
 			$el.unwrap();
+			$('#zipNameS').text("");
 		});	
 	}	
 	
@@ -149,9 +171,12 @@ var WebProjectCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': uploadZip()') : '';	
 			uploadZip(); 
 		},
-		
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			
+			freeResource(id,url);
+		},
 		submitform: function(){
-		
 			$("#webproject_create_form").submit();
 		},
 		

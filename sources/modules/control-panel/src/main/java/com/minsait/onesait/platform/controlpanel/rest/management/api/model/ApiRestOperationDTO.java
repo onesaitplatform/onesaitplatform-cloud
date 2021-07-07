@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.api.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
@@ -23,6 +24,7 @@ import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.controlpanel.controller.apimanager.ApiQueryParameterDTO;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,6 +39,11 @@ public class ApiRestOperationDTO implements Serializable {
 	@Getter
 	@Setter
 	private String identification;
+
+	@ApiModelProperty(value = "ID de la Operacion")
+	@Getter
+	@Setter
+	private String id;
 
 	@ApiModelProperty(value = "Descripción de la Operacion")
 	@Getter
@@ -69,18 +76,26 @@ public class ApiRestOperationDTO implements Serializable {
 	private String postProcess;
 
 	public ApiRestOperationDTO(ApiOperation apiOp) {
-		this.identification = apiOp.getIdentification();
-		this.description = apiOp.getDescription();
-		this.operation = apiOp.getOperation();
-		this.endpoint = apiOp.getEndpoint();
-		this.path = apiOp.getPath();
-		this.postProcess = apiOp.getPostProcess();
-		this.queryParams = new ArrayList<>();
+		identification = apiOp.getIdentification();
+		description = apiOp.getDescription();
+		operation = apiOp.getOperation();
+		endpoint = apiOp.getEndpoint();
+		path = apiOp.getPath();
+		postProcess = apiOp.getPostProcess();
+		queryParams = new ArrayList<>();
+		id = apiOp.getId();
 
-		for (ApiQueryParameter apiQueryParam : apiOp.getApiqueryparameters()) {
-			ApiQueryParameterDTO apiQueryParameterDTO = new ApiQueryParameterDTO(apiQueryParam);
-			this.queryParams.add(apiQueryParameterDTO);
+		for (final ApiQueryParameter apiQueryParam : apiOp.getApiqueryparameters()) {
+			final ApiQueryParameterDTO apiQueryParameterDTO = new ApiQueryParameterDTO(apiQueryParam);
+			queryParams.add(apiQueryParameterDTO);
 		}
+
+		Collections.sort(queryParams, new Comparator<ApiQueryParameterDTO>() {
+			@Override
+			public int compare(ApiQueryParameterDTO s1, ApiQueryParameterDTO s2) {
+				return s1.getName().compareToIgnoreCase(s2.getName());
+			}
+		});
 	}
 
 	public Api toAPI() {

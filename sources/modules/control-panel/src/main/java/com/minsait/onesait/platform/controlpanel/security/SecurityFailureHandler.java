@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -50,6 +51,8 @@ public class SecurityFailureHandler implements AuthenticationFailureHandler {
 	private AppWebUtils utils;
 	@Autowired
 	private ConfigurationService configurationService;
+	@Value("${onesaitplatform.urls.iotbroker}")
+	private String SERVERNAME;
 
 	@Override
 	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
@@ -61,8 +64,13 @@ public class SecurityFailureHandler implements AuthenticationFailureHandler {
 			// catch user
 			// if user exist increase failed attemps
 			MasterUser masterUser = multitenancyService.increaseFailedAttemp(userName);
-			if (masterUser != null) {
-
+			if (masterUser == null) {
+				// show message
+				response.sendRedirect(request.getContextPath() + "/loginerror");
+			} else if (masterUser != null && !masterUser.isActive()) {
+				// redirect to blocked page
+				response.sendRedirect(request.getContextPath() + "/blocked");
+			} else {
 				// validate limit
 				final Configuration configuration = configurationService
 						.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
@@ -70,17 +78,20 @@ public class SecurityFailureHandler implements AuthenticationFailureHandler {
 						.fromYaml(configuration.getYmlConfig()).get("Authentication");
 				final int limitFailedAttemp = (Integer) ymlExpirationUsersPassConfig.get("limitFailedAttemp");
 
-				if (masterUser.getFailedAtemps() >= limitFailedAttemp) {
+				if (masterUser.getFailedAtemps() >= limitFailedAttemp && limitFailedAttemp >= 0) {
 					// if the limit is equal or higher
 					if (userService.deactivateUser(userName)) {
 						// send mail
 						try {
 							final String defaultTitle = "[Onesait Plaform] User account locked";
-							final String defaultMessage = "Your account has been blocked contact your administrator.";
-
+							final String defaultMessage = " Your account has been blocked contact your administrator.";
+							final String defaultServer1 = "On the ";
+							final String defaultServer2 = "server. ";
 							final String emailTitle = utils.getMessage("user.attemp.bloqued.mail.title", defaultTitle);
 							String emailMessage = utils.getMessage("user.attemp.bloqued.mail.body", defaultMessage);
-
+							String server1 = utils.getMessage("user.attemp.bloqued.mail.body.server.1", defaultServer1);
+							String server2 = utils.getMessage("user.attemp.bloqued.mail.body.server.2", defaultServer2);
+							emailMessage = server1 + SERVERNAME + " " + server2 + emailMessage;
 							log.info("Send email to {} in order user account locked", masterUser.getEmail());
 							mailService.sendMail(masterUser.getEmail(), emailTitle, emailMessage);
 
@@ -95,9 +106,6 @@ public class SecurityFailureHandler implements AuthenticationFailureHandler {
 					response.sendRedirect(request.getContextPath() + "/loginerror");
 				}
 
-			} else {
-				// show message
-				response.sendRedirect("login");
 			}
 		} else {
 			// show message

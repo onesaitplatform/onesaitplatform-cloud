@@ -24,11 +24,13 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import com.minsait.onesait.platform.config.components.CaasOpenshiftConfiguration;
 import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.RancherConfiguration;
 import com.minsait.onesait.platform.config.converters.GitlabConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.JenkinsConfigurationConverter;
+import com.minsait.onesait.platform.config.converters.OpenshiftConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.RancherConfigurationConverter;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -44,11 +46,12 @@ public class Microservice extends OPResource {
 	private static final long serialVersionUID = 1L;
 
 	public enum TemplateType {
-		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, IMPORT_FROM_GIT, IMPORT_FROM_ZIP
+		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, ARCHITECTURE_ARCHETYPE,
+		IMPORT_FROM_GIT, IMPORT_FROM_ZIP
 	}
 
 	public enum CaaS {
-		RANCHER
+		RANCHER, OPENSHIFT
 	}
 
 	@Getter
@@ -90,11 +93,21 @@ public class Microservice extends OPResource {
 	@Convert(converter = RancherConfigurationConverter.class)
 	private RancherConfiguration rancherConfiguration;
 
+	@Column(name = "OPENSHIFT_CONFIGURATION")
+	@Convert(converter = OpenshiftConfigurationConverter.class)
+	private CaasOpenshiftConfiguration openshiftConfiguration;
+
 	@Column(name = "RANCHER_ENVIRONMENT")
 	private String rancherEnv;
 
 	@Column(name = "RANCHER_STACK")
 	private String rancherStack;
+
+	@Column(name = "OPENSHIFT_NAMESPACE")
+	private String openshiftNamespace;
+
+	@Column(name = "OPENSHIFT_DEPLOYMENT_URL")
+	private String openshiftDeploymentUrl;
 
 	@Column(name = "JENKINS_QUEUE_ID")
 	private Integer jenkinsQueueId;

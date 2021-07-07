@@ -38,13 +38,14 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserComment;
 import com.minsait.onesait.platform.config.model.UserRatings;
-import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
 import com.minsait.onesait.platform.config.repository.UserCommentRepository;
 import com.minsait.onesait.platform.config.repository.UserRatingsRepository;
-import com.minsait.onesait.platform.config.repository.WebProjectRepository;
+import com.minsait.onesait.platform.config.services.market.MarketAssetService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
+import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.exception.BinaryFileException;
 import com.minsait.onesait.platform.controlpanel.multipart.MarketAssetMultipart;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -62,10 +63,12 @@ public class MarketAssetHelper {
 	ApiRepository apiRepository;
 
 	@Autowired
-	WebProjectRepository webProjectRepository;
-
+	WebProjectService webProjectService;
 	@Autowired
 	private MarketAssetRepository marketAssetRepository;
+
+	@Autowired
+	private MarketAssetService marketAssetService;
 
 	@Autowired
 	UserRatingsRepository userRatingsRepository;
@@ -111,12 +114,11 @@ public class MarketAssetHelper {
 	public void populateMarketAssetUpdateForm(Model model, String id) throws GenericOPException {
 		final User user = userService.getUser(utils.getUserId());
 
-		final MarketAsset marketAsset = marketAssetRepository.findById(id);
+		final MarketAsset marketAsset = marketAssetService.getMarketAssetById(id);
 
 		// If the user is not the owner nor Admin an exception is launch to redirect to
 		// list view
-		if (!marketAsset.getUser().equals(user)
-				&& !userService.isUserAdministrator(user)) {
+		if (!marketAsset.getUser().equals(user) && !userService.isUserAdministrator(user)) {
 			log.error(USER_NOT_ALLOW_STR);
 			throw new GenericOPException(USER_NOT_ALLOW_STR);
 		}
@@ -130,7 +132,7 @@ public class MarketAssetHelper {
 
 	public void populateMarketAssetShowForm(Model model, String id) throws GenericOPException {
 		// Asset to show
-		final MarketAsset marketAsset = marketAssetRepository.findById(id);
+		final MarketAsset marketAsset = marketAssetService.getMarketAssetById(id);
 
 		final String userId = utils.getUserId();
 
@@ -202,17 +204,17 @@ public class MarketAssetHelper {
 
 		} else if (type.equals(MarketAsset.MarketAssetType.WEBPROJECT.toString())) {
 
-			List<WebProject> webProjectList = null;
-			List<WebProject> webProjectListFiltered = null;
+			List<WebProjectDTO> webProjectList = null;
+			List<WebProjectDTO> webProjectListFiltered = null;
 
-			webProjectList = webProjectRepository.findAll();
+			webProjectList = webProjectService.getAllWebProjects();
 
 			if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				webProjectListFiltered = webProjectList;
 			} else {
 				webProjectListFiltered = new ArrayList<>();
-				for (final WebProject webProject : webProjectList) {
-					if (user.getUserId().equals(webProject.getUser().getUserId())) {
+				for (final WebProjectDTO webProject : webProjectList) {
+					if (user.getUserId().equals(webProject.getUserId())) {
 						webProjectListFiltered.add(webProject);
 					}
 				}
@@ -423,7 +425,7 @@ public class MarketAssetHelper {
 			log.error(e.getMessage());
 		}
 
-		final WebProject webProject = webProjectRepository.findById(id);
+		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 
 		final String webProjectUrl = ROOT_WWW + webProject.getIdentification() + "/" + webProject.getMainFile();
 

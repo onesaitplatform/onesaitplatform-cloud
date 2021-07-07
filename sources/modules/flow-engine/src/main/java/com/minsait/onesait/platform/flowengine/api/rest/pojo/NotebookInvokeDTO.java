@@ -17,9 +17,13 @@ package com.minsait.onesait.platform.flowengine.api.rest.pojo;
 import java.util.List;
 import java.util.Map;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public class NotebookInvokeDTO {
 	@Getter
 	@Setter
@@ -38,6 +42,6 @@ public class NotebookInvokeDTO {
 	private String executionParams;
 	@Getter
 	@Setter
-	private List<Map<String,String>> outputParagraphs;
+	private List<Map<String, String>> outputParagraphs;
 
 }

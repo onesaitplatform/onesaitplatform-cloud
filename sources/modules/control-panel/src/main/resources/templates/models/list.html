@@ -93,7 +93,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../models/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../models/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>								
 							</div>
@@ -149,8 +149,8 @@
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
 															<th class="titulo-columnas">Notebook</th>
-															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -189,7 +189,31 @@
 														</tr>
 													</tbody>
 												</table>												
-																							
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right" >
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{gen.identification}" data-column="0">Identification</label>
+														<label class="toggle-vis"
+															th:text="#{gen.description}" data-column="1">Description</label>
+														<label class="toggle-vis"
+															  data-column="2">Notebook</label>														
+														<label 
+															class="toggle-vis"
+															th:text="#{gen.created}" data-column="3">Created At</label>		
+														<label 
+															class="toggle-vis"
+															th:text="#{gen.updated}" data-column="4"> Updated At </label>														 
+														<label  
+															class="toggle-vis"
+															th:text="#{gen.options}" data-column="5"> Options</label>
+													</div>
+												</div>						
 											</div>
 										</div>											
 									</div>
@@ -207,13 +231,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -297,13 +321,14 @@
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		//$.each([ 2,6,7 ],
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 2,6,7 ],
-		$.each([ 6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 	

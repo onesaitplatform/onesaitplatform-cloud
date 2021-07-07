@@ -45,7 +45,7 @@ public abstract class OPResource extends AuditableEntity {
 
 	public enum Resources {
 		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, NOTEBOOK, ONTOLOGY,
-		DATAFLOW
+		DATAFLOW, REPORT, BINARYFILE
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -73,26 +73,29 @@ public abstract class OPResource extends AuditableEntity {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null)
+		if (obj == null) {
 			return false;
+		}
 
-		if (this.getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 
 		final OPResource that = (OPResource) obj;
-		if (that instanceof Api && (getIdentification() != null && ((Api) this).getNumversion() != null)) {
-			return (getIdentification().equals(that.getIdentification())
-					&& ((Api) this).getNumversion().equals(((Api) that).getNumversion()));
+		if (that instanceof Api && getIdentification() != null && ((Api) this).getNumversion() != null) {
+			return getIdentification().equals(that.getIdentification())
+					&& ((Api) this).getNumversion().equals(((Api) that).getNumversion());
 		}
-		if (getIdentification() != null)
+		if (getIdentification() != null) {
 			return getIdentification().equals(that.getIdentification());
+		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
 		if (this instanceof Api) {
-			return java.util.Objects.hash(this.getIdentification(), ((Api) this).getNumversion());
+			return java.util.Objects.hash(getIdentification(), ((Api) this).getNumversion());
 		}
 
 		return java.util.Objects.hash(getIdentification());

@@ -41,11 +41,11 @@ public class MultitenancyInterceptor extends HandlerInterceptorAdapter {
 
 		final String vertical = request.getHeader(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER);
 		if (!StringUtils.isEmpty(vertical)) {
-			multitenancyService.getVertical(vertical).ifPresent(v -> {
-				MultitenancyContextHolder.setTenantName(request.getHeader(Tenant2SchemaMapper.TENANT_HTTP_HEADER));
-				MultitenancyContextHolder.setVerticalSchema(v.getSchema());
+			multitenancyService.getVerticalSchema(vertical).ifPresent(v -> {
+				final String tenant = request.getHeader(Tenant2SchemaMapper.TENANT_HTTP_HEADER);
+				MultitenancyContextHolder.setTenantName(tenant);
+				MultitenancyContextHolder.setVerticalSchema(v);
 			});
-
 		}
 		return true;
 	}

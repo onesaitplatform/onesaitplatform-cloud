@@ -154,6 +154,15 @@
 											<div>
 												<table id="devicesTable" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters"	dt:filterPlaceholder="none"	dt:paginationtype="full_numbers">
 													<thead>
+													<tr class="cabecera-tabla">
+															<th class="titulo-columnas" > <span id="identificationfilter" > </span></th>
+																<th class="titulo-columnas" >  </th>
+															<th class="titulo-columnas" > <span id="ontologyfilter" > </span></th>
+																<th class="titulo-columnas" >  </th>
+																<th class="titulo-columnas" >  </th>
+																<th class="titulo-columnas" >  </th>
+																<th class="titulo-columnas" >  </th>
+														</tr>
 														<tr class="cabecera-tabla">
 															<th dt:filterable="true" dt:filterCssClass="input-small"
 																dt:selector="deviceFilter" class="titulo-columnas"> <span
@@ -232,22 +241,7 @@
 													</tbody>
 												</table>
 
-												<!-- DATATABLE DANDELION CONF. -->
-												<div dt:conf="devices">
-													<div dt:confType="extrahtml" dt:uid="0">
-														<!-- TABLE FILTERS AUX. ROW -->
-														<table id="filteringTable" class="hide">
-															<tr id="filtering" class="hide" role="row">
-																<th id="deviceFilter" class="dtFilter"></th>
-																<th></th>
-																<th id="ontologyFilter" class="dtFilter"></th>
-																<th></th>
-																<th></th>
-																<th></th>
-															</tr>
-														</table>
-													</div>
-												</div>
+												
 
 
 
@@ -310,16 +304,14 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" />
-	<script th:src="@{/static/js/layout.js}" />
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
-	<script
-		th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" />
-	<script
-		th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" ></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" ></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
 
 
 	<script th:inline="javascript">	
@@ -590,6 +582,17 @@
 		
 		// INIT row selection
 		handleSingleSelection('devicesTable');
+		
+		 yadcf.init(oTable, [	 			
+			    {column_number : 0, filter_type: "text",  filter_container_id:"identificationfilter",filter_default_label: [[#{apimanager.list.text.placeholder}]]},				
+			    {column_number : 2,   filter_type: "select",filter_container_id:"ontologyfilter",filter_default_label: [[#{apimanager.list.value.placeholder}]]}				 
+			  ]);
+		 
+		 var filtersResets = $('.yadcf-filter-reset-button');
+		 	 filtersResets.css('margin-left', '10px'); 
+		     filtersResets.html('<i class="fa fa-times"></i>');
+		     filtersResets.addClass("btn btn-default btn-sm");
+		
 		
 	});
 	

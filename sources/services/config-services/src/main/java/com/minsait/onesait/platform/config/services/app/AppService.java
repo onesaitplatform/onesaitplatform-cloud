@@ -19,8 +19,12 @@ import java.util.Map;
 import java.util.Set;
 
 import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppRoleList;
+import com.minsait.onesait.platform.config.model.AppRoleListOauth;
 import com.minsait.onesait.platform.config.model.AppUser;
+import com.minsait.onesait.platform.config.model.AppUserListOauth;
 import com.minsait.onesait.platform.config.services.app.dto.AppCreateDTO;
 import com.minsait.onesait.platform.config.services.app.dto.Realm;
 
@@ -28,9 +32,15 @@ public interface AppService {
 
 	public List<App> getAllApps();
 
+	public List<AppList> getAllAppsList();
+
 	public List<App> getAppsByUser(String sessionUserId, String identification);
 
+	public List<AppList> getAppsByUserList(String sessionUserId, String identification);
+
 	public List<AppRole> getAllRoles();
+
+	public List<AppRoleListOauth> getAllRolesList();
 
 	public void createApp(App app);
 
@@ -38,11 +48,17 @@ public interface AppService {
 
 	public void updateApp(AppCreateDTO appDTO);
 
+	public void updateApp(AppList appDTO);
+
 	public void deleteApp(App app);
 
 	public String createUserAccess(String appId, String userId, String roleId);
 
 	public void deleteUserAccess(String appUserId);
+
+	public void deleteUserAccess(String userId, String roleName, String appIdentification);
+
+	public void removeAuthorizations(String userId, String appIdentification);
 
 	public Set<AppUser> findUsersByRole(AppRole role);
 
@@ -53,6 +69,10 @@ public interface AppService {
 	public void deleteAssociation(String fatherRoleName, String childRoleName, String fatherAppId, String childAppId);
 
 	public AppRole getByRoleNameAndApp(String roleName, App app);
+
+	public AppRoleList getByRoleNameAndAppList(String roleName, AppList app);
+
+	public AppRoleListOauth getByRoleNameAndAppListOauth(String roleName, AppList app);
 
 	public void updateApp(App app);
 
@@ -65,5 +85,19 @@ public interface AppService {
 	public boolean isUserInApp(String userId, String realmId);
 
 	public App getAppByIdentification(String identification);
+
+	public AppList getAppListByIdentification(String identification);
+
+	public AppList getAppListById(String id);
+
+	public List<AppUserListOauth> getAppUsersByUserIdAndApp(String userId, String appIdentification);
+
+	public List<AppUserListOauth> getAppUsersByApp(String appIdentification);
+
+	public List<AppUserListOauth> getAppUsersByAppAndUserIdLike(String appIdentification, String userIdLike);
+
+	public List<AppRoleListOauth> getAppRolesListOauth(String appIdentification);
+
+	long countUsersInApp(String appIdentification);
 
 }

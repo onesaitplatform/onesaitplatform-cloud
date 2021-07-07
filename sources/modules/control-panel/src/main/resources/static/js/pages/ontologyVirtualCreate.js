@@ -23,7 +23,36 @@ var OntologyCreateController = function() {
 	var validJsonSchema = false;
 	var validMetaInf = false;
 	var hasId = false; // instance
-
+	const KUDU = "KUDU";
+	var isKuduOntology = false;
+	var geometryObject = {"coordinates": {
+						        "id": "/coordinates",
+						        "required": true,
+						        "type": "array",
+						        "items": [
+						            {
+						                "type": "number",
+						                "maximum": 180,
+						                "minimum": -180
+						            },
+						            {
+						                "type": "number",
+						                "maximum": 90,
+						                "minimum": -90
+						            }
+						        ],
+						        "minItems": 2,
+						        "maxItems": 2
+						    },
+						    "type": {
+						        "id": "/type",
+						        "required": true,
+						        "type": "string",
+						        "enum": [
+						            "Point"
+						        ]
+						    }
+						};
 	
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 	var getDataSourceFromServer = function() {
@@ -164,7 +193,7 @@ var OntologyCreateController = function() {
 		$('#loading-collection').show();
 		$('#collections').selectpicker('refresh');
 		
-		$('#identification').val('');
+		//$('#identification').val('');
 		editor.setText("{}");
 		
 		$("#id").prop('checked',false);
@@ -172,56 +201,94 @@ var OntologyCreateController = function() {
 		$("#fields").empty();
 		$("#fields").selectpicker('deselectAll').selectpicker('refresh');
 		
-		$.ajax({
-			url : "/controlpanel/ontologies/getTables/"+ $("#datasources").val(),
-			headers: {
-				[csrf_header]: csrf_value
-		    },
-			type : 'GET',
-			dataType: 'text', 
-			contentType: 'text/plain',
-			mimeType: 'text/plain',
-			success : function(data, _textStatus, xhr) {
-				$('#collections').empty();
-				if (xhr.status === 204) {
-					var tables = [];
-				} else {
-					var tables = JSON.parse(data);
-				}
-				
-				var count = tables.length;
-				if(count > 0)
-					$.each( tables, function (key, object){
-						$('#collections').append("<option value='"+object+"' text='"+object+"' >"+object+"</option>");
-						$('#tablesConstraint').append("<option value='"+object+"' text='"+object+"' >"+object+"</option>");
-						if (!--count) {
-							$('#collections').prop('disabled', false);
-							$('#collections').selectpicker('refresh');
-							$('#tablesConstraint').selectpicker('refresh');
-						}
-					});
-				else {
-					$.alert({title: 'INFO!', type: 'blue' , theme: 'dark', content: 'Database has not tables'});
+		if(this.value === KUDU){
+			isKuduOntology = true;
+			$("#allowsCreateTable").prop("checked", true);
+			$("#allowsCreateTable").prop("disabled", true);
+			//toggleFieldCreation();
+
+			editor.setText("{}");
+			$("#datasources").prop('disabled', true);
+			$('#fieldCreationForm').show();
+			$('#autoIncrementalColumn').hide();
+			$('#partitionsCreationForm').show();
+			$('#selectTable').hide();
+			$('#asociateIdTableCheck').hide();
+			$('#asociateIdTable').hide();
+			$('#asociateGeometryTableCheck').hide();
+			$('#asociateGeometryTable').hide();
+			$('#fieldsFromExistingTable').hide();
+			$('#sqlEditorRow').show();
+			creationConfig['allowsCreationTable'] = true;
+			identification.readOnly = false;
+			//identification.value = "";
+			//	this.generateFieldSchema();
+			
+			selectedDatasource = {'sgbd' : $("#datasources").val()};
+			$("#datasource").val($("#datasources").val());
+			
+		} else {
+		
+			$.ajax({
+				url : "/controlpanel/ontologies/getTables/"+ $("#datasources").val(),
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					$('#collections').empty();
+					if (xhr.status === 204) {
+						var tables = [];
+					} else {
+						var tables = JSON.parse(data);
+					}
+					
+					var count = tables.length;
+					if(count > 0)
+						$.each( tables, function (key, object){
+							$('#collections').append("<option value='"+object+"' text='"+object+"' >"+object+"</option>");
+							$('#tablesConstraint').append("<option value='"+object+"' text='"+object+"' >"+object+"</option>");
+							if (!--count) {
+								$('#collections').prop('disabled', false);
+								$('#collections').selectpicker('refresh');
+								$('#tablesConstraint').selectpicker('refresh');
+							}
+						});
+					else {
+						$.alert({title: 'INFO!', type: 'blue' , theme: 'dark', content: 'Database has not tables'});
+						$('#collections').prop('disabled', true);
+						$('#collections').selectpicker('refresh');
+					}
+					
+					$("#datasource").val($("#datasources").val());
+					
+				},
+				error : function(data, status, err) {
+					$.alert({title: 'ERROR '+ status + ': '+err+'!', theme: 'dark', type: 'red', content: data.responseText});
+					$('#collections').empty();
 					$('#collections').prop('disabled', true);
 					$('#collections').selectpicker('refresh');
+				}, 
+				complete: function (data, status){
+					$('#loading-collection').hide();
 				}
-				
-				$("#datasource").val($("#datasources").val());
-				
-			},
-			error : function(data, status, err) {
-				$.alert({title: 'ERROR '+ status + ': '+err+'!', theme: 'dark', type: 'red', content: data.responseText});
-				$('#collections').empty();
-				$('#collections').prop('disabled', true);
-				$('#collections').selectpicker('refresh');
-			}, 
-			complete: function (data, status){
-				$('#loading-collection').hide();
-			}
-		});
-		getDataSourceFromServer();
+			});
+			getDataSourceFromServer();
+		}
+		
 	});
 
+	$("#enablePartitionIndexes").on('click', function(){
+		if($('#enablePartitionIndexes').is(':checked')){
+			$(".kuduAdvancedProps").removeClass("hidden");
+		}
+		else{
+			$(".kuduAdvancedProps").addClass("hidden");
+		}
+	});
 	
 	
 	$("#generateSchema").on("click", function(){
@@ -544,7 +611,7 @@ var OntologyCreateController = function() {
 		logControl ? console.log('deleteOntologyConfirmation() -> formAction: ' + $('.delete-ontology').attr('action') + ' ID: ' + $('#delete-ontologyId').attr('ontologyId')) : '';
 		
 		// call ontology Confirm at header. 
-		HeaderController.showConfirmDialogOntologia('delete_ontology_form');	
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form',ontologyId);	
 	}
 
 	
@@ -825,6 +892,21 @@ var OntologyCreateController = function() {
 		return found;
 	}	
 	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/ontologies/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 
@@ -874,6 +956,11 @@ var OntologyCreateController = function() {
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			
+			freeResource(id,url);
 		},
 		
 		// DELETE ONTOLOGY 
@@ -1089,7 +1176,7 @@ var OntologyCreateController = function() {
 				while (index < createColumns.length) {
 					var name = createColumns[index]['name'];
 					var notNull = createColumns[index]['notNull'];
-					if (notNull === "true" && sch['properties'].hasOwnProperty(name)) {
+					if ((notNull === "true" || notNull === true) && sch['properties'].hasOwnProperty(name)) {
                         sch['properties'][name]["required"] = true;
                         reloadEditor = true;
 						}
@@ -1107,6 +1194,110 @@ var OntologyCreateController = function() {
 				}
 			}
 		},
+		
+		setTimestampFieldsForKudu: function() {
+			//if not kudu return;
+			if (!isKuduOntology) {
+				return;
+			}
+			var sch = JSON.parse(editor.getText());
+			var reloadEditor = false;
+						
+			if (createColumns.length > 0 && sch.hasOwnProperty("properties")) {
+				var index = 0;
+				while (index < createColumns.length) {
+					var name = createColumns[index]['name'];
+					var type = createColumns[index]['type'];
+					if (type === "timestamp" && sch['properties'].hasOwnProperty(name)) {
+                        sch['properties'][name]['format'] = 'date-time';
+                        reloadEditor = true;
+						}
+				
+					index++;
+				}
+
+                if (sch.hasOwnProperty("properties")) {
+                	var props = sch['properties']
+                	
+                }
+
+				if (reloadEditor) {
+					editor.setText(JSON.stringify(sch));
+				}
+			}
+		},
+		
+		setGeometryFieldsForKudu: function() {
+			//if not kudu return;
+			if (!isKuduOntology) {
+				return;
+			}
+			var sch = JSON.parse(editor.getText());
+			var reloadEditor = false;
+						
+			if (createColumns.length > 0 && sch.hasOwnProperty("properties")) {
+				var index = 0;
+				while (index < createColumns.length) {
+					var name = createColumns[index]['name'];
+					var type = createColumns[index]['type'];
+					if (type === "geometry" && sch['properties'].hasOwnProperty(name)) {
+                        sch['properties'][name]['type'] = 'object';
+                        sch['properties'][name]['properties'] = geometryObject;
+                        sch['properties'][name]['additionalProperties'] = false;
+
+                        reloadEditor = true;
+						}
+				
+					index++;
+				}
+
+                if (sch.hasOwnProperty("properties")) {
+                	var props = sch['properties']
+                	
+                }
+
+				if (reloadEditor) {
+					editor.setText(JSON.stringify(sch));
+				}
+			}
+		},
+		
+		setDefaultValueAndCommentForKudu: function() {
+			//if not kudu return;
+			if (!isKuduOntology) {
+				return;
+			}
+			var sch = JSON.parse(editor.getText());
+			var reloadEditor = false;
+						
+			if (createColumns.length > 0 && sch.hasOwnProperty("properties")) {
+				var index = 0;
+				while (index < createColumns.length) {
+					var name = createColumns[index]['name'];
+					var defaultValue = createColumns[index]['defautlValue'];
+					var colComment = createColumns[index]['colComment'];
+					if (defaultValue !== null && defaultValue !== '') {
+                        sch['properties'][name]['default'] = defaultValue;
+                        reloadEditor = true;
+					}
+					if (colComment !== null && colComment !== '') {
+						 sch['properties'][name]['description'] = colComment;
+						 reloadEditor = true;
+					}
+					index++;
+				}
+
+                if (sch.hasOwnProperty("properties")) {
+                	var props = sch['properties']
+                	
+                }
+
+				if (reloadEditor) {
+					editor.setText(JSON.stringify(sch));
+				}
+			}
+		},
+		
 		
 	    generateSchema: function() {
 	    	event.preventDefault();
@@ -1145,6 +1336,9 @@ var OntologyCreateController = function() {
 		        editor.setMode("tree");
 		        editor.setText(spStaticV.render());
 		        this.setRequiredFields();
+		        this.setTimestampFieldsForKudu();
+		        this.setGeometryFieldsForKudu();
+		        this.setDefaultValueAndCommentForKudu();
 		        $("#jsonschema").val(editor.getText());
 		        
 		     // CHANGE TO SCHEMA TAB.
@@ -1570,7 +1764,7 @@ var OntologyCreateController = function() {
 					if (type === "number") {type = 1.1;}
 					else if (type === "integer") {type = 1;}
 
-				  	fieldsSchema[name] = type;
+					fieldsSchema[name] = type;
 					index++;
 				}
 				
@@ -1716,8 +1910,16 @@ var OntologyCreateController = function() {
 				"ontology": $("#identification").val(),
 				"columnsRelational": createColumns,
 				"columnConstraints": createConstrains
-
 			}
+			
+			if ($('#enablePartitionIndexes').prop('checked')) {
+				body.partitions = $('#partitions').val();
+				body.npartitions = $('#npartitions').val();
+				body.primaryKey = $('#primarykey').val();
+				body.enablePartitionIndexes = $('#enablePartitionIndexes').prop('checked');
+			}
+
+			
 			$.ajax({
 				url : "/controlpanel/ontologies/virtual/sql/converter/create/" 
 					+ $("#identification").val() + "?datasource=" + selectedDatasource['sgbd'],

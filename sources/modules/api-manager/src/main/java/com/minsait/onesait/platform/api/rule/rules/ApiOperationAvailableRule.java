@@ -56,7 +56,7 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 	public boolean existsRequest(Facts facts) {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
-		return api != null && !api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON);
+		return api != null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY);
 	}
 
 	@Action
@@ -65,7 +65,7 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 		final Api api = (Api) data.get(Constants.API);
 		final String method = (String) data.get(Constants.METHOD);
 		final String pathInfo = (String) data.get(Constants.PATH_INFO);
-		final ApiOperation customSQL = apiService.getCustomSQL(pathInfo, api);
+		final ApiOperation customSQL = apiService.getCustomSQL(pathInfo, api, method);
 		final String objectId = apiService.getObjectidFromPathQuery(pathInfo, customSQL);
 		final List<ApiOperation> operations = apiManagerService.getOperationsByMethod(api, Type.valueOf(method));
 		ApiOperation operation = null;

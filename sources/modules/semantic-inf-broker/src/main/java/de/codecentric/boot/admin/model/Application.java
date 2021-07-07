@@ -17,8 +17,10 @@ package de.codecentric.boot.admin.model;
 import java.io.Serializable;
 
 /**
- * The domain model for all registered application at the spring boot admin application.
+ * The domain model for all registered application at the spring boot admin
+ * application.
  */
+@Deprecated
 public class Application implements Serializable {
 
 	private static final long serialVersionUID = 2;
@@ -26,7 +28,7 @@ public class Application implements Serializable {
 	private String id;
 
 	private String url;
-	
+
 	private String name;
 
 	public String getId() {
@@ -68,7 +70,7 @@ public class Application implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Application other = (Application) obj;
+		final Application other = (Application) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -94,7 +96,5 @@ public class Application implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-
 
 }

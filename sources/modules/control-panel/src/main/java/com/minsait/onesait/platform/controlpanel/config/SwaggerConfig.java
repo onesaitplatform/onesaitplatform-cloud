@@ -90,7 +90,7 @@ public class SwaggerConfig {
 
 	@SuppressWarnings("unchecked")
 	private Predicate<String> buildPathSelectorApiOps() {
-		return or(regex("/api/.*"));
+		return or(regex("/api/.*"), regex("/binary-repository.*"));
 	}
 
 	@Bean
@@ -791,5 +791,112 @@ public class SwaggerConfig {
 	@SuppressWarnings("unchecked")
 	private Predicate<String> buildPathSelectorGadgetManagement() {
 		return or(regex("/api/gadgets.*"));
+	}
+
+	@Bean
+	public Docket importToolAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Import tool").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorImportTool()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorImportTool() {
+		return or(regex("/api/importtool.*"));
+	}
+
+	@Bean
+	public Docket openDataPortalAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Open Data Portal").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorOpenDataPortalManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorOpenDataPortalManagement() {
+		return or(regex("/api/opendata.*"));
+	}
+
+	@Bean
+	public Docket dataRefinerAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Data Refiner").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathDataCleanerAPI()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathDataCleanerAPI() {
+		return or(regex("/api/datarefiner.*"));
+	}
+
+	@Bean
+	public Docket lowCodeAPI() {
+
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Low Code Generation").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorLowCode()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorLowCode() {
+		return or(regex("/api/low-code.*"));
+	}
+
+	@Bean
+	public Docket favoriteGadgetAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Favorite Gadgets").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorFavoriteGadgetManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorFavoriteGadgetManagement() {
+		return or(regex("/api/favoritegadget.*"));
 	}
 }

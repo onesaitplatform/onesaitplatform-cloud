@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.iotbroker.processor.impl;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +35,8 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @RestController
 @RequestMapping(path = "/")
 @EnableAutoConfiguration
@@ -55,7 +54,9 @@ public class CommandProcessor {
 	public boolean sendAsync(@PathVariable(name = "command") String command,
 			@RequestHeader(value = "Authorization", required = true) String sessionKey, @RequestBody JsonNode params) {
 
-		if (this.securityPluginManager.checkSessionKeyActive(sessionKey)) {
+		Optional<IoTSession> session = securityPluginManager.getSession(sessionKey);
+		
+		if (this.securityPluginManager.checkSessionKeyActive(session)) {
 			final SSAPMessage<SSAPBodyCommandMessage> cmd = new SSAPMessage<>();
 			cmd.setBody(new SSAPBodyCommandMessage());
 			cmd.setDirection(SSAPMessageDirection.REQUEST);
@@ -71,23 +72,5 @@ public class CommandProcessor {
 		} else
 			return false;
 	}
-
-	// @RequestMapping(value="/commandSync/{command}", method=RequestMethod.POST)
-	// public JsonNode sendSync(@PathVariable(name="command") String command, String
-	// sessionKey, @RequestBody JsonNode params) {
-	//
-	// final SSAPMessage<SSAPBodyCommandMessage> cmd = new SSAPMessage<>();
-	// cmd.setBody(new SSAPBodyCommandMessage());
-	// cmd.setDirection(SSAPMessageDirection.REQUEST);
-	// cmd.setMessageType(SSAPMessageTypes.COMMAND);
-	// cmd.setSessionKey(sessionKey);
-	// cmd.getBody().setCommand(UUID.randomUUID().toString());
-	// cmd.getBody().setCommand(command);
-	// cmd.getBody().setParams(params);
-	//
-	// notifier.sendCommandSync(cmd);
-	//
-	// return JsonNodeFactory.instance.nullNode();
-	// }
 
 }

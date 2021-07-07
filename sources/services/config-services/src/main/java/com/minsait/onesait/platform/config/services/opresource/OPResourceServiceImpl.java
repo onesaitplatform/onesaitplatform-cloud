@@ -20,17 +20,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import com.minsait.onesait.platform.config.model.*;
-import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.nodes.Entities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -38,7 +34,18 @@ import org.springframework.util.CollectionUtils;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.dto.ProjectUserAccess;
+import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppUser;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
+import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.ProjectList;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
@@ -50,6 +57,7 @@ import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepos
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
@@ -107,12 +115,13 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	@Override
 	public Collection<OPResource> getResources(String userId, String identification) {
-		if (identification == null)
+		if (identification == null) {
 			identification = "";
+		}
 		final User user = userService.getUser(userId);
-		if (userService.isUserAdministrator(user))
+		if (userService.isUserAdministrator(user)) {
 			return resourceRepository.findByIdentificationContainingIgnoreCase(identification);
-		else {
+		} else {
 			final List<OPResource> resources = resourceRepository
 					.findByIdentificationContainingIgnoreCase(identification);
 			final Set<OPResource> resourcesFiltered = resources.stream().filter(r -> r.getUser().equals(user))
@@ -146,17 +155,17 @@ public class OPResourceServiceImpl implements OPResourceService {
 	public void createUpdateAuthorization(ProjectResourceAccess pRA) {
 		ProjectResourceAccess pRADB;
 		log.debug("createUpdateAuthorization() arguments are: {}", pRA.toString());
-		if (pRA.getAppRole() != null)
+		if (pRA.getAppRole() != null) {
 			pRADB = pRA.getProject().getProjectResourceAccesses().stream()
 					.filter(a -> a.getResource().equals(pRA.getResource()) && a.getAppRole().equals(pRA.getAppRole())
 							&& a.getProject().equals(pRA.getProject()))
 					.findFirst().orElse(null);
-
-		else
+		} else {
 			pRADB = pRA.getProject().getProjectResourceAccesses().stream()
 					.filter(a -> a.getResource().equals(pRA.getResource()) && a.getUser().equals(pRA.getUser())
 							&& a.getProject().equals(pRA.getProject()))
 					.findFirst().orElse(null);
+		}
 
 		if (pRADB != null) {
 			log.debug("Project already had authorization, will remove it: {}", pRADB.toString());
@@ -173,15 +182,15 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	@Override
 	public OPResource getResourceById(String id) {
-		return resourceRepository.findOne(id);
+		return resourceRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public OPResource getResourceByIdentificationAndType(String identification, Resources type) {
 		List<OPResource> resList = resourceRepository.findByIdentification(identification);
-		if (resList.isEmpty())
+		if (resList.isEmpty()) {
 			return null;
-		else {
+		} else {
 			if (type.toString().equalsIgnoreCase("DATAFLOW")) {
 				resList = resList.stream().filter(r -> r.getClass().getSimpleName().equalsIgnoreCase("PIPELINE"))
 						.collect(Collectors.toList());
@@ -204,11 +213,14 @@ public class OPResourceServiceImpl implements OPResourceService {
 	@Transactional
 	public void removeAuthorization(String id, String projectId, String userId) throws GenericOPException {
 		final Project project = projectService.getById(projectId);
-		final ProjectResourceAccess pra = resourceAccessRepository.findOne(id);
-		if (!projectService.isUserAuthorized(projectId, userId) && !isUserAuthorized(userId, pra.getResource().getId()))
-			throw new GenericOPException("Unauthorized");
-		project.getProjectResourceAccesses().removeIf(p -> p.equals(pra));
-		projectService.updateProject(project);
+		resourceAccessRepository.findById(id).ifPresent(pra -> {
+			if (!projectService.isUserAuthorized(projectId, userId)
+					&& !isUserAuthorized(userId, pra.getResource().getId())) {
+				return;
+			}
+			project.getProjectResourceAccesses().removeIf(p -> p.equals(pra));
+			projectService.updateProject(project);
+		});
 
 	}
 
@@ -230,23 +242,9 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	@Override
 	public ResourceAccessType getResourceAccess(String userId, String resourceId) {
-		final User user = userService.getUser(userId);
-		final OPResource resource = resourceRepository.findOne(resourceId);
-		final List<ProjectResourceAccess> accesses = resourceAccessRepository.findByResource(resource);
-		return accesses.stream().map(pra -> {
-			if (pra.getAppRole() != null) {
-				final User userInApp = pra.getAppRole().getAppUsers().stream().map(AppUser::getUser)
-						.filter(u -> u.equals(user)).findFirst().orElse(null);
-				if (userInApp != null) {
-					return pra.getAccess();
-				}
-			} else {
-				if (pra.getUser().equals(user))
-					return pra.getAccess();
-			}
-			return null;
-
-		}).filter(Objects::nonNull).findFirst().orElse(null);
+		final List<ProjectResourceAccessList> accesses = resourceAccessRepository.findByUserIdAndResourceId(userId,
+				resourceId);
+		return accesses.stream().map(ProjectResourceAccessList::getAccess).findAny().orElse(null);
 
 	}
 
@@ -282,7 +280,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 			List<String> versions, List<String> resourceTypes, List<String> resourceAccessTypes, String currentUser) {
 		final List<String> created = new ArrayList<>();
 
-		if (!((userIds.size() == resources.size()) && (resourceTypes.size() == resourceAccessTypes.size()))) {
+		if (!(userIds.size() == resources.size() && resourceTypes.size() == resourceAccessTypes.size())) {
 			return created;
 		}
 
@@ -316,7 +314,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 			String currentUser) {
 		final List<String> created = new ArrayList<>();
 
-		if (!((realmIds.size() == resources.size()) && (resourceTypes.size() == roleIds.size()))) {
+		if (!(realmIds.size() == resources.size() && resourceTypes.size() == roleIds.size())) {
 			return created;
 		}
 
@@ -350,7 +348,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 			List<String> versions, List<String> resourceTypes, List<String> resourceAccessTypes, String currentUser) {
 		final List<String> deleted = new ArrayList<>();
 
-		if (!((userIds.size() == resources.size()) && (resourceTypes.size() == resourceAccessTypes.size()))) {
+		if (!(userIds.size() == resources.size() && resourceTypes.size() == resourceAccessTypes.size())) {
 			return deleted;
 		}
 
@@ -384,7 +382,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 			String userId) {
 		final List<String> deleted = new ArrayList<>();
 
-		if (!((realmIds.size() == resources.size()) && (resourceTypes.size() == roleIds.size()))) {
+		if (!(realmIds.size() == resources.size() && resourceTypes.size() == roleIds.size())) {
 			return deleted;
 		}
 
@@ -415,7 +413,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	@Override
 	public boolean isResourceSharedInAnyProject(OPResource resource) {
-		return (resourceAccessRepository.countByResource(resource) > 0);
+		return resourceAccessRepository.countByResource(resource) > 0;
 	}
 
 	@Override
@@ -436,9 +434,9 @@ public class OPResourceServiceImpl implements OPResourceService {
 	public boolean isUserAuthorized(String userId, String resourceId) {
 		final User user = userService.getUser(userId);
 
-		final OPResource resource = resourceRepository.findOne(resourceId);
-		return (userService.isUserAdministrator(user) || (resource != null && resource.getUser().equals(user))
-				|| hasAccess(userId, resourceId, ResourceAccessType.MANAGE));
+		final OPResource resource = resourceRepository.findById(resourceId).orElse(null);
+		return userService.isUserAdministrator(user) || resource != null && resource.getUser().equals(user)
+				|| hasAccess(userId, resourceId, ResourceAccessType.MANAGE);
 
 	}
 
@@ -446,8 +444,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 			String resourceAccessType, String currentUserId) {
 		ProjectResourceAccess projectResourceAccess = null;
 
-		if (!(projectName.equals("")) && !(userId.equals("")) && !(resourceId.equals(""))
-				&& !(resourceType.equals(""))) {
+		if (!projectName.equals("") && !userId.equals("") && !resourceId.equals("") && !resourceType.equals("")) {
 
 			final User user = userRepository.findByUserId(userId);
 			final ProjectList project = projectService.getByNameForList(projectName);
@@ -474,12 +471,12 @@ public class OPResourceServiceImpl implements OPResourceService {
 				throw new OPResourceServiceException(ERROR_LOGGED_USER_NO_AUTH);
 			}
 
-			final ProjectResourceAccessList pRA = checkResourceAccessByUser(project, user, resource, version, resourceType,
-					resourceAccessType, currentUserId);
+			final ProjectResourceAccessList pRA = checkResourceAccessByUser(project, user, resource, version,
+					resourceType, resourceAccessType, currentUserId);
 
 			if (pRA == null) {
 				projectResourceAccess = new ProjectResourceAccess();
-				projectResourceAccess.setProject(EntitiesCast.castProjectList(project,false));
+				projectResourceAccess.setProject(EntitiesCast.castProjectList(project, false));
 				projectResourceAccess.setUser(user);
 				projectResourceAccess.setResource(resource);
 				projectResourceAccess.setAccess(ResourceAccessType.valueOf(resourceAccessType));
@@ -511,13 +508,13 @@ public class OPResourceServiceImpl implements OPResourceService {
 				final JSONObject elementJson = elementsJson.getJSONObject(i);
 
 				final ProjectResourceAccess projectRA = new ProjectResourceAccess();
-				projectRA.setProject(EntitiesCast.castProjectList(project,false));
+				projectRA.setProject(EntitiesCast.castProjectList(project, false));
 				projectRA.setUser(user);
 				final OPResource res = getResourceById(elementJson.get("id").toString());
 				projectRA.setResource(res);
 				projectRA.setAccess(ResourceAccessType.VIEW);
-				final ProjectResourceAccessList prevPRA = resourceAccessRepository.findByResourceListAndProjectAndUserId(res.getId(),
-						project.getId(), user.getUserId());
+				final ProjectResourceAccessList prevPRA = resourceAccessRepository
+						.findByResourceListAndProjectAndUserId(res.getId(), project.getId(), user.getUserId());
 				if (prevPRA == null) {
 					resourceAccessRepository.save(projectRA);
 				}
@@ -534,8 +531,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 	void deleteResourceAccess(String projectName, String userId, String resourceId, String version, String resourceType,
 			String resourceAccessType, String currentUserId) throws GenericOPException {
 
-		if (!(projectName.equals("")) && !(userId.equals("")) && !(resourceId.equals(""))
-				&& !(resourceType.equals(""))) {
+		if (!projectName.equals("") && !userId.equals("") && !resourceId.equals("") && !resourceType.equals("")) {
 
 			final User user = userRepository.findByUserId(userId);
 			final ProjectList project = projectService.getByNameForList(projectName);
@@ -557,8 +553,8 @@ public class OPResourceServiceImpl implements OPResourceService {
 				throw new OPResourceServiceException(ERROR_RESOURCE_NOT_FOUND);
 			}
 
-			final ProjectResourceAccessList pRA = checkResourceAccessByUser(project, user, resource, version, resourceType,
-					resourceAccessType, currentUserId);
+			final ProjectResourceAccessList pRA = checkResourceAccessByUser(project, user, resource, version,
+					resourceType, resourceAccessType, currentUserId);
 
 			if (pRA == null) {
 				log.error(ERROR_ACCESS_NOT_EXISTS);
@@ -587,7 +583,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 			throw new OPResourceServiceException(ERROR_USER_NOT_IN_PROJECT);
 		}
 
-		if ((!userService.isUserAnalytics(user)) && (resourceType.equals(Resources.DATAFLOW.toString())
+		if (!userService.isUserAnalytics(user) && (resourceType.equals(Resources.DATAFLOW.toString())
 				|| resourceType.equals(Resources.NOTEBOOK.toString()))) {
 			log.error(ERROR_NOT_RESOURCE_TYPE + resourceType);
 			throw new OPResourceServiceException(ERROR_NOT_RESOURCE_TYPE + resourceType);
@@ -599,15 +595,16 @@ public class OPResourceServiceImpl implements OPResourceService {
 			throw new OPResourceServiceException(
 					ERROR_NOT_RESOURCE_TYPE + resourceType + " (" + resourceAccessType + ")");
 		}
-		return resourceAccessRepository.findByResourceListAndProjectAndUserId(resource.getId(), project.getId(), user.getUserId());
+		return resourceAccessRepository.findByResourceListAndProjectAndUserId(resource.getId(), project.getId(),
+				user.getUserId());
 	}
 
 	private void createResourceAccessRealm(String projectName, String realmId, String roleId, String resourceId,
 			String version, String resourceType, String resourceAccessType, String currentUserId) {
 		ProjectResourceAccess projectResourceAccess = null;
 
-		if (!(projectName.equals("")) && !(realmId.equals("")) && !(resourceId.equals("")) && !(resourceType.equals(""))
-				&& !(roleId.equals(""))) {
+		if (!projectName.equals("") && !realmId.equals("") && !resourceId.equals("") && !resourceType.equals("")
+				&& !roleId.equals("")) {
 			final Project project = projectService.getByName(projectName);
 			final App realm = appService.getAppByIdentification(realmId);
 
@@ -712,8 +709,8 @@ public class OPResourceServiceImpl implements OPResourceService {
 			String version, String resourceType, String resourceAccessType, String currentUserId)
 			throws GenericOPException {
 
-		if (!(projectName.equals("")) && !(realmId.equals("")) && !(resourceId.equals("")) && !(resourceType.equals(""))
-				&& !(roleId.equals(""))) {
+		if (!projectName.equals("") && !realmId.equals("") && !resourceId.equals("") && !resourceType.equals("")
+				&& !roleId.equals("")) {
 			final Project project = projectService.getByName(projectName);
 			final App realm = appService.getAppByIdentification(realmId);
 

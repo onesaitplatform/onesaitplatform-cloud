@@ -16,6 +16,7 @@ package com.minsait.onesait.platform;
 
 import java.util.Locale;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,12 +28,14 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
+import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
+
 @SpringBootApplication
-public class Oauth2AuthorizationServerApplication extends WebMvcConfigurerAdapter {
+public class Oauth2AuthorizationServerApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Oauth2AuthorizationServerApplication.class, args);
@@ -66,10 +69,12 @@ public class Oauth2AuthorizationServerApplication extends WebMvcConfigurerAdapte
 		lci.setIgnoreInvalidLocale(true);
 		return lci;
 	}
-
+	@Autowired
+	private CorrelationInterceptor logInterceptor;
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());
+		registry.addInterceptor(logInterceptor);
 	}
 
 	@Bean

@@ -46,6 +46,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+
 import lombok.extern.slf4j.Slf4j;
 
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.plugable.gateway.kafka", name = "enable", havingValue = "true")
@@ -53,10 +55,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KafkaService {
 
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
+	private String kafkaBrokers;
+	
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
 
-	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.port:9092}")
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.port:9092}") 	
 	private String kafkaPort;
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.user:admin}")
@@ -86,17 +91,22 @@ public class KafkaService {
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.group:ontologyGroup}")
 	private String ontologyGroup;
 
+	@Value("${onesaitplatform.multitenancy.enabled:false}")
+	private boolean isMultitenancyEnabled;
+
 	private static final String CREATING_TOPIC = "Creating topic '{}'";
 	private static final String CANNOT_ENSURE_CREATING_TOPIC = "Cannot ensure topic creation for  '{}'";
 
 	private static final String KAFKA_DEFAULTPORT = "9092";
 	private static final String ACL_CREATED = "Creating {} access for user {} to topic {}...";
 	private static final String PRINCIPAL = "User:";
+	
+	private static final String EMPTY_BROKERS = "none";
 
 	private AdminClient adminAcl;
 
 	private void applySecurity(Properties config) {
-		if (!KAFKA_DEFAULTPORT.equals(kafkaPort)) {
+		if (!KAFKA_DEFAULTPORT.equals(kafkaPort) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
 
@@ -113,7 +123,11 @@ public class KafkaService {
 
 		try {
 			Properties config = new Properties();
-			config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+			if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+				config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+			} else {
+				config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+			}
 			applySecurity(config);
 			adminAcl = AdminClient.create(config);
 		} catch (Exception e) {
@@ -122,15 +136,40 @@ public class KafkaService {
 
 	}
 
-	public String getTopicName(String ontology) {
-		return (ontologyInputPrefix + ontology).toUpperCase();
+	public String getTopicName(String ontology, String vertical, String tenant) {
+		if (vertical == null || vertical.isEmpty()) {
+			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+		}
+		if (tenant == null || tenant.isEmpty()) {
+			tenant = Tenant2SchemaMapper.defaultTenantName(vertical);
+		}
+		if (Tenant2SchemaMapper.defaultTenantName(vertical).equals(tenant)
+				&& Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME.equals(vertical)) {
+			// if default used, then topic name has no vertical and tenant
+			return (ontologyInputPrefix + ontology).toUpperCase();
+		} else {
+			return (ontologyInputPrefix.substring(0, ontologyInputPrefix.length() - 1) + "-" + vertical + "-" + tenant + "-" + ontology).toUpperCase();
+		}
 	}
 
-	public String getNotificationTopicName(String ontology) {
-		return (ontologyNotificationPrefix + ontology).toUpperCase();
+	public String getNotificationTopicName(String ontology, String vertical, String tenant) {
+
+		if (vertical == null || vertical.isEmpty()) {
+			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+		}
+		if (tenant == null || tenant.isEmpty()) {
+			tenant = Tenant2SchemaMapper.defaultTenantName(vertical);
+		}
+		if (Tenant2SchemaMapper.defaultTenantName(vertical).equals(tenant)
+				&& Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME.equals(vertical)) {
+			// if default used, then topic name has no vertical and tenant
+			return (ontologyNotificationPrefix + ontology).toUpperCase();
+		} else {
+			return (ontologyNotificationPrefix.substring(0, ontologyNotificationPrefix.length() - 1) + "-" + vertical + "-" + tenant + "-" + ontology).toUpperCase();
+		}
 	}
 
-	public boolean createTopic(String name, int partitions, short replication) {
+	private boolean createTopic(String name, int partitions, short replication) {
 
 		NewTopic t = new NewTopic(name, partitions, replication);
 		try {
@@ -144,38 +183,40 @@ public class KafkaService {
 		}
 	}
 
-	public boolean createInputTopicForOntology(String name) {
+	public boolean createInputTopicForOntology(String ontologyName, String vertical, String tenant) {
 		try {
 			// chekc if topic exists
 			ListTopicsResult topicList = adminAcl.listTopics();
 			Set<String> currentTopicList = topicList.names().get();
 			for (String existingTopic : currentTopicList) {
-				if (existingTopic.equals(getTopicName(name))) {
+				if (existingTopic.equals(getTopicName(ontologyName, vertical, tenant))) {
 					return true;
 				}
 			}
-			return createTopic(getTopicName(name), partitions, replication);
+			return createTopic(getTopicName(ontologyName, vertical, tenant), partitions, replication);
 		} catch (Exception e) {
-			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(name));
-			log.error("Error creating input topic for Ontology", e);
+			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
+			log.error("Error creating input topic for Ontology=" + ontologyName + ", vertical=" + vertical + ", tenant="
+					+ tenant, e);
 			return false;
 		}
 	}
 
-	public boolean createNotificationTopicForOntology(String name) {
+	public boolean createNotificationTopicForOntology(String ontologyName, String vertical, String tenant) {
 		try {
-			// chekc if topic exists
+			// check if topic exists
 			ListTopicsResult topicList = adminAcl.listTopics();
 			Set<String> currentTopicList = topicList.names().get();
 			for (String existingTopic : currentTopicList) {
-				if (existingTopic.equals(getNotificationTopicName(name))) {
+				if (existingTopic.equals(getNotificationTopicName(ontologyName, vertical, tenant))) {
 					return true;
 				}
 			}
-			return createTopic(getNotificationTopicName(name), partitions, replication);
+			return createTopic(getNotificationTopicName(ontologyName, vertical, tenant), partitions, replication);
 		} catch (Exception e) {
-			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(name));
-			log.error("Error creating notification topic for Ontology", e);
+			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
+			log.error("Error creating notification topic for Ontology=" + ontologyName + ", vertical=" + vertical
+					+ ", tenant=" + tenant, e);
 			return false;
 		}
 	}
@@ -184,8 +225,22 @@ public class KafkaService {
 		return createTopic(name, partitions, replication);
 	}
 
-	public boolean createTopicForKsqlInput(String name) {
-		return createTopic(ksqlInTopicPrefix + name, partitions, replication);
+	public boolean createTopicForKsqlInput(String ontologyName, String vertical, String tenant) {
+		if (vertical == null || vertical.isEmpty()) {
+			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+		}
+		if (tenant == null || tenant.isEmpty()) {
+			Tenant2SchemaMapper.defaultTenantName(vertical);
+		}
+		if (Tenant2SchemaMapper.defaultTenantName(vertical).equals(tenant)
+				&& Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME.equals(vertical)) {
+			// if default used, then topic name has no vertical and tenant
+			return createTopic(ksqlInTopicPrefix + ontologyName, partitions, replication);
+		} else {
+			return createTopic(ksqlInTopicPrefix.substring(0, ksqlInTopicPrefix.length() - 1) + "-" + vertical + "-"
+					+ tenant + "-" + ontologyName, partitions, replication);
+		}
+
 	}
 
 	public DeleteTopicsResult deleteTopic(String name) {

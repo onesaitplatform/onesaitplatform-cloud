@@ -49,6 +49,8 @@ import com.microsoft.sqlserver.jdbc.StringUtils;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
+import com.minsait.onesait.platform.multitenant.util.BeanUtil;
+import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 import com.minsait.onesait.platform.security.token.TokenResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +63,7 @@ public class CustomFilter extends GenericFilterBean {
 	private static final String AUTH_HEADER_VALUE_PREFIX = "Bearer "; // with trailing space to separate token
 	private static final String AUTH_VALUE_ANONYMOUS = "anonymous";
 	private static final String VERTICAL_PARAMETER = "vertical";
+	private static final String OAUTH2_QUERYPARAM = "oauthtoken";
 
 	private static final String TENANT_PARAMETER = "tenant";
 
@@ -68,6 +71,7 @@ public class CustomFilter extends GenericFilterBean {
 
 	private final String onesaitPlatformTokenAuth;
 	private final UserDetailsService userDetailsService;
+	private PlugableOauthAuthenticator plugableOauthAuthenticator;
 
 	private final MultitenancyService multitenancyService;
 
@@ -77,6 +81,12 @@ public class CustomFilter extends GenericFilterBean {
 		this.onesaitPlatformTokenAuth = onesaitPlatformTokenAuth;
 		this.userDetailsService = userDetailsService;
 		this.multitenancyService = multitenancyService;
+		try {
+			plugableOauthAuthenticator = BeanUtil.getBean(PlugableOauthAuthenticator.class);
+		} catch (final Exception e) {
+			// NO-OP
+		}
+
 	}
 
 	@Override
@@ -88,19 +98,29 @@ public class CustomFilter extends GenericFilterBean {
 		try {
 			final String jwt = getBearerToken(httpRequest);
 			if (jwt != null && !jwt.isEmpty()) {
-				final TokenResponse details = validateToken(jwt);
-				generateSecurityContextAuthentication(details);
-				log.info("Logged in using JWT");
-
-				return;
-			} else {
-				if (isAnonymous(httpRequest)) {
-					setMultitenantContext(httpRequest);
-					generateSecurityContextAuthenticationAnonymous();
-				} else {
-					log.info("No JWT provided, continue chain or user-pass");
-					filterChain.doFilter(servletRequest, servletResponse);
+				final String userId = validateToken(jwt);
+				if (!org.springframework.util.StringUtils.isEmpty(userId)) {
+					generateSecurityContextAuthentication(userId, jwt);
+					log.info("Logged in using JWT");
+					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")) {
+						filterChain.doFilter(servletRequest, servletResponse);
+					} else {
+						return;
+					}
 				}
+				return;
+			}
+			else {
+					if (isAnonymous(httpRequest)) {
+						setMultitenantContext(httpRequest);
+						generateSecurityContextAuthenticationAnonymous();
+						if(((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")){
+							filterChain.doFilter(servletRequest, servletResponse);
+						}
+					} else {
+						log.info("No JWT provided, continue chain or user-pass");
+						filterChain.doFilter(servletRequest, servletResponse);
+					}
 			}
 		} catch (final Exception e) {
 			log.error("Failed logging in", e);
@@ -118,9 +138,14 @@ public class CustomFilter extends GenericFilterBean {
 
 	/**
 	 * Get the bearer token from the HTTP request. The token is in the HTTP request
+	 * "oauthtoken" queryparams in the form of: "oauthtoken=[token]"
 	 * "Authorization" header in the form of: "Bearer [token]"
 	 */
 	private String getBearerToken(HttpServletRequest request) {
+		final String authParam = request.getParameter(OAUTH2_QUERYPARAM);
+		if(authParam != null){
+			return authParam;
+		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
 		if (authHeader != null && authHeader.startsWith(AUTH_HEADER_VALUE_PREFIX)) {
 			return authHeader.substring(AUTH_HEADER_VALUE_PREFIX.length());
@@ -129,6 +154,10 @@ public class CustomFilter extends GenericFilterBean {
 	}
 
 	private boolean isAnonymous(HttpServletRequest request) {
+		final String authParam = request.getParameter(AUTH_VALUE_ANONYMOUS);
+		if(authParam != null) {
+			return true;
+		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
 		if (authHeader != null && authHeader.equals(AUTH_VALUE_ANONYMOUS)) {
 			return true;
@@ -136,7 +165,23 @@ public class CustomFilter extends GenericFilterBean {
 		return false;
 	}
 
-	private TokenResponse validateToken(String token) {
+	private String validateToken(String token) {
+		if (plugableOauthAuthenticator == null) {
+			return validateTokenLegacy(token);
+		} else {
+			final Authentication auth = plugableOauthAuthenticator.loadOauthAuthentication(token);
+			if (auth != null) {
+				return auth.getName();
+			}
+		}
+		return null;
+	}
+
+	@Deprecated
+	/*
+	 * Will remove this validation method soon as of 2.2.0
+	 */
+	private String validateTokenLegacy(String token) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -144,14 +189,13 @@ public class CustomFilter extends GenericFilterBean {
 		final HttpEntity<String> entity = new HttpEntity<>(token, headers);
 		final TokenResponse response = restTemplate.postForObject(onesaitPlatformTokenAuth, entity,
 				TokenResponse.class);
-		return response;
+		return response.getPrincipal();
 	}
 
-	private void generateSecurityContextAuthentication(TokenResponse details) {
+	private void generateSecurityContextAuthentication(String userId, String token) {
 
-		final UserDetails user = userDetailsService.loadUserByUsername(details.getPrincipal());
-		final Authentication auth = new UsernamePasswordAuthenticationToken(user, details.getAccess_token(),
-				user.getAuthorities());
+		final UserDetails user = userDetailsService.loadUserByUsername(userId);
+		final Authentication auth = new UsernamePasswordAuthenticationToken(user, token, user.getAuthorities());
 		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 

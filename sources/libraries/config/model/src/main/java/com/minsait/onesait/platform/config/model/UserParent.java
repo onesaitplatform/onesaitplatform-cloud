@@ -46,16 +46,16 @@ public class UserParent extends AuditableEntity {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name = "USER_ID", length = 50, unique = true, nullable = false)
+	@Column(name = "USER_ID", length = 255, unique = true, nullable = false)
 	@NotNull
 	@Getter
 	@Setter
-	@Size(min = 4, message = "user.userid.error")
+	@Size(min = 3, message = "user.userid.error")
 	private String userId;
 
 	@Column(name = "EMAIL", length = 255, nullable = false)
 	@NotNull
-	@javax.validation.constraints.Pattern(regexp = "^[-A-Za-z0-9~!$%^&*_=+}{\\'?]+(\\.[-a-z0-9~!$%^&*_=+}{\\'?]+)*@([a-z0-9_][-a-z0-9_]*(\\.[-a-z0-9_]+)*\\.([a-z]+)|([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))(:[0-9]{1,5})?$", message = "user.create.empty.email")
+	@javax.validation.constraints.Pattern(regexp = "^[-A-Za-z0-9~!$%^&*\\._=+}{\\'?]+(\\.[-a-z0-9~!$%^&*_=+}{\\'?]+)*@([a-z0-9_][-a-z0-9_]*(\\.[-a-z0-9_]+)*\\.([a-z]+)|([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))(:[0-9]{1,5})?$", message = "user.create.empty.email")
 	@Getter
 	@Setter
 	private String email;
@@ -67,7 +67,7 @@ public class UserParent extends AuditableEntity {
 	@Setter
 	private Role role;
 
-	@Column(name = "PASSWORD", length = 128, nullable = false)
+	@Column(name = "PASSWORD", length = 255, nullable = false)
 	@NotNull
 	@Setter
 	@Convert(converter = JPAHAS256ConverterCustom.class)
@@ -96,7 +96,7 @@ public class UserParent extends AuditableEntity {
 
 	@Column(name = "FULL_NAME", length = 255)
 	@NotNull
-	@Size(min = 4, message = "user.fullname.error")
+	@Size(min = 3, message = "user.fullname.error")
 	@Getter
 	@Setter
 	private String fullName;
@@ -121,16 +121,19 @@ public class UserParent extends AuditableEntity {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof UserParent))
+		}
+		if (!(o instanceof UserParent)) {
 			return false;
+		}
 		return getUserId() != null && getUserId().equals(((UserParent) o).getUserId());
 	}
 
 	@JsonIgnore
 	public boolean isAdmin() {
-		return this.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
+		return getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || (getRole().getRoleParent() != null
+				&& getRole().getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()));
 	}
 
 	@Override

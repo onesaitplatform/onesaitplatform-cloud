@@ -58,7 +58,7 @@ public class GadgetDatasource extends OPResource {
 	private String dbtype;
 
 	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = true)
 	@Getter
 	@Setter

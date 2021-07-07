@@ -36,6 +36,7 @@ import com.minsait.onesait.platform.iotbroker.common.exception.SSAPComplianceExc
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.iotbroker.processor.DeviceManager;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
@@ -47,13 +48,16 @@ public class JoinProcessor implements MessageTypeProcessor {
 
 	@Autowired
 	SecurityPluginManager securityManager;
+	
+	@Autowired
+	private DeviceManager deviceManager;
 
 	@Autowired
 	ObjectMapper mapper;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 		final SSAPMessage<SSAPBodyJoinMessage> join = (SSAPMessage<SSAPBodyJoinMessage>) message;
 		log.info("Client {}:{} ask for new session",join.getBody().getDeviceTemplate(),join.getBody().getDevice());
 		final SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
@@ -69,28 +73,36 @@ public class JoinProcessor implements MessageTypeProcessor {
 			throw new SSAPComplianceException(
 					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "token", message.getMessageType().name()));
 		}
-
-		final Optional<IoTSession> session = securityManager.authenticate(join.getBody().getToken(),
-				join.getBody().getDeviceTemplate(), join.getBody().getDevice(), join.getSessionKey());
-		session.ifPresent(s -> {
-			response.setSessionKey(s.getSessionKey());
-			try {
-				response.getBody().setData(mapper.readTree("{\"sessionKey\":\"" + s.getSessionKey() + "\"}"));
-			} catch (final IOException e) {
-				log.error(e.getMessage());
+  
+		String clientPlatformIdentification = join.getBody().getDeviceTemplate();
+		String clientPlatformInstanceIdentification = join.getBody().getDevice();
+		
+		
+		if (deviceManager.registerActivity(message, clientPlatformIdentification, clientPlatformInstanceIdentification, info)) {
+		
+			session = securityManager.authenticate(join.getBody().getToken(),
+					clientPlatformIdentification, clientPlatformInstanceIdentification, join.getSessionKey());
+			session.ifPresent(s -> {
+				response.setSessionKey(s.getSessionKey());
+				try {
+					response.getBody().setData(mapper.readTree("{\"sessionKey\":\"" + s.getSessionKey() + "\"}"));
+				} catch (final IOException e) {
+					log.error(e.getMessage());
+				}
+			});
+	
+			if (!StringUtils.isEmpty(response.getSessionKey())) {
+				response.setDirection(SSAPMessageDirection.RESPONSE);
+				response.setMessageId(join.getMessageId());
+				response.setMessageType(SSAPMessageTypes.JOIN);
+			} else {
+				throw new AuthenticationException(MessageException.ERR_SESSIONKEY_NOT_ASSINGED);
 			}
-
-		});
-
-		if (!StringUtils.isEmpty(response.getSessionKey())) {
-			response.setDirection(SSAPMessageDirection.RESPONSE);
-			response.setMessageId(join.getMessageId());
-			response.setMessageType(SSAPMessageTypes.JOIN);
+			return response;
 		} else {
-			throw new AuthenticationException(MessageException.ERR_SESSIONKEY_NOT_ASSINGED);
+			//TODO add limit configuration
+			throw new AuthenticationException(MessageException.ERR_CLIENTPLATFORM_INSTANCE_LIMIT_REACHED);
 		}
-
-		return response;
 	}
 
 	@Override

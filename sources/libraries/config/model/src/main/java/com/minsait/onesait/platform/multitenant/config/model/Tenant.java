@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
@@ -28,8 +27,6 @@ import javax.persistence.UniqueConstraint;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,17 +35,12 @@ import lombok.Setter;
 @Configurable
 @Getter
 @Setter
-public class Tenant extends AuditableEntityWithUUID {
+public class Tenant extends TenantParent {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
-
-	@Column(name = "NAME", length = 50, nullable = false)
-	private String name;
-
-	// TO-DO nivel intermedio Vertical-Tenant
 
 	@OneToMany(mappedBy = "tenant", fetch = FetchType.EAGER, cascade = { CascadeType.REMOVE,
 			CascadeType.PERSIST }, orphanRemoval = true)

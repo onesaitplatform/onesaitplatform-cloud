@@ -1,4 +1,7 @@
 var UserCreateController = function() {
+	
+	var csrf = {};
+	csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
     
 	// DEFAULT PARAMETERS, VAR, CONSTS. 
     var APPNAME = 'onesait Platform Control Panel'; 
@@ -113,7 +116,6 @@ var UserCreateController = function() {
 		
         var form1 = $('#user_create_form');
         var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
 		
 		// set current language
 		currentLanguage = userCreateReg.language || LANGUAGE;
@@ -133,15 +135,14 @@ var UserCreateController = function() {
 				userId:				{ required: true, minlength: 4 },
                 fullName:			{ required: true},
                 email:				{ required: true, email: true },
-                newpasswordbox:		{ required: true, minlength: 7, maxlength: 20 },
-                repeatpasswordbox:	{ required: true, minlength: 7, maxlength: 20,  equalTo : "#newpasswordbox" }, 
+                newpasswordbox:		{ required: true, minlength: 7, maxlength: 128 },
+                repeatpasswordbox:	{ required: true, minlength: 7, maxlength: 128,  equalTo : "#newpasswordbox" }, 
                 roles:				{ required: true },
 				datecreated:		{ date: true, required: true },
-				datedeleted:		{ date: true }
+				datedeleted:        { date: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit              
             	
-            	success1.hide();
                 error1.show();
                 App.scrollTo(error1, -200);
                 
@@ -163,7 +164,6 @@ var UserCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-                success1.show();
                 error1.hide();
                 
 				// date conversion to DDBB format.
@@ -176,12 +176,14 @@ var UserCreateController = function() {
 	                	}
 	                
 	                }else{
+	                	if ($('#datedeleted').val()=="") {
+	                		$('#datedeleted').prop('disabled',true);
+	                	}
 	                	form.submit();
 	                }
 					
 				} 
 				else { 
-					success1.hide();
 					error1.show();
 					App.scrollTo(error1, -200);
 				}				
@@ -251,6 +253,7 @@ var UserCreateController = function() {
 		else {
 			// set DATE created in EDIT MODE
 			logControl ? console.log('action-mode: UPDATE') : '';
+			$('#deleteBtn').hide();
 			var f = new Date(userCreateReg.dateCreated);
 			regDate = (currentLanguage == 'es') ? ('0' + (f.getDate())).slice(-2) + "/" + ('0' + (f.getMonth()+1)).slice(-2) + "/" + f.getFullYear() : ('0' + (f.getMonth()+1)).slice(-2) + "/" + ('0' + (f.getDate())).slice(-2) + "/" + f.getFullYear();
 			$('#datecreated').datepicker('update',regDate);
@@ -273,7 +276,7 @@ var UserCreateController = function() {
 		
 	}	
 	
-	// DELETE USER
+	// DEACTIVATE USER
 	var deleteUserConfirmation = function(userId){
 		console.log('deleteUserConfirmation() -> formId: '+ userId);
 		
@@ -283,9 +286,7 @@ var UserCreateController = function() {
 		console.log('deleteUserConfirmation() -> ID: ' + userId);
 		
 		// i18 labels
-		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
-		var	Content = headerReg.genericConfirm;
 		var Title = headerReg.titleConfirm + ':';
 		
 		// call user Confirm at header.
@@ -294,14 +295,14 @@ var UserCreateController = function() {
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
-			content: Content,
+			content: userCreateJson.deactivateText,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
 			closeIcon: true,
 			buttons: {
 				remove: {
-					text: Remove,
+					text: userCreateJson.deactivateTitle,
 					btnClass: 'btn btn-sm btn-circle btn-primary btn-outline',
 					action: function(){ 
 						navigateUrl("/controlpanel/users/forgetDataUser/" +userId+"/true");
@@ -315,7 +316,54 @@ var UserCreateController = function() {
 			}
 		});		
 	}
-
+	
+	//HARD DELETE USER
+	var hardDeleteUserConfirmation = function(userId) {
+		
+		var Close = headerReg.btnCancelar;
+		
+		$.confirm({
+			icon: 'fa fa-warning',
+			title: userCreateJson.deleteTitle,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: userCreateJson.deleteText,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: userCreateJson.deleteTitle,
+					btnClass: 'btn btn-circle btn-outline btn-primary',
+					action: function(){
+						$.ajax({
+							url : "/controlpanel/users/hardDelete/"+userId,
+							type : "DELETE",
+							headers: csrf,
+							success : function(response){
+								navigateUrl("/controlpanel/users/list");
+							},
+						    error :  function () {
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  userCreateJson.deleteError
+								});
+						    }
+						})
+					}
+				}
+			}
+		});
+	}
+	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{		
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
@@ -336,10 +384,15 @@ var UserCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
 		},
-		// DELETE USER 
+		// DEACTIVATE USER 
 		deleteUser: function(userId){
 			logControl ? console.log(LIB_TITLE + ': deleteUser()') : '';	
 			deleteUserConfirmation(userId);			
+		},
+		// HARD DELETE USER 
+		hardDeleteUser: function(userId){
+			logControl ? console.log(LIB_TITLE + ': hardDeleteUser()') : '';	
+			hardDeleteUserConfirmation(userId);			
 		}
 		
 	};

@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.0.0-ce</version>
+		<version>2.3.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-metrics-input</artifactId>
@@ -39,26 +39,34 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		
+		<!-- Spring boot actuator to expose metrics endpoint -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<!-- Micormeter core dependecy -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-spring-legacy</artifactId>
+			<artifactId>micrometer-core</artifactId>
 		</dependency>
+		<!-- Micrometer Prometheus registry -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
-		<!--JSQLParser to parse sql queries-->
-        <dependency>
-        	<groupId>com.github.jsqlparser</groupId>
-        	<artifactId>jsqlparser</artifactId>
-        	<version>${jsqlparser.version}</version>
-        </dependency>
-        
+		<!--JSQLParser to parse sql queries -->
+		<dependency>
+			<groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
+			<version>${jsqlparser.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>        
-		
+		</dependency>
+
 	</dependencies>
 </project>

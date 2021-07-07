@@ -82,6 +82,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.commons.OSDetector;
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
 import com.minsait.onesait.platform.config.model.Api;
@@ -108,17 +109,21 @@ import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
+import com.minsait.onesait.platform.config.model.DatasetResource;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.model.I18nResources;
 import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.MarketAsset;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
+import com.minsait.onesait.platform.config.model.ODTypology;
+import com.minsait.onesait.platform.config.model.ODTypologyDataset;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyCategory;
@@ -130,6 +135,7 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.AggregationFunction;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.WindowType;
+import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
 import com.minsait.onesait.platform.config.model.Role;
@@ -164,12 +170,16 @@ import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
+import com.minsait.onesait.platform.config.repository.GadgetTemplateTypeRepository;
 import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
 import com.minsait.onesait.platform.config.repository.InternationalizationRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
+import com.minsait.onesait.platform.config.repository.ODBinaryFilesDatasetRepository;
+import com.minsait.onesait.platform.config.repository.ODTypologyDatasetRepository;
+import com.minsait.onesait.platform.config.repository.ODTypologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyCategoryRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesPropertyRepository;
@@ -193,8 +203,10 @@ import com.minsait.onesait.platform.config.services.exceptions.WebProjectService
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterConfigurationRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.TenantRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
@@ -232,8 +244,8 @@ public class InitConfigDB {
 	private static final String RESULT_STR = "result";
 	private static final String OPERATIONTYPE_STR = "operationType";
 	private static final String VALUE_STR = "value";
-	private static final String SHA_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
-	private static final String SHA_EDGE_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
+	private static final String SHA_STR = "SHA256(DCxLLN6X4qrlIoI0vvuyEApc5xZWZgXgTfYkqyuhUTQ=)";
+	private static final String SHA_EDGE_STR = "SHA256(DCxLLN6X4qrlIoI0vvuyEApc5xZWZgXgTfYkqyuhUTQ=)";
 	private static final String RESTSCHEMA_STR = "examples/Restaurants-schema.json";
 	private static final String GTKPEXAMPLE_STR = "GTKP-Example";
 	private static final String GENERALIOT_STR = "General,IoT";
@@ -296,7 +308,6 @@ public class InitConfigDB {
 	OntologyRepository ontologyRepository;
 	@Autowired
 	OntologyCategoryRepository ontologyCategoryRepository;
-
 	@Autowired
 	OntologyUserAccessRepository ontologyUserAccessRepository;
 	@Autowired
@@ -309,6 +320,12 @@ public class InitConfigDB {
 	TokenRepository tokenRepository;
 	@Autowired
 	UserRepository userCDBRepository;
+	@Autowired
+	ODTypologyRepository typologyRepository;
+	@Autowired
+	ODTypologyDatasetRepository typologyDatasetRepository;
+	@Autowired
+	ODBinaryFilesDatasetRepository binaryFilesDatasetRepository;
 
 	@Autowired
 	ConfigurationRepository configurationRepository;
@@ -365,6 +382,9 @@ public class InitConfigDB {
 	private DashboardConfRepository dashboardConfRepository;
 
 	@Autowired
+	private GadgetTemplateTypeRepository gadgetTemplateTypeRepository;
+
+	@Autowired
 	private GadgetTemplateRepository gadgetTemplateRepository;
 
 	@Autowired
@@ -397,8 +417,14 @@ public class InitConfigDB {
 	@Value("${onesaitplatform.init.mailconfig}")
 	private boolean loadMailConfig;
 
+	@Value("${onesaitplatform.init.samples:false}")
+	private boolean initSamples;
+	
 	@Value("${onesaitplatform.init.database.mongodb.servers:realtimedb:27017}")
 	private String rtdbServers;
+
+	@Autowired
+	private MasterConfigurationRepository masterConfigurationRepository;
 
 	private static final String DATAMODEL_EMPTY_BASE = "EmptyBase";
 
@@ -453,6 +479,15 @@ public class InitConfigDB {
 	private static final String GADGET1CONFIG = "{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"\",\"display\":true}}]}}";
 	private static final String GADGET2CONFIG = "{\"tablePagination\":{\"limit\":\"5\",\"page\":1,\"limitOptions\":[5,10,20,50,100],\"style\":{\"backGroundTHead\":\"#ffffff\",\"backGroundTFooter\":\"#ffffff\",\"trHeightHead\":\"40\",\"trHeightBody\":\"40\",\"trHeightFooter\":\"40\",\"textColorTHead\":\"#141414\",\"textColorBody\":\"#000000\",\"textColorFooter\":\"#000000\"},\"options\":{\"rowSelection\":false,\"multiSelect\":false,\"autoSelect\":false,\"decapitate\":false,\"largeEditDialog\":false,\"boundaryLinks\":true,\"limitSelect\":true,\"pageSelect\":true}}}";
 	private static final String GADGET5CONFIG = "{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"\",\"display\":true},\"stacked\":false,\"sort\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"1000\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"sort\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}";
+	private static final String MASTER_INTERNATIONALIZATION_ONE = "MASTER-Internationalization-1";
+	private static final String ACCESS_TYPE_ONE = "ACCESS-TYPE-1";
+	private static final String MAIN_PS_WD = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
+	private static final String CONSTANT_STR = "CONSTANT";
+	private static final String MASTER_DASHBOARD_FRTH = "MASTER-Dashboard-4";
+	private static final String PATH_ID = "/{id}";
+	private static final String MENU_NOT_FOUND = "Menu not found";
+	private static final String PIPELINE_DESCRIPTION = "Pipeline XML for microservice generation";
+	private static final String TWITTER = "Twitter";
 
 	@Before
 	public void setDBTenant() {
@@ -470,7 +505,7 @@ public class InitConfigDB {
 
 	@PostConstruct
 	@Test
-	public void init() {
+	public void init() throws GenericOPException {
 		setDBTenant();
 		if (!started) {
 			started = true;
@@ -480,134 +515,171 @@ public class InitConfigDB {
 			log.info("creating Default Vertical for multitenancy");
 			initDefaultVertical();
 
+			// initMasterConfiguration();
+
 			initRoleUser();
 			log.info("OK init_RoleUser");
 			initUser();
 			log.info("OK init_User");
 			//
+			
+			
 			initDataModel();
 			log.info("OK init_DataModel");
-			initOntologyCategory();
-			log.info("OK init_OntologyCategory");
+			if (initSamples) {
+				initOntologyCategory();
+				log.info("OK init_OntologyCategory");
+			}
+			
 			initOntology();
 			log.info("OK init_Ontology");
+			
 			initOntologyUserAccess();
 			log.info("OK init_OntologyUserAccess");
 			initOntologyUserAccessType();
 			log.info("OK init_OntologyUserAccessType");
 
-			initOntologyCategory();
-			log.info("OK init_OntologyCategory");
+			if (initSamples) {
+				initClientPlatform();
+				log.info("OK init_ClientPlatform");
+			
+			
+				initClientPlatformOntology();
+				log.info("OK init_ClientPlatformOntology");
+			
 
-			initClientPlatform();
-			log.info("OK init_ClientPlatform");
-			initClientPlatformOntology();
-			log.info("OK init_ClientPlatformOntology");
-
-			initToken();
-			log.info("OK init_Token");
+				initToken();
+				log.info("OK init_Token");
+			}
 
 			initUserToken();
 			log.info("OK USER_Token");
 
-			initOntologyRestaurants();
-			log.info("OK init_OntologyRestaurants");
+			if (initSamples) {
+				initOntologyRestaurants();
+				log.info("OK init_OntologyRestaurants");
+			
+				
+				initGadgetDatasource();
+				log.info("OK init_GadgetDatasource");
+			}
+			
+			initGadgetTemplateType();
+			log.info("OK init_GadgetTemplate_Type");
+			
+			if (initSamples) {
 
-			initGadgetDatasource();
-			log.info("OK init_GadgetDatasource");
+				initGadgetTemplate();
+				log.info("OK init_GadgetTemplate");
 
-			initGadgetTemplate();
-			log.info("OK init_GadgetTemplate");
+				initGadget();
+				log.info("OK init_Gadget");
+				initGadgetMeasure();
+				log.info("OK init_GadgetMeasure");
+			}
 
-			initGadget();
-			log.info("OK init_Gadget");
-			initGadgetMeasure();
-			log.info("OK init_GadgetMeasure");
-
-			initDashboard();
-			log.info("OK init_Dashboard");
+			if (initSamples) {
+				initDashboard();
+				log.info("OK init_Dashboard");
+			}
+			
 			initDashboardConf();
 			log.info("OK init_DashboardConf");
 			initDashboardUserAccessType();
 			log.info("OK init_DashboardUserAccessType");
 
-			initInternationalization();
-			log.info("OK init_Internationalization");
-
+			if (initSamples) {
+				initInternationalization();
+				log.info("OK init_Internationalization");
+			}
+			
 			initMenuControlPanel();
 			log.info("OK init_ConsoleMenu");
 			initConsoleMenuRollBack();
 			log.info("OK initConsoleMenuRollBack");
 			initConfiguration();
 			log.info("OK init_Configuration");
+			
+			if (initSamples) {
+				initFlowDomain();
+				log.info("OK init_FlowDomain");
+		
+				initDigitalTwin.initDigitalTwinType();
+				log.info("OK init_DigitalTwinType");
 
-			initFlowDomain();
-			log.info("OK init_FlowDomain");
-
-			initDigitalTwin.initDigitalTwinType();
-			log.info("OK init_DigitalTwinType");
-
-			initDigitalTwin.initDigitalTwinDevice();
-			log.info("OK init_DigitalTwinDevice");
-
+				initDigitalTwin.initDigitalTwinDevice();
+				log.info("OK init_DigitalTwinDevice");
+			}
+			
 			initMarketPlace();
 			log.info("OK init_Market");
 
-			initNotebook();
-			log.info("OK init_Notebook");
-
+			if (initSamples) {
+				initNotebook();
+				log.info("OK init_Notebook");
+			}
+			
 			initDataflowInstances();
 			log.info("OK init_dataflow");
 
 			initNotebookUserAccessType();
 			log.info("OK init_notebook_user_access_type");
-
+			
 			initDataflowUserAccessType();
 			log.info("OK init_dataflow_user_access_type");
 
-			initSimulations();
-			log.info("OK init_simulations");
-
-			initOpenFlightSample();
-			log.info("OK init_openflight");
-
+			if (initSamples) {
+				initSimulations();
+				log.info("OK init_simulations");
+			}
+			
+			if (initSamples) {
+				initOpenFlightSample();
+				log.info("OK init_openflight");
+			}
+			
 			initBaseLayers();
 			log.info("OK init_BaseLayers");
 
-			initQAWindTurbinesSample();
-			log.info("OK init_QA_WindTurbines");
+			if (initSamples) {
+				initQAWindTurbinesSample();
+				log.info("OK init_QA_WindTurbines");
+			
+				
+				initLayers();
+				log.info("OK init_Layers");
 
-			initLayers();
-			log.info("OK init_Layers");
+				initViewers();
+				log.info("OK init_Viewers");
 
-			initViewers();
-			log.info("OK init_Viewers");
+				initRealms();
+				log.info("OK initRealms");
 
-			initRealms();
-			log.info("OK initRealms");
-
+			}
+			
 			initCategories();
 			log.info("OK Categories");
 
-			initInternationalizationSample();
-			log.info("OK initInternationalizationSample");
-
+			if (initSamples) {
+				initTypology();
+				log.info("OK Typologies");
+				initTypologyDataset();
+				log.info("OK Typologies-Dataset");
+			
+				initInternationalizationSample();
+				log.info("OK initInternationalizationSample");
+			
 			// init_OntologyVirtualDatasource();
 			// log.info(" OK init_OntologyVirtualDatasource");
 			// init_realms();
 
-			// initWebProject();
-			// log.info("OK initWebProject");
+				initWebProject();
+				log.info("OK initWebProject");
+			
 
-			initWebProject();
-			log.info("OK initWebProject");
-
-			initApis();
-			log.info("Init API");
-
-			initSubscription();
-			log.info("Init Subscription");
-
+				initApis();
+				log.info("Init API");
+			}
 		}
 
 	}
@@ -632,13 +704,22 @@ public class InitConfigDB {
 		}
 	}
 
+	private void initMasterConfiguration() {
+		if (masterConfigurationRepository.findByType(MasterConfiguration.Type.RTDB) == null) {
+			final MasterConfiguration config = MasterConfiguration.builder()
+					.description("RTDB Master configuration for Multitenancy").type(MasterConfiguration.Type.RTDB)
+					.ymlConfig(loadFromResources("configurations/MultitenantRTDBConfiguration.yml")).build();
+			masterConfigurationRepository.save(config);
+		}
+	}
+
 	private @Autowired ApiRepository apiRepository;
 	private @Autowired ApiOperationRepository apiOperationRepository;
 
 	private void initSubscription() {
 		if (subscriptionRepository.findByIdentification("ticketStatus").isEmpty()) {
-			Ontology ontology = ontologyRepository.findByIdentification(TICKET);
-			Subscription subscription = new Subscription();
+			final Ontology ontology = ontologyRepository.findByIdentification(TICKET);
+			final Subscription subscription = new Subscription();
 			subscription.setIdentification("ticketStatus");
 			subscription.setOntology(ontology);
 			subscription.setProjection("$.Ticket.file");
@@ -668,6 +749,7 @@ public class InitConfigDB {
 				o.setPublic(true);
 				ontologyRepository.save(o);
 			}
+			
 			Api api = new Api();
 			api.setIdentification(vueProjectApi);
 			api.setApiType(ApiType.INTERNAL_ONTOLOGY);
@@ -680,10 +762,12 @@ public class InitConfigDB {
 			api.setOntology(ontologyRepository.findByIdentification(projectOntology));
 			api.setId("MASTER-Api-1");
 			api = apiRepository.save(api);
+			
+			
 
 			ApiOperation operation = new ApiOperation();
 			operation.setIdentification("project_PUT");
-			operation.setPath("/{id}");
+			operation.setPath(PATH_ID);
 			operation.setDescription("edit");
 			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.PUT);
 			operation.setApi(api);
@@ -722,7 +806,7 @@ public class InitConfigDB {
 
 			operation = new ApiOperation();
 			operation.setIdentification("project_GET");
-			operation.setPath("/{id}");
+			operation.setPath(PATH_ID);
 			operation.setDescription("getbyid");
 			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.GET);
 			operation.setApi(api);
@@ -746,7 +830,7 @@ public class InitConfigDB {
 
 			operation = new ApiOperation();
 			operation.setIdentification("project_DELETEID");
-			operation.setPath("/{id}");
+			operation.setPath(PATH_ID);
 			operation.setDescription("delete");
 			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.DELETE);
 			operation.setApi(api);
@@ -773,7 +857,7 @@ public class InitConfigDB {
 					+ "// A string result must be returned\n" + "return (JSON.stringify(dataArray));");
 			ApiQueryParameter targetDb = new ApiQueryParameter();
 			targetDb.setApiOperation(operation);
-			targetDb.setCondition("CONSTANT");
+			targetDb.setCondition(CONSTANT_STR);
 			targetDb.setDataType(DataType.STRING);
 			targetDb.setHeaderType(HeaderType.QUERY);
 			targetDb.setValue("rtdb");
@@ -781,7 +865,7 @@ public class InitConfigDB {
 			targetDb.setDescription("");
 			ApiQueryParameter queryType = new ApiQueryParameter();
 			queryType.setApiOperation(operation);
-			queryType.setCondition("CONSTANT");
+			queryType.setCondition(CONSTANT_STR);
 			queryType.setDataType(DataType.STRING);
 			queryType.setHeaderType(HeaderType.QUERY);
 			queryType.setValue("sql");
@@ -789,11 +873,11 @@ public class InitConfigDB {
 			queryType.setDescription("");
 			ApiQueryParameter query = new ApiQueryParameter();
 			query.setApiOperation(operation);
-			query.setCondition("CONSTANT");
+			query.setCondition(CONSTANT_STR);
 			query.setDataType(DataType.STRING);
 			query.setHeaderType(HeaderType.QUERY);
 			query.setValue("select p from Project as p where p.features.name={$pname}");
-			query.setName("query");
+			query.setName(QUERY);
 			query.setDescription("");
 			ApiQueryParameter parameter = new ApiQueryParameter();
 			parameter.setApiOperation(operation);
@@ -819,11 +903,11 @@ public class InitConfigDB {
 			operation.setApi(api);
 			query = new ApiQueryParameter();
 			query.setApiOperation(operation);
-			query.setCondition("CONSTANT");
+			query.setCondition(CONSTANT_STR);
 			query.setDataType(DataType.STRING);
 			query.setHeaderType(HeaderType.QUERY);
 			query.setValue("select p from Project as p where p.features.name={$name}");
-			query.setName("query");
+			query.setName(QUERY);
 			query.setDescription("");
 			parameter = new ApiQueryParameter();
 			parameter.setApiOperation(operation);
@@ -835,7 +919,7 @@ public class InitConfigDB {
 			parameter.setDescription("");
 			targetDb = new ApiQueryParameter();
 			targetDb.setApiOperation(operation);
-			targetDb.setCondition("CONSTANT");
+			targetDb.setCondition(CONSTANT_STR);
 			targetDb.setDataType(DataType.STRING);
 			targetDb.setHeaderType(HeaderType.QUERY);
 			targetDb.setValue("rtdb");
@@ -843,7 +927,7 @@ public class InitConfigDB {
 			targetDb.setDescription("");
 			queryType = new ApiQueryParameter();
 			queryType.setApiOperation(operation);
-			queryType.setCondition("CONSTANT");
+			queryType.setCondition(CONSTANT_STR);
 			queryType.setDataType(DataType.STRING);
 			queryType.setHeaderType(HeaderType.QUERY);
 			queryType.setValue("sql");
@@ -898,7 +982,7 @@ public class InitConfigDB {
 
 	private void initRealms() {
 
-		if (appRepository.findOne("MASTER-Realm-1") == null) {
+		if (appRepository.findById("MASTER-Realm-1").orElse(null) == null) {
 			final App app = new App();
 			app.setId("MASTER-Realm-1");
 			app.setIdentification("GovConsole");
@@ -962,7 +1046,8 @@ public class InitConfigDB {
 	}
 
 	private void initSimulations() {
-		ClientPlatformInstanceSimulation simulation = simulationRepository.findById("MASTER-DeviceSimulation-1");
+		ClientPlatformInstanceSimulation simulation = simulationRepository.findById("MASTER-DeviceSimulation-1")
+				.orElse(null);
 		if (simulation == null) {
 			simulation = new ClientPlatformInstanceSimulation();
 			simulation.setId("MASTER-DeviceSimulation-1");
@@ -992,7 +1077,7 @@ public class InitConfigDB {
 		initGadgetDatasourceOpenFlight();
 		initGadgetMeasureOpenFlight();
 	}
-
+	
 	public void initQAWindTurbinesSample() {
 		initOntologyQAWindTurbines();
 		initDashboardQAWindTurbines();
@@ -1037,30 +1122,33 @@ public class InitConfigDB {
 		}
 	}
 
-	private void initConfiguration() {
+	private void initConfiguration() throws GenericOPException {
 		log.info("init_Configuration");
 		if (configurationRepository.count() == 0) {
 
 			Configuration config = new Configuration();
+			config.setSuffix("Twitter");
 			config.setId("MASTER-Configuration-1");
 			config.setType(Configuration.Type.TWITTER);
 			config.setUser(getUserAdministrator());
-			config.setDescription("Twitter");
+			config.setDescription(TWITTER);
 			config.setEnvironment("dev");
 			config.setYmlConfig(loadFromResources("configurations/TwitterConfiguration.yml"));
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
+			config.setSuffix("Twitter");
 			config.setId("MASTER-Configuration-2");
 			config.setType(Configuration.Type.TWITTER);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
 			config.setSuffix("lmgracia");
-			config.setDescription("Twitter");
+			config.setDescription(TWITTER);
 			config.setYmlConfig(loadFromResources("configurations/TwitterConfiguration.yml"));
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
+			config.setSuffix("Scheduler");
 			config.setId("MASTER-Configuration-3");
 			config.setType(Configuration.Type.SCHEDULING);
 			config.setUser(getUserAdministrator());
@@ -1070,6 +1158,7 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
+			config.setSuffix("PlatformModules");
 			config.setId("MASTER-Configuration-4");
 			config.setType(Configuration.Type.ENDPOINT_MODULES);
 			config.setUser(getUserAdministrator());
@@ -1080,6 +1169,7 @@ public class InitConfigDB {
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-5");
+			config.setSuffix("PlatformModules");
 			config.setType(Configuration.Type.ENDPOINT_MODULES);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DOCKER);
@@ -1091,20 +1181,23 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
+			config.setSuffix("Email");
 			config.setId("MASTER-Configuration-6");
 			config.setType(Configuration.Type.MAIL);
 			config.setUser(getUserAdministrator());
 			config.setDescription("Mail Config");
 			config.setEnvironment(DEFAULT);
-			if (loadMailConfig)
+			if (loadMailConfig) {
 				config.setYmlConfig(loadFromResources("configurations/MailConfiguration.yml"));
-			else
+			} else {
 				config.setYmlConfig(loadFromResources("configurations/MailConfigurationDefault.yml"));
+			}
 			configurationRepository.save(config);
 
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-8");
+			config.setSuffix("Monitoring");
 			config.setType(Configuration.Type.MONITORING);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
@@ -1115,6 +1208,7 @@ public class InitConfigDB {
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-10");
+			config.setSuffix("Openshift");
 			config.setType(Configuration.Type.OPENSHIFT);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
@@ -1123,6 +1217,7 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
+			config.setSuffix("Rancher");
 			config.setId("MASTER-Configuration-11");
 			config.setType(Configuration.Type.DOCKER);
 			config.setUser(getUserAdministrator());
@@ -1145,6 +1240,7 @@ public class InitConfigDB {
 		Configuration config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
+			config.setSuffix("Platform");
 			config.setDescription("onesait Platform global configuration");
 			config.setEnvironment(DEFAULT);
 			config.setId("MASTER-Configuration-13");
@@ -1156,13 +1252,17 @@ public class InitConfigDB {
 		config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, DOCKER);
 		if (config == null) {
 			config = new Configuration();
+			config.setSuffix("Platform");
 			config.setDescription("onesait Platform global configuration");
 			config.setEnvironment(DOCKER);
 			config.setId("MASTER-Configuration-14");
 			config.setType(Type.OPEN_PLATFORM);
 			config.setUser(getUserAdministrator());
-			config.setYmlConfig(
-					replaceRTDBServers(loadFromResources("configurations/OpenPlatformConfiguration_docker.yml")));
+			final String yml = loadFromResources("configurations/OpenPlatformConfiguration_docker.yml");
+			if (yml == null) {
+				throw new GenericOPException("Null yaml from OpenPlatformConfiguration.yml");
+			}
+			config.setYmlConfig(replaceRTDBServers(yml));
 
 			configurationRepository.save(config);
 		}
@@ -1170,6 +1270,7 @@ public class InitConfigDB {
 		config = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
+			config.setSuffix("Google");
 			config.setId("MASTER-Configuration-19");
 			config.setType(Configuration.Type.GOOGLE_ANALYTICS);
 			config.setUser(getUserAdministrator());
@@ -1181,6 +1282,7 @@ public class InitConfigDB {
 		config = configurationRepository.findByTypeAndEnvironment(Type.EXPIRATIONUSERS, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
+			config.setSuffix("ExpirationUserPass");
 			config.setId("MASTER-Configuration-21");
 			config.setType(Configuration.Type.EXPIRATIONUSERS);
 			config.setUser(getUserAdministrator());
@@ -1189,6 +1291,31 @@ public class InitConfigDB {
 			config.setYmlConfig(loadFromResources("configurations/ExpirationUsersPass_default.yml"));
 			configurationRepository.save(config);
 		}
+		config = configurationRepository.findById("MASTER-Configuration-22").orElse(null);
+		if (config == null) {
+			config = new Configuration();
+			config.setSuffix("JsonSqlEngine");
+			config.setId("MASTER-Configuration-22");
+			config.setType(Type.SQLENGINE);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setDescription("Json dictionary config file for SQL Engine");
+			config.setYmlConfig(loadFromResources("configurations/JSONSqlEngine_default.json"));
+			configurationRepository.save(config);
+		}
+		config = configurationRepository.findById("MASTER-Configuration-23").orElse(null);
+		if (config == null) {
+			config = new Configuration();
+			config.setSuffix("JavaSqlEngine");
+			config.setId("MASTER-Configuration-23");
+			config.setType(Type.SQLENGINE);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setDescription("Java class util file for SQL Engine");
+			config.setYmlConfig(loadFromResources("configurations/JavaUtilSqlEngine_default.java"));
+			configurationRepository.save(config);
+		}
+
 	}
 
 	public void initClientPlatformOntology() {
@@ -1196,10 +1323,12 @@ public class InitConfigDB {
 		log.info("init ClientPlatformOntology");
 		final List<ClientPlatformOntology> cpos = clientPlatformOntologyRepository.findAll();
 		if (cpos.isEmpty()) {
-			if (clientPlatformRepository.findAll().isEmpty())
+			if (clientPlatformRepository.findAll().isEmpty()) {
 				throw new GenericRuntimeOPException("There must be at least a ClientPlatform with id=1 created");
-			if (ontologyRepository.findAll().isEmpty())
+			}
+			if (ontologyRepository.findAll().isEmpty()) {
 				throw new GenericRuntimeOPException("There must be at least a Ontology with id=1 created");
+			}
 			log.info("No Client Platform Ontologies");
 
 			ClientPlatformOntology cpo = new ClientPlatformOntology();
@@ -1209,12 +1338,14 @@ public class InitConfigDB {
 			cpo.setAccess(Ontology.AccessType.ALL);
 			clientPlatformOntologyRepository.save(cpo);
 			//
+			
 			cpo = new ClientPlatformOntology();
 			cpo.setId("MASTER-ClientPlatformOntology-2");
 			cpo.setClientPlatform(clientPlatformRepository.findByIdentification(GTKPEXAMPLE_STR));
 			cpo.setOntology(ontologyRepository.findByIdentification(ONTOLOGY_HELSINKIPOPULATION));
 			cpo.setAccess(Ontology.AccessType.ALL);
 			clientPlatformOntologyRepository.save(cpo);
+			
 		}
 	}
 
@@ -1238,6 +1369,7 @@ public class InitConfigDB {
 			client.setEncryptionKey("f9dfe72e-7082-4fe8-ba37-3f569b30a691");
 			client.setDescription("ClientPatform created as Example");
 			clientPlatformRepository.save(client);
+			
 
 			client = new ClientPlatform();
 			client.setId("MASTER-ClientPlatform-3");
@@ -1273,7 +1405,7 @@ public class InitConfigDB {
 			final ConsoleMenu menu = new ConsoleMenu();
 			menu.setId("MASTER-ConsoleMenu-1");
 			menu.setJson(loadFromResources("menu/menu_admin.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role ADMIN");
@@ -1284,7 +1416,7 @@ public class InitConfigDB {
 			final ConsoleMenu menu = new ConsoleMenu();
 			menu.setId("MASTER-ConsoleMenu-2");
 			menu.setJson(loadFromResources("menu/menu_developer.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role DEVELOPER");
@@ -1296,7 +1428,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-3");
 
 			menu.setJson(loadFromResources("menu/menu_user.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_USER.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role USER");
@@ -1307,7 +1439,7 @@ public class InitConfigDB {
 			final ConsoleMenu menu = new ConsoleMenu();
 			menu.setId("MASTER-ConsoleMenu-4");
 			menu.setJson(loadFromResources("menu/menu_analytic.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role ANALYTIC");
@@ -1318,7 +1450,7 @@ public class InitConfigDB {
 			final ConsoleMenu menu = new ConsoleMenu();
 			menu.setId("MASTER-ConsoleMenu-5");
 			menu.setJson(loadFromResources("menu/menu_dataviewer.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role DATAVIEWER");
@@ -1329,7 +1461,7 @@ public class InitConfigDB {
 			final ConsoleMenu menu = new ConsoleMenu();
 			menu.setId("MASTER-ConsoleMenu-6");
 			menu.setJson(loadFromResources("menu/menu_platform_admin.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role DATAVIEWER");
@@ -1341,7 +1473,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-7");
 
 			menu.setJson(loadFromResources("menu/menu_devops.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role DEVOPS");
@@ -1353,7 +1485,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-8");
 
 			menu.setJson(loadFromResources("menu/menu_partner.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role PARTNER");
@@ -1365,7 +1497,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-9");
 
 			menu.setJson(loadFromResources("menu/menu_operations.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role OPERATIONS");
@@ -1377,7 +1509,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-10");
 
 			menu.setJson(loadFromResources("menu/menu_sys_admin.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role SYS_ADMIN");
@@ -1389,7 +1521,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-11");
 
 			menu.setJson(loadFromResources("menu/menu_edge_user.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role SYS_ADMIN");
@@ -1401,7 +1533,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-12");
 
 			menu.setJson(loadFromResources("menu/menu_edge_developer.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role EDGE_DEVELOPER");
@@ -1413,7 +1545,7 @@ public class InitConfigDB {
 			menu.setId("MASTER-ConsoleMenu-13");
 
 			menu.setJson(loadFromResources("menu/menu_edge_admin.json"));
-			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()).orElse(null));
 			consoleMenuRepository.save(menu);
 		} catch (final Exception e) {
 			log.error("Error adding menu for role EDGE_ADMINISTRATOR");
@@ -1423,7 +1555,11 @@ public class InitConfigDB {
 	public void initConsoleMenuRollBack() {
 		log.info("init ConsoleMenuRollBack");
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-1");
+			final Optional<ConsoleMenu> opt = consoleMenuRepository.findById("MASTER-ConsoleMenu-1");
+			if (!opt.isPresent()) {
+				throw new GenericOPException(MENU_NOT_FOUND);
+			}
+			final ConsoleMenu menu = opt.get();
 
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
@@ -1440,7 +1576,11 @@ public class InitConfigDB {
 			log.error("Error creating console menu rollback for MASTER-ConsoleMenu-1: " + e);
 		}
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-2");
+			final Optional<ConsoleMenu> opt = consoleMenuRepository.findById("MASTER-ConsoleMenu-2");
+			if (!opt.isPresent()) {
+				throw new GenericOPException(MENU_NOT_FOUND);
+			}
+			final ConsoleMenu menu = opt.get();
 
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
@@ -1457,7 +1597,11 @@ public class InitConfigDB {
 			log.error("Error creating console menu rollback for MASTER-ConsoleMenu-2: " + e);
 		}
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-3");
+			final Optional<ConsoleMenu> opt = consoleMenuRepository.findById("MASTER-ConsoleMenu-3");
+			if (!opt.isPresent()) {
+				throw new GenericOPException(MENU_NOT_FOUND);
+			}
+			final ConsoleMenu menu = opt.get();
 
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
@@ -1474,8 +1618,11 @@ public class InitConfigDB {
 			log.error("Error creating console menu rollback for MASTER-ConsoleMenu-3: " + e);
 		}
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-4");
-
+			final Optional<ConsoleMenu> opt = consoleMenuRepository.findById("MASTER-ConsoleMenu-4");
+			if (!opt.isPresent()) {
+				throw new GenericOPException(MENU_NOT_FOUND);
+			}
+			final ConsoleMenu menu = opt.get();
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
 				rollback = new Rollback();
@@ -1491,7 +1638,11 @@ public class InitConfigDB {
 			log.error("Error creating console menu rollback for MASTER-ConsoleMenu-4: " + e);
 		}
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-5");
+			final Optional<ConsoleMenu> opt = consoleMenuRepository.findById("MASTER-ConsoleMenu-5");
+			if (!opt.isPresent()) {
+				throw new GenericOPException(MENU_NOT_FOUND);
+			}
+			final ConsoleMenu menu = opt.get();
 
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
@@ -1508,7 +1659,11 @@ public class InitConfigDB {
 			log.error("Error creating console menu rollback for MASTER-ConsoleMenu-5: " + e);
 		}
 		try {
-			final ConsoleMenu menu = consoleMenuRepository.findById("MASTER-ConsoleMenu-6");
+			final Optional<ConsoleMenu> opt = consoleMenuRepository.findById("MASTER-ConsoleMenu-6");
+			if (!opt.isPresent()) {
+				throw new GenericOPException(MENU_NOT_FOUND);
+			}
+			final ConsoleMenu menu = opt.get();
 
 			Rollback rollback = rollbackRepository.findByEntityId(menu.getId());
 			if (rollback == null) {
@@ -1569,8 +1724,9 @@ public class InitConfigDB {
 
 	private String replaceEnvironment(String yamlSt) {
 		try {
-			if (yamlSt == null)
+			if (yamlSt == null) {
 				throw new GenericRuntimeOPException("YAML is null");
+			}
 			return yamlSt.replace("${SERVER_NAME}", serverName);
 		} catch (final Exception e) {
 			log.error("Error replacing environment: " + serverName + ".On endpoint configuration file");
@@ -1585,7 +1741,7 @@ public class InitConfigDB {
 		} catch (final Exception e) {
 			log.error("Error replacing RTDB servers: " + rtdbServers + ".On endpoint configuration file");
 			log.error(e.getMessage());
-			return null;
+			return yamlSt;
 		}
 	}
 
@@ -1636,7 +1792,7 @@ public class InitConfigDB {
 			dashboardConfRepository.save(dashboardConfNoTitleEcharts);
 
 		}
-		if (!dashboardConfRepository.exists("MASTER-DashboardConf-4")) {
+		if (!dashboardConfRepository.existsById("MASTER-DashboardConf-4")) {
 			final DashboardConf dashboardConfSynoptic = new DashboardConf();
 			final String synopticSchema = "{\"header\":{\"title\":\" \",\"enable\":true,\"height\":72,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":false},\"pages\":[{\"title\":\"New Page\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":false,\"mobileBreakpoint\":640,\"minCols\":299,\"maxCols\":301,\"minRows\":299,\"maxRows\":301,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":40,\"defaultItemRows\":40,\"fixedColWidth\":2,\"fixedRowHeight\":20,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
 			dashboardConfSynoptic.setId("MASTER-DashboardConf-4");
@@ -1645,7 +1801,7 @@ public class InitConfigDB {
 			dashboardConfSynoptic.setDescription("Fixed style");
 			dashboardConfRepository.save(dashboardConfSynoptic);
 		}
-		if (!dashboardConfRepository.exists("MASTER-DashboardConf-5")) {
+		if (!dashboardConfRepository.existsById("MASTER-DashboardConf-5")) {
 			final DashboardConf dashboardConfNoTitleEcharts = new DashboardConf();
 			final String notitleechartsSchema = "{\"header\":{\"title\":\"\",\"enable\":false,\"height\":0,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"navigation\":{\"showBreadcrumbIcon\":false,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":299,\"maxCols\":301,\"minRows\":299,\"maxRows\":301,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":40,\"defaultItemRows\":40,\"fixedColWidth\":2,\"fixedRowHeight\":20,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":false,\"pushItems\":true,\"disablePushOnDrag\":false,\"disablePushOnResize\":false,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"none\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":true,\"api\":{}},\"interactionHash\":{\"1\":[]}}";
 			dashboardConfNoTitleEcharts.setId("MASTER-DashboardConf-5");
@@ -1670,7 +1826,15 @@ public class InitConfigDB {
 					.setDescription("No title style with ECharts libraries, and Datatable libraries");
 			dashboardConfRepository.save(dashboardConfNoTitleEcharts);
 		}
-
+		if (!dashboardConfRepository.existsById("MASTER-DashboardConf-0")) {
+			final DashboardConf dashboardConf = new DashboardConf();
+			final String defaultNewSchema = "{\"header\":{\"title\":\"My Dashboard\",\"enable\":true,\"height\":72,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"showfavoritesg\":true,\"navigation\":{\"showBreadcrumbIcon\":true,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"New Page\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":20,\"maxCols\":20,\"minRows\":20,\"maxRows\":20,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":1,\"defaultItemRows\":1,\"fixedColWidth\":250,\"fixedRowHeight\":250,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":true,\"pushItems\":false,\"disablePushOnDrag\":true,\"disablePushOnResize\":true,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"onDrag&Resize\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":false,\"enableEmptyCellAlign\":true,\"disableLiveResize\":true,\"disableLiveMove\":true,\"dragGadgetType\":\"livehtml\",\"api\":{}},\"interactionHash\":{\"1\":[]}}";
+			dashboardConf.setId("MASTER-DashboardConf-0");
+			dashboardConf.setIdentification("Default Style from 2.2");
+			dashboardConf.setModel(defaultNewSchema);
+			dashboardConf.setDescription("Style with swap, shadow, drawdrag and element align");
+			dashboardConfRepository.save(dashboardConf);
+		}
 	}
 
 	public void initDashboard() {
@@ -1698,7 +1862,7 @@ public class InitConfigDB {
 	}
 
 	public void initDashboardOpenFlight() {
-		if (dashboardRepository.findById("MASTER-Dashboard-2") == null) {
+		if (!dashboardRepository.findById("MASTER-Dashboard-2").isPresent()) {
 			log.info("init Dashboard OpenFlight");
 			final Dashboard dashboard = new Dashboard();
 			dashboard.setId("MASTER-Dashboard-2");
@@ -1716,10 +1880,10 @@ public class InitConfigDB {
 	}
 
 	public void initDashboardInternationalizations() {
-		if (dashboardRepository.findById("MASTER-Dashboard-4") == null) {
+		if (!dashboardRepository.findById(MASTER_DASHBOARD_FRTH).isPresent()) {
 			log.info("init Dashboard Internationalization");
 			final Dashboard dashboard = new Dashboard();
-			dashboard.setId("MASTER-Dashboard-4");
+			dashboard.setId(MASTER_DASHBOARD_FRTH);
 			dashboard.setIdentification("Internationalization Dashboard Example");
 			dashboard.setDescription("Internationalization Dashboard Example");
 			dashboard.setJsoni18n("");
@@ -1757,32 +1921,37 @@ public class InitConfigDB {
 	}
 
 	private User getUserDeveloper() {
-		if (userDeveloper == null)
+		if (userDeveloper == null) {
 			userDeveloper = userCDBRepository.findByUserId(DEVELOPER);
+		}
 		return userDeveloper;
 	}
 
 	private User getUserAdministrator() {
-		if (userAdministrator == null)
+		if (userAdministrator == null) {
 			userAdministrator = userCDBRepository.findByUserId(ADMINISTRATOR);
+		}
 		return userAdministrator;
 	}
 
 	private User getUser() {
-		if (user == null)
+		if (user == null) {
 			user = userCDBRepository.findByUserId("user");
+		}
 		return user;
 	}
 
 	private User getUserAnalytics() {
-		if (userAnalytics == null)
+		if (userAnalytics == null) {
 			userAnalytics = userCDBRepository.findByUserId("analytics");
+		}
 		return userAnalytics;
 	}
 
 	private GadgetDatasource getGadgetDatasourceDeveloper() {
-		if (gadgetDatasourceDeveloper == null)
+		if (gadgetDatasourceDeveloper == null) {
 			gadgetDatasourceDeveloper = gadgetDatasourceRepository.findAll().get(0);
+		}
 		return gadgetDatasourceDeveloper;
 	}
 
@@ -1855,7 +2024,7 @@ public class InitConfigDB {
 			//
 			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-7");
-			dataModel.setIdentification("Twitter");
+			dataModel.setIdentification(TWITTER);
 			dataModel.setTypeEnum(DataModel.MainType.SOCIAL_MEDIA);
 			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_Twitter.json"));
 			dataModel.setDescription("Twitter DataModel");
@@ -2059,7 +2228,7 @@ public class InitConfigDB {
 			dataModelRepository.save(dataModel);
 		}
 
-		if (dataModelRepository.findById("MASTER-DataModel-27") == null) {
+		if (!dataModelRepository.findById("MASTER-DataModel-27").isPresent()) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-27");
 			dataModel.setIdentification("VideoResult");
@@ -2071,7 +2240,7 @@ public class InitConfigDB {
 			dataModelRepository.save(dataModel);
 		}
 
-		if (dataModelRepository.findById("MASTER-DataModel-28") == null) {
+		if (!dataModelRepository.findById("MASTER-DataModel-28").isPresent()) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-28");
 			dataModel.setIdentification("AssetType");
@@ -2082,7 +2251,7 @@ public class InitConfigDB {
 			dataModel.setUser(getUserAdministrator());
 			dataModelRepository.save(dataModel);
 		}
-		if (dataModelRepository.findById("MASTER-DataModel-29") == null) {
+		if (!dataModelRepository.findById("MASTER-DataModel-29").isPresent()) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-29");
 			dataModel.setIdentification("GSMA-BikeStation");
@@ -2094,7 +2263,7 @@ public class InitConfigDB {
 			dataModelRepository.save(dataModel);
 		}
 
-		if (dataModelRepository.findById("MASTER-DataModel-30") == null) {
+		if (!dataModelRepository.findById("MASTER-DataModel-30").isPresent()) {
 			final DataModel dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-30");
 			dataModel.setIdentification(TIMESERIE_STR);
@@ -2203,7 +2372,7 @@ public class InitConfigDB {
 
 		Gadget gadget = null;
 
-		if (gadgetRepository.findById(MASTER_GADGET_2) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_2).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_2);
 			gadget.setIdentification("airportsByCountry");
@@ -2215,7 +2384,7 @@ public class InitConfigDB {
 			gadgetRepository.save(gadget);
 		}
 
-		if (gadgetRepository.findById(MASTER_GADGET_3) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_3).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_3);
 			gadget.setIdentification("airportsByCountryTop10");
@@ -2228,7 +2397,7 @@ public class InitConfigDB {
 			gadgetRepository.save(gadget);
 		}
 
-		if (gadgetRepository.findById(MASTER_GADGET_4) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_4).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_4);
 			gadget.setIdentification(DESTINATIONMAP_STR);
@@ -2241,7 +2410,7 @@ public class InitConfigDB {
 			gadgetRepository.save(gadget);
 		}
 
-		if (gadgetRepository.findById(MASTER_GADGET_5) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_5).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_5);
 			gadget.setIdentification("destinationCountries");
@@ -2254,7 +2423,7 @@ public class InitConfigDB {
 			gadgetRepository.save(gadget);
 		}
 
-		if (gadgetRepository.findById(MASTER_GADGET_6) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_6).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_6);
 			gadget.setIdentification("originCountries");
@@ -2267,7 +2436,7 @@ public class InitConfigDB {
 			gadgetRepository.save(gadget);
 		}
 
-		if (gadgetRepository.findById(MASTER_GADGET_7) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_7).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_7);
 			gadget.setIdentification(ROUTESDESTTOP_STR);
@@ -2279,7 +2448,7 @@ public class InitConfigDB {
 			gadgetRepository.save(gadget);
 		}
 
-		if (gadgetRepository.findById(MASTER_GADGET_8) == null) {
+		if (!gadgetRepository.findById(MASTER_GADGET_8).isPresent()) {
 			gadget = new Gadget();
 			gadget.setId(MASTER_GADGET_8);
 			gadget.setIdentification(ROUTESORIGINTOP_STR);
@@ -2416,7 +2585,7 @@ public class InitConfigDB {
 	public void initGadgetDatasourceOpenFlight() {
 		GadgetDatasource gadgetDatasources = new GadgetDatasource();
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_2) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_2).isPresent()) {
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_2);
 			gadgetDatasources.setIdentification(ROUTESORIGINTOP_STR);
 			gadgetDatasources.setDescription("Routes group by src sample Datasource.");
@@ -2432,7 +2601,7 @@ public class InitConfigDB {
 			gadgetDatasourceRepository.save(gadgetDatasources);
 		}
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_3) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_3).isPresent()) {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_3);
 			gadgetDatasources.setIdentification(ROUTESDESTTOP_STR);
@@ -2449,7 +2618,7 @@ public class InitConfigDB {
 			gadgetDatasourceRepository.save(gadgetDatasources);
 		}
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_4) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_4).isPresent()) {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_4);
 			gadgetDatasources.setIdentification("countriesAsDestination");
@@ -2466,7 +2635,7 @@ public class InitConfigDB {
 			gadgetDatasourceRepository.save(gadgetDatasources);
 		}
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_5) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_5).isPresent()) {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_5);
 			gadgetDatasources.setIdentification(DESTINATIONMAP_STR);
@@ -2483,7 +2652,7 @@ public class InitConfigDB {
 			gadgetDatasourceRepository.save(gadgetDatasources);
 		}
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_6) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_6).isPresent()) {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_6);
 			gadgetDatasources.setIdentification("airportsCountByCountryTop10");
@@ -2500,10 +2669,11 @@ public class InitConfigDB {
 			gadgetDatasourceRepository.save(gadgetDatasources);
 		}
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_7) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_7).isPresent()) {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_7);
 			gadgetDatasources.setIdentification("airportsCountByCountry");
+			gadgetDatasources.setDescription("Restaurants sample Datasource.");
 			gadgetDatasources.setDescription("Airports group by country sample Datasource.");
 			gadgetDatasources.setMode(QUERY);
 			gadgetDatasources.setQuery(
@@ -2517,7 +2687,7 @@ public class InitConfigDB {
 			gadgetDatasourceRepository.save(gadgetDatasources);
 		}
 
-		if (gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_8) == null) {
+		if (!gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_8).isPresent()) {
 			gadgetDatasources = new GadgetDatasource();
 			gadgetDatasources.setId(MASTER_GADGET_DATASOURCE_8);
 			gadgetDatasources.setIdentification("distinctCountries");
@@ -2673,81 +2843,81 @@ public class InitConfigDB {
 	public void initGadgetMeasureOpenFlight() {
 		GadgetMeasure gadgetMeasure;
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-2").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-2").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-2");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_7));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_7).orElse(null));
 			gadgetMeasure.setConfig("{\"fields\":[\"count\"],\"name\":\"Country\",\"config\":{}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_2));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_2).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-3").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-3").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-3");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_7));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_7).orElse(null));
 			gadgetMeasure.setConfig("{\"fields\":[\"acountry\"],\"name\":\"Number of Airports\",\"config\":{}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_2));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_2).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-4").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-4").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-4");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_6));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_6).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"country\",\"count\"],\"name\":\"Top 10 Countries By Airports\",\"config\":{\"backgroundColor\":\"#2d60b5\",\"borderColor\":\"#2d60b5\",\"pointBackgroundColor\":\"#2d60b5\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_3));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_3).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-5").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-5").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-5");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_5));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_5).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"latitude\",\"longitude\",\"countrydest\",\"countrydest\",\"count\"],\"name\":\"\",\"config\":{}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_4));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_4).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-6").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-6").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-6");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_4));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_4).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"countrydest\",\"count\"],\"name\":\"Top Country Destinations\",\"config\":{\"backgroundColor\":\"#e8cb6a\",\"borderColor\":\"#e8cb6a\",\"pointBackgroundColor\":\"#e8cb6a\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_5));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_5).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-7").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-7").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-7");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_4));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_4).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"countrysrc\",\"count\"],\"name\":\"Top Country Origins\",\"config\":{\"backgroundColor\":\"#879dda\",\"borderColor\":\"#879dda\",\"pointBackgroundColor\":\"#879dda\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_6));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_6).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-8").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-8").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-8");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_3));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_3).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"dest\",\"count\"],\"name\":\"Top Destination Airports\",\"config\":{\"backgroundColor\":\"#4e851b\",\"borderColor\":\"#4e851b\",\"pointBackgroundColor\":\"#4e851b\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_7));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_7).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-9").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-9").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-9");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_2));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_2).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"src\",\"count\"],\"name\":\"Top Origin Airports\",\"config\":{\"backgroundColor\":\"#b02828\",\"borderColor\":\"#b02828\",\"pointBackgroundColor\":\"#b02828\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_8));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_8).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 	}
@@ -2755,443 +2925,443 @@ public class InitConfigDB {
 	public void initGadgetMeasureQAWindTurbines() {
 		GadgetMeasure gadgetMeasure;
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-10").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-10").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-10");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9).orElse(null));
 			gadgetMeasure
 					.setConfig("{\"fields\":[\"idAdaptador\"],\"name\":\"Producer\",\"config\":{\"position\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-11").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-11").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-11");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"dataLost\"],\"name\":\"Missed Data (%)\",\"config\":{\"position\":\"2\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-12").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-12").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-12");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9).orElse(null));
 			gadgetMeasure
 					.setConfig("{\"fields\":[\"bad\"],\"name\":\"Wrong Records\",\"config\":{\"position\":\"4\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-13").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-13").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-13");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9).orElse(null));
 			gadgetMeasure
 					.setConfig("{\"fields\":[\"good\"],\"name\":\"Right Records\",\"config\":{\"position\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-14").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-14").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-14");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_9).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"totalLoaded\"],\"name\":\"Data Loaded\",\"config\":{\"position\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_9).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-15").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-15").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-15");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameCat1\",\"structural\"],\"name\":\"Structural errors\",\"config\":{\"backgroundColor\":\"rgba(0,108,168,0.62)\",\"borderColor\":\"rgba(0,108,168,0.62)\",\"pointBackgroundColor\":\"rgba(0,108,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(0,108,168,0.62)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\",\"pointRadius\":\"0\",\"pointHoverRadius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-16").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-16").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-16");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameCat2\",\"integrity\"],\"name\":\"Integrity errors\",\"config\":{\"backgroundColor\":\"rgba(0,168,57,0.44)\",\"borderColor\":\"rgba(0,168,57,0.44)\",\"pointBackgroundColor\":\"rgba(0,168,57,0.44)\",\"pointHoverBackgroundColor\":\"rgba(0,168,57,0.44)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\",\"pointRadius\":\"0\",\"pointHoverRadius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-17").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-17").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-17");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameCat3\",\"business\"],\"name\":\"Business errors\",\"config\":{\"backgroundColor\":\"rgba(201,58,58,0.88)\",\"borderColor\":\"rgba(201,58,58,0.88)\",\"pointBackgroundColor\":\"rgba(201,58,58,0.88)\",\"pointHoverBackgroundColor\":\"rgba(201,58,58,0.88)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\",\"pointRadius\":\"0\",\"pointHoverRadius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-18").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-18").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-18");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_10).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"refCat\",\"totalLoaded\"],\"name\":\" Ok \",\"config\":{\"backgroundColor\":\"#e39d34\",\"borderColor\":\"#e39d34\",\"pointBackgroundColor\":\"#e39d34\",\"pointHoverBackgroundColor\":\"#e39d34\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\",\"pointRadius\":\"0\",\"pointHoverRadius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_10).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-19").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-19").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-19");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"structural\"],\"name\":\"Structural errors\",\"config\":{\"backgroundColor\":\"rgba(0,108,168,0.62)\",\"borderColor\":\"rgba(0,108,168,0.62)\",\"pointBackgroundColor\":\"rgba(0,108,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(0,108,168,0.62)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-20").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-20").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-20");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"totalLoaded\"],\"name\":\"Ok\",\"config\":{\"backgroundColor\":\"#e39d34\",\"borderColor\":\"#e39d34\",\"pointBackgroundColor\":\"#e39d34\",\"pointHoverBackgroundColor\":\"#e39d34\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-21").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-21").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-21");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"integrity\"],\"name\":\"Integrity errors\",\"config\":{\"backgroundColor\":\"rgba(0,168,57,0.44)\",\"borderColor\":\"rgba(0,168,57,0.44)\",\"pointBackgroundColor\":\"rgba(0,168,57,0.44)\",\"pointHoverBackgroundColor\":\"rgba(0,168,57,0.44)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-22").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-22").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-22");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_11).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"business\"],\"name\":\"Business errors\",\"config\":{\"backgroundColor\":\"rgba(201,58,58,0.88)\",\"borderColor\":\"rgba(201,58,58,0.88)\",\"pointBackgroundColor\":\"rgba(201,58,58,0.88)\",\"pointHoverBackgroundColor\":\"rgba(201,58,58,0.88)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_11).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-23").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-23").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-23");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_12));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_12).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"name\",\"forecast\"],\"name\":\"Production Forecast\",\"config\":{\"backgroundColor\":\"rgba(223,94,255,0.62)\",\"borderColor\":\"rgba(223,94,255,0.62)\",\"pointBackgroundColor\":\"rgba(223,94,255,0.62)\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_12));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_12).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-24").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-24").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-24");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_12));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_12).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"name\",\"errors\"],\"name\":\"WTG\",\"config\":{\"backgroundColor\":\"rgba(0,108,168,0.62)\",\"borderColor\":\"rgba(0,108,168,0.62)\",\"pointBackgroundColor\":\"rgba(0,108,168,0.62)\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_12));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_12).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-25").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-25").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-25");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_12));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_12).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"name\",\"meteor\"],\"name\":\"Meter\",\"config\":{\"backgroundColor\":\"rgba(17,245,149,0.62)\",\"borderColor\":\"rgba(17,245,149,0.62)\",\"pointBackgroundColor\":\"rgba(17,245,149,0.62)\",\"yAxisID\":\"#0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_12));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_12).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-26").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-26").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-26");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType2\",\"e102\"],\"name\":\"102 The raw has no enough fields\",\"config\":{\"backgroundColor\":\"rgba(114,181,62,0.62)\",\"borderColor\":\"rgba(114,181,62,0.62)\",\"pointBackgroundColor\":\"rgba(114,181,62,0.62)\",\"pointHoverBackgroundColor\":\"rgba(114,181,62,0.62)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-27").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-27").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-27");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType5\",\"e105\"],\"name\":\"105 Invalid numeric format \",\"config\":{\"backgroundColor\":\"#eda437\",\"borderColor\":\"#eda437\",\"pointBackgroundColor\":\"#eda437\",\"pointHoverBackgroundColor\":\"#eda437\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-28").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-28").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-28");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType9\",\"e109\"],\"name\":\"109 Duplicated record\",\"config\":{\"backgroundColor\":\"rgba(84,0,168,0.26)\",\"borderColor\":\"rgba(84,0,168,0.26)\",\"pointBackgroundColor\":\"rgba(84,0,168,0.26)\",\"pointHoverBackgroundColor\":\"rgba(84,0,168,0.26)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-29").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-29").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-29");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType4\",\"e104\"],\"name\":\"104 Invalid date format\",\"config\":{\"backgroundColor\":\"rgba(41,196,230,0.67)\",\"borderColor\":\"rgba(41,196,230,0.67)\",\"pointBackgroundColor\":\"rgba(41,196,230,0.67)\",\"pointHoverBackgroundColor\":\"rgba(41,196,230,0.67)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-30").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-30").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-30");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType3\",\"e103\"],\"name\":\"103 Mandatory fields \",\"config\":{\"backgroundColor\":\"rgba(24,0,168,0.62)\",\"borderColor\":\"rgba(24,0,168,0.62)\",\"pointBackgroundColor\":\"rgba(24,0,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(24,0,168,0.62)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-31").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-31").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-31");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType6\",\"e106\"],\"name\":\"106 Integrity error\",\"config\":{\"backgroundColor\":\"rgba(70,131,224,0.57)\",\"borderColor\":\"rgba(70,131,224,0.57)\",\"pointBackgroundColor\":\"rgba(70,131,224,0.57)\",\"pointHoverBackgroundColor\":\"rgba(70,131,224,0.57)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-32").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-32").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-32");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType0\",\"e100\"],\"name\":\"100 Frozen data\",\"config\":{\"backgroundColor\":\"rgba(0,108,168,0.62)\",\"borderColor\":\"rgba(0,108,168,0.62)\",\"pointBackgroundColor\":\"rgba(0,108,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(0,108,168,0.62)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-33").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-33").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-33");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType10\",\"e110\"],\"name\":\"110 Decimal precision \",\"config\":{\"backgroundColor\":\"rgba(0,148,168,0.62)\",\"borderColor\":\"rgba(0,148,168,0.62)\",\"pointBackgroundColor\":\"rgba(0,148,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(0,148,168,0.62)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-34").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-34").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-34");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType8\",\"e108\"],\"name\":\"108 Out of bounds sup \",\"config\":{\"backgroundColor\":\"rgba(0,168,67,0.21)\",\"borderColor\":\"rgba(0,168,67,0.21)\",\"pointBackgroundColor\":\"rgba(0,168,67,0.21)\",\"pointHoverBackgroundColor\":\"rgba(0,168,67,0.21)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-35").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-35").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-35");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType7\",\"e107\"],\"name\":\"107 Out of bounds inf \",\"config\":{\"backgroundColor\":\"rgba(168,30,0,0.49)\",\"borderColor\":\"rgba(168,30,0,0.49)\",\"pointBackgroundColor\":\"rgba(168,30,0,0.49)\",\"pointHoverBackgroundColor\":\"rgba(168,30,0,0.49)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-36").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-36").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-36");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_13).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"nameType1\",\"e101\"],\"name\":\"101 Max null values per hour\",\"config\":{\"backgroundColor\":\"rgba(122,89,5,0.98)\",\"borderColor\":\"rgba(122,89,5,0.98)\",\"pointBackgroundColor\":\"rgba(122,89,5,0.98)\",\"pointHoverBackgroundColor\":\"rgba(122,89,5,0.98)\",\"yAxisID\":\"#0\",\"type\":\"bar\",\"fill\":false,\"steppedLine\":false,\"radius\":\"1\",\"pointRadius\":\"1\",\"pointHoverRadius\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_13).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-37").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-37").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-37");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"duplicated\"],\"name\":\"109 Duplicated record\",\"config\":{\"backgroundColor\":\"rgba(84,0,168,0.26)\",\"borderColor\":\"rgba(84,0,168,0.26)\",\"pointBackgroundColor\":\"rgba(84,0,168,0.26)\",\"pointHoverBackgroundColor\":\"rgba(84,0,168,0.26)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-38").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-38").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-38");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"decimalPrecision\"],\"name\":\"110 Decimal precision\",\"config\":{\"backgroundColor\":\"rgba(0,148,168,0.62)\",\"borderColor\":\"rgba(0,148,168,0.62)\",\"pointBackgroundColor\":\"rgba(0,148,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(0,148,168,0.62)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-39").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-39").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-39");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"numericFormat\"],\"name\":\"105 Invalid numeric format\",\"config\":{\"backgroundColor\":\"#eda437\",\"borderColor\":\"#eda437\",\"pointBackgroundColor\":\"#eda437\",\"pointHoverBackgroundColor\":\"#eda437\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-40").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-40").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-40");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"nullValues\"],\"name\":\"101 Null values\",\"config\":{\"backgroundColor\":\"rgba(122,89,5,0.98)\",\"borderColor\":\"rgba(122,89,5,0.98)\",\"pointBackgroundColor\":\"rgba(122,89,5,0.98)\",\"pointHoverBackgroundColor\":\"rgba(122,89,5,0.98)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-41").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-41").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-41");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"dateFormat\"],\"name\":\"104 Invalid date format\",\"config\":{\"backgroundColor\":\"rgba(41,196,230,0.67)\",\"borderColor\":\"rgba(41,196,230,0.67)\",\"pointBackgroundColor\":\"rgba(41,196,230,0.67)\",\"pointHoverBackgroundColor\":\"rgba(41,196,230,0.67)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-42").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-42").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-42");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"integrity\"],\"name\":\"106 Integrity error\",\"config\":{\"backgroundColor\":\"rgba(70,131,224,0.57)\",\"borderColor\":\"rgba(70,131,224,0.57)\",\"pointBackgroundColor\":\"rgba(70,131,224,0.57)\",\"pointHoverBackgroundColor\":\"rgba(70,131,224,0.57)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-43").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-43").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-43");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"mandatoryFields\"],\"name\":\"103 Mandatory fields\",\"config\":{\"backgroundColor\":\"rgba(24,0,168,0.62)\",\"borderColor\":\"rgba(24,0,168,0.62)\",\"pointBackgroundColor\":\"rgba(24,0,168,0.62)\",\"pointHoverBackgroundColor\":\"rgba(24,0,168,0.62)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-44").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-44").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-44");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"raw\"],\"name\":\"102 The raw has no enough fields\",\"config\":{\"backgroundColor\":\"rgba(114,181,62,0.62)\",\"borderColor\":\"rgba(114,181,62,0.62)\",\"pointBackgroundColor\":\"rgba(114,181,62,0.62)\",\"pointHoverBackgroundColor\":\"rgba(114,181,62,0.62)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-45").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-45").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-45");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"boundsInf\"],\"name\":\"107 Out of bounds inf\",\"config\":{\"backgroundColor\":\"rgba(168,30,0,0.49)\",\"borderColor\":\"rgba(168,30,0,0.49)\",\"pointBackgroundColor\":\"rgba(168,30,0,0.49)\",\"pointHoverBackgroundColor\":\"rgba(168,30,0,0.49)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-46").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-46").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-46");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"frozenData\"],\"name\":\"100 Frozen data\",\"config\":{\"backgroundColor\":\"rgba(0,108,168,0.72)\",\"borderColor\":\"rgba(0,108,168,0.72)\",\"pointBackgroundColor\":\"rgba(0,108,168,0.72)\",\"pointHoverBackgroundColor\":\"rgba(0,108,168,0.72)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-47").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-47").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-47");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_14).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"process_date\",\"boundsSup\"],\"name\":\"108 Out of bounds sup\",\"config\":{\"backgroundColor\":\"rgba(0,168,67,0.21)\",\"borderColor\":\"rgba(0,168,67,0.21)\",\"pointBackgroundColor\":\"rgba(0,168,67,0.21)\",\"pointHoverBackgroundColor\":\"rgba(0,168,67,0.21)\",\"yAxisID\":\"#0\",\"fill\":false,\"steppedLine\":false,\"radius\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_14).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-48").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-48").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-48");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"errorCategory\"],\"name\":\"Error Category\",\"config\":{\"position\":\"0\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-49").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-49").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-49");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"raw\"],\"name\":\"Original raw content\",\"config\":{\"position\":\"5\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-50").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-50").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-50");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15).orElse(null));
 			gadgetMeasure
 					.setConfig("{\"fields\":[\"assetName\"],\"name\":\"WTG Name\",\"config\":{\"position\":\"3\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-51").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-51").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-51");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15).orElse(null));
 			gadgetMeasure
 					.setConfig("{\"fields\":[\"siteName\"],\"name\":\"Site Name\",\"config\":{\"position\":\"2\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-52").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-52").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-52");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15).orElse(null));
 			gadgetMeasure.setConfig(
 					"{\"fields\":[\"errorDescription\"],\"name\":\"Error Description\",\"config\":{\"position\":\"1\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 
-		if (gadgetMeasureRepository.findById("MASTER-GadgetMeasure-53").isEmpty()) {
+		if (!gadgetMeasureRepository.findById("MASTER-GadgetMeasure-53").isPresent()) {
 			gadgetMeasure = new GadgetMeasure();
 			gadgetMeasure.setId("MASTER-GadgetMeasure-53");
-			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15));
+			gadgetMeasure.setDatasource(gadgetDatasourceRepository.findById(MASTER_GADGET_DATASOURCE_15).orElse(null));
 			gadgetMeasure
 					.setConfig("{\"fields\":[\"timestamp\"],\"name\":\"Timestamp\",\"config\":{\"position\":\"4\"}}");
-			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15));
+			gadgetMeasure.setGadget(gadgetRepository.findById(MASTER_GADGET_15).orElse(null));
 			gadgetMeasureRepository.save(gadgetMeasure);
 		}
 	}
@@ -3203,7 +3373,7 @@ public class InitConfigDB {
 			log.info("No internationalizations...adding");
 
 			final Internationalization internationalization = new Internationalization();
-			internationalization.setId("MASTER-Internationalization-1");
+			internationalization.setId(MASTER_INTERNATIONALIZATION_ONE);
 			internationalization.setIdentification("InternationalizationExample");
 			internationalization.setDescription("Internationalization example");
 			internationalization
@@ -3220,12 +3390,16 @@ public class InitConfigDB {
 		final List<I18nResources> i18nResources = i18nResourcesRepository.findAll();
 		if (i18nResources.isEmpty()) {
 			log.info("No i18n resources...adding");
-			final I18nResources i18nresource = new I18nResources();
-			i18nresource.setId("MASTER-I18nResources-1");
-			i18nresource.setI18n(internationalizationRepository.findById("MASTER-Internationalization-1"));
-			i18nresource.setOpResource(dashboardRepository.findById("MASTER-Dashboard-4"));
+			if (internationalizationRepository.findById(MASTER_INTERNATIONALIZATION_ONE).isPresent()
+					&& dashboardRepository.findById(MASTER_DASHBOARD_FRTH).isPresent()) {
+				final I18nResources i18nresource = new I18nResources();
+				i18nresource.setId("MASTER-I18nResources-1");
+				i18nresource
+						.setI18n(internationalizationRepository.findById(MASTER_INTERNATIONALIZATION_ONE).orElse(null));
+				i18nresource.setOpResource(dashboardRepository.findById(MASTER_DASHBOARD_FRTH).orElse(null));
 
-			i18nResourcesRepository.save(i18nresource);
+				i18nResourcesRepository.save(i18nresource);
+			}
 		}
 	}
 
@@ -3266,7 +3440,7 @@ public class InitConfigDB {
 		log.info("No ontologies..adding");
 		Ontology ontology = new Ontology();
 
-		if (ontologyRepository.findByIdentification(ONTOLOGY_MASTER) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_MASTER) == null && initSamples) {
 			ontology.setId("MASTER-Ontology-1");
 			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
 			ontology.setJsonSchema(
@@ -3282,7 +3456,7 @@ public class InitConfigDB {
 			ontology.setAllowsCypherFields(false);
 			ontologyService.createOntology(ontology, null);
 		}
-		if (ontologyRepository.findByIdentification(TICKET) == null) {
+		if (ontologyRepository.findByIdentification(TICKET) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-2");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_Ticket.json"));
@@ -3314,7 +3488,7 @@ public class InitConfigDB {
 			ontology.setAllowsCypherFields(false);
 			ontologyService.createOntology(ontology, null);
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_HELSINKIPOPULATION) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_HELSINKIPOPULATION) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-4");
 			ontology.setJsonSchema(loadFromResources("examples/HelsinkiPopulation-schema.json"));
@@ -3335,7 +3509,7 @@ public class InitConfigDB {
 			}
 
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_TWEETSENTIMENT) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_TWEETSENTIMENT) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-5");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_TweetSentiment.json"));
@@ -3355,7 +3529,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_GEOAIRQUALITY) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_GEOAIRQUALITY) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-6");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_GeoAirQuality.json"));
@@ -3375,7 +3549,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_CITYPOPULATION) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_CITYPOPULATION) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-7");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_CityPopulation.json"));
@@ -3396,7 +3570,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_AIRQUALITYGR2) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_AIRQUALITYGR2) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-8");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_AirQuality_gr2.json"));
@@ -3416,7 +3590,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_AIRQUALITY) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_AIRQUALITY) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-9");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_AirQuality.json"));
@@ -3436,7 +3610,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_AIRCOMETER) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_AIRCOMETER) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-10");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_AirCOMeter.json"));
@@ -3456,7 +3630,7 @@ public class InitConfigDB {
 			}
 		}
 
-		if (ontologyRepository.findByIdentification(ONTOLOGY_TWINPROPERTIESTURBINE) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_TWINPROPERTIESTURBINE) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-11");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_Turbine.json"));
@@ -3477,7 +3651,7 @@ public class InitConfigDB {
 			}
 		}
 
-		if (ontologyRepository.findByIdentification(ONTOLOGY_TWINPROPERTIESSENSEHAT) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_TWINPROPERTIESSENSEHAT) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-16");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_SenseHat.json"));
@@ -3498,7 +3672,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_NATIVENOTIFKEYS) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_NATIVENOTIFKEYS) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-25");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_NativeNotifKeys.json"));
@@ -3518,7 +3692,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(ONTOLOGY_NOTIFICATIONMESSAGE) == null) {
+		if (ontologyRepository.findByIdentification(ONTOLOGY_NOTIFICATIONMESSAGE) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-26");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_notificationMessage.json"));
@@ -3539,7 +3713,7 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
-		if (ontologyRepository.findByIdentification(SUPERMARKETS) == null) {
+		if (ontologyRepository.findByIdentification(SUPERMARKETS) == null && initSamples) {
 			ontology = new Ontology();
 			ontology.setId("MASTER-Ontology-27");
 			ontology.setJsonSchema(loadFromResources("examples/OntologySchema_supermarkets.json"));
@@ -3978,29 +4152,29 @@ public class InitConfigDB {
 	}
 
 	private String buildJSCode() {
-		freemarker.template.Configuration cfg = new freemarker.template.Configuration(
+		final freemarker.template.Configuration cfg = new freemarker.template.Configuration(
 				freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-		Map<String, Object> dataMap = new HashMap<>();
+		final Map<String, Object> dataMap = new HashMap<>();
 
 		try {
-			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/examples");
+			final TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/examples");
 
 			cfg.setTemplateLoader(templateLoader);
-			Template indexViewerTemplate = cfg.getTemplate("viewer.ftl");
+			final Template indexViewerTemplate = cfg.getTemplate("viewer.ftl");
 
 			dataMap.put("cesiumPath", webProjectPath + "/cesium/Cesium1.60/Cesium.js");
 			dataMap.put("widgetcss", webProjectPath + "/cesium/Cesium1.60/Widgets/widgets.css");
 			dataMap.put("basePath", basePath);
 
 			// write the freemarker output to a StringWriter
-			StringWriter stringWriter = new StringWriter();
+			final StringWriter stringWriter = new StringWriter();
 			indexViewerTemplate.process(dataMap, stringWriter);
 
 			// get the String from the StringWriter
 			return stringWriter.toString();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Error configuring the template loader. {}", e.getMessage());
-		} catch (TemplateException e) {
+		} catch (final TemplateException e) {
 			log.error("Error processing the template loades. {}", e.getMessage());
 		}
 		return null;
@@ -4332,7 +4506,7 @@ public class InitConfigDB {
 	public void initRoleUser() {
 		log.info("init init_RoleUser");
 		Role type = new Role();
-		Role typeSon = new Role();
+		Role typeSon = null;
 		Role typeParent = new Role();
 		final List<Role> types = roleRepository.findAll();
 		if (types.isEmpty()) {
@@ -4391,43 +4565,57 @@ public class InitConfigDB {
 				type.setIdEnum(Role.Type.ROLE_EDGE_USER);
 				type.setName("Edge User");
 				type.setDescription("User of the Platform for Edge");
-				roleRepository.save(type);
+				type = roleRepository.save(type);
 				//
 				// UPDATE of the ROLE_EDGE_USER
-				typeSon = roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString());
-				typeParent = roleRepository.findById(Role.Type.ROLE_USER.toString());
+
+				typeSon = type;
+				if (roleRepository.findById(Role.Type.ROLE_USER.toString()).isPresent()) {
+					typeParent = roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null);
+				}
 				typeSon.setRoleParent(typeParent);
 				roleRepository.save(typeSon);
+
 				//
 				type = new Role();
 				type.setIdEnum(Role.Type.ROLE_EDGE_DEVELOPER);
 				type.setName("Edge Developer");
 				type.setDescription("Developer of the Platform for Edge");
-				roleRepository.save(type);
+				type = roleRepository.save(type);
 				//
 				// UPDATE of the ROLE_EDGE_USER
-				typeSon = roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString());
-				typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString());
-				typeSon.setRoleParent(typeParent);
-				roleRepository.save(typeSon);
+				typeSon = type;
+				if (roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).isPresent()) {
+					typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null);
+					typeSon.setRoleParent(typeParent);
+					roleRepository.save(typeSon);
+				}
 				//
 				type = new Role();
 				type.setIdEnum(Role.Type.ROLE_EDGE_ADMINISTRATOR);
 				type.setName("Edge Administrator");
 				type.setDescription("Administrator of the Platform for Edge");
-				roleRepository.save(type);
+				type = roleRepository.save(type);
 				//
 				// UPDATE of the ROLE_EDGE_USER
-				typeSon = roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString());
-				typeParent = roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString());
-				typeSon.setRoleParent(typeParent);
-				roleRepository.save(typeSon);
+				typeSon = type;
+				if (roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).isPresent()) {
+					typeParent = roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null);
+					typeSon.setRoleParent(typeParent);
+					roleRepository.save(typeSon);
+				}
 				//
 				// UPDATE of the ROLE_ANALYTICS
-				typeSon = roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString());
-				typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString());
-				typeSon.setRoleParent(typeParent);
-				roleRepository.save(typeSon);
+				if (roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).isPresent()
+						&& roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).isPresent()) {
+					typeSon = roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null);
+					typeParent = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null);
+					if (typeSon == null) {
+						throw new GenericOPException("ROLE_DATASCIENTIST NOT FOUND");
+					}
+					typeSon.setRoleParent(typeParent);
+					roleRepository.save(typeSon);
+				}
 
 				type = new Role();
 				type.setIdEnum(Role.Type.ROLE_DATAVIEWER);
@@ -4442,7 +4630,7 @@ public class InitConfigDB {
 			}
 
 		}
-		if (roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.name()) == null) {
+		if (!roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.name()).isPresent()) {
 			type = new Role();
 			type.setIdEnum(Role.Type.ROLE_PLATFORM_ADMIN);
 			type.setName("Multitenant admin");
@@ -4456,8 +4644,9 @@ public class InitConfigDB {
 		final List<Token> tokens = tokenRepository.findAll();
 		if (tokens.isEmpty()) {
 			log.info("No Tokens, adding ...");
-			if (clientPlatformRepository.findAll().isEmpty())
+			if (clientPlatformRepository.findAll().isEmpty()) {
 				throw new GenericRuntimeOPException("You need to create ClientPlatform before Token");
+			}
 
 			ClientPlatform client = clientPlatformRepository.findByIdentification(TICKETING_APP);
 			final Set<Token> hashSetTokens = new HashSet<>();
@@ -4477,7 +4666,7 @@ public class InitConfigDB {
 			token.setClientPlatform(client);
 			token.setTokenName("a16b9e7367734f04bc720e981fcf483f");
 			tokenRepository.save(token);
-
+			
 			client = clientPlatformRepository.findByIdentification(GTKPEXAMPLE_STR);
 			token = new Token();
 			token.setId("MASTER-Token-3");
@@ -4529,22 +4718,22 @@ public class InitConfigDB {
 							.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema());
 					type = new User();
 					type.setUserId(ADMINISTRATOR + "_" + vertical);
-					type.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
+					type.setPassword(MAIN_PS_WD);
 					type.setFullName("Administrator of vertical " + vertical);
 					type.setEmail(vertical.toLowerCase() + "@onesaitplatform.com");
 					type.setActive(true);
-					type.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()));
+					type.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
 					userCDBRepository.save(type);
 				}
 
 				log.info("No types en tabla.Adding...");
 				type = new User();
 				type.setUserId(ADMINISTRATOR);
-				type.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
+				type.setPassword(MAIN_PS_WD);
 				type.setFullName("A Administrator of the Platform");
 				type.setEmail("administrator@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4553,7 +4742,7 @@ public class InitConfigDB {
 				type.setFullName("A Developer of the Platform.");
 				type.setEmail("developer@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4562,7 +4751,7 @@ public class InitConfigDB {
 				type.setFullName("Demo Developer of the Platform");
 				type.setEmail("demo_developer@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4571,7 +4760,7 @@ public class InitConfigDB {
 				type.setFullName("Generic User of the Platform");
 				type.setEmail("user@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4580,7 +4769,7 @@ public class InitConfigDB {
 				type.setFullName("Demo User of the Platform");
 				type.setEmail("demo_user@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4589,7 +4778,7 @@ public class InitConfigDB {
 				type.setFullName("Generic Analytics User of the Platform");
 				type.setEmail("analytics@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4598,7 +4787,7 @@ public class InitConfigDB {
 				type.setFullName("Generic Partner of the Platform");
 				type.setEmail("partner@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4607,7 +4796,7 @@ public class InitConfigDB {
 				type.setFullName("Generic SysAdmin of the Platform");
 				type.setEmail("sysadmin@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4616,7 +4805,7 @@ public class InitConfigDB {
 				type.setFullName("Operations of the Platform");
 				type.setEmail("operations@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()).orElse(null));
 				userCDBRepository.save(type);
 				//
 				type = new User();
@@ -4625,7 +4814,7 @@ public class InitConfigDB {
 				type.setFullName("DataViewer User of the Platform");
 				type.setEmail("dataviewer@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()).orElse(null));
 				userCDBRepository.save(type);
 
 				type = new User();
@@ -4634,7 +4823,7 @@ public class InitConfigDB {
 				type.setFullName("Anonymous User of the Platform");
 				type.setEmail("anonymous@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
 				userCDBRepository.save(type);
 
 				type = new User();
@@ -4643,7 +4832,7 @@ public class InitConfigDB {
 				type.setFullName("EDGE Administrator User of the Platform");
 				type.setEmail("edge_admin@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()).orElse(null));
 				userCDBRepository.save(type);
 
 				type = new User();
@@ -4652,7 +4841,7 @@ public class InitConfigDB {
 				type.setFullName("EDGE Developer User of the Platform");
 				type.setEmail("edge_developer@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()).orElse(null));
 				userCDBRepository.save(type);
 
 				type = new User();
@@ -4661,7 +4850,7 @@ public class InitConfigDB {
 				type.setFullName("EDGE User User of the Platform");
 				type.setEmail("edge_user@onesaitplatform.com");
 				type.setActive(true);
-				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()));
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()).orElse(null));
 				userCDBRepository.save(type);
 
 			} catch (final Exception e) {
@@ -4673,8 +4862,8 @@ public class InitConfigDB {
 		if (masterUserRepository.findByUserId(PLATFORM_ADMINISTRATOR) == null) {
 			final User master = new User();
 			master.setUserId(PLATFORM_ADMINISTRATOR);
-			master.setRole(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.name()));
-			master.setPassword("SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)");
+			master.setRole(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.name()).orElse(null));
+			master.setPassword(MAIN_PS_WD);
 			master.setFullName("Platform administrator");
 			master.setEmail("platformadmin@onesaitplatform.com");
 			userCDBRepository.save(master);
@@ -4867,6 +5056,13 @@ public class InitConfigDB {
 					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
 					"market/details/OpenNotify.json", MARKET_IMG_NODERED_PNG, "png", "market/docs/OpenNotify.json",
 					"AzureCognitiveServiceVision.json");
+
+		}
+		// SSO-OAuth2-Plugin
+		if (!marketAssetRepository.findById("MASTER-MarketAsset-22").isPresent()) {
+			createMarketAsset("MASTER-MarketAsset-22", "sso-oauth-plugin", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.APPLICATION, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/sso-oauth-plugin.json", null, null, "market/docs/sso-oauth-plugin.zip", null);
 		}
 	}
 
@@ -4919,7 +5115,9 @@ public class InitConfigDB {
 		final boolean hasDefault = dataflowInstanceRepository.findByDefaultInstance(true) != null;
 		if (!hasDefault) {
 			final DataflowInstance instance = new DataflowInstance();
+			instance.setId("MASTER-DataflowInstance-1");
 			instance.setIdentification("Default");
+			instance.setId("MASTER-DataflowInstance-1");
 			instance.setUrl("http://streamsets:18630");
 			instance.setDefaultInstance(true);
 
@@ -4954,7 +5152,7 @@ public class InitConfigDB {
 		if (notebookUat.isEmpty()) {
 			try {
 				final NotebookUserAccessType p = new NotebookUserAccessType();
-				p.setId("ACCESS-TYPE-1");
+				p.setId(ACCESS_TYPE_ONE);
 				p.setDescription("Edit Access");
 				p.setName("EDIT");
 				notebookUserAccessTypeRepository.save(p);
@@ -4970,10 +5168,10 @@ public class InitConfigDB {
 		final List<String> uatIds = pipelineUserAccessTypeRepository.findAll().stream()
 				.map(PipelineUserAccessType::getId).collect(Collectors.toList());
 
-		if (!uatIds.contains("ACCESS-TYPE-1")) {
+		if (!uatIds.contains(ACCESS_TYPE_ONE)) {
 			try {
 				final PipelineUserAccessType p = new PipelineUserAccessType();
-				p.setId("ACCESS-TYPE-1");
+				p.setId(ACCESS_TYPE_ONE);
 				p.setDescription("Edit Access");
 				p.setName("EDIT");
 				pipelineUserAccessTypeRepository.save(p);
@@ -4995,6 +5193,58 @@ public class InitConfigDB {
 		}
 	}
 
+	public void initGadgetTemplateType() {
+		log.info("init GadgetTemplateType");
+		final String angularTemplateJS = "//Write your controller (JS code) code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\nvm.initLiveComponent = function(){\n\n};\n\n//This function will be call when data change. On first execution oldData will be null\nvm.drawLiveComponent = function(newData, oldData){\n\n};\n\n//This function will be call on element resize\nvm.resizeEvent = function(){\n\n}\n\n//This function will be call when element is destroyed\nvm.destroyLiveComponent = function(){\n\n};\n\n//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\nvm.receiveValue = function(data){\n\n};";
+		final String angularTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
+		final String angularHeaders = "";
+		final String vueTemplateJS = "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.querySelector('#' + vm.id + ' vuetemplate'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n";
+		final String vueTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
+		final String vueHeaders = "";
+		final String vueODSTemplateJS = "//Write your Vue with ODS JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.querySelector('#' + vm.id + ' vuetemplate'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n";
+		final String vueODSTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
+		final String vueODSHeaders = "";
+		final String reactTemplateJS = "//Write your controller (JS code) code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call for render the React Gadget\nfunction GadgetComponent(props) {\n    const ds = props.ds;\n    return React.createElement(\"div\", null, null);\n}\n\n//This function will be call on init event and when data arrives to the React Gadget\nvm.renderReactGadget = function(ds, old_ds){\n  ReactDOM.render(\n      React.createElement(GadgetComponent, { ds: ds || [] }), document.querySelector('#' + vm.id + ' reacttemplate' + ' .rootapp')\n  );\n}\n\n//This function will be call in destroy event of React Gadget\nvm.destroyReactGadget = function(){\n\n}\n\n//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\nvm.receiveValue = function(data){\n\n};";
+		final String reactTemplate = "<!-- Write your React CSS Style Here \n<!--Focus here and F11 to full screen editor-->";
+		final String reactHeaders = "<script src=\"/controlpanel/static/vendor/react/react.production.min.js\" crossorigin></script>\n<script src=\"/controlpanel/static/vendor/react/react-dom.production.min.js\" crossorigin></script>";
+		final List<GadgetTemplateType> gadgetsTemplatesType = gadgetTemplateTypeRepository.findAll();
+		if (gadgetsTemplatesType.isEmpty()) {
+			log.info("No gadgetsTemplateType ...");
+
+			GadgetTemplateType gadgetTemplateType = new GadgetTemplateType();
+			gadgetTemplateType.setId("angularJS");
+			gadgetTemplateType.setIdentification("Angular JS");
+			gadgetTemplateType.setTemplate(angularTemplate);
+			gadgetTemplateType.setTemplateJS(angularTemplateJS);
+			gadgetTemplateType.setHeaderlibs(angularHeaders);
+			gadgetTemplateTypeRepository.save(gadgetTemplateType);
+
+			gadgetTemplateType = new GadgetTemplateType();
+			gadgetTemplateType.setId("vueJS");
+			gadgetTemplateType.setIdentification("Vue JS");
+			gadgetTemplateType.setTemplate(vueTemplate);
+			gadgetTemplateType.setTemplateJS(vueTemplateJS);
+			gadgetTemplateType.setHeaderlibs(vueHeaders);
+			gadgetTemplateTypeRepository.save(gadgetTemplateType);
+
+			gadgetTemplateType = new GadgetTemplateType();
+			gadgetTemplateType.setId("vueJSODS");
+			gadgetTemplateType.setIdentification("Vue JS + ODS");
+			gadgetTemplateType.setTemplate(vueODSTemplate);
+			gadgetTemplateType.setTemplateJS(vueODSTemplateJS);
+			gadgetTemplateType.setHeaderlibs(vueODSHeaders);
+			gadgetTemplateTypeRepository.save(gadgetTemplateType);
+
+			gadgetTemplateType = new GadgetTemplateType();
+			gadgetTemplateType.setId("reactJS");
+			gadgetTemplateType.setIdentification("React JS");
+			gadgetTemplateType.setTemplate(reactTemplate);
+			gadgetTemplateType.setTemplateJS(reactTemplateJS);
+			gadgetTemplateType.setHeaderlibs(reactHeaders);
+			gadgetTemplateTypeRepository.save(gadgetTemplateType);
+		}
+	}
+
 	public void initGadgetTemplate() {
 		log.info("init GadgetTemplate");
 		final String templateJS = "//Write your controller (JS code) code here\r\n" + "\r\n"
@@ -5007,13 +5257,15 @@ public class InitConfigDB {
 				+ "}\r\n" + "\r\n" + "//This function will be call when element is destroyed\r\n"
 				+ "vm.destroyLiveComponent = function(){\r\n" + "\r\n" + "};";
 		final List<GadgetTemplate> gadgets = gadgetTemplateRepository.findAll();
+		GadgetTemplate gadgetTemplate;
 		if (gadgets.isEmpty()) {
 			log.info("No gadgetsTemplate ...");
 
-			GadgetTemplate gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate = new GadgetTemplate();
 			gadgetTemplate.setId("MASTER-GadgetTemplate-1");
 			gadgetTemplate.setIdentification("Select");
 			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("angularJS");
 			gadgetTemplate.setDescription("this template creates a drop-down list");
 			gadgetTemplate.setTemplate("<!-- \r\n"
 					+ "to use the template we can create a datasource with a query like this:\r\n"
@@ -5037,6 +5289,7 @@ public class InitConfigDB {
 			gadgetTemplate.setId("MASTER-GadgetTemplate-2");
 			gadgetTemplate.setIdentification("Simple Value");
 			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("angularJS");
 			gadgetTemplate.setDescription("this template shows a value with its title and an icon");
 			gadgetTemplate.setTemplate("<style>\r\n" + "  .card-count{\r\n" + "   color: #2e43ab;\r\n"
 					+ "    font-weight: bold;\r\n" + "    font-size: -webkit-xxx-large; \r\n"
@@ -5060,6 +5313,7 @@ public class InitConfigDB {
 			gadgetTemplate.setId("MASTER-GadgetTemplate-3");
 			gadgetTemplate.setIdentification("Chart Bubble");
 			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("angularJS");
 			gadgetTemplate.setDescription("this template creates a chart bubble");
 			gadgetTemplate.setTemplate("<span ng-init=\"\r\n" + "    cdata=[];\r\n"
 					+ "    cdatasetOverride={label: '<!--label-osp  name=\"series label\" type=\"text\"-->'};\r\n"
@@ -5082,6 +5336,130 @@ public class InitConfigDB {
 			gadgetTemplate.setUser(getUserAdministrator());
 			gadgetTemplateRepository.save(gadgetTemplate);
 		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-4").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-4");
+			gadgetTemplate.setIdentification("React Material List");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("reactJS");
+			gadgetTemplate.setHeaderlibs(
+					"<script src=\"/controlpanel/static/vendor/react/react.production.min.js\" crossorigin></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/react/react-dom.production.min.js\" crossorigin></script>\n"
+							+ "<script src=\"https://unpkg.com/@material-ui/core@latest/umd/material-ui.production.min.js\" crossorigin></script>\n"
+							+ "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap\" />\n"
+							+ "<!-- Icons to support Material Design -->\n"
+							+ "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" />");
+			gadgetTemplate.setDescription(
+					"This template creates a react js material list, for use it in dashboard you need to import dependencies");
+			gadgetTemplate.setTemplate("<style>\n" + "    .MuiListItemText-root{\n" + "        background: #d8eaff\n"
+					+ "    }\n" + "</style>");
+
+			gadgetTemplate.setTemplateJS("\n" + "const {\n" + "  List,\n" + "  ListItem,\n" + "  ListItemText\n"
+					+ "} = MaterialUI;\n" + "\n"
+					+ "var key = /*label-osp  name=\"key\" type=\"ds_parameter\"*/\"dummyk\"\n"
+					+ "var value = /*label-osp  name=\"value\" type=\"ds_parameter\"*/\"dummyv\"\n" + "\n" + "\n"
+					+ "function GadgetComponent(props) {\n" + "    const ds = props.ds;\n"
+					+ "    const listItems = ds.map(inst => React.createElement(ListItem, {button: true}, React.createElement(ListItemText, {\n"
+					+ "        primary: inst[key]\n" + "    }), inst[value]));\n"
+					+ "    return React.createElement(List, null, listItems);\n" + "}\n" + "\n"
+					+ "vm.renderReactGadget = function(ds, old_ds){\n" + "  ReactDOM.render(\n"
+					+ "      React.createElement(GadgetComponent, { ds: ds || [{dummyk:1,dummyv:2}] }), document.querySelector('#' + vm.id + ' reacttemplate' + ' .rootapp')\n"
+					+ "  );\n" + "}\n" + "\n" + "vm.destroyReactGadget = function(){\n" + "\n" + "}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-5").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-5");
+			gadgetTemplate.setIdentification("Vue Echart Line or Bar");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs(
+					"<!--Write here your html code to load required libs and init scripts for your component\n"
+							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
+							+ "    <script src=\"https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.min.js\"></script>\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>");
+			gadgetTemplate.setDescription(
+					"This template creates an vue echart component from datasource with type bar or line, for use it in dashboard you need to import dependencies");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n"
+					+ "<v-chart :options=\"chartConfig\"></v-chart>");
+
+			gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 to full screen editor\n" + "\n"
+					+ "var color = /*select-osp  name=\"Color Serie\" type=\"ds\" options=\"red,blue,green,orange,yellow,black,purple,pink\"*/ 'red'\n"
+					+ "var typechart = /*select-osp  name=\"Chart Type\" type=\"ds\" options=\"bar,line\"*/ 'line'\n"
+					+ "var key = /*label-osp  name=\"Key\" type=\"ds_parameter\"*/ \"key\"\n"
+					+ "var value = /*label-osp  name=\"Value\" type=\"ds_parameter\"*/ \"value\"\n" + "\n"
+					+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
+					+ "    el: document.querySelector('#' + vm.id + ' vuetemplate'),\n" + "    data: {\n"
+					+ "        ds: [{\"key\":\"A\",\"value\":123},{\"key\":\"B\",\"value\":143}]\n" + "    },\n"
+					+ "    computed: {\n" + "        chartConfig() {\n" + "            return {\n"
+					+ "                xAxis: {\n" + "                    type: 'category',\n"
+					+ "                    data: this.ds.map(inst => inst[key])\n" + "                },\n"
+					+ "                yAxis: {\n" + "                    type: 'value'\n" + "                },\n"
+					+ "                series: [{\n" + "                    data: this.ds.map(inst => inst[value]),\n"
+					+ "                    type: typechart,\n" + "                    color: color\n"
+					+ "                }]\n" + "            };\n" + "        }\n" + "    },\n" + "    methods: {\n"
+					+ "        drawVueComponent: function (newData, oldData) {\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
+					+ "        },\n" + "        receiveValue: function (data) {\n"
+					+ "            //data received from datalink\n" + "        },\n"
+					+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+					+ "\tcomponents: {\n" + "\t\t'v-chart':VueECharts\n" + "\t}\n" + "}\n" + "\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-6").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-6");
+			gadgetTemplate.setIdentification("Vue ODS Select");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJSODS");
+			gadgetTemplate.setHeaderlibs(
+					"<!--Write here your html code to load required libs and init scripts for your component\n"
+							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
+							+ "    <script src=\"https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.min.js\"></script>\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>");
+			gadgetTemplate.setDescription("This template creates an vue ods select component from datasource");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<ods-select\n" + "  v-model=\"value\"\n"
+					+ "  :placeholder=\"select\"\n" + "  @change=\"sendFilter(key,value)\"\n" + "  >\n"
+					+ "  <ods-option\n" + "    v-for=\"item in ds\"\n" + "    :key=\"item[key]\"\n"
+					+ "    :label=\"item[label]\"\n" + "    :value=\"item[key]\">\n" + "  </ods-option>\n"
+					+ "</ods-select>");
+
+			gadgetTemplate.setTemplateJS("//Write your Vue ODS JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 to full screen editor\n" + "\n"
+					+ "//This function will be call once to init components\n" + "\n"
+					+ "var key = /*label-osp  name=\"Key Select\" type=\"ds_parameter\"*/ \"value\"\n"
+					+ "var label =  /*label-osp  name=\"Value Select\" type=\"ds_parameter\"*/ \"label\"\n"
+					+ "var select = /*label-osp  name=\"PlaceHolder\" type=\"text\"*/ \"Select\"\n" + "\n"
+					+ "vm.vueconfig = {\n" + "    el: document.querySelector(\"#\" + vm.id + \" vuetemplate\"),\n"
+					+ "    data: {\n" + "        ds: [{\n" + "            value: \"Option1\",\n"
+					+ "            label: \"Option1\"\n" + "        }, {\n" + "            value: \"Option2\",\n"
+					+ "            label: \"Option2\"\n" + "        }, {\n" + "            value: \"Option3\",\n"
+					+ "            label: \"Option3\"\n" + "        }, {\n" + "            value: \"Option4\",\n"
+					+ "            label: \"Option4\"\n" + "        }, {\n" + "            value: \"Option5\",\n"
+					+ "            label: \"Option5\"\n" + "        }],\n" + "        value: \"\",\n"
+					+ "        key: key,\n" + "        label: label,\n" + "        select: select\n" + "    },\n"
+					+ "    methods: {\n" + "        drawVueComponent: function (newData, oldData) {\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function () {\n" + "\n" + "        },\n"
+					+ "        receiveValue: function (data) {\n" + "            //data received from datalink\n"
+					+ "        },\n" + "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n"
+					+ "    }\n" + "}\n" + "\n" + "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);\n");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
 	}
 
 	private void initOntologyRestaurants() {
@@ -5120,6 +5498,7 @@ public class InitConfigDB {
 
 			final WebProject webProject = new WebProject();
 
+			webProject.setId("MASTER-webproject-1");
 			webProject.setDescription("Stand Alone Library of Cesium 1.60 nad CesiumHeatMap");
 			webProject.setIdentification(CESIUM);
 			webProject.setUser(getUserDeveloper());
@@ -5145,6 +5524,37 @@ public class InitConfigDB {
 			subcategory.setDescription("General Subcategory Description");
 			subcategory.setCategory(category);
 			subcategoryRepository.save(subcategory);
+		}
+	}
+
+	public void initTypology() {
+		log.info("init Typologies");
+		final List<ODTypology> typologies = typologyRepository.findAll();
+		if (typologies.isEmpty()) {
+			log.info("No typologies...adding");
+
+			final ODTypology typology = new ODTypology();
+			typology.setId("MASTER-Typology-1");
+			typology.setIdentification("TypologyExample");
+			typology.setDescription("Typology example");
+			typology.setUser(getUserAdministrator());
+
+			typologyRepository.save(typology);
+		}
+	}
+
+	public void initTypologyDataset() {
+		log.info("init Typology-Dataset");
+		final List<ODTypologyDataset> typologies = typologyDatasetRepository.findAll();
+		if (typologies.isEmpty()) {
+			log.info("No typology-dataset...adding");
+
+			final ODTypologyDataset typology = new ODTypologyDataset();
+			typology.setId("MASTER-Typology-Dataset-1");
+			typology.setDatasetId("21ebc28f-b967-46e5-a8f6-0e977dee72fb");
+			typology.setTypologyId("MASTER-Typology-1");
+
+			typologyDatasetRepository.save(typology);
 		}
 	}
 
@@ -5228,12 +5638,13 @@ public class InitConfigDB {
 		} catch (final IOException e) {
 			throw new WebProjectServiceException("Error unzipping files " + e);
 		} finally {
-			if (is != null)
+			if (is != null) {
 				try {
 					is.close();
 				} catch (final IOException e) {
 					log.debug("Error: " + e);
 				}
+			}
 		}
 
 		if (folder.exists()) {

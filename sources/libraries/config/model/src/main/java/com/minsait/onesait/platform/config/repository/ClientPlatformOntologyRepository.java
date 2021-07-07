@@ -39,14 +39,15 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepository", unless = "#result==null or #result.size()==0", key = "#p0.id")
 	List<ClientPlatformOntology> findByClientPlatform(ClientPlatform clientPlatform);
-	
+
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepositoryByClientPlatformAndInsertAccess", unless = "#result == null")
 	@Query("SELECT o " + "FROM ClientPlatformOntology AS o " + "WHERE o.access != 'QUERY' AND "
 			+ "o.clientPlatform.identification = :clientPlatformId")
-	List<ClientPlatformOntology> findByClientPlatformAndInsertAccess(@Param("clientPlatformId") String clientPlatformId);
+	List<ClientPlatformOntology> findByClientPlatformAndInsertAccess(
+			@Param("clientPlatformId") String clientPlatformId);
 
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepository", unless = "#result==null or #result.size()==0", key = "#p0.id")
-	List<ClientPlatformOntology> findById(String id);
+	List<ClientPlatformOntology> findAllById(String id);
 
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepositoryByOntology", unless = "#result==null or #result.size()==0", key = "#p0.id")
 	List<ClientPlatformOntology> findByOntology(Ontology ontology);
@@ -58,6 +59,7 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Modifying
 	void deleteByOntology(Ontology ontology);
 
+	@Override
 	@Transactional
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
@@ -78,14 +80,6 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Modifying
 	@Transactional
 	void delete(ClientPlatformOntology entity);
-
-	@Override
-	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
-			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
-	@Modifying
-	@Transactional
-	void delete(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",

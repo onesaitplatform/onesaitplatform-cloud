@@ -62,6 +62,7 @@ public class OpenAPI3Utils {
 	private RestTemplate template;
 	@Autowired
 	IntegrationResourcesService resourcesService;
+	final Map<String, Components> cacheExternalReferences = new HashMap<>();
 
 	private static final String DEFAULT_RESPONSE_DESC = "Other status code";
 
@@ -75,7 +76,6 @@ public class OpenAPI3Utils {
 			String opMethodFilter) {
 		final List<RestApiOperationDTO> operationNames = new ArrayList<>();
 
-		final Map<String, Components> cacheExternalReferences = new HashMap<>();
 		final OpenAPI openAPI = getOpenAPI(openApi);
 		openAPI.getPaths().entrySet().forEach(p -> {
 			final PathItem path = p.getValue();
@@ -146,7 +146,9 @@ public class OpenAPI3Utils {
 		if (parameter.get$ref() == null) {
 			final RestApiOperationParamDTO paramDTO = new RestApiOperationParamDTO();
 			paramDTO.setName(parameter.getName());
+			paramDTO.setRequired(parameter.getRequired() != null ? parameter.getRequired() : Boolean.FALSE);
 			paramDTO.setType(parameter.getIn().toUpperCase());
+			paramDTO.setRequired(parameter.getRequired() != null ? parameter.getRequired() : Boolean.FALSE);
 			return paramDTO;
 		} else {
 			return getApiParamFromRef(parameter, openAPI, cacheExternalReferences);
@@ -189,9 +191,11 @@ public class OpenAPI3Utils {
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
+				log.debug("getStatusDescriptionFromRef: Returning cached instance for url {}", url);
 				return cacheExternalReferences.get(url).getResponses().get(getParameterComponent(splitedRef[1]))
 						.getDescription();
 			} else {
+				log.debug("getStatusDescriptionFromRef: Downloading decriptor from url {}", url);
 				final OpenAPI yaml = getOpenApiYaml(url);
 				final String description = yaml.getComponents().getResponses().get(getParameterComponent(splitedRef[1]))
 						.getDescription();
@@ -212,25 +216,29 @@ public class OpenAPI3Utils {
 			if (p != null) {
 				paramDTO.setName(p.getName());
 				paramDTO.setType(p.getIn().toUpperCase());
+				paramDTO.setRequired(p.getRequired() != null ? p.getRequired() : Boolean.FALSE);
 			}
 		} else {
 			// Is an http reference -> download yaml and get component.
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
+				log.debug("getApiParamFromRef: Returning cached instance for url {}", url);
 				final Parameter p = cacheExternalReferences.get(url).getParameters()
 						.get(getParameterComponent(splitedRef[1]));
 				paramDTO.setName(p.getName());
 				paramDTO.setType(p.getIn().toUpperCase());
+				paramDTO.setRequired(p.getRequired() != null ? p.getRequired() : Boolean.FALSE);
 
 				return paramDTO;
 			}
-
+			log.debug("getApiParamFromRef: Downloading decriptor from url {}", url);
 			final OpenAPI yaml = getOpenApiYaml(url);
 			final Parameter p = yaml.getComponents().getParameters().get(getParameterComponent(splitedRef[1]));
 			if (p != null) {
 				paramDTO.setName(p.getName());
 				paramDTO.setType(p.getIn().toUpperCase());
+				paramDTO.setRequired(p.getRequired() != null ? p.getRequired() : Boolean.FALSE);
 				cacheExternalReferences.put(url, yaml.getComponents());
 			}
 		}
@@ -285,6 +293,7 @@ public class OpenAPI3Utils {
 		for (final RestApiOperationParamDTO param : params) {
 			// QUERY, PATH, BODY (formData ignore) or HEADER
 			String value = "";
+			boolean skipParam = false;
 			try {
 				value = getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
 			} catch (final FlowDomainServiceException e) {
@@ -292,24 +301,31 @@ public class OpenAPI3Utils {
 				final String msg = "No value was found for parameter " + param.getName() + " in operation ["
 						+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName() + " from API ["
 						+ invokeRequest.getApiVersion() + "] - " + selectedApi.getIdentification() + ".";
-				log.error(msg);
-				throw new NoValueForParamIvocationException(msg);
+				if (param.getRequired()) {
+					log.error(msg);
+					throw new NoValueForParamIvocationException(msg);
+				} else {
+					log.debug("Skipping parameter. Optional parameter not received. " + msg);
+					skipParam = true;
+				}
 			}
-			switch (param.getType().toUpperCase()) {
-			case "QUERY":
-				resultInvocationParams.getQueryParams().put(param.getName(), value);
-				break;
-			case "PATH":
-				resultInvocationParams.getPathParams().put(param.getName(), value);
-				break;
-			case "BODY":
-				resultInvocationParams.setBody(value);
-				break;
-			case "HEADER":
-				resultInvocationParams.getHeaders().add(param.getName(), value);
-				break;
-			default:
-				break;
+			if (!skipParam) {
+				switch (param.getType().toUpperCase()) {
+				case "QUERY":
+					resultInvocationParams.getQueryParams().put(param.getName(), value);
+					break;
+				case "PATH":
+					resultInvocationParams.getPathParams().put(param.getName(), value);
+					break;
+				case "BODY":
+					resultInvocationParams.setBody(value);
+					break;
+				case "HEADER":
+					resultInvocationParams.getHeaders().add(param.getName(), value);
+					break;
+				default:
+					break;
+				}
 			}
 		}
 

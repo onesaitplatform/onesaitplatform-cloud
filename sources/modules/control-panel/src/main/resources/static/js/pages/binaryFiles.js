@@ -4,7 +4,7 @@ var BinaryFilesController = function() {
 	var listPath = '/controlpanel/files/list';
 	var metadataPath = mainPath + 'metadata/';
 	var getAuthsPath = mainPath + 'authorization/';
-	var maxsizePath = mainPath + '/maxsize';
+	var maxsizePath = mainPath + 'maxsize';
 	var authorizationsArr 		= []; // add authorizations
 	var authorizationUpdateArr  = []; // get authorizations of the file
 	var authorizationsIds 		= []; // get authorizations ids for actions
@@ -40,13 +40,18 @@ var BinaryFilesController = function() {
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		$.ajax({
 		    url: mainPath + id,
+		    contentType: 'application/json; charset=utf-8',
+		    dataType: 'json',
 			headers: {
 				[csrf_header]: csrf_value
 		    },
 		    type: 'DELETE',
 		    success: function(response) {
 		    	navigateUrl(listPath);
-		    }
+		    },
+			error: function (err) {
+			    $.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: err.responseText});
+			}
 		});
 	}
 	
@@ -197,7 +202,6 @@ var BinaryFilesController = function() {
 			
 		}
 		if (action  === 'delete'){
-		
 			
 			$.ajax({url:deleteURL, type:"POST", async: true, 
 				headers: {
@@ -221,10 +225,7 @@ var BinaryFilesController = function() {
 						$("#users").selectpicker('refresh');
 						if (authorizationsArr.length == 0){
 							$('#alert-authorizations').toggle(!$('#alert-authorizations').is(':visible'));					
-							$('#authorizations').addClass('hide');
-							
-						}
-						
+							$('#authorizations').addClass('hide');						}
 					}
 					else{ 
 						$.alert({title: 'ALERT!', theme: 'dark', type: 'orange', content: 'NO RESPONSE!'}); 

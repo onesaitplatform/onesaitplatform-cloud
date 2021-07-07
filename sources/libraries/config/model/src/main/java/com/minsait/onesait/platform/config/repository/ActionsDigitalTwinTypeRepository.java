@@ -21,8 +21,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.minsait.onesait.platform.config.model.ActionsDigitalTwinType;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 
-public interface ActionsDigitalTwinTypeRepository extends JpaRepository<ActionsDigitalTwinType, String>{
-	
+public interface ActionsDigitalTwinTypeRepository extends JpaRepository<ActionsDigitalTwinType, String> {
+
 	List<ActionsDigitalTwinType> findByNameIgnoreCase(String name);
 
 	List<ActionsDigitalTwinType> findByDescription(String description);
@@ -34,12 +34,10 @@ public interface ActionsDigitalTwinTypeRepository extends JpaRepository<ActionsD
 	List<ActionsDigitalTwinType> findByDescriptionContaining(String description);
 
 	List<ActionsDigitalTwinType> findByNameContaining(String name);
-	
+
 	List<ActionsDigitalTwinType> findByNameLikeAndDescriptionLike(String name, String description);
-	
+
 	List<ActionsDigitalTwinType> findByNameContainingAndDescriptionContaining(String name, String description);
-	
-	ActionsDigitalTwinType findById(String id);
-	
+
 	List<ActionsDigitalTwinType> findByTypeId(DigitalTwinType digitalTwinType);
 }

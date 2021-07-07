@@ -92,11 +92,6 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		private final String value;
 	}
 
-	@Value("${onesaitplatform.database.mongodb.database:onesaitplatform_rtdb}")
-	@Getter
-	@Setter
-	private String database;
-
 	@Getter
 	@Setter
 	private long queryExecutionTimeout;
@@ -125,7 +120,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 	}
 
 	@Override
-	public List<TimeSeriesResult> processTimeSerie(String ontology, String instance) {
+	public List<TimeSeriesResult> processTimeSerie(String database, String ontology, String instance) {
 
 		log.info("Process TimeSerie instance for ontology {}", ontology);
 		final List<TimeSeriesResult> result = new ArrayList<>();
@@ -169,7 +164,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		lTimeSeriesWindows.forEach(window -> {
 			try {
 				log.debug("Process window {} for ontology {}", window.getWindowType().name(), ontology);
-				result.addAll(manageWindow(ontology, rootkey, mTags, mFields, formattedDate, window,
+				result.addAll(manageWindow(database, ontology, rootkey, mTags, mFields, formattedDate, window,
 						getWindowAggregationType(window)));
 			} catch (TimeSeriesFrecuencyNotSupportedException | WindowNotSupportedException | ParseException e) {
 				log.error("Error processing TimeSeries Window", e);
@@ -236,7 +231,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 	 * @throws WindowNotSupportedException
 	 * @throws ParseException
 	 */
-	private List<TimeSeriesResult> manageWindow(String ontology, Optional<String> rootElement,
+	private List<TimeSeriesResult> manageWindow(String database, String ontology, Optional<String> rootElement,
 			Map<OntologyTimeSeriesProperty, Object> mTags, Map<OntologyTimeSeriesProperty, Object> mFields,
 			String formattedDate, OntologyTimeSeriesWindow window, UPDATE_TYPE updateType)
 			throws TimeSeriesFrecuencyNotSupportedException, WindowNotSupportedException, ParseException {

@@ -15,12 +15,8 @@
 package com.minsait.onesait.platform.simulator;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.endpoint.MetricsEndpoint;
-import org.springframework.boot.actuate.endpoint.MetricsEndpointMetricReader;
-import org.springframework.boot.actuate.endpoint.PublicMetrics;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -39,15 +35,6 @@ public class DeviceSimulatorApplication {
 	@Profile("default")
 	@ComponentScan(basePackages = { "com.ibm.javametrics.spring", "com.minsait.onesait.platform" }, lazyInit = true)
 	static class LocalConfig {
-	}
-
-	/**
-	 * Exports the all endpoint metrics like those implementing
-	 * {@link PublicMetrics}.
-	 */
-	@Bean
-	public MetricsEndpointMetricReader metricsEndpointMetricReader(MetricsEndpoint metricsEndpoint) {
-		return new MetricsEndpointMetricReader(metricsEndpoint);
 	}
 
 }

@@ -39,4 +39,9 @@ public class DefaultQueryAsTextDBRepository implements QueryAsTextDBRepository {
 		throw new DBPersistenceException(NOT_SUPPORTED);
 	}
 
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
 }

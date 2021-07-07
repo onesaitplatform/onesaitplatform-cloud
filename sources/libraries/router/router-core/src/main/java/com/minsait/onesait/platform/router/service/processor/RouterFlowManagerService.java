@@ -130,6 +130,8 @@ public class RouterFlowManagerService {
 	private ExecutorService rulesEngineNotificatorExecutor;
 	private ExecutorService subscriptionNotificatorExecutor;
 	private ExecutorService noderedNotificatorProcessor;
+	
+	private Map<String, AdviceNotificationService> adviceNotificationServiceBeans;
 
 	private static final String ERROR_MESSAGE_STR = "{ \"error\" : { \"message\" : \"";
 
@@ -178,6 +180,9 @@ public class RouterFlowManagerService {
 				}
 			}
 		});
+		
+		adviceNotificationServiceBeans = applicationContext
+				.getBeansOfType(AdviceNotificationService.class);
 	}
 
 	@PreDestroy
@@ -318,10 +323,7 @@ public class RouterFlowManagerService {
 
 		final List<AdviceNotificationModel> listNotifications = new ArrayList<>();
 
-		final Map<String, AdviceNotificationService> map = applicationContext
-				.getBeansOfType(AdviceNotificationService.class);
-
-		final Iterator<Entry<String, AdviceNotificationService>> iterator = map.entrySet().iterator();
+		final Iterator<Entry<String, AdviceNotificationService>> iterator = adviceNotificationServiceBeans.entrySet().iterator();
 		try {
 			while (iterator.hasNext()) {
 				final Entry<String, AdviceNotificationService> item = iterator.next();
@@ -398,7 +400,7 @@ public class RouterFlowManagerService {
 		} catch (Exception e) {
 			// If not successfully, requeue
 			log.error("Error sending NodeRED Notification");
-			if(compositeModel.getRetryOnFaialureEnabled()) {
+			if(Boolean.TRUE.equals(compositeModel.getRetryOnFaialureEnabled())) {
 				compositeModel.setRetriedNotification(true);
 				notificationAdviceNodeRED.add(compositeModel);
 			}
@@ -486,7 +488,7 @@ public class RouterFlowManagerService {
 		final String payload = model.getBody();
 
 		if (messageType == OperationType.POST || messageType == OperationType.INSERT) {
-
+						
 			// KSQL Notification to ORIGINS
 			notifyKafkaKsqlTopics(ontologyName, payload);
 
@@ -531,10 +533,14 @@ public class RouterFlowManagerService {
 
 		while (kafkaIterator.hasNext()) {
 			final Entry<String, KafkaTopicOntologyNotificationService> item = kafkaIterator.next();
-
+			final String vertical = MultitenancyContextHolder.getVerticalSchema();
+			final String tenant = MultitenancyContextHolder.getTenantName();
 			kafkaNotificatorExecutor.execute(() -> {
+				MultitenancyContextHolder.setTenantName(tenant);
+				MultitenancyContextHolder.setVerticalSchema(vertical);
 				final KafkaTopicOntologyNotificationService service = item.getValue();
 				final String kafkaTopic = service.getKafkaTopicOntologyNotification(ontologyName);
+				MultitenancyContextHolder.clear();
 				if (kafkaTopic != null) {
 					kafkaTemplate.send(kafkaTopic, payload);
 				}

@@ -37,7 +37,7 @@ public class ConfigurationSimplified {
 	@NotNull
 	private String description;
 	@NotNull
-	private String suffix;
+	private String identification;
 	@NotNull
 	private String environment;
 	@NotNull
@@ -48,7 +48,7 @@ public class ConfigurationSimplified {
 		username = configuration.getUser().getUserId();
 		type = configuration.getType();
 		description = configuration.getDescription();
-		suffix = configuration.getSuffix();
+		identification = configuration.getSuffix();
 		environment = configuration.getEnvironment();
 		yml = configuration.getYmlConfig();
 

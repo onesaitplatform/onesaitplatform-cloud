@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
@@ -94,7 +93,7 @@ public class OPResourceRepositoryTest {
 		project.getProjectResourceAccesses().clear();
 		project = projectRepository.save(project);
 		Assert.assertTrue(project.getProjectResourceAccesses().size() == 0);
-		Assert.assertNotNull(resourceRepository.findOne(resource.getId()));
+		Assert.assertTrue(resourceRepository.findById(resource.getId()).isPresent());
 
 		projectRepository.delete(project);
 		Assert.assertTrue(projectRepository.findByIdentification(project.getIdentification()).size() == 0);

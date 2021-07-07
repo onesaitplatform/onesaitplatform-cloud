@@ -91,6 +91,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
 				}
 			]
 		},

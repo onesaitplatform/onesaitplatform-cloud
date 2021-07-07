@@ -17,7 +17,8 @@ package com.minsait.onesait.platform.config.dto.report;
 public enum ReportType {
 
 	PDF("application/pdf", "pdf"), JRXML("application/jrxml", "jrxml"), XML("application/xml", "xml"), HTML("text/html",
-			"html"), XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"), CSV("text/csv","csv");
+			"html"), XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"), CSV("text/csv",
+					"csv"), DOCX("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx");
 
 	private ReportType(String contentType, String extension) {
 		this.contentType = contentType;

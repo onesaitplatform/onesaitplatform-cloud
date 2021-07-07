@@ -34,7 +34,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthorizationException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -58,15 +57,10 @@ public class InsertProcessor implements MessageTypeProcessor {
 	@Autowired
 	ObjectMapper objectMapper;
 
-	@Autowired
-	SecurityPluginManager securityPluginManager;
-
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodyInsertMessage> insertMessage = (SSAPMessage<SSAPBodyInsertMessage>) message;
-
-		final Optional<IoTSession> session = securityPluginManager.getSession(insertMessage.getSessionKey());
 
 		String user = null;
 		String deviceTemplate = null;

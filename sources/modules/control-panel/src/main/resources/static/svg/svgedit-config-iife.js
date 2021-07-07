@@ -37305,6 +37305,7 @@
   var synDatasources = new Map();
   var synLocalConditions = new Map();
   var synDataSourceElemPropertiesExt = {};
+  var imageLibrary = {};
   var editingevents = false;
    
   editor.setConditions = function (conditions){
@@ -37313,6 +37314,14 @@
   editor.getConditions = function (){
 	  return synConditions;
   };
+  
+  editor.setImageLibrary = function (paramImageLibrary){
+	  imageLibrary  = paramImageLibrary;
+  };
+  editor.getImageLibrary = function (){
+	 return imageLibrary ;
+  };  
+
   editor.setDatasources = function (datasources){
 	  synDatasources = datasources;
   };

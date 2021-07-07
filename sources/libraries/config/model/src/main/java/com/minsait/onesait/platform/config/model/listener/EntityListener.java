@@ -33,15 +33,20 @@ import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterDigitalTwinDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserHistoric;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
+import com.minsait.onesait.platform.multitenant.config.model.TenantLazy;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterDeviceTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterDigitalTwinDeviceTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserHistoricRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepositoryLazy;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.TenantRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.TenantRepositoryLazy;
 import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 import com.minsait.onesait.platform.multitenant.exception.TenantDBException;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
@@ -53,6 +58,8 @@ public class EntityListener {
 
 	private static MasterUserRepository masterUserRepository;
 
+	private static MasterUserRepositoryLazy masterUserRepositoryLazy;
+
 	private static MasterUserTokenRepository masterUserTokenRepository;
 
 	private static MasterUserHistoricRepository masterUserHistoricRepository;
@@ -61,11 +68,15 @@ public class EntityListener {
 
 	private static TenantRepository tenantRepository;
 
+	private static TenantRepositoryLazy tenantRepositoryLazy;
+
 	private static VerticalRepository verticalRepository;
 
 	private static MasterDigitalTwinDeviceTokenRepository masterDigitalTwinDeviceTokenRepository;
 
 	private static MasterUserConverter converter;
+
+	private static IoTSessionRepository sessionRepository;
 
 	public static void initialize() {
 		masterUserHistoricRepository = BeanUtil.getBean(MasterUserHistoricRepository.class);
@@ -76,25 +87,30 @@ public class EntityListener {
 		masterDeviceTokenRepository = BeanUtil.getBean(MasterDeviceTokenRepository.class);
 		converter = BeanUtil.getBean(MasterUserConverter.class);
 		masterDigitalTwinDeviceTokenRepository = BeanUtil.getBean(MasterDigitalTwinDeviceTokenRepository.class);
+		sessionRepository = BeanUtil.getBean(IoTSessionRepository.class);
+		masterUserRepositoryLazy = BeanUtil.getBean(MasterUserRepositoryLazy.class);
+		tenantRepositoryLazy = BeanUtil.getBean(TenantRepositoryLazy.class);
 	}
 
 	@PrePersist
 	public void createUser(Object o) throws TenantDBException {
 		if (o instanceof User) {
 			final User user = (User) o;
-			if (null != masterUserRepository.findByUserId(user.getUserId())) {
+			if (null != masterUserRepository.findLazyByUserId(user.getUserId())) {
 				log.warn("Could not add Master user{}, already exists", user.getUserId());
 			} else {
-				final MasterUser master = converter.convert(user);
-				if (master.getTenant() == null)
-					master.setTenant(getCurrentTenant());
+				final MasterUserLazy master = converter.convertToLazyNoRaw(user);
+				if (master.getTenant() == null) {
+					master.setTenant(getCurrentTenantLazy());
+				}
 				final Date createDate = new Date();
 				master.setFailedAtemps(0);
 				master.setLastPswdUpdate(createDate);
-				master.setResetPass(createDate);
+				master.setResetPass(null);
 				master.setLastLogin(createDate);
-				masterUserRepository.save(master);
-				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder().masterUser(master)
+				masterUserRepositoryLazy.save(master);
+				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder()
+						.masterUser(MasterUser.builder().userId(user.getUserId()).build())
 						.password(master.getPassword()).build();
 				masterUserHistoricRepository.save(masterUserHistoric);
 			}
@@ -105,22 +121,23 @@ public class EntityListener {
 	public void updateUser(Object o) {
 		if (o instanceof User) {
 			final User user = (User) o;
-			MasterUser master = converter.convert(user);
-			master.setTenant((masterUserRepository.findByUserId(user.getUserId()).getTenant()));
-			JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
+			MasterUserLazy master = converter.convertToLazyNoRaw(user);
+			master.setTenant(masterUserRepositoryLazy.findByUserId(user.getUserId()).getTenant());
+			final JPAHAS256ConverterCustom shaConverter = new JPAHAS256ConverterCustom();
 
-			String newPass = converter.convertToDatabaseColumn(user.getPassword());
+			final String newPass = shaConverter.convertToDatabaseColumn(user.getPassword());
 
-			boolean changePass = !masterUserRepository.findByUserId(user.getUserId()).getPassword().equals(newPass);
+			final boolean changePass = !masterUserRepository.findByUserId(user.getUserId()).getPassword()
+					.equals(newPass);
 			if (changePass) {
 				final Date createDate = new Date();
 				master.setFailedAtemps(0);
 				master.setLastPswdUpdate(createDate);
-				master.setResetPass(createDate);
+				master.setResetPass(null);
 			}
-			master = masterUserRepository.save(master);
+			master = masterUserRepositoryLazy.save(master);
 			if (changePass) {
-				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder().masterUser(master)
+				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder().masterUser(converter.convert(user))
 						.password(master.getPassword()).build();
 				masterUserHistoricRepository.save(masterUserHistoric);
 			}
@@ -135,19 +152,17 @@ public class EntityListener {
 			masterUserTokenRepository.deleteByToken(((UserToken) object).getToken());
 			log.debug("Created Master User Token");
 		} else if (object instanceof Token) {
+			sessionRepository.findByClientPlatform(((Token) object).getClientPlatform().getIdentification())
+			.forEach(s -> sessionRepository.deleteBySessionKey(s.getSessionKey()));
 			masterDeviceTokenRepository.deleteByTokenName(((Token) object).getTokenName());
 		} else if (object instanceof User) {
 			// avoid deleting master users from non authorized verticals
 			final User user = (User) object;
-			final MasterUser mUser = masterUserRepository.findByUserId(user.getUserId());
+			final MasterUserLazy mUser = masterUserRepository.findLazyByUserId(user.getUserId());
 			if (mUser != null) {
 				final boolean belongs = MultitenancyContextHolder.getTenantName().equals(mUser.getTenant().getName());
 				if (belongs) {
-					final Tenant tenant = tenantRepository.findByName(MultitenancyContextHolder.getTenantName());
-					tenant.getUsers().removeIf(u -> u.getUserId().equals(user.getUserId()));
-					// mUser.setTenant(null);
-					tenantRepository.save(tenant);
-					masterUserRepository.delete(mUser);
+					masterUserRepositoryLazy.deleteByUserId(user.getUserId());
 				}
 			}
 		} else if (object instanceof DigitalTwinDevice) {
@@ -203,7 +218,7 @@ public class EntityListener {
 	private void createMasterUserToken(UserToken token) {
 		try {
 			final MasterUserToken masterToken = MasterUserToken.builder().token(token.getToken())
-					.masterUser(masterUserRepository.findByUserId(token.getUser().getUserId()))
+					.masterUser(MasterUser.builder().userId(token.getUser().getUserId()).build())
 					.tenant(getCurrentTenant()).vertical(getCurrentVertical()).build();
 			masterUserTokenRepository.save(masterToken);
 		} catch (final Exception e) {
@@ -217,6 +232,10 @@ public class EntityListener {
 
 	private Tenant getCurrentTenant() {
 		return tenantRepository.findByName(MultitenancyContextHolder.getTenantName());
+	}
+
+	private TenantLazy getCurrentTenantLazy() {
+		return tenantRepositoryLazy.findLazyByName(MultitenancyContextHolder.getTenantName());
 	}
 
 }

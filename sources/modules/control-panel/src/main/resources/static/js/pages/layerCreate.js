@@ -988,7 +988,7 @@ var LayerCreateController = function() {
 			    '<label>' + layerCreateJson.field + '</label> <select id="fields_pop" class="form-control" data-width="100%">'+
 				'</select>'+
 				'<label>' + layerCreateJson.operator + '</label> <select id="operator" class="form-control" data-width="100%">'+
-				'<option value="===">===</option>'+
+				'<option value="==">==</option>'+
 				'<option value=">">></option>'+
 				'<option value="<"><</option>'+
 				'<option value="!=">!=</option>'+
@@ -1042,10 +1042,10 @@ var LayerCreateController = function() {
 					var fields = ontologyFields;
 					$("#fields_pop").append('<option id="'+field+'" name="'+type+'" value="select">'+layerCreateJson.layerselect+'</option>');
 					for (var key in fields){
-				        var field = key;
+				        var fieldAux = key;
 				        var type = fields[key];
 				        
-				        $("#fields_pop").append('<option id="'+field+'" name="'+type+'" value="'+ field +'">' + field +'</option>');
+				        $("#fields_pop").append('<option id="'+fieldAux+'" name="'+type+'" value="'+ fieldAux +'">' + fieldAux +'</option>');
 				    }
 					
 					$("#fields_pop").val(field);

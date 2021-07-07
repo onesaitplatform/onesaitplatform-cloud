@@ -59,34 +59,34 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 
 	@Override
 	public List<TwitterListening> getAllListenings() {
-		return this.twitterListeningRepository.findAll();
+		return twitterListeningRepository.findAll();
 	}
 
 	@Override
 	public List<TwitterListening> getAllListeningsByUser(String userId) {
-		User user = userService.getUser(userId);
-		return this.twitterListeningRepository.findByUser(user);
+		final User user = userService.getUser(userId);
+		return twitterListeningRepository.findByUser(user);
 	}
 
 	@Override
 	public TwitterListening getListenById(String id) {
-		return this.twitterListeningRepository.findById(id);
+		return twitterListeningRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public TwitterListening getListenByIdentificator(String identificator) {
-		return this.twitterListeningRepository.findByIdentification(identificator);
+		return twitterListeningRepository.findByIdentification(identificator);
 	}
 
 	@Override
 	public List<Configuration> getAllConfigurations() {
-		return this.configurationService.getConfigurations(Configuration.Type.TWITTER);
+		return configurationService.getConfigurations(Configuration.Type.TWITTER);
 	}
 
 	@Override
 	public List<Configuration> getConfigurationsByUserId(String userId) {
-		List<Configuration> configurationsByUser = new ArrayList<>();
-		for (Configuration configuration : this.getAllConfigurations()) {
+		final List<Configuration> configurationsByUser = new ArrayList<>();
+		for (final Configuration configuration : getAllConfigurations()) {
 			if (configuration.getUser().getUserId().equals(userId))
 				configurationsByUser.add(configuration);
 		}
@@ -97,9 +97,9 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 
 	@Override
 	public List<String> getClientsFromOntology(String ontologyId, String userSessionId) {
-		Ontology ontology = this.ontologyService.getOntologyByIdentification(ontologyId, userSessionId);
-		List<String> clients = new ArrayList<>();
-		for (ClientPlatformOntology clientPlatform : this.clientPlatformOntologyRepository.findByOntology(ontology)) {
+		final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyId, userSessionId);
+		final List<String> clients = new ArrayList<>();
+		for (final ClientPlatformOntology clientPlatform : clientPlatformOntologyRepository.findByOntology(ontology)) {
 			clients.add(clientPlatform.getClientPlatform().getIdentification());
 		}
 		return clients;
@@ -107,9 +107,9 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 
 	@Override
 	public List<String> getTokensFromClient(String clientPlatformId) {
-		ClientPlatform clientPlatform = this.clientPlatformRepository.findByIdentification(clientPlatformId);
-		List<String> tokens = new ArrayList<>();
-		for (Token token : this.tokenRepository.findByClientPlatform(clientPlatform)) {
+		final ClientPlatform clientPlatform = clientPlatformRepository.findByIdentification(clientPlatformId);
+		final List<String> tokens = new ArrayList<>();
+		for (final Token token : tokenRepository.findByClientPlatform(clientPlatform)) {
 			tokens.add(token.getTokenName());
 		}
 		return tokens;
@@ -118,15 +118,15 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 	@Override
 	public TwitterListening createListening(TwitterListening twitterListening, String userSessionId) {
 		if (twitterListening.getOntology().getId() == null)
-			twitterListening.setOntology(this.ontologyService
+			twitterListening.setOntology(ontologyService
 					.getOntologyByIdentification(twitterListening.getOntology().getIdentification(), userSessionId));
 		if (twitterListening.getToken().getId() == null)
-			twitterListening.setToken(this.tokenRepository.findByTokenName(twitterListening.getToken().getTokenName()));
+			twitterListening.setToken(tokenRepository.findByTokenName(twitterListening.getToken().getTokenName()));
 		if (twitterListening.getConfiguration().getId() == null)
-			twitterListening.setConfiguration(this.configurationService
+			twitterListening.setConfiguration(configurationService
 					.getConfigurationByDescription(twitterListening.getConfiguration().getDescription()));
 
-		twitterListening = this.twitterListeningRepository.save(twitterListening);
+		twitterListening = twitterListeningRepository.save(twitterListening);
 		return twitterListening;
 
 	}
@@ -134,34 +134,35 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 	@Override
 
 	public void updateListening(TwitterListening twitterListening) {
-		TwitterListening newTwitterListening = this.twitterListeningRepository.findById(twitterListening.getId());
+		final TwitterListening newTwitterListening = twitterListeningRepository.findById(twitterListening.getId())
+				.orElse(null);
 		if (newTwitterListening != null) {
 			newTwitterListening.setIdentification(twitterListening.getIdentification());
-			newTwitterListening.setConfiguration(this.configurationService
+			newTwitterListening.setConfiguration(configurationService
 					.getConfigurationByDescription(twitterListening.getConfiguration().getDescription()));
 			newTwitterListening.setTopics(twitterListening.getTopics());
 			newTwitterListening.setDateFrom(twitterListening.getDateFrom());
 			newTwitterListening.setDateTo(twitterListening.getDateTo());
 			// newTwitterListening.setJobName(twitterListening.getJobName());
-			this.twitterListeningRepository.save(newTwitterListening);
+			twitterListeningRepository.save(newTwitterListening);
 		}
 
 	}
 
 	@Override
 	public boolean existOntology(String identification, String userSessionId) {
-		return (this.ontologyService.getOntologyByIdentification(identification, userSessionId) != null);
+		return (ontologyService.getOntologyByIdentification(identification, userSessionId) != null);
 	}
 
 	@Override
 	public boolean existClientPlatform(String identification) {
-		return (this.clientPlatformRepository.findByIdentification(identification) != null);
+		return (clientPlatformRepository.findByIdentification(identification) != null);
 	}
 
 	@Override
 	public Ontology createTwitterOntology(String ontologyId) {
-		DataModel dataModelTwitter = this.dataModelRepository.findByIdentification("Twitter").get(0);
-		Ontology ontology = new Ontology();
+		final DataModel dataModelTwitter = dataModelRepository.findByIdentification("Twitter").get(0);
+		final Ontology ontology = new Ontology();
 		ontology.setIdentification(ontologyId);
 		if (dataModelTwitter.getType().equals(DataModel.MainType.SOCIAL_MEDIA.toString()))
 			ontology.setDescription("Ontology created for tweet recollection");
@@ -177,13 +178,13 @@ public class TwitterListeningServiceImpl implements TwitterListeningService {
 
 	@Override
 	public TwitterListening getListeningByJobName(String jobName) {
-		return this.twitterListeningRepository.findByJobName(jobName);
+		return twitterListeningRepository.findByJobName(jobName);
 	}
 
 	@Override
 	public List<String> getAllClientsForUser(User userSessionId) {
-		List<String> clients = new ArrayList<>();
-		for (ClientPlatform client : this.clientPlatformRepository.findByUser(userSessionId)) {
+		final List<String> clients = new ArrayList<>();
+		for (final ClientPlatform client : clientPlatformRepository.findByUser(userSessionId)) {
 			clients.add(client.getIdentification());
 		}
 		return clients;

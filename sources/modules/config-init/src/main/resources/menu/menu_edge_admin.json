@@ -29,19 +29,11 @@
                 },
                 {
                     "title": {
-                        "EN": "JDBC Connections Management",
-                        "ES": "Gestión de conexiones JDBC"
+                        "EN": "External Database Connections Management",
+                        "ES": "Gestión de Conexiones Externas a Base de datos"
                     },
                     "icon": "",
                     "url": "/controlpanel/virtualdatasources/list"
-                },
-                {
-                    "title": {
-                        "EN": "Configuration Management",
-                        "ES": "Gestión de Configuraciones"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/configurations/list"
                 },
                 {
                     "title": {
@@ -107,47 +99,149 @@
                 "EN": "EDGE MANAGEMENT",
                 "ES": "ADMINITRACIÓN EDGE"
             },
-            "icon": "flaticon-analytics",
+            "icon": "flaticon-user-settings",
             "url": "",
             "submenu": [
                 {
                     "title": {
-                        "EN": "Devices Management",
-                        "ES": "Gestión de Dispositivos"
+                        "EN": "Users Management",
+                        "ES": "Gestión de Usuarios"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/devices"
+                    "url": "/controlpanel/edge/admin/user"
                 },
                 {
                     "title": {
-                        "EN": "Clusters Management",
-                        "ES": "Gestión de Clusters"
+                        "EN": "Configuration Management",
+                        "ES": "Gestión de configuración"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/bastions"
+                    "url": "/controlpanel/edge/admin/config"
                 },
                 {
                     "title": {
-                        "EN": "Landscape Management",
-                        "ES": "Gestión de Landscape"
+                        "EN": "Broker Dashboard Management",
+                        "ES": "Gestión de Dashboards"
                     },
                     "icon": "",
-                    "url": ""
+                    "url": "/controlpanel/edge/admin/dashboards"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "LANDSCAPE",
+                "ES": "LANDSCAPE"
+            },
+            "icon": "flaticon-technology",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Edge Devices Management",
+                        "ES": "Gestión de Dispositivos Edge"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/landscape/devices"
                 },
                 {
                     "title": {
-                        "EN": "Repositories Management",
-                        "ES": "Gestión de Repositorios"
+                        "EN": "Field Devices Management",
+                        "ES": "Gestión de campos"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/organizations"
+                    "url": "/controlpanel/edge/landscape/field"
+                },
+                {
+                    "title": {
+                        "EN": "Cloud to Cloud Management",
+                        "ES": "Gestión de Cloud to Cloud"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/landscape/cloud2cloud"
+                }
+            ]
+        },
+         {
+            "title": {
+                "EN": "EDGE PROJECT ",
+                "ES": "PROYECTOS EDGE"
+            },
+            "icon": "flaticon-folder",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Projects Management",
+                        "ES": "Gestión de Proyectos"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/projects"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "CONNECTORS",
+                "ES": "CONECTORES"
+            },
+            "icon": "flaticon-more-v4",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Connectors Management",
+                        "ES": "Gestión de Conectores"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/connectors"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "REGISTRY",
+                "ES": "REGISTRY"
+            },
+            "icon": "flaticon-download",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Registry Management",
+                        "ES": "Gestión del registry"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/registry"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "CIBERSECURITY",
+                "ES": "CIBERSEGURIDAD"
+            },
+            "icon": "flaticon-lock",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Keys Management",
+                        "ES": "Gestión de claves"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/cibersecurity/keys"
+                },{
+                    "title": {
+                        "EN": "Secrets Management",
+                        "ES": "Gestión de claves secretas"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/cibersecurity/secrets"
                 }
             ]
         },
         {
             "title": {
                 "EN": "ANALYTICS TOOLS",
-                "ES": "HERR. ANALYTICS"
+                "ES": "HERR. ANALÍTICA"
             },
             "icon": "flaticon-analytics",
             "url": "",
@@ -341,6 +435,14 @@
                     },
                     "icon": "",
                     "url": "/controlpanel/files/list"
+                },
+                {
+                    "title": {
+                        "EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/configurations/list"
                 },
                 {
                     "title": {

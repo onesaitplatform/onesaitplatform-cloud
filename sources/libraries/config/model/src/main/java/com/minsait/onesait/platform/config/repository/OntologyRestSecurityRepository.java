@@ -20,6 +20,4 @@ import com.minsait.onesait.platform.config.model.OntologyRestSecurity;
 
 public interface OntologyRestSecurityRepository extends JpaRepository<OntologyRestSecurity, String> {
 
-	OntologyRestSecurity findById(String id);
-
 }

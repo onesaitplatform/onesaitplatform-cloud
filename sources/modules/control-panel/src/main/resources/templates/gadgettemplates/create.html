@@ -25,23 +25,7 @@
 	    <meta name="description" content="Gadget list template"/>
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
-		
-		<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
-		
-		<script>
-		 window.__env = window.__env || {};
-		    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
-		    window.__env.socketEndpointSend = '/dsengine/solver';
-		    window.__env.socketEndpointSubscribe = '/dsengine/broker';
-		    window.__env.endpointControlPanel = '/controlpanel';
-		    window.__env.endpointDashboardEngine = '/dashboardengine';
-		    window.__env.dashboardEngineUsername = '';
-			window.__env.dashboardEnginePassword = '';
-			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
-		    window.__env.dashboardEngineLoginRest = '/loginRest';
-		    window.__env.enableDebug = false;
-		    
-		</script>
+
 
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -150,16 +134,16 @@
 																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{id}" th:placeholder="#{gadgettemplates.identification}" />
 															</div>
 														</div>
-													</div>	
-													<div class="col-md-6 col-sm-12">														
+													</div>
+													<div class="col-md-2 col-sm-12">
 														<div class="form-group">
-															<label class="control-label"  th:text="#{gadgettemplates.description} + ':'">Description</label><span class="required"> (*)</span>
-																														
-																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{id}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
-															
+															<label class="control-label">Type</label>
+															<select th:field="*{type}" id="type" th:readonly="*{id}" class="form-control"  >
+																<option th:each="gadgetTemplateType:${gadgetTemplateTypes}" th:value="${gadgetTemplateType.id}" th:text="${gadgetTemplateType.identification}">ontology</option>
+															</select>
 														</div>
-													</div>		
-													<div class="col-md-3 col-sm-12">
+													</div>
+													<div class="col-md-2 col-sm-12">
 														<div class="form-group">
 															<label class="" th:text="#{gadgettemplates.public} + ':'">Public</label>
 															<div class="mt-checkbox-list">
@@ -169,11 +153,34 @@
 																</label>
 															</div>
 														</div>
-													</div>												
-													<div class="clearfix"></div>													
-												</div>											
-											
-												
+													</div>
+													<div class="col-md-5 col-sm-12">
+														<div class="form-group">
+															<label class="control-label"  th:text="#{gadgettemplates.description} + ':'">Description</label><span class="required"> (*)</span>
+																														
+																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{id}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
+															
+														</div>
+													</div>		
+
+													<div class="clearfix"></div>
+
+												</div>
+
+
+												<div class="portlet light no-pad no-shadow">
+													<div class="portlet-title">
+														<div class="tools hide">
+															<a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+															<a href="" class="fullscreen" data-original-title="" title=""> </a>
+														</div>
+														<label data-toggle="collapse" href="#headerlibscodeWrapper"><a>Header Libs</a></label>
+													</div>
+													<div id="headerlibscodeWrapper" class="portlet-body" style="margin-top: -30px;">
+														<textarea id="headerlibsCode" name="headerlibsCode" th:field="*{headerlibs}" th:required="true"  class="hidden"></textarea>
+														<div style="height:200px" id="hlcode" role="tabpanel"></div>
+													</div>
+												</div>
 
 												<div class="portlet light no-pad no-shadow">
 													<div class="portlet-title">
@@ -203,9 +210,7 @@
 														</div>
 													</div>
 												</div>
-															
-											
-											<!-- Json-->
+
 											<div class="row">
 												<div class="col-md-6 col-sm-6 col-xs-6">
 													<div class="form-group">
@@ -227,13 +232,13 @@
 											<!-- VIEWER -->
 											<label th:text="#{gadgettemplates.template.result}">Previsualization</label>	
 											
-											<iframe style="height:400px;width:100%;border:none" src="/controlpanel/gadgettemplates/gadgetViewer" id="icontent"></iframe>
+											<div style="height:400px;width:100%;border:none" id="icontent"></div>
 											
 											<div class="clearfix"></div>
 											<div style="margin-top:20px" class="form-actions">
 												<div class="pull-left">
 													<!-- CANCEL  -->
-													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + ${gadgetTemplate.id} + '\',\'' + @{/gadgets/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 												</div>
 												<div class="pull-right">
 													<!-- REMOVE -->
@@ -274,8 +279,8 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>	
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>	
 	
 	<script
 		th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
@@ -293,19 +298,19 @@
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/gadgetTemplatesCreate.js}"/>
+	<script th:src="@{/static/js/pages/gadgetTemplatesCreate.js}"></script>
 	
 	<script th:inline="javascript">
 	
 		// <![CDATA[
-	 $("#createBtn,#updateBtn").on("click", function() {	
+	$("#createBtn,#updateBtn").on("click", function() {
       //  $("#gadget_create_form").get(0).submit();
-     });
-	
-	 $(window).load(function () {GadgetsTemplateCreateController.updatePreview();});
+    });
+
+	$(window).load(function () {GadgetsTemplateCreateController.updatePreview();});
 	 
 	 
 		var gadgetTemplateCreateJson = { 		
@@ -316,7 +321,6 @@
 				"parameterDsPropertieLabel" : [[#{gadgettemplates.template.parameters.name.ds.label}]],
 				"titleParametersSelected" : [[#{gadgettemplates.template.parameters.selected}]],				
 				"parameterSelectLabel" : [[#{gadgettemplates.template.parameters.label.select}]]};
-		
 			
 		
 	// ]]>

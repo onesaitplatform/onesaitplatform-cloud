@@ -6,20 +6,24 @@ LABEL platform.image.name="apimanager"
 ADD *-exec.jar app.jar
 
 # Timezone
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata \
+    bash
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \
-	mkdir ./target
+	mkdir /application
 
 # create onesait user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
+WORKDIR /application
+RUN unzip /app.jar &&\
+	rm /app.jar
+
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait ./target && \
-    chown onesait:onesait app.jar && \
-    chmod -R 777 ./target && \
+    chown -R onesait:onesait /application && \
+    chmod -R 777 /application && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
 
@@ -53,6 +57,10 @@ ENV SERVER_NAME=localhost \
     OP_LOG_LEVEL=INFO \
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
-    ENABLE_METRICS=true
+    ENABLE_METRICS=true \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]

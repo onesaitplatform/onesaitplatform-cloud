@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.regex.Pattern;
 
+import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -46,8 +47,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -67,6 +70,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.saml.SAMLAuthenticationProvider;
 import org.springframework.security.saml.SAMLBootstrap;
 import org.springframework.security.saml.SAMLEntryPoint;
@@ -114,6 +124,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.session.InvalidSessionStrategy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
@@ -126,14 +137,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.controlpanel.interceptor.BearerTokenFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.MicrosoftTeamsTokenFilter;
+import com.minsait.onesait.platform.controlpanel.interceptor.X509CertFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.XOpAPIKeyFilter;
 import com.minsait.onesait.platform.controlpanel.security.xss.XSSFilter;
+import com.minsait.onesait.platform.multitenant.util.BeanUtil;
 import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
+@EnableOAuth2Client
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 @Slf4j
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -141,9 +155,12 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	public static final String LOGIN_STR = "/login";
 	public static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	public static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
+	public static final String INVALIDATE_SESSION_FORCED = "INVALIDATE_SESSION_FORCED";
+	public static final String ROLE_ANONYMOUS = "ROLE_ANONYMOUS";
 
 	private static final String SAML = "saml";
 	private static final String CAS = "cas";
+	private static final String X509 = "X509";
 	private static final String CONFIGDB = "configdb";
 
 	@Value("${onesaitplatform.authentication.provider}")
@@ -172,8 +189,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private boolean samlIncludePort;
 	@Value("${server.port}")
 	private int samlServerPort;
-	@Value("${server.contextPath}")
+	@Value("${server.servlet.contextPath}")
 	private String samlContextPath;
+
+	@Value("${onesaitplatform.authentication.oauth.enabled:false}")
+	private boolean oauthLogin;
 
 	@Value("${csrf.enable}")
 	private boolean csrfOn;
@@ -242,8 +262,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/virtualdatasources.*", null),
 					new RegexRequestMatcher("^/querytool.*", null), new RegexRequestMatcher("^/datasources.*", null),
 					new RegexRequestMatcher("^/gadgets.*", null), new RegexRequestMatcher("^/saml.*", null),
-					new RegexRequestMatcher("^/oauth" + ".*", null), new RegexRequestMatcher("^/users/register", null),
-					new RegexRequestMatcher("^/users/reset-password", null));
+					new RegexRequestMatcher("^/oauth" + ".*", null),
+					new RegexRequestMatcher("^/users/register", null),
+					new RegexRequestMatcher("^/users/reset-password", null),
+					new RegexRequestMatcher("^/actuator.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -266,20 +288,20 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http.headers().frameOptions().disable();
 		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-				.antMatchers("/api/applications", "/api/applications/").permitAll()
-				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token").permitAll()
-				.antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+				.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+				.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 				.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
-				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
+				.antMatchers("/actuator/**", "/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
 				.antMatchers("/nodered/auth/**/**").permitAll()
 				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
 						"/dashboards/viewiframe/**", "/viewers/view/**", "/viewers/viewiframe/**", "/gadgets/**",
 						"/viewers/**", "/datasources/**", "/v2/api-docs/", "/v2/api-docs/**", "/swagger-resources/",
 						"/swagger-resources/**", "/users/validateNewUser/**", "/users/validateResetPassword/**",
-						"/swagger-ui.html", "/layer/**", "/notebooks/app/**")
+						"/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403", "/gadgettemplates/getGadgetTemplateByIdentification/**")
 
 				.permitAll();
+
 
 		// This line deactivates login page when using SAML or other Auth Provider
 		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
@@ -310,9 +332,43 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
 				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class)
 				.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
+		if (oauthLogin) {
+			http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
+		}
 		http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
 
+	}
+
+	@Autowired(required = false)
+	private OAuth2ClientContext oauth2ClientContext;
+	@Autowired(required = false)
+	private UserInfoTokenServices userInfoTokenServices;
+	@Autowired(required = false)
+	@Qualifier("oauthClient")
+	private AuthorizationCodeResourceDetails clientCodeDetails;
+
+	private Filter ssoFilter() {
+		final OAuth2ClientAuthenticationProcessingFilter oauthFilter = new OAuth2ClientAuthenticationProcessingFilter(
+				"/login");
+		final OAuth2RestTemplate oauthTemplate = new OAuth2RestTemplate(clientCodeDetails, oauth2ClientContext);
+		oauthFilter.setRestTemplate(oauthTemplate);
+		oauthFilter.setTokenServices(userInfoTokenServices);
+		oauthFilter.setApplicationEventPublisher(BeanUtil.getContext());
+		oauthFilter.setAuthenticationFailureHandler(new SimpleFailiureHandler("/login"));
+		oauthFilter.setAuthenticationSuccessHandler(successHandler);
+		return oauthFilter;
+	}
+
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.oauth.enabled", havingValue = "true")
+	@Bean
+	public FilterRegistrationBean<OAuth2ClientContextFilter> oauth2ClientFilterRegistration(
+			OAuth2ClientContextFilter filter) {
+		final FilterRegistrationBean<OAuth2ClientContextFilter> registration = new FilterRegistrationBean<>();
+		registration.setFilter(filter);
+		registration.setOrder(-100);
+		return registration;
 	}
 
 	@Bean
@@ -325,6 +381,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		samlAuthenticationProvider.setForcePrincipalAsString(false);
 		return samlAuthenticationProvider;
 
+	}
+
+	// This listener allows to spring-security components events from Sessions. For
+	// example, session invalidation from Jetty
+	// cannot be processed by SessionResgistryImpl without this bean
+	@Bean
+	public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
+		return new ServletListenerRegistrationBean<HttpSessionEventPublisher>(new HttpSessionEventPublisher());
 	}
 
 	@Bean
@@ -364,6 +428,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
+	public NoOpPasswordEncoder noopPasswordEncoder() {
+		return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
+	}
+
+	@Bean
 	public FilterRegistrationBean xssPreventFilter() {
 		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
 
@@ -399,7 +468,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Override
-	protected AuthenticationManager authenticationManager() throws Exception {
+	@Bean
+	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return new ProviderManager(Arrays.asList(authenticationProvider));
 	}
 

@@ -1,0 +1,39 @@
+version: "2"
+
+services:
+  realtimedb-node1:
+    privileged: true 
+    image: registry.onesaitplatform.com/onesaitplatform/realtimedb:latest
+    container_name: realtimedb-node1
+    command: --replSet "rs0" --wiredTigerCacheSizeGB=3
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/realtimedb-node1:/data/db:rw
+    tty: true    
+    restart: on-failure
+    labels:
+      io.rancher.scheduler.affinity:host_label: node=data-worker  
+  realtimedb-node2:
+    privileged: true
+    image: registry.onesaitplatform.com/onesaitplatform/realtimedb:latest
+    container_name: realtimedb-node2
+    command: --replSet "rs0" --wiredTigerCacheSizeGB=3  
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/realtimedb-node2:/data/db:rw
+    tty: true    
+    restart: on-failure
+    labels:
+      io.rancher.scheduler.affinity:host_label: node=data-worker   
+  realtimedb-node3:
+    privileged: true
+    image: registry.onesaitplatform.com/onesaitplatform/realtimedb:latest
+    container_name: realtimedb-node3
+    command: --replSet "rs0" --wiredTigerCacheSizeGB=3    
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/realtimedb-node3:/data/db:rw
+    tty: true    
+    restart: on-failure   
+    labels:
+      io.rancher.scheduler.affinity:host_label: node=data-worker     

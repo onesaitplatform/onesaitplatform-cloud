@@ -89,7 +89,7 @@ public class ReferenceSecurityTest {
 		user.setEmail(faker.internet().emailAddress());
 		user.setFullName(faker.name().fullName());
 		user.setPassword("changeIt!");
-		user.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.name()));
+		user.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.name()).orElse(null));
 		final String userId = UUID.randomUUID().toString();
 		user.setUserId(userId);
 		userService.createUser(user);
@@ -146,9 +146,9 @@ public class ReferenceSecurityTest {
 
 		Assert.assertTrue(session.isPresent());
 		Assert.assertTrue(!StringUtils.isEmpty(session.get().getSessionKey()));
-		Assert.assertTrue(security.checkSessionKeyActive(session.get().getSessionKey()));
+		Assert.assertTrue(security.checkSessionKeyActive(session));
 		Assert.assertTrue(security.closeSession(session.get().getSessionKey()));
-		Assert.assertFalse(security.checkSessionKeyActive(session.get().getSessionKey()));
+		Assert.assertFalse(security.checkSessionKeyActive(session));
 	}
 
 	@Test
@@ -163,7 +163,7 @@ public class ReferenceSecurityTest {
 	@Test
 	public void given_OneNotValidSessionKey_When_TheSessionIsChecked_Then_ItRetrunsThatTheSessionIsNotAcctive()
 			throws AuthorizationException {
-		Assert.assertFalse(security.checkSessionKeyActive("NOT_EXISTENT_SESSIONKEY"));
+		Assert.assertFalse(security.checkSessionKeyActive(Optional.empty()));
 	}
 
 	@Test
@@ -175,7 +175,7 @@ public class ReferenceSecurityTest {
 				subjectClientPlatform.getIdentification(), UUID.randomUUID().toString(), "");
 
 		Assert.assertTrue(security.checkAuthorization(SSAPMessageTypes.INSERT, subjectOntology.getIdentification(),
-				session.get().getSessionKey()));
+				session));
 	}
 
 	@Test
@@ -187,7 +187,7 @@ public class ReferenceSecurityTest {
 				subjectClientPlatform.getIdentification(), UUID.randomUUID().toString(), "");
 
 		Assert.assertFalse(security.checkAuthorization(SSAPMessageTypes.INSERT, "NOT_ASSIGNED_ONTOLOGY",
-				session.get().getSessionKey()));
+				session));
 	}
 
 }

@@ -22,6 +22,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.dao.DataAccessException;
@@ -38,11 +39,11 @@ import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component("ImpalaManageDBRepository")
+@Component(NameBeanConst.IMPALA_MANAGE_DB_REPO_BEAN_NAME)
 @Scope("prototype")
 @Lazy
 @Slf4j
-@ConditionalOnBean(name = { NameBeanConst.IMPALA_TEMPLATE_JDBC_BEAN_NAME })
+@DependsOn( {NameBeanConst.IMPALA_TEMPLATE_JDBC_BEAN_NAME})
 public class ImpalaManageDBRepository implements ManageDBRepository {
 
 	private static final String INVALIDATE_METADATA = "invalidate metadata %s";

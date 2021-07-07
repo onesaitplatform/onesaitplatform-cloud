@@ -17,10 +17,12 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology.model
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.validation.constraints.NotNull;
-import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
-import com.minsait.onesait.platform.persistence.external.generator.model.common.Constraint;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
+
+import com.minsait.onesait.platform.business.services.ontology.CreateStatementBusiness;
+import com.minsait.onesait.platform.business.services.ontology.ColumnDefinitionBusiness;
+import com.minsait.onesait.platform.business.services.ontology.ConstraintBusiness;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -51,53 +53,73 @@ public class CreateStatementDTO implements java.io.Serializable {
 	@Getter
 	@Setter
 	@NotNull
-	private List<ConstraintDTO> columnConstraints;
+	private List<ConstraintDTO> columnConstraints;	
+	@Getter
+	@Setter
+	private String primaryKey;
+	@Getter
+	@Setter
+	private String partitions;
+	@Getter
+	@Setter
+	private String npartitions;
+	@Getter
+	@Setter
+	private Boolean enablePartitionIndexes;
 	
-	public CreateStatementDTO(CreateStatement statement) {
+	
+	public CreateStatementDTO(CreateStatementBusiness statement) {
 		this.ontology = statement.getOntology();
 		this.type = statement.getType();
 		this.columnsRelational = columnsDefinitionToDTO(statement.getColumnsRelational());
 		this.columnConstraints = columnsConstraintsToDTO(statement.getColumnConstraints());
-		
+		this.primaryKey = statement.getPrimaryKey();
+		this.partitions = statement.getPartitions();
+		this.npartitions = statement.getNpartitions();
+		this.enablePartitionIndexes = statement.getEnablePartitionIndexes();
 	}
 	
-	private List<ColumnDefinitionDTO> columnsDefinitionToDTO(List<ColumnRelational> cols) {
+	private List<ColumnDefinitionDTO> columnsDefinitionToDTO(List<ColumnDefinitionBusiness> cols) {
 		List<ColumnDefinitionDTO> columnsDef = new ArrayList<>();
-		for (ColumnRelational col: cols) {
+		for (ColumnDefinitionBusiness col: cols) {
 			columnsDef.add(new ColumnDefinitionDTO(col));
 		}
 		return columnsDef;
 	}
 	
-	private List<ConstraintDTO> columnsConstraintsToDTO(List<Constraint> cons) {
+	private List<ConstraintDTO> columnsConstraintsToDTO(List<ConstraintBusiness> cons) {
 		List<ConstraintDTO> constraintsDTO = new ArrayList<>();
-		for (Constraint con: cons) {
+		for (ConstraintBusiness con: cons) {
 			constraintsDTO.add(new ConstraintDTO(con));
 		}
 		return constraintsDTO;
 	}
 	
-	public CreateStatement toCreateStatement() {
-		CreateStatement statement = new CreateStatement();
+	public CreateStatementBusiness toCreateStatement() {
+		CreateStatementBusiness statement = new CreateStatementBusiness();
 		statement.setOntology(this.ontology);
 		statement.setType(this.type);
 		statement.setColumnsRelational(columnsRelationals());
 		statement.setColumnConstraints(columnsConstraints());
+		statement.setPartitions(this.partitions);
+		statement.setNpartitions(this.npartitions);
+		statement.setPrimaryKey(this.primaryKey);
+		statement.setEnablePartitionIndexes(this.enablePartitionIndexes);
 		
 		return statement;
 		
 	}
 	
-	private List<ColumnRelational> columnsRelationals() {
-		List<ColumnRelational> relationals = new ArrayList<>();
+	private List<ColumnDefinitionBusiness> columnsRelationals() {
+		List<ColumnDefinitionBusiness> relationals = new ArrayList<>();
 		for (ColumnDefinitionDTO relationaltDTO: this.columnsRelational) {
 			relationals.add(relationaltDTO.toColumnRelational());
 		}
 		return relationals;
 	}
 	
-	private List<Constraint> columnsConstraints() {
-		List<Constraint> constraints = new ArrayList<>();
+	private List<ConstraintBusiness> columnsConstraints() {
+		List<ConstraintBusiness> constraints = new ArrayList<>();
 		for (ConstraintDTO constraintDTO: this.columnConstraints) {
 			constraints.add(constraintDTO.toConstraint());
 		}

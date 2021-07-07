@@ -24,23 +24,21 @@ import com.minsait.onesait.platform.config.model.Categorization;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface CategorizationRepository extends JpaRepository<Categorization, String> {
-	
-	Categorization findById(String id);
-	
+
 	List<Categorization> findByUser(User user);
-	
+
 	Categorization findByIdentification(String identification);
-	
+
 	@Query("SELECT o.id FROM Categorization AS o WHERE o.identification=:identification")
 	String findIdByIdentification(@Param("identification") String identification);
-	
+
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.active=1")
 	List<Categorization> findActive();
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
-	Categorization save (Categorization entity);
-	
+	Categorization save(Categorization entity);
+
 	@Override
 	void delete(Categorization id);
 

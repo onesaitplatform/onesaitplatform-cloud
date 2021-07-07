@@ -19,15 +19,14 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
 
 public interface UserTokenRepository extends JpaRepository<UserToken, String> {
-
-	@Override
-
-	<S extends UserToken> List<S> save(Iterable<S> entities);
 
 	@Override
 
@@ -54,12 +53,13 @@ public interface UserTokenRepository extends JpaRepository<UserToken, String> {
 
 	UserToken findByToken(String token);
 
-	UserToken findById(String id);
-
 	UserToken findByUserAndToken(String user, String token);
 
 	UserToken findByUserAndToken(User user, String token);
 
 	@Transactional
-	void deleteByUser(User user);
+	@Modifying
+	@Query("DELETE FROM UserToken u WHERE u.user.userId= :userId")
+	void deleteByUser(@Param("userId") String userId);
+
 }

@@ -6,21 +6,25 @@ LABEL platform.image.name="rules-engine"
 ADD *-exec.jar app.jar
 
 # Timezone
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata \
+    bash
 
 # web projects folder & logs folder
 RUN mkdir -p /var/log/platform-logs && \
-	mkdir ./target
+	mkdir /application
 
 # create sofia user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
+WORKDIR /application
+RUN unzip /app.jar &&\
+	rm /app.jar
+	
 # Install git
 RUN apk update && apk upgrade && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait ./target && \
-    chown onesait:onesait app.jar && \
-    chmod -R 777 ./target && \
+    chown -R onesait:onesait /application && \
+    chmod -R 777 /application && \
     chmod -R 777 /var/log
 
 VOLUME ["/var/log/platform-logs"]
@@ -41,6 +45,11 @@ ENV SERVER_NAME=localhost \
     CONFIGDB_MAX_IDLE=2 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
-    DBADDPROPS=""
+    DBADDPROPS="" \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
+

@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
@@ -53,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @Slf4j
+@ConditionalOnBean(AuthorizationServerEndpointsConfiguration.class)
 public class TokenController {
 
 	@Value("${security.jwt.client-id}")
@@ -211,26 +213,26 @@ public class TokenController {
 
 			try {
 				final ClientDetails clientId = clientDetailsService.loadClientByClientId(appId);
-				
+
 				log.info("Entering Access Info Token with Tokenid = {} ", value);
 
 				if (!clientId.getClientSecret().equals(appSecret)) {
 					response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
 					response.put(OAuth2Exception.DESCRIPTION, value);
 
-					log.info(REVOKE_ERROR_RESPONSE,OAuth2Exception.ACCESS_DENIED);
+					log.info(REVOKE_ERROR_RESPONSE, OAuth2Exception.ACCESS_DENIED);
 
 					return response;
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
 				response.put(OAuth2Exception.DESCRIPTION, value);
 
-				log.info(REVOKE_ERROR_RESPONSE,OAuth2Exception.ACCESS_DENIED);
+				log.info(REVOKE_ERROR_RESPONSE, OAuth2Exception.ACCESS_DENIED);
 
 				return response;
 			}
-			
+
 			final OAuth2Authentication authentication = customTokenService.loadAuthentication(value);
 			final OAuth2AccessToken token = customTokenService.getAccessToken(authentication);
 
@@ -281,7 +283,7 @@ public class TokenController {
 				response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
 				response.put(OAuth2Exception.DESCRIPTION, value);
 
-				log.info(REVOKE_ERROR_RESPONSE,OAuth2Exception.ACCESS_DENIED);
+				log.info(REVOKE_ERROR_RESPONSE, OAuth2Exception.ACCESS_DENIED);
 
 				return response;
 			}

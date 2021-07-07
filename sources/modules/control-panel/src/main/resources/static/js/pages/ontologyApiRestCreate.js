@@ -742,7 +742,7 @@ var OntologyCreateController = function() {
 		logControl ? console.log('deleteOntologyConfirmation() -> formAction: ' + $('.delete-ontology').attr('action') + ' ID: ' + $('#delete-ontologyId').attr('ontologyId')) : '';
 		
 		// call ontology Confirm at header. 
-		HeaderController.showConfirmDialogOntologia('delete_ontology_form');	
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form',ontologyId);	
 	}
 
 	
@@ -1022,6 +1022,21 @@ var OntologyCreateController = function() {
 		return found;
 	}
 	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/ontologies/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
@@ -1076,6 +1091,11 @@ var OntologyCreateController = function() {
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			
+			freeResource(id,url);
 		},
 		
 		// DELETE ONTOLOGY 

@@ -19,6 +19,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class SelectVisitorComparator implements SelectVisitor {
 
@@ -49,6 +50,11 @@ public class SelectVisitorComparator implements SelectVisitor {
     @Override
     public void visit(SetOperationList setOpList1) {
     	// Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(ValuesStatement aThis) {
+
     }
 
     @Override

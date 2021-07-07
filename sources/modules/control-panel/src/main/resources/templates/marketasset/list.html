@@ -97,7 +97,7 @@
 											  <button class="btn  btn-outline btn-square blue btn-project-description"><i class="la la-expand"></i></button>
 											</span>
 											<span class="input-group-btn" style="padding-left: 24px">
-											   <button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER')" type="button" class="btn btn-outline btn-circle blue" onclick="location.href='../marketasset/create'" ><span th:text="#{gen.create}">New </span></button>
+											   <button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER')" type="button" class="btn btn-outline btn-circle blue" onclick="location.href='../marketasset/create'" ><span th:text="#{gen.create}">New </span></button>
 											</span>
 										</div>
 
@@ -201,11 +201,11 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery-matchHeight/jquery.matchHeight-min.js}"/>
+	<script th:src="@{/static/vendor/jquery-matchHeight/jquery.matchHeight-min.js}"></script>
 	
 	
 	<script th:inline="javascript">	

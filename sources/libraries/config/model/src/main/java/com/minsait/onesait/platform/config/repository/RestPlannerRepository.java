@@ -23,12 +23,11 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface RestPlannerRepository extends JpaRepository<RestPlanner, String> {
 
-	RestPlanner findById(String id);
-
 	List<RestPlanner> findByUser(User user);
 
 	RestPlanner findByIdentification(String identification);
 
+	@Override
 	void deleteById(String id);
 
 }

@@ -17,6 +17,20 @@ var DeviceCreateController = function() {
 		window.location.href = url;
 	}
 
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/devices/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
 	// CLEAN FIELDS FORM
 	var cleanFields = function(formId) {
 		logControl ? console.log('cleanFields() -> ') : '';
@@ -54,10 +68,22 @@ var DeviceCreateController = function() {
 					this.remove();
 
 				});
-		$('.onto').selectpicker('refresh');
+		sortOntologies();
 
 		$("#parameter_clientPlatformOntologies").val('');
 
+	}
+	
+	var sortOntologies = function(){
+		var options = $("#onto option");
+
+		options.sort(function(a,b) {
+		    if (a.text > b.text) return 1;
+		    else if (a.text < b.text) return -1;
+		    else return 0;
+		});
+
+		$("#onto").empty().append(options).selectpicker("refresh");
 	}
 
 	// FORM VALIDATION
@@ -200,7 +226,7 @@ var DeviceCreateController = function() {
 		else {
 			updateMetainfo($('#parameter_metaInfo').val());
 			updateOntologies($("#parameter_clientPlatformOntologies").val());
-			updateTokens($("#parameter_clientPlatformTokens").val());
+			refreshTokens($("#identification").val());
 		}
 
 	}
@@ -222,7 +248,8 @@ var DeviceCreateController = function() {
 		var span = document.createElement('span');
 		span.className = "fa fa-times";
 		span.onclick = function() {
-			this.parentNode.parentElement.remove()
+			this.parentNode.parentElement.remove();
+			deleteMetainfo(document.getElementById("parameter_metaInfo").value, this.parentNode.parentElement.getElementsByTagName('p')[0].innerText);
 		};
 
 		div.appendChild(p);
@@ -244,6 +271,17 @@ var DeviceCreateController = function() {
 		$('#value_metainfo').val('');
 
 	}
+	
+	var deleteMetainfo = function(metaInfoValue, metaVal) {
+		if(metaInfoValue.includes('#' + metaVal)) {
+			metaInfoValue = metaInfoValue.replace('#' + metaVal, '');
+		} else if(metaInfoValue.includes(metaVal + '#')) {
+			metaInfoValue = metaInfoValue.replace(metaVal + '#', '');
+		} else if (metaInfoValue.includes(metaVal)) {
+			metaInfoValue = metaInfoValue.replace(metaVal, '');
+		}
+		document.getElementById("parameter_metaInfo").value = metaInfoValue;
+	}
 
 	var updateMetainfo = function(metaInfoValue) {
 		if (metaInfoValue !== null && metaInfoValue.length > 0) {
@@ -258,16 +296,15 @@ var DeviceCreateController = function() {
 				var span = document.createElement('span');
 				span.className = "fa fa-times";
 				span.onclick = function() {
-					this.parentNode.parentElement.remove()
+					this.parentNode.parentElement.remove();
+					deleteMetainfo(metaInfoValue, this.parentNode.parentElement.getElementsByTagName('p')[0].innerText);
 				};
 				div.appendChild(p);
 				p.appendChild(span);
 				$("#id_parameter_metaInfo").append(div);
 
 			}
-
 		}
-
 	}
 
 	var addOntologyRow = function() {
@@ -328,7 +365,7 @@ var DeviceCreateController = function() {
 		$("#onto").append(
 				'<option value="' + ontoSelected + '">' + ontoSelected
 						+ '</option>');
-		$('.onto').selectpicker('refresh');
+		sortOntologies();
 		row.parentElement.parentElement.remove();
 	}
 
@@ -347,6 +384,7 @@ var DeviceCreateController = function() {
 	}
 
 	var generateToken = function() {
+		
 		var selectedDevice = $("#identification").val();
 		var request = {
 			deviceIdentification : selectedDevice
@@ -354,9 +392,13 @@ var DeviceCreateController = function() {
 		requestData = JSON.stringify(request);
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		var url = "/controlpanel/devices/generateToken";
+		if(multitenancyEnabled === 'true' && $('#tenants').val()!=null ){
+			url+='?tenant='+$('#tenants').val();
+		}
 		
 		$.ajax({
-			url : "/controlpanel/devices/generateToken",
+			url : url,
 			headers: {
 				[csrf_header]: csrf_value
 		    },
@@ -405,17 +447,24 @@ var DeviceCreateController = function() {
 				if (token.active) {
 					checked = 'checked';
 				}
-				$('#datamodel_tokens > tbody')
-						.append(
-								'<tr data-id="'
-										+ token.id
-										+ '"><td>'
-										+ token.token
-										+ '</td><td><input '+disableButton+' class="form-check-input" type="checkbox" onclick="DeviceCreateController.changeEstatusToken(this);" value="'
-										+ token.active
-										+ '" '
-										+ checked
-										+ '></td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><span th:text="#{gen.deleteBtn}"> Delete </span></button></div></td></tr>');
+				var html = '<tr data-id="'
+					+ token.id
+					+ '"><td>'
+					+ token.token
+					+ '</td>';
+					if(multitenancyEnabled === 'true'){
+						if(token.tenant !=null)
+							html+='<td>'+token.tenant+'</td>';
+						else
+							html+='<td>'+currentTenant+'</td>';
+					}
+					html+='<td><input '+disableButton+' class="form-check-input" type="checkbox" onclick="DeviceCreateController.changeEstatusToken(this);" value="'
+					+ token.active
+					+ '" '
+					+ checked
+					+ '></td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><span th:text="#{gen.deleteBtn}"> Delete </span></button></div></td></tr>';
+				$('#datamodel_tokens > tbody').append(html);
+				$('#parameter_clientPlatformTokens').val(tokens)
 
 			}
 		}
@@ -459,6 +508,8 @@ var DeviceCreateController = function() {
 						content : deviceCreateJson.deviceChangeActiveError
 					});
 					return false;
+				}else{
+					refreshTokens($("#identification").val());
 				}
 			},
 			error : function(data, status, er) {
@@ -685,6 +736,10 @@ var DeviceCreateController = function() {
 		go : function(url) {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';
 			navigateUrl(url);
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';			
+			freeResource(id,url);
 		},
 		// DELETE DEVICE
 		deleteDevice : function(id) {

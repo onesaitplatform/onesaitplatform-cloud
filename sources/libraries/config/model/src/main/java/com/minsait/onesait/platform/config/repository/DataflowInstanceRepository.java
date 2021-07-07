@@ -14,11 +14,12 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import com.minsait.onesait.platform.config.model.DataflowInstance;
-import com.minsait.onesait.platform.config.model.User;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.minsait.onesait.platform.config.model.DataflowInstance;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface DataflowInstanceRepository extends JpaRepository<DataflowInstance, String> {
 
@@ -29,12 +30,7 @@ public interface DataflowInstanceRepository extends JpaRepository<DataflowInstan
 	<S extends DataflowInstance> S save(S s);
 
 	@Override
-	void delete(String s);
-
-	@Override
 	void delete(DataflowInstance instance);
-
-	DataflowInstance findById(String id);
 
 	DataflowInstance findByIdentification(String identification);
 

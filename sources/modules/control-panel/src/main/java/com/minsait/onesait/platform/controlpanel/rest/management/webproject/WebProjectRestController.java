@@ -63,9 +63,10 @@ public class WebProjectRestController {
 			@RequestPart("zip") MultipartFile zip) {
 		try {
 			if (!name.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-			    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+						HttpStatus.BAD_REQUEST);
 			}
-			
+
 			final WebProjectDTO webProject = WebProjectDTO.builder().zip(zip).identification(name)
 					.mainFile(mainFileName).description(description).build();
 			validateDTO(webProject);
@@ -95,9 +96,28 @@ public class WebProjectRestController {
 		return ResponseEntity.ok().build();
 	}
 
+	@Deprecated
 	@ApiOperation(value = "Update web project")
 	@PutMapping("{name}")
 	public ResponseEntity<String> update(@PathVariable("name") String name,
+			@RequestParam(required = true, value = "description") String description,
+			@RequestParam(required = false, value = "mainFileName", defaultValue = "index.html") String mainFileName,
+			@RequestPart("zip") MultipartFile zip) {
+		try {
+			final WebProjectDTO webProject = WebProjectDTO.builder().zip(zip).identification(name)
+					.mainFile(mainFileName).description(description).build();
+			validateDTO(webProject);
+			webProjectService.uploadZip(zip, utils.getUserId());
+			webProjectService.updateWebProject(webProject, utils.getUserId());
+		} catch (final WebProjectServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		return ResponseEntity.ok().build();
+	}
+
+	@ApiOperation(value = "Update web project")
+	@PostMapping("{name}")
+	public ResponseEntity<String> updateWebProject(@PathVariable("name") String name,
 			@RequestParam(required = true, value = "description") String description,
 			@RequestParam(required = false, value = "mainFileName", defaultValue = "index.html") String mainFileName,
 			@RequestPart("zip") MultipartFile zip) {

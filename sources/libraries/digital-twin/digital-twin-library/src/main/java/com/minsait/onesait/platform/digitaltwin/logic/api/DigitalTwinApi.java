@@ -91,6 +91,7 @@ public class DigitalTwinApi implements DigitalTwinLogicAPI {
 				String property = keys.next();
 				Object value = jsonData.get(property);
 				properties.put(property, value.toString());
+				setStatusValue(property, value);
 			}
 			eventManager.updateShadow(properties);
 		} catch (JSONException e) {

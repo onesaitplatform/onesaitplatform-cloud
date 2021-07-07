@@ -22,16 +22,16 @@
 				},
 				{
 					"title": {
-						"EN": "JDBC Connections Management",
-						"ES": "Gestión de conexiones JDBC"
+						"EN": "External Database Connections Management",
+						"ES": "Gestión de Conexiones Externas a Base de datos"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
 				},
 				{
 					"title": {
-						"EN": "Configuration Management",
-						"ES": "Gestión de Configuraciones"
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
@@ -88,6 +88,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "Configuration Management",
+						"ES": "Gestión de Configuraciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
 				},
 				{
 					"title": {

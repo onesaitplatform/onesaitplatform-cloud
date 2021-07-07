@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -38,15 +39,16 @@ public interface QueryTemplateRepository extends JpaRepository<QueryTemplate, St
 
 	public List<QueryTemplate> findByOntologyIdentificationIsNull();
 
+	@Override
 	@Cacheable(cacheNames = "QueryTemplateRepositoryById", unless = "#result == null", key = "#p0")
-	public QueryTemplate findById(String id);
+	public Optional<QueryTemplate> findById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "QueryTemplateRepositoryByOntologyIdentification", "QueryTemplateRepositoryByName",
 			"QueryTemplateRepositoryById" }, allEntries = true)
 	@Modifying
 	@Transactional
-	void delete(String id);
+	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "QueryTemplateRepositoryByOntologyIdentification", "QueryTemplateRepositoryByName",

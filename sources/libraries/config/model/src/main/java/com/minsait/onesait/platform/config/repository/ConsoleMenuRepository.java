@@ -25,7 +25,7 @@ public interface ConsoleMenuRepository extends JpaRepository<ConsoleMenu, String
 
 	@Override
 
-	<S extends ConsoleMenu> List<S> save(Iterable<S> entities);
+	<S extends ConsoleMenu> List<S> saveAll(Iterable<S> entities);
 
 	@Override
 
@@ -50,8 +50,6 @@ public interface ConsoleMenuRepository extends JpaRepository<ConsoleMenu, String
 	@Override
 
 	void deleteAll();
-
-	ConsoleMenu findById(String id);
 
 	ConsoleMenu findByRoleType(Role roleType);
 

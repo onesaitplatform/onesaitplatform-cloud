@@ -38,8 +38,8 @@ public class UserTokenServiceImpl implements UserTokenService {
 		if (user.getUserId() != null) {
 			userToken.setUser(user);
 			userToken.setToken(UUID.randomUUID().toString().replaceAll("-", ""));
-			if (this.userTokenRepository.findByToken(userToken.getToken()) == null) {
-				userToken = this.userTokenRepository.save(userToken);
+			if (userTokenRepository.findByToken(userToken.getToken()) == null) {
+				userToken = userTokenRepository.save(userToken);
 			} else {
 				throw new GenericOPException("Token with value " + userToken.getToken() + " already exists");
 			}
@@ -49,14 +49,14 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 	@Override
 	public UserToken getToken(User user) {
-		return this.userTokenRepository.findByUser(user).get(0);
+		return userTokenRepository.findByUser(user).get(0);
 	}
 
 	@Override
 	public UserToken getTokenByToken(String token) {
-		return this.userTokenRepository.findByToken(token);
+		return userTokenRepository.findByToken(token);
 	}
-	
+
 	@Override
 	public UserToken getTokenByUserAndToken(User user, String token) {
 		return userTokenRepository.findByUserAndToken(user, token);
@@ -64,25 +64,25 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 	@Override
 	public void deactivateToken(UserToken userToken, boolean active) {
-		this.userTokenRepository.save(userToken);
+		userTokenRepository.save(userToken);
 
 	}
 
 	@Override
 	public UserToken getTokenByID(String id) {
-		return this.userTokenRepository.findById(id);
+		return userTokenRepository.findById(id).orElse(null);
 	}
 
 	@Override
 	public List<UserToken> getTokens(User user) {
-		return this.userTokenRepository.findByUser(user);
+		return userTokenRepository.findByUser(user);
 	}
 
 	@Override
 	public void removeToken(User user, String token) {
-		UserToken userToken = this.userTokenRepository.findByUserAndToken(user, token);
+		final UserToken userToken = userTokenRepository.findByUserAndToken(user, token);
 		if (userToken != null) {
-			this.userTokenRepository.delete(userToken);
+			userTokenRepository.delete(userToken);
 		}
 	}
 

@@ -16,7 +16,7 @@ package authentication.server;
 
 import java.security.Provider;
 import java.security.Security;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import authentication.server.PlainSaslServer.PlainSaslServerFactory;
 

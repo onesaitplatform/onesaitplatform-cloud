@@ -1,4 +1,5 @@
 spring:
+   application.name: onesaitplatform-planner
    ## JPA Config
    datasource:
       url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
@@ -51,6 +52,12 @@ quartz:
    autoStartupSchedulers:
       #- scriptScheduler
       #- twitterScheduler
+
+onesaitplatform:
+  graylog:
+    enabled: false
+    host: 127.0.0.1
+    port: 12201
 
 ## LOGGING CONF
 logging:

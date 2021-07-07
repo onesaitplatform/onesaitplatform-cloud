@@ -32,6 +32,23 @@ var DashboardConfController = function() {
 		HeaderController.showConfirmDialogDashboardConf('delete_dashboardconf_form');	
 	}
 	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/dashboardconf/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
+	
+	
 	// INIT CODEMIRROR
 	var handleVS = function () {
 		logControl ? console.log('handleCodeMirror() on -> templateCode') : '';	
@@ -297,16 +314,23 @@ var DashboardConfController = function() {
 		},
 		
 		// REDIRECT
-		go: function(url){
-			logControl ? console.log(LIB_TITLE + ': go()') : '';	
-			navigateUrl(url); 
+		go: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': go()') : '';
+			freeResource(id,url);
+			
+		},
+
+		navigateUrl: function(url){
+		    navigateUrl(url);
 		},
 	
 		// DELETE INITIAL DASHBOARD CONF
 		deleteDashboardConf: function(id){
 			logControl ? console.log(LIB_TITLE + ': deleteDashboardConf()') : '';	
 			deleteDashboardConfConfirmation(id);			
-		}
+		},
+	
+		
 		
 	};
 }();

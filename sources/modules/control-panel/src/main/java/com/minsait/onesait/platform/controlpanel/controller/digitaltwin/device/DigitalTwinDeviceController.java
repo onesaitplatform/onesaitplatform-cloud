@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.controller.digitaltwin.device;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +40,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -49,6 +51,7 @@ import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTw
 import com.minsait.onesait.platform.config.services.exceptions.DigitalTwinServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.helper.digitaltwin.device.DigitalTwinDeviceHelper;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +76,9 @@ public class DigitalTwinDeviceController {
 	@Autowired
 	private ConfigurationService configurationService;
 
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+
 	private static final String REDIRECT_DIGITAL_TWIN_DEV_CREATE = "redirect:/digitaltwindevices/create";
 	private static final String REDIRECT_DIGITAL_TWIN_DEV_LIST = "redirect:/digitaltwindevices/list";
 	private static final String ERROR_403 = "error/403";
@@ -93,8 +99,37 @@ public class DigitalTwinDeviceController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list")
-	public String list(Model model) {
-		model.addAttribute("digitalTwinDevices", digitalTwinDeviceService.getAllByUserId(utils.getUserId()));
+	public String list(Model model, HttpServletRequest request,
+			@RequestParam(required = false, name = "identification") String identification,
+			@RequestParam(required = false, name = "type") String type) {
+		
+		// Scaping "" string values for parameters
+		if (identification != null && identification.equals("")) {
+		   identification = null;
+		}
+		if (type != null && type.equals("")) {
+			type = null;
+		}
+		
+		List<DigitalTwinDevice> digitaltwindevices = new ArrayList<>();
+		
+		if(identification == null && type == null) {
+			digitaltwindevices = digitalTwinDeviceService.getAllByUserId(utils.getUserId());
+		}
+		
+		if(identification != null && type == null) {
+			digitaltwindevices = digitalTwinDeviceService.getAllByUserIdAndIdentification(utils.getUserId(), identification);
+		}
+		
+		if(identification == null && type != null) {
+			digitaltwindevices = digitalTwinDeviceService.getAllByUserId(utils.getUserId());
+		}
+		
+		if(identification != null && type != null) {
+			digitaltwindevices = digitalTwinDeviceService.getAllByUserIdAndIdentification(utils.getUserId(), identification);
+		}
+		
+		model.addAttribute("digitalTwinDevices", digitaltwindevices);
 		return "digitaltwindevices/list";
 	}
 
@@ -156,6 +191,9 @@ public class DigitalTwinDeviceController {
 		if (!digitalTwinDeviceService.hasUserEditAccess(id, utils.getUserId()))
 			return ERROR_403;
 		digitalTwinDeviceService.getDigitalTwinToUpdate(model, id);
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
+
 		model.addAttribute("typesDigitalTwin", digitalTwinDeviceService.getAllDigitalTwinTypeNames());
 		return "digitaltwindevices/create";
 	}
@@ -182,6 +220,7 @@ public class DigitalTwinDeviceController {
 			utils.addRedirectMessage("digitaltwindevice.update.error", redirect);
 			return REDIRECT_DIGITAL_TWIN_DEV_CREATE;
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_DIGITAL_TWIN_DEV_LIST;
 
 	}
@@ -220,6 +259,13 @@ public class DigitalTwinDeviceController {
 		respHeaders.setContentLength(zipFile.length());
 		final InputStreamResource isr = new InputStreamResource(new FileInputStream(zipFile));
 		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+	}
+
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free dashboard resource ", id);
 	}
 
 }

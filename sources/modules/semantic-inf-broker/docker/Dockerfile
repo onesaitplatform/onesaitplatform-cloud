@@ -31,6 +31,7 @@ EXPOSE 20000
 
 ENV SERVER_NAME=localhost \
     KAFKAENABLED=false \
+    KAFKABROKERS=none \    
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
@@ -71,7 +72,10 @@ ENV SERVER_NAME=localhost \
     NOTIFICATION_POOL_NODERED=50 \
     NOTIFICATION_POOL_KAFKA=50 \
     NOTIFICATION_POOL_RULESENGINE=50 \
-    ELASTICSEARCH_ENABLED=false
+    ELASTICSEARCH_ENABLED=false \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh

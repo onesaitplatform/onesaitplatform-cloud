@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.security;
 
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ import org.springframework.security.web.authentication.logout.CookieClearingLogo
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
@@ -35,6 +37,7 @@ import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.audit.bean.OPEventFactory;
 import com.minsait.onesait.platform.audit.notify.EventRouter;
+import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,6 +48,16 @@ public class OPLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 	@Autowired
 	EventRouter eventRouter;
 
+	@Autowired(required = false)
+	PlugableOauthAuthenticator plugableAuthenticator;
+
+	@PostConstruct
+	public void setUp() {
+		if (plugableAuthenticator != null && !StringUtils.isEmpty(plugableAuthenticator.getLogoutUrl())) {
+			setDefaultTargetUrl(plugableAuthenticator.getLogoutUrl());
+		}
+	}
+
 	@Override
 	public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
 			throws IOException, ServletException {
@@ -53,13 +66,15 @@ public class OPLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 		new CookieClearingLogoutHandler(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY)
 				.logout(request, response, authentication);
 
-		if (authentication == null)
+		if (authentication == null) {
 			return;
+		}
 		String user;
-		if (authentication.getPrincipal() instanceof UserDetails)
+		if (authentication.getPrincipal() instanceof UserDetails) {
 			user = ((UserDetails) authentication.getPrincipal()).getUsername();
-		else
+		} else {
 			user = (String) authentication.getPrincipal();
+		}
 
 		if (user != null) {
 			final OPAuditEvent s2event = OPEventFactory.builder().build().createAuditEvent(EventType.SECURITY,

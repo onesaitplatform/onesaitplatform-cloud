@@ -37,12 +37,12 @@ import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
+import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadgetdatasource.model.DatasourceDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadgetdatasource.model.DatasourceDTOCreate;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.persistence.services.QueryToolService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -72,9 +72,6 @@ public class GadgetDatasourceManagementRestController {
 	@Autowired
 	private AppWebUtils utils;
 
-	@Autowired
-	private QueryToolService queryToolService;
-
 	private static final String DBTYPE = "RTDB";
 	private static final String MODE = "query";
 	private static final int MAXVALUES = 100;
@@ -85,14 +82,17 @@ public class GadgetDatasourceManagementRestController {
 	@ApiOperation(value = "Get datasources")
 	@GetMapping
 	public ResponseEntity<?> getDatasources() {
+		try {
+			final List<GadgetDatasource> datasourceList = datasourceService.getUserGadgetDatasources(utils.getUserId());
+			final List<DatasourceDTO> dtos = new ArrayList<>(datasourceList.size());
+			for (GadgetDatasource ds : datasourceList) {
+				dtos.add(fromDatasourceToDTO(ds));
+			}
 
-		final List<GadgetDatasource> datasourceList = datasourceService.getUserGadgetDatasources(utils.getUserId());
-		final List<DatasourceDTO> dtos = new ArrayList<>(datasourceList.size());
-		for (GadgetDatasource ds : datasourceList) {
-			dtos.add(fromDatasourceToDTO(ds));
+			return new ResponseEntity<>(dtos, HttpStatus.OK);
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
-		return new ResponseEntity<>(dtos, HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -101,18 +101,21 @@ public class GadgetDatasourceManagementRestController {
 	@GetMapping("/{identification}")
 	public ResponseEntity<?> getDatasourceByIdentification(
 			@ApiParam(value = "identification", required = true) @PathVariable("identification") String identification) {
+		try {
+			GadgetDatasource datasource = datasourceService.getDatasourceByIdentification(identification);
+			if (datasource == null) {
+				datasource = datasourceService.getGadgetDatasourceById(identification);
+				if (datasource == null)
+					return new ResponseEntity<>("Datasource not found.", HttpStatus.OK);
+			}
+			if (!datasourceService.hasUserViewPermission(datasource.getId(), utils.getUserId()))
+				return new ResponseEntity<>("The user is not authorized to retrieve the datasource.",
+						HttpStatus.UNAUTHORIZED);
 
-		GadgetDatasource datasource = datasourceService.getDatasourceByIdentification(identification);
-		if (datasource == null) {
-			datasource = datasourceService.getGadgetDatasourceById(identification);
-			if (datasource == null)
-				return new ResponseEntity<>("Datasource not found.", HttpStatus.OK);
+			return new ResponseEntity<>(fromDatasourceToDTO(datasource), HttpStatus.OK);
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		if (!datasourceService.hasUserViewPermission(datasource.getId(), utils.getUserId()))
-			return new ResponseEntity<>("The user is not authorized to retrieve the datasource.",
-					HttpStatus.UNAUTHORIZED);
-
-		return new ResponseEntity<>(fromDatasourceToDTO(datasource), HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -121,26 +124,32 @@ public class GadgetDatasourceManagementRestController {
 	@PostMapping
 	public ResponseEntity<?> createDatasource(
 			@ApiParam(value = "DatasourceDTO", required = true) @Valid @RequestBody DatasourceDTOCreate datasourceDTO) {
+		try {
+			if (datasourceDTO.getQuery() == null || datasourceDTO.getIdentification() == null)
+				return new ResponseEntity<>("Missing required field. Required = [identification, query]",
+						HttpStatus.BAD_REQUEST);
 
-		if (datasourceDTO.getQuery() == null || datasourceDTO.getIdentification() == null)
-			return new ResponseEntity<>("Missing required field. Required = [identification, query]",
-					HttpStatus.BAD_REQUEST);
+			if (!datasourceDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+						HttpStatus.BAD_REQUEST);
+			}
 
-		if (!datasourceDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-		    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+			GadgetDatasource datasource = fromDTOtoDatasource(datasourceDTO);
+			if (datasource == null)
+				return new ResponseEntity<>("The ontology does not exist.", HttpStatus.BAD_REQUEST);
+
+			if (!ontologyService.hasUserPermissionForQuery(utils.getUserId(),
+					datasource.getOntology().getIdentification()))
+				return new ResponseEntity<>("The user does not have permissions to use the ontology.",
+						HttpStatus.UNAUTHORIZED);
+
+			final GadgetDatasource dsCreated = datasourceService.createGadgetDatasource(datasource);
+
+			return new ResponseEntity<>(fromDatasourceToDTO(dsCreated), HttpStatus.OK);
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
-		GadgetDatasource datasource = fromDTOtoDatasource(datasourceDTO);
-		if (datasource == null)
-			return new ResponseEntity<>("The ontology does not exist.", HttpStatus.BAD_REQUEST);
 
-		if (!ontologyService.hasUserPermissionForQuery(utils.getUserId(), datasource.getOntology().getIdentification()))
-			return new ResponseEntity<>("The user does not have permissions to use the ontology.",
-					HttpStatus.UNAUTHORIZED);
-
-		final GadgetDatasource dsCreated = datasourceService.createGadgetDatasource(datasource);
-
-		return new ResponseEntity<>(fromDatasourceToDTO(dsCreated), HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -149,32 +158,39 @@ public class GadgetDatasourceManagementRestController {
 	@PutMapping
 	public ResponseEntity<?> updateDatasource(
 			@ApiParam(value = "DatasourceDTO", required = true) @Valid @RequestBody DatasourceDTOCreate datasourceDTO) {
+		try {
+			if (datasourceDTO.getIdentification() == null)
+				return new ResponseEntity<>("Missing required field. Required = [identification]",
+						HttpStatus.BAD_REQUEST);
 
-		if (datasourceDTO.getIdentification() == null)
-			return new ResponseEntity<>("Missing required field. Required = [identification]", HttpStatus.BAD_REQUEST);
+			GadgetDatasource existingDatasource = datasourceService
+					.getDatasourceByIdentification(datasourceDTO.getIdentification());
+			if (existingDatasource == null)
+				return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
 
-		GadgetDatasource existingDatasource = datasourceService
-				.getDatasourceByIdentification(datasourceDTO.getIdentification());
-		if (existingDatasource == null)
-			return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
+			if (!datasourceService.hasUserEditPermission(existingDatasource.getId(), utils.getUserId()))
+				return new ResponseEntity<>(
+						"The user is not authorized to update a datasource on behalf of another user.",
+						HttpStatus.UNAUTHORIZED);
 
-		if (!datasourceService.hasUserEditPermission(existingDatasource.getId(), utils.getUserId()))
-			return new ResponseEntity<>("The user is not authorized to update a datasource on behalf of another user.",
-					HttpStatus.UNAUTHORIZED);
+			GadgetDatasource datasource = copyProperties(existingDatasource, datasourceDTO);
+			if (datasource == null)
+				return new ResponseEntity<>("The ontology does not exist.", HttpStatus.BAD_REQUEST);
 
-		GadgetDatasource datasource = copyProperties(existingDatasource, datasourceDTO);
-		if (datasource == null)
-			return new ResponseEntity<>("The ontology does not exist.", HttpStatus.BAD_REQUEST);
+			if (!ontologyService.hasUserPermissionForQuery(utils.getUserId(),
+					datasource.getOntology().getIdentification()))
+				return new ResponseEntity<>("The user does not have permissions to use the ontology.",
+						HttpStatus.BAD_REQUEST);
 
-		if (!ontologyService.hasUserPermissionForQuery(utils.getUserId(), datasource.getOntology().getIdentification()))
-			return new ResponseEntity<>("The user does not have permissions to use the ontology.",
-					HttpStatus.BAD_REQUEST);
+			datasource.setId(existingDatasource.getId());
+			datasource.setUpdatedAt(new Date());
+			datasourceService.updateGadgetDatasource(datasource);
 
-		datasource.setId(existingDatasource.getId());
-		datasource.setUpdatedAt(new Date());
-		datasourceService.updateGadgetDatasource(datasource);
+			return new ResponseEntity<>(fromDatasourceToDTO(datasource), HttpStatus.OK);
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-		return new ResponseEntity<>(fromDatasourceToDTO(datasource), HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -207,6 +223,10 @@ public class GadgetDatasourceManagementRestController {
 		dto.setUser(ds.getUser().getUserId());
 		dto.setAccessMode(ds.getMode());
 		dto.setDatabase(ds.getDbtype());
+		if (ds.getOntology() == null) {
+			throw new GadgetDatasourceServiceException(
+					"Error Ontology not assigned to datasource " + ds.getIdentification());
+		}
 		dto.setOntology(ds.getOntology().getIdentification());
 		dto.setCreatedAt(ds.getCreatedAt().toString());
 		dto.setUpdatedAt(ds.getUpdatedAt().toString());

@@ -16,12 +16,14 @@ package com.minsait.onesait.platform.controlpanel.rest.management.api.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.UserApi;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -76,6 +78,11 @@ public class ApiRestDTO implements Serializable {
 	@Getter
 	@Setter
 	private Integer apiLimit;
+
+	@ApiModelProperty(value = "API cache timeout")
+	@Getter
+	@Setter
+	private Integer apiCacheTimeout;
 
 	@ApiModelProperty(value = "Endpoint for invoking API")
 	@Getter
@@ -133,46 +140,54 @@ public class ApiRestDTO implements Serializable {
 	private ArrayList<UserApiSimplifiedResponseDTO> authentications;
 
 	public ApiRestDTO(Api api, List<ApiOperation> apiops, List<UserApi> usersapi, String urlBase) {
-		this.id = api.getId();
-		this.identification = api.getIdentification();
-		this.version = api.getNumversion();
-		this.type = api.getApiType().toString();
-		this.isPublic = api.isPublic();
-		this.category = api.getCategory().toString();
+		id = api.getId();
+		identification = api.getIdentification();
+		version = api.getNumversion();
+		type = api.getApiType().toString();
+		isPublic = api.isPublic();
+		category = api.getCategory().toString();
 		if (type.contains("EXTERNAL")) {
-			this.externalApi = true;
-			this.ontologyId = null;
+			externalApi = true;
+			ontologyId = null;
 		} else {
-			this.externalApi = false;
+			externalApi = false;
 			if (type.equals(Api.ApiType.NODE_RED.toString()) && api.getOntology() == null) {
-				this.ontologyId = null;
+				ontologyId = null;
 			} else {
-				this.ontologyId = api.getOntology().getIdentification();
+				ontologyId = api.getOntology().getIdentification();
 			}
 		}
-		this.apiLimit = api.getApilimit();
-		this.endpointExt = api.getEndpointExt();
 
-		this.setEndpoint(
-				urlBase.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		apiLimit = api.getApilimit();
+		endpointExt = api.getEndpointExt();
 
-		this.description = api.getDescription();
-		this.metainf = api.getMetaInf();
-		this.imageType = api.getImageType();
-		this.status = api.getState().toString();
-		this.creationDate = api.getCreatedAt().toString();
-		this.userId = api.getUser().getUserId();
-		this.swaggerJson = api.getSwaggerJson();
-		this.authentications = new ArrayList<>();
-		this.operations = new ArrayList<>();
-		for (UserApi apiauth : usersapi) {
-			UserApiSimplifiedResponseDTO userapiDTO = new UserApiSimplifiedResponseDTO(apiauth);
-			this.authentications.add(userapiDTO);
+		setEndpoint(urlBase.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+
+		description = api.getDescription();
+		metainf = api.getMetaInf();
+		imageType = api.getImageType();
+		status = api.getState().toString();
+		creationDate = api.getCreatedAt().toString();
+		userId = api.getUser().getUserId();
+		swaggerJson = api.getSwaggerJson();
+		authentications = new ArrayList<>();
+		operations = new ArrayList<>();
+		for (final UserApi apiauth : usersapi) {
+			final UserApiSimplifiedResponseDTO userapiDTO = new UserApiSimplifiedResponseDTO(apiauth);
+			authentications.add(userapiDTO);
+
 		}
-		for (ApiOperation apiop : apiops) {
-			ApiRestOperationDTO apiopDTO = new ApiRestOperationDTO(apiop);
-			this.operations.add(apiopDTO);
+		for (final ApiOperation apiop : apiops) {
+			final ApiRestOperationDTO apiopDTO = new ApiRestOperationDTO(apiop);
+			operations.add(apiopDTO);
 		}
+
+		Collections.sort(operations, new Comparator<ApiRestOperationDTO>() {
+			@Override
+			public int compare(ApiRestOperationDTO s1, ApiRestOperationDTO s2) {
+				return s1.getIdentification().compareToIgnoreCase(s2.getIdentification());
+			}
+		});
 
 	}
 

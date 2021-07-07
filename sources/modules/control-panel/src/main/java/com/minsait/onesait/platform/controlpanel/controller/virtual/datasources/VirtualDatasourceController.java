@@ -14,8 +14,10 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.virtual.datasources;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -82,7 +84,10 @@ public class VirtualDatasourceController {
 	public String create(Model model) {
 		model.addAttribute("fieldDisabled", "disabled");
 		model.addAttribute(DATASOURCE_STR, new OntologyVirtualDatasource());
-		model.addAttribute("rdbs", VirtualDatasourceType.values());
+		model.addAttribute("rdbs", 
+				Arrays.stream(VirtualDatasourceType.values()).
+				filter(o -> !o.equals(VirtualDatasourceType.KUDU)).
+				collect(Collectors.toList()));
 		return VIRTUAL_DATASOURCE_CREATE;
 	}
 
@@ -113,7 +118,10 @@ public class VirtualDatasourceController {
 			if (datasource != null) {
 				model.addAttribute("fieldDisabled", "disabled");
 				model.addAttribute(DATASOURCE_STR, datasource);
-				model.addAttribute("rdbs", VirtualDatasourceType.values());
+				model.addAttribute("rdbs", 
+						Arrays.stream(VirtualDatasourceType.values()).
+						filter(o -> !o.equals(VirtualDatasourceType.KUDU)).
+						collect(Collectors.toList()));
 				return VIRTUAL_DATASOURCE_CREATE;
 			} else {
 				return VIRTUAL_DATASOURCE_CREATE;

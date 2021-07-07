@@ -14,13 +14,24 @@
  */
 package com.minsait.onesait.platform.multitenant.config.repository;
 
+import java.util.List;
+
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 
 public interface MasterUserTokenRepository extends JpaRepository<MasterUserToken, String> {
 
+	@Transactional
 	void deleteByToken(String token);
 
 	MasterUserToken findByToken(String token);
+
+	@Query("SELECT t FROM MasterUserToken t WHERE t.masterUser.userId= :userId")
+	List<MasterUserToken> findByUserId(@Param("userId") String userId);
+
 }

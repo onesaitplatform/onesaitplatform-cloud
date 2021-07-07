@@ -20,14 +20,14 @@
 	<meta charset="UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta http-equiv="Content-Language" th:content="${lang}"/>
-	<link href='https://fonts.googleapis.com/css?family=Poppins:400,700' rel='stylesheet' type='text/css'/>
+	<link rel="stylesheet" th:href="@{/static/css/poppins.css}"/> <!-- CSS reset -->
 	<link rel="stylesheet" th:href="@{/static/css/reset.css}"/> <!-- CSS reset -->
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 	 <!--<link rel="stylesheet" th:href="@{/static/webjars/sofia2_theme/css/login.css}"/> sofia2_theme login style -->
 	<link rel="stylesheet" th:href="@{/static/css/newLogin.css}"/>
-	<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>  	
+	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap/bootstrap.min.js}"></script>
 	<title th:text="#{login.title}">Control Panel Login</title>
 </head>
 <body>

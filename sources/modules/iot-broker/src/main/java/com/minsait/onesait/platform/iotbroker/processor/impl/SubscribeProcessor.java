@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -37,7 +36,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -48,7 +46,6 @@ import com.minsait.onesait.platform.router.service.app.service.RouterService;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
-@EnableScheduling
 @Slf4j
 public class SubscribeProcessor implements MessageTypeProcessor {
 
@@ -56,21 +53,16 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 	private RouterService routerService;
 
 	@Autowired
-	SecurityPluginManager securityPluginManager;
-
-	@Autowired
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodySubscribeMessage> subscribeMessage = (SSAPMessage<SSAPBodySubscribeMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
 		final String subsId = UUID.randomUUID().toString();
 		response.setBody(new SSAPBodyReturnMessage());
-
-		final Optional<IoTSession> session = securityPluginManager.getSession(subscribeMessage.getSessionKey());
 
 		final SubscriptionModel model = new SubscriptionModel();
 		model.setCallback(subscribeMessage.getBody().getCallback());

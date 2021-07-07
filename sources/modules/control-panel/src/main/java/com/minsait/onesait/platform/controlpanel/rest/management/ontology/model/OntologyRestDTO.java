@@ -25,9 +25,9 @@ import javax.validation.constraints.NotNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.model.OntologyRest;
+import com.minsait.onesait.platform.config.model.OntologyRest.SecurityType;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyRestOperation;
-import com.minsait.onesait.platform.config.model.OntologyRest.SecurityType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

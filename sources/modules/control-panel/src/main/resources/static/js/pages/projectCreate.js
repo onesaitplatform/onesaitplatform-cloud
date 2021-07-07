@@ -31,9 +31,13 @@ var ProjectCreateController = function() {
 			if (!useRealm) {
 				$('#platform-users').removeClass('hide');
 				$('#realms-select').addClass('hide');
+				$('#alert-realm').addClass('hide');
+				$('#create-realm').addClass('hide');
 			} else {
 				$('#platform-users').addClass('hide');
 				$('#realms-select').removeClass('hide');
+				$('#alert-realm').removeClass('hide');
+				$('#create-realm').removeClass('hide');
 			}
 
 		});
@@ -219,7 +223,8 @@ var ProjectCreateController = function() {
 				'project' : projectCreateJson.projectId,
 				'resource' : resource,
 				'authorizing' : authorizing,
-				'access' : accesstype
+				'access' : accesstype,
+				'resourceType': type
 			}
 			parentAuthorization = authorization;
 			if (type == 'GADGET' || type == 'DASHBOARD'||
@@ -282,10 +287,12 @@ var ProjectCreateController = function() {
 		    	var accesstype = $(this).closest('tr').find('select.accesstypes :selected').val();
 				var resource = $(this).closest('tr').find("input[name='ids\\[\\]']").val();
 				var project = projectCreateJson.projectId;
+				var type = $('#resource-type-filter').val();
 				authorization["project"] = project;
 				authorization["resource"] = resource;
 				authorization["authorizing"] = authorizing;
 				authorization["access"] = accesstype;
+				authorization["resourceType"] = type;
 				authorizations.push(authorization);
 		    })
 		})

@@ -409,7 +409,7 @@ var OntologyCreateController = function() {
 		logControl ? console.log('deleteOntologyConfirmation() -> formAction: ' + $('.delete-ontology').attr('action') + ' ID: ' + $('#delete-ontologyId').attr('ontologyId')) : '';
 
 		// call ontology Confirm at header.
-		HeaderController.showConfirmDialogOntologia('delete_ontology_form');
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form',ontologyId);
 	}
 
 	

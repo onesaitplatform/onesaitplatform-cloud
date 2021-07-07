@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.service;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 
@@ -75,4 +74,12 @@ public interface FlowEngineNodeService {
 	public ResponseEntity<String> stopDataflow(String domainName, String pipelineIdentification);
 	
 	public ResponseEntity<String> startDataflow(String domainName, String pipelineIdentification, String parameters, boolean resetOrigin);
+
+	public List<String> getControlpanelApis(String authentication);
+
+	public List<RestApiOperationDTO> getControlpanelApiOperations(String apiName, String authentication);
+
+	public ResponseEntity<String> invokeManagementRestApiOperation(
+			FlowEngineInvokeRestApiOperationRequest invokeRequest);
+
 }

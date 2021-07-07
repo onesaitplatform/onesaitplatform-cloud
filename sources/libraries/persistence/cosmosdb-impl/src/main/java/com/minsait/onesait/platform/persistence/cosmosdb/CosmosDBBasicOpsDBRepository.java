@@ -234,7 +234,12 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset) {
-		return querySQLAsJson(ontology, preparedQuery(query, offset));
+		return querySQLAsJson(ontology, preparedQuery(query, offset, -1));
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		return querySQLAsJson(ontology, preparedQuery(query, offset, limit));
 	}
 
 	@Override
@@ -375,7 +380,7 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 		throw new DBPersistenceException(NOT_IMPLEMENTED);
 	}
 
-	public String preparedQuery(String query, int offset) {
+	public String preparedQuery(String query, int offset, int limit) {
 		final Pattern pattern = Pattern.compile(".*(limit|LIMIT \\d+)");
 		final Matcher matcher = pattern.matcher(query);
 		boolean changed = false;
@@ -387,7 +392,8 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 			changed = true;
 		}
 		if (!changed) {
-			return query + OFFSET + offset + LIMIT + getMaxRegisters();
+			limit = limit > 0 ? limit : getMaxRegisters();
+			return query + OFFSET + offset + LIMIT + limit;
 		} else {
 			return query;
 		}
@@ -401,4 +407,10 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 				"Inserted {} documents for ontology {} on CosmosDb with a total RU consumed of {}. Total time taken {} milliseconds with avg {} imports/millisecond",
 				inserted, ontology, response.getTotalRequestUnitsConsumed(), timeTakenMillis, importsPerMillisecond);
 	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED);
+	}
+
 }

@@ -22,11 +22,6 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.MetricsDropwizardAutoConfiguration;
-import org.springframework.boot.actuate.endpoint.MetricsEndpoint;
-import org.springframework.boot.actuate.endpoint.MetricsEndpointMetricReader;
-import org.springframework.boot.actuate.endpoint.PublicMetrics;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -46,23 +41,24 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import com.github.dandelion.core.web.DandelionFilter;
 import com.github.dandelion.core.web.DandelionServlet;
-import com.github.dandelion.datatables.thymeleaf.dialect.DataTablesDialect;
-import com.github.dandelion.thymeleaf.dialect.DandelionDialect;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.controlpanel.converter.YamlHttpMessageConverter;
 import com.minsait.onesait.platform.controlpanel.security.CheckSecurityFilter;
+import com.minsait.onesait.platform.controlpanel.security.encryption.PasswordEncryptionManager;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 import com.minsait.onesait.platform.metrics.manager.MetricsNotifier;
 
@@ -77,8 +73,12 @@ import lombok.extern.slf4j.Slf4j;
 @EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
 @EnableMongoRepositories(basePackages = "com.minsait.onesait.platform.persistence.mongodb")
 @ComponentScan(basePackages = { "com.ibm.javametrics.spring", "com.minsait.onesait.platform" }, lazyInit = true)
-@EnableAutoConfiguration(exclude = { MetricsDropwizardAutoConfiguration.class })
-public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
+// @EnableAutoConfiguration(exclude = { MetricsDropwizardAutoConfiguration.class
+// })
+public class ControlPanelWebApplication implements WebMvcConfigurer {
+
+	@Autowired
+	private PasswordEncryptionManager passwordManager;
 
 	@Configuration
 	@Profile("default")
@@ -135,9 +135,9 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 		registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		registry.addResourceHandler("/notebooks/app/**").addResourceLocations("classpath:/static/notebooks/");
 		registry.addResourceHandler("/dataflow/{instance}/app/**")
-				.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
+		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/dataflow/app/**")
-				.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
+		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/gitlab/**").addResourceLocations("classpath:/static/gitlab/");
 	}
 
@@ -145,23 +145,16 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	 * Exports the all endpoint metrics like those implementing
 	 * {@link PublicMetrics}.
 	 */
-	@Bean
-	public MetricsEndpointMetricReader metricsEndpointMetricReader(MetricsEndpoint metricsEndpoint) {
-		return new MetricsEndpointMetricReader(metricsEndpoint);
-	}
+	// TO-DO review this
+	// @Bean
+	// public MetricsEndpointMetricReader
+	// metricsEndpointMetricReader(MetricsEndpoint metricsEndpoint) {
+	// return new MetricsEndpointMetricReader(metricsEndpoint);
+	// }
 
 	/**
 	 * Dandelion Config Beans
 	 */
-	@Bean
-	public DandelionDialect dandelionDialect() {
-		return new DandelionDialect();
-	}
-
-	@Bean
-	public DataTablesDialect dataTablesDialect() {
-		return new DataTablesDialect();
-	}
 
 	@Bean
 	public DandelionFilter dandelionFilter() {
@@ -169,8 +162,8 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	}
 
 	@Bean
-	public ServletRegistrationBean dandelionServletRegistrationBean() {
-		return new ServletRegistrationBean(new DandelionServlet(), "/dandelion-assets/*");
+	public ServletRegistrationBean<DandelionServlet> dandelionServletRegistrationBean() {
+		return new ServletRegistrationBean<>(new DandelionServlet(), "/dandelion-assets/*");
 	}
 
 	/**
@@ -195,7 +188,7 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());
-		registry.addInterceptor(logInterceptor);
+		//		registry.addInterceptor(logInterceptor);
 		registry.addInterceptor(securityCheckInterceptor);
 
 	}
@@ -215,9 +208,16 @@ public class ControlPanelWebApplication extends WebMvcConfigurerAdapter {
 		return "OK";
 	}
 
+	@Bean(name = MultipartFilter.DEFAULT_MULTIPART_RESOLVER_BEAN_NAME)
+	public CommonsMultipartResolver filterMultipartResolver() {
+		final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+		multipartResolver.setMaxUploadSize(-1);
+		return multipartResolver;
+	}
+
 	@Bean
-	public FilterRegistrationBean filterRegistrationBean() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+	public FilterRegistrationBean<CharacterEncodingFilter> filterRegistrationBean() {
+		final FilterRegistrationBean<CharacterEncodingFilter> registrationBean = new FilterRegistrationBean<>();
 		final CharacterEncodingFilter characterEncodingFilter = new CharacterEncodingFilter();
 		characterEncodingFilter.setForceEncoding(true);
 		characterEncodingFilter.setEncoding("UTF-8");

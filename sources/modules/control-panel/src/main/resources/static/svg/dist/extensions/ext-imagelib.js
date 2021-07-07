@@ -71,8 +71,7 @@ var svgEditorExtension_imagelib = (function () {
             switch (_context2.prev = _context2.next) {
               case 0:
                 showBrowser = function _ref10() {
-                  var browser = $('#imgbrowse');
-
+                  var browser = $('#imgbrowse');                  
                   if (!browser.length) {
                     $('<div id=imgbrowse_holder><div id=imgbrowse class=toolbar_button>' + '</div></div>').insertAfter('#svg_docprops');
                     browser = $('#imgbrowse');
@@ -126,17 +125,41 @@ var svgEditorExtension_imagelib = (function () {
                     });
                     cancel.prepend($.getSvgIcon('cancel', true));
                     back.prepend($.getSvgIcon('tool_imagelib', true));
-                    imagelibStrings.imgLibs.forEach(function (_ref6) {
-                      var name = _ref6.name,
-                          url = _ref6.url,
-                          description = _ref6.description;
-                      $('<li>').appendTo(libOpts).text(name).on('click touchend', function () {
-                        frame.attr('src', url).show();
-                        header.text(name);
-                        libOpts.hide();
-                        back.show();
-                      }).append("<span>".concat(description, "</span>"));
-                    });
+                    var imageLibrary = svgEditor.getImageLibrary();   
+                    if(typeof imageLibrary== 'undefined' || imageLibrary == null){
+                    	// if the variable imageLibrary is empty 
+                    	 imagelibStrings.imgLibs.forEach(function (_ref6) {
+                             var name = _ref6.name,
+                                 url = _ref6.url,
+                                 description = _ref6.description,
+                                 librarySelected = [{"title":"horizontalturbine","link":"../../images/horizontalturbine.png"},
+                                	 {"title":"verticalturbine","link":"../../images/verticalturbine.png"},
+                                	 {"title":"solarpanels","link":"../../images/solarpanels.jpg"},
+                                	 {"title":"coolingtowers","link":"../../images/coolingtowers.jpg"},
+                                	 {"title":"biofuel","link":"../../images/biofuel.jpg"}];                                 
+                             $('<li>').appendTo(libOpts).text(name).on('click touchend', function () {
+                           	 frame.attr('id', 'iframelibs');
+                               frame.attr('src', url+'?imagelib='+btoa(JSON.stringify(librarySelected))).show();
+                               header.text(name);
+                               libOpts.hide();
+                               back.show();                             
+                             }).append("<span>".concat(description, "</span>"));
+                           });
+                    }else{
+                    	 imageLibrary.forEach(function (_ref6) {
+                             var name = _ref6.name,
+                                 url = "extensions/imagelib/index.html",
+                                 description = _ref6.description,
+                                 librarySelected = _ref6.content;
+                             $('<li>').appendTo(libOpts).text(name).on('click touchend', function () {
+                           	 frame.attr('id', 'iframelibs');
+                               frame.attr('src', url+'?imagelib='+btoa(JSON.stringify(librarySelected))).show();
+                               header.text(name);
+                               libOpts.hide();
+                               back.show();                           
+                             }).append("<span>".concat(description, "</span>"));
+                           });
+                    }
                   } else {
                     $('#imgbrowse_holder').show();
                   }

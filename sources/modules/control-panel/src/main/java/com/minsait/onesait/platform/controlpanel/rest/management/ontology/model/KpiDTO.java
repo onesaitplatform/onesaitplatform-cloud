@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import javax.validation.constraints.NotNull;
 
 import com.minsait.onesait.platform.config.model.OntologyKPI;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

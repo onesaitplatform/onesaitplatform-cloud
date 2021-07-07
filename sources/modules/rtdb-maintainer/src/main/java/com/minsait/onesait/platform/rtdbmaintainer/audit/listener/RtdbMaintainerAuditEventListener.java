@@ -22,8 +22,6 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.audit.notify.EventRouter;
 import com.minsait.onesait.platform.rtdbmaintainer.audit.bean.RtdbMaintainerAuditEvent;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Component
 public class RtdbMaintainerAuditEventListener {
 	@Autowired

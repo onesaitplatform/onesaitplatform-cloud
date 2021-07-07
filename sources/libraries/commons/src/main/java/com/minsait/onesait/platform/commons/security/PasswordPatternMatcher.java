@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordPatternMatcher {
 
-	@Value("${onesaitplatform.password.pattern:(?=^.{10,20}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$}")
+	@Value("${onesaitplatform.password.pattern:(?=^.{10,128}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$}")
 	private String passwordPattern;
 
 	public boolean isValidPassword(String data) {

@@ -28,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.minsait.onesait.platform.persistence.hadoop.hive.table.HiveColumn;
 import com.minsait.onesait.platform.persistence.hadoop.util.FileUtil;
 import com.minsait.onesait.platform.persistence.hadoop.util.HiveFieldType;
 import com.minsait.onesait.platform.persistence.hadoop.util.JsonFieldType;
@@ -83,7 +82,7 @@ public class KuduTableGeneratorTest {
 
 		KuduTable table = kuduTableGenerator.builTable(ONTOLOGY_NAME, schema, null);
 
-		List<HiveColumn> columns = table.getColumns();
+		List<KuduColumn> columns = table.getColumns();
 
 		Map<String, String> columnTypes = table.getColumns().stream()
 				.collect(Collectors.toMap(x -> x.getName(), x -> x.getColumnType()));
@@ -105,7 +104,7 @@ public class KuduTableGeneratorTest {
 
 		KuduTable table = kuduTableGenerator.builTable(ONTOLOGY_NAME, schema, null);
 
-		List<HiveColumn> columns = table.getColumns();
+		List<KuduColumn> columns = table.getColumns();
 
 		Map<String, String> columnTypes = table.getColumns().stream()
 				.collect(Collectors.toMap(x -> x.getName(), x -> x.getColumnType()));

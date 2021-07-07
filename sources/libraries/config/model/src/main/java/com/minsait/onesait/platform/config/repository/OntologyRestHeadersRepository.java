@@ -20,6 +20,4 @@ import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 
 public interface OntologyRestHeadersRepository extends JpaRepository<OntologyRestHeaders, String> {
 
-	OntologyRestHeaders findById(String id);
-
 }

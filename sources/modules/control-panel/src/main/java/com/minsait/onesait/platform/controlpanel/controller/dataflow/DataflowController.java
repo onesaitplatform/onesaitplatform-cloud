@@ -56,13 +56,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.PipelineUserAccess;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.PipelineUserAccessRepository;
 import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -90,6 +90,9 @@ public class DataflowController {
 	private AppWebUtils utils;
 
 	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+
+	@Autowired
 	ServletContext context;
 
 	/* TEMPLATES VIEWS */
@@ -102,7 +105,7 @@ public class DataflowController {
 		uiModel.addAttribute("lpl", dataflowService.getPipelinesWithStatus(utils.getUserId()));
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
-		uiModel.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
+		uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
 		uiModel.addAttribute("instance", instanceIdentification);
 		return "dataflow/list";
 	}
@@ -111,7 +114,7 @@ public class DataflowController {
 	@GetMapping(value = { "/{instance}/app", "/{instance}/app/collector/jvmMetrics", "/{instance}/app/collector/logs",
 			"/{instance}/app/collector/configuration", "/{instance}/app/collector/packageManager" })
 	public String getToolsWithInstance(@PathVariable("instance") String id, Model uiModel) {
-		uiModel.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
+		uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
 		return "dataflow/index";
 	}
 
@@ -121,7 +124,10 @@ public class DataflowController {
 		final Pipeline dataFlow = pipelineRepository.findByIdstreamsets(id);
 		if (dataFlow != null) {
 			if (dataflowService.hasUserViewPermission(dataFlow, utils.getUserId())) {
-				uiModel.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
+				uiModel.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+						resourcesInUseService.isInUse(id, utils.getUserId()));
+				resourcesInUseService.put(id, utils.getUserId());
+				uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
 				return "dataflow/index";
 			} else {
 				return "redirect:/403";
@@ -132,7 +138,7 @@ public class DataflowController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = {"/{instance}/app/collector/pipeline/{id}"})
+	@GetMapping(value = { "/{instance}/app/collector/pipeline/{id}" })
 	public String showDataFlowForManager(@PathVariable("id") String id) {
 		final Pipeline dataFlow = pipelineRepository.findByIdstreamsets(id);
 		if (dataFlow != null) {
@@ -144,9 +150,9 @@ public class DataflowController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = {"/show/{id}"})
+	@GetMapping(value = { "/show/{id}" })
 	public String showDataFlow(@PathVariable("id") String id) {
-		final Pipeline dataFlow = pipelineRepository.findById(id);
+		final Pipeline dataFlow = pipelineRepository.findById(id).orElse(null);
 		if (dataFlow != null) {
 			final String idStreamsets = dataFlow.getIdstreamsets();
 			return "redirect:/dataflow/app/collector/pipeline/" + idStreamsets;
@@ -216,6 +222,10 @@ public class DataflowController {
 
 				model.addAttribute("users", users);
 				model.addAttribute("instance", instance);
+				model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+						resourcesInUseService.isInUse(id, utils.getUserId()));
+				resourcesInUseService.put(id, utils.getUserId());
+
 				return "dataflow/instance";
 			}
 		} catch (final Exception e) {
@@ -228,7 +238,7 @@ public class DataflowController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PutMapping(value = "/pipeline")
 	@ResponseBody
-	public ResponseEntity<String> createPipeline(@Valid @RequestBody Pipeline pipeline, BindingResult bindingResult) {
+	public ResponseEntity<String> createPipeline(@RequestBody Pipeline pipeline, BindingResult bindingResult) {
 		final Pipeline newPipeline = dataflowService.createPipeline(pipeline, utils.getUserId());
 		return new ResponseEntity<>(newPipeline.getIdstreamsets(), HttpStatus.CREATED);
 	}
@@ -312,6 +322,7 @@ public class DataflowController {
 	public ResponseEntity<DataflowInstance> updateDataflowInstance(@PathVariable("id") String id,
 			@Valid @RequestBody InstanceBuilder instanceBuilder, BindingResult bindingResult) {
 		final DataflowInstance updatedInstance = dataflowService.updateDataflowInstance(id, instanceBuilder);
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return new ResponseEntity<>(updatedInstance, HttpStatus.OK);
 	}
 
@@ -417,19 +428,25 @@ public class DataflowController {
 
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createForm(Model model) {
-		Pipeline pipeline = new Pipeline();
+		final Pipeline pipeline = new Pipeline();
 		String instanceIdentification = "";
 		try {
 			instanceIdentification = dataflowService.getDataflowInstanceForUserId(utils.getUserId())
 					.getIdentification();
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		}
 		model.addAttribute("instance", instanceIdentification);
 		model.addAttribute("pipeline", pipeline);
-		model.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
+		model.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
 		return "dataflow/create";
 
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

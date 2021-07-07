@@ -93,7 +93,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../ontologies/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../ontologies/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>								
 							</div>
@@ -211,6 +211,16 @@
 																		<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
 																	</th:block>
 																	
+																	<!-- CLONE -->
+																	<span  th:if="(${ontology.ontologyKPI} ==null)" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.clone}" th:data-original-title="#{gen.clone}"><i class="la la-clone font-hg" th:onclick="'javascript:cloneOntology(\''+${ontology.id}+'\',false)'"></i></span>
+																	<th:block  th:if="((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
+																		<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.clone}" th:data-original-title="#{gen.clone}"><i class="la la-clone font-hg"></i></span>
+																	</th:block>
+																	<span  th:if="(${ontology.ontologyKPI} !=null)" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.clone}" th:data-original-title="#{gen.clone}"><i class="la la-clone font-hg" th:onclick="'javascript:cloneOntology(\''+${ontology.id}+'\',true)'"></i></span>
+																	<th:block  th:if="((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
+																		<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.clone}" th:data-original-title="#{gen.clone}"><i class="la la-clone font-hg"></i></span>
+																	</th:block>
+																	
 																	<!-- CRUD -->
 																	<span  th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{crud.crud}" th:data-original-title="#{crud.crud}" th:onclick="'javascript:navigateUrl(\'' + @{|/crud/admin/${ontology.id}/|} + '\');'"><i class="la la-database font-hg"></i></span>
 																	<th:block  th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
@@ -272,13 +282,16 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -315,6 +328,7 @@
 		}
 	}
 	
+	
 	// DELETE ONTOLOGY
 	var deleteOntology = function(ontologyId){
 		console.log('deleteOntologyConfirmation() -> formId: '+ ontologyId);
@@ -324,7 +338,7 @@
 		$('#delete-id').val(ontologyId);
 
 		// call ontology Confirm at header.
-		HeaderController.showConfirmDialogOntologia('delete_ontology_form');
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form', ontologyId);
 	}
 	
 	// MAIN WHEN READY
@@ -375,14 +389,14 @@
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		//$.each([ 2,6,7 ],
+		$.each([ 6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 2,6,7 ],
-		$.each([ 6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 	
@@ -400,6 +414,72 @@
 		
 	}
 	
+	//CLONE
+	function cloneOntology(id, isKpi) {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		var identification_text = [[#{ontology.name}]];
+		
+		$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: [[#{ontology.clone}]],
+			theme: 'light',
+			columnClass: 'medium',
+			content: "<label>"+identification_text+"</label><input class='col-md-12 form-control' type='text' id='cloneIdentification'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Wrong Identification Structure.</label>",
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			onContentReady: function () {
+				// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+				$("#cloneIdentification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
+			},
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+					action: function() {
+						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val()
+								|| $("#cloneIdentification").val().length < 5 || $('#cloneIdentification').val().match(/^[0-9]/)){
+							console.log("identification empty");
+							$("#patternAlert").removeClass("hidden");
+							return false;
+						} else {
+							var cloneName = $("#cloneIdentification").val().trim();
+							if (isKpi) {
+								url = '/controlpanel/ontologies/cloneKpi/';
+							} else {
+								url = '/controlpanel/ontologies/clone/';
+							}
+							$.ajax({ url: url, headers: {[csrf_header]: csrf_value}, type: 'POST',data:{'id': id, 'identification':cloneName},
+								success: function (source) {			 
+									navigateUrl('/controlpanel/ontologies/list');
+								},
+								 error: function(xhr, status, error) {
+									 var errorMessage = 'ERROR!';
+									 if(typeof xhr.responseJSON !== 'undefined' && 
+											 typeof xhr.responseJSON.cause !== 'undefined' ){
+										 errorMessage = xhr.responseJSON.cause;
+									 }
+									 $.alert({
+											title : 'ERROR!',
+											type : 'red',
+											theme : 'light',
+											content :  errorMessage
+										});
+									}
+							});
+						}
+					}											
+				}						
+			}
+		});
+	}
 	
 	function executeKPI(id) {
 		

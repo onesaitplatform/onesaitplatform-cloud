@@ -22,17 +22,15 @@ import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.I18nResources;
 
-public interface I18nResourcesRepository extends JpaRepository<I18nResources, String>{
+public interface I18nResourcesRepository extends JpaRepository<I18nResources, String> {
 
-    I18nResources findById(String id);
-    
 	@Query("SELECT ir FROM I18nResources AS ir WHERE ir.i18n.id = :i18n")
-    List<I18nResources> findByInternationalizationId(@Param("i18n") String i18n);
-	
+	List<I18nResources> findByInternationalizationId(@Param("i18n") String i18n);
+
 	@Query("SELECT ir FROM I18nResources AS ir WHERE ir.opResource.id = :opResource")
-    List<I18nResources> findByOPResourceId(@Param("opResource") String opResource);
-	
+	List<I18nResources> findByOPResourceId(@Param("opResource") String opResource);
+
 	@Query("SELECT ir FROM I18nResources AS ir WHERE ir.opResource.id = :opResource AND ir.i18n.id = :i18n")
 	I18nResources findByInterAndOPResIds(@Param("i18n") String i18n, @Param("opResource") String opResource);
-	
+
 }

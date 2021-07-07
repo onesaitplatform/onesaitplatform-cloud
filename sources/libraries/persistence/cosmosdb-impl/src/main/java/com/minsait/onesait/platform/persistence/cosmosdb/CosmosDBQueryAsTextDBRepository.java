@@ -61,4 +61,19 @@ public class CosmosDBQueryAsTextDBRepository implements QueryAsTextDBRepository 
 		}
 	}
 
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		if (sqlUtils.isSelect(query))
+			return cosmosDBBasicOpsRepository.querySQLAsJson(ontology, query, offset, limit);
+		else if (sqlUtils.isDelete(query)) {
+			final MultiDocumentOperationResult result = cosmosDBBasicOpsRepository.deleteNative(ontology, query, true);
+			return String.valueOf(result.getCount());
+		} else if (sqlUtils.isUpdate(query)) {
+			final MultiDocumentOperationResult result = cosmosDBBasicOpsRepository.updateNative(ontology, query, true);
+			return String.valueOf(result.getCount());
+		} else {
+			throw new DBPersistenceException("Not supported SQL operation");
+		}
+	}
+
 }

@@ -63,8 +63,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 	private Map<String, KieContainer> cacheKieContainer;
 
 	private KieServices getNewKieServices(String user) {
-		if (kieServicesMap.get(user) != null)
+		if (kieServicesMap.get(user) != null) {
 			kieServicesMap.remove(user);
+		}
 		try {
 			final KieServices ks = (KieServices) Class.forName("org.drools.compiler.kie.builder.impl.KieServicesImpl")
 					.newInstance();
@@ -112,8 +113,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 		final KieFileSystem kfs = kieServices.newKieFileSystem();
 
-		if (fileSystems.get(user) != null)
+		if (fileSystems.get(user) != null) {
 			fileSystems.remove(user);
+		}
 		kfs.generateAndWritePomXML(getReleaseId(user));
 		fileSystems.put(user, kfs);
 		loadRulesForUser(user);
@@ -126,8 +128,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 		final KieFileSystem kfs = kieServices.newKieFileSystem();
 
-		if (fileSystems.get(user) != null)
+		if (fileSystems.get(user) != null) {
 			fileSystems.remove(user);
+		}
 		kfs.generateAndWritePomXML(getReleaseId(user));
 		fileSystems.put(user, kfs);
 		addRule(user, rule.getDRL(), rule.getIdentification());
@@ -143,8 +146,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 	@Override
 	public KieSession getKieSession(String user) {
-		if (kieServicesMap.get(user) == null)
+		if (kieServicesMap.get(user) == null) {
 			throw new GenericRuntimeOPException("User does not have any binded kie services");
+		}
 		final KieServices ks = kieServicesMap.get(user);
 
 		if (cacheKieContainer.containsKey(user)) {
@@ -159,8 +163,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 	@Override
 	public Results addRule(String user, String ruleDRL, String ruleName) {
-		if (fileSystems.get(user) == null)
+		if (fileSystems.get(user) == null) {
 			throw new GenericRuntimeOPException("User does not have any binded kie file system");
+		}
 		final KieFileSystem kfs = fileSystems.get(user);
 		kfs.write(PATH_TO_RULES + user + "/" + ruleName + ".drl",
 				ResourceFactory.newReaderResource(new StringReader(ruleDRL)));
@@ -170,8 +175,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 	@Override
 	public void removeRule(String user, String ruleName) {
-		if (fileSystems.get(user) == null)
+		if (fileSystems.get(user) == null) {
 			throw new GenericRuntimeOPException("User does not have any binded kie file system");
+		}
 		final KieFileSystem kfs = fileSystems.get(user);
 		kfs.delete(PATH_TO_RULES + user + "/" + ruleName + ".drl");
 		final KieServices ks = kieServicesMap.get(user);
@@ -190,7 +196,8 @@ public class KieServicesManagerImpl implements KieServicesManager {
 	}
 
 	private ReleaseId getReleaseId(String user) {
-		return kieServicesMap.get(user).newReleaseId(GROUP_ID, ARTIFACT_ID + "-" + user, VERSION);
+		// sanitize userid with @ as emails
+		return kieServicesMap.get(user).newReleaseId(GROUP_ID, ARTIFACT_ID + "-" + user.replace("@", "__"), VERSION);
 	}
 
 	@Override

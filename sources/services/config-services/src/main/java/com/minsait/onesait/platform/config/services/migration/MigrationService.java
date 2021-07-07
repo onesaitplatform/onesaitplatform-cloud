@@ -20,6 +20,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.MigrationData;
+import com.minsait.onesait.platform.config.model.MigrationData.DataType;
+import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.User;
 
 import de.galan.verjson.core.IOReadException;
@@ -67,10 +69,17 @@ public interface MigrationService {
 
 	public String compareSchemas(String currentSchemaJson, String otherSchemaJson) throws IOException;
 
-	public void storeMigrationData(User user, String name, String description, String fileName, byte[] file);
+	public void storeMigrationData(User user, String name, String description, String fileName, byte[] file,
+			DataType type, Status status);
 
-	public MigrationData findMigrationData(User user);
+	public MigrationData findMigrationData(User user, DataType type);
 
 	public MigrationErrors getExportErrors();
+
+	void updateStoreMigrationData(User user, String json, DataType type);
+
+	public List<MigrationData> findByUserAndTypeAndStatus(User user, DataType type, Status status);
+
+	public void deleteMigrationData(MigrationData data);
 
 }

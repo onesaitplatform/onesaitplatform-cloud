@@ -58,4 +58,9 @@ public class HiveQueryAsTextDBRepository implements QueryAsTextDBRepository {
 		return queryNativeAsJson(ontology, query, offset, -1);
 	}
 
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		return queryNativeAsJson(ontology, query, offset, limit);
+	}
+
 }

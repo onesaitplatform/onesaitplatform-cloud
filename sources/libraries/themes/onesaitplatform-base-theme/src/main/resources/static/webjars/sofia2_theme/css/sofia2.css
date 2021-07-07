@@ -237,7 +237,7 @@ Page Header
 	.page-bar .page-breadcrumb > li > span {
     text-shadow: none;
 font-family: "Soho","sans-serif";
-font-size: 16px;
+font-size: 14px;
 font-weight: 500;
 font-style: normal;
 font-stretch: normal;
@@ -247,7 +247,7 @@ letter-spacing: normal;
 	.page-content-white .page-bar .page-breadcrumb > li > a {
 		text-shadow: none;
     font-family: "Soho","sans-serif";
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     font-style: normal;
     font-stretch: normal;

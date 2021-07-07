@@ -25,8 +25,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface LayerRepository extends JpaRepository<Layer, String> {
 
-	Layer findById(String id);
-
 	List<Layer> findByIdentification(String identification);
 
 	List<Layer> findByDescription(String description);
@@ -52,5 +50,8 @@ public interface LayerRepository extends JpaRepository<Layer, String> {
 	List<String> findIdentificationByUserOrIsPublicTrue(@Param("user") User user);
 
 	List<Layer> findByUserOrderByIdentificationAsc(User user);
+
+	@Query("SELECT o.identification FROM Layer AS o where o.ontology.identification=:ontology ORDER BY o.identification ASC")
+	List<String> findIdentificationByOntology(@Param("ontology") String ontology);
 
 }

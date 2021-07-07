@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 
@@ -37,7 +38,6 @@ import com.minsait.onesait.platform.config.services.apimanager.operation.Operati
 import com.minsait.onesait.platform.config.services.apimanager.operation.QueryStringJson;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
-import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.apimanager.UserApiDTO;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
@@ -68,8 +68,6 @@ public class ApiManagerHelper {
 	@Autowired
 	private UserService userService;
 	@Autowired
-	private ProjectService projectService;
-	@Autowired
 	private AppWebUtils utils;
 
 	private static final String API_SERVICES_STR = "apiServices";
@@ -85,6 +83,7 @@ public class ApiManagerHelper {
 		final List<User> users = userRepository.findAll();
 
 		final User user = userService.getUser(utils.getUserId());
+		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(USERS_STR, users);
@@ -115,15 +114,13 @@ public class ApiManagerHelper {
 		// POPULATE API TAB
 		populateApiManagerCreateForm(uiModel);
 
-		final Api api = apiRepository.findById(apiId);
+		final Api api = apiManagerService.getById(apiId);
 
 		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
-
-		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
-				.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
 				ServiceUrl.SWAGGERJSON));
@@ -138,6 +135,7 @@ public class ApiManagerHelper {
 				Role.Type.ROLE_ADMINISTRATOR.toString()));
 		if (apiManagerService.postProcess(api))
 			uiModel.addAttribute("postProcessFx", apiManagerService.getPostProccess(api));
+		
 	}
 
 	private List<UserApiDTO> toUserApiDTO(List<UserApi> findByApiId) {
@@ -152,7 +150,7 @@ public class ApiManagerHelper {
 	public void populateApiManagerShowForm(Model uiModel, String apiId) {
 
 		// POPULATE API TAB
-		final Api api = apiRepository.findById(apiId);
+		final Api api = apiManagerService.getById(apiId);
 
 		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
@@ -161,9 +159,7 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(OPERATIONS_STR, operations);
-
-		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
-				.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 
 		uiModel.addAttribute("api", api);
 		if (apiManagerService.postProcess(api))
@@ -233,12 +229,12 @@ public class ApiManagerHelper {
 
 		api.setUser(userService.getUser(utils.getUserId()));
 
-		if (apiMultipart.getCachetimeout() != null) {
+		if (apiMultipart.getApicachetimeout() != null) {
 
-			if (apiMultipart.getCachetimeout() > 1000 || apiMultipart.getCachetimeout() < 10) {
+			if (apiMultipart.getApicachetimeout() > 1000 || apiMultipart.getApicachetimeout() < 10) {
 				// throw new Exception("Cache Limits exceded");
 			} else {
-				api.setCachetimeout(apiMultipart.getCachetimeout());
+				api.setApicachetimeout(apiMultipart.getApicachetimeout());
 			}
 		}
 
@@ -300,11 +296,12 @@ public class ApiManagerHelper {
 	}
 
 	public void populateApiManagerInvokeForm(Model model, String apiId) {
-		final Api api = apiRepository.findById(apiId);
+		final Api api = apiManagerService.getById(apiId);
 
 		model.addAttribute("api", api);
 		model.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		model.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		model.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 	}
+	
 }

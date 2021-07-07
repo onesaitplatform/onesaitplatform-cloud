@@ -22,6 +22,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
@@ -43,6 +44,9 @@ public interface OntologyTimeSeriesService {
 			OntologyTimeSeries ontologyTimeSeries);
 
 	public List<OntologyTimeSeriesWindow> getTimeSeriesWindowByOntologyTimeSeries(OntologyTimeSeries ontologyTimeSeries);
+	
+	public void cloneOntologyTimeSeries(String identification, Ontology ontology, User user, OntologyConfiguration config)
+			throws OntologyServiceException, OntologyDataJsonProblemException;
 
 	ResponseEntity<?> updateOntologyTimeSeries(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
 			OntologyConfiguration config, boolean cleanProperties, boolean cleanWindow);

@@ -36,4 +36,9 @@ public interface BinaryRepository {
 
 	public BinaryFileData getBinaryFile(String id) throws IOException, BinaryRepositoryException;
 
+	public String getBinaryFileForPaginate(String id, Long startLine, Long maxLines, Boolean skipHeaders)
+			throws IOException, BinaryRepositoryException;
+
+	public Boolean closePaginate(String id) throws IOException, BinaryRepositoryException;
+
 }

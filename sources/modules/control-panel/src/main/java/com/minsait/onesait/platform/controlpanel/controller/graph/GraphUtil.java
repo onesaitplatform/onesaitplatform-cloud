@@ -42,7 +42,6 @@ import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
@@ -137,7 +136,7 @@ public class GraphUtil {
 				"ONTOLOGIES", utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
 
 		if (ontologies == null) {
-			if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+			if (utils.isAdministrator())
 				ontologies = ontologyRepository.findAll();
 			else
 				ontologies = ontologyRepository

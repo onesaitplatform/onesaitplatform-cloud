@@ -86,7 +86,7 @@ var JsonToolController = function(){
 			try{
 				data = JSON.parse(data);
 			}catch(err){
-				$('#response').text(err);
+				$('#response').html(data);
 				$('#returnAction').modal("show");
 			}
 			if(data.result=='ok'){
@@ -104,8 +104,8 @@ var JsonToolController = function(){
 
 
 			}else{
-				//$('#response').text(ontologyExists);
-				$('#response').text(data.cause);
+				
+				$('#response').html(nl2br(data.cause));
 				$('#returnAction').modal("show");
 			}
 			
@@ -113,6 +113,11 @@ var JsonToolController = function(){
 		});
 		
 	};
+	
+	function nl2br(str){
+		 return str.replace(/(?:\r\n|\r|\n)/g, '<br>');
+		}
+	
 	var getParentNode = function () {
 		var payload = {'id' : $('#ontology').val()};
 		payload[csrfParam] = csrfToken;
@@ -236,7 +241,7 @@ var JsonToolController = function(){
 		    data = JSON.parse(data);
 		}
 		catch(err) {
-			$('#response').text(err);
+			$('#response').html(data);
 			$('#returnAction').modal("show");
 			return;
 		}
@@ -275,7 +280,7 @@ var JsonToolController = function(){
 		    data = JSON.parse(data);
 		}
 		catch(err) {
-			$('#response').text(err);
+			$('#response').html(data);
 			$('#returnAction').modal("show");
 			return;
 		}
@@ -298,11 +303,23 @@ var JsonToolController = function(){
 				return;
 			}
 		}else{
-			$('#response').text(data.cause);
+			//$('#response').text(data.cause);
+			$('#response').html(formatBulkError(data.cause));
 			$('#returnAction').modal("show");
 		}
 		
 	}
+	
+	function formatBulkError(str){
+		
+		str = str.replace(/(data:)/g, '<br><b>data:</b>');
+		str = str.replace(/(by:)/g, '<br><b>by:</b>');		
+		str = str.replace(/(\'schema\':)/g, '<br><br><b> schema :</b>');
+		str = str.replace(/(\'instance\':)/g, '<br><b> instance :</b>');
+		str = str.replace(/(\'message\':)/g, '<br><b> message :</b>');
+		return str;
+		}
+		
 	
 	var handleError = function (jqXHR, textStatus, error) {
 		console.log(error);
@@ -446,6 +463,7 @@ var JsonToolController = function(){
 								}
 								catch(err) {
 									try{
+										var firstError = err.message;
 										var jsonData = content.replace(/[\r]/g, '');
 										var arrayJson = [];
 										var dataSplitted = jsonData.split("\n");
@@ -458,7 +476,7 @@ var JsonToolController = function(){
 										fileLoaded=arrayJson;
 									}catch(err){
 										
-										$('#response').text(err);
+										$('#response').html(firstError+'<br>'+ err.message);
 										$('#returnAction').modal("show");
 										return;
 									}

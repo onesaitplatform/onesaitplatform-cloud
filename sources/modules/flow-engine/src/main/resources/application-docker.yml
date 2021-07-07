@@ -1,10 +1,10 @@
 master:
    datasource:
-      url: ${CONFIGDBMASTERURL}
+     hikari:
+      jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      max-active: ${CONFIGDB_MAX_ACTIVE}
-      max-idle: ${CONFIGDB_MAX_IDLE}
+      maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
      
 onesaitplatform:
    flowengine:
@@ -27,29 +27,23 @@ onesaitplatform:
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    analytics.notebook:
       zeppelinHostname: zeppelin
+   graylog:
+      enabled: ${GRAYLOG_ENABLED}
+      host: ${GRAYLOG_HOST}
+      port: ${GRAYLOG_PORT}
 
 spring:
    datasource:
-      url: ${CONFIGDBURL}${DBADDPROPS}
+     hikari:
+      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      driver-class-name: com.mysql.jdbc.Driver
-      test-while-idle: true
-      test-on-borrow: true
-      validation-query: SELECT 1
-      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
-      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
-      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
-      max-wait: ${DS_MAX_WAIT}
-      initial-size: ${DS_INITIAL_SIZE}
-      max-active: ${DS_MAX_ACTIVE}
-      max-idle: ${DS_MAX_IDLE}
-      min-idle: ${DS_MIN_IDLE}
-      removeAbandoned: ${DS_REMOVE_ABANDONED}
-      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
+      connection-timeout: ${DS_MAX_WAIT_MILLIS}
+      maximum-pool-size: ${DS_MAX_ACTIVE}
+      minimum-idle: ${DS_MIN_IDLE}
    boot.admin: #Spring Boot Admin Config
-      url: http://monitoringuiservice:18100/monitoring
-      client.service-url: http://flowengineservice:${server.port}${server.contextPath}/
+      client.url: http://monitoringuiservice:18100/monitoring
+      client.instance.service-url: http://flowengineservice:${server.port}${server.servlet.contextPath}/
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:

@@ -82,7 +82,7 @@ public class CrudController {
 
 	@Autowired
 	private SQLGenerator sqlGenerator;
-
+	
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
@@ -187,19 +187,35 @@ public class CrudController {
 					} else {
 						if (useQuasar()) {
 							selectStatement.setColumns(Arrays.asList("_id", selectStatement.getOntology() + ".*"));
+							selectStatement.setLimit(selectStatement.getLimit() + selectStatement.getOffset() );
 						} else {
 							selectStatement.setColumns(Arrays.asList("*"));
+							selectStatement.setAlias("c");
 						}
 					}
-					if (selectStatement.getWhere() != null && !selectStatement.getWhere().isEmpty() && useQuasar()) {
-						selectStatement.getWhere().stream().forEach(where -> {
-							where.setColumn(selectStatement.getOntology() + "." + where.getColumn());
-						});
+					if (selectStatement.getWhere() != null && !selectStatement.getWhere().isEmpty()) {
+						if (useQuasar()) {
+							selectStatement.getWhere().stream().forEach(where -> {
+								where.setColumn(selectStatement.getOntology() + "." + where.getColumn());
+							});
+						}
+						else{
+							selectStatement.getWhere().stream().forEach(where -> {
+								where.setColumn("c" + "." + where.getColumn());
+							});
+						}
 					}
 					if (selectStatement.getOrderBy() != null && !selectStatement.getOrderBy().isEmpty()) {
-						selectStatement.getOrderBy().stream().forEach(order -> {
-							order.setColumn(selectStatement.getOntology() + "." + order.getColumn());
-						});
+						if (useQuasar()) {
+							selectStatement.getOrderBy().stream().forEach(order -> {
+								order.setColumn(selectStatement.getOntology() + "." + order.getColumn());
+							});
+						}
+						else {
+							selectStatement.getOrderBy().stream().forEach(order -> {
+								order.setColumn("c" + "." + order.getColumn());
+							});
+						}
 					}
 				}
 
@@ -242,7 +258,12 @@ public class CrudController {
 
 			if (datasource.equals(Ontology.RtdbDatasource.MONGO)) {
 				final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyID, utils.getUserId());
-				return findDatesAndReplace(result, ontology.getJsonSchema());
+				if (useQuasar()) {
+					return findDatesAndReplace(result, ontology.getJsonSchema());
+				}
+				else{
+					return result;
+				}
 			} else {
 				return result;
 			}
@@ -262,7 +283,7 @@ public class CrudController {
 				return new ArrayList<>();
 			}
 		} else {
-			ArrayList list = new ArrayList<>();
+			final ArrayList list = new ArrayList<>();
 			list.add("*");
 			return list;
 		}
@@ -279,7 +300,7 @@ public class CrudController {
 		} else if (datasource.equals(Ontology.RtdbDatasource.COSMOS_DB)) {
 			return "id";
 		} else {
-			if (useQuasar() || findById) {
+			if (useQuasar() || useLegacySQL() || findById) {
 				return "_id";
 			} else {
 				return "_id.$oid";
@@ -337,11 +358,20 @@ public class CrudController {
 		}
 		return text;
 	}
-
+	
 	private boolean useQuasar() {
 		try {
 			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
 					.get("mongodb-use-quasar")).booleanValue();
+		} catch (final RuntimeException e) {
+			return true;
+		}
+	}
+
+	private boolean useLegacySQL() {
+		try {
+			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+					.get("mongodb-use-legacysql")).booleanValue();
 		} catch (final RuntimeException e) {
 			return true;
 		}

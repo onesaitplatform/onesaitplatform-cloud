@@ -17,6 +17,22 @@ var DatasourcesCreateController = function() {
 	var navigateUrl = function(url) {
 		window.location.href = url;
 	}
+	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/datasources/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
 	// DELETE DATASOURCE
 	var deleteDatasourceConfirmation = function(datasourceId){
 		console.log('deleteGadgetDatasourceConfirmation() -> formId: '+ datasourceId);
@@ -169,7 +185,11 @@ var DatasourcesCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
 		},
-		
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			freeResource(id,url);
+			 
+		},
 		getFieldsFromQueryResult: function (jsonString){
 			var fields = [];
 			function iterate(obj, stack) {

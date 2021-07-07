@@ -20,5 +20,5 @@ import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
 
 public interface MongoDBTimeSeriesProcessor {
 
-	public List<TimeSeriesResult> processTimeSerie(String ontology, String instance);
+	public List<TimeSeriesResult> processTimeSerie(String database, String ontology, String instance);
 }

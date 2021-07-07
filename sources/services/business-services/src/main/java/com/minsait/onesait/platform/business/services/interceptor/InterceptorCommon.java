@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.business.services.interceptor;
 
+import static com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+
 import javax.servlet.http.HttpSession;
 
 import org.springframework.security.core.Authentication;
@@ -21,7 +23,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class InterceptorCommon {
 
 	public static final String SESSION_ATTR_PREVIOUS_AUTH = "PREVIOUS_AUTH";
@@ -32,25 +38,36 @@ public class InterceptorCommon {
 
 	public static void setContexts(Authentication auth) {
 		SecurityContextHolder.getContext().setAuthentication(auth);
-		MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
-		MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
+		try {
+			log.debug("setContexts for authentication {}, of class: {} with principal class: {}", auth.getName(), auth.getClass().getCanonicalName(), auth.getPrincipal().getClass().getCanonicalName());
+			MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
+			MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
+		}catch (final Exception e) {
+			log.error("Error in setContexts with auth {}", auth.getPrincipal() );
+			MultitenancyContextHolder.setVerticalSchema(Tenant2SchemaMapper.DEFAULT_SCHEMA);
+			MultitenancyContextHolder.setTenantName(Tenant2SchemaMapper.defaultTenantName(DEFAULT_VERTICAL_NAME));
+		}
 	}
 
-	public static void clearContexts(Authentication auth, HttpSession session) {
-		MultitenancyContextHolder.clear();
-		SecurityContextHolder.getContext().setAuthentication(auth);
-		session.removeAttribute(SESSION_ATTR_PREVIOUS_AUTH);
-	}
-
-	public static void setPreviousAuthenticationOnSession(HttpSession session) {
-		if (session.getAttribute(SESSION_ATTR_PREVIOUS_AUTH) == null) {
-			session.setAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH,
-					SecurityContextHolder.getContext().getAuthentication());
+	public static void clearContexts(HttpSession session) {
+		if (session != null) {
+			final Authentication auth = (Authentication) session
+					.getAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH);
+			MultitenancyContextHolder.clear();
+			SecurityContextHolder.getContext().setAuthentication(auth);
+			session.removeAttribute(SESSION_ATTR_PREVIOUS_AUTH);
 		}
 	}
 
 	public static void clearMultitenancyContext() {
 		MultitenancyContextHolder.clear();
+	}
+
+	public static void setPreviousAuthenticationOnSession(HttpSession session) {
+		if (session != null && session.getAttribute(SESSION_ATTR_PREVIOUS_AUTH) == null) {
+			session.setAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH,
+					SecurityContextHolder.getContext().getAuthentication());
+		}
 	}
 
 }

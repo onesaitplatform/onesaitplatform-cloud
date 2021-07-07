@@ -34,6 +34,8 @@ import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Path;
@@ -206,6 +208,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	private String getApiBasePath(Api api, String numVersion) {
 		return BASE_PATH + "/v" + numVersion + "/" + api.getIdentification();
 	}
+
 
 	/**
 	 * Add Authentication Header to Swagger instance.

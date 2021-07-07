@@ -60,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DefaultTokenServices implements AuthorizationServerTokenServices, ResourceServerTokenServices,
-		ConsumerTokenServices, InitializingBean {
+ConsumerTokenServices, InitializingBean{
 
 	private int refreshTokenValiditySeconds = 60 * 60 * 24 * 30; // default 30 days.
 
@@ -78,6 +78,7 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 
 	private AuthenticationManager authenticationManager;
 
+
 	/**
 	 * Initialize these token services. If no random generator is set, one will be
 	 * created.
@@ -91,7 +92,6 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 	@Override
 	@Transactional
 	public OAuth2AccessToken createAccessToken(OAuth2Authentication authentication) throws AuthenticationException {
-
 		final OAuth2AccessToken existingAccessToken = tokenStore.getAccessToken(authentication);
 		OAuth2RefreshToken refreshToken = null;
 		if (existingAccessToken != null) {
@@ -108,7 +108,7 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 				try {
 					tokenStore.storeAccessToken(existingAccessToken, authentication);
 				} catch (final Exception e) {
-					log.warn("Could not update existing access token");
+					log.warn("Could not update existing access token: {}", e.getMessage());
 				}
 				return existingAccessToken;
 			}
@@ -135,8 +135,24 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 		try {
 			tokenStore.storeAccessToken(accessToken, authentication);
 		} catch (final Exception e) {
-			return tokenStore.getAccessToken(authentication);
-
+			log.warn("Error storing access_token", e);
+			final int tries = 5;
+			OAuth2AccessToken token = null;
+			for (int i = 0; i < tries; i++) {
+				try {
+					token = tokenStore.getAccessToken(authentication);
+					if(token != null) {
+						break;
+					}
+					wait(50);
+				} catch (final Exception e2) {
+					log.error("Error getting auth token try number {}", i, e2);
+				}
+			}
+			if (token == null) {
+				log.warn("After 5 tries could not get authentication");
+			}
+			return token;
 		}
 		// In case it was modified
 		refreshToken = accessToken.getRefreshToken();
@@ -149,7 +165,8 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 
 	@OauthServerAuditable
 	@Override
-	@Transactional(noRollbackFor = { InvalidTokenException.class, InvalidGrantException.class })
+	@Transactional(noRollbackFor = { InvalidTokenException.class,
+			InvalidGrantException.class })
 	public OAuth2AccessToken refreshAccessToken(String refreshTokenValue, TokenRequest tokenRequest)
 			throws AuthenticationException {
 
@@ -312,7 +329,7 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 		final String value = UUID.randomUUID().toString();
 		if (validitySeconds > 0) {
 			return new DefaultExpiringOAuth2RefreshToken(value,
-					new Date(System.currentTimeMillis() + (validitySeconds * 1000L)));
+					new Date(System.currentTimeMillis() + validitySeconds * 1000L));
 		}
 		return new DefaultOAuth2RefreshToken(value);
 	}
@@ -321,7 +338,7 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 		final DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(UUID.randomUUID().toString());
 		final int validitySeconds = getAccessTokenValiditySeconds(authentication.getOAuth2Request());
 		if (validitySeconds > 0) {
-			token.setExpiration(new Date(System.currentTimeMillis() + (validitySeconds * 1000L)));
+			token.setExpiration(new Date(System.currentTimeMillis() + validitySeconds * 1000L));
 		}
 		token.setRefreshToken(refreshToken);
 		token.setScope(authentication.getOAuth2Request().getScope());
@@ -469,5 +486,8 @@ public class DefaultTokenServices implements AuthorizationServerTokenServices, R
 	public void setClientDetailsService(ClientDetailsService clientDetailsService) {
 		this.clientDetailsService = clientDetailsService;
 	}
+
+
+
 
 }

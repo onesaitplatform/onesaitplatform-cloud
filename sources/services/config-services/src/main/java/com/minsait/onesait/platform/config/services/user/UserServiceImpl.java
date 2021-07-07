@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -73,44 +74,51 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public boolean isUserAdministrator(User user) {
 		boolean result = false;
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (user.isAdmin()) {
 			result = true;
-		if (user.getRole().getRoleParent() != null
-				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		}
+		if (user.getRole().getRoleParent() != null && user.isAdmin()) {
 			result = true;
+		}
 		return result;
 	}
 
 	@Override
 	public boolean isUserDeveloper(User user) {
 		boolean result = false;
-		if (user.getRole().getId().equals(Role.Type.ROLE_DEVELOPER.name()))
+		if (user.getRole().getId().equals(Role.Type.ROLE_DEVELOPER.name())) {
 			result = true;
+		}
 		if (user.getRole().getRoleParent() != null
-				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_DEVELOPER.name()))
+				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_DEVELOPER.name())) {
 			result = true;
+		}
 		return result;
 	}
 
 	@Override
 	public boolean isUserAnalytics(User user) {
 		boolean result = false;
-		if (user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.name()))
+		if (user.getRole().getId().equals(Role.Type.ROLE_DATASCIENTIST.name())) {
 			result = true;
+		}
 		if (user.getRole().getRoleParent() != null
-				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_DATASCIENTIST.name()))
+				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_DATASCIENTIST.name())) {
 			result = true;
+		}
 		return result;
 	}
 
 	@Override
 	public boolean isUserUser(User user) {
 		boolean result = false;
-		if (user.getRole().getId().equals(Role.Type.ROLE_USER.name()))
+		if (user.getRole().getId().equals(Role.Type.ROLE_USER.name())) {
 			result = true;
+		}
 		if (user.getRole().getRoleParent() != null
-				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_USER.name()))
+				&& user.getRole().getRoleParent().getId().equals(Role.Type.ROLE_USER.name())) {
 			result = true;
+		}
 		return result;
 	}
 
@@ -200,8 +208,9 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toMap(MasterUser::getUserId, mu -> mu.getTenant().getName()));
 		users.forEach(u -> {
 			final String tenant = mapUsers.get(u.getUsername());
-			if (!StringUtils.isEmpty(tenant))
+			if (!StringUtils.isEmpty(tenant)) {
 				u.setTenant(tenant);
+			}
 		});
 
 	}
@@ -230,6 +239,17 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public List<UserAmplified> getAllUsersActiveByUsernameLike(String usernameLike) {
+
+		final List<UserAmplified> usersDTO = userRepository.findByUsernameLike(usernameLike).stream()
+				.map(UserAmplified::new).collect(Collectors.toList());
+
+		addTenantInfo(usersDTO, getActiveMasterUsersForCurrentVertical(true));
+		return usersDTO;
+
+	}
+
+	@Override
 	public List<User> getDifferentUsersWithRole(User user, Type roleType) {
 		return userRepository.findUserByIdentificationAndRol(user.getUserId(), roleType.toString());
 	}
@@ -239,8 +259,9 @@ public class UserServiceImpl implements UserService {
 
 		if (!userExists(user)) {
 			log.debug("User no exist, creating...");
-			if (user.getRole().getName().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))
+			if (user.getRole().getName().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
 				throw new UserServiceException("Cannot create user with role ROLE_PLATFORM_ADMINISTRATOR");
+			}
 			user.setRole(roleRepository.findByName(user.getRole().getName()));
 			userRepository.save(user);
 
@@ -291,7 +312,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean userExists(User user) {
-		return (userRepository.findByUserId(user.getUserId()) != null);
+		return userRepository.findByUserId(user.getUserId()) != null;
 	}
 
 	@Override
@@ -317,8 +338,9 @@ public class UserServiceImpl implements UserService {
 			if (user.getRole() != null) {
 				final Role role = roleRepository.findByName(user.getRole().getName());
 				if (userDb.getRole().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())
-						&& role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))
+						&& role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
 					throw new UserServiceException("Cannot change role to ROLE_PLATFORM_ADMINISTRATOR");
+				}
 				userDb.setRole(role);
 
 			}
@@ -346,10 +368,12 @@ public class UserServiceImpl implements UserService {
 		}
 		userDb.setFullName(user.getFullName());
 		// new features Avatar and extra fields
-		if (user.getAvatar() != null)
+		if (user.getAvatar() != null) {
 			userDb.setAvatar(user.getAvatar());
-		if (user.getExtraFields() != null)
+		}
+		if (user.getExtraFields() != null) {
 			userDb.setExtraFields(user.getExtraFields());
+		}
 	}
 
 	@Override
@@ -365,11 +389,10 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void deleteUser(List<String> userIds) {
 		entityDeletionService.deactivateUser(userIds);
-
 	}
 
 	Role getRole(Role.Type roleType) {
-		return roleRepository.findById(roleType.name());
+		return roleRepository.findById(roleType.name()).orElse(null);
 	}
 
 	@Override
@@ -405,9 +428,15 @@ public class UserServiceImpl implements UserService {
 		return userRepository.save(user);
 	}
 
+	@CacheEvict(cacheNames = UserRepository.USER_REPOSITORY, key = "#p0.userId")
+	@Override
+	public void evictFromCache(User user) {
+		// NO-OP
+	}
+
 	@Override
 	public Role getUserRoleById(String roleId) {
-		return roleRepository.findById(roleId);
+		return roleRepository.findById(roleId).orElse(null);
 	}
 
 	@Override
@@ -462,6 +491,16 @@ public class UserServiceImpl implements UserService {
 			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleType(userId, fullName, email, roleType);
 		}
 		return users;
+	}
+
+	@Override
+	public User getUserNoCache(String userId) {
+		return userRepository.findByUserNoCache(userId);
+	}
+
+	@Override
+	public long countUsers() {
+		return userRepository.count();
 	}
 
 }

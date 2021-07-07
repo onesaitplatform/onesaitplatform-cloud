@@ -14,18 +14,37 @@
  */
 package com.minsait.onesait.platform.config.converters;
 
+import static com.minsait.onesait.platform.config.converters.JPAHAS256ConverterCustom.STORED_FLAG;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 
 @Component
 public class MasterUserConverter implements Converter<User, MasterUser> {
-
+	JPAHAS256ConverterCustom shaConverter = new JPAHAS256ConverterCustom();
 	@Override
 	public MasterUser convert(User user) {
 		return MasterUser.builder().email(user.getEmail()).userId(user.getUserId()).password(user.getRawPassword())
+				.extraFields(user.getExtraFields()).fullName(user.getFullName()).active(user.isActive()).build();
+	}
+
+	public MasterUser convertToMasterUserNoRaw(User user) {
+		return MasterUser.builder().email(user.getEmail()).userId(user.getUserId()).password(STORED_FLAG+shaConverter.convertToDatabaseColumn(user.getPassword()))
+				.extraFields(user.getExtraFields()).fullName(user.getFullName()).active(user.isActive()).build();
+	}
+
+	public MasterUserLazy convertToLazy(User user) {
+		return MasterUserLazy.builder().email(user.getEmail()).userId(user.getUserId()).password(user.getRawPassword())
+				.extraFields(user.getExtraFields()).fullName(user.getFullName()).active(user.isActive()).build();
+	}
+
+
+	public MasterUserLazy convertToLazyNoRaw(User user) {
+		return MasterUserLazy.builder().email(user.getEmail()).userId(user.getUserId()).password(STORED_FLAG+shaConverter.convertToDatabaseColumn(user.getPassword()))
 				.extraFields(user.getExtraFields()).fullName(user.getFullName()).active(user.isActive()).build();
 	}
 

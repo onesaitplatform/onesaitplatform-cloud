@@ -37,6 +37,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.services.dashboardconf.DashboardConfService;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardConfServiceException;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -48,8 +49,12 @@ public class DashboardConfController {
 
 	private static final String DASHBOARD_CONF = "dashboardconf";
 	private static final String MESSAGE = "message";
+
 	@Autowired
 	private DashboardConfService dashboardConfService;
+
+	@Autowired()
+	private ResourcesInUseService resourcesInUseService;
 
 	@Autowired
 	private AppWebUtils utils;
@@ -118,6 +123,8 @@ public class DashboardConfController {
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDashboardConf(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_CONF, this.dashboardConfService.getDashboardConfById(id));
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
 		return "dashboardconf/create";
 	}
 
@@ -145,7 +152,14 @@ public class DashboardConfController {
 			return "redirect:/dashboardconf/update/" + id;
 		}
 		this.dashboardConfService.saveDashboardConf(dashboardConf);
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_DASHBOARD_CONF_LIST;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 	/*

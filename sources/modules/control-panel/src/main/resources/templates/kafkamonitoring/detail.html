@@ -22,8 +22,10 @@
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
 		
-		<!-- BEGIN WEB FONT -->
-		<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+		<!-- WEB FONTs -->
+		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
+		<!-- <script src="/controlpanel/static/vendor/google/1.6.16/webfont.js"></script>
 		<script>
           WebFont.load({
             google: {"families":["Poppins:300,400,500,600,700","Open Sans:300,400,500,600,700"]},
@@ -31,7 +33,7 @@
                 sessionStorage.fonts = true;
             }
           });
-		</script>
+		</script> -->
 
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -166,13 +168,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	

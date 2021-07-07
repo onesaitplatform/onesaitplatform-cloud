@@ -60,4 +60,6 @@ public class Urls {
 
 	private ReportEngine reportEngine;
 
+	private Edge edge;
+
 }

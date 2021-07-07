@@ -19,16 +19,13 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyLogMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface DeviceManager {
 
-	public <T extends SSAPBodyMessage> boolean registerActivity(SSAPMessage<T> request,
-			SSAPMessage<SSAPBodyReturnMessage> response, IoTSession session, GatewayInfo info);
+	public <T extends SSAPBodyMessage> boolean registerActivity(SSAPMessage<T> request, String clientPlatformIdentification, String clientPlatformInstanceIdentification, GatewayInfo info);
 
 	public JsonNode createDeviceLog(ClientPlatform client, String deviceId, SSAPBodyLogMessage logMessage)
 			throws IOException;

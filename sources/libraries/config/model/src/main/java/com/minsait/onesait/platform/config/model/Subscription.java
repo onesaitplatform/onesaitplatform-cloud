@@ -44,7 +44,7 @@ public class Subscription extends OPResource {
 	private String description;
 
 	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY", referencedColumnName = "ID", nullable = false)
 	@NotNull
 	@Getter

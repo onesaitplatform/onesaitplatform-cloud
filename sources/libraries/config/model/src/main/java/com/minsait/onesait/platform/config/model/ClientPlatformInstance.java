@@ -87,12 +87,6 @@ public class ClientPlatformInstance extends AuditableEntityWithUUID {
 	@Setter
 	private String protocol;
 
-	@Column(name = "SESSION_KEY", length = 512, nullable = false)
-	@NotNull
-	@Getter
-	@Setter
-	private String sessionKey;
-
 	@Column(name = "disabled", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter

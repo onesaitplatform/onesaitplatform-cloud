@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,6 @@ import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
@@ -45,6 +45,7 @@ import com.minsait.onesait.platform.config.repository.ProjectRepository;
 import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
+import com.minsait.onesait.platform.config.services.exceptions.AppServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
@@ -92,18 +93,20 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void deleteProject(String projectId) {
-		final Project project = projectRepository.findOne(projectId);
-		final App app = project.getApp();
-		if (app != null) {
-			project.setApp(null);
-			app.setProject(null);
-			appService.updateApp(app);
-		}
-		if (!project.getUsers().isEmpty()) {
-			removeUsersFromProject(project);
-			project.getUsers().clear();
-		}
-		projectRepository.delete(project);
+		projectRepository.findById(projectId).ifPresent(project -> {
+			final App app = project.getApp();
+			if (app != null) {
+				project.setApp(null);
+				app.setProject(null);
+				appService.updateApp(app);
+			}
+			if (!project.getUsers().isEmpty()) {
+				removeUsersFromProject(project);
+				project.getUsers().clear();
+			}
+			projectRepository.delete(project);
+		});
+
 	}
 
 	@Override
@@ -117,7 +120,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Project getById(String id) {
-		return projectRepository.findOne(id);
+		return projectRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -158,17 +161,18 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public void updateWithParameters(ProjectDTO project) {
-		final Project projectDb = projectRepository.findOne(project.getId());
-		projectDb.setDescription(project.getDescription());
-		projectDb.setType(project.getType());
-		projectRepository.save(projectDb);
+		projectRepository.findById(project.getId()).ifPresent(projectDb -> {
+			projectDb.setDescription(project.getDescription());
+			projectDb.setType(project.getType());
+			projectRepository.save(projectDb);
+		});
 
 	}
 
 	@Override
 	@Transactional
 	public List<ProjectUserDTO> getProjectMembers(String projectId) {
-		final Project project = projectRepository.findOne(projectId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
 		if (project != null) {
 			final List<?> users = getProjectUsers(project);
 			return getMembersDTO(users);
@@ -229,8 +233,8 @@ public class ProjectServiceImpl implements ProjectService {
 		final List<ProjectList> projectsList = projectRepository.findAllForList();
 		final List<Project> projects = new LinkedList<>();
 
-		final User user = userService.getUser(userId);
-		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		final User user = userService.getUserNoCache(userId);
+		if (user.isAdmin()) {
 			for (final ProjectList pl : projectsList) {
 				projects.add(EntitiesCast.castProjectList(pl, true));
 			}
@@ -271,27 +275,29 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public void addUserToProject(String userId, String projectId) {
-		final User user = userService.getUser(userId);
-		final Project project = projectRepository.findOne(projectId);
-		if (user != null && project != null && project.getApp() == null) {
+		final User user = userService.getUserNoCache(userId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
+		if (user != null && project != null && project.getApp() == null && !project.getUsers().contains(user)) {
 			project.getUsers().add(user);
 			user.getProjects().add(project);
 			projectRepository.save(project);
 			userService.saveExistingUser(user);
+			userService.evictFromCache(user);
 		}
 	}
 
 	@Override
 	@Transactional
 	public void removeUserFromProject(String userId, String projectId) {
-		final User user = userService.getUser(userId);
-		final Project project = projectRepository.findOne(projectId);
+		final User user = userService.getUserNoCache(userId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
 		if (user != null && project != null && project.getApp() == null) {
 			project.getUsers().remove(user);
-			user.getProjects().remove(project);
+			user.getProjects().removeIf(p -> p.getId().equals(project.getId()));
 			project.getProjectResourceAccesses().removeIf(pra -> pra.getUser().equals(user));
 			projectRepository.save(project);
 			userService.saveExistingUser(user);
+			userService.evictFromCache(user);
 		}
 	}
 
@@ -308,16 +314,21 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	public void setRealm(String realmId, String projectId) {
 		final App app = appService.getAppByIdentification(realmId);
+		if (app.getProject() != null) {
+			throw new AppServiceException("Realm is assigned to project " + app.getProject().getIdentification());
+		}
 		if (app != null) {
-			final Project project = projectRepository.findOne(projectId);
-			if (!project.getUsers().isEmpty()) {
-				removeUsersFromProject(project);
-				project.getUsers().clear();
-			}
-			project.setApp(app);
-			app.setProject(project);
-			projectRepository.save(project);
-			appService.updateApp(app);
+			projectRepository.findById(projectId).ifPresent(project -> {
+				if (!project.getUsers().isEmpty()) {
+					removeUsersFromProject(project);
+					project.getUsers().clear();
+				}
+				project.setApp(app);
+				app.setProject(project);
+				projectRepository.save(project);
+				appService.updateApp(app);
+			});
+
 		}
 
 	}
@@ -327,19 +338,21 @@ public class ProjectServiceImpl implements ProjectService {
 	public void unsetRealm(String realmId, String projectId) {
 		final App app = appService.getAppByIdentification(realmId);
 		if (app != null) {
-			final Project project = projectRepository.findOne(projectId);
-			project.setApp(null);
-			app.setProject(null);
-			project.getProjectResourceAccesses().clear();
-			projectRepository.save(project);
-			appService.updateApp(app);
+			projectRepository.findById(projectId).ifPresent(project -> {
+				project.setApp(null);
+				app.setProject(null);
+				project.getProjectResourceAccesses().clear();
+				projectRepository.save(project);
+				appService.updateApp(app);
+			});
+
 		}
 
 	}
 
 	@Override
 	public void addWebProject(String webProjectId, String projectId, String userId) {
-		final Project project = projectRepository.findOne(projectId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(webProjectId, userId);
 		if (webProject != null && project != null) {
 			project.setWebProject(WebProjectDTO.convert(webProject, userService.getUser(userId)));
@@ -350,7 +363,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public void removeWebProject(String projectId) {
-		final Project project = projectRepository.findOne(projectId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
 		if (project != null) {
 			project.setWebProject(null);
 			projectRepository.save(project);
@@ -361,9 +374,14 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	@Transactional
 	public boolean isUserInProject(String userId, String projectId) {
-		final User user = userService.getUser(userId);
-		final Project project = projectRepository.findOne(projectId);
+		final User user = userService.getUserNoCache(userId);
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			return false;
+		}
+		final Project project = opt.get();
 		if (project.getUser().equals(user)) {
+
 			return true;
 		} else if (project.getApp() != null) {
 			return project.getApp().getAppRoles().stream()
@@ -378,8 +396,9 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	@Override
 	public Set<User> getUsersInProject(String projectId) {
-		final Project project = projectRepository.findOne(projectId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
 		if (project != null) {
+
 			return project.getUsers().stream().collect(Collectors.toSet());
 		} else {
 			return new HashSet<>();
@@ -397,8 +416,12 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Set<ProjectResourceAccess> getResourcesAccessesForUser(String projectId, String userId) {
-		final User user = userService.getUser(userId);
-		final Project project = projectRepository.findOne(projectId);
+		final User user = userService.getUserNoCache(userId);
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			throw new ProjectServiceException("Project not found");
+		}
+		final Project project = opt.get();
 		if (project.getApp() != null) {
 			final Set<AppRole> roles = project
 					.getApp().getAppRoles().stream().filter(ar -> null != ar.getAppUsers().stream()
@@ -415,8 +438,11 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public Set<ProjectResourceAccess> getResourcesAccessesForAppRole(String projectId, String name) {
 		final AppRole appRole = appService.findRole(name);
-		final Project project = projectRepository.findOne(projectId);
-
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			throw new ProjectServiceException("Project not found");
+		}
+		final Project project = opt.get();
 		if (project.getApp() != null) {
 			return project.getProjectResourceAccesses().stream()
 					.filter(pra -> pra.getAppRole().getName().equals(appRole.getName())).collect(Collectors.toSet());
@@ -427,18 +453,25 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Set<ProjectResourceAccess> getAllResourcesAccesses(String projectId) {
-		final Project project = projectRepository.findOne(projectId);
+		final Project project = projectRepository.findById(projectId).orElse(null);
 		if (project != null) {
 			return project.getProjectResourceAccesses().stream().collect(Collectors.toSet());
-		} else {
+
+		} else
+
+		{
 			return new HashSet<>();
 		}
 	}
 
 	@Override
 	public Set<OPResource> getResourcesForProjectAndUser(String projectId, String userId) {
-		final User user = userService.getUser(userId);
-		final Project project = projectRepository.findOne(projectId);
+		final User user = userService.getUserNoCache(userId);
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			throw new ProjectServiceException("Project not found");
+		}
+		final Project project = opt.get();
 		final String role_user = user.getRole().getId();
 		if (user.equals(project.getUser()) || role_user.equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return project.getProjectResourceAccesses().stream().map(ProjectResourceAccess::getResource)
@@ -453,7 +486,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	public Set<OPResource> getResourcesForUser(String userId) {
 		final Set<OPResource> resources = new HashSet<>();
-		final List<ProjectResourceAccessList> accesses = projectResourceAccessRepository.findByUserId(userId);
+		final List<ProjectResourceAccess> accesses = projectResourceAccessRepository.findByUserIdAccess(userId);
 		accesses.stream().forEach(a -> resources.add(a.getResource()));
 		return resources;
 
@@ -470,17 +503,26 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	public Set<AppRole> getProjectRoles(String projectId) {
 		final Set<AppRole> roles = new HashSet<>();
-		final Project project = projectRepository.findOne(projectId);
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			throw new ProjectServiceException("Project not found");
+		}
+		final Project project = opt.get();
 		roles.addAll(project.getApp().getAppRoles());
-		project.getApp().getAppRoles().forEach(a -> roles.addAll(a.getChildRoles()));
+		project.getApp().getAppRoles().forEach(a -> roles.addAll(EntitiesCast.castAppRoles(a.getChildRoles())));
 		return roles;
 	}
 
 	@Override
 	public boolean isUserAuthorized(String projectId, String userId) {
-		final ProjectList project = getByIdForList(projectId);
-		final User user = userService.getUser(userId);
-		return project.getUser().equals(user) || user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name());
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			throw new ProjectServiceException("Project not found");
+		}
+		final Project project = opt.get();
+
+		final User user = userService.getUserNoCache(userId);
+		return project.getUser().equals(user) || user.isAdmin();
 	}
 
 	@Override
@@ -489,7 +531,7 @@ public class ProjectServiceImpl implements ProjectService {
 		final List<Project> projects = getProjectsWithResource(resourceId);
 		projects.forEach(
 				p -> p.getProjectResourceAccesses().removeIf(pra -> pra.getResource().getId().equals(resourceId)));
-		projectRepository.save(projects);
+		projectRepository.saveAll(projects);
 
 	}
 
@@ -501,9 +543,15 @@ public class ProjectServiceImpl implements ProjectService {
 	@Transactional
 	@Override
 	public boolean isUserInProjectWithoutOwner(String userId, String projectId) {
-		final User user = userService.getUser(userId);
-		final Project project = EntitiesCast.castProjectList(getByIdForList(projectId), false);
+		final User user = userService.getUserNoCache(userId);
+
+		final Optional<Project> opt = projectRepository.findById(projectId);
+		if (!opt.isPresent()) {
+			throw new ProjectServiceException("Project not found");
+		}
+		final Project project = opt.get();
 		if (project.getApp() != null) {
+
 			return project.getApp().getAppRoles().stream()
 					.map(ar -> ar.getAppUsers().stream().map(au -> au.getUser().equals(user))
 							.filter(Boolean::booleanValue).findFirst().orElse(false))

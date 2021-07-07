@@ -35,6 +35,7 @@ import com.minsait.onesait.platform.commons.model.MetricsControlPanelDto;
 import com.minsait.onesait.platform.commons.model.MetricsOntologyDto;
 import com.minsait.onesait.platform.commons.model.MetricsOperationDto;
 import com.minsait.onesait.platform.commons.model.MetricsPlatformDto;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.MongoDBTimeSeriesProcessor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -82,28 +83,28 @@ public class MetricAggregatorController {
 			for (MetricsOntologyDto dto : metricsOntologies) {
 				synchronized (this) { // To avoid multidocuments creation -- Performance is not relevant in this
 										// feature
-					timeSeriesProcessor.processTimeSerie(METRIC_ONTOLOGY, buildOntologyInstance(formattedDate, dto));
+					timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), METRIC_ONTOLOGY, buildOntologyInstance(formattedDate, dto));
 				}
 			}
 
 			for (MetricsOperationDto dto : metricsOperations) {
 				synchronized (this) { // To avoid multidocuments creation -- Performance is not relevant in this
 										// feature
-					timeSeriesProcessor.processTimeSerie(METRIC_OPERATION, buildOperationInstance(formattedDate, dto));
+					timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), METRIC_OPERATION, buildOperationInstance(formattedDate, dto));
 				}
 			}
 
 			for (MetricsApiDto dto : metricsApies) {
 				synchronized (this) { // To avoid multidocuments creation -- Performance is not relevant in this
 										// feature
-					timeSeriesProcessor.processTimeSerie(METRIC_API, buildApiInstance(formattedDate, dto));
+					timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), METRIC_API, buildApiInstance(formattedDate, dto));
 				}
 			}
 
 			for (MetricsControlPanelDto dto : metricsControlPanel) {
 				synchronized (this) { // To avoid multidocuments creation -- Performance is not relevant in this
 										// feature
-					timeSeriesProcessor.processTimeSerie(METRIC_CONTROLPANEL,
+					timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), METRIC_CONTROLPANEL,
 							buildControlPanelInstance(formattedDate, dto));
 				}
 			}
@@ -111,7 +112,7 @@ public class MetricAggregatorController {
 			for (MetricsOntologyDto dto : metricsQueriesControlPanel) {
 				synchronized (this) { // To avoid multidocuments creation -- Performance is not relevant in this
 										// feature
-					timeSeriesProcessor.processTimeSerie(METRIC_QUERIES_CONTROLPANEL,
+					timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), METRIC_QUERIES_CONTROLPANEL,
 							buildQueriesControlPanelInstance(formattedDate, dto));
 				}
 			}

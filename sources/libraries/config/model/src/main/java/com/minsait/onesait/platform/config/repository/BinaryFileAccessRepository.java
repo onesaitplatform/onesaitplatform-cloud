@@ -38,11 +38,10 @@ public interface BinaryFileAccessRepository extends JpaRepository<BinaryFileAcce
 	@Transactional
 	public void deleteByUserAndBinaryFile(User user, BinaryFile binaryFile);
 
+	@Override
 	@Modifying
 	@Transactional
 	public void deleteById(String id);
-
-	public BinaryFileAccess findById(String id);
 
 	@Query("select bfa from BinaryFileAccess as bfa WHERE bfa.user=:user AND bfa.binaryFile=:file AND bfa.accessType=1")
 	public BinaryFileAccess findByUserAndWriteAccess(@Param("file") BinaryFile file, @Param("user") User user);

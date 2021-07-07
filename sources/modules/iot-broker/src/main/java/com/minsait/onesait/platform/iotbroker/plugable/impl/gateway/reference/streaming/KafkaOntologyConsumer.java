@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.s
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +32,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.log.interceptor.aop.LogInterceptable;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.multitenant.config.model.Tenant;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -59,6 +66,9 @@ public class KafkaOntologyConsumer {
 	@Autowired
 	RouterService routerService;
 
+	@Autowired
+	private MultitenancyService multitenancyService;
+
 	ObjectMapper mapper = new ObjectMapper();
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.prefix:ONTOLOGY_}")
@@ -81,15 +91,12 @@ public class KafkaOntologyConsumer {
 			@Header(KafkaHeaders.OFFSET) List<Long> offsets) {
 
 		try {
-			log.info("listenToParitionKsqlBatch: Start consuming batch messages size: {}",data.size());
+			log.info("listenToParitionKsqlBatch: Start consuming batch messages size: {}", data.size());
 
 			final Map<String, StringBuilder> batchsToInsert = new HashMap<>();
 
 			String comma = "";
 			for (int i = 0; i < data.size(); i++) {
-				// log.info("received message='{}' with partition-offset='{}'",
-				// data.get(i),
-				// partitions.get(i) + "-" + offsets.get(i));
 
 				final String receivedTopic = receivedTopicList.get(i);
 				final String ontologyId = receivedTopic.substring(ksqlPrefix.length(), receivedTopic.lastIndexOf('_'));
@@ -109,11 +116,12 @@ public class KafkaOntologyConsumer {
 			}
 
 			final Set<String> ontologies = batchsToInsert.keySet();
-			for (final String ontology : ontologies) {
-				final String batch = batchsToInsert.get(ontology).append("]").toString();
+			for (final String ontologyFromtopic : ontologies) {
+				final String batch = batchsToInsert.get(ontologyFromtopic).append("]").toString();
 
 				final OperationType operationType = OperationType.INSERT;
-				final OperationModel model = OperationModel.builder(ontology,
+				final Ontology ontology = ontologyRepository.findByIdentificationIgnoreCase(ontologyFromtopic).get(0);
+				final OperationModel model = OperationModel.builder(ontology.getIdentification(),
 						OperationType.valueOf(operationType.name()), null, OperationModel.Source.KSQL).body(batch)
 						.deviceTemplate("").cacheable(false).build();
 				final NotificationModel modelNotification = new NotificationModel();
@@ -144,41 +152,69 @@ public class KafkaOntologyConsumer {
 
 			String comma = "";
 			for (int i = 0; i < data.size(); i++) {
-				// log.info("received message='{}' with partition-offset='{}'",
-				// data.get(i),
-				// partitions.get(i) + "-" + offsets.get(i));
 
+				String ontologyId = "";
+				String vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+				String tenant = Tenant2SchemaMapper.defaultTenantName(vertical);
 				final String receivedTopic = receivedTopicList.get(i);
-				final String ontologyId = receivedTopic.replace(ontologyPrefix, "");
+				// Get Ontology, vertical name/schema and tenant.
+				String[] topicInfo = receivedTopic.split("-");
 
-				if (!batchsToInsert.containsKey(ontologyId)) {
-					final StringBuilder stringBuilder = new StringBuilder();
-					stringBuilder.append("[");
-					batchsToInsert.put(ontologyId, stringBuilder);
+				if (topicInfo.length != 1) {
+					// We have a tenant that is not the default one
+					vertical = topicInfo[1].toLowerCase();
+					tenant = topicInfo[2].toLowerCase();
+					ontologyId = topicInfo[3];
+				} else {
+					ontologyId = receivedTopic.replace(ontologyPrefix, "");
 				}
 
-				final StringBuilder sb = batchsToInsert.get(ontologyId);
+				if (!batchsToInsert.containsKey(ontologyId + "-" + vertical + "-" + tenant)) {
+					final StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append("[");
+					batchsToInsert.put(ontologyId + "-" + vertical + "-" + tenant, stringBuilder);
+				}
+
+				final StringBuilder sb = batchsToInsert.get(ontologyId + "-" + vertical + "-" + tenant);
 
 				final String message = data.get(i);
 				sb.append(comma);
 				sb.append(message);
 				comma = ",";
+
 			}
 
 			final Set<String> ontologies = batchsToInsert.keySet();
-			for (final String ontology : ontologies) {
-				final String batch = batchsToInsert.get(ontology).append("]").toString();
+			for (final String ontologyVerticalTenant : ontologies) {
+				final String batch = batchsToInsert.get(ontologyVerticalTenant).append("]").toString();
+				String[] ontologyInfo = ontologyVerticalTenant.split("-");
+				final String ontologyName = ontologyInfo[0];
+				final String verticalName = ontologyInfo[1];
+				final String tenantName = ontologyInfo[2];
 
-				final OperationType operationType = OperationType.INSERT;
-				final OperationModel model = OperationModel.builder(ontology,
-						OperationType.valueOf(operationType.name()), null, OperationModel.Source.KAFKA).body(batch)
-						.deviceTemplate("").cacheable(false).build();
-				final NotificationModel modelNotification = new NotificationModel();
-				modelNotification.setOperationModel(model);
-				try {
-					routerService.insert(modelNotification);
-				} catch (final Exception e) {
-					log.error("listenToPartitionBatch:Message ignored by error:", e);
+				Optional<Vertical> vertical = multitenancyService.getVertical(verticalName);
+				Optional<Tenant> tenant = multitenancyService.getTenant(tenantName);
+				final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
+				if (vertical.isPresent() && tenant.isPresent() && ontology != null) {
+					final OperationType operationType = OperationType.INSERT;
+					final OperationModel model = OperationModel
+							.builder(ontology.getIdentification(), OperationType.valueOf(operationType.name()), null,
+									OperationModel.Source.KAFKA)
+							.body(batch).deviceTemplate("").cacheable(false).build();
+					final NotificationModel modelNotification = new NotificationModel();
+					modelNotification.setOperationModel(model);
+					try {
+						// set Multitenancy context
+						MultitenancyContextHolder.setTenantName(tenant.get().getName());
+						MultitenancyContextHolder.setVerticalSchema(vertical.get().getSchema());
+						routerService.insert(modelNotification);
+					} catch (final Exception e) {
+						log.error("listenToPartitionBatch:Message ignored by error:", e);
+					}
+				} else {
+					log.debug(
+							" Vertical  or Tenant not found. Insertion to ontology will be skipped. Ontology={}, Vertical={}, Tenant={}, Topic={}",
+							verticalName, ontology, verticalName, tenant, ontologyVerticalTenant);
 				}
 			}
 		} catch (final Exception e) {

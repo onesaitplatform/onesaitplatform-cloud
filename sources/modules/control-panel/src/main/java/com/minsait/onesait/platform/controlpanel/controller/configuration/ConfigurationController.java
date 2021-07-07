@@ -20,7 +20,6 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -44,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/configurations")
 @Slf4j
-@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 public class ConfigurationController {
 
 	@Autowired
@@ -66,7 +64,8 @@ public class ConfigurationController {
 	@GetMapping("/list")
 	public String list(Model model) {
 
-		final List<Configuration> configurations = configurationService.getAllConfigurations();
+		final List<Configuration> configurations = configurationService
+				.getAllConfigurations(userService.getUser(utils.getUserId()));
 		model.addAttribute("configurations", configurations);
 		model.addAttribute("nginxServiceEnabled", nginxServiceEnabled);
 		return "configurations/list";
@@ -108,8 +107,12 @@ public class ConfigurationController {
 			configuration = new Configuration();
 			configuration.setUser(userService.getUser(utils.getUserId()));
 		}
-		model.addAttribute(CONFIGURATION_STR, configuration);
-		return CONF_CREATE;
+		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+			model.addAttribute(CONFIGURATION_STR, configuration);
+			return CONF_CREATE;
+		} else {
+			return "error/403";
+		}
 
 	}
 
@@ -119,7 +122,11 @@ public class ConfigurationController {
 		if (configuration != null) {
 
 			try {
-				configurationService.updateConfiguration(configuration);
+				if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+					configurationService.updateConfiguration(configuration);
+				} else {
+					return "error/403";
+				}
 			} catch (final Exception e) {
 				log.debug(e.getMessage());
 				return CONF_CREATE;
@@ -134,7 +141,8 @@ public class ConfigurationController {
 	}
 
 	private void populateFormData(Model model) {
-		model.addAttribute("configurationTypes", configurationService.getAllConfigurationTypes());
+		model.addAttribute("configurationTypes",
+				configurationService.getAllConfigurationTypes(userService.getUser(utils.getUserId())));
 		// model.addAttribute("environments",
 		// this.configurationService.getEnvironmentValues());
 	}
@@ -148,12 +156,14 @@ public class ConfigurationController {
 		if (configuration == null)
 			return "error/404";
 
-		model.addAttribute(CONFIGURATION_STR, configuration);
-		return "configurations/show";
-
+		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+			model.addAttribute(CONFIGURATION_STR, configuration);
+			return "configurations/show";
+		} else {
+			return "error/403";
+		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		Configuration configuration = null;
@@ -162,9 +172,12 @@ public class ConfigurationController {
 		}
 		if (configuration == null)
 			return "error/404";
-
-		configurationService.deleteConfiguration(id);
-		return REDIRECT_CONF_LIST;
+		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+			configurationService.deleteConfiguration(id);
+			return REDIRECT_CONF_LIST;
+		} else {
+			return "error/403";
+		}
 	}
 
 	@GetMapping("/reload")

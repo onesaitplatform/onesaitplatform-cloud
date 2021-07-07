@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.api.model;
 import java.io.Serializable;
 
 import com.minsait.onesait.platform.config.model.Api;
+
 import lombok.Getter;
 import lombok.Setter;
 

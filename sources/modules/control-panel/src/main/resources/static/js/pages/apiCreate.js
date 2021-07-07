@@ -15,6 +15,7 @@ var ApiCreateController = function() {
 	var internalLanguage = 'en';
 	var reader = new FileReader();
 	var mountableModel2 = "";
+	
 	if ($('#api_authorizations').find('tr.authorization-model')[0]){
 		mountableModel2 = $('#api_authorizations').find('tr.authorization-model')[0].outerHTML;
 	}
@@ -283,6 +284,20 @@ var ApiCreateController = function() {
 	// REDIRECT URL
 	var navigateUrl = function(url){ window.location.href = url; }
 	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/apimanager/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
 		
 	// CLEAN FIELDS FORM
 	var cleanFields = function (formId) {
@@ -303,8 +318,16 @@ var ApiCreateController = function() {
 		
 		// CLEAN ALERT MSG
 		$('.alert-danger').hide();
+		
+		//CLEAN CODEMIRROR
+		if (myCodeMirror.getValue() != ""){
+			myCodeMirror.setValue('');
+		}
+		
+		operations = [];
+		$('#divCUSTOMSQLS').empty();
 	}
-	
+
 	// FORMATDATES: format date to DDBB standard 'yyyy/mm/dd';
 	var formatDates = function(dates){
 		
@@ -415,9 +438,10 @@ var ApiCreateController = function() {
 					$('#postProcessFx').val(myCodeMirrorJsExternal.getValue());
 				}
 				if (error == ""){
+					form.attr("action", "?" + csrfParameter + "=" + csrfValue)
 					form.submit();
 				} else { 
-					showGenericErrorDialog('ERROR', error);
+					showGenericErrorDialog('Error', error);
 				}				
             }
         });
@@ -449,7 +473,15 @@ var ApiCreateController = function() {
 		$(".nav-tabs a[href='#tab_2']").on("click", function(e) {
 		  if ($(this).hasClass("disabled")) {
 			e.preventDefault();
-			$.alert({title: 'INFO!', theme: 'light', content: 'CREATE API THEN GIVE AUTHORIZATIONS!'});
+			$.alert({title: 'INFO!', theme: 'light', content: apiCreateJson.validations.authinsert});
+			return false;
+		  }
+		});
+		
+		$(".nav-tabs a[href='#tab_3']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			$.alert({title: 'INFO!', theme: 'light', content: apiCreateJson.validations.graviteeswagger});
 			return false;
 		  }
 		});
@@ -494,7 +526,15 @@ var ApiCreateController = function() {
 			$('#datecreated').datepicker('update',regDate);
 			
 			initAuthorization(apiCreateReg.authorizations);
-		}initAuthorization
+			
+		    if ($('#checkboxCache').prop('checked')) {
+		    	$('#id_cachetimeout').prop('disabled', false);
+		    }
+
+		    if ($('#checkboxLimit').prop('checked')) {
+		    	$('#id_limit').prop('disabled', false);
+		    }
+		}
 	}
 	
     function replaceOperation(newOp){
@@ -761,7 +801,46 @@ var ApiCreateController = function() {
 		}
     };
     
+    // Init Code Mirror Gravitee
+    var handleCodeMirrorGraviteeSwaggerDoc = function() {
+        swaggerEditor = ace.edit("graviteeDocumentationAce");
+        swaggerEditor.setTheme("ace/theme/xcode");
+       	swaggerEditor.session.setMode("ace/mode/yaml");
+    	swaggerEditor.setOptions({showInvisibles:true});
+        swaggerEditor.setValue($('#graviteeDocumentation').val());
+        swaggerEditor.gotoLine(1);
+    }
     
+    // Save changes Gravitee Swagger Documentation
+	var saveGraviteeSwaggerDocumentation = function(apiId, content) {
+		var url =  apiCreateReg.authorizationsPath + '/updateGraviteeSwaggerDoc';
+		var response = {};
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		$.ajax({
+			url: url,
+            headers: {
+            	[csrf_header]: csrf_value
+		    },
+			type:"POST",
+			async: true,
+			data: {"apiId": apiId,"content": content},			 
+			dataType:"json",
+			success: function(response,status) {							
+				$.alert({title: 'INFO!', theme: 'light', content: apiCreateJson.graviteeSwaggerDocSaved});				
+			},
+            error: function(data, status, error) {
+            	var errorMessage = error;
+				 if(typeof data.responseText !== 'undefined' ){
+					 errorMessage = data.responseText;
+				 }
+				$.alert({title: 'ERROR!', theme: 'light', content: errorMessage});
+            }
+		});	
+						
+	};
+ 
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 		// SHOW ERROR DIALOG
@@ -833,6 +912,7 @@ var ApiCreateController = function() {
 				})
 				
 			}
+			handleCodeMirrorGraviteeSwaggerDoc();
 		},
 		
 		// INSERT AUTHORIZATION
@@ -869,7 +949,25 @@ var ApiCreateController = function() {
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
-		}
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			
+			freeResource(id,url);
+		},
+		
+		// UPDATE GRAVITEE SWAGGER DOCUMENTATION
+		updateGraviteeSwaggerDocumentation: function(){
+			logControl ? console.log(LIB_TITLE + ': updateGraviteeSwaggerDocumentation()') : '';
+			if ( apiCreateReg.actionMode !== null){	
+				// UPDATE MODE ONLY 
+				var content = swaggerEditor.getValue();
+				if (content !== '') {
+					saveGraviteeSwaggerDocumentation(apiCreateReg.apiId, content);
+				}	
+			}
+		},
+
 	};
 }();
 

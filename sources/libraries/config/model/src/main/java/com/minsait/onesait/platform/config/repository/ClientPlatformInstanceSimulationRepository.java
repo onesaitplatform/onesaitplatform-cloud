@@ -28,8 +28,6 @@ public interface ClientPlatformInstanceSimulationRepository
 
 	ClientPlatformInstanceSimulation findByIdentification(String identification);
 
-	ClientPlatformInstanceSimulation findById(String id);
-
 	List<ClientPlatformInstanceSimulation> findByUser(User user);
 
 	List<ClientPlatformInstanceSimulation> findByOntology(Ontology ontology);
@@ -38,6 +36,7 @@ public interface ClientPlatformInstanceSimulationRepository
 
 	void deleteByOntology(Ontology ontology);
 
+	@Override
 	void deleteById(String id);
 
 	ClientPlatformInstanceSimulation findByJobName(String jobName);

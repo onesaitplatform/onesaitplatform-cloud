@@ -39,12 +39,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.index.MongoDbIndex;
 import com.minsait.onesait.platform.persistence.mongodb.template.MongoDbTemplate;
 import com.minsait.onesait.platform.persistence.util.JSONPersistenceUtilsMongo;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 
@@ -70,13 +70,6 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	private static final String VALIDATE_INDEX = "validateIndexes";
 	private static final String NOT_IMPLEMENTED_ALREADY = "Not Implemented Already";
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
-	@Getter
-	@Setter
-	private String database;
-
 	@Value("${onesaitplatform.database.mongodb.export.path:#{null}}")
 	@Getter
 	@Setter
@@ -93,29 +86,29 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	public void init() {
 		objectMapper = new ObjectMapper();
 		objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-		database = resourcesService.getGlobalConfiguration().getEnv().getDatabase().get("mongodb-database").toString();
 	}
 
 	@Override
 	public String createTable4Ontology(String collection, String schema, Map<String, String> config) {
 		log.debug(CREATE_TABLE_ONTOLOGY, collection, schema);
 		try {
-			if (collection == null || schema == null)
+			if (collection == null || schema == null) {
 				throw new DBPersistenceException(
 						"DAOMongoDBImpl needs a collection and a schema to create a collection into the database");
+				}
 
 			/**
 			 * Sino existe la collection la crea
 			 */
-			if (!mongoDbConnector.collectionExists(database, collection)) {
-				mongoDbConnector.createCollection(database, collection);
+			if (!mongoDbConnector.collectionExists(Tenant2SchemaMapper.getRtdbSchema(), collection)) {
+				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), collection);
 			} else {
 
 				/**
 				 * Permitir creación solamente si no tiene elementos: usa la que existe sin
 				 * registros
 				 */
-				final long countCollection = mongoDbConnector.count(database, collection, "{}");
+				final long countCollection = mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), collection, "{}");
 				if (countCollection > 0) {
 					log.error("The collection {} already exists and has records", collection);
 					throw new DBPersistenceException("The collection already exists and has records");
@@ -133,7 +126,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 
 	@Override
 	public List<String> getListOfTables() {
-		return mongoDbConnector.getCollectionNames(database);
+		return mongoDbConnector.getCollectionNames(Tenant2SchemaMapper.getRtdbSchema());
 	}
 
 	@Override
@@ -141,8 +134,9 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		final List<String> collections = getListOfTables();
 		final ArrayList<String> result = new ArrayList<>();
 		for (final String collection : collections) {
-			if (collection.startsWith(ontology))
+			if (collection.startsWith(ontology)) {
 				result.add(collection);
+			}
 		}
 		return result;
 	}
@@ -150,7 +144,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	@Override
 	public void removeTable4Ontology(String ontology) {
 		try {
-			mongoDbConnector.dropCollection(database, ontology);
+			mongoDbConnector.dropCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 		} catch (final javax.persistence.PersistenceException e) {
 			log.error("removeTable4Ontology" + e.getMessage());
 			throw new DBPersistenceException(e);
@@ -168,11 +162,13 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		IndexOptions indexOptions = null;
 		try {
 			pquery = sentence.trim();
-			if (pquery.indexOf(".createIndex(") == -1)
+			if (pquery.indexOf(".createIndex(") == -1) {
 				throw new DBPersistenceException("No db.<collection>.createIndex() found in sentence");
-			if (pquery.indexOf(".createIndex({\"") == -1 && pquery.indexOf(".createIndex({'") == -1)
+			}
+			if (pquery.indexOf(".createIndex({\"") == -1 && pquery.indexOf(".createIndex({'") == -1) {
 				throw new DBPersistenceException(
 						"Please use ' in sentences, example: db.<collection>.createIndex({'<attribute>':1}) ");
+			}
 
 			collection = util.getCollectionName(pquery);
 
@@ -196,7 +192,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 						e.getCause(), e.getMessage());
 				throw new DBPersistenceException("Invalid index key or index options", e);
 			}
-			mongoDbConnector.createIndex(database, collection, new MongoDbIndex(indexKeys, indexOptions));
+			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), collection, new MongoDbIndex(indexKeys, indexOptions));
 
 		} catch (final DBPersistenceException e) {
 			log.error(CREATE_INDEX + e.getMessage());
@@ -248,7 +244,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	@Override
 	public Map<String, Boolean> getStatusDatabase() {
 		final Map<String, Boolean> map = new HashMap<>();
-		map.put(database, mongoDbConnector.testConnection());
+		map.put(Tenant2SchemaMapper.getRtdbSchema(), mongoDbConnector.testConnection());
 		return map;
 	}
 
@@ -257,7 +253,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		log.debug("dropIndex", indexName, ontology);
 		if (indexName != null && ontology != null) {
 			try {
-				mongoDbConnector.dropIndex(database, ontology, new MongoDbIndex(indexName));
+				mongoDbConnector.dropIndex(Tenant2SchemaMapper.getRtdbSchema(), ontology, new MongoDbIndex(indexName));
 			} catch (final DBPersistenceException e) {
 				log.error("dropIndex", e, indexName);
 				throw new DBPersistenceException(e);
@@ -271,7 +267,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		try {
 			final List<String> index = new ArrayList<>();
 			if (ontology != null) {
-				return mongoDbConnector.getIndexesAsStrings(database, ontology);
+				return mongoDbConnector.getIndexesAsStrings(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 			}
 			return index;
 		} catch (final Exception e) {
@@ -284,7 +280,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	public String getIndexes(String ontology) {
 		log.debug(GET_INDEX, ontology);
 		try {
-			final List<MongoDbIndex> list = mongoDbConnector.getIndexes(database, ontology);
+			final List<MongoDbIndex> list = mongoDbConnector.getIndexes(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 			return objectMapper.writeValueAsString(list);
 		} catch (final Exception e) {
 			log.error(GET_INDEX, e);
@@ -297,11 +293,12 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 
 		try {
 			final List<String> list = JSONPersistenceUtilsMongo.getGeoIndexes(schema);
-			if (list != null && !list.isEmpty())
+			if (list != null && !list.isEmpty()) {
 				for (final String string : list) {
 					createIndex(collection, string, "2dsphere");
 					ensureGeoIndex(collection, string);
 				}
+			}
 		} catch (final Exception e) {
 			log.error("Cannot create geo indexes: " + e.getMessage(), e);
 		}
@@ -324,19 +321,21 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				try {
 					final Map<String, Object> obj2 = objectMapper.readValue(esquema,
 							new TypeReference<Map<String, Object>>() {
-							});
+					});
 					List<String> names;
 					if (obj2.containsKey("properties")) {
 
 						final Map<String, Object> proper = (Map<String, Object>) obj2.get("properties");
 						names = util.getParentProperties(proper, obj2);
 						if (!names.isEmpty()) {
-							for (final String name : names)
+							for (final String name : names) {
 								createIndex(collection, name + ": \"2dsphere\"");
+							}
 						}
 
-						for (final String name : names)
+						for (final String name : names) {
 							computeGeometryIndex(collection, name, schema);
+						}
 
 					}
 				} catch (final JsonParseException | JsonMappingException e) {
@@ -359,7 +358,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		final Map<String, Integer> indexKey = new HashMap<>();
 		indexKey.put(attribute, 1);
 		try {
-			mongoDbConnector.createIndex(database, ontology, new MongoDbIndex(indexKey));
+			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), ontology, new MongoDbIndex(indexKey));
 		} catch (final DBPersistenceException e) {
 			log.error(CREATE_INDEX, e, attribute);
 			throw new DBPersistenceException(e);
@@ -369,7 +368,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	public void ensureGeoIndex(String ontology, String attribute) {
 		try {
 			log.debug("ensureGeoIndex", ontology, attribute);
-			mongoDbConnector.createIndex(database, ontology, Indexes.geo2dsphere(attribute));
+			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), ontology, Indexes.geo2dsphere(attribute));
 		} catch (final DBPersistenceException e) {
 			log.error(CREATE_INDEX, e, attribute);
 
@@ -393,22 +392,24 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 		final String query = "{'contextData.timestampMillis':{$lte:" + startDateMillis + "}}";
 		final String path;
 
-		if (pathToFile.equals("default"))
+		if (pathToFile.equals("default")) {
 			path = exportPath + ontology + format.format(new Date()) + ".json";
-		else
+		}
+		else {
 			path = pathToFile;
+		}
 
-		if (mongoDbConnector.count(database, ontology, "count(" + query + ")") > 0) {
+		if (mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), ontology, "count(" + query + ")") > 0) {
 			ProcessBuilder pb = null;
 			if (mongoDbConnector.getCredentials().isEnableMongoDbAuthentication()) {
 				pb = new ProcessBuilder("mongoexport", "--host",
-						mongoDbConnector.getConnection().getServerAddressList().get(0).getHost(), "--db", database,
+						mongoDbConnector.getConnection().getServerAddressList().get(0).getHost(), "--db", Tenant2SchemaMapper.getRtdbSchema(),
 						"--username", mongoDbConnector.getCredentials().getUsername(), "--password",
 						mongoDbConnector.getCredentials().getPassword(), "--collection", ontology, "--query", query,
 						"--out", path, "--authenticationDatabase",
 						mongoDbConnector.getCredentials().getAuthenticationDatabase());
 			} else {
-				pb = new ProcessBuilder("mongoexport", "--db", database, "--collection", ontology, "--query", query,
+				pb = new ProcessBuilder("mongoexport", "--db", Tenant2SchemaMapper.getRtdbSchema(), "--collection", ontology, "--query", query,
 						"--out", path);
 			}
 
@@ -431,14 +432,15 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				log.error("Could not execute command {}", e.getMessage());
 				throw new DBPersistenceException("Could not execute command: " + pb.command().toString() + e);
 			}
-		} else
+		} else {
 			log.debug("No ontologies to export");
+		}
 		return ExportData.builder().filterQuery(query).path(path).build();
 	}
 
 	@Override
 	public long deleteAfterExport(String ontology, String query) {
-		return mongoDbConnector.remove(database, ontology, query, false).getCount();
+		return mongoDbConnector.remove(Tenant2SchemaMapper.getRtdbSchema(), ontology, query, false).getCount();
 	}
 
 	@Override

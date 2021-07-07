@@ -65,7 +65,8 @@ public class ConfigurationRestService {
 	@GetMapping
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ConfigurationSimplified[].class))
 	public ResponseEntity<?> getAll() {
-		final List<ConfigurationSimplified> configurations = configurationService.getAllConfigurations().stream()
+		final List<ConfigurationSimplified> configurations = configurationService
+				.getAllConfigurations(userService.getUser(utils.getUserId())).stream()
 				.map(c -> new ConfigurationSimplified(c)).collect(Collectors.toList());
 
 		return new ResponseEntity<>(configurations, HttpStatus.OK);
@@ -75,6 +76,7 @@ public class ConfigurationRestService {
 	@ApiOperation("Get configuration by parameters")
 	@GetMapping("/type/{type}/environment/{environment}/realm/{realm}")
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ConfigurationSimplified.class))
+	@Deprecated
 	public ResponseEntity<?> get(
 			@ApiParam("Type") @PathVariable(value = "type", required = true) Configuration.Type type,
 			@ApiParam("Environment") @PathVariable(value = "environment", required = true) String environment,
@@ -89,20 +91,46 @@ public class ConfigurationRestService {
 
 	}
 
-	@ApiOperation("Get configuration")
+	@ApiOperation("Get configuration By ID")
 	@GetMapping("/{id}")
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ConfigurationSimplified.class))
 	public ResponseEntity<?> getById(@ApiParam("id") @PathVariable(value = "id", required = true) String id) {
 
 		final Configuration configuration = configurationService.getConfiguration(id);
-		if (configuration == null)
+		if (configuration != null
+				&& (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId()))) {
+			return new ResponseEntity<>(new ConfigurationSimplified(configuration), HttpStatus.OK);
+		} else if (configuration == null) {
 			return new ResponseEntity<>("No configuration with id " + id, HttpStatus.NOT_FOUND);
-		return new ResponseEntity<>(new ConfigurationSimplified(configuration), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>("User has not permission for configuration:  " + id, HttpStatus.FORBIDDEN);
+		}
+	}
+
+	@ApiOperation("Get configuration By Identification, Environment and Type")
+	@GetMapping("/{identification}/type/{type}/environment/{environment}")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ConfigurationSimplified.class))
+	public ResponseEntity<?> getByIdentification(
+			@ApiParam("identification") @PathVariable(value = "identification", required = true) String identification,
+			@ApiParam("type") @PathVariable(value = "type", required = true) Configuration.Type type,
+			@ApiParam("environment") @PathVariable(value = "environment", required = true) String environment) {
+
+		final Configuration configuration = configurationService.getConfiguration(type, environment, identification);
+		if (configuration != null
+				&& (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId()))) {
+			return new ResponseEntity<>(new ConfigurationSimplified(configuration), HttpStatus.OK);
+		} else if (configuration == null) {
+			return new ResponseEntity<>("No configuration with identification: " + identification + " - environment: "
+					+ environment + " - type: " + type.name(), HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>("User has not permission.", HttpStatus.FORBIDDEN);
+		}
 
 	}
 
 	@ApiOperation("Get configuration by parameters")
 	@GetMapping("/type/{type}/real/{realm}")
+	@Deprecated
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ConfigurationSimplified[].class))
 	public ResponseEntity<?> getByIdRealm(
 			@ApiParam("Type") @PathVariable(value = "type", required = true) Configuration.Type type,
@@ -127,18 +155,51 @@ public class ConfigurationRestService {
 		}
 
 		final Configuration configuration = configurationService.getConfiguration(id);
+		if (configuration != null
+				&& (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId()))) {
+			configuration.setDescription(config.getDescription());
+			configuration.setEnvironment(config.getEnvironment());
+			configuration.setSuffix(config.getIdentification());
+			configuration.setType(config.getType());
+			configuration.setYmlConfig(config.getYml());
+			configurationService.updateConfiguration(configuration);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} else if (configuration == null) {
+			return new ResponseEntity<>("No configuration with id: " + id, HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>("User has not permission.", HttpStatus.FORBIDDEN);
+		}
 
-		if (configuration == null)
-			return new ResponseEntity<>("Configuration with id " + id + " does not exist", HttpStatus.BAD_REQUEST);
+	}
 
-		configuration.setDescription(config.getDescription());
-		configuration.setEnvironment(config.getEnvironment());
-		configuration.setSuffix(config.getSuffix());
-		configuration.setType(config.getType());
-		configuration.setYmlConfig(config.getYml());
-		configurationService.updateConfiguration(configuration);
-		return new ResponseEntity<>(HttpStatus.OK);
+	@ApiOperation("Update configuration")
+	@PutMapping
+	public ResponseEntity<?> updateByIdentification(
+			@ApiParam("Configuration") @Valid @RequestBody ConfigurationSimplified config, Errors errors) {
+		if (errors.hasErrors()) {
+			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
 
+		final Configuration configuration = configurationService.getConfiguration(config.getType(),
+				config.getEnvironment(), config.getIdentification());
+
+		if (configuration != null
+				&& (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId()))) {
+			configuration.setDescription(config.getDescription());
+			configuration.setEnvironment(config.getEnvironment());
+			configuration.setSuffix(config.getIdentification());
+			configuration.setType(config.getType());
+			configuration.setYmlConfig(config.getYml());
+			configurationService.updateConfiguration(configuration);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} else if (configuration == null) {
+			return new ResponseEntity<>(
+					"Configuration with identification: " + config.getIdentification() + " - environment: "
+							+ config.getEnvironment() + " - type: " + config.getType().name() + " does not exist",
+					HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>("User has not permission.", HttpStatus.FORBIDDEN);
+		}
 	}
 
 	@ApiOperation("Create configuration")
@@ -152,7 +213,7 @@ public class ConfigurationRestService {
 		Configuration configurationDb = new Configuration();
 		configurationDb.setDescription(configuration.getDescription());
 		configurationDb.setEnvironment(configuration.getEnvironment());
-		configurationDb.setSuffix(configuration.getSuffix());
+		configurationDb.setSuffix(configuration.getIdentification());
 		configurationDb.setType(configuration.getType());
 		configurationDb.setYmlConfig(configuration.getYml());
 		configurationDb.setUser(userService.getUser(utils.getUserId()));
@@ -161,16 +222,38 @@ public class ConfigurationRestService {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@ApiOperation("Delete configuration")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> delete(@ApiParam("ID") @PathVariable(value = "id", required = true) String id) {
 		final Configuration configuration = configurationService.getConfiguration(id);
-		if (configuration == null)
-			return new ResponseEntity<>("Configuration with id " + id + " does not exist", HttpStatus.BAD_REQUEST);
-		configurationService.deleteConfiguration(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+		if (configuration != null
+				&& (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId()))) {
+			configurationService.deleteConfiguration(id);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} else if (configuration == null) {
+			return new ResponseEntity<>("Configuration with id: " + id + " does not exist", HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>("User has not permission.", HttpStatus.FORBIDDEN);
+		}
+	}
 
+	@ApiOperation("Delete configuration by identification, environment and type")
+	@DeleteMapping("/{identification}/type/{type}/environment/{environment}")
+	public ResponseEntity<?> deleteByIdentification(
+			@ApiParam("identification") @PathVariable(value = "identification", required = true) String identification,
+			@ApiParam("type") @PathVariable(value = "type", required = true) Configuration.Type type,
+			@ApiParam("environment") @PathVariable(value = "environment", required = true) String environment) {
+		final Configuration configuration = configurationService.getConfiguration(type, environment, identification);
+		if (configuration != null
+				&& (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId()))) {
+			configurationService.deleteConfiguration(configuration.getId());
+			return new ResponseEntity<>(HttpStatus.OK);
+		} else if (configuration == null) {
+			return new ResponseEntity<>("Configuration with identification: " + identification + " - environment: "
+					+ environment + " - type: " + type.name() + " does not exist", HttpStatus.NOT_FOUND);
+		} else {
+			return new ResponseEntity<>("User has not permission.", HttpStatus.FORBIDDEN);
+		}
 	}
 
 }

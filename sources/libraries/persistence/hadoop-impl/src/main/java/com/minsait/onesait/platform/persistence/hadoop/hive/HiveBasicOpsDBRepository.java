@@ -193,4 +193,15 @@ public class HiveBasicOpsDBRepository implements BasicOpsDBRepository {
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
 	}
 
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) throws DBPersistenceException {
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
 }

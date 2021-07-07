@@ -43,23 +43,25 @@ public class ServiceUtils {
 	}
 
 	public String getUserId() {
-		Authentication auth = getAuthentication();
-		if (auth == null)
+		final Authentication auth = getAuthentication();
+		if (auth == null) {
 			return null;
+		}
 		return auth.getName();
 	}
 
 	public String getRole() {
-		Authentication auth = getAuthentication();
-		if (auth == null)
+		final Authentication auth = getAuthentication();
+		if (auth == null) {
 			return null;
+		}
 		return auth.getAuthorities().toArray()[0].toString();
 	}
 
 	public String getMessage(String key, String valueDefault) {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
@@ -71,14 +73,14 @@ public class ServiceUtils {
 
 	public String jsonStringToString(String json) {
 
-		ObjectMapper objectMapper = new ObjectMapper();
+		final ObjectMapper objectMapper = new ObjectMapper();
 		String formattedJson = null;
 
 		try {
-			JsonNode tree = objectMapper.readValue(json, JsonNode.class);
+			final JsonNode tree = objectMapper.readValue(json, JsonNode.class);
 			formattedJson = tree.toString();
 			return formattedJson;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Exception reached " + e.getMessage(), e);
 			return null;
 		}
@@ -86,7 +88,7 @@ public class ServiceUtils {
 
 	public static String getAuditCollectionName(String userId) {
 		if (userId.contains(".")) {
-			String replacedUser = userId.replace(".", "_");
+			final String replacedUser = userId.replace(".", "_");
 			return AUDIT_COLLECTION_NAME + replacedUser;
 		} else {
 			return AUDIT_COLLECTION_NAME + userId;

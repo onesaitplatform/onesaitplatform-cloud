@@ -24,10 +24,9 @@ import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
 
 public interface NotebookUserAccessTypeRepository extends JpaRepository<NotebookUserAccessType, String> {
 
-	NotebookUserAccessType findById(String id);
-
+	@Override
 	List<NotebookUserAccessType> findAll();
-	
+
 	@Query("SELECT n FROM NotebookUserAccessType AS n WHERE n.name = :accessTypeName")
 	NotebookUserAccessType findUserAccessTypeByName(@Param("accessTypeName") String accessTypeName);
 }

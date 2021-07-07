@@ -23,8 +23,6 @@ import com.minsait.onesait.platform.config.model.Viewer;
 
 public interface ViewerRepository extends JpaRepository<Viewer, String> {
 
-	Viewer findById(String id);
-
 	List<Viewer> findByIdentification(String identification);
 
 	List<Viewer> findByDescription(String description);

@@ -14,6 +14,15 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.helper;
 
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
@@ -24,6 +33,11 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
+
+
+import java.util.List;
 
 @Component("OracleHelper")
 @Slf4j
@@ -37,6 +51,9 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 			+ "SELECT table_name AS table_name FROM user_tables UNION "
 			+ "SELECT table_name AS table_name FROM user_tab_privs WHERE grantee IN (SELECT user from dual)"
 			+ ") ORDER BY table_name asc";
+
+	@Autowired
+	private OntologyVirtualRepository ontologyVirtualRepository;
 
 	@Override
 	public String getAllTablesStatement() {
@@ -118,6 +135,35 @@ public class OracleHelper extends SQLHelperImpl implements SQLHelper {
 		}
 
 		return type;
+	}
+
+	@Override
+	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
+		Ontology o = ontologyVirtualRepository.findOntology(ontology);
+		OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
+		String jsonSchema = o.getJsonSchema();
+		JSONObject obj = new JSONObject(jsonSchema);
+		JSONObject columns = obj.getJSONObject("properties");
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
+
+		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
+			Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
+			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
+			Alias alias = plainSelect.getFromItem().getAlias();
+			List<SelectItem> selectItems = plainSelect.getSelectItems();
+			for (SelectItem item : selectItems) {
+				if (item.toString().equals("*") || (alias != null && item.toString().equals(alias.getName()))) {
+					return refactorQueryAll(columns, virtual, selectStatement, alias, item.toString());
+				} else {
+					query = refactorQuery(virtual, query, alias, item);
+				}
+			}
+
+		}
+
+		return query;
 	}
 
 }

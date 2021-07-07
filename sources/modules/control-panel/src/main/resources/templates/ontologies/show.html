@@ -105,6 +105,7 @@
 									<li id="tab-advanced-options" class=""><a href="#tab_settings" data-toggle="tab" aria-expanded="true"><span th:text="#{ontology.advancedsettings}" >Advanced Settings </span></a></li>
 								    <li id="tab-kpi" class=""><a  th:style="${ontology.ontologyKPI} == null ? 'display:none' : 'display:block'" href="#tab_kpi" data-toggle="tab" aria-expanded="true"> <span  th:text="#{ontology.kpisettings}" >KPI Settings </span></a></li>
 								    <li id="tab-tseries" class =""><a th:style="${ontology.dataModel.id} != 'MASTER-DataModel-30' ? 'display:none' : 'display:block'" href="#tab_tseries" data-toggle="tab" aria-expanded="false">	<span th:text="#{ontology.tseriessettings}"> Timeseries Settings</span></a></li>
+								    <li id="tab-data" class=""><a href="#tab_data" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true"> <span th:text="#{ontology.dataaccess}" >Data Access Settings </span></a></li>
 								</ul>
 								
 							</div>
@@ -227,25 +228,25 @@
 														<div class="pull-right">
 															
 															<!-- REMOVE -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+															<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 
 															<span class="sep no-border">&nbsp;</span>
 															
 															
 															<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-															<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" th:if="${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
-	 														<button sec:authorize="!hasAuthority('ROLE_PARTNER') AND !hasAuthority('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${ontology.user.userId} AND ${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>															
-															<button sec:authorize=" hasAuthority('ROLE_PARTNER')" th:if="${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-square btn-warning" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><i class="la la-edit"></i> <span th:text="#{gen.editBtn}"> Edit </span></button>
+															<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+	 														<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER') AND !@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${ontology.user.userId} AND ${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>															
+															<button sec:authorize=" @securityService.hasAnyRole('ROLE_PARTNER')" th:if="${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-square btn-warning" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><i class="la la-edit"></i> <span th:text="#{gen.editBtn}"> Edit </span></button>
 
-															<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" th:if="${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
-	 														<button sec:authorize="!hasAuthority('ROLE_PARTNER') AND !hasAuthority('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${ontology.user.userId} AND ${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>															
-															<button sec:authorize=" hasAuthority('ROLE_PARTNER')" th:if="${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-square btn-warning" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/updatetimeseries/} + ${ontology.id} + '\');'" ><i class="la la-edit"></i> <span th:text="#{gen.editBtn}"> Edit </span></button>
+															<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+	 														<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER') AND !@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${ontology.user.userId} AND ${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>															
+															<button sec:authorize=" @securityService.hasAnyRole('ROLE_PARTNER')" th:if="${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-square btn-warning" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/updatetimeseries/} + ${ontology.id} + '\');'" ><i class="la la-edit"></i> <span th:text="#{gen.editBtn}"> Edit </span></button>
 
 															
 															<span class="sep">&nbsp;</span>
 															
 															<!-- CREATE -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/} + 'create' + '\');'" ><span th:text="#{gen.createBtn}"> New</span></button>
+															<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/} + 'create' + '\');'" ><span th:text="#{gen.createBtn}"> New</span></button>
 															
 														</div>
 													</div>											
@@ -266,7 +267,7 @@
 												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 													<div>
 														<!-- DATATABLE DANDELION CONF. -->												
-														<table id="authorizations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+														<table id="authorizations" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
 															<thead>
 																<tr class="cabecera-tabla">
 																	<th class="titulo-columnas text-left" th:text="#{ontology.auth.user}">Identification</th>
@@ -326,6 +327,11 @@
 													<label class="control-label" th:text="#{ontology.allowsCreateTopic}">Kafka</label>
 													<p th:if="${ontology.allowsCreateTopic}" id="allowsCreateTopic" class="form-control-static-block " th:text="#{gen.yes}"> Kafka </p>
 													<p th:if="${not ontology.allowsCreateTopic}" id="allowsCreateTopic" class="form-control-static-block " th:text="#{gen.no}"> Kafka </p>
+												</div>
+												<div class="form-group">
+													<label class="control-label" th:text="#{ontology.allowsCreateNotificationTopic}">Kafka Notification</label>
+													<p th:if="${ontology.allowsCreateNotificationTopic}" id="allowsCreateNotificationTopic" class="form-control-static-block " th:text="#{gen.yes}"> Kafka </p>
+													<p th:if="${not ontology.allowsCreateNotificationTopic}" id="allowsCreateNotificationTopic" class="form-control-static-block " th:text="#{gen.no}"> Kafka </p>
 												</div>
 												
 											</div>								
@@ -503,11 +509,90 @@
 												</div>
 											</div>									
 										</div>	
-																		
-										<!-- END TAB TIMESERIES  -->
-										
 									</div>
+									<!-- END TAB TIMESERIES  -->									
 									
+									<div class="tab-pane " id="tab_data">
+									<!-- DATA ACCESSES -->
+										<div class="row">
+											<div class="col-md-12">											
+												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+													<div>
+														<!-- DATATABLE DANDELION CONF. -->												
+														<table id="userdataaccess" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+															<thead>
+																<tr class="cabecera-tabla">
+																	<th class="titulo-columnas" th:text="#{ontology.user}">User</th>
+																	<th class="titulo-columnas" th:text="#{ontology.data.atributte}">Attribute</th>
+																	<th class="titulo-columnas" th:text="#{ontology.data.atributtevalue}">Value</th>
+																</tr>
+															</thead>
+															<tbody th:remove="all-but-first">
+																<tr th:each="dataaccess : ${dataaccesses}" th:if="${dataaccess.userId}!=null" pages:paginate="10">
+																	<!-- USER -->
+																	<td class="text-left no-wrap bold" th:text="${dataaccess.userId}"></td>
+																	<!-- RULE -->
+																	<td class="text-left " th:text="${dataaccess.rule}"></td>													
+																</tr>
+															</tbody>
+														</table>												
+														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+														<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+															<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+																<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+															</a>
+															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+																<label class="toggle-vis" data-column="0" th:text="#{ontology.user}"> Identification </label>
+																<label class="toggle-vis" data-column="1" th:text="#{ontology.data.atributte}"> User </label>
+																<label class="toggle-vis" data-column="2" th:text="#{ontology.data.atributtevalue}"> Access Type</label>															
+															</div>
+														</div>																							
+													</div>
+												</div>											
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-12">											
+												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+													<div>
+														<!-- DATATABLE DANDELION CONF. -->												
+														<table id="roledataaccess" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+															<thead>
+																<tr class="cabecera-tabla">
+																	<th class="titulo-columnas" th:text="#{ontology.realm}">Realm</th>
+																	<th class="titulo-columnas" th:text="#{ontology.role}">Role</th>
+																	<th class="titulo-columnas" th:text="#{ontology.data.atributte}">Attribute</th>
+																	<th class="titulo-columnas" th:text="#{ontology.data.atributtevalue}">Value</th>
+																</tr>
+															</thead>
+															<tbody th:remove="all-but-first">
+																<tr th:each="dataaccess : ${dataaccesses}" th:if="${dataaccess.userId}==null" pages:paginate="10">
+																	<!-- REALM -->
+																	<td class="text-left no-wrap bold" th:text="${dataaccess.appName}"></td>
+																	<!-- ROLE -->
+																	<td class="text-left no-wrap bold" th:text="${dataaccess.appRoleName}"></td>
+																	<!-- RULE -->
+																	<td class="text-left " th:text="${dataaccess.rule}"></td>														
+																</tr>
+															</tbody>
+														</table>												
+														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+														<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+															<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+																<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+															</a>
+															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+																<label class="toggle-vis" data-column="0" th:text="#{ontology.realm}">Realm</label>
+																<label class="toggle-vis" data-column="1" th:text="#{ontology.role}">Role</label>
+																<label class="toggle-vis" data-column="2" th:text="#{ontology.data.atributte}">Attribute </label>
+																<label class="toggle-vis" data-column="3" th:text="#{ontology.data.atributtevalue}">Value</label>															
+															</div>
+														</div>																							
+													</div>
+												</div>											
+											</div>
+										</div>
+									</div>						
 								</div>
 								
 							</div>
@@ -523,26 +608,28 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
 	
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	
+	<script th:src="@{/static/js/pages/showOntology.js}"></script>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
 		
@@ -577,7 +664,7 @@
 		showLog ? console.log('deleteOntologyConfirmation() -> formAction: ' + $('.delete-ontology').attr('action') + ' ID: ' + $('#delete-ontologyId').attr('ontologyId')): '';
 		
 		// call ontology Confirm at header.
-		HeaderController.showConfirmDialogOntologia('delete_ontology_form');	
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form',ontologyId);	
 	}
 	
 	// CHECK IF JSON STRING WHEN JSON PARSE IS OK OR NOT, IF THE JSON IS
@@ -612,6 +699,9 @@
             } else if (tipo.toLowerCase() == "object"){ console.log('INSTANCE (obj): ' + instance); instance = instance + generateObject(property, "", propertyName);
 			// adding array type
             } else if (tipo.toLowerCase() == "array" ){ console.log('INSTANCE (arr): ' + instance); instance = instance + generateArray(property, "", propertyName);
+         	// date
+            } else if (tipo.toLowerCase() == "string" && property.format == "date"){
+            	instance = instance +"\"2014-01-30\"";
             // timestamp
             } else if (tipo.toLowerCase() == "string" && property.format != null){
             	instance = instance +"\"2014-01-30T17:14:00Z\""; 
@@ -627,107 +717,7 @@
         return instance;
     }
 	
-	// GENERARATE PROPERTY TYPES [GEOMETRY, OBJECT, ARRAY OR BASIC]
-	var generateBasicType = function(propType, obj, parent, thevalue){
-		showLog ? console.log('        |--->   generateBasicType()') : '';
-
-    	// if enum, return enum value
-    	if (thevalue != null && thevalue != ""){ return "\"" + thevalue + "\""; }
-    	// string
-        if (propType == "string") {
-        	if 		(parent == "media" && obj == "storageArea")	  { return "\"SERIALIZED\""; }
-			else if (parent == "media" && obj == "binaryEncoding"){ return "\"Base64\""; }
-			else if (parent == "media" && obj == "name")		  {	return "\"fichero.pdf\""; }
-			else if (parent == "media" && obj == "mime")		  {	return "\"application/pdf\""; }
-			else{ return "\"string\""; }
-        }
-		// integer,boolean, object, number and geometry
-		else if ( propType == "integer" ){ return "1" }
-		else if ( propType == "boolean" ){ return "true"; }
-		else if ( propType == "object" ){ return "{}"; }
-		else if ( propType == "geometry-point" || obj =="geometry-point"){ return "{\"type\":\"Point\", \"coordinates\":[9,19.3]}"; }
-		else if ( propType == "geometry-linestring" || obj =="geometry-linestring"){ return "{\"type\":\"LineString\", \"coordinates\":[[9,19.3],[19,9.3]]}"; }
-		else if ( propType == "geometry-polygon" || obj =="geometry-polygon"){ return "{\"type\":\"Polygon\", \"coordinates\":[ [[9,-19.3],[-19,-9.3],[-9,19.3],[19,-9.3]] ,[[9,19.3],[19,9.3],[-9,19.3],[-19,9.3]] ]}"; }
-		else if ( propType == "geometry-multipoint" || obj =="geometry-multipoint"){ return "{\"type\":\"MultiPoint\", \"coordinates\":[[9,19.3],[19,19.3]]}"; }
-		else if ( propType == "geometry-multilinestring" || obj =="geometry-multilinestring"){ return "{\"type\":\"MultiLineString\", \"coordinates\":[ [[9,19.3],[19,9.3]], [[9,19.3],[19,9.3]] ]}"; }
-		else if ( propType == "geometry-multipolygon" || obj =="geometry-multipolygon"){ return "{\"type\":\"MultiPolygon\", \"coordinates\":[[[[9,2.5],[9,2],[-9,3],[9,-3],[-9,2]]],[[[9,0],[9,-0.5],[9,-1.5],[9,1],[9,0.4]],[[9,0.2],[-9,0.2],[9,0.8],[-9,0.8],[9,3.2]]]]}"; }
-		else if ( propType == "number"   || propType == "numeric" ){	return "28.6" }
-		else if ( propType == "array") {return ""; }
-    }
 	
-
-	// GENERARATE PROPERTY TYPES [GEOMETRY, OBJECT, ARRAY ]
-	var generateObject = function(ontology, instance, parent){
-		showLog ? console.log('        |--->   generateObject()') : '';
-
-       	instance = "{";
-       	if ( ontology.properties ){
-	        for ( var obj in ontology.properties ){
-
-				var objtype = ontology.properties[obj].type;
-	             // if obj <> date or geometry, iterates recursive for
-					// treatment.
-	             if ((objtype.toLowerCase() == "object") && (obj != "geometry") && ontology.properties[obj].properties && ontology.properties[obj].properties.$date == null ){
-	            	 showLog ? console.log('        |--->   generateObject() --> object: ' + JSON.stringify(ontology.properties[obj])) : '';
-	             	instance = instance + "\"" +obj+"\":"+ generateObject(ontology.properties[obj], "", obj);
-
-	             }
-				 // date obj
-				 else if ((ontology.properties && ontology.properties.$date != null) || (ontology.properties && ontology.properties[obj] && ontology.properties[obj].properties && ontology.properties[obj].properties.$date!= null)){
-	                 // date root node or date children node
-	            	 if (obj == "$date"){  instance = instance + "\"$date\": \"2014-01-30T17:14:00Z\""; } else { instance = instance + "\"" +obj+"\":"+ "{\"$date\": \"2014-01-30T17:14:00Z\"}"; }
-				 }
-	             // geometry with direct reference to point
-				 else if (ontology[obj] && ontology[obj].properties &&  ontology[obj].properties[propertyName].properties && ontology[obj].properties[propertyName].properties.type && ontology.properties[obj].properties.type.enum[0]== "Point"){
-	                 instance = instance + "\"" +obj+"\":"+ "{\"type\":\"Point\", \"coordinates\":[9,19.3]}";
-
-	             }
-				 else if (ontology[obj] && ontology[obj].properties &&  ontology[obj].properties[propertyName].properties && ontology[obj].properties[propertyName].properties.type && ontology.properties[obj].properties.type.enum[0]== "LineString"){
-	                 instance = instance + "\"" +obj+"\":"+ "{\"type\":\"LineString\", \"coordinates\":[[9,19.3],[19,9.3]]}";
-
-	             }
-				 else if (ontology[obj] && ontology[obj].properties &&  ontology[obj].properties[propertyName].properties && ontology[obj].properties[propertyName].properties.type && ontology.properties[obj].properties.type.enum[0]== "Polygon"){
-	                 instance = instance + "\"" +obj+"\":"+ "{\"type\":\"Polygon\", \"coordinates\":[ [[9,-19.3],[-19,-9.3],[-9,19.3],[19,-9.3]] ,[[9,19.3],[19,9.3],[-9,19.3],[-19,9.3]] ]}";
-
-	             }
-				 else if (ontology[obj] && ontology[obj].properties &&  ontology[obj].properties[propertyName].properties && ontology[obj].properties[propertyName].properties.type && ontology.properties[obj].properties.type.enum[0]== "MultiPoint"){
-	                 instance = instance + "\"" +obj+"\":"+ "{\"type\":\"MultiPoint\", \"coordinates\":[[9,19.3],[19,19.3]]}";
-
-	             }
-				 else if (ontology[obj] && ontology[obj].properties &&  ontology[obj].properties[propertyName].properties && ontology[obj].properties[propertyName].properties.type && ontology.properties[obj].properties.type.enum[0]== "MultiLineString"){
-	                 instance = instance + "\"" +obj+"\":"+ "{\"type\":\"MultiLineString\", \"coordinates\":[ [[9,19.3],[19,9.3]], [[9,19.3],[19,9.3]] ]}";
-
-	             }
-				 else if (ontology[obj] && ontology[obj].properties &&  ontology[obj].properties[propertyName].properties && ontology[obj].properties[propertyName].properties.type && ontology.properties[obj].properties.type.enum[0]== "MultiPolygon"){
-	                 instance = instance + "\"" +obj+"\":"+ "{\"type\":\"MultiPolygon\", \"coordinates\":[[[[9,2.5],[9,2],[-9,3],[9,-3],[-9,2]]],[[[9,0],[9,-0.5],[9,-1.5],[9,1],[9,0.4]],[[9,0.2],[-9,0.2],[9,0.8],[-9,0.8],[9,3.2]]]]}";
-
-	             }
-				// array
-				 else if (objtype.toLowerCase() == "array"){
-					 showLog ? console.log('        |--->   generateObject() --> array: ' + JSON.stringify(ontology.properties[obj])) : '';
-					instance = instance + "\""+ obj + "\":" + generateArray(ontology.properties[obj], "", obj);
-	             }
-				 else if (obj.format != null){
-					 instance = instance +"\"" +obj+"\":\"2014-01-30T17:14:00Z\"}"; 
-				 }
-				 // Basic
-				 else {
-	            	 var valor = "";
-	            	 // if enum getr first value
-	                 if (ontology.properties[obj].enum != null){
-	                	  valor = ontology.properties[obj].enum[0];
-	                 }
-	            	 instance = instance + "\""+ obj + "\":" + generateBasicType(objtype, obj, parent, valor);
-	             }
-	             instance = instance + ",";
-	        }
-	        instance = instance.substring(0,instance.length-1);
-	     // if obj is null, generate default
-       	} else {
-       		instance = instance + "\"object\"";
-       	}
-        return instance + "}";
-    }
 	
  // GENERARATE PROPERTY TYPES [ ARRAY ]
 	var generateArray = function(ontology, instance, parent){
@@ -890,7 +880,11 @@
 			// Get the column API object
 			var column = $('#authorizations').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
-			column.visible( ! column.visible() );			
+			column.visible( ! column.visible() );	
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
+			}
 			// toggle Text
 			$(this).toggleClass('text-muted line-through');			
 		});	
@@ -904,12 +898,36 @@
 		// init on load.		
 		showLog ? console.log('SHOW ontology load()...') : '';
 		
+		//DATATABLE 
+		var oTable = $('#authorizations').DataTable();
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-			
+		
+		// FILTERING COLUMNS INIT
+		$('#filtering').appendTo($('#authorizations > thead'));
+		$('#filtering').removeClass('hide');
 	
+		// INIT row selection
+		handleSingleSelection('authorizations');
 	});
+	
+	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
+	var handleSingleSelection = function(pTableId){
+		$("#"+pTableId).on('click','tr:not(.tr-detail)',function(event){
+			if ($(event.target).is('td')){
+				event.stopPropagation();
+				var eleRow = $(event.target).parent('tr');
+				
+				// SE CUENTAN LAS FILAS QUE NO SEAN CABECERA NI FILTRO.
+				if (!$(eleRow).hasClass('cabecera-tabla') && !$(eleRow).hasClass('filtering')){
+					// SUCCESS VISUAL SELECTION
+					$(eleRow).hasClass('success') ?  $(eleRow).removeClass('success') : $(eleRow).addClass('success');
+				}
+			}
+		});
+	}
 	
 	//]]>
 	</script>	

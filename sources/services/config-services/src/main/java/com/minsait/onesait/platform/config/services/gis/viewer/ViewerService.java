@@ -41,4 +41,6 @@ public interface ViewerService {
 
 	Viewer getViewerPublicById(String id);
 
+	Viewer getViewerByIdentification(String identification);
+
 }

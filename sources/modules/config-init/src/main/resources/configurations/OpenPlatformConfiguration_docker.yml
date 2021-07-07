@@ -10,9 +10,11 @@ onesaitplatform:
       mongodb-max-wait-time: 5000
       mongodb-pool-size: 100
       mongodb-read-from-secondaries: false
+      mongodb-read-preference: secondaryPreferred
       mongodb-write-concern: UNACKNOWLEDGED
       mongodb-ssl-enabled: false
-      mongodb-use-quasar: true
+      mongodb-use-quasar: false
+      mongodb-use-legacysql: false
       mongodb-quasar-timeout: 10000
       mongodb-quasar-compile: true
       mongodb-quasar-allow-mapreduce: true

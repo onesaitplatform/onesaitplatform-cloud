@@ -43,7 +43,6 @@ import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
@@ -54,8 +53,8 @@ import com.minsait.onesait.platform.config.services.gadget.dto.GadgetMeasureDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +83,7 @@ public class GadgetController {
 	private OntologyService ontologyService;
 
 	@Autowired
-	private ProjectService projectService;
+	private ResourcesInUseService resourcesInUseService;
 
 	@Autowired
 	private GadgetTemplateService gadgetTemplateService;
@@ -99,14 +98,14 @@ public class GadgetController {
 	private static final String REDIRECT_GADGETS_LIST = "redirect:/gadgets/list";
 	private static final String ERROR_TRUE_STR = "{\"error\":\"true\"}";
 	private static final String GADGET_TEMPLATE_TYPE = "template";
-	
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
-		
+
 		uiModel.addAttribute("gadgetTypes", gadgetService.getGadgetTypes());
 
 		String identification = request.getParameter("name");
@@ -119,7 +118,8 @@ public class GadgetController {
 			type = null;
 		}
 
-		final List<Gadget> gadget = gadgetService.findGadgetWithIdentificationAndType(identification, type,	utils.getUserId());
+		final List<Gadget> gadget = gadgetService.findGadgetWithIdentificationAndType(identification, type,
+				utils.getUserId());
 		// gadgets: tiene que coincidir con el del list
 		uiModel.addAttribute("gadgets", gadget);
 
@@ -128,10 +128,10 @@ public class GadgetController {
 		if (description != null && description.equals("")) {
 			description = null;
 		}
-		
+
 		List<GadgetTemplate> gadgetTemplate = new ArrayList<GadgetTemplate>();
-		
-		if (type==null || type.equals(GADGET_TEMPLATE_TYPE)) {
+
+		if (type == null || type.equals(GADGET_TEMPLATE_TYPE)) {
 			gadgetTemplate = this.gadgetTemplateService
 					.findGadgetTemplateWithIdentificationAndDescription(identification, description, utils.getUserId());
 		}
@@ -234,6 +234,11 @@ public class GadgetController {
 				gadgetDatasourceService.getAccessType(gadgetService
 						.getGadgetMeasuresByGadgetId(utils.getUserId(), gadgetId).get(0).getDatasource().getId(),
 						utils.getUserId()));
+
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+				resourcesInUseService.isInUse(gadgetId, utils.getUserId()));
+		resourcesInUseService.put(gadgetId, utils.getUserId());
+
 		return GADGETS_CREATE;
 	}
 
@@ -269,6 +274,10 @@ public class GadgetController {
 				gadgetDatasourceService.getAccessType(gadgetService
 						.getGadgetMeasuresByGadgetId(utils.getUserId(), gadgetId).get(0).getDatasource().getId(),
 						utils.getUserId()));
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSEDASHBOARD,
+				resourcesInUseService.isInUse(gadgetId, utils.getUserId()));
+		resourcesInUseService.put(gadgetId, utils.getUserId());
+
 		return GADGETS_CREATE;
 	}
 
@@ -279,11 +288,11 @@ public class GadgetController {
 		if (!gadgetService.hasUserPermission(gadgetId, utils.getUserId())) {
 			return REDIRECT_ERROR;
 		}
-		final Gadget g;
 
 		try {
 			gadget.setUser(userService.getUser(utils.getUserId()));
 			gadgetService.updateGadget(gadget, datasourcesMeasures, jsonMeasures);
+			resourcesInUseService.removeByUser(gadgetId, utils.getUserId());
 		} catch (final GadgetDatasourceServiceException e) {
 			log.debug("Cannot updateiframe gadget");
 
@@ -325,6 +334,7 @@ public class GadgetController {
 			return REDIRECT_ERROR;
 		try {
 			gadgetService.updateGadget(gadget, datasourcesMeasures, jsonMeasures);
+			resourcesInUseService.removeByUser(id, utils.getUserId());
 		} catch (final GadgetServiceException e) {
 			log.debug("Cannot update gadget datasource");
 			utils.addRedirectMessage("gadgetDatasource.update.error", redirect);
@@ -434,6 +444,12 @@ public class GadgetController {
 		gDTO.setConfig(gadgetMeasure.getConfig());
 
 		return gDTO;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

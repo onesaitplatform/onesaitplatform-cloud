@@ -100,12 +100,12 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	private String insert(KuduTable kuduTable, String instance, KuduSession kuduSession, Schema schema) {
 		try {
-			String id = UUID.randomUUID().toString();
-			Insert insert = kuduTable.newInsert();
+			final String id = UUID.randomUUID().toString();
+			final Insert insert = kuduTable.newInsert();
 			jsonRelationalHelperKuduImpl.instanceToPartialRow(schema, instance, insert.getRow(), id, false);
 			kuduSession.apply(insert);
 			return id;
-		} catch (KuduException e) {
+		} catch (final KuduException e) {
 			log.error("Error inserting", e);
 			throw new DBPersistenceException("Error generating insert " + e);
 		}
@@ -113,10 +113,10 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	private void delete(KuduTable kuduTable, Schema schema, KuduSession kuduSession, String id, String instance) {
 		try {
-			Delete delete = kuduTable.newDelete();
+			final Delete delete = kuduTable.newDelete();
 			jsonRelationalHelperKuduImpl.instanceToPartialRow(schema, instance, delete.getRow(), id, true);
 			kuduSession.apply(delete);
-		} catch (KuduException e) {
+		} catch (final KuduException e) {
 			log.error("Error deleting", e);
 			throw new DBPersistenceException("Error generating delete " + e);
 		}
@@ -124,7 +124,7 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	private void deletePartialBulk(KuduTable kuduTable, KuduSession kuduSession, List<BulkWriteResult> result,
 			List<String> instances, List<OperationResponse> lopr) {
-		List<ColumnSchema> lpkey = kuduTable.getSchema().getPrimaryKeyColumns();
+		final List<ColumnSchema> lpkey = kuduTable.getSchema().getPrimaryKeyColumns();
 		for (int i = 0; i < lopr.size(); i++) {
 			if (!lopr.get(i).hasRowError()) {
 				delete(kuduTable, kuduTable.getSchema(), kuduSession, result.get(i).getId(), instances.get(i));
@@ -132,7 +132,7 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 		}
 		try {
 			kuduSession.flush();
-		} catch (KuduException e) {
+		} catch (final KuduException e) {
 			throw new DBPersistenceException("Error removing partial row in flush ", e);
 		}
 		if (kuduSession.getPendingErrors().getRowErrors().length > 0) {
@@ -143,14 +143,14 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String insert(String ontology, String instance) {
 		try {
-			KuduTable ktable = kuduClient.openTable(impalaPrefix + ontology);
-			KuduSession session = kuduClient.newSession();
+			final KuduTable ktable = kuduClient.openTable(impalaPrefix + ontology);
+			final KuduSession session = kuduClient.newSession();
 			session.setFlushMode(FlushMode.valueOf(sessionFlushMode));
-			String id = insert(ktable, instance, session, ktable.getSchema());
-			List<OperationResponse> lopr = session.flush();
+			final String id = insert(ktable, instance, session, ktable.getSchema());
+			final List<OperationResponse> lopr = session.flush();
 			session.close();
 			return id;
-		} catch (KuduException e) {
+		} catch (final KuduException e) {
 			log.error("Error getting table", e);
 			throw new DBPersistenceException("Error getting table for insert " + e);
 		}
@@ -158,32 +158,32 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
-		List<BulkWriteResult> resultAux = new ArrayList<>();
-		List<BulkWriteResult> result = new ArrayList<>();
-		List<DBPersistenceException> errors = new ArrayList<>();
+		final List<BulkWriteResult> resultAux = new ArrayList<>();
+		final List<BulkWriteResult> result = new ArrayList<>();
+		final List<DBPersistenceException> errors = new ArrayList<>();
 
 		if (instances != null) {
 			KuduTable ktable;
 			try {
 				ktable = kuduClient.openTable(impalaPrefix + ontology);
-			} catch (KuduException e) {
+			} catch (final KuduException e) {
 				log.error("Error in insertBulk", e);
 				throw new DBPersistenceException("Error getting table for insertBulk " + e);
 			}
-			KuduSession session = kuduClient.newSession();
+			final KuduSession session = kuduClient.newSession();
 			session.setFlushMode(FlushMode.valueOf(sessionFlushMode));
 
-			for (String instance : instances) {
+			for (final String instance : instances) {
 
-				BulkWriteResult insertResult = new BulkWriteResult();
+				final BulkWriteResult insertResult = new BulkWriteResult();
 
 				try {
 
-					String id = insert(ktable, instance, session, ktable.getSchema());
+					final String id = insert(ktable, instance, session, ktable.getSchema());
 					insertResult.setId(id);
 					insertResult.setOk(true);
 
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					log.error("error inserting bulk instance " + instance, e);
 					insertResult.setOk(false);
 					errors.add(
@@ -194,9 +194,9 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 				resultAux.add(insertResult);
 			}
 			try {
-				List<OperationResponse> lopr = session.flush();
+				final List<OperationResponse> lopr = session.flush();
 				for (int i = 0; i < lopr.size(); i++) {
-					OperationResponse opres = lopr.get(i);
+					final OperationResponse opres = lopr.get(i);
 					if (opres.hasRowError()) {
 						deletePartialBulk(ktable, session, resultAux, instances, lopr);
 						if (opres.getRowError().getErrorStatus().isAlreadyPresent()) {
@@ -209,19 +209,19 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 					}
 				}
 				session.close();
-			} catch (KuduException e) {
+			} catch (final KuduException e) {
 				log.error("Error closing", e);
 				throw new DBPersistenceException("Error flush/close session " + e);
 			}
 			if (!errors.isEmpty()) {
-				List<ErrorResult> eResult = errors.stream().map(dbpex -> dbpex.getErrorsResult().get(0))
+				final List<ErrorResult> eResult = errors.stream().map(dbpex -> dbpex.getErrorsResult().get(0))
 						.collect(Collectors.toList());
 				log.error("Error processing bulk insert request");
 				throw new DBPersistenceException(eResult, "Error processing bulk insert request");
 			}
 		}
 
-		ComplexWriteResult complexWriteResult = new ComplexWriteResult();
+		final ComplexWriteResult complexWriteResult = new ComplexWriteResult();
 		complexWriteResult.setType(ComplexWriteResultType.BULK);
 		complexWriteResult.setData(result);
 
@@ -231,51 +231,86 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public MultiDocumentOperationResult updateNative(String ontology, String updateStmt, boolean includeIds) {
+
 		KuduTable ktable;
 		try {
 			ktable = kuduClient.openTable(impalaPrefix + ontology);
-		} catch (KuduException e) {
+		} catch (final KuduException e) {
 			log.error("Error in updateNative ", e);
 			throw new DBPersistenceException("Error getting table for updateNative " + e);
 		}
-		KuduSession session = kuduClient.newSession();
-		session.setFlushMode(FlushMode.valueOf(sessionFlushMode));
-		Update upd = ktable.newUpdate();
-		PartialRow prow = upd.getRow();
+
+		// Analise is execute update using k-v mechanism or impala
+		boolean isImpalaStatement = false;
+		net.sf.jsqlparser.statement.update.Update statement = null;
+
 		try {
-			translateUpdateToRow(updateStmt, prow, ktable.getSchema());
-		} catch (JSQLParserException e) {
+
+			final List<ColumnSchema> lpkColumns = ktable.getSchema().getPrimaryKeyColumns();
+			if (lpkColumns.size() != 1) {
+				isImpalaStatement = true;
+			} else {
+				statement = (net.sf.jsqlparser.statement.update.Update) parserManager
+						.parse(new StringReader(updateStmt));
+
+				final Expression where = statement.getWhere();
+				final String[] whereList = where.toString().split("(?i) and ");
+				if (whereList.length != 1) {
+					isImpalaStatement = true;
+				} else {
+					final String[] fieldVal = whereList[0].split(" = ");
+					final ColumnSchema pk = lpkColumns.get(0);
+
+					if (!pk.getName().toLowerCase().equals(fieldVal[0].toLowerCase())) {
+						isImpalaStatement = true;
+					}
+				}
+
+			}
+
+		} catch (final JSQLParserException e) {
 			log.error("Error updating ", e);
 			throw new DBPersistenceException("Error parsing update for table " + e);
 		}
+		if (isImpalaStatement) {
+			final MultiDocumentOperationResult result = executeStatementImpala(updateStmt);
+			result.setCount(1);// Impala always returns 0
+			return result;
+		} else {
+			final KuduSession session = kuduClient.newSession();
+			session.setFlushMode(FlushMode.valueOf(sessionFlushMode));
+			final Update upd = ktable.newUpdate();
+			final PartialRow prow = upd.getRow();
 
-		MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			translateUpdateToRow(statement, prow, ktable.getSchema());
 
-		try {
-			session.apply(upd);
-			List<OperationResponse> lopr = session.flush();
-			session.close();
-			if (lopr.get(0).getRowError() != null && lopr.get(0).getRowError().getErrorStatus().isNotFound()) {
-				result.setCount(0);
-			} else {
-				result.setCount(1);
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+
+			try {
+				session.apply(upd);
+				final List<OperationResponse> lopr = session.flush();
+				session.close();
+				if (lopr.get(0).getRowError() != null && lopr.get(0).getRowError().getErrorStatus().isNotFound()) {
+					result.setCount(0);
+				} else {
+					result.setCount(1);
+				}
+			} catch (final KuduException e) {
+				log.error("Error updating instance ", e);
+				throw new DBPersistenceException("Error updating instance " + e);
 			}
-		} catch (KuduException e) {
-			log.error("Error updating instance ", e);
-			throw new DBPersistenceException("Error updating instance " + e);
+			return result;
 		}
-		return result;
 	}
 
-	private void translateUpdateToRow(String query, PartialRow prow, Schema schema) throws JSQLParserException {
-		final net.sf.jsqlparser.statement.update.Update statement = (net.sf.jsqlparser.statement.update.Update) parserManager
-				.parse(new StringReader(query));
+	private void translateUpdateToRow(net.sf.jsqlparser.statement.update.Update statement, PartialRow prow,
+			Schema schema) {
 		final List<Column> columns = statement.getColumns();
 		final List<Expression> expressions = statement.getExpressions();
-		Expression where = statement.getWhere();
+		final Expression where = statement.getWhere();
 		for (int i = 0; i < columns.size(); i++) {
-			String key = columns.get(i).getColumnName();
-			String o = expressions.get(i).toString();
+			final String key = columns.get(i).getColumnName();
+			final String o = expressions.get(i).toString();
 			switch (schema.getColumn(key).getType()) {
 			case STRING:
 				prow.addString(key, o.substring(1, o.length() - 1));
@@ -307,15 +342,16 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 			}
 		}
 
-		String[] whereList = where.toString().split("(?i) and ");
-		for (String whereExp : whereList) {
-			String[] fieldVal = whereExp.split(" = ");
+		final String[] whereList = where.toString().split("(?i) and ");
+
+		for (final String whereExp : whereList) {
+			final String[] fieldVal = whereExp.split(" = ");
 			if (fieldVal.length != 2) {
 				throw new DBPersistenceException(
 						"Incompatible where expresion, kudu only support update by primary key, found: " + whereExp);
 			} else {
-				String key = fieldVal[0].trim();
-				String o = fieldVal[1].trim();
+				final String key = fieldVal[0].trim();
+				final String o = fieldVal[1].trim();
 				switch (schema.getColumn(key).getType()) {
 				case STRING:
 					prow.addString(key, o.substring(1, o.length() - 1));
@@ -350,6 +386,13 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	}
 
+	private MultiDocumentOperationResult executeStatementImpala(String statement) {
+		final int count = impalaJdbcTemplate.update(statement);
+		final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+		result.setCount(count);
+		return result;
+	}
+
 	@Override
 	public MultiDocumentOperationResult updateNative(String collection, String query, String data, boolean includeIds) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
@@ -357,11 +400,9 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public MultiDocumentOperationResult deleteNative(String collection, String query, boolean includeIds) {
-		int count = impalaJdbcTemplate.update(query);
-		MultiDocumentOperationResult result = new MultiDocumentOperationResult();
-		result.setCount(count);
-		return result;
-	}
+		return executeStatementImpala(query);
+
+	}	
 
 	@Override
 	public List<String> queryNative(String ontology, String query) {
@@ -386,9 +427,9 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String findById(String ontology, String objectId) {
 		try {
-			String sql = String.format(CommonQuery.FIND_BY_ID, ontology, objectId);
+			final String sql = String.format(CommonQuery.FIND_BY_ID, ontology, objectId);
 			return impalaJdbcTemplate.query(sql, new SingleKuduResultSetExtractor());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
 		}
@@ -417,9 +458,9 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String findAllAsJson(String ontology) {
 		try {
-			String sql = String.format(CommonQuery.FIND_ALL, ontology);
+			final String sql = String.format(CommonQuery.FIND_ALL, ontology);
 			return impalaJdbcTemplate.query(sql, new KuduResultSetExtractor());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error in findAllAsJson", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -428,16 +469,16 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String findAllAsJson(String ontology, int limit) {
-		String query = String.format(CommonQuery.FIND_ALL_WITH_LIMIT, ontology, limit);
+		final String query = String.format(CommonQuery.FIND_ALL_WITH_LIMIT, ontology, limit);
 		return queryNativeAsJson(ontology, query);
 	}
 
 	@Override
 	public List<String> findAll(String ontology) {
 		try {
-			String sql = String.format(CommonQuery.FIND_ALL, ontology);
+			final String sql = String.format(CommonQuery.FIND_ALL, ontology);
 			return impalaJdbcTemplate.query(sql, new SingleKuduRowMapper());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error in findAll", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -447,9 +488,9 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public List<String> findAll(String ontology, int limit) {
 		try {
-			String sql = String.format(CommonQuery.FIND_ALL_WITH_LIMIT, ontology, limit);
+			final String sql = String.format(CommonQuery.FIND_ALL_WITH_LIMIT, ontology, limit);
 			return impalaJdbcTemplate.query(sql, new SingleKuduRowMapper());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("findAll", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -459,9 +500,9 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public long count(String ontology) {
 		try {
-			String sql = String.format(CommonQuery.COUNT, ontology);
+			final String sql = String.format(CommonQuery.COUNT, ontology);
 			return impalaJdbcTemplate.queryForObject(sql, Integer.class);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error in count", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -471,13 +512,13 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public MultiDocumentOperationResult delete(String ontology, boolean includeIds) {
 		try {
-			String sql = String.format(CommonQuery.DELETE_ALL, ontology);
-			int count = impalaJdbcTemplate.update(sql);
+			final String sql = String.format(CommonQuery.DELETE_ALL, ontology);
+			final int count = impalaJdbcTemplate.update(sql);
 
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(count);
 			return result;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error deleting", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -488,7 +529,7 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	public long countNative(String collectionName, String query) {
 		try {
 			return impalaJdbcTemplate.queryForObject(query, Integer.class);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error in countNative", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -498,13 +539,13 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public MultiDocumentOperationResult deleteNativeById(String ontologyName, String objectId) {
 		try {
-			String sql = String.format(CommonQuery.DELETE_BY_ID, ontologyName, objectId);
-			int count = impalaJdbcTemplate.update(sql);
+			final String sql = String.format(CommonQuery.DELETE_BY_ID, ontologyName, objectId);
+			final int count = impalaJdbcTemplate.update(sql);
 
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(count);
 			return result;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error deleting native", e);
 			throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.IMPALA, e.getMessage()),
 					e.getMessage());
@@ -554,6 +595,17 @@ public class KuduBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
 			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		return querySQLAsJson(ontology, query, offset, limit);
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
 	}

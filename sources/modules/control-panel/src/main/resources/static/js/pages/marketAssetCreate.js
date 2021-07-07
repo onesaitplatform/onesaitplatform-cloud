@@ -285,7 +285,7 @@ var MarketAssetCreateController = function() {
 				if (error == ""){
 					form.submit();
 				} else { 
-					showGenericErrorDialog('ERROR', error);
+					showGenericErrorDialog('Error', error);
 				}				
             }
         });

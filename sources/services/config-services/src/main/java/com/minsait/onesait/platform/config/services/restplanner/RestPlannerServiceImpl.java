@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -35,6 +36,7 @@ import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.RestPlanner;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.RestPlannerRepository;
+import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +59,7 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 
 	@Override
 	public List<RestPlanner> getAllRestPlannersByUser(String userId) {
-		User user = userService.getUser(userId);
+		final User user = userService.getUser(userId);
 		return restPlannerRepository.findByUser(user);
 	}
 
@@ -67,13 +69,17 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
-			return restPlannerRepository.findById(id).getUser().getUserId().equals(userId);
+			final Optional<RestPlanner> rp = restPlannerRepository.findById(id);
+			if (rp.isPresent())
+				return rp.get().getUser().getUserId().equals(userId);
+			else
+				return false;
 		}
 	}
 
 	@Override
 	public RestPlanner getRestPlannerById(String id) {
-		return restPlannerRepository.findById(id);
+		return restPlannerRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -91,7 +97,10 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 
 	@Override
 	public RestPlanner updateRestPlanner(RestPlanner restPlanner) {
-		final RestPlanner restPlannerDB = restPlannerRepository.findById(restPlanner.getId());
+		final Optional<RestPlanner> opt = restPlannerRepository.findById(restPlanner.getId());
+		if (!opt.isPresent())
+			throw new OPResourceServiceException("Rest Planner not found");
+		final RestPlanner restPlannerDB = opt.get();
 		restPlannerDB.setCron(restPlanner.getCron());
 		restPlannerDB.setDescription(restPlanner.getDescription());
 		restPlannerDB.setMethod(restPlanner.getMethod());
@@ -107,8 +116,8 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 	@Override
 	@Transactional
 	public void deleteRestPlannerById(String id) {
-		final RestPlanner restPlannerDB = restPlannerRepository.findById(id);
-		restPlannerRepository.delete(restPlannerDB);
+		restPlannerRepository.findById(id).ifPresent(rp -> restPlannerRepository.delete(rp));
+
 	}
 
 	@Override
@@ -121,7 +130,7 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 			else
 				result = "OK - " + resp.getStatusCodeValue() + " - " + resp.getBody();
 			return result;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return "ERROR - " + e.getMessage();
 		} finally {
 
@@ -137,7 +146,7 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 		} else {
 			restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 		}
-		HttpHeaders headers = toHttpHeaders(headersStr);
+		final HttpHeaders headers = toHttpHeaders(headersStr);
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
 		log.debug("Sending method " + httpMethod.toString());
@@ -169,11 +178,11 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 	}
 
 	private HttpHeaders toHttpHeaders(String headersStr) {
-		HttpHeaders httpHeaders = new HttpHeaders();
-		String[] heads = headersStr.split("\n");
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		final String[] heads = headersStr.split("\n");
 		String headerName = "";
 		String headerValue = "";
-		for (String head : heads) {
+		for (final String head : heads) {
 			headerName = head.split(":")[0];
 			headerValue = head.substring(head.indexOf(':') + 1).trim();
 			httpHeaders.add(headerName, headerValue);

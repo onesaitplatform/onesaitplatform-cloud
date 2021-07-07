@@ -50,7 +50,7 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 
 	public List<ProjectResourceAccess> findByUser(User user);
 
-	@Query("SELECT new com.minsait.onesait.platform.config.dto.ProjectUserAccess(pra.resource.id, pra.access ) FROM com.minsait.onesait.platform.config.model.ProjectResourceAccess as pra WHERE pra.user = :user and pra.resource.id in :resourceIdList")
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.ProjectUserAccess(pra.resource.id, pra.access ) FROM com.minsait.onesait.platform.config.model.ProjectResourceAccess as pra WHERE (pra.user = :user or pra IN (SELECT prar FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user )) and pra.resource.id in :resourceIdList")
 	public List<ProjectUserAccess> findUserAccessByUserAndResourceIds(@Param("user") User user,
 			@Param("resourceIdList") List<String> resourceIdList);
 
@@ -71,6 +71,10 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
 			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )")
 	public List<ProjectResourceAccessList> findByUserId(@Param("userId") String userId);
+
+	@Query("SELECT pra FROM ProjectResourceAccess pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )")
+	public List<ProjectResourceAccess> findByUserIdAccess(@Param("userId") String userId);
 
 	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
 			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"
@@ -99,6 +103,7 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	public ProjectResourceAccessList findByResourceListAndProjectAndUserId(@Param("resourceId") String resourceId,
 			@Param("projectId") String projectId, @Param("userId") String userId);
 
+	@Override
 	@Transactional
 	@Modifying
 	@Query("delete from ProjectResourceAccess p where p.id = :id")

@@ -56,6 +56,8 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 	private ObjectMapper mapper;
 	@Value("${onesaitplatform.authentication.cas.attributes.mail:mail}")
 	private String mail;
+	@Value("${onesaitplatform.authentication.cas.attributes.mail_suffix:onesaitplatform.com}")
+	private String mailSuffix;
 	@Value("${onesaitplatform.authentication.cas.attributes.fullName:name}")
 	private String fullName;
 	@Value("${onesaitplatform.authentication.default_password:changeIt9900!}")
@@ -66,16 +68,17 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 	@Override
 	protected UserDetails loadUserDetails(Assertion assertion) {
 		log.debug("New user logged from CAS server {}", assertion.getPrincipal().getName());
-		String username = assertion.getPrincipal().getName();
+		final String username = assertion.getPrincipal().getName();
 		MasterUser user = masterUserRepository.findByUserId(username);
 
 		if (user == null) {
 			log.info("LoadUserByUserName: User not found by name: {}", username);
 			log.info("Creating CAS user on default vertical");
-			User newUser = importUserToDB(username, assertion.getPrincipal().getAttributes());
+			final User newUser = importUserToDB(username, assertion.getPrincipal().getAttributes());
 			user = masterUserRepository.findByUserId(username);
-			if (user == null)
+			if (user == null) {
 				throw new UsernameNotFoundException("Could not create CAS user: " + username);
+			}
 			return toUserDetails(user.getUserId(), user.getPassword(),
 					tenantDBResolver.getSingleVerticalIfPossible(user), user.getTenant().getName(),
 					newUser.getRole().getId());
@@ -104,11 +107,18 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 
 	private User importUserToDB(String username, Map<String, Object> attributes) {
 		final User user = new User();
+		log.info("Attributes are: ");
+		attributes.entrySet().forEach(e -> log.info("Key {} with value {}", e.getKey(), e.getValue()));
 
-		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()));
+		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()).orElse(null));
 		user.setUserId(username);
 		user.setActive(true);
-		user.setEmail((String) attributes.get(mail));
+		if (attributes.get(mail) == null || !((String) attributes.get(mail)).contains("@") ) {
+			log.warn("No mail from CAS attributes, setting mail to: {}", username + "@"+ mailSuffix);
+			user.setEmail(username + "@"+ mailSuffix);
+		} else {
+			user.setEmail((String) attributes.get(mail));
+		}
 		user.setPassword(defaultPassword);
 		user.setFullName((String) attributes.get(fullName));
 		try {

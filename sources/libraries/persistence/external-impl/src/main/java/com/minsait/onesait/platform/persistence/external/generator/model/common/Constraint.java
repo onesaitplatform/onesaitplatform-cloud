@@ -40,7 +40,7 @@ public class Constraint extends Index {
 	@Override
 	public void setName(String name) {
 		if (name == null) {
-			super.setName(null);
+			super.setName((String)null);
 		}
 		else {
 			super.setName(name.trim().replace(" ", "_"));

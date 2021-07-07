@@ -22,4 +22,6 @@ public interface QueryAsTextDBRepository {
 
 	String querySQLAsJson(String ontology, String query, int offset);
 
+	String querySQLAsJson(String ontology, String query, int offset, int limit);
+
 }

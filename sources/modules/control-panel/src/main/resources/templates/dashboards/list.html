@@ -89,11 +89,11 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">										
 										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>																			
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline blue" id="createDashboardButton" onclick="location.href='/controlpanel/gadgets/list'"><span th:text="#{gadgets.listGadgets}">Gadgets</span></button>										
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline blue" id="createDashboardButton" onclick="location.href='/controlpanel/datasources/list'"><span th:text="#{datasources.listDatasources}">Datasources </span></button>
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="javascript:showImportDashboardDialog()"><span th:text="#{dashboards.importdashboard}">Import Dashboard</span></button>										
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/create'"><span th:text="#{dashboards.create}">New Dashboard</span></button>
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/createsynoptic'"><span th:text="#{dashboards.create.synoptic}">New Synoptic</span></button>
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline blue" id="createDashboardButton" onclick="location.href='/controlpanel/gadgets/list'"><span th:text="#{gadgets.listGadgets}">Gadgets</span></button>										
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline blue" id="createDashboardButton" onclick="location.href='/controlpanel/datasources/list'"><span th:text="#{datasources.listDatasources}">Datasources </span></button>
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="javascript:showImportDashboardDialog()"><span th:text="#{dashboards.importdashboard}">Import Dashboard</span></button>										
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/create'"><span th:text="#{dashboards.create}">New Dashboard</span></button>
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/createsynoptic'"><span th:text="#{dashboards.create.synoptic}">New Synoptic</span></button>
 									</div>										
 								</div>
 							</div>
@@ -144,6 +144,23 @@
 																			
 										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
+														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}"> Owner</label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gadgets.type}"> Type</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
+														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="7"  >ID</label>
+														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>															
+													</div>
+												</div>			
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="dashboards" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
@@ -189,52 +206,42 @@
 																	<a  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="#{gen.view}" th:href="'/controlpanel/dashboards/view/'+@{${dashboard.id}}"><i class="la la-eye font-hg"></i></a>
 																	
 																	<!-- Full EDIT -->																	
-																	<a  sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-placement="bottom" th:title="#{gen.edit}" th:href="'/controlpanel/dashboards/editfull/'+@{${dashboard.id}(form)}+ '='"><i class="la la-book font-hg"></i></a>
+																	<a  sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-placement="bottom" th:title="#{gen.edit}" th:href="'/controlpanel/dashboards/editfull/'+@{${dashboard.id}(form)}+ '='"><i class="la la-book font-hg"></i></a>
 																	
 																	<!-- EDIT ACCESS-->
-																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.auth.title} " th:data-original-title="#{dashboards.auth.title} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/dashboardconf/${dashboard.id}/|} + '\');'"><i class="la la-cog font-hg"></i></span>
+																	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.auth.title} " th:data-original-title="#{dashboards.auth.title} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/dashboardconf/${dashboard.id}/|} + '\');'"><i class="la la-cog font-hg"></i></span>
 																	
 																	<!-- CLONE-->
 																	<span th:title="#{dashboards.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:onclick="'javascript:cloneDashboardDialog(\''+${dashboard.id}+ '\',\'' +${dashboard.identification}+'\');'"><i class="la la-clone font-hg"></i></span>
 																	
 																	<!-- URL -->
 																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="URL Dashboard" data-original-title="URL Dashboard" th:onclick="'javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i></span>
-				
+																    
+																    <!-- EXPORT IMAGE -->
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="Export Image" data-original-title="Export Image" th:onclick="'javascript:showExportImageDialog(\''+${dashboard.id}+ '\');'"><i class="la la-file-image-o font-hg"></i></span>
+																    
+																    <!-- EXPORT PDF -->
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="Export PDF" data-original-title="Export PDF" th:onclick="'javascript:showExportPDFDialog(\''+${dashboard.id}+ '\');'"><i class="la la-file-pdf-o font-hg"></i></span>
+																
 																    <!-- DOWNLOAD -->																   
 																    <a th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  target="_blank" th:href="'/controlpanel/dashboards/exportDashboard/' +  ${dashboard.id}"><i class="la la-download font-hg"></i></a>
 																    
 																	<!-- IMPORT -->
-																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.import}" data-original-title="Import" th:onclick="'javascript:showImportDashboardTableDialog(\'' + ${dashboard.identification} + '\');'"><i class="la la-upload font-hg"></i></span>
+																	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.import}" data-original-title="Import" th:onclick="'javascript:showImportDashboardTableDialog(\'' + ${dashboard.identification} + '\');'"><i class="la la-upload font-hg"></i></span>
 																    
 																    
 																    <!-- EDIT DASHBOARD JSON-->
-																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.edit.model.json.tooltip} " th:data-original-title="#{dashboards.edit.model.json.tooltip} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>																	
+																	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.edit.model.json.tooltip} " th:data-original-title="#{dashboards.edit.model.json.tooltip} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>																	
 																
 																    <!-- DELETE -->
-																    <span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="la la-trash font-hg"></i></span>
+																    <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
 															</td>
 														</tr>
 													</tbody>
 												</table>
 												
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
-														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}"> Owner</label>
-														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
-														<label class="toggle-vis" data-column="3" th:text="#{gadgets.type}"> Type</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
-														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="7"  >ID</label>
-														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>															
-													</div>
-												</div>											
+																				
 											</div>
 										</div>											
 									</div>
@@ -257,18 +264,16 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
-
-	
-	
-	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<script type="text/javascript" th:inline="javascript">	
 	
@@ -425,7 +430,328 @@
 		});
 	};
 	
+var showExportImageDialog = function(id){
 
+	
+		var messageExportImage = [[#{dashboards.export.image}]];
+		var messageStandbyTime = [[#{dashboards.export.wait}]];
+		var messageheight= [[#{dashboards.export.height}]];
+		var messagewidth= [[#{dashboards.export.width}]];
+		var messagefullpage= [[#{dashboards.export.fullpage}]];
+		var messagepresetsize= [[#{dashboards.export.presetsize}]];
+		var messageparams= [[#{dashboards.export.params}]];
+		var globalMessage=[[#{dashboards.export.emptyfields}]];
+		
+		$.confirm({
+			icon: 'la la-file-image-o font-hg',
+			title: messageExportImage,
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="form-body container-fluid">
+				<div id="imagehaserror" class="alert alert-danger display-hide">
+				<span >${globalMessage}</span>
+			    </div>
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="imagewaittime" type="number" 
+									required="true" maxlength="100"
+									 class="form-control "  minlength="1" required value="20000" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-5 col-sm-6 col-xs-12">
+						<div class="form-group">							
+						<div class="mt-checkbox-list"> 
+							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" >${messagefullpage}?</div>
+								<input  id="checkboxfullscreen" class="form-control no-remove"  name="checkboxfullscreen" type="checkbox"    />
+								<span></span>
+							</label>
+						</div>
+					    </div>
+				      </div>
+				        
+					 </div>
+					 <div class="row">
+					 <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagepresetsize}</label>
+							  <select id="imageselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthimage()"  >
+							   <option   value="A0 H" >A0 H</option>
+							   <option   value="A0 V" >A0 V</option> 
+							   <option   value="A1 H" >A1 H</option>
+							   <option   value="A1 V" >A1 V</option> 
+							   <option   value="A2 H" >A2 H</option>
+							   <option   value="A2 V" >A2 V</option>
+							   <option   value="A3 H" >A3 H</option>
+							   <option   value="A3 V" >A3 V</option>
+							   <option selected  value="A4 H" >A4 H</option>
+							   <option   value="A4 V" >A4 V</option>
+							   <option   value="A5 H" >A5 H</option>
+							   <option   value="A5 V" >A5 V</option>
+							   <option   value="A6 H" >A6 H</option>
+							   <option   value="A6 V" >A6 V</option>							   
+						      </select>
+					    </div>
+				        </div>		
+						<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageheight}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="imageheight" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="794" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagewidth}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="imagewidth" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="1123" />
+						     </div>
+					    </div>
+				        </div>
+				        
+				        
+				        
+					 </div>
+					 <div class="row">
+						 <div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label>${messageparams}</label>														
+								<textarea id="imageparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
+							</div>							
+						</div>
+					</div> 
+				</div>
+				
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,		
+			buttons: {				
+				Send: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){						
+						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);						
+						var imageparams = $('#imageparams').val();
+						var imagewidth = $('#imagewidth').val();
+						var imageheight = $('#imageheight').val();
+						var checkboxfullscreen = $('#checkboxfullscreen').prop('checked');
+						var imagewaittime = $('#imagewaittime').val();
+						var ident = id;
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
+							
+						var data ={};
+						if(typeof imageparams ==='undefined' || imageparams.trim().length===0){
+							data = {
+						    	waittime:imagewaittime,
+						    	height:imageheight,
+						    	width:imagewidth,
+						    	fullpage:checkboxfullscreen	,
+						    	token:token
+						    }
+						}else{
+							data = {
+							    	waittime:imagewaittime,
+							    	height:imageheight,
+							    	width:imagewidth,
+							    	fullpage:checkboxfullscreen,
+							    	params:imageparams,
+							    	token:token
+							    }
+						}
+						var ok = typeof imagewidth!=='undefined' && imagewidth!==null  && imagewidth.trim().length>0
+						&& typeof imageheight!=='undefined' && imageheight!==null  && imageheight.trim().length>0
+						&& typeof imagewaittime!=='undefined' && imagewaittime!==null  && imagewaittime.trim().length>0 ;	
+						if(ok){
+					    	var downloadUrl ='/controlpanel/dashboards/generateDashboardImage/'+id+'?'+ encodeQueryData(data);							    
+					    	var download = document.createElement('a');
+					    	download.href =   downloadUrl;					    	
+					    	download.click();							    	
+					    	return true;						
+						}else{
+							$('#imagehaserror').show();
+							return false;
+						}
+					}											
+				}
+			}
+		});
+	};
+	
+	function encodeQueryData(data) {
+		   const ret = [];
+		   for (let d in data)
+		     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+		   return ret.join('&');
+		}
+	
+	
+	var showExportPDFDialog = function(id){
+		
+		var messageExportPDF = [[#{dashboards.export.pdf}]];
+		var messageStandbyTime = [[#{dashboards.export.wait}]];
+		var messageheight= [[#{dashboards.export.height}]];
+		var messagewidth= [[#{dashboards.export.width}]];		
+		var messagepresetsize= [[#{dashboards.export.presetsize}]];
+		var messageparams= [[#{dashboards.export.params}]];
+		var globalMessage=[[#{dashboards.export.emptyfields}]];
+		
+		$.confirm({
+			icon: 'la la-file-pdf-o font-hg',
+			title: messageExportPDF,
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="form-body container-fluid">	
+				<div id="imagehaserror" class="alert alert-danger display-hide">
+				<span >${globalMessage}</span>
+			    </div>
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfwaittime" type="number" 
+									required="true" maxlength="100"
+									 class="form-control "  minlength="1" required value="20000" />
+						     </div>
+					    </div>
+				        </div>	
+				        
+					 </div>
+					 <div class="row">
+					 <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagepresetsize}</label>
+							  <select id="pdfselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthpdf()">
+							   <option   value="A0 H" >A0 H</option>
+							   <option   value="A0 V" >A0 V</option> 
+							   <option   value="A1 H" >A1 H</option>
+							   <option   value="A1 V" >A1 V</option> 
+							   <option   value="A2 H" >A2 H</option>
+							   <option   value="A2 V" >A2 V</option>
+							   <option   value="A3 H" >A3 H</option>
+							   <option   value="A3 V" >A3 V</option>
+							   <option selected  value="A4 H" >A4 H</option>
+							   <option   value="A4 V" >A4 V</option>
+							   <option   value="A5 H" >A5 H</option>
+							   <option   value="A5 V" >A5 V</option>
+							   <option   value="A6 H" >A6 H</option>
+							   <option   value="A6 V" >A6 V</option>							   
+						      </select>
+					    </div>
+				        </div>		
+						<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageheight}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfheight" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="794" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagewidth}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfwidth" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="1123" />
+						     </div>
+					    </div>
+				        </div>
+				        
+				        
+				        
+					 </div>
+					 <div class="row">
+						 <div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label>${messageparams}</label>														
+								<textarea id="pdfparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
+							</div>							
+						</div>
+					</div> 
+				</div>
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {				
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 						
+						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);;						
+						var pdfparams = $('#pdfparams').val();
+						var pdfwidth = $('#pdfwidth').val();
+						var pdfheight = $('#pdfheight').val();
+						var checkboxfullscreen = $('#checkboxfullscreen').val();
+						var pdfwaittime = $('#pdfwaittime').val();
+						var ident = id;
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
+						var ok = true;	
+						
+						var data ={};
+						if(typeof pdfparams ==='undefined' || pdfparams.trim().length===0){
+							data = {
+									waittime:pdfwaittime,
+							    	height:pdfheight,
+							    	width:pdfwidth,
+							    	fullpage:checkboxfullscreen,
+							    	token:token			    	
+						    }
+						}else{
+							data = {
+									waittime:pdfwaittime,
+							    	height:pdfheight,
+							    	width:pdfwidth,
+							    	fullpage:checkboxfullscreen,
+							    	token:token,
+							    	params:pdfparams
+							    }
+						}
+						var ok = typeof pdfwidth!=='undefined' && pdfwidth!==null  && pdfwidth.trim().length>0
+							&& typeof pdfheight!=='undefined' && pdfheight!==null  && pdfheight.trim().length>0
+							&& typeof pdfwaittime!=='undefined' && pdfwaittime!==null  && pdfwaittime.trim().length>0 ;	
+						if(ok){
+							var downloadUrl ='/controlpanel/dashboards/generatePDFImage/'+id+'?'+ encodeQueryData(data);							    
+					    	var download = document.createElement('a');
+					    	download.href = downloadUrl;					    	
+					    	download.click();							    	
+					    	return true;
+						} else{
+							$('#imagehaserror').show();
+							return false;
+						}
+						}
+					}											
+				
+			}
+		});
+	};
+	
+	
 	function updateheightwidthimage(){
 		var selected = $('#imageselectsize').val();
 		var dimensions = getDimensions(selected);
@@ -595,12 +921,12 @@
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([1,3,7],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([1,3,7],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});	
 	
@@ -615,10 +941,14 @@
 			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder=''/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			onContentReady: function () {
+				// INPUT MASK FOR identification allow only letters, numbers and -_
+					$("#newImportDashboard").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
+				},
 			closeIcon: true,
 			buttons: {
 				close: {

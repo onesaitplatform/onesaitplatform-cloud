@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
+import com.minsait.onesait.platform.config.services.dashboardapi.dto.GadgetTemplateDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetMeasureDTO;
@@ -74,4 +75,6 @@ public class DashboardExportDTO implements Serializable {
 	private List<GadgetDatasourceDTO> gadgetDatasources;
 
 	private List<GadgetMeasureDTO> gadgetMeasures;
+
+	private List<GadgetTemplateDTO> gadgetTemplates;
 }

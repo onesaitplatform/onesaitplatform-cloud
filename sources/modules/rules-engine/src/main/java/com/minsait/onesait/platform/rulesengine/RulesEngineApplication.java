@@ -18,16 +18,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 
 @SpringBootApplication
 @EnableAutoConfiguration
+@ComponentScan("com.minsait.onesait.platform")
 @EnableAsync
-public class RulesEngineApplication extends WebMvcConfigurerAdapter {
+public class RulesEngineApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(RulesEngineApplication.class, args);

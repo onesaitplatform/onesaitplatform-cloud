@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.0.0-ce</version>
+		<version>2.3.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 
 	<artifactId>onesaitplatform-binary-repository</artifactId>
-	<version>2.0.0-ce</version>
+	<version>2.3.0-ce</version>
 	<name>onesaitplatform-binary-repository</name>
 	<description>Binary repository</description>
 
@@ -44,5 +44,4 @@
 		  </plugin>	
 		</plugins>	
 	</build>
-	
 </project>

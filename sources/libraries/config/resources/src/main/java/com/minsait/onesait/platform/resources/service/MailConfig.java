@@ -16,9 +16,11 @@ package com.minsait.onesait.platform.resources.service;
 
 import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -37,13 +39,19 @@ public class MailConfig {
 
 	private static final String DEFAULT_PROFILE = "default";
 
+	@Value("${proxy-mail.host:localhost}")
+	private String proxyHost;
+
+	@Value("${proxy-mail.port:8080}")
+	private int proxyPort;
+
 	@Bean("emailSender")
 	public JavaMailSender getJavaMailSender() {
 		final JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-		final MailConfiguration configuration = configurationService.getMailConfiguration(DEFAULT_PROFILE);
+		final MailConfiguration configuration = mailConfigurationOSP();
 		mailSender.setHost(configuration.getHost());
 		mailSender.setPort(configuration.getPort());
-
+		mailSender.setDefaultEncoding(StandardCharsets.UTF_8.name());
 		mailSender.setUsername(configuration.getUsername());
 		mailSender.setPassword(configuration.getPassword());
 
@@ -60,7 +68,22 @@ public class MailConfig {
 			props.put("mail.smtp.from", configuration.getSmtp().getFrom());
 		}
 
+		if (proxyHost != null && !proxyHost.equals("localhost")) {
+			props.put("mail.smtp.proxy.host", proxyHost);
+			props.put("mail.smtp.proxy.port", proxyPort);
+		}
+
 		return mailSender;
+	}
+
+	@Bean("mailConfigurationOSP")
+	public MailConfiguration mailConfigurationOSP() {
+		return configurationService.getMailConfiguration(DEFAULT_PROFILE);
+	}
+
+	@Bean("mailFrom")
+	public String mailFrom() {
+		return mailConfigurationOSP().getSmtp().getFrom();
 	}
 
 }

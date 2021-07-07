@@ -169,7 +169,7 @@
 											<div style="margin-top:20px" class="form-actions">
 												<div class="pull-left">
 													<!-- CANCEL  -->
-													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardConfController.go(\'' + @{/dashboardconf/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardConfController.go(\'' + ${dashboardconf.id} + '\',\'' + @{/dashboardconf/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 												</div>
 											    <div class="pull-right">
 													<!-- REMOVE -->
@@ -215,7 +215,7 @@
 	
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/dashboardConfCreate.js}"/>
+	<script th:src="@{/static/js/pages/dashboardConfCreate.js}"></script>
 	
 	<script
 		th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
@@ -232,7 +232,7 @@
 	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	<script th:inline="javascript">
 	
 		// <![CDATA[
@@ -251,6 +251,5 @@
 	// ]]>
 	
 	
-	</script>
-	
+	</script>	
 </html> 

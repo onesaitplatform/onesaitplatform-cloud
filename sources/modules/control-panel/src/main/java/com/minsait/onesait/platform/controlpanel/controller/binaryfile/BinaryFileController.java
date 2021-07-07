@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -53,6 +52,7 @@ import com.minsait.onesait.platform.comms.protocol.binary.BinarySizeException;
 import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.BinaryFileAccess;
+import com.minsait.onesait.platform.config.model.ODBinaryFilesDataset;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -167,22 +167,22 @@ public class BinaryFileController {
 	}
 
 	@DeleteMapping("/{fileId}")
-	@ResponseBody
-	public String delete(@PathVariable String fileId) {
-		if (binaryFileService.isUserOwner(fileId, userService.getUser(webUtils.getUserId()))) {
-			try {
+	public @ResponseBody String delete(Model model, @PathVariable String fileId, RedirectAttributes ra) {
+		try {
+			if (binaryFileService.isUserOwner(fileId, userService.getUser(webUtils.getUserId()))) {
 				binaryRepositoryLogicService.removeBinary(fileId);
-				return "ok";
-			} catch (final BinaryRepositoryException e) {
-				log.error("Something went wrong while trying to delete file", e);
-				return "ko";
 			}
-
+		} catch (final RuntimeException e) {
+			webUtils.addRedirectException(e, ra);
+			return e.getMessage();
+		} catch (BinaryRepositoryException ex) {
+			webUtils.addRedirectException(ex, ra);
+			return ex.getMessage();
 		}
-		return "ok";
+		return "{\"ok\":true}";
 	}
 
-	@PutMapping
+	@PostMapping("/update")
 	public String update(@RequestParam("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata, @RequestParam("fileId") String fileId,
 			RedirectAttributes redirectAttributes) {

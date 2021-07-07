@@ -31,7 +31,7 @@
 				      <div class="modal-body">
 				      <form></form>
 				      <div class="form-group">
-				      	<form id="form_update_resource" method="post" th:action="@{/reports/}" enctype="multipart/form-data">
+				      	<form id="form_update_resource" method="post" th:action="@{/reports/}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
 				      	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 				      	  <input type="hidden" name="_method" value="put" />
 				      	  <input type="hidden" name="fileId" id="updateFileId"/>

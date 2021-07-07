@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.controller;
 
-import java.io.UnsupportedEncodingException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -143,12 +141,6 @@ public class FlowEngineNodeServicesController {
 		return null;
 	}
 
-	@PostMapping(value = "/sendSimpleMail", produces = { "application/javascript", "application/json" })
-	public @ResponseBody String sendsimpleMail(@RequestBody MailRestDTO mailData) {
-		flowEngineNodeService.sendSimpleMail(mailData);
-		return null;
-	}
-
 	@GetMapping(value = "/user/notebooks", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String getNotebooksByUser(@RequestParam String authentication,
 			@RequestParam("callback") String callbackName) throws JsonProcessingException {
@@ -195,4 +187,26 @@ public class FlowEngineNodeServicesController {
 				dataflowData.getDataflowIdentification());
 	}
 
+	@GetMapping(value = "/user/management/api/rest", produces = { "application/javascript", "application/json" })
+	public @ResponseBody String getControlpanelApis(@RequestParam String authentication,
+			@RequestParam("callback") String callbackName) throws JsonProcessingException {
+		String response = mapper.writeValueAsString(flowEngineNodeService.getControlpanelApis(authentication));
+		return callbackName + "(" + response + ")";
+	}
+
+	@GetMapping(value = "/user/management/api/rest/operations", produces = { "application/javascript",
+			"application/json" })
+	public @ResponseBody String getControlpanelApiOperations(@RequestParam("apiName") String apiName,
+			@RequestParam String authentication, @RequestParam("callback") String callbackName)
+			throws JsonProcessingException {
+		String response = mapper
+				.writeValueAsString(flowEngineNodeService.getControlpanelApiOperations(apiName, authentication));
+		return callbackName + "(" + response + ")";
+	}
+	
+	@PostMapping(value = "/user/management/invoke_rest_api_operation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public @ResponseBody ResponseEntity<String> invokeManagementRestApiOperation(
+			@RequestBody FlowEngineInvokeRestApiOperationRequest invokeRequest) {
+		return flowEngineNodeService.invokeManagementRestApiOperation(invokeRequest);
+	}
 }

@@ -15,12 +15,17 @@
 package com.minsait.onesait.platform.config.services.dataflow;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -31,9 +36,6 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
-import com.minsait.onesait.platform.config.model.*;
-import com.minsait.onesait.platform.config.repository.*;
-import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +61,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
+import com.minsait.onesait.platform.config.dto.PipelineForList;
+import com.minsait.onesait.platform.config.model.DataflowInstance;
+import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.PipelineUserAccess;
+import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.DataflowInstanceRepository;
+import com.minsait.onesait.platform.config.repository.PipelineRepository;
+import com.minsait.onesait.platform.config.repository.PipelineUserAccessRepository;
+import com.minsait.onesait.platform.config.repository.PipelineUserAccessTypeRepository;
+import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
 import com.minsait.onesait.platform.config.services.dataflow.configuration.DataflowServiceConfiguration;
+import com.minsait.onesait.platform.config.services.generic.security.SecurityService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
@@ -100,7 +115,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Autowired
 	private OPResourceService resourceService;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -111,6 +126,9 @@ public class DataflowServiceImpl implements DataflowService {
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
 
+	@Autowired
+	private SecurityService securityService;
+	
 	private final ObjectMapper mapper = new ObjectMapper();
 	private DataflowInstance defaultinstance;
 
@@ -121,9 +139,12 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	@Override
-	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String userId) {
-		final String url = requestServlet.getServletPath() + (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
-		final String contentType = requestServlet.getContentType() == null ? MediaType.APPLICATION_JSON_UTF8_VALUE : requestServlet.getContentType();
+	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body,
+			String userId) {
+		final String url = requestServlet.getServletPath()
+				+ (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
+		final String contentType = requestServlet.getContentType() == null ? MediaType.APPLICATION_JSON_UTF8_VALUE
+				: requestServlet.getContentType();
 		final String streamsetsId = requestServlet.getHeader(DATAFLOW_HEADER);
 		final User user = getUserById(userId);
 
@@ -137,9 +158,12 @@ public class DataflowServiceImpl implements DataflowService {
 
 	// Only accessible when administrator
 	@Override
-	public ResponseEntity<String> sendHttpWithInstance(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String instanceId) {
-		final String url = requestServlet.getServletPath() + (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
-		final String contentType = requestServlet.getContentType() == null ? MediaType.APPLICATION_JSON_UTF8_VALUE : requestServlet.getContentType();
+	public ResponseEntity<String> sendHttpWithInstance(HttpServletRequest requestServlet, HttpMethod httpMethod,
+			Object body, String instanceId) {
+		final String url = requestServlet.getServletPath()
+				+ (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
+		final String contentType = requestServlet.getContentType() == null ? MediaType.APPLICATION_JSON_UTF8_VALUE
+				: requestServlet.getContentType();
 
 		final DataflowInstance instance = getDataflowInstanceById(instanceId);
 		final HttpHeaders headers = getAuthorizationHeadersForInstance(instance);
@@ -150,7 +174,8 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public ResponseEntity<String> sendHttpFile(HttpServletRequest requestServlet, MultipartFile file, String userId) {
-		final String url = requestServlet.getServletPath() + (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
+		final String url = requestServlet.getServletPath()
+				+ (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
 		final String streamsetsId = requestServlet.getHeader(DATAFLOW_HEADER);
 		final User user = getUserById(userId);
 
@@ -161,7 +186,8 @@ public class DataflowServiceImpl implements DataflowService {
 
 		try {
 			final MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
-			fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\""+file.getOriginalFilename()+"\"");
+			fileMap.add(HttpHeaders.CONTENT_DISPOSITION,
+					"form-data; name=\"file\"; filename=\"" + file.getOriginalFilename() + "\"");
 			final HttpEntity<byte[]> fileEntity = new HttpEntity<>(file.getBytes(), fileMap);
 
 			final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -176,15 +202,18 @@ public class DataflowServiceImpl implements DataflowService {
 
 	// Only accessible when administrator
 	@Override
-	public ResponseEntity<String> sendHttpFileWithInstance(HttpServletRequest requestServlet, MultipartFile file, String instanceId) {
-		final String url = requestServlet.getServletPath() + (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
+	public ResponseEntity<String> sendHttpFileWithInstance(HttpServletRequest requestServlet, MultipartFile file,
+			String instanceId) {
+		final String url = requestServlet.getServletPath()
+				+ (requestServlet.getQueryString() != null ? "?" + requestServlet.getQueryString() : "");
 		final DataflowInstance instance = getDataflowInstanceById(instanceId);
 		final HttpHeaders headers = getAuthorizationHeadersForInstance(instance);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
 		try {
 			final MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
-			fileMap.add(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\""+file.getOriginalFilename()+"\"");
+			fileMap.add(HttpHeaders.CONTENT_DISPOSITION,
+					"form-data; name=\"file\"; filename=\"" + file.getOriginalFilename() + "\"");
 			final HttpEntity<byte[]> fileEntity = new HttpEntity<>(file.getBytes(), fileMap);
 
 			final MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
@@ -198,7 +227,7 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, Object body, HttpHeaders headers,
-											DataflowInstance instance ) {
+			DataflowInstance instance) {
 		if (httpMethod == HttpMethod.POST || httpMethod == HttpMethod.DELETE || httpMethod == HttpMethod.PUT) {
 			headers.add("X-Requested-By", "OnesaitPlatform");
 		}
@@ -218,7 +247,7 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private DataflowInstance getInstanceForUserAndStreamsetsId(final User user, final String streamsetsId) {
-		if(streamsetsId == null) {
+		if (streamsetsId == null) {
 			return getDataflowInstanceForUser(user);
 		} else {
 			final Pipeline pipeline = getPipelineByIdStreamsets(streamsetsId);
@@ -226,12 +255,12 @@ public class DataflowServiceImpl implements DataflowService {
 		}
 	}
 
-	private User getUserById(String userId){
-		if(userId == null || userId.trim().isEmpty()){
+	private User getUserById(String userId) {
+		if (userId == null || userId.trim().isEmpty()) {
 			throw new BadRequestException("User is null or empty, not authorized");
 		} else {
 			final User user = userRepository.findByUserId(userId);
-			if(user == null){
+			if (user == null) {
 				throw new NotFoundException("User not found, not authorized");
 			} else {
 				return user;
@@ -240,7 +269,7 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private HttpHeaders getAuthorizationHeadersForUserAndStreamsetsId(final User user, final String streamsetsId) {
-		if(streamsetsId == null){
+		if (streamsetsId == null) {
 			return getAuthorizationHeadersForUser(user);
 		} else {
 			final Pipeline pipeline = getPipelineByIdStreamsets(streamsetsId);
@@ -248,14 +277,14 @@ public class DataflowServiceImpl implements DataflowService {
 		}
 	}
 
-	private HttpHeaders getAuthorizationHeadersForUser(User user){
-		HttpHeaders httpHeaders = new HttpHeaders();
+	private HttpHeaders getAuthorizationHeadersForUser(User user) {
+		final HttpHeaders httpHeaders = new HttpHeaders();
 		final String credentials = getCredentials(user);
 		httpHeaders.add(AUTHORIZATION, credentials);
 		return httpHeaders;
 	}
 
-	private HttpHeaders getAuthorizationHeadersForPipelineAndUser(Pipeline pipeline, User user){
+	private HttpHeaders getAuthorizationHeadersForPipelineAndUser(Pipeline pipeline, User user) {
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		final String credentials = getCredentials(user, pipeline);
 		httpHeaders.add(AUTHORIZATION, credentials);
@@ -263,30 +292,30 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	// Only accessible by admins
-	private HttpHeaders getAuthorizationHeadersForInstance(DataflowInstance instance){
+	private HttpHeaders getAuthorizationHeadersForInstance(DataflowInstance instance) {
 		final HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.add(AUTHORIZATION, BASIC +instance.getAdminCredentials());
+		httpHeaders.add(AUTHORIZATION, BASIC + instance.getAdminCredentials());
 		return httpHeaders;
 	}
 
-	private String getCredentials(User user){
+	private String getCredentials(User user) {
 		final String credentials;
 		final DataflowInstance instance = getDataflowInstanceForUser(user);
-		if(user.isAdmin()){
+		if (user.isAdmin()) {
 			credentials = instance.getAdminCredentials();
-		} else if(userService.isUserAnalytics(user)) {
+		} else if (userService.isUserAnalytics(user)) {
 			credentials = instance.getUserCredentials();
 		} else {
 			// Other roles can't create resources
 			throw new NotAuthorizedException("User " + user.getUserId() + " have no rights over this resource");
 		}
-		return BASIC+credentials;
+		return BASIC + credentials;
 	}
 
-	private String getCredentials(User user, Pipeline pipeline){
+	private String getCredentials(User user, Pipeline pipeline) {
 		final String credentials;
 		final DataflowInstance instance = pipeline.getInstance();
-		if(user.isAdmin()) {
+		if (user.isAdmin()) {
 			credentials = instance.getAdminCredentials();
 		} else if (hasUserEditPermission(pipeline, user)) {
 			credentials = instance.getUserCredentials();
@@ -295,7 +324,7 @@ public class DataflowServiceImpl implements DataflowService {
 		} else {
 			throw new NotAuthorizedException("User " + user.getUserId() + " have no rights over this resource");
 		}
-		return BASIC+credentials;
+		return BASIC + credentials;
 	}
 
 	@Override
@@ -314,7 +343,7 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private ResponseEntity<byte[]> getHttpBinary(String url, HttpMethod httpMethod, String body, HttpHeaders headers,
-												 DataflowInstance instance) {
+			DataflowInstance instance) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 		final HttpEntity<String> request = new HttpEntity<>(body, headers);
 		log.debug("Sending method {} Dataflow", httpMethod.toString());
@@ -328,26 +357,27 @@ public class DataflowServiceImpl implements DataflowService {
 			throw new BadRequestException(e.getMessage());
 		}
 
-		log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url );
+		log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 
-		return new ResponseEntity<>(response.getBody(), responseHeaders, HttpStatus.valueOf(response.getStatusCode().value()));
+		return new ResponseEntity<>(response.getBody(), responseHeaders,
+				HttpStatus.valueOf(response.getStatusCode().value()));
 	}
 
 	@Override
 	public Pipeline getPipelineById(String id) {
-		if(id == null || id.trim().isEmpty()){
+		if (id == null || id.trim().isEmpty()) {
 			throw new BadRequestException("Pipeline id is null or empty");
 		} else {
-			final Pipeline pipeline = pipelineRepository.findById(id);
+			final Pipeline pipeline = pipelineRepository.findById(id).orElse(null);
 			return checkPipeline(pipeline);
 		}
 	}
 
 	@Override
 	public Pipeline getPipelineByIdentification(String identification) {
-		if(identification == null || identification.trim().isEmpty()){
+		if (identification == null || identification.trim().isEmpty()) {
 			throw new BadRequestException("Pipeline dentification is null or empty");
 		} else {
 			final Pipeline pipeline = pipelineRepository.findByIdentification(identification);
@@ -357,7 +387,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public Pipeline getPipelineByIdStreamsets(String streamsetsId) {
-		if(streamsetsId == null || streamsetsId.trim().isEmpty()){
+		if (streamsetsId == null || streamsetsId.trim().isEmpty()) {
 			throw new BadRequestException("Pipeline streamsets id is null or empty");
 		} else {
 			final Pipeline pipeline = pipelineRepository.findByIdstreamsets(streamsetsId);
@@ -365,8 +395,8 @@ public class DataflowServiceImpl implements DataflowService {
 		}
 	}
 
-	private Pipeline checkPipeline(Pipeline pipeline){
-		if (pipeline != null ) {
+	private Pipeline checkPipeline(Pipeline pipeline) {
+		if (pipeline != null) {
 			return pipeline;
 		} else {
 			throw new NotFoundException("Pipeline not found");
@@ -390,7 +420,7 @@ public class DataflowServiceImpl implements DataflowService {
 		pUAView.setId("ACCESS-TYPE-2"); // VIEW Access
 
 		return hasUserEditPermission(pipeline, user) || pipeline.isPublic()
-				|| this.hasUserPermissionInPipeline(pipeline, user, pUAView)
+				|| hasUserPermissionInPipeline(pipeline, user, pUAView)
 				|| resourceService.hasAccess(user.getUserId(), pipeline.getId(), ResourceAccessType.VIEW);
 	}
 
@@ -398,22 +428,24 @@ public class DataflowServiceImpl implements DataflowService {
 		final PipelineUserAccessType pUA = new PipelineUserAccessType();
 		pUA.setId("ACCESS-TYPE-1"); // EDIT Access
 
-		return isUserOwner(pipeline, user) || this.hasUserPermissionInPipeline(pipeline, user, pUA)
+		return isUserOwner(pipeline, user) || hasUserPermissionInPipeline(pipeline, user, pUA)
 				|| resourceService.hasAccess(user.getUserId(), pipeline.getId(), ResourceAccessType.MANAGE);
 	}
 
-	private boolean hasUserPermissionInPipeline(Pipeline pipeline, User user, PipelineUserAccessType pipelineUserAccessType) {
-		return pipelineUserAccessRepository.findByPipelineAndUserAndAccess(pipeline, user, pipelineUserAccessType) != null;
+	private boolean hasUserPermissionInPipeline(Pipeline pipeline, User user,
+			PipelineUserAccessType pipelineUserAccessType) {
+		return pipelineUserAccessRepository.findByPipelineAndUserAndAccess(pipeline, user,
+				pipelineUserAccessType) != null;
 	}
 
-	private void checkUserViewPipelineAccess(Pipeline pipeline, User user){
-		if(!hasUserViewPermission(pipeline, user)) {
+	private void checkUserViewPipelineAccess(Pipeline pipeline, User user) {
+		if (!hasUserViewPermission(pipeline, user)) {
 			throw new NotAuthorizedException("User can not access this resource");
 		}
 	}
 
-	private void checkUserEditPipelineAccess(Pipeline pipeline, User user){
-		if(!hasUserEditPermission(pipeline, user)) {
+	private void checkUserEditPipelineAccess(Pipeline pipeline, User user) {
+		if (!hasUserEditPermission(pipeline, user)) {
 			throw new NotAuthorizedException("User can not access this resource");
 		}
 	}
@@ -422,8 +454,8 @@ public class DataflowServiceImpl implements DataflowService {
 		return user.isAdmin() || pipeline.getUser().equals(user);
 	}
 
-	private void checkUserIsOwner(Pipeline pipeline, User user){
-		if(!isUserOwner(pipeline, user)) {
+	private void checkUserIsOwner(Pipeline pipeline, User user) {
+		if (!isUserOwner(pipeline, user)) {
 			throw new NotAuthorizedException("You are not the owner or administrator");
 		}
 	}
@@ -446,31 +478,29 @@ public class DataflowServiceImpl implements DataflowService {
 	public List<Pipeline> getPipelinesWithStatus(final String userId) {
 		final User user = getUserById(userId);
 
-		final List<Pipeline> pipelines = getPipelines(userId)
-				.stream()
-				.map(pipeline -> addPipelineAccessType(pipeline, user))
-				.collect(Collectors.toList());
+		final List<Pipeline> pipelines = getPipelines(userId).stream()
+				.map(pipeline -> addPipelineAccessType(pipeline, user)).collect(Collectors.toList());
 
-	 	try{
+		try {
 			final ObjectNode response = getJSONPipelineStatus(user);
 			final Map<String, Pipeline.PipelineStatus> pipelineStatusMap = getPipelinesStatusMap(response);
 			for (final Pipeline pipeline : pipelines) {
 				final Pipeline.PipelineStatus status = pipelineStatusMap.get(pipeline.getIdstreamsets());
-				if(status == null){
+				if (status == null) {
 					pipeline.setStatus(Pipeline.PipelineStatus.INSTANCE_ERROR);
 				} else {
 					pipeline.setStatus(status);
 				}
 			}
-		} catch (final Exception ignored){
-	 		// Ignored
+		} catch (final Exception ignored) {
+			// Ignored
 			log.error(ignored.getMessage(), ignored);
 		}
 		return pipelines;
 	}
 
-	private Pipeline addPipelineAccessType(Pipeline pipeline, User user){
-		if(hasUserEditPermission(pipeline, user)){
+	private Pipeline addPipelineAccessType(Pipeline pipeline, User user) {
+		if (hasUserEditPermission(pipeline, user)) {
 			pipeline.setAccessType(PipelineUserAccessType.Type.EDIT);
 		} else {
 			pipeline.setAccessType(PipelineUserAccessType.Type.VIEW);
@@ -480,7 +510,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	private Map<String, Pipeline.PipelineStatus> getPipelinesStatusMap(final ObjectNode pipelinesStatus) {
 		final Map<String, Pipeline.PipelineStatus> statusMap = new HashMap<>();
-		pipelinesStatus.forEach( instanceNode -> instanceNode.forEach(pipelineNode -> {
+		pipelinesStatus.forEach(instanceNode -> instanceNode.forEach(pipelineNode -> {
 			final Pipeline.PipelineStatus status = Pipeline.PipelineStatus.valueOf(pipelineNode.get("status").asText());
 			statusMap.put(pipelineNode.get("pipelineId").asText(), status);
 		}));
@@ -489,8 +519,9 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public Pipeline createPipeline(final Pipeline pipeline, final String userId) {
-		if(pipelineRepository.findByIdentification(pipeline.getIdentification()) != null) {
-			throw new ClientErrorException("Pipeline already exists in database", org.apache.http.HttpStatus.SC_CONFLICT);
+		if (pipelineRepository.findByIdentification(pipeline.getIdentification()) != null) {
+			throw new ClientErrorException("Pipeline already exists in database",
+					org.apache.http.HttpStatus.SC_CONFLICT);
 		} else {
 			log.info("Creating pipeline '{}' for user: {}", pipeline.getIdentification(), userId);
 			try {
@@ -499,25 +530,30 @@ public class DataflowServiceImpl implements DataflowService {
 				final String basePath = getDataflowInstanceForUser(user).getUrl();
 				final String encodedName = UriUtils.encode(pipeline.getIdentification(), UTF8_STR);
 
-				final ResponseEntity<String> response = StreamsetsApiWrapper.pipelineCreate(rt, headers, basePath, encodedName, pipeline.getType());
+				final ResponseEntity<String> response = StreamsetsApiWrapper.pipelineCreate(rt, headers, basePath,
+						encodedName, pipeline.getType());
 
 				final HttpStatus statusCode = response.getStatusCode();
 				if (statusCode != HttpStatus.CREATED) {
-					log.error("Exception executing create pipeline, status code: {} Message: {}", response.getStatusCodeValue(), response.getBody());
+					log.error("Exception executing create pipeline, status code: {} Message: {}",
+							response.getStatusCodeValue(), response.getBody());
 					metricsManagerLogControlPanelDataflowsCreation(userId, "KO");
-					throw new ClientErrorException("Exception executing create pipeline, status code: " + response.getStatusCodeValue()+" Message: "+response.getBody(), statusCode.value());
+					throw new ClientErrorException("Exception executing create pipeline, status code: "
+							+ response.getStatusCodeValue() + " Message: " + response.getBody(), statusCode.value());
 				} else {
 					return createPipelineFromResponse(pipeline, userId, user, response);
 				}
-			} catch (final UnsupportedEncodingException e) {
+			} catch (final Exception e) {
 				log.error("Encoding not supported on name {}", pipeline.getIdentification(), e);
 				metricsManagerLogControlPanelDataflowsCreation(userId, "KO");
-				throw new BadRequestException("Encoding not supported with name "+pipeline.getIdentification()+" Message: "+e.getMessage());
+				throw new BadRequestException("Encoding not supported with name " + pipeline.getIdentification()
+						+ " Message: " + e.getMessage());
 			}
 		}
 	}
 
-	private Pipeline createPipelineFromResponse(Pipeline pipeline, String userId, User user, ResponseEntity<String> response) {
+	private Pipeline createPipelineFromResponse(Pipeline pipeline, String userId, User user,
+			ResponseEntity<String> response) {
 		try {
 			final JSONObject createResponseObj = new JSONObject(response.getBody());
 			final String dataflowId = createResponseObj.getString(PIPELINEID);
@@ -528,7 +564,8 @@ public class DataflowServiceImpl implements DataflowService {
 		} catch (final JSONException e) {
 			log.error("Exception parsing answer in create pipeline. Response: {}", response.getBody(), e);
 			metricsManagerLogControlPanelDataflowsCreation(userId, "KO");
-			throw new BadRequestException("Exception parsing answer creating pipeline. Response: "+response.getBody(), e);
+			throw new BadRequestException("Exception parsing answer creating pipeline. Response: " + response.getBody(),
+					e);
 		}
 	}
 
@@ -543,6 +580,12 @@ public class DataflowServiceImpl implements DataflowService {
 		return pipelineRepository.save(pl);
 	}
 
+	private Pipeline updateDBPipeline(final String identification, final String streamsetsId, final User user) {
+		Pipeline pl = pipelineRepository.findByIdentification(identification);
+		pl.setIdstreamsets(streamsetsId);
+		return pipelineRepository.save(pl);
+	}
+
 	@Override
 	public void removePipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, true);
@@ -553,28 +596,32 @@ public class DataflowServiceImpl implements DataflowService {
 		deletePipeline(pipelineId, userId, false);
 	}
 
-	private void deletePipeline(final String pipelineId, final String userId, final boolean removeFromInstance){
+	private void deletePipeline(final String pipelineId, final String userId, final boolean removeFromInstance) {
 		final Pipeline pipeline = getPipelineById(pipelineId);
 		if (resourceService.isResourceSharedInAnyProject(pipeline)) {
-			throw new BadRequestException("This DataFlow is shared within a Project, revoke access from project prior to deleting");
+			throw new BadRequestException(
+					"This DataFlow is shared within a Project, revoke access from project prior to deleting");
 		} else {
 			final User user = getUserById(userId);
 			checkUserEditPipelineAccess(pipeline, user);
 
 			// If instance can be accessed
-			if(removeFromInstance){
+			if (removeFromInstance) {
 				final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
 				final String basePath = pipeline.getInstance().getUrl();
-				final ResponseEntity<String> response = StreamsetsApiWrapper.pipelineRemove(rt, headers, basePath, pipeline.getIdstreamsets());
+				final ResponseEntity<String> response = StreamsetsApiWrapper.pipelineRemove(rt, headers, basePath,
+						pipeline.getIdstreamsets());
 				final HttpStatus statusCode = response.getStatusCode();
 				if (statusCode != HttpStatus.OK && statusCode != HttpStatus.ACCEPTED) {
 					log.error("Exception executing delete pipeline, status code:  {}", response.getStatusCodeValue());
-					throw new BadRequestException("Exception executing delete pipeline, status code: " + response.getStatusCodeValue());
+					throw new BadRequestException(
+							"Exception executing delete pipeline, status code: " + response.getStatusCodeValue());
 				}
 			}
 
 			pipelineRepository.delete(pipeline);
-			log.info("Pipeline with id {} for user {} and , successfully deleted", pipeline.getIdentification(), user.getUserId());
+			log.info("Pipeline with id {} for user {} and , successfully deleted", pipeline.getIdentification(),
+					user.getUserId());
 		}
 	}
 
@@ -582,7 +629,9 @@ public class DataflowServiceImpl implements DataflowService {
 	public Pipeline renamePipeline(final String pipelineId, final String userId, final String newIdentification) {
 		final Pipeline newPipeline = pipelineRepository.findByIdentification(newIdentification);
 		if (newPipeline != null) {
-			throw new ClientErrorException("The pipeline with identification [" + newIdentification + "] already exists", Response.Status.CONFLICT);
+			throw new ClientErrorException(
+					"The pipeline with identification [" + newIdentification + "] already exists",
+					Response.Status.CONFLICT);
 		} else {
 			final Pipeline pipeline = getPipelineById(pipelineId);
 			final User user = getUserById(userId);
@@ -650,20 +699,17 @@ public class DataflowServiceImpl implements DataflowService {
 	private ObjectNode getJSONPipelineStatus(User user) {
 		final ObjectNode result = mapper.createObjectNode();
 
-		if(user.isAdmin()) {
+		if (user.isAdmin()) {
 			final List<DataflowInstance> instances = getAllDataflowInstances();
-			for (DataflowInstance instance : instances) {
+			for (final DataflowInstance instance : instances) {
 				final HttpHeaders headers = getAuthorizationHeadersForInstance(instance);
 				setStatusToResult(user, headers, result, instance);
 			}
 		} else {
-			final List<DataflowInstance> instances = getPipelines(user)
-					.stream()
-					.map(Pipeline::getInstance)
-					.distinct()
+			final List<DataflowInstance> instances = getPipelines(user).stream().map(Pipeline::getInstance).distinct()
 					.collect(Collectors.toList());
 
-			for (DataflowInstance instance : instances) {
+			for (final DataflowInstance instance : instances) {
 				// Although this action is performed as admin, later the permissions are checked
 				final HttpHeaders headers = getAuthorizationHeadersForInstance(instance);
 				setStatusToResult(user, headers, result, instance);
@@ -674,7 +720,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	private void setStatusToResult(User user, HttpHeaders headers, ObjectNode result, DataflowInstance instance) {
 		final Optional<ArrayNode> status = getPipelinesStatusForInstance(headers, instance, user);
-		if(status.isPresent()){
+		if (status.isPresent()) {
 			result.set(instance.getIdentification(), status.get());
 		} else {
 			result.put(instance.getIdentification(), "Response from instance is not readable");
@@ -682,9 +728,10 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private Optional<ArrayNode> getPipelinesStatusForInstance(final HttpHeaders headers,
-															   final DataflowInstance instance, final User user) {
+			final DataflowInstance instance, final User user) {
 		try {
-			final ResponseEntity<String> response = StreamsetsApiWrapper.pipelinesStatus(rt, headers, instance.getUrl());
+			final ResponseEntity<String> response = StreamsetsApiWrapper.pipelinesStatus(rt, headers,
+					instance.getUrl());
 			final String body = response.getBody();
 			final ArrayNode result = mapper.createArrayNode();
 
@@ -695,7 +742,8 @@ public class DataflowServiceImpl implements DataflowService {
 				final Entry<String, JsonNode> pipelineStatus = it.next();
 				final Pipeline pipeline = pipelineRepository.findByIdstreamsets(pipelineStatus.getKey());
 				// Instance could have pipelines not stored in config
-				if(pipeline != null && pipeline.getInstance().equals(instance) && hasUserViewPermission(pipeline, user)) {
+				if (pipeline != null && pipeline.getInstance().equals(instance)
+						&& hasUserViewPermission(pipeline, user)) {
 					result.add(pipelineStatus.getValue());
 				}
 			}
@@ -717,7 +765,8 @@ public class DataflowServiceImpl implements DataflowService {
 		if (exportResponse.getStatusCode() == HttpStatus.OK) {
 			return exportResponse;
 		} else {
-			throw new BadRequestException("Error getting pipeline configuration from streamsets. Status: "+exportResponse.getStatusCode()+" Response: "+exportResponse.getBody());
+			throw new BadRequestException("Error getting pipeline configuration from streamsets. Status: "
+					+ exportResponse.getStatusCode() + " Response: " + exportResponse.getBody());
 		}
 	}
 
@@ -731,24 +780,54 @@ public class DataflowServiceImpl implements DataflowService {
 		if (exportResponse.getStatusCode() == HttpStatus.OK) {
 			return exportResponse;
 		} else {
-			throw new BadRequestException("Error exporting the pipeline in streamsets. Status: "+exportResponse.getStatusCode()+" Response: "+exportResponse.getBody());
+			throw new BadRequestException("Error exporting the pipeline in streamsets. Status: "
+					+ exportResponse.getStatusCode() + " Response: " + exportResponse.getBody());
 		}
 	}
 
-	private ResponseEntity<String> exportPipeline(Pipeline pipeline, HttpHeaders headers){
+	private ResponseEntity<String> exportPipeline(Pipeline pipeline, HttpHeaders headers) {
 		final String basePath = pipeline.getInstance().getUrl();
 		return StreamsetsApiWrapper.pipelineExport(rt, headers, basePath, pipeline.getIdstreamsets());
 	}
 
 	@Override
-	public ResponseEntity<String> importPipeline(final String userId, final String pipelineIdentification, final String config, final boolean overwrite) {
+	public ResponseEntity<String> importPipelineData(final String userId, final String pipelineIdentification,
+			final String config, final boolean overwrite) {
+
+		final User user = getUserById(userId);
+		final HttpHeaders headers = getAuthorizationHeadersForUser(user);
+		final DataflowInstance instance = getDataflowInstanceForUser(user);
+		final ResponseEntity<String> response = importPipeline(pipelineIdentification, config, headers, instance);
+
+		if (response.getStatusCode() == HttpStatus.OK) {
+			final JSONObject createResponseObj = new JSONObject(response.getBody());
+			final String pipelineId = createResponseObj.getJSONObject("pipelineConfig").getString(PIPELINEID);
+			final Pipeline pipelineUpdated = updateDBPipeline(pipelineIdentification, pipelineId, user);
+
+			if (pipelineUpdated != null) {
+				return response;
+			} else {
+				throw new BadRequestException("Error creating the pipeline in configdb");
+			}
+		} else {
+			throw new BadRequestException("Error importing the pipeline in streamsets. Status: "
+					+ response.getStatusCode() + " Response: " + response.getBody());
+		}
+
+	}
+
+	@Override
+	public ResponseEntity<String> importPipeline(final String userId, final String pipelineIdentification,
+			final String config, final boolean overwrite) {
 		final Pipeline pipeline = pipelineRepository.findByIdentification(pipelineIdentification);
 		if (pipeline != null) {
-		    if (overwrite) {
-		        return updatePipeline(userId, pipelineIdentification, config);
-		    } else {
-		        throw new ClientErrorException("The pipeline with identification [" + pipelineIdentification + "] already exists", Response.Status.CONFLICT);
-		    }
+			if (overwrite) {
+				return updatePipeline(userId, pipelineIdentification, config);
+			} else {
+				throw new ClientErrorException(
+						"The pipeline with identification [" + pipelineIdentification + "] already exists",
+						Response.Status.CONFLICT);
+			}
 		} else {
 			final User user = getUserById(userId);
 			final HttpHeaders headers = getAuthorizationHeadersForUser(user);
@@ -767,18 +846,19 @@ public class DataflowServiceImpl implements DataflowService {
 					throw new BadRequestException("Error creating the pipeline in configdb");
 				}
 			} else {
-				throw new BadRequestException("Error importing the pipeline in streamsets. Status: "+response.getStatusCode()+" Response: "+response.getBody());
+				throw new BadRequestException("Error importing the pipeline in streamsets. Status: "
+						+ response.getStatusCode() + " Response: " + response.getBody());
 			}
 		}
 	}
 
 	private ResponseEntity<String> importPipeline(final String pipelineIdentification, final String config,
-												  final HttpHeaders headers, final DataflowInstance instance) {
+			final HttpHeaders headers, final DataflowInstance instance) {
 		final JSONObject modifiedConfig = new JSONObject(config);
 		modifiedConfig.getJSONObject("pipelineConfig").put("title", pipelineIdentification);
 
-		return StreamsetsApiWrapper.pipelineImport(rt, headers, instance.getUrl(),
-				pipelineIdentification, false, true, modifiedConfig.toString());
+		return StreamsetsApiWrapper.pipelineImport(rt, headers, instance.getUrl(), pipelineIdentification, false, true,
+				modifiedConfig.toString());
 	}
 
 	@Override
@@ -789,42 +869,47 @@ public class DataflowServiceImpl implements DataflowService {
 
 		final ResponseEntity<String> statusPipelineResponse = statusPipeline(userId, pipelineIdentification);
 		if (statusPipelineResponse.getStatusCode() != HttpStatus.OK) {
-			throw new BadRequestException("The pipeline does not exist in streamsets. Status: "+statusPipelineResponse.getStatusCode()+" Response: "+statusPipelineResponse.getBody());
+			throw new BadRequestException("The pipeline does not exist in streamsets. Status: "
+					+ statusPipelineResponse.getStatusCode() + " Response: " + statusPipelineResponse.getBody());
 		} else {
 			final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
 			final String basePath = pipeline.getInstance().getUrl();
-			final ResponseEntity<String> response = StreamsetsApiWrapper.pipelineImport(rt, headers, basePath, pipeline.getIdstreamsets(), true, false, config);
+			final ResponseEntity<String> response = StreamsetsApiWrapper.pipelineImport(rt, headers, basePath,
+					pipeline.getIdstreamsets(), true, false, config);
 			if (response.getStatusCode() == HttpStatus.OK) {
 				return response;
 			} else {
-				throw new BadRequestException("Error creating the pipeline in streamsets. Status: "+response.getStatusCode()+" Response: "+response.getBody());
+				throw new BadRequestException("Error creating the pipeline in streamsets. Status: "
+						+ response.getStatusCode() + " Response: " + response.getBody());
 			}
 		}
 	}
 
 	@Override
-	public ResponseEntity<String> clonePipeline(String userId, String pipelineIdentificationOri, String pipelineIdentificationDest) {
+	public ResponseEntity<String> clonePipeline(String userId, String pipelineIdentificationOri,
+			String pipelineIdentificationDest) {
 		final Pipeline pipeLineDest = pipelineRepository.findByIdentification(pipelineIdentificationDest);
 		if (pipeLineDest == null) {
 			final ResponseEntity<String> exportResponse = exportPipeline(userId, pipelineIdentificationOri);
 			final JSONObject configOriObject = new JSONObject(exportResponse.getBody());
 			return importPipeline(userId, pipelineIdentificationDest, configOriObject.toString(), false);
 		} else {
-			throw new BadRequestException("The pipeline [" + pipelineIdentificationDest + "] already exists in the platform");
+			throw new BadRequestException(
+					"The pipeline [" + pipelineIdentificationDest + "] already exists in the platform");
 		}
 	}
 
-    @Override
-    public ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len,
-            String orderBy, String order, boolean includeStatus) {
+	@Override
+	public ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len,
+			String orderBy, String order, boolean includeStatus) {
 		final User user = getUserById(userId);
-        final HttpHeaders headers = getAuthorizationHeadersForUser(user);
+		final HttpHeaders headers = getAuthorizationHeadersForUser(user);
 		final ObjectNode result = mapper.createObjectNode();
 
-        if(user.isAdmin()) {
+		if (user.isAdmin()) {
 			final List<DataflowInstance> instances = getAllDataflowInstances();
 
-			for (DataflowInstance instance : instances) {
+			for (final DataflowInstance instance : instances) {
 				setPipelinesToResult(userId, filterText, label, offset, len, orderBy, order, includeStatus, headers,
 						result, instance);
 			}
@@ -835,14 +920,14 @@ public class DataflowServiceImpl implements DataflowService {
 		}
 
 		return new ResponseEntity<>(result.toString(), HttpStatus.OK);
-    }
+	}
 
 	private void setPipelinesToResult(String userId, String filterText, String label, int offset, int len,
-									  String orderBy, String order, boolean includeStatus, HttpHeaders headers,
-									  ObjectNode result, DataflowInstance instance) {
-		final Optional<ArrayNode> pipelines = getPipelinesForInstance(instance, headers, filterText, label, offset,
-				len, orderBy, order, userId, includeStatus);
-		if(pipelines.isPresent()){
+			String orderBy, String order, boolean includeStatus, HttpHeaders headers, ObjectNode result,
+			DataflowInstance instance) {
+		final Optional<ArrayNode> pipelines = getPipelinesForInstance(instance, headers, filterText, label, offset, len,
+				orderBy, order, userId, includeStatus);
+		if (pipelines.isPresent()) {
 			result.set(instance.getIdentification(), pipelines.get());
 		} else {
 			result.put(instance.getIdentification(), "Response from instance is not readable");
@@ -850,9 +935,8 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private Optional<ArrayNode> getPipelinesForInstance(DataflowInstance instance, HttpHeaders headers,
-														String filterText, String label, int offset, int len,
-														String orderBy, String order,
-														String userId, boolean includeStatus){
+			String filterText, String label, int offset, int len, String orderBy, String order, String userId,
+			boolean includeStatus) {
 
 		final ResponseEntity<String> response = StreamsetsApiWrapper.pipelines(rt, headers, instance.getUrl(),
 				filterText, label, offset, len, orderBy, order, includeStatus);
@@ -867,10 +951,10 @@ public class DataflowServiceImpl implements DataflowService {
 			Iterator<JsonNode> itStatus;
 
 			if (includeStatus) { // json will be [[{pipe1},{pipe2}],[{status1},{status2}]]
-				Iterator<JsonNode> arrayIt = nodes.iterator();
-				JsonNode pipelines = arrayIt.next();
+				final Iterator<JsonNode> arrayIt = nodes.iterator();
+				final JsonNode pipelines = arrayIt.next();
 				it = pipelines.iterator();
-				JsonNode statuses = arrayIt.next();
+				final JsonNode statuses = arrayIt.next();
 				itStatus = statuses.iterator();
 			} else { // json will be [{pipe1},{pipe2}]
 				it = nodes.iterator();
@@ -883,10 +967,10 @@ public class DataflowServiceImpl implements DataflowService {
 				final String idStreamsets = findValue.asText();
 
 				final Pipeline pipeline = pipelineRepository.findByIdstreamsets(idStreamsets);
-				if(pipeline != null){
+				if (pipeline != null) {
 					if (hasUserViewPermission(pipeline, userId)) {
 						if (includeStatus) {
-							JsonNode status = itStatus.next();
+							final JsonNode status = itStatus.next();
 							jsonPipeline.set("OP_pipelineStatus", status);
 						}
 						result.add(jsonPipeline);
@@ -899,10 +983,10 @@ public class DataflowServiceImpl implements DataflowService {
 			return Optional.empty();
 		}
 	}
-    
-    @Override
-    public ResponseEntity<String> metricsPipeline(String userId, String identification) {
-        final Pipeline pipeline = getPipelineByIdentification(identification);
+
+	@Override
+	public ResponseEntity<String> metricsPipeline(String userId, String identification) {
+		final Pipeline pipeline = getPipelineByIdentification(identification);
 		final User user = getUserById(userId);
 		checkUserViewPipelineAccess(pipeline, user);
 
@@ -910,7 +994,7 @@ public class DataflowServiceImpl implements DataflowService {
 		final String basePath = pipeline.getInstance().getUrl();
 
 		return StreamsetsApiWrapper.pipelineMetrics(rt, headers, basePath, pipeline.getIdstreamsets());
-    }
+	}
 
 	@Override
 	public PipelineUserAccess createUserAccess(String pipelineId, String ownerId, String accessType, String userId) {
@@ -918,18 +1002,19 @@ public class DataflowServiceImpl implements DataflowService {
 		final User user = getUserById(userId);
 		final Pipeline pipeline = getPipelineById(pipelineId);
 		checkUserIsOwner(pipeline, owner);
-		if(accessType != null && !accessType.equals("")) {
-			final PipelineUserAccessType pipelineUserAccessType = pipelineUserAccessTypeRepository.findById(accessType);
-			if(pipelineUserAccessType != null) {
+		if (accessType != null && !accessType.equals("")) {
+			final PipelineUserAccessType pipelineUserAccessType = pipelineUserAccessTypeRepository.findById(accessType)
+					.orElse(null);
+			if (pipelineUserAccessType != null) {
 				final PipelineUserAccess pipelineUserAccess = new PipelineUserAccess();
 				pipelineUserAccess.setPipeline(pipeline);
 				pipelineUserAccess.setUser(user);
 				pipelineUserAccess.setPipelineUserAccessType(pipelineUserAccessType);
 				return pipelineUserAccessRepository.save(pipelineUserAccess);
 			} else {
-				throw new BadRequestException("Access type "+accessType+" not found");
+				throw new BadRequestException("Access type " + accessType + " not found");
 			}
-		}else {
+		} else {
 			throw new BadRequestException("Access type is null or empty");
 		}
 	}
@@ -946,13 +1031,13 @@ public class DataflowServiceImpl implements DataflowService {
 	@Override
 	public void deleteUserAccess(String pipelineUserAccessId, String userId) {
 		final User user = getUserById(userId);
-		final PipelineUserAccess userAccess = pipelineUserAccessRepository.findById(pipelineUserAccessId);
-		if(userAccess != null){
-			if(userAccess.getPipeline() == null) {
+		final PipelineUserAccess userAccess = pipelineUserAccessRepository.findById(pipelineUserAccessId).orElse(null);
+		if (userAccess != null) {
+			if (userAccess.getPipeline() == null) {
 				throw new NotFoundException("Pipeline not found");
 			} else {
 				checkUserIsOwner(userAccess.getPipeline(), user);
-				pipelineUserAccessRepository.delete(pipelineUserAccessId);
+				pipelineUserAccessRepository.deleteById(pipelineUserAccessId);
 			}
 		} else {
 			throw new NotFoundException("User access not found");
@@ -990,14 +1075,14 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public DataflowInstance getDataflowInstanceByIdentification(final String identification) {
-		if(identification == null || identification.trim().isEmpty() ){
+		if (identification == null || identification.trim().isEmpty()) {
 			log.error("Instance identification is null or empty");
 			throw new BadRequestException("Instance identification is null or empty");
 		}
 		final DataflowInstance instance = instancesRepository.findByIdentification(identification);
-		if(instance == null){
-			log.error("Instance {} not found", identification );
-			throw new NotFoundException("Instance "+identification+" not found in repository");
+		if (instance == null) {
+			log.error("Instance {} not found", identification);
+			throw new NotFoundException("Instance " + identification + " not found in repository");
 		} else {
 			return instance;
 		}
@@ -1005,14 +1090,14 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public DataflowInstance getDataflowInstanceById(final String id) {
-		if(id == null || id.trim().isEmpty() ){
+		if (id == null || id.trim().isEmpty()) {
 			log.error("Instance id is null or empty");
 			throw new BadRequestException("Instance id is null or empty");
 		}
-		final DataflowInstance instance = instancesRepository.findById(id);
-		if(instance == null){
-			log.error("Instance {} not found", id );
-			throw new NotFoundException("Instance "+id+" not found in repository");
+		final DataflowInstance instance = instancesRepository.findById(id).orElse(null);
+		if (instance == null) {
+			log.error("Instance {} not found", id);
+			throw new NotFoundException("Instance " + id + " not found in repository");
 		} else {
 			return instance;
 		}
@@ -1020,7 +1105,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public DataflowInstance getDataflowInstanceForUserId(final String userId) {
-		if(userId == null || userId.trim().isEmpty() ){
+		if (userId == null || userId.trim().isEmpty()) {
 			log.error("User id is null or empty");
 			throw new BadRequestException("User id is null or empty");
 		}
@@ -1030,7 +1115,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	private DataflowInstance getDataflowInstanceForUser(final User user) {
 		final DataflowInstance instance = instancesRepository.findByUser(user);
-		if(instance == null){
+		if (instance == null) {
 			return defaultinstance;
 		} else {
 			return instance;
@@ -1043,14 +1128,13 @@ public class DataflowServiceImpl implements DataflowService {
 		getUserById(instanceFromCreate.getUser().getUserId()); // Check user exist
 
 		// Check credentials are set on create
-		if(instanceFromCreate.getAdminCredentials() ==  null ||
-				instanceFromCreate.getUserCredentials() ==  null ||
-				instanceFromCreate.getGuestCredentials() ==  null ) {
+		if (instanceFromCreate.getAdminCredentials() == null || instanceFromCreate.getUserCredentials() == null
+				|| instanceFromCreate.getGuestCredentials() == null) {
 			throw new BadRequestException("All user credentials must be set on create");
 		}
 
 		// Set default instance
-		if(instanceFromCreate.isDefaultInstance()) {
+		if (instanceFromCreate.isDefaultInstance()) {
 			updateDefaultDataflowInstance(instanceFromCreate);
 			instanceFromCreate.setUser(null);
 		}
@@ -1067,29 +1151,30 @@ public class DataflowServiceImpl implements DataflowService {
 		instance.setUrl(instanceFromUpdate.getUrl());
 
 		// Don't update instance credentials if they are null
-		if(instanceFromUpdate.getAdminCredentials() !=  null){
+		if (instanceFromUpdate.getAdminCredentials() != null) {
 			instance.setAdminCredentials(instanceFromUpdate.getAdminCredentials());
 		}
-		if(instanceFromUpdate.getUserCredentials() !=  null){
+		if (instanceFromUpdate.getUserCredentials() != null) {
 			instance.setUserCredentials(instanceFromUpdate.getUserCredentials());
 		}
-		if(instanceFromUpdate.getGuestCredentials() !=  null){
+		if (instanceFromUpdate.getGuestCredentials() != null) {
 			instance.setGuestCredentials(instanceFromUpdate.getGuestCredentials());
 		}
 
 		// Set default instance
-		if( instanceFromUpdate.isDefaultInstance() ){
+		if (instanceFromUpdate.isDefaultInstance()) {
 			updateDefaultDataflowInstance(instance);
 
 			instance.setUser(null);
 			instance.setDefaultInstance(true);
 		} else {
-			if(instance.isDefaultInstance()) {
-				throw new ClientErrorException("You can't set a user to a default instance", org.apache.http.HttpStatus.SC_CONFLICT);
+			if (instance.isDefaultInstance()) {
+				throw new ClientErrorException("You can't set a user to a default instance",
+						org.apache.http.HttpStatus.SC_CONFLICT);
 			} else {
 				// Set user
 				final User user;
-				if(instanceFromUpdate.getUser() != null && !instanceFromUpdate.getUser().getUserId().isEmpty()) {
+				if (instanceFromUpdate.getUser() != null && !instanceFromUpdate.getUser().getUserId().isEmpty()) {
 					user = getUserById(instanceFromUpdate.getUser().getUserId());
 				} else {
 					user = null;
@@ -1104,7 +1189,7 @@ public class DataflowServiceImpl implements DataflowService {
 	private void updateDefaultDataflowInstance(DataflowInstance newDefaultInstance) {
 		final DataflowInstance defaultInstance = getDefaultDataflowInstance();
 		// If its the same we do not persist in the DB as it's going to be updated later
-		if(!newDefaultInstance.getId().equalsIgnoreCase(defaultInstance.getId())){
+		if (!newDefaultInstance.getId().equalsIgnoreCase(defaultInstance.getId())) {
 			defaultInstance.setDefaultInstance(false);
 			instancesRepository.save(defaultInstance);
 		}
@@ -1114,100 +1199,119 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public void deleteDataflowInstance(final DataflowInstance dataflowInstance, final RemoveInstanceAction action,
-									   final User user){
-		if(dataflowInstance.isDefaultInstance()) {
-			throw new ClientErrorException("This instance can not be deleted, is the default instance. Make other instance default first", org.apache.http.HttpStatus.SC_CONFLICT);
+			final User user) {
+		if (dataflowInstance.isDefaultInstance()) {
+			throw new ClientErrorException(
+					"This instance can not be deleted, is the default instance. Make other instance default first",
+					org.apache.http.HttpStatus.SC_CONFLICT);
 		} else {
 			final List<Pipeline> pipelines = getPipelinesForInstance(dataflowInstance);
-			switch (action){
-				case EXPORT:
-					final HttpHeaders headersFrom = getAuthorizationHeadersForInstance(dataflowInstance);
-					final HttpHeaders headersDefault = getAuthorizationHeadersForInstance(getDefaultDataflowInstance());
+			switch (action) {
+			case EXPORT:
+				final HttpHeaders headersFrom = getAuthorizationHeadersForInstance(dataflowInstance);
+				final HttpHeaders headersDefault = getAuthorizationHeadersForInstance(getDefaultDataflowInstance());
 
-					for (final Pipeline pipeline : pipelines) {
-						final String newStreamsetsId = movePipelineInInstances(pipeline, headersFrom, headersDefault);
-						pipeline.setIdstreamsets(newStreamsetsId);
-						pipeline.setInstance(getDefaultDataflowInstance());
-					}
+				for (final Pipeline pipeline : pipelines) {
+					final String newStreamsetsId = movePipelineInInstances(pipeline, headersFrom, headersDefault);
+					pipeline.setIdstreamsets(newStreamsetsId);
+					pipeline.setInstance(getDefaultDataflowInstance());
+				}
 
-					pipelineRepository.save(pipelines);
-					break;
-				case HARD_REMOVE:
-					pipelineRepository.delete(pipelines);
-					break;
-				case REMOVE:
-				default:
-					if(!pipelineRepository.findByInstance(dataflowInstance).isEmpty()){
-						throw new ClientErrorException("This instance has pipelines associated. Hard remove it or export to the default instance.", org.apache.http.HttpStatus.SC_CONFLICT);
-					} else {
-						pipelineRepository.delete(pipelines);
-					}
-					break;
+				pipelineRepository.saveAll(pipelines);
+				break;
+			case HARD_REMOVE:
+				pipelineRepository.deleteAll(pipelines);
+				break;
+			case REMOVE:
+			default:
+				if (!pipelineRepository.findByInstance(dataflowInstance).isEmpty()) {
+					throw new ClientErrorException(
+							"This instance has pipelines associated. Hard remove it or export to the default instance.",
+							org.apache.http.HttpStatus.SC_CONFLICT);
+				} else {
+					pipelineRepository.deleteAll(pipelines);
+				}
+				break;
 			}
 			instancesRepository.delete(dataflowInstance);
 		}
 	}
 
-	private List<Pipeline> getPipelinesForInstance(DataflowInstance instance){
+	private List<Pipeline> getPipelinesForInstance(DataflowInstance instance) {
 		return pipelineRepository.findByInstance(instance);
 	}
 
 	private String movePipelineInInstances(final Pipeline pipeline, final HttpHeaders headersFrom,
-														  final HttpHeaders headersDefault) {
+			final HttpHeaders headersDefault) {
 		final ResponseEntity<String> exportResponse = exportPipeline(pipeline, headersFrom);
 		if (exportResponse.getStatusCode() == HttpStatus.OK) {
 			final JSONObject configOriObject = new JSONObject(exportResponse.getBody());
 			final ResponseEntity<String> importResponse = importPipeline(pipeline.getIdentification(),
 					configOriObject.toString(), headersDefault, getDefaultDataflowInstance());
 
-			if(importResponse.getStatusCode() != HttpStatus.OK){
-				throw new BadRequestException("Pipeline not imported in instance '"+getDefaultDataflowInstance().getIdentification()+"' Status"+importResponse.getStatusCode()+" Response: "+importResponse.getBody());
+			if (importResponse.getStatusCode() != HttpStatus.OK) {
+				throw new BadRequestException("Pipeline not imported in instance '"
+						+ getDefaultDataflowInstance().getIdentification() + "' Status" + importResponse.getStatusCode()
+						+ " Response: " + importResponse.getBody());
 			} else {
 				final JSONObject createResponseObj = new JSONObject(importResponse.getBody());
 				return createResponseObj.getString(PIPELINEID);
 			}
 		} else {
-			throw new BadRequestException("Pipeline not exported from instance '"+getDefaultDataflowInstance().getIdentification()+"' Status"+exportResponse.getStatusCode()+" Response: "+exportResponse.getBody());
+			throw new BadRequestException(
+					"Pipeline not exported from instance '" + getDefaultDataflowInstance().getIdentification()
+							+ "' Status" + exportResponse.getStatusCode() + " Response: " + exportResponse.getBody());
 		}
 	}
 
 	@Override
-	public void deleteDataflowInstance(final String id, final String action, final String userId){
-		final DataflowInstance instance = this.getDataflowInstanceById(id);
+	public void deleteDataflowInstance(final String id, final String action, final String userId) {
+		final DataflowInstance instance = getDataflowInstanceById(id);
 		final RemoveInstanceAction actionType = RemoveInstanceAction.valueOf(action);
 		final User user = getUserById(userId);
 		deleteDataflowInstance(instance, actionType, user);
 	}
 
 	@Override
-	public ResponseEntity<String> restartDataflowInstance(final String instanceId){
-		final DataflowInstance instance = this.getDataflowInstanceById(instanceId);
+	public ResponseEntity<String> restartDataflowInstance(final String instanceId) {
+		final DataflowInstance instance = getDataflowInstanceById(instanceId);
 		final HttpHeaders headers = getAuthorizationHeadersForInstance(instance);
 		return StreamsetsApiWrapper.restartInstance(rt, headers, instance.getUrl());
 	}
 
 	@Override
-	public List<User> getFreeAnalyticsUsers(){
-		final List<User> usersInInstances = getAllDataflowInstances()
-				.stream()
-				.map(DataflowInstance::getUser)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+	public List<User> getFreeAnalyticsUsers() {
+		final List<User> usersInInstances = getAllDataflowInstances().stream().map(DataflowInstance::getUser)
+				.filter(Objects::nonNull).collect(Collectors.toList());
 
-		return userRepository.findAll()
-				.stream()
-				.filter(User::isActive)
-				.filter(this::userRoleFilterNewInstance)
-				.filter(user -> !isUserAssigned(user, usersInInstances))
-				.collect(Collectors.toList());
+		return userRepository.findAll().stream().filter(User::isActive).filter(this::userRoleFilterNewInstance)
+				.filter(user -> !isUserAssigned(user, usersInInstances)).collect(Collectors.toList());
 	}
 
-	private boolean userRoleFilterNewInstance(User user){
+	private boolean userRoleFilterNewInstance(User user) {
 		return user.isAdmin() || userService.isUserAnalytics(user);
 	}
 
-	private boolean isUserAssigned(final User user, final List<User> users){
+	private boolean isUserAssigned(final User user, final List<User> users) {
 		return users.stream().anyMatch(userInstance -> userInstance.equals(user));
+	}
+	
+	public List<Pipeline> getPipelinesForListWithProjectsAccess(String userId) {
+		
+		final User user = userRepository.findByUserId(userId);
+		final List<PipelineForList> pipelineForLists = pipelineRepository.findAllPipelineList();
+		if (!user.isAdmin()) {
+			securityService.setSecurityToInputList(pipelineForLists, user, "Pipeline");
+		}
+		final List<Pipeline> pipelineList = new ArrayList<>();
+		for (PipelineForList p: pipelineForLists) {
+			if (p.getAccessType() != null) {
+				Pipeline pipeline = getPipelineById(p.getId());
+				pipelineList.add(pipeline);
+			}
+		}
+		
+		return pipelineList;
 	}
 
 }

@@ -30,7 +30,7 @@ public interface OntologyDataService {
 
 	public ProcessingReport reportJsonSchemaValid(String jsonSchema) throws IOException;
 
-	public List<String> preProcessInsertData(final OperationModel operationModel, final boolean addContextData)
+	public List<String> preProcessInsertData(final OperationModel operationModel, final boolean addContextData, final Ontology ontology)
 			throws IOException;
 
 	public void checkOntologySchemaCompliance(final JsonNode data, final Ontology ontology);

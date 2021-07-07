@@ -32,6 +32,14 @@ public class MigrationData extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
+	public enum DataType {
+		EXPORT, IMPORT, QUERY;
+	}
+
+	public enum Status {
+		FINISHED, IN_PROGRESS, NO_STATUS, ERROR;
+	}
+
 	@Getter
 	@Setter
 	@Column(name = "DESCRIPTION")
@@ -39,10 +47,20 @@ public class MigrationData extends OPResource {
 
 	@Getter
 	@Setter
+	@Column(name = "TYPE")
+	private DataType type;
+
+	@Getter
+	@Setter
+	@Column(name = "STATUS")
+	private Status status;
+
+	@Getter
+	@Setter
 	@Column(name = "FILE_NAME")
 	private String fileName;
 
-	@Column(name = "FILE", length = 100000)
+	@Column(name = "FILE", length = 100000000)
 	@Lob
 	@Type(type = "org.hibernate.type.BinaryType")
 	@Getter

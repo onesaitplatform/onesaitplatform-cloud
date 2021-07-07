@@ -25,13 +25,12 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface DashboardUserAccessRepository extends JpaRepository<DashboardUserAccess, String> {
 
-	DashboardUserAccess findByDashboardAndUserAndDashboardUserAccessType(Dashboard dashboard, User user, DashboardUserAccessType dashboardUserAccessType);
+	DashboardUserAccess findByDashboardAndUserAndDashboardUserAccessType(Dashboard dashboard, User user,
+			DashboardUserAccessType dashboardUserAccessType);
 
 	DashboardUserAccess findByDashboardAndUser(Dashboard dashboard, User user);
 
 	List<DashboardUserAccess> findByUser(User user);
-
-	DashboardUserAccess findById(String id);
 
 	List<DashboardUserAccess> findByDashboard(Dashboard dashboard);
 

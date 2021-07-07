@@ -23,7 +23,9 @@
 
 		
 		<!-- WEB FONTs -->
-		<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
+		<!-- <script src="/controlpanel/static/vendor/google/1.6.16/webfont.js"></script>
 		<script>
           WebFont.load({
             google: {"families":["Poppins:300,400,500,600,700","Open Sans:300,400,500,600,700"]},
@@ -31,7 +33,7 @@
                 sessionStorage.fonts = true;
             }
           });
-		</script>
+		</script> -->
 
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -186,7 +188,7 @@
 													<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
 												</div>															
 											</div>															
-											<div class="col-md-2 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+											<div class="col-md-2 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 												<div class="form-group">
 													<label class="" th:text="#{ontology.active} + ':'">Active</label>
 													<div class="mt-checkbox-list">
@@ -323,19 +325,19 @@
 	
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- DATABASE PLUGINS TO-DO: pendiente de ubicación -->
 
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
-	<script th:src="@{/static/vendor/json/jsonToTable.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsonToTable.js}"></script>
 	
 	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
@@ -366,13 +368,13 @@
 	</script> 
 
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/ontologyfromhiveCreate.js}"/>
+	<script th:src="@{/static/js/pages/ontologyfromhiveCreate.js}"></script>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">

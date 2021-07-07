@@ -42,7 +42,7 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 
 	@Override
 	public ParameterModel getParameterModelById(String id) {
-		return parameterModelRepository.findById(id);
+		return parameterModelRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -57,21 +57,21 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 
 	@Override
 	public void deleteParameterModel(String id) {
-		parameterModelRepository.delete(parameterModelRepository.findById(id));
+		parameterModelRepository.findById(id).ifPresent(pm -> parameterModelRepository.delete(pm));
 	}
 
 	@Override
 	public void createParameterModel(HttpServletRequest httpServletRequest, Model model) {
 		try {
-			String[] parameters = httpServletRequest.getParameterValues("parameters");
+			final String[] parameters = httpServletRequest.getParameterValues("parameters");
 
 			if (parameters != null && !parameters[0].equals("")) {
-				for (String param : parameters) {
-					JSONObject json = new JSONObject(param);
+				for (final String param : parameters) {
+					final JSONObject json = new JSONObject(param);
 
-					ParameterModel.Type type = ParameterModel.Type.valueOf(json.getString("type").toUpperCase());
+					final ParameterModel.Type type = ParameterModel.Type.valueOf(json.getString("type").toUpperCase());
 
-					ParameterModel paramModel = new ParameterModel();
+					final ParameterModel paramModel = new ParameterModel();
 					paramModel.setIdentification(json.getString(ID_STR));
 					paramModel.setType(type);
 					paramModel.setModel(model);
@@ -85,7 +85,7 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new ParameterModelServiceException("Problems creating the parameter model: " + e.getMessage());
 		}
 	}
@@ -93,16 +93,16 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 	@Override
 	public void updateParameterModel(HttpServletRequest request, Model model) {
 		try {
-			String[] parameters = request.getParameterValues("parameters");
+			final String[] parameters = request.getParameterValues("parameters");
 
-			List<ParameterModel> parametersModel = parameterModelRepository.findAllByModel(model);
+			final List<ParameterModel> parametersModel = parameterModelRepository.findAllByModel(model);
 
 			if (!parametersModel.isEmpty()) {
-				parameterModelRepository.delete(parametersModel);
+				parameterModelRepository.deleteAll(parametersModel);
 			}
 			if (parameters != null && !parameters[0].equals("")) {
-				for (String param : parameters) {
-					JSONObject json = new JSONObject(param);
+				for (final String param : parameters) {
+					final JSONObject json = new JSONObject(param);
 
 					ParameterModel paramModel = parameterModelRepository
 							.findByIdentificationAndModel(json.getString(ID_STR), model);
@@ -111,7 +111,7 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 						paramModel = new ParameterModel();
 					}
 
-					ParameterModel.Type type = ParameterModel.Type.valueOf(json.getString("type").toUpperCase());
+					final ParameterModel.Type type = ParameterModel.Type.valueOf(json.getString("type").toUpperCase());
 
 					paramModel.setIdentification(json.getString(ID_STR));
 					paramModel.setType(type);
@@ -127,7 +127,7 @@ public class ParameterModelServiceImpl implements ParameterModelService {
 
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new ParameterModelServiceException("Problems updating the parameter model: " + e.getMessage());
 		}
 	}

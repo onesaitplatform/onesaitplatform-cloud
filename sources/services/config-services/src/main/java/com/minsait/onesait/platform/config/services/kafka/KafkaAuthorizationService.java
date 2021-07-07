@@ -14,12 +14,29 @@
  */
 package com.minsait.onesait.platform.config.services.kafka;
 
+import java.util.Set;
+
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Token;
 
 public interface KafkaAuthorizationService {
 
-	public void addAclToOntologyClient (ClientPlatformOntology clientPlatformOntology);
+	public void addAclToOntologyClient(ClientPlatformOntology clientPlatformOntology);
 
-	public void removeAclToOntologyClient (ClientPlatformOntology clientPlatformOntology);
-	
+	public void addAclToOntologyOnClientCreation(ClientPlatformOntology clientPlatformOntology, Set<Token> tokens);
+
+	public void removeAclToOntologyClient(ClientPlatformOntology clientPlatformOntology);
+
+	public void checkOntologyAclAfterUpdate(Ontology ontology);
+
+	public void addAclToClientForNewToken(Token token);
+
+	public void deactivateToken(Token token, boolean active);
+
+	public void removeAclToClientForToken(Token token);
+
+	public void addAclToOntologyClient(ClientPlatformOntology clientPlatformOntology, boolean createInputTopic,
+			boolean createNotificationTopic);
+
 }

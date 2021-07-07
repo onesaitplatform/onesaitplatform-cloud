@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.multitenant.config.repository;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
@@ -22,6 +24,7 @@ public interface MasterDeviceTokenRepository extends JpaRepository<MasterDeviceT
 
 	MasterDeviceToken findByTokenName(String tokenName);
 
+	@Transactional
 	void deleteByTokenName(String tokenName);
 
 }

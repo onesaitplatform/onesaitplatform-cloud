@@ -79,8 +79,8 @@ public class OPEventFactory {
 		setSecurityData(event);
 
 		event.setUser(audit.getPrincipal());
-		event.setTimeStamp(audit.getTimestamp().getTime());
-		event.setFormatedTimeStamp(CalendarUtil.builder().build().convert(audit.getTimestamp()));
+		event.setTimeStamp(audit.getTimestamp().toEpochMilli());
+		event.setFormatedTimeStamp(audit.getTimestamp().toString());
 
 		event.setMessage(message);
 		event.setOtherType(audit.getType());

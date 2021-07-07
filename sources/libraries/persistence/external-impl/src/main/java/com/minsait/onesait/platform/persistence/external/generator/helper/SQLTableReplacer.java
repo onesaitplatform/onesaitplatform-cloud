@@ -14,6 +14,9 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.helper;
 
+import java.util.List;
+
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -27,8 +30,8 @@ import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
 import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 public class SQLTableReplacer {
-
-    public static String replaceTableNameInSelect(String querySQL, OntologyVirtualRepository ontologyVirtualRepository)
+	
+    public static String replaceTableNameInSelect(String querySQL, OntologyVirtualRepository ontologyVirtualRepository, List<String> excludeParse)
             throws JSQLParserException {
         Select select = (Select) CCJSqlParserUtil.parse(querySQL);
 
@@ -38,20 +41,32 @@ public class SQLTableReplacer {
             @Override
             public void visit(Table tableName) {
             	
-                String ontologyVirtualTable = ontologyVirtualRepository
-                        .findOntologyVirtualByOntologyIdentification(tableName.getName()).getDatasourceTableName();
-            	
-                if (null!=ontologyVirtualTable && !ontologyVirtualTable.equals("")) {
-                    getBuffer().append(ontologyVirtualTable).append(' ');
-                    if (tableName.getAlias() != null) {
-                        getBuffer().append(tableName.getAlias().getName());
-                    } else {
-                        getBuffer().append(tableName.getName()).append(' ');
-                        if (tableName.getAlias() != null) {
-                            getBuffer().append(tableName.getAlias().getName());
-                        }
-                    }
-                }
+                OntologyVirtual ontologyVirtual = ontologyVirtualRepository
+                        .findOntologyVirtualByOntologyIdentification(tableName.getName());
+                
+            	if(ontologyVirtual != null ) {
+            		String ontologyVirtualTable =  ontologyVirtual.getDatasourceTableName();
+	                if ( null!=ontologyVirtualTable && !ontologyVirtualTable.equals("")) {
+	                    getBuffer().append(ontologyVirtualTable).append(' ');
+	                    if (tableName.getAlias() != null) {
+	                        getBuffer().append(tableName.getAlias().getName());
+	                    } else {
+	                        getBuffer().append(tableName.getName()).append(' ');
+	                        if (tableName.getAlias() != null) {
+	                            getBuffer().append(tableName.getAlias().getName());
+	                        }
+	                    }
+	                }
+            	}
+            	else {
+            		String tableStr = tableName.getName();
+            		if(excludeParse.indexOf(tableStr.toLowerCase()) != -1) {//no translate exception
+            			getBuffer().append(tableStr + " ");
+                	}
+            		else {
+            			getBuffer().append("{unknown ontology} ");
+            		}
+            	}
             }
         };
         expressionDeParser.setSelectVisitor(deparser);
@@ -90,11 +105,9 @@ public class SQLTableReplacer {
 
         Update updateSQLObj = (Update) CCJSqlParserUtil.parse(updateSQL);
 
-        for (Table table : updateSQLObj.getTables()) {
-            if (table.getName().equals(oldTableName)) {
-                table.setName(newTableName);
-            }
-
+        Table table = updateSQLObj.getTable();
+        if (table.getName().equals(oldTableName)) {
+            table.setName(newTableName);
         }
         return updateSQLObj.toString();
     }

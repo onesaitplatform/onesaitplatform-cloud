@@ -43,8 +43,7 @@ public interface KsqlFlowRepository extends JpaRepository<KsqlFlow, String> {
 
 	KsqlFlow findByUserAndIdentification(User sessionUser, String identification);
 
-	KsqlFlow findById(String id);
-
+	@Override
 	@Transactional
 	void deleteById(String id);
 }

@@ -35,8 +35,6 @@ public interface OntologyUserAccessRepository extends JpaRepository<OntologyUser
 	List<OntologyUserAccess> findByUserAndOntologyUserAccessType(User user,
 			OntologyUserAccessType ontologyUserAccessType);
 
-	OntologyUserAccess findById(String id);
-
 	List<OntologyUserAccess> findByOntologyUserAccessType(OntologyUserAccessType ontologyUserAccessType);
 
 	List<OntologyUserAccess> findByOntology(Ontology ontology);

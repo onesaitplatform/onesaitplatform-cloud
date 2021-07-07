@@ -22,14 +22,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 @Configuration
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/advice**").permitAll().and().authorizeRequests().anyRequest()
-				.authenticated().and().csrf().disable();
+		http.authorizeRequests().antMatchers("/advice**", "/health", "/info", "/actuator/**").permitAll().and()
+				.authorizeRequests().anyRequest().authenticated().and().csrf().disable()
+				.addFilterBefore(new BearerExtractorFilter(), AnonymousAuthenticationFilter.class);
 	}
 
 	@Bean

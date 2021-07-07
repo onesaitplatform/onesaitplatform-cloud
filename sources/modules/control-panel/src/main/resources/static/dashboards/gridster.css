@@ -59,14 +59,14 @@ gridster-grid .column, gridster-grid .row {
 
 gridster-grid .column {
   height: 100%;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  border-left: 1px solid #2e6c9938;
+  border-right: 1px solid #2e6c9938;
 }
 
 gridster-grid .row {
   width: 100%;
-  border-top: 1px solid white;
-  border-bottom: 1px solid white;
+  border-top: 1px solid #2e6c9938;
+  border-bottom: 1px solid #2e6c9938;
 }
 
 gridster-item {
@@ -88,6 +88,12 @@ gridster-item.gridster-item-resizing, gridster-item.gridster-item-moving {
   transition: 0s;
   z-index: 2;
   box-shadow: 0 0 5px 5px rgba(0, 0, 0, .2), 0 6px 10px 0 rgba(0, 0, 0, .14), 0 1px 18px 0 rgba(0, 0, 0, .12);
+
+}
+
+.noliveresize gridster-item.gridster-item-resizing, .nolivemove gridster-item.gridster-item-moving {
+  box-shadow: none;
+  display: none !important;
 }
 
 .gridster-item-resizable-handler {

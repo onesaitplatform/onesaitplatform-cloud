@@ -19,7 +19,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.minsait.onesait.platform.persistence.external.generator.model.common.Constraint;
+import com.minsait.onesait.platform.business.services.ontology.ConstraintBusiness;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.Constraint.ConstraintType;
 
 import lombok.AllArgsConstructor;
@@ -55,19 +55,19 @@ public class ConstraintDTO implements java.io.Serializable {
 	@Setter
 	private String referencedColumn = null;
 	
-	public ConstraintDTO(Constraint constraint) {
+	public ConstraintDTO(ConstraintBusiness constraint) {
 		this.name = constraint.getName();
-		this.type = constraint.getEnumType();
-		this.columns = constraint.getColumnsNames();
+		this.type = constraint.getType();
+		this.columns = constraint.getColumns();
 		this.referencedTable = constraint.getReferencedTable();
 		this.referencedColumn = constraint.getReferencedColumn();
 	}
 	
-	public Constraint toConstraint() {
-		Constraint constraint = new Constraint();
+	public ConstraintBusiness toConstraint() {
+		ConstraintBusiness constraint = new ConstraintBusiness();
 		constraint.setName(this.name);
-		constraint.setTypeEnum(this.type);
-		constraint.setColumnsNames(this.columns);
+		constraint.setType(this.type);
+		constraint.setColumns(this.columns);
 		constraint.setReferencedTable(this.referencedTable);
 		constraint.setReferencedColumn(this.referencedColumn);
 		

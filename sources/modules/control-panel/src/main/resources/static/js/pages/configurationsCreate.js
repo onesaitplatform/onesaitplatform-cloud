@@ -67,6 +67,7 @@ var ConfigurationsCreateController = function() {
             rules: {
 				userId:					{ minlength: 5, required: true },             
 				configurationTypes:		{ required: true },
+				identification:			{ required: true },
 				ymlConfig:   			{required:true},
 				createdAt:				{ date: true, required: true },
 

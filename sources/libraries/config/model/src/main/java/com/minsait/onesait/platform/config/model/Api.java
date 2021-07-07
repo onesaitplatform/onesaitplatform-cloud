@@ -60,6 +60,10 @@ public class Api extends OPResource {
 		IOT, EXTERNAL, INTERNAL_ONTOLOGY, EXTERNAL_FROM_JSON, NODE_RED
 	}
 
+	public enum ClientJS {
+		REACT_JS
+	}
+
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID")
@@ -131,10 +135,10 @@ public class Api extends OPResource {
 	@Setter
 	private boolean isPublic;
 
-	@Column(name = "CACHE_TIMEOUT")
+	@Column(name = "API_CACHE_TIMEOUT")
 	@Getter
 	@Setter
-	private Integer cachetimeout;
+	private Integer apicachetimeout;
 
 	@Column(name = "API_LIMIT")
 	@Getter
@@ -157,10 +161,5 @@ public class Api extends OPResource {
 	@Getter
 	@Setter
 	private String swaggerJson;
-
-	@Column(name = "GRAVITEE_ID", length = 100)
-	@Getter
-	@Setter
-	private String graviteeId;
 
 }

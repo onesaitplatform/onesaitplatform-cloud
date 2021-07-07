@@ -14,7 +14,12 @@ RUN mkdir -p /usr/local/webprojects && \
 	mkdir -p /usr/local/themes && \
     mkdir -p /usr/local/files && \
 	mkdir -p /var/log/platform-logs && \
-	mkdir ./target
+	mkdir /application
+
+
+WORKDIR /application
+RUN unzip /app.jar &&\
+	rm /app.jar
 
 # create sofia user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
@@ -26,19 +31,19 @@ RUN apk update && apk upgrade && \
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /usr/share/maven && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait ./target && \
-    chown onesait:onesait app.jar && \
-    chmod -R 777 ./target && \
+    chown -R onesait:onesait /application && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local &&\
+    chmod -R 777 /application &&\
     chmod -R 777 /etc/ssl/certs/java
-    
+
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
 ENV BOWTIE2_VERSION 2.2.8
 ENV ASPECTJ_VERSION 1.8.9
 
 RUN apk add --no-cache \
+        bash \
         perl \
         wget \
         openssl \
@@ -63,6 +68,14 @@ RUN cd /tmp/ \
 
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
 
+# Rancher CLI
+COPY rancher /bin
+
+#Openshift CLI
+COPY oc /bin
+
+RUN chmod 755 /bin/oc && mkdir -p /.kube && chown -R onesait:onesait /.kube && chmod -R 777 /.kube
+
 USER onesait
 
 EXPOSE 18000 5701
@@ -72,6 +85,7 @@ EXPOSE 18000 5701
 ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
+    KAFKABROKERS=none \
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
@@ -119,6 +133,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     AUTH_PROVIDER=configdb \
     CAS_ATT_MAIL=mail \
     CAS_ATT_NAME=name \
+    CAS_MAIL_SUFFIX=onesaitplatform.com \
     LDAP_URL="" \
     LDAP_BASE_DN=OU="" \
     LDAP_ADMIN_DN="" \
@@ -128,7 +143,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     LDAP_MAIL_ATT=mail \
     LDAP_CN_ATT=cn \
     LDAP_IGNORE_PARTIAL_RESULT=false \
-    LDAP_ADMINISTRATOR_DN="" \ 
+    LDAP_ADMINISTRATOR_DN="" \
     LDAP_ANALYTICS_DN="" \
     LDAP_DEVELOPER_DN="" \
     LDAP_DATAVIEWER_DN="" \
@@ -140,6 +155,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     LDAP_USER_DN="" \
     LDAP_GROUP_OF_NAMES_ATT="" \
     LDAP_ROLES_MEMBER_ATT="" \
+    LDAP_ADMIN_WHITELIST=administrator,admin \
     JKS_URI=saml.jks \
     JKS_PASS=pass \
     KEY_ALIAS=pass \
@@ -157,7 +173,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
     DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS=10000 \
-    DS_MIN_EVICTABLE_IDLE_TIME_MILLIS=180000 \
     DS_MAX_WAIT_MILLIS=10000 \
     DS_MAX_WAIT=10000 \
     DS_INITIAL_SIZE=10 \
@@ -173,11 +188,34 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     DYNAMIC_LOADBALANCER_ENDPOINT=http://localhost:8000/nginx \
     QUERY_TOOL_ALLOWED_OPERATIONS=false \
     MULTITENANCY_ENABLED=false \
+    MAIL_PROXY_HOST=localhost \
+    MAIL_PROXY_PORT=8080 \
     RESTPLANNER_CHECKSSL=false \
+    MAIL_PROXY_HOST=localhost \
+    MAIL_PROXY_PORT=8080 \
     SPLASH_ON=false \
     SPLASH_EVERYXHOURS=24 \
     ELASTICSEARCH_ENABLED=false \
     NOTEBOOKPLATFORMAUTH=false \
-    SECURE_XFRAMEOPTIONS=true
+    X509_ID_ATT=SERIALNUMBER \
+    X509_ID_REGEX=(.*?)(?:,|$) \
+    X509_CN_REGEX=CN=\"(.*?)(?:\"|$) \
+    X509_ADMIN_ID=51503283G \
+    X509_HASH_ID=false \
+    SECURE_XFRAMEOPTIONS=true \
+    ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
+    ENCRYPTION_ITERATIONS=5 \
+    JWT_KEY=ENC(BXYVNNRDiawMsH4sY79FUPig6FWPGbcoMusSVrXXb6ZLtZ4qhIEUazqv6XrcRm39s8zEu2d1G8yTowyE/sEv7YF0vrLNdb1m) \
+    JWT_CLIENT_SECRET=ENC(siZm4DUe6Y1FkxoUH7y0oUCiGDIq/vRX) \
+    OAUTH_SSO_ENABLED=false \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201 \
+    CORS_ALLOWED_URLS="*" \
+	INTERNAL_SSL=false \
+    CORS_ALLOWED_URLS="*"
 
-ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+#ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar

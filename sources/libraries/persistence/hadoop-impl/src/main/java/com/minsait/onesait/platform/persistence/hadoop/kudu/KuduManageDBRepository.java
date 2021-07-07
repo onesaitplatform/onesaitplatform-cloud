@@ -16,7 +16,9 @@ package com.minsait.onesait.platform.persistence.hadoop.kudu;
 
 import static com.minsait.onesait.platform.persistence.hadoop.common.HadoopMessages.NOT_IMPLEMENTED;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +27,11 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.dao.DataAccessException;
@@ -40,6 +44,7 @@ import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceExceptio
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.hadoop.config.condition.HadoopEnabledCondition;
 import com.minsait.onesait.platform.persistence.hadoop.impala.ImpalaManageDBRepository;
+import com.minsait.onesait.platform.persistence.hadoop.kudu.table.CreateStatementKudu;
 import com.minsait.onesait.platform.persistence.hadoop.kudu.table.KuduTable;
 import com.minsait.onesait.platform.persistence.hadoop.kudu.table.KuduTableGenerator;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
@@ -51,12 +56,17 @@ import lombok.extern.slf4j.Slf4j;
 @Lazy
 @Slf4j
 @Conditional(HadoopEnabledCondition.class)
+@DependsOn({NameBeanConst.IMPALA_MANAGE_DB_REPO_BEAN_NAME})
 public class KuduManageDBRepository implements ManageDBRepository {
 
 	// Static regex extract info from show create table sentence
 	private static final String PRIMARY_KEY_PATTERN = "(?m)^ *PRIMARY KEY \\((.*)\\) *$";
 	private static final String PARTITION_BY_PATTERN = "(?m)^ *PARTITION BY HASH \\((.*)\\) PARTITIONS ([0-9]+) *$";
+	private static final String PREFIX_CREATE_TABLE = "CREATE TABLE";
+	private static final String PREFIX_CREATE_TABLE_IF_NOT_EXISTS = "CREATE TABLE IF NOT EXISTS";
+	private static final String KEY_SQL_STATEMENT = "sqlStatement";
 
+	
 	@Autowired
 	@Qualifier(NameBeanConst.IMPALA_MANAGE_DB_REPO_BEAN_NAME)
 	private ManageDBRepository impalaManageDBRepository;
@@ -82,9 +92,17 @@ public class KuduManageDBRepository implements ManageDBRepository {
 	public String createTable4Ontology(String ontology, String schema, Map<String, String> config) {
 
 		try {
+			final JSONObject schemaObj = new JSONObject(schema);
+			String statement = schemaObj.getString(KEY_SQL_STATEMENT);			
+			if (!statement.toUpperCase().replace(" ", "").startsWith(PREFIX_CREATE_TABLE.replace(" ", "")+ontology.toUpperCase().trim())
+					&& !statement.toUpperCase().replace(" ", "").startsWith(PREFIX_CREATE_TABLE_IF_NOT_EXISTS.replace(" ", "")+ontology.toUpperCase().trim())) {
+				// CREATETABLEONTOLOGY
+				throw new DBPersistenceException("Not possible to create table with sql statment: " + statement);
+			}
+			
 			log.debug("create kudu table for ontology " + ontology);
-			KuduTable table = kuduTableGenerator.builTable(ontology, schema, config);
-			jdbcTemplate.execute(table.build());
+			String query = kuduTableGenerator.completeSQLCreateStatement(ontology, statement, null);
+			jdbcTemplate.execute(query);
 			log.debug("kudu table created successfully");
 		} catch (DataAccessException | DBPersistenceException e) {
 			log.error("error creating kudu table for ontology " + ontology, e);
@@ -200,9 +218,18 @@ public class KuduManageDBRepository implements ManageDBRepository {
 	@Override
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		String bckCreateTable = ((ImpalaManageDBRepository) impalaManageDBRepository).showCreateTable(identification);
-		try {
+		String query = "";
+		try {		
+			query = kuduTableGenerator.completeSQLCreateStatement(identification, bckCreateTable, jsonSchema);
+			createTestTable(identification, query);
+		} catch (DBPersistenceException e) {
+			log.debug("Error creating kudu query for ontology " + identification);
+			throw new DBPersistenceException(e);
+		}	
+		
+		try {	
 			impalaManageDBRepository.removeTable4Ontology(identification);
-			createTable4Ontology(identification, jsonSchema, config);
+			jdbcTemplate.execute(query);
 		} catch (DBPersistenceException e) {
 			// Recover original table
 			log.debug("executing previous create table of " + identification + " : " + bckCreateTable);
@@ -211,6 +238,24 @@ public class KuduManageDBRepository implements ManageDBRepository {
 			throw new DBPersistenceException(e);
 		}
 		return identification;
+	}
+
+	public String getSQLCreateStatement(CreateStatementKudu statement) {
+		KuduTable table = kuduTableGenerator.buildCreateTable(statement.getOntology(), statement);
+		return table.buildCreate();
+	}
+	
+	private void createTestTable(String name, String statement) {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+		String newName = name.concat("_").concat(simpleDateFormat.format(new Date()));
+		statement = statement.replace(name, newName);	
+		try {
+			jdbcTemplate.execute(statement);
+			impalaManageDBRepository.removeTable4Ontology(newName);
+		} catch (DBPersistenceException e) {
+			log.debug("Error executing query " + statement);
+			throw new DBPersistenceException(e);
+		}
 	}
 
 }

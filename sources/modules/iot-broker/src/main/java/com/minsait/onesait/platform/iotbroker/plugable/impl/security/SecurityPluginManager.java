@@ -38,7 +38,7 @@ public class SecurityPluginManager implements SecurityPlugin {
 	public Optional<IoTSession> authenticate(String token, String clientPlatform, String clientPlatformInstance,
 			String sessionKey) {
 		final List<IoTSession> sessions = new ArrayList<>();
-
+		
 		for (final SecurityPlugin p : plugins) {
 			p.authenticate(token, clientPlatform, clientPlatformInstance, sessionKey).ifPresent(sessions::add);
 		}
@@ -63,20 +63,20 @@ public class SecurityPluginManager implements SecurityPlugin {
 	}
 
 	@Override
-	public boolean checkSessionKeyActive(String sessionKey) {
+	public boolean checkSessionKeyActive(Optional<IoTSession> session) {
 		boolean ret = false;
 		for (final SecurityPlugin p : plugins) {
-			ret |= p.checkSessionKeyActive(sessionKey);
+			ret |= p.checkSessionKeyActive(session);
 		}
 		return ret;
 
 	}
 
 	@Override
-	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, String sessionKey) {
+	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, Optional<IoTSession> session) {
 		boolean ret = false;
 		for (final SecurityPlugin p : plugins) {
-			ret |= p.checkAuthorization(messageType, ontology, sessionKey);
+			ret |= p.checkAuthorization(messageType, ontology, session);
 		}
 		return ret;
 
