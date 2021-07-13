@@ -68,12 +68,6 @@ RUN cd /tmp/ \
 
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
 
-# Rancher CLI
-COPY rancher /bin
-
-#Openshift CLI
-COPY oc /bin
-
 RUN chmod 755 /bin/oc && mkdir -p /.kube && chown -R onesait:onesait /.kube && chmod -R 777 /.kube
 
 USER onesait
