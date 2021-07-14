@@ -88,8 +88,12 @@ RUN chown -R onesait:onesait /var/log/platform-logs && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
-USER onesait
+
 EXPOSE 21000
 COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
+
+USER onesait
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
