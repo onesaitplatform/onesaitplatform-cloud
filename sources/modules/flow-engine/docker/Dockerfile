@@ -36,23 +36,12 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
     NODERED_LOG_PATH=/var/log/platform-logs \
     NODERED_LOG_RETAIN_DAYS=5 \
     HTTPREQUESTTIMEOUT=20000 \
-    SOCKETTIMEOUT=22000 \
-    GRAYLOG_ENABLED=false \
-    GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    SOCKETTIMEOUT=22000
 
 COPY --from=nodebase /usr/local/bin/node /bin
 
 # Download tzdata for Timezone support and aspectj library
-RUN apk add --no-cache \
-    tzdata \ 
-    npm \
-    python \
-    build-base \
-    libexecinfo-dev \
-    libc6-compat \
-    git \
-    openssh
+RUN apk add --no-cache tzdata
 
 RUN mkdir -p /opt/nodeRed && \
 	mkdir -p /tmp/logs/flowEngine && \
@@ -75,9 +64,7 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local && \
-    chmod -R 777 /opt/nodeRed &&\
-    cd /opt/nodeRed/Flow-Engine-Manager &&\
-    npm i appmetrics-dash
+    chmod -R 777 /opt/nodeRed &&
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
