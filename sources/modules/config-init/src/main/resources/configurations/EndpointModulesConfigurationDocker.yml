@@ -44,10 +44,5 @@ onesaitplatform:
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
     reportEngine:
       base: http://reportengine:18400/report-engine
-    openData:
-      base: https://${SERVER_NAME}/opendata
-    dataCleanerUI:
-      base: https://${SERVER_NAME}/datacleaner/
-      embedded: http://datacleanerservice:3333/
     edge:
       base: https://iothub02.onesaitplatform.com
