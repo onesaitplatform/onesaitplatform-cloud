@@ -283,7 +283,8 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 			urls = configurationService.getEndpointsUrls(profile);
 		} catch (final Exception e) {
 			log.warn(
-					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
+					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator", e);
+			log.debug("Error: {}", e );
 			urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
 					.getOnesaitplatform().get("urls");
 		}
