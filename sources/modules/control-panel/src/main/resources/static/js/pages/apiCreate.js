@@ -478,13 +478,6 @@ var ApiCreateController = function() {
 		  }
 		});
 		
-		$(".nav-tabs a[href='#tab_3']").on("click", function(e) {
-		  if ($(this).hasClass("disabled")) {
-			e.preventDefault();
-			$.alert({title: 'INFO!', theme: 'light', content: apiCreateJson.validations.graviteeswagger});
-			return false;
-		  }
-		});
 		
 		// set current language and formats
 		currentLanguage = apiCreateReg.language || LANGUAGE[0];
@@ -800,47 +793,7 @@ var ApiCreateController = function() {
 			myCodeMirror.refresh();
 		}
     };
-    
-    // Init Code Mirror Gravitee
-    var handleCodeMirrorGraviteeSwaggerDoc = function() {
-        swaggerEditor = ace.edit("graviteeDocumentationAce");
-        swaggerEditor.setTheme("ace/theme/xcode");
-       	swaggerEditor.session.setMode("ace/mode/yaml");
-    	swaggerEditor.setOptions({showInvisibles:true});
-        swaggerEditor.setValue($('#graviteeDocumentation').val());
-        swaggerEditor.gotoLine(1);
-    }
-    
-    // Save changes Gravitee Swagger Documentation
-	var saveGraviteeSwaggerDocumentation = function(apiId, content) {
-		var url =  apiCreateReg.authorizationsPath + '/updateGraviteeSwaggerDoc';
-		var response = {};
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		
-		$.ajax({
-			url: url,
-            headers: {
-            	[csrf_header]: csrf_value
-		    },
-			type:"POST",
-			async: true,
-			data: {"apiId": apiId,"content": content},			 
-			dataType:"json",
-			success: function(response,status) {							
-				$.alert({title: 'INFO!', theme: 'light', content: apiCreateJson.graviteeSwaggerDocSaved});				
-			},
-            error: function(data, status, error) {
-            	var errorMessage = error;
-				 if(typeof data.responseText !== 'undefined' ){
-					 errorMessage = data.responseText;
-				 }
-				$.alert({title: 'ERROR!', theme: 'light', content: errorMessage});
-            }
-		});	
-						
-	};
- 
+
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 		// SHOW ERROR DIALOG
@@ -912,7 +865,6 @@ var ApiCreateController = function() {
 				})
 				
 			}
-			handleCodeMirrorGraviteeSwaggerDoc();
 		},
 		
 		// INSERT AUTHORIZATION
@@ -954,20 +906,8 @@ var ApiCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
 			
 			freeResource(id,url);
-		},
+		}
 		
-		// UPDATE GRAVITEE SWAGGER DOCUMENTATION
-		updateGraviteeSwaggerDocumentation: function(){
-			logControl ? console.log(LIB_TITLE + ': updateGraviteeSwaggerDocumentation()') : '';
-			if ( apiCreateReg.actionMode !== null){	
-				// UPDATE MODE ONLY 
-				var content = swaggerEditor.getValue();
-				if (content !== '') {
-					saveGraviteeSwaggerDocumentation(apiCreateReg.apiId, content);
-				}	
-			}
-		},
-
 	};
 }();
 
