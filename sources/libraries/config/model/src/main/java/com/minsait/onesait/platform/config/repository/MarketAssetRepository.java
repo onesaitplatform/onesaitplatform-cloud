@@ -27,10 +27,6 @@ public interface MarketAssetRepository extends JpaRepository<MarketAsset, String
 
 	@Override
 
-	<S extends MarketAsset> List<S> save(Iterable<S> entities);
-
-	@Override
-
 	void flush();
 
 	@Override
@@ -55,7 +51,7 @@ public interface MarketAssetRepository extends JpaRepository<MarketAsset, String
 	void deleteAll();
 
 	@Query("SELECT o FROM MarketAsset AS o WHERE (o.id = :id AND o.deletedAt = null)")
-	MarketAsset findById(@Param("id") String id);
+	MarketAsset findByIdCustom(@Param("id") String id);
 
 	@Query("SELECT o FROM MarketAsset AS o WHERE (o.identification = :marketAssetId) order by o.identification")
 	MarketAsset findByIdentification(@Param("marketAssetId") String marketAssetId);
@@ -63,7 +59,7 @@ public interface MarketAssetRepository extends JpaRepository<MarketAsset, String
 	@Query("SELECT o FROM MarketAsset AS o WHERE (o.identification LIKE %:marketAssetId% AND o.deletedAt = null) order by o.identification")
 	List<MarketAsset> findByIdentificationLike(@Param("marketAssetId") String marketAssetId);
 
-	@Query("SELECT o FROM MarketAsset AS o WHERE (((o.user.userId = :userId OR o.isPublic = true) AND o.state = 'APPROVED')) AND (o.deletedAt = null)) order by o.createdAt desc")
+	@Query("SELECT o FROM MarketAsset AS o WHERE (((o.user.userId = :userId OR o.isPublic = true) AND o.state = 'APPROVED')) AND (o.deletedAt = null) order by o.createdAt desc")
 	List<MarketAsset> findByUser(@Param("userId") String userId);
 
 	@Query("SELECT o.jsonDesc FROM MarketAsset AS o WHERE (o.deletedAt = null)")

@@ -35,7 +35,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -57,20 +56,18 @@ public class DeleteProcessor implements MessageTypeProcessor {
 	private RouterService routerService;
 	@Autowired
 	ObjectMapper objectMapper;
-	@Autowired
-	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 
 		if (SSAPMessageTypes.DELETE.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyDeleteMessage> deleteMessage = (SSAPMessage<SSAPBodyDeleteMessage>) message;
-			return processDelete(deleteMessage);
+			return processDelete(deleteMessage, session);
 		}
 
 		if (SSAPMessageTypes.DELETE_BY_ID.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyDeleteByIdMessage> deleteMessage = (SSAPMessage<SSAPBodyDeleteByIdMessage>) message;
-			return processDeleteById(deleteMessage);
+			return processDeleteById(deleteMessage, session);
 		}
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage;
@@ -78,11 +75,10 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		return responseMessage;
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processDeleteById(SSAPMessage<SSAPBodyDeleteByIdMessage> message) {
+	private SSAPMessage<SSAPBodyReturnMessage> processDeleteById(SSAPMessage<SSAPBodyDeleteByIdMessage> message, Optional<IoTSession> session) {
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
-		final Optional<IoTSession> session = securityPluginManager.getSession(message.getSessionKey());
 
 		final String user = session.isPresent() ? session.get().getUserID() : null;
 		final String deviceTemplate = session.isPresent() ? session.get().getClientPlatform() : null;
@@ -155,12 +151,11 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		return responseMessage;
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processDelete(SSAPMessage<SSAPBodyDeleteMessage> message) {
+	private SSAPMessage<SSAPBodyReturnMessage> processDelete(SSAPMessage<SSAPBodyDeleteMessage> message, Optional<IoTSession> session) {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
-		final Optional<IoTSession> session = securityPluginManager.getSession(message.getSessionKey());
 
 		final String user = session.isPresent() ? session.get().getUserID() : null;
 		final String deviceTemplate = session.isPresent() ? session.get().getClientPlatform() : null;

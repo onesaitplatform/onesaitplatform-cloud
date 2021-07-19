@@ -93,7 +93,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../digitaltwintypes/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../digitaltwintypes/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>								
 							</div>
@@ -224,13 +224,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -319,14 +319,14 @@
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
-		
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 2,6,7 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		
+	 
 	});
 	
 	//]]>

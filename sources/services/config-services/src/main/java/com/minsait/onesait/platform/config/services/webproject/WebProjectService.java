@@ -35,6 +35,8 @@ public interface WebProjectService {
 
 	WebProjectDTO getWebProjectByName(String name, String userId);
 
+	List<WebProjectDTO> getAllWebProjects();
+
 	void deleteWebProjectById(String webProjectId, String userId);
 
 	void uploadZip(MultipartFile file, String userId);

@@ -86,5 +86,8 @@ public interface BasicOpsDBRepository {
 	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
 			throws DBPersistenceException;
 
+	public String querySQLAsJson(String ontology, String query, int offset, int limit);
+
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds);
 
 }

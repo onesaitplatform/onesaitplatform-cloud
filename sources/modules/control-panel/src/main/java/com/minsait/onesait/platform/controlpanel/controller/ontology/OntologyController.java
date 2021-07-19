@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
@@ -57,15 +58,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.JsonObject;
+import com.minsait.onesait.platform.business.services.ontology.CreateStatementBusiness;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException.Error;
 import com.minsait.onesait.platform.business.services.swagger.SwaggerApiImporterService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.OntologyDataAccess;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
@@ -83,6 +87,7 @@ import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
@@ -100,14 +105,15 @@ import com.minsait.onesait.platform.config.services.templates.QueryTemplateServi
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyVirtualDataSourceDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.sql.CreateStatementDTO;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.quartz.services.ontologyKPI.OntologyKPIService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -141,6 +147,9 @@ public class OntologyController {
 	private UserService userService;
 
 	@Autowired
+	private AppService appService;
+
+	@Autowired
 	private QueryToolService queryToolService;
 	@Autowired
 	private OntologyDataService ontologyDataService;
@@ -159,6 +168,11 @@ public class OntologyController {
 	private DataModelService dataModelService;
 	@Autowired
 	private QueryTemplateService queryTemplateService;
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
@@ -187,7 +201,9 @@ public class OntologyController {
 	private static final String ONTOLOGYTSDTO = "ontologyTSDTO";
 	private static final String AUTHORIZATIONS = "authorizations";
 	private static final String USERS = "users";
+	private static final String REALMS = "realms";
 	private static final String PROPERTY_NAMES = "propertyNames";
+	private static final String DATAACCESSES = "dataaccesses";
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -226,7 +242,6 @@ public class OntologyController {
 
 		final List<OntologyDTO> ontologies = ontologyConfigService
 				.getOntologiesForListByUserPropietary(utils.getUserId(), identification, description);
-
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", true);
 		return ONTOLOGIES_LIST;
@@ -307,6 +322,50 @@ public class OntologyController {
 		return ONTOLOGIES_CREATE_TS;
 	}
 
+	@PostMapping(value = "/clone")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<Map<String, String>> cloneOntology(Model model,
+			@RequestParam String id, @RequestParam String identification, HttpServletRequest request) {
+
+		final Map<String, String> response = new HashMap<>();
+		final OntologyConfiguration config = new OntologyConfiguration(request);
+		
+		try {
+			ontologyBusinessService.cloneOntology(id, identification, utils.getUserId(), config);
+		} catch (final OntologyServiceException | OntologyBusinessServiceException e) {
+			log.error("Error clonning ontology", e);
+			response.put(STATUS_STR, ERROR_STR);
+			response.put(CAUSE_STR, e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	@Transactional
+	@PostMapping(value = "/cloneKpi")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<Map<String, String>> cloneOntologyKpi(Model model,
+			@RequestParam String id, @RequestParam String identification, HttpServletRequest request) {
+
+		final Map<String, String> response = new HashMap<>();
+		final OntologyConfiguration config = new OntologyConfiguration(request);
+		
+		try {
+			ontologyBusinessService.cloneOntology(id, identification, utils.getUserId(), config);
+			Ontology cloneOntology = ontologyConfigService.getOntologyByIdentification(identification);
+			Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
+			ontologyKPIService.cloneOntologyKpi(ontology, cloneOntology, userService.getUser(utils.getUserId()));
+		} catch (final OntologyServiceException | OntologyBusinessServiceException e) {
+			log.error("Error clonning ontology", e);
+			response.put(STATUS_STR, ERROR_STR);
+			response.put(CAUSE_STR, e.getMessage());
+			return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+		}
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
 	@PostMapping(value = { "/create", "/createwizard", "/createapirest", "/createvirtual" })
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createOntology(Model model, @Valid Ontology ontology,
@@ -325,7 +384,8 @@ public class OntologyController {
 			ontologyBusinessService.createOntology(ontology, utils.getUserId(), config);
 
 			if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
-					|| ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
+					|| ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)
+					|| ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU)) {
 				response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
 			}
 			response.put(STATUS_STR, "ok");
@@ -532,11 +592,32 @@ public class OntologyController {
 					otsDTO = ontologyTimeSeriesService.generateOntologyTimeSeriesDTO(ontology);
 				}
 
+				final List<App> realms = appService.getAppsByUser(ontology.getUser().getUserId(), null);
+
+				final List<OntologyDataAccess> dataAccesses = ontologyConfigService
+						.getOntologyUserDataAccesses(ontology.getId(), utils.getUserId());
+				final List<OntologyDataAccessDTO> dataAccessesDTO = new ArrayList<>();
+
+				for (final OntologyDataAccess dataAccess : dataAccesses) {
+					if (dataAccess.getUser() != null && dataAccess.getUser().isActive()
+							|| dataAccess.getAppRole() != null) {
+						dataAccessesDTO.add(new OntologyDataAccessDTO(dataAccess));
+					}
+				}
+
+				model.addAttribute(DATAACCESSES, dataAccessesDTO);
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
 				model.addAttribute(ONTOLOGY_STR, ontology);
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(USERS, users);
+				model.addAttribute(REALMS, realms);
 
+				// InUseService
+				if (resourcesInUseService != null) {
+					model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+							resourcesInUseService.isInUse(id, utils.getUserId()));
+					resourcesInUseService.put(id, utils.getUserId());
+				}
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
 					final OntologyRest ontologyRest = ontologyConfigService.getOntologyRestByOntologyId(ontology);
 					populateRestForm(model, ontologyRest);
@@ -606,6 +687,10 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(PROPERTY_NAMES, getPropertyNames(otsDTO.getTimeSeriesProperties()));
 				model.addAttribute(USERS, users);
+
+				model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+						resourcesInUseService.isInUse(id, utils.getUserId()));
+				resourcesInUseService.put(id, utils.getUserId());
 
 				return ONTOLOGIES_CREATE_TS;
 			} else {
@@ -734,6 +819,7 @@ public class OntologyController {
 
 			}
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(STATUS_STR, "ok");
 		response.put(REDIRECT_STR, "/controlpanel/ontologies/show/" + id);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -764,6 +850,7 @@ public class OntologyController {
 			response.put(CAUSE_STR, e.getMessage());
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(STATUS_STR, "ok");
 		response.put(REDIRECT_STR, "/controlpanel/ontologies/show/" + id);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
@@ -793,14 +880,15 @@ public class OntologyController {
 					for (final ClientPlatformOntology cpo : clientPlatformOntologyRepository.findByOntology(ontology)) {
 						iotClients = iotClients + cpo.getClientPlatform().getIdentification() + " ";
 					}
-					if (apis.equals("") && iotClients.equals(""))
+					if (apis.equals("") && iotClients.equals("")) {
 						utils.addRedirectMessageWithParam(ONT_DEL_ERROR,
 								"Cannot delete an ontology with attached elements", redirect);
-					else
+					} else {
 						utils.addRedirectMessageWithParam(ONT_DEL_ERROR,
 								"Cannot delete an ontology with attached elements:\n -API: " + apis + "\n"
 										+ "-IoTClient: " + iotClients,
 								redirect);
+					}
 				} else {
 					utils.addRedirectMessageWithParam(ONT_DEL_ERROR, e.getMessage(), redirect);
 				}
@@ -834,6 +922,20 @@ public class OntologyController {
 				if (ontology.getDataModel().getId().equals(TIMESERIES_DATAMODEL)) {
 					otsDTO = ontologyTimeSeriesService.generateOntologyTimeSeriesDTO(ontology);
 				}
+
+				final List<OntologyDataAccess> dataAccesses = ontologyConfigService
+						.getOntologyUserDataAccesses(ontology.getId(), utils.getUserId());
+				final List<OntologyDataAccessDTO> dataAccessesDTO = new ArrayList<>();
+
+				for (final OntologyDataAccess dataAccess : dataAccesses) {
+					if (dataAccess.getUser() != null && dataAccess.getUser().isActive()
+							|| dataAccess.getAppRole() != null) {
+						dataAccessesDTO.add(new OntologyDataAccessDTO(dataAccess));
+					}
+				}
+
+				model.addAttribute(DATAACCESSES, dataAccessesDTO);
+
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(ONTOLOGY_STR, ontology);
 
@@ -883,7 +985,14 @@ public class OntologyController {
 	private void populateForm(Model model) {
 		model.addAttribute(DATA_MODELS_STR, ontologyConfigService.getAllDataModels());
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
-		model.addAttribute(RTDBS, ontologyConfigService.getDatasources());
+		List<Ontology.RtdbDatasource> listRtdbs = ontologyConfigService.getDatasources()
+				.stream()
+				.filter(o -> !(Arrays.asList(RtdbDatasource.KUDU, 
+						RtdbDatasource.VIRTUAL, 
+						RtdbDatasource.API_REST, 
+						RtdbDatasource.DIGITAL_TWIN).contains(o))).
+				collect(Collectors.toList());
+		model.addAttribute(RTDBS, listRtdbs);	
 		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("modes", Ontology.RtdbToHdbStorage.values());
 	}
@@ -911,24 +1020,20 @@ public class OntologyController {
 
 		model.addAttribute("constraintTypes", ontologyBusinessService.getStringSupportedConstraintTypes());
 
-		if (ontologyConfigService.getDatasourcesRelationals().isEmpty()) {
-
-			model.addAttribute("datasources", new ArrayList<OntologyVirtualDatasource>());
-			model.addAttribute("collectionNames", new ArrayList<String>());
-
-		} else {
-
-			List<VirtualDatasourceDTO> dsList;
-			if (utils.getRole().equals("ROLE_ADMINISTRATOR"))
+		List<VirtualDatasourceDTO> dsList = new ArrayList<>();
+		
+		if (!ontologyConfigService.getDatasourcesRelationals().isEmpty()) {
+			if (utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 				dsList = ontologyConfigService.getDatasourcesRelationals();
-			else
+			} else {
 				dsList = ontologyConfigService.getPublicOrOwnedDatasourcesRelationals(utils.getUserId());
-
-			model.addAttribute("datasources", dsList);
-			model.addAttribute("collectionNames", new ArrayList<String>());
-
+			}
 		}
 
+		dsList.add(new VirtualDatasourceDTO(RtdbDatasource.KUDU.toString(),""));
+		model.addAttribute("datasources", dsList);
+		model.addAttribute("collectionNames", new ArrayList<String>());
+		
 		model.addAttribute("datasource", new OntologyVirtualDatasource());
 	}
 
@@ -1010,14 +1115,42 @@ public class OntologyController {
 		}
 	}
 
+	@PostMapping(value = "/dataaccess", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<OntologyDataAccessDTO> createOrUpdateDataAccess(@RequestParam String ontId,
+			@RequestParam String realm, @RequestParam String role, @RequestParam String user, @RequestParam String rule,
+			@RequestParam String id) {
+		try {
+			final OntologyDataAccess ontologyDataAccessCreated = ontologyConfigService.createOrUpdateDataAccess(ontId,
+					realm, role, user, rule, utils.getUserId());
+			final OntologyDataAccessDTO ontologyDataAccessDTO = new OntologyDataAccessDTO(ontologyDataAccessCreated);
+			return new ResponseEntity<>(ontologyDataAccessDTO, HttpStatus.CREATED);
+		} catch (final RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping(value = "/dataaccess/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<String> deleteDataAccess(@RequestParam String id) {
+
+		try {
+			ontologyConfigService.deleteDataAccess(id, utils.getUserId());
+			return new ResponseEntity<>("{\"status\" : \"ok\"}", HttpStatus.OK);
+		} catch (final RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
 	@GetMapping(value = "/getTables/{datasource}")
 	public @ResponseBody ResponseEntity<?> getTables(@PathVariable("datasource") String datasource) {
 		try {
 			final List<String> tables = ontologyBusinessService.getTablesFromDatasource(datasource);
-			if (tables.isEmpty())
+			if (tables.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-			else
+			} else {
 				return new ResponseEntity<>(tables, HttpStatus.OK);
+			}
 		} catch (final Exception e) {
 			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
@@ -1054,10 +1187,11 @@ public class OntologyController {
 			@PathVariable("collection") String collection) {
 		try {
 			final String metaData = ontologyBusinessService.getRelationalSchema(datasource, collection);
-			if (metaData.isEmpty())
+			if (metaData.isEmpty()) {
 				return new ResponseEntity<>("Collection or datasource not found", HttpStatus.NOT_FOUND);
-			else
+			} else {
 				return new ResponseEntity<>(metaData, HttpStatus.OK);
+			}
 		} catch (final Exception e) {
 			return new ResponseEntity<>("Error processing the request", HttpStatus.BAD_REQUEST);
 		}
@@ -1188,7 +1322,12 @@ public class OntologyController {
 	public @ResponseBody String runQueryOne(Model model, @RequestParam String queryType, @RequestParam String query,
 			@RequestParam String ontologyIdentification) throws JsonProcessingException {
 		String queryResult = null;
-		query = "select onequeryontology from ( " + query + " ) as onequeryontology limit 1";
+
+		if (useQuasar()) {
+			query = "select onequeryontology from ( " + query + " ) as onequeryontology limit 1";
+		} else {
+			query = "select * from ( " + query + " ) as onequeryontology limit 1";
+		}
 		final Ontology ontology = ontologyConfigService.getOntologyByIdentification(ontologyIdentification,
 				utils.getUserId());
 
@@ -1345,7 +1484,7 @@ public class OntologyController {
 			@ApiParam(value = "Datasource type") @RequestParam(required = true) VirtualDatasourceType datasource) {
 		ResponseEntity<String> response = null;
 		try {
-			final CreateStatement statement = statementDTO.toCreateStatement();
+			final CreateStatementBusiness statement = statementDTO.toCreateStatement();
 			statement.setOntology(identification);
 			final String definition = ontologyBusinessService.getSQLCreateTable(statement, datasource);
 			final JsonObject responseBody = new JsonObject();
@@ -1354,7 +1493,7 @@ public class OntologyController {
 
 		} catch (final Exception e) {
 
-			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return response;
 	}
@@ -1387,11 +1526,32 @@ public class OntologyController {
 	}
 
 	private List<String> getPropertyNames(Set<OntologyTimeSeriesProperty> props) {
-		List<String> propertyNames = new LinkedList<String>();
-		for (OntologyTimeSeriesProperty otsp : props) {
+		final List<String> propertyNames = new LinkedList<String>();
+		for (final OntologyTimeSeriesProperty otsp : props) {
 			propertyNames.add(otsp.getPropertyName());
 		}
 		return propertyNames;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
+	}
+
+	@GetMapping(value = "/getResourcesAssociated/{id}")
+	public @ResponseBody Map<String, List<String>> getResourcesAssociated(@PathVariable("id") String id) {
+
+		return ontologyConfigService.getResourcesFromOntology(ontologyRepository.findById(id).get());
+	}
+
+	private boolean useQuasar() {
+		try {
+			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+					.get("mongodb-use-quasar")).booleanValue();
+		} catch (final RuntimeException e) {
+			return true;
+		}
 	}
 
 }

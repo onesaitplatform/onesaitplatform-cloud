@@ -71,11 +71,11 @@ public class MainPageController {
 		utils.setSessionAttribute(request, "menu", menu);
 		if (request.getSession().getAttribute("apis") == null)
 			utils.setSessionAttribute(request, "apis", integrationResourcesService.getSwaggerUrls());
-		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (utils.isAdministrator()) {
 			model.addAttribute("kpis", mainService.createKPIs());
 
 			return "main";
-		} else if (utils.getRole().equals(Role.Type.ROLE_DEVELOPER.name())) {
+		} else if (utils.isDeveloper()) {
 			// FLOW
 			model.addAttribute("hasOntology",
 					ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);

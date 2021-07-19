@@ -38,10 +38,10 @@ public class XSSWhiteList {
 		mWhiteList.put("/dashboardconf/update", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/dashboardconf/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/gadgets/create", new HashSet<>(Arrays.asList("*")));
-		mWhiteList.put("/gadgettemplates/create",
-				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
-		mWhiteList.put("/gadgettemplates/update",
-				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
+		mWhiteList.put("/gadgettemplates/create", new HashSet<>(
+				Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "headerlibs", "js")));
+		mWhiteList.put("/gadgettemplates/update", new HashSet<>(
+				Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "headerlibs", "js")));
 		mWhiteList.put("/querytemplates/create", new HashSet<>(Arrays.asList("querySelector", "queryGenerator", "js")));
 		mWhiteList.put("/querytemplates/update", new HashSet<>(Arrays.asList("querySelector", "queryGenerator", "js")));
 		mWhiteList.put("/apimanager/create",
@@ -56,6 +56,7 @@ public class XSSWhiteList {
 		mWhiteList.put("/configurations/create", new HashSet<>(Arrays.asList("ymlConfig")));
 		mWhiteList.put("/configurations/update", new HashSet<>(Arrays.asList("ymlConfig")));
 		mWhiteList.put("/rule-domains", new HashSet<>(Arrays.asList("DRL")));
+		mWhiteList.put("/api/mail/mail", new HashSet<>(Arrays.asList("htmlMessage", "message", "attachment")));
 
 	}
 
@@ -64,8 +65,8 @@ public class XSSWhiteList {
 		if (fields != null) {
 			return fields.contains(field) || fields.contains("*");
 		} else {
-			for (Map.Entry<String, HashSet<String>> entry : mWhiteList.entrySet()) {
-				String key = entry.getKey();
+			for (final Map.Entry<String, HashSet<String>> entry : mWhiteList.entrySet()) {
+				final String key = entry.getKey();
 				if (path.startsWith(key)) {
 					return mWhiteList.get(key).contains(field) || mWhiteList.get(key).contains("*");
 				}

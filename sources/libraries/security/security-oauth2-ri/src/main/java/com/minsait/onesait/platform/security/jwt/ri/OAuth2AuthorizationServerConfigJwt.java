@@ -22,10 +22,10 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,7 +41,10 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
+import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
+
 @Configuration
+@ConditionalOnMissingBean(PlugableOauthAuthenticator.class)
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfigurerAdapter {
 
@@ -56,9 +59,6 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 	@Value("${security.jwt.scopes}")
 	private String scopes;
-
-	@Autowired
-	private AuthenticationManager authenticationManager;
 
 	@Autowired(required = false)
 	@Qualifier("configDBAuthenticationProvider")

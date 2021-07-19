@@ -89,7 +89,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../users/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../users/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>
 							</div>
@@ -160,6 +160,20 @@
 												<table id="users" class="table table-light table-hover" dt:table="true"  dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
 												
 													<thead>
+													<tr class="cabecera-tabla">
+															<th class="titulo-columnas" > <span id="identificationfilter" ></span></th>
+															<th class="titulo-columnas" > </th>
+															<th class="titulo-columnas" > </th>
+															<th class="titulo-columnas text-left"><span id="rolesFilter" ></span></th>
+															<th class="titulo-columnas text-center" >  </th>
+															<th class="titulo-columnas text-center" >  </th>
+															<th class="titulo-columnas text-center" >  </th>																
+															<th class="titulo-columnas text-center" ></th>
+															<th class="titulo-columnas text-center"  >  </th>
+															<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" >  </th>
+															
+														</tr>
+													
 														<tr class="cabecera-tabla">
 															<th dt:filterable="true" dt:filterCssClass="input-small" dt:selector="userFilter" class="titulo-columnas" > <span th:text="#{user.id}">Identification</span></th>
 															<th class="titulo-columnas" > <span th:text="#{user.name}" >Name</span></th>
@@ -211,6 +225,15 @@
 																	
 																	<!-- EDIT -->
 																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.username}|} + '/false\');'"><i class="la la-edit font-hg"></i></span>
+																	
+																	<!-- RESET PASS -->
+																	<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{user.reset.password}" th:data-original-title="#{user.reset.password}" th:onclick="'javascript:resetPass(\'' + ${user.username}+ '\');'"><i class="la la-key font-hg"></i></span>
+																	
+																	<!-- DEACTIVE -->
+																	<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND ${user.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{user.deactivateBtn}" th:data-original-title="#{user.deactivateBtn}" th:onclick="'javascript:deactivateUser(\'' + ${user.username}+ '\');'"><i class="la la-times font-hg" th:onclick="''"></i></span>
+																	
+																	<!-- DELETE -->
+																	<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:deleteUser(\'' + ${user.username}+ '\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
 															</td>
 															<!-- TENANT -->
@@ -219,25 +242,7 @@
 													</tbody>
 												</table>
 												
-												<!-- DATATABLE DANDELION CONF. -->
-												<div dt:conf="users">
-													<div dt:confType="extrahtml" dt:uid="0">
-														<!-- TABLE FILTERS AUX. ROW -->
-														<table id="filteringTable" class="hide">
-																<tr id="filtering" class="hide" role="row">
-																	<th id="userFilter" class="dtFilter"></th>
-																	<th></th>
-																	<th></th>
-																	<th id="roleFilter" class="dtFilter"></th>
-																	<th></th>
-																	<th></th>
-																	<th></th>
-																	<th></th>
-																	<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"></th>
-																</tr>
-														</table>
-													</div>
-												</div>
+												
 												
 												<!-- TABLE TOOLBAR -->
 												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
@@ -280,14 +285,14 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -314,9 +319,18 @@
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
+	
+	var resetOK =[[#{user.reset.rest.mail.ok.list}]] ;
+	var resetKO = [[#{user.reset.rest.mail.ko.list}]];
+	var cancelBtn = [[#{gen.cancelBtn}]] || 'Cancel';
+	var deleteTitle = [[#{gen.deleteBtn}]] || 'Delete';
+	var deleteText = [[#{user.hardDelete}]] || '';
+	var deleteError = [[#{user.deleteError}]] || 'Error!';
+	var deactivate = [[#{user.deactivateBtn}]] || 'Deactivate';
+	var deactivateText = [[#{user.deactivateText}]] || '';
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
-
+	var usersList = [[@{/users/list}]];
 	</script>
 	
 	<script type="text/javascript">	
@@ -325,10 +339,149 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
+	
+	function resetPass(id){
+		$.get("/controlpanel/users/reset-password/" + id).done(
+				function(data){
+					console.log('reset-pass-ok ');	
+					modalMessage(resetOK);
+				}
+			).fail(
+				function(e){
+					console.error("Error reset-pass", e);
+					modalMessage(resetKO);
+				}
+			)	
+		
+	}
+	
+	// DEACTIVATE USER
+	function deactivateUser (userId){
+		console.log('deleteUserConfirmation() -> formId: '+ userId);
+		
+		// no Id no fun!
+		if ( !userId ) {$.alert({title: 'ERROR!', theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
+		
+		console.log('deleteUserConfirmation() -> ID: ' + userId);
+		
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var Title = headerReg.titleConfirm + ':';
+		
+		// call user Confirm at header.
+		$.confirm({
+			icon: 'fa fa-warning',
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: deactivateText,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				remove: {
+					text: deactivate,
+					btnClass: 'btn btn-sm btn-circle btn-primary btn-outline',
+					action: function(){ 
+						navigateUrl("/controlpanel/users/deactivateUser/" +userId);
+					}											
+				},
+				close: {
+					text: Close,
+					btnClass: 'btn btn-sm btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				}
+			}
+		});		
+	}
+	
+	function deleteUser(id) {
+		
+		var csrf = {};
+		csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
+		
+		$.confirm({
+			icon: 'fa fa-warning',
+			title: deleteTitle,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: deleteText,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: cancelBtn,
+					btnClass: 'btn btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: deleteTitle,
+					btnClass: 'btn btn-circle btn-outline btn-primary',
+					action: function(){
+						$.ajax({
+							url : "/controlpanel/users/hardDelete/"+id,
+							type : "DELETE",
+							headers: csrf,
+							success : function(response){
+								location.reload();
+							},
+						    error :  function () {
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  deleteError
+								});
+						    }
+						})
+					}
+				}
+			}
+		});
+	}
+	
+function modalMessage(message){
+	$.confirm({
+		icon: 'fas fa-chart-pie',
+		title: "",
+		theme: 'light',
+		columnClass: 'medium',
+		content:`	
+			<div class="alert alert-info alert-dismissable">						 
+					<i class="fa fa-info-circle"></i> 
+						<span>`+message+`</span>			
+					</div>					
+					`,
+		draggable: true,
+		dragWindowGap: 100,
+		backgroundDismiss: true,
+		closeIcon: true,
+		buttons: {			 
+			Ok: {
+				text: 'OK',					
+				btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+				action: function(){ 
+				}											
+			}
+		}
+	});
+}
+	
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
-	
+		setTimeout(function(){
+			$('#users_filter input').on('keypress', function(event){
+				if (event.keyCode === 13) {
+					location.href = usersList+'?userId='+ event.target.value;
+				}
+			})
+		},1500);
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
@@ -383,8 +536,8 @@
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
 		// FILTERING COLUMNS INIT
-		$('#filtering').appendTo($('#users > thead'));
-		$('#filtering').removeClass('hide');
+		//$('#filtering').appendTo($('#users > thead'));
+		//$('#filtering').removeClass('hide');
 		
 		// RESET ALL FILTERS BTN
 		$('#clearFilters').on('click', function(){			
@@ -393,10 +546,10 @@
 		
 		
 		// ADJUST CSS FOR DATATABLE FILTERS 
-		var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
+	/*	var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
 		var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
 		filters.addClass('input-small font-sm');
-		filtersResets.addClass('hide');				
+		filtersResets.addClass('hide');				*/
 		
 		// INIT row selection
 		handleSingleSelection('users');
@@ -405,8 +558,17 @@
 		
 		
 		$.each([ 1,6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-				
 		
+		 yadcf.init(oTable, [	 			
+			    {column_number : 0, filter_type: "text",  filter_container_id:"identificationfilter",filter_default_label: "[[#{apimanager.list.text.placeholder}]]"},				
+			    {column_number : 3,   filter_type: "select",filter_container_id:"rolesFilter",filter_default_label: "[[#{apimanager.list.value.placeholder}]]"}				 
+			  ]);
+		
+		 var filtersResets = $('.yadcf-filter-reset-button');
+	 	 filtersResets.css('margin-left', '10px'); 
+	     filtersResets.html('<i class="fa fa-times"></i>');
+	     filtersResets.addClass("btn btn-default btn-sm");
+		 
 	});
 	
 	//]]>

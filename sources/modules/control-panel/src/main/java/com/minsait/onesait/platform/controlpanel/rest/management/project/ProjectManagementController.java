@@ -23,8 +23,6 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
-import com.minsait.onesait.platform.config.model.*;
-import org.apache.commons.lang.time.StopWatch;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +33,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppUser;
+import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.ProjectList;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectDTO;
@@ -79,7 +83,7 @@ public class ProjectManagementController {
 
 	@ApiOperation(value = "List projects")
 	@GetMapping(value = "/")
-	public ResponseEntity<?> listProjects(@RequestHeader("Authorization") String authorization) {
+	public ResponseEntity<?> listProjects() {
 		try {
 
 			final String userId = utils.getUserId();
@@ -116,8 +120,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Get project by identification")
 	@GetMapping(value = "/{project}")
 	public ResponseEntity<?> getByIdentification(
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 		try {
 
 			final Project project = projectService.getByName(projectId);
@@ -168,8 +171,7 @@ public class ProjectManagementController {
 	@Deprecated
 	@ApiOperation(value = "Create project")
 	@PostMapping(value = "/create")
-	public ResponseEntity<?> createProject(@Valid @RequestBody ProjectRestDTO projectDTO,
-			@RequestHeader("Authorization") String authorization) {
+	public ResponseEntity<?> createProject(@Valid @RequestBody ProjectRestDTO projectDTO) {
 
 		try {
 
@@ -195,10 +197,11 @@ public class ProjectManagementController {
 			if (projectDTO.getIdentification().equals("") || projectDTO.getDescription().equals("")) {
 				return new ResponseEntity<>(String.format("Missing input data"), HttpStatus.BAD_REQUEST);
 			}
-			
+
 			if (!projectDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-			    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
-			}			
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+						HttpStatus.BAD_REQUEST);
+			}
 
 			ProjectDTO projDTO = new ProjectDTO();
 			projDTO.setDescription(projectDTO.getDescription());
@@ -218,8 +221,7 @@ public class ProjectManagementController {
 
 	@ApiOperation(value = "Create project")
 	@PostMapping(value = "/")
-	public ResponseEntity<?> newProject(@Valid @RequestBody ProjectRestDTO projectDTO,
-			@RequestHeader("Authorization") String authorization) {
+	public ResponseEntity<?> newProject(@Valid @RequestBody ProjectRestDTO projectDTO) {
 
 		try {
 
@@ -265,8 +267,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Delete project")
 	@DeleteMapping(value = "/{project}")
 	public ResponseEntity<?> deleteProject(
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -303,8 +304,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Get all resources from a project")
 	@GetMapping(value = "/{project}/getAllResources")
 	public ResponseEntity<?> getAllResources(
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -340,8 +340,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Get all resources from a project")
 	@GetMapping(value = "/{project}/resources")
 	public ResponseEntity<?> allResources(
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -378,8 +377,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Get all users from a project")
 	@GetMapping(value = "/{project}/getAllUsers")
 	public ResponseEntity<?> getAllUsers(
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -413,8 +411,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Get all users from a project")
 	@GetMapping(value = "/{project}/users")
 	public ResponseEntity<?> allUsers(
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -450,8 +447,7 @@ public class ProjectManagementController {
 	@GetMapping(value = "/{project}/getResources/{user}")
 	public ResponseEntity<?> getResourcesForProjectAndUser(
 			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@ApiParam(value = "User Id", required = true) @PathVariable("user") String userId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "User Id", required = true) @PathVariable("user") String userId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -489,27 +485,10 @@ public class ProjectManagementController {
 						HttpStatus.UNAUTHORIZED);
 			}
 
-			JSONArray responseInfo = new JSONArray();
-
 			Set<ProjectResourceAccess> userAccesses = projectService.getResourcesAccessesForUser(project.getId(),
 					userId);
 
-			Iterator<ProjectResourceAccess> i1 = userAccesses.iterator();
-			while (i1.hasNext()) {
-				ProjectResourceAccess currentUserAccess = i1.next();
-				JSONObject jsonAccess = new JSONObject();
-				jsonAccess.put("resource", currentUserAccess.getResource().getIdentification());
-				jsonAccess.put("resourceType",
-						currentUserAccess.getResource().getClass().getSimpleName().toUpperCase());
-				if (project.getApp() == null)
-					jsonAccess.put("userId", currentUserAccess.getUser().getUserId());
-				else {
-					jsonAccess.put("realm", currentUserAccess.getAppRole().getApp().getIdentification());
-					jsonAccess.put("role", currentUserAccess.getAppRole().getName());
-				}
-				jsonAccess.put("accessType", currentUserAccess.getAccess().name());
-				responseInfo.put(jsonAccess);
-			}
+			JSONArray responseInfo = resourceAccessestoJson(userAccesses, project);
 
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
@@ -523,8 +502,7 @@ public class ProjectManagementController {
 	@GetMapping(value = "/{project}/resources/{user}")
 	public ResponseEntity<?> resourcesFromProjectAndUser(
 			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@ApiParam(value = "User Id", required = true) @PathVariable("user") String userId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "User Id", required = true) @PathVariable("user") String userId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -562,27 +540,10 @@ public class ProjectManagementController {
 						HttpStatus.UNAUTHORIZED);
 			}
 
-			JSONArray responseInfo = new JSONArray();
-
 			Set<ProjectResourceAccess> userAccesses = projectService.getResourcesAccessesForUser(project.getId(),
 					userId);
 
-			Iterator<ProjectResourceAccess> i1 = userAccesses.iterator();
-			while (i1.hasNext()) {
-				ProjectResourceAccess currentUserAccess = i1.next();
-				JSONObject jsonAccess = new JSONObject();
-				jsonAccess.put("resource", currentUserAccess.getResource().getIdentification());
-				jsonAccess.put("resourceType",
-						currentUserAccess.getResource().getClass().getSimpleName().toUpperCase());
-				if (project.getApp() == null)
-					jsonAccess.put("userId", currentUserAccess.getUser().getUserId());
-				else {
-					jsonAccess.put("realm", currentUserAccess.getAppRole().getApp().getIdentification());
-					jsonAccess.put("role", currentUserAccess.getAppRole().getName());
-				}
-				jsonAccess.put("accessType", currentUserAccess.getAccess().name());
-				responseInfo.put(jsonAccess);
-			}
+			JSONArray responseInfo = resourceAccessestoJson(userAccesses, project);
 
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
@@ -597,8 +558,7 @@ public class ProjectManagementController {
 	@GetMapping(value = "/{project}/getResourcesRole/{appRole}")
 	public ResponseEntity<?> getResourcesForProjectAndAppRole(
 			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@ApiParam(value = "AppRole Id", required = true) @PathVariable("appRole") String appRoleName,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -626,23 +586,10 @@ public class ProjectManagementController {
 						HttpStatus.BAD_REQUEST);
 			}
 
-			JSONArray responseInfo = new JSONArray();
-
 			Set<ProjectResourceAccess> appRoleAccesses = projectService.getResourcesAccessesForAppRole(project.getId(),
 					appRole.getId());
 
-			Iterator<ProjectResourceAccess> i1 = appRoleAccesses.iterator();
-			while (i1.hasNext()) {
-				ProjectResourceAccess currentAppRoleAccess = i1.next();
-				JSONObject jsonAccess = new JSONObject();
-				jsonAccess.put("resource", currentAppRoleAccess.getResource().getIdentification());
-				jsonAccess.put("resourceType",
-						currentAppRoleAccess.getResource().getClass().getSimpleName().toUpperCase());
-				jsonAccess.put("realm", currentAppRoleAccess.getAppRole().getApp().getIdentification());
-				jsonAccess.put("role", currentAppRoleAccess.getAppRole().getName());
-				jsonAccess.put("accessType", currentAppRoleAccess.getAccess().name());
-				responseInfo.put(jsonAccess);
-			}
+			JSONArray responseInfo = resourceAccessestoJson(appRoleAccesses, project);
 
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
@@ -656,8 +603,7 @@ public class ProjectManagementController {
 	@GetMapping(value = "/{project}/resources/role/{appRole}")
 	public ResponseEntity<?> resourcesFromProjectAndAppRole(
 			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@ApiParam(value = "AppRole Id", required = true) @PathVariable("appRole") String appRoleName,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -685,23 +631,10 @@ public class ProjectManagementController {
 						HttpStatus.BAD_REQUEST);
 			}
 
-			JSONArray responseInfo = new JSONArray();
-
 			Set<ProjectResourceAccess> appRoleAccesses = projectService.getResourcesAccessesForAppRole(project.getId(),
 					appRole.getId());
 
-			Iterator<ProjectResourceAccess> i1 = appRoleAccesses.iterator();
-			while (i1.hasNext()) {
-				ProjectResourceAccess currentAppRoleAccess = i1.next();
-				JSONObject jsonAccess = new JSONObject();
-				jsonAccess.put("resource", currentAppRoleAccess.getResource().getIdentification());
-				jsonAccess.put("resourceType",
-						currentAppRoleAccess.getResource().getClass().getSimpleName().toUpperCase());
-				jsonAccess.put("realm", currentAppRoleAccess.getAppRole().getApp().getIdentification());
-				jsonAccess.put("role", currentAppRoleAccess.getAppRole().getName());
-				jsonAccess.put("accessType", currentAppRoleAccess.getAccess().name());
-				responseInfo.put(jsonAccess);
-			}
+			JSONArray responseInfo = resourceAccessestoJson(appRoleAccesses, project);
 
 			return new ResponseEntity<>(responseInfo.toString(), HttpStatus.OK);
 
@@ -716,8 +649,7 @@ public class ProjectManagementController {
 	@PostMapping(value = "/{project}/associateResourcesByUser")
 	public ResponseEntity<?> associateResourceByUser(
 			@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -789,8 +721,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Associate resources to a project by user")
 	@PostMapping(value = "/{project}/resources/user")
 	public ResponseEntity<?> addResourceByUser(@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final ProjectList project = projectService.getByNameForList(projectId);
@@ -864,8 +795,7 @@ public class ProjectManagementController {
 	@DeleteMapping(value = "/{project}/disassociateResourcesByUser")
 	public ResponseEntity<?> disassociateResourceByUser(
 			@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -935,8 +865,7 @@ public class ProjectManagementController {
 	@DeleteMapping(value = "/{project}/resources/user")
 	public ResponseEntity<?> suppressResourceByUser(
 			@Valid @RequestBody List<ProjectResourceRestUserDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 
@@ -1008,8 +937,7 @@ public class ProjectManagementController {
 	@PostMapping(value = "/{project}/associateResourcesByRealm")
 	public ResponseEntity<?> associateResourceByRealm(
 			@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1082,8 +1010,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Associate resources to a project by realm")
 	@PostMapping(value = "/{project}/resources/realm")
 	public ResponseEntity<?> addResourceByRealm(@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1158,8 +1085,7 @@ public class ProjectManagementController {
 	@DeleteMapping(value = "/{project}/disassociateResourcesByRealm")
 	public ResponseEntity<?> disassociateResourceByRealm(
 			@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1234,8 +1160,7 @@ public class ProjectManagementController {
 	@DeleteMapping(value = "/{project}/resources/realm")
 	public ResponseEntity<?> suppressResourceByRealm(
 			@Valid @RequestBody List<ProjectResourceRestRealmDTO> projectResources,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1310,8 +1235,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Associate user to a project")
 	@PostMapping(value = "/{project}/associateUser")
 	public ResponseEntity<?> associateUserToProject(@Valid @RequestBody List<String> users,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1343,7 +1267,7 @@ public class ProjectManagementController {
 				final User userTo = userService.getUser(userName);
 				if (userTo == null) {
 					created.add(ERROR_USER_NOT_FOUND);
-				} else if (userTo.getRole().getId().toString().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				} else if (userTo.isAdmin()) {
 					created.add(ERROR_USERACCESS_ROL);
 				} else if (projectService.isUserInProjectWithoutOwner(userName, project.getId())) {
 					created.add(ERROR_USER_IN_PROJECT);
@@ -1373,8 +1297,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Associate user to a project")
 	@PostMapping(value = "/{project}/user")
 	public ResponseEntity<?> addUserToProject(@Valid @RequestBody List<String> users,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1406,7 +1329,7 @@ public class ProjectManagementController {
 				final User userTo = userService.getUser(userName);
 				if (userTo == null) {
 					created.add(ERROR_USER_NOT_FOUND);
-				} else if (userTo.getRole().getId().toString().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				} else if (userTo.isAdmin()) {
 					created.add(ERROR_USERACCESS_ROL);
 				} else if (projectService.isUserInProjectWithoutOwner(userName, project.getId())) {
 					created.add(ERROR_USER_IN_PROJECT);
@@ -1437,8 +1360,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Disassociate user to a project")
 	@DeleteMapping(value = "/{project}/disassociateUser")
 	public ResponseEntity<?> disassociateUserToProject(@Valid @RequestBody List<String> users,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1498,8 +1420,7 @@ public class ProjectManagementController {
 	@ApiOperation(value = "Disassociate user to a project")
 	@DeleteMapping(value = "/{project}/user")
 	public ResponseEntity<?> suppressUserToProject(@Valid @RequestBody List<String> users,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1561,8 +1482,7 @@ public class ProjectManagementController {
 	@PostMapping(value = "/{project}/associateRealm/{realm}")
 	public ResponseEntity<?> associateRealmToProject(
 			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@ApiParam(value = "Realm Name", required = true) @PathVariable("realm") String realmId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Realm Name", required = true) @PathVariable("realm") String realmId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1611,8 +1531,7 @@ public class ProjectManagementController {
 	@PostMapping(value = "/{project}/realm/{realm}")
 	public ResponseEntity<?> addRealmToProject(
 			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@ApiParam(value = "Realm Name", required = true) @PathVariable("realm") String realmId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Realm Name", required = true) @PathVariable("realm") String realmId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1662,8 +1581,7 @@ public class ProjectManagementController {
 	@DeleteMapping(value = "/{project}/disassociateRealm/{realm}")
 	public ResponseEntity<?> disassociateRealmToProject(
 			@ApiParam(value = "Realm", required = true) @PathVariable("realm") String realmId,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1711,8 +1629,7 @@ public class ProjectManagementController {
 	@DeleteMapping(value = "/{project}/realm/{realm}")
 	public ResponseEntity<?> suppressRealmToProject(
 			@ApiParam(value = "Realm", required = true) @PathVariable("realm") String realmId,
-			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId,
-			@RequestHeader("Authorization") String authorization) {
+			@ApiParam(value = "Project Name", required = true) @PathVariable("project") String projectId) {
 
 		try {
 			final Project project = projectService.getByName(projectId);
@@ -1764,6 +1681,11 @@ public class ProjectManagementController {
 			JSONObject jsonAccess = new JSONObject();
 			jsonAccess.put("resource", currentUserAccess.getResource().getIdentification());
 			jsonAccess.put("resourceType", currentUserAccess.getResource().getClass().getSimpleName().toUpperCase());
+			if (currentUserAccess.getResource() instanceof com.minsait.onesait.platform.config.model.Api) {
+				jsonAccess.put("version",
+						((com.minsait.onesait.platform.config.model.Api) currentUserAccess.getResource())
+								.getNumversion());
+			}
 			if (project.getApp() == null)
 				jsonAccess.put("userId", currentUserAccess.getUser().getUserId());
 			else {

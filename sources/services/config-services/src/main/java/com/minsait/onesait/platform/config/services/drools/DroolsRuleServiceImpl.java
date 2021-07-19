@@ -29,7 +29,6 @@ import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.model.DroolsRule.Type;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.DroolsRuleDomainRepository;
 import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
@@ -56,7 +55,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public List<DroolsRule> getRulesForOntology(String ontology) {
-		return getRulesForOntology(ontologyRepository.findByIdentification(ontology));
+		return droolsRuleRepository.findBySourceOntologyIdentificationAndActiveTrue(ontology);
 	}
 
 	@Override
@@ -82,7 +81,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	@Override
 	public List<DroolsRuleDomain> getAllDomains(String user) {
 
-		if (userService.getUser(user).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (userService.getUser(user).isAdmin()) {
 			return droolsRuleDomainRepository.findAll();
 		} else {
 			return new ArrayList<>(Arrays.asList(this.getUserDomain(user)));
@@ -127,7 +126,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public DroolsRuleDomain getDomain(String id) {
-		return droolsRuleDomainRepository.findOne(id);
+		return droolsRuleDomainRepository.findById(id).orElse(null);
 	}
 
 	@Override

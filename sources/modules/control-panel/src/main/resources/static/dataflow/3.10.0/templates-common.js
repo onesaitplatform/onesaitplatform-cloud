@@ -925,7 +925,7 @@ angular.module("common/administration/logs/logs.tpl.html", []).run(["$templateCa
     "      </button>\n" +
     "\n" +
     "      <div class=\"btn-group download-btn-group\" ng-if=\"logFiles && logFiles.length && common.isUserAdmin\">\n" +
-    "        <a href=\"/rest/v1/system/logs/files/{{logFiles[0].file}}?attachment=true\" target=\"_self\"\n" +
+    "        <a href=\"/controlpanel/dataflow/app/rest/v1/system/logs/files/{{logFiles[0].file}}?attachment=true\" target=\"_self\"\n" +
     "           class=\"btn btn-primary btn-sm\">{{'logs.download' | translate}}</a>\n" +
     "        <button type=\"button\" class=\"btn btn-primary btn-sm dropdown-toggle\" data-toggle=\"dropdown\" aria-expanded=\"false\">\n" +
     "          <span class=\"caret\"></span>\n" +
@@ -933,7 +933,7 @@ angular.module("common/administration/logs/logs.tpl.html", []).run(["$templateCa
     "        </button>\n" +
     "        <ul class=\"dropdown-menu pull-right\" role=\"menu\">\n" +
     "          <li ng-repeat=\"logFile in logFiles\">\n" +
-    "            <a href=\"/rest/v1/system/logs/files/{{logFile.file}}?attachment=true\" target=\"_self\">{{logFile.file}}</a>\n" +
+    "            <a href=\"/controlpanel/dataflow/app/rest/v1/system/logs/files/{{logFile.file}}?attachment=true\" target=\"_self\">{{logFile.file}}</a>\n" +
     "          </li>\n" +
     "        </ul>\n" +
     "      </div>\n" +

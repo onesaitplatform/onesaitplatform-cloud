@@ -32,7 +32,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -44,6 +43,7 @@ import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +59,9 @@ public class WebProjectController {
 	@Autowired
 	private AppWebUtils utils;
 
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
 
@@ -67,7 +70,7 @@ public class WebProjectController {
 	private static final String REDIRECT_WEBPROJ_LIST = "redirect:/webprojects/list";
 
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
@@ -86,7 +89,7 @@ public class WebProjectController {
 	}
 
 	@GetMapping(value = "/create", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String create(Model model) {
 
 		model.addAttribute("webproject", new WebProject());
@@ -94,7 +97,7 @@ public class WebProjectController {
 	}
 
 	@PostMapping(value = "/create")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String createWebProject(Model model, @Valid WebProjectDTO webProject, BindingResult bindingResult,
 			RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
@@ -121,11 +124,14 @@ public class WebProjectController {
 	}
 
 	@GetMapping(value = "/update/{id}", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String update(Model model, @PathVariable("id") String id) {
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 
 		if (webProject != null) {
+			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+					resourcesInUseService.isInUse(id, utils.getUserId()));
+			resourcesInUseService.put(id, utils.getUserId());
 			model.addAttribute("webproject", webProject);
 			return WEBPROJ_CREATE;
 		} else {
@@ -133,8 +139,8 @@ public class WebProjectController {
 		}
 	}
 
-	@PutMapping(value = "/update/{id}", produces = "text/html")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PostMapping(value = "/update/{id}", produces = "text/html")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String updateWebProject(Model model, @PathVariable("id") String id, @Valid WebProjectDTO webProject,
 			BindingResult bindingResult, RedirectAttributes redirect) {
 
@@ -150,12 +156,13 @@ public class WebProjectController {
 			utils.addRedirectMessage("webproject.update.error", redirect);
 			return "redirect:/webprojects/update/" + id;
 		}
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_WEBPROJ_LIST;
 
 	}
 
 	@GetMapping(value = "/delete/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String deleteWebProject(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
@@ -174,7 +181,7 @@ public class WebProjectController {
 	}
 
 	@PostMapping(value = "/uploadZip")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<String> uploadZip(MultipartHttpServletRequest request) {
 
 		final Iterator<String> itr = request.getFileNames();
@@ -195,7 +202,7 @@ public class WebProjectController {
 	}
 
 	@GetMapping(value = "/downloadZip/{id}", produces = "application/zip")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> downloadZip(@PathVariable("id") String id) {
 
 		final WebProjectDTO webProject;
@@ -221,6 +228,12 @@ public class WebProjectController {
 				"attachment; filename=\"" + webProject.getIdentification() + ".zip\"");
 
 		return new ResponseEntity<>(zipFile, headers, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

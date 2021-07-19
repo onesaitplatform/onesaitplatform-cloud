@@ -33,6 +33,10 @@ public interface CategoryService {
 	Category getCategoryById(String id);
 
 	Category getCategoryByIdentification(String identification);
+	
+	List<Category> getCategoryByIdentificationLike(String identification);
+	
+	List<Category> getCategoryByDescriptionLike(String description);
 
 	List<Category> findAllCategories();
 

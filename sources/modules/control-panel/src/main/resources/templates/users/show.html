@@ -63,8 +63,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/users/list}" th:text="#{user.breadcrumb.prev}">Home</a><i class="la la-angle-right"></i></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
 						<li><span th:text="#{user.breadcrumb.show}">Show User</span></li>
 					</ul>						
 				</div>
@@ -118,13 +117,13 @@
 												</div>
 												<!-- Role, created-at, removed-at -->
 												<div class="row">
-													<div class="col-md-3 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+													<div class="col-md-3 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 														<div class="form-group">
 															<label class="control-label" th:text="#{user.rolTypeName} + ':'">Role</label>
 															<p class="form-control-static-block " th:text="*{role.name}"> User Role </p>
 														</div>
 													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+													<div class="col-md-3 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 														<div class="form-group">
 															<label class="control-label"><span th:text="#{user.dateCreated} + ':'">Created At</span></label>
 															<p class="form-control-static-block " th:text="${#dates.format(user.createdAt, 'dd/MM/yyyy')}" > User creation date </p>
@@ -133,16 +132,24 @@
 													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
 															<label class="control-label"><span th:text="#{user.dateDeleted} + ':'">Deleted At</span></label>
-															<p class="form-control-static-block " ><span th:if="*{dateDeleted}" th:text="*{dateDeleted}"> User deleting date </span></p>
+															<p class="form-control-static-block " th:text="${#dates.format(user.dateDeleted, 'dd/MM/yyyy')}" ><span th:if="*{dateDeleted}" th:text="*{dateDeleted}"> User deleting date </span></p>
 														</div>
 													</div>
-													<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+													<div class="col-md-4 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 														<div class="form-group">
 															<label class="control-label" th:text="#{user.active} + '?'">Active</label>
 															<p class="form-control-static-block form-control-static-no-border static-blank">
 																<span th:if="*{active}"><i class="la la-check-circle-o text-success font-hg"></i></span>
 																<span th:if="!*{active}"><i class="la la-times-circle-o text-danger font-hg"></i></span>
 															</p>
+														</div>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{multitenancy.tenant} + ':'">Tenant</label>
+															<p class="form-control-static-block " th:text="${tenant}"> </p>
 														</div>
 													</div>
 												</div>
@@ -160,20 +167,23 @@
 												<div class="pull-right">													
 													
 													
-													<!-- REMOVE TO-DO: caducado -->
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline  blue" name="delete"  value="Remove" th:onclick="'deleteUserConfirmation(\'' + ${user.userId} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<!-- DEACTIVATE -->
+													<button th:if="${user.active} == true" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline  blue" name="delete"  value="Remove" th:onclick="'deleteUserConfirmation(\'' + ${user.userId} + '\');'" > <span th:text="#{user.deactivateBtn}"> Delete </span></button>
 													
+													<!-- DELETE -->
+													<button th:if="${user.userId} != null" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="hardDeleteBtn" type="button" class="btn btn-circle btn-outline blue" name="hardDelete"  value="HardDelete" th:onclick="'hardDeleteUser(\'' + ${user.userId} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+											
 													<span class="sep no-border" >&nbsp;</span>
 													
 													<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} != ${user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.userId}/false|} + '\');'"> <span th:text="#{gen.editBtn}"> Edit </span></button>
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.userId}/false|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
-													<button sec:authorize=" hasAuthority('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/users/} + ${userId} + '?form=' + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#authentication.name} != ${user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.userId}/false|} + '\');'"> <span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#authentication.name} == ${user.userId}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.userId}/false|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button sec:authorize=" @securityService.hasAnyRole('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{/users/} + ${userId} + '?form=' + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
 													
 													<span class="sep" >&nbsp;</span>
 													
 													<!-- CREATE -->
-													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/users/} + 'create' + '\');'" > <span th:text="#{gen.createBtn}"> New</span></button>
+													<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/users/} + 'create' + '\');'" > <span th:text="#{gen.createBtn}"> New</span></button>
 													
 												</div>
 											</div>											
@@ -194,14 +204,23 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- TEMPLATE CONTROLLER  -->	
 		
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
 	var showLog = 1; // console.log toggle
+	
+	var userCreateJson = { 
+			"deleteTitle" : [[#{gen.deleteBtn}]] || 'Delete',
+			"deleteText" : [[#{user.hardDelete}]] || '',
+			"deleteError" : [[#{user.deleteError}]] || 'Error!',
+			"deactivateTitle" : [[#{user.deactivateBtn}]] || 'Deactivate',
+			"deactivateText" : [[#{user.deactivateText}]] || ''
+		};
+	
     //<![CDATA[ 
 
 	// REDIRECT
@@ -217,9 +236,7 @@
 		console.log('deleteUserConfirmation() -> ID: ' + userId);
 		
 		// i18 labels
-		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
-		var	Content = headerReg.genericConfirm;
 		var Title = headerReg.titleConfirm + ':';
 		
 		// call user Confirm at header.
@@ -228,17 +245,17 @@
 			title: Title,
 			theme: 'dark',
 			columnClass: 'medium',
-			content: Content,
+			content: userCreateJson.deactivateText,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
 			closeIcon: true,
 			buttons: {
 				remove: {
-					text: Remove,
+					text: userCreateJson.deactivateTitle,
 					btnClass: 'btn btn-sm btn-danger btn-outline',
 					action: function(){ 
-						navigateUrl("/controlpanel/users/forgetDataUser/" +userId+"/true");
+						navigateUrl("/controlpanel/users/deactivateUser/" +userId);
 					}											
 				},
 				close: {
@@ -249,6 +266,55 @@
 			}
 		});	
 		
+	}
+	
+	//HARD DELETE USER
+	function hardDeleteUser(id) {
+		
+		var Close = headerReg.btnCancelar;
+		var csrf = {};
+		csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
+		
+		$.confirm({
+			icon: 'fa fa-warning',
+			title: userCreateJson.deleteTitle,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: userCreateJson.deleteText,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: userCreateJson.deleteTitle,
+					btnClass: 'btn btn-circle btn-outline btn-primary',
+					action: function(){
+						$.ajax({
+							url : "/controlpanel/users/hardDelete/"+id,
+							type : "DELETE",
+							headers: csrf,
+							success : function(response){
+								navigateUrl("/controlpanel/users/list");
+							},
+						    error :  function () {
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  userCreateJson.deleteError
+								});
+						    }
+						})
+					}
+				}
+			}
+		});
 	}
 	
 	

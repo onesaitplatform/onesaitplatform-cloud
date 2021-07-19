@@ -114,7 +114,7 @@
 									      </div>		
 									      <div class="modal-body">
 									      <div class="form-group">
-									      	<form id="form_new" method="post" th:action="@{/files}" enctype="multipart/form-data">
+									      	<form id="form_new" method="post" th:action="@{/files}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
 										      <div class="form-group">
 										      <input class="form-control no-remove" type="text" name="metadata" id="metadata" th:placeholder="#{binaryfiles.metadata}"/>
 										 	  <br/>    
@@ -130,7 +130,7 @@
 										      <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#buttonLoadFile').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
 										      <br/>
 										      <input class="form-group button_text hide" id="buttonLoadFile" type="file" accept="*" name="file"  />
-										  	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+										  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 										  	</form>
 										  </div>
 									      </div>									      
@@ -154,8 +154,8 @@
 									      </div>		
 									      <div class="modal-body">
 									      <div class="form-group">
-									      	<form id="form_update" method="post" th:action="@{/files}" enctype="multipart/form-data">
-									      	  <input type="hidden" name="_method" value="put" />
+									      	<form id="form_update" method="post" th:action="@{/files/update}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
+									      	  
 									      	  <input type="hidden" name="fileId" id="updateFileId"/>
 										      <input class="form-control no-remove" type="text" name="metadata" id="metadataUpdate" th:placeholder="#{binaryfiles.metadata}"/>
 										      <br/>
@@ -389,17 +389,17 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	
 	<!-- Custom JS -->
-	<script th:src="@{/static/js/pages/binaryFiles.js}"/>
+	<script th:src="@{/static/js/pages/binaryFiles.js}"></script>
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 	
 	<script th:inline="javascript">	

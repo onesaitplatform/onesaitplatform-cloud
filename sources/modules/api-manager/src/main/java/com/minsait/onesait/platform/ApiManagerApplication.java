@@ -35,4 +35,5 @@ public class ApiManagerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ApiManagerApplication.class, args);
 	}
+
 }

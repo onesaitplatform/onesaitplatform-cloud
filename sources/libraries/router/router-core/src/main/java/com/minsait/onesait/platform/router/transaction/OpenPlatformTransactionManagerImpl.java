@@ -237,6 +237,7 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 				} else {
 					log.info("Transaction {} finish successfully", transactionId);
 					result.setStatus(true);
+					result.setResult("ok");
 				}
 
 				if (model.isLockTransaction()) {
@@ -298,7 +299,7 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 				transactionalOperationsMap.remove(transactionId);
 
 				result.setStatus(true);
-
+				result.setResult("ok");
 				return result;
 
 			} else {

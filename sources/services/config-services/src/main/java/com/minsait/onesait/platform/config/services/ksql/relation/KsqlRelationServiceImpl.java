@@ -25,7 +25,6 @@ import com.minsait.onesait.platform.config.model.KsqlFlow;
 import com.minsait.onesait.platform.config.model.KsqlRelation;
 import com.minsait.onesait.platform.config.model.KsqlResource;
 import com.minsait.onesait.platform.config.model.KsqlResource.FlowResourceType;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.KsqlRelationRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlRelationServiceException;
@@ -41,7 +40,7 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 
 	@Autowired
 	private KsqlResourceService ksqlResourceService;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -53,7 +52,7 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 	@Transactional
 	public void createKsqlRelation(KsqlFlow ksqlFlow, KsqlResource ksqlResource) throws KsqlExecutionException {
 
-		KsqlResource existingKsqlResource = ksqlResourceService
+		final KsqlResource existingKsqlResource = ksqlResourceService
 				.getKsqlResourceByIdentification(ksqlResource.getIdentification());
 
 		if (existingKsqlResource == null) {
@@ -82,17 +81,17 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 		}
 
 		// Create Relation
-		KsqlRelation newKsqlRelation = new KsqlRelation();
+		final KsqlRelation newKsqlRelation = new KsqlRelation();
 		newKsqlRelation.setKsqlFlow(ksqlFlow);
 		newKsqlRelation.setKsqlResource(ksqlResource);
 		ksqlRelationRepository.save(newKsqlRelation);
 		// Get Predecessors By Resource identification (Stream/table name)
-		List<String> dependencies = ksqlResourceService.parseStatementTextAndGetDependencies(ksqlResource);
+		final List<String> dependencies = ksqlResourceService.parseStatementTextAndGetDependencies(ksqlResource);
 		// Set predecessors and successors to relations
-		for (String dependency : dependencies) {
-			List<KsqlRelation> predecessors = ksqlRelationRepository
+		for (final String dependency : dependencies) {
+			final List<KsqlRelation> predecessors = ksqlRelationRepository
 					.findByKsqlFlowAndKsqlResourceIdentification(ksqlFlow, dependency);
-			for (KsqlRelation predecessor : predecessors) {
+			for (final KsqlRelation predecessor : predecessors) {
 				// Set new Relation as sucessor
 				predecessor.addSucessor(newKsqlRelation);
 				// Set predecessor in new Relation
@@ -109,7 +108,7 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 	@Override
 	@Transactional
 	public void deleteKsqlRelation(KsqlRelation relation) throws KsqlExecutionException {
-		KsqlResource ksqlResource = relation.getKsqlResource();
+		final KsqlResource ksqlResource = relation.getKsqlResource();
 		relation.getPredecessors().forEach(predecessor -> {
 			predecessor.removeSucessor(relation);
 			ksqlRelationRepository.save(predecessor);
@@ -124,7 +123,7 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 		// Delete KsqlResource if it has no more KsqlRelations in any Flow
 		boolean resourceDeletion = true;
 		if (ksqlResource.getResourceType() == FlowResourceType.ORIGIN) {
-			List<KsqlRelation> relations = ksqlRelationRepository
+			final List<KsqlRelation> relations = ksqlRelationRepository
 					.findByKsqlResourceIdentification(ksqlResource.getIdentification());
 			if (relations != null && !relations.isEmpty()) {
 				resourceDeletion = false;
@@ -140,9 +139,9 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 	public void updateKsqlRelation(KsqlFlow ksqlFlow, KsqlResource ksqlResource, String statement, String description)
 			throws KsqlExecutionException {
 		boolean statementChanged = false;
-		boolean descriptionChanged = !ksqlResource.getDescription().equals(description);
+		final boolean descriptionChanged = !ksqlResource.getDescription().equals(description);
 
-		KsqlResourceForUpdate ksqlResourceForUpdate = new KsqlResourceForUpdate();
+		final KsqlResourceForUpdate ksqlResourceForUpdate = new KsqlResourceForUpdate();
 		ksqlResourceForUpdate.setChangedKsqlReousrce(ksqlResource);
 		ksqlResourceForUpdate.setCurrentIdentification(ksqlResource.getIdentification());
 		ksqlResourceForUpdate.setCurrentKafkaTopic(ksqlResource.getKafkaTopic());
@@ -150,7 +149,7 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 		ksqlResourceForUpdate.setDescriptionChanged(descriptionChanged);
 		ksqlResourceForUpdate.setCurrentKsqlResourceType(ksqlResource.getKsqlType().name());
 		ksqlResourceForUpdate.setStatemenChanged(false);
-		KsqlRelation relation = ksqlRelationRepository.findByKsqlFlowAndKsqlResource(ksqlFlow, ksqlResource);
+		final KsqlRelation relation = ksqlRelationRepository.findByKsqlFlowAndKsqlResource(ksqlFlow, ksqlResource);
 		if (relation == null) {
 			log.error("Unable to find Relation for the Resource Update command. KsqlFlow = {}, KsqlResource = {}.",
 					ksqlFlow.getIdentification(), ksqlResource.getIdentification());
@@ -160,14 +159,14 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 							+ ksqlResource.getIdentification());
 		}
 		// Only if statement changes
-		String oldStatement = ksqlResource.getStatementText();
+		final String oldStatement = ksqlResource.getStatementText();
 
 		if (!oldStatement.equals(statement)) {
 			ksqlResourceForUpdate.setStatemenChanged(true);
 			statementChanged = true;
 			ksqlResource.setStatementText(statement);
 			// Get new Predecessors
-			List<String> dependencies = ksqlResourceService.parseStatementTextAndGetDependencies(ksqlResource);
+			final List<String> dependencies = ksqlResourceService.parseStatementTextAndGetDependencies(ksqlResource);
 
 			// CHECK if Topic is already used by any Resource in an other FLOW
 			// (ignore ORIGIN and DESTINY)
@@ -181,10 +180,10 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 			});
 
 			// Set new Predecessors
-			for (String dependency : dependencies) {
-				List<KsqlRelation> predecessors = ksqlRelationRepository
+			for (final String dependency : dependencies) {
+				final List<KsqlRelation> predecessors = ksqlRelationRepository
 						.findByKsqlFlowAndKsqlResourceIdentification(ksqlFlow, dependency);
-				for (KsqlRelation predecessor : predecessors) {
+				for (final KsqlRelation predecessor : predecessors) {
 					predecessor.addSucessor(relation);
 					relation.addPredecessor(predecessor);
 					ksqlRelationRepository.save(predecessor);
@@ -234,12 +233,12 @@ public class KsqlRelationServiceImpl implements KsqlRelationService {
 
 	@Override
 	public KsqlRelation getKsqlRelationWithId(String id) {
-		return ksqlRelationRepository.findById(id);
+		return ksqlRelationRepository.findById(id).orElse(null);
 	}
 
 	private void checkTopicAvailability(KsqlFlow ksqlFlow, KsqlResource ksqlResource) {
 		if (ksqlResource.getResourceType() == FlowResourceType.PROCESS) {
-			List<KsqlRelation> relations = ksqlRelationRepository
+			final List<KsqlRelation> relations = ksqlRelationRepository
 					.findByKsqlResourceKafkaTopicAndKsqlFlowNot(ksqlResource.getKafkaTopic(), ksqlFlow);
 			if (relations != null && !relations.isEmpty()) {
 				log.error("Specified TOPIC already in use in a different FLOW. KsqlFlow=%s, KsqlResource=%s.",

@@ -32,82 +32,87 @@ public class ThemesServiceImpl implements ThemesService {
 
 	@Autowired
 	private ThemesRepository themesRepository;
-	
+
 	@Override
 	public void createTheme(ThemesDTO themeDTO) {
-		
+
 		final Themes theme = new Themes();
-		
+
 		try {
 			if (themesRepository.findIdByIdentification(themeDTO.getIdentification()) != null) {
 				log.error("There is a Theme with the same Identification");
 				throw new GenericOPException("There is a Theme with the same Identification");
 			}
-			
+
 			theme.setIdentification(themeDTO.getIdentification());
 			theme.setJson(themeDTO.getJson().toString());
-			
+
 			themesRepository.save(theme);
-		} catch (GenericOPException e) {
-			log.error("Error creating a new theme: "+e.getMessage());
+		} catch (final GenericOPException e) {
+			log.error("Error creating a new theme: " + e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void updateTheme(ThemesDTO themeDTO) {
 		try {
-			final Themes theme = themesRepository.findById(themeDTO.getId());
-			
-			theme.setIdentification(themeDTO.getIdentification());
-			theme.setJson(themeDTO.getJson().toString());
-			
-			themesRepository.save(theme);
-		} catch (Exception e) {
-			log.error("Error updating a theme: "+e.getMessage());
+			themesRepository.findById(themeDTO.getId()).ifPresent(theme -> {
+				theme.setIdentification(themeDTO.getIdentification());
+				theme.setJson(themeDTO.getJson().toString());
+
+				themesRepository.save(theme);
+			});
+
+		} catch (final Exception e) {
+			log.error("Error updating a theme: " + e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void setActive(String id) {
 		try {
 			final List<Themes> activeThemes = themesRepository.findActive();
-			
-			for(Themes theme : activeThemes) {
+
+			for (final Themes theme : activeThemes) {
 				theme.setActive(false);
 				themesRepository.save(theme);
 			}
-			
-			final Themes themeToActive = themesRepository.findById(id);
-			themeToActive.setActive(true);
-			themesRepository.save(themeToActive);
-		} catch (Exception e) {
-			log.error("Error setting to active: "+e.getMessage());
+
+			themesRepository.findById(id).ifPresent(themeToActive -> {
+				themeToActive.setActive(true);
+				themesRepository.save(themeToActive);
+			});
+
+		} catch (final Exception e) {
+			log.error("Error setting to active: " + e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void deactivate(String id) {
-		try {			
-			final Themes theme = themesRepository.findById(id);
-			theme.setActive(false);
-			themesRepository.save(theme);
-		} catch (Exception e) {
-			log.error("Error setting to inactive: "+e.getMessage());
+		try {
+			themesRepository.findById(id).ifPresent(theme -> {
+				theme.setActive(false);
+				themesRepository.save(theme);
+			});
+
+		} catch (final Exception e) {
+			log.error("Error setting to inactive: " + e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void setDefault() {
 		try {
 			final List<Themes> activeThemes = themesRepository.findActive();
-			
-			for(Themes theme : activeThemes) {
+
+			for (final Themes theme : activeThemes) {
 				theme.setActive(false);
 				themesRepository.save(theme);
 			}
-		} catch (Exception e) {
-			log.error("Error setting default theme: "+e.getMessage());
+		} catch (final Exception e) {
+			log.error("Error setting default theme: " + e.getMessage());
 		}
 	}
-	
+
 }

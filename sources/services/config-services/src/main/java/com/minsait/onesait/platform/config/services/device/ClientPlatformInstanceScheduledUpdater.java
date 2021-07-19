@@ -18,5 +18,5 @@ import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 
 public interface ClientPlatformInstanceScheduledUpdater {
 
-	public ClientPlatformInstance updateDevice(ClientPlatformInstance device);
+	ClientPlatformInstance saveDevice(ClientPlatformInstance device, String cpIdentification);
 }

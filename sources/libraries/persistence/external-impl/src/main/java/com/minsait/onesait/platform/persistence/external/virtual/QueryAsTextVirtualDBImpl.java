@@ -51,7 +51,7 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 	public String queryNativeAsJson(String ontology, String query) {
 		try {
 			Statement statement = CCJSqlParserUtil.parse(query);
-			
+
 			if (statement instanceof Select) {
 				return this.virtualRelationalOntologyOps.queryNativeAsJson(ontology, query);
 			} else if (statement instanceof Insert) {
@@ -61,7 +61,7 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 			} else if (statement instanceof Delete) {
 				return this.virtualRelationalOntologyOps.deleteNative(ontology, query, false).toString();
 			}
-		
+
 			return "";
 		} catch (Exception e) {
 			log.error("Error queryNativeAsJson:" + e.getMessage(), e);
@@ -73,6 +73,16 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		try {
 			return this.virtualRelationalOntologyOps.querySQLAsJson(ontology, query, offset);
+		} catch (Exception e) {
+			log.error("Error querySQLAsJson:" + e.getMessage());
+			throw new DBPersistenceException(e);
+		}
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		try {
+			return this.virtualRelationalOntologyOps.querySQLAsJson(ontology, query, offset, limit);
 		} catch (Exception e) {
 			log.error("Error querySQLAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);

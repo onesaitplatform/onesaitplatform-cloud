@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.BinaryFileRepository;
 import com.minsait.onesait.platform.config.repository.ReportRepository;
@@ -65,7 +64,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	public Report findById(String id) {
 		log.debug("INI. Find report by Id: {}", id);
-		return reportRepository.findOne(id);
+		return reportRepository.findById(id).orElse(null);
 	}
 
 	@Transactional
@@ -79,7 +78,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	public void disable(String id) {
 		log.debug("INI. Disable report id: {}", id);
-		final Report entity = reportRepository.findOne(id);
+		final Report entity = reportRepository.findById(id).orElse(null);
 
 		if (entity != null) {
 			log.debug("Disable > Find report {}", entity);
@@ -91,7 +90,7 @@ public class ReportServiceImpl implements ReportService {
 	@Transactional
 	@Override
 	public void delete(String id) {
-		reportRepository.delete(id);
+		reportRepository.deleteById(id);
 
 	}
 
@@ -117,7 +116,7 @@ public class ReportServiceImpl implements ReportService {
 	public Collection<BinaryFile> findResourcesForUser(String userId) {
 
 		List<Report> reports;
-		if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
+		if (userService.getUser(userId).isAdmin())
 			reports = findAllActiveReports();
 		else
 			reports = findAllActiveReportsByUserId(userId);
@@ -141,7 +140,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	@Transactional
 	public void addBinaryFileToResource(Report report, String binaryFileId) {
-		final BinaryFile file = binaryFileRepository.findById(binaryFileId);
+		final BinaryFile file = binaryFileRepository.findById(binaryFileId).orElse(null);
 		if (file != null) {
 			report.getResources().removeIf(bf -> bf.getId().equals(file.getId()));
 			report.getResources().add(file);

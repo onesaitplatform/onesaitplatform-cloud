@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
 
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.ResponseErrorHandler;
 
 import com.google.common.io.ByteStreams;
@@ -35,9 +36,10 @@ public class ClientHttpErrorHandler implements ResponseErrorHandler {
 
 			if (response.getBody() != null) {
 				final String json = new String(ByteStreams.toByteArray(response.getBody()), Charset.forName("UTF-8"));
-				throw new DBPersistenceException(json);
-			} else
+				throw new DBPersistenceException(json, new ResourceAccessException(json));
+			} else {
 				errorHandler.handleError(response);
+			}
 
 		} finally {
 			response.close();

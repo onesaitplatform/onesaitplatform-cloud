@@ -32,10 +32,6 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 
 	@Override
 
-	<S extends Api> List<S> save(Iterable<S> entities);
-
-	@Override
-
 	void flush();
 
 	@Override
@@ -87,8 +83,6 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 
 	List<Api> findByIdentificationAndApiType(String identification, ApiType apiType);
 
-	Api findById(String id);
-
 	List<Api> findByUserAndIsPublicTrue(User userId);
 
 	@Query("SELECT a FROM Api AS a WHERE (a.user.userId = :userId OR a.identification LIKE %:apiId%)")
@@ -122,5 +116,14 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 			@Param("apiId") String apiId, @Param("state") ApiStates state, @Param("userId") String userId);
 
 	List<Api> findByOntology(Ontology ontology);
+
+	@Query("SELECT a.identification FROM Api as a WHERE a.ontology.identification = :ontology ORDER BY a.identification asc")
+	List<String> findIdentificationByOntology(@Param("ontology") String ontology);
+
+	@Query("SELECT a FROM Api as a WHERE a.user.userId = :userId ORDER BY a.createdAt desc")
+	List<Api> findByUserOrderByDate(@Param("userId") String userId);
+
+	@Query("SELECT a FROM Api as a ORDER BY a.createdAt desc")
+	List<Api> findAllOrderByDate();
 
 }

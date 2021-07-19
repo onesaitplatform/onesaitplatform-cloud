@@ -21,7 +21,6 @@ import javax.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,7 +35,7 @@ public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 
 	List<FlowNode> findByflowNodeType(String flowNodeType);
 
-	@Cacheable(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", unless = "#result==null or #result.size()==0")
+	@Cacheable(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", key = "#p0.concat('-').concat(#p1.name())")
 	@Query("SELECT N FROM FlowNode N "
 			+ "WHERE N.flowNodeType = 'HTTP_NOTIFIER' AND N.ontology.identification = :ontology AND N.messageType = :messageType")
 	List<FlowNode> findNotificationByOntologyAndMessageType(@Param("ontology") String ontology,
@@ -44,19 +43,17 @@ public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
-	@Modifying
 	@Transactional
-	void delete(String id);
+	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
-	@Modifying
 	@Transactional
 	void delete(FlowNode entity);
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
-	FlowNode save(FlowNode flow);
+	<S extends FlowNode> S save(S flow);
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)

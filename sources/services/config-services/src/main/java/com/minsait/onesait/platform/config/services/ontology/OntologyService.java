@@ -23,6 +23,7 @@ import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
+import com.minsait.onesait.platform.config.model.OntologyDataAccess;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
@@ -182,5 +183,18 @@ public interface OntologyService {
 			String description);
 
 	List<Ontology> getOntologiesByOwner(String sessionUserId);
+
+	OntologyDataAccess createOrUpdateDataAccess(String ontId, String realm, String role, String user, String rule,
+			String sessionuser);
+
+	List<OntologyDataAccess> getOntologyUserDataAccesses(String id, String userId);
+
+	void deleteDataAccess(String id, String userId);
+
+	Map<String, String> getUserDataAccess(String user);
+
+	Map<String, List<String>> getResourcesFromOntology(Ontology ontology);
+
+	List<Ontology> getAllOntologiesByUser(String userId);
 
 }

@@ -128,4 +128,6 @@ public interface ApiManagerService {
 
 	public void removeAuthorizationAllVersions(String identification, String userId, User user);
 
+	public String cloneApi(String id, String identification, String userId);
+
 }

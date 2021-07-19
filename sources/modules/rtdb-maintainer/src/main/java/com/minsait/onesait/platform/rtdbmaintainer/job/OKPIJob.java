@@ -26,6 +26,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.rtdbmaintainer.audit.aop.RtdbMaintainerAuditable;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,6 +37,7 @@ public class OKPIJob {
 	@Autowired
 	private OntologyService ontologyConfigService;
 
+	@RtdbMaintainerAuditable
 	public void execute(JobExecutionContext context) throws IOException {
 
 		final String user = context.getJobDetail().getJobDataMap().getString("userId");

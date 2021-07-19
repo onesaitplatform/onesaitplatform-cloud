@@ -58,8 +58,8 @@ public class RestSwaggerReader {
 	private static final String LICENSE_URL = "http://www.apache.org/licenses/LICENSE-2.0.html";
 
 	private static final String CONTACT_NAME = "Platform Team";
-	private static final String CONTACT_URL = "https://sofia2.com";
-	private static final String CONTACT_EMAIL = "supportsofia2@indra.es";
+	private static final String CONTACT_URL = "https://dev.onesaitplatform.com";
+	private static final String CONTACT_EMAIL = "support@onesaitplatform.com";
 
 	private static final String DATA_TYPE_VALUE_SEPARATOR = "|";
 

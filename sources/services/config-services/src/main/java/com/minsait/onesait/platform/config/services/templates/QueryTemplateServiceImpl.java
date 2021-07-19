@@ -43,13 +43,13 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 
 	@Autowired
 	private QueryTemplateRepository queryTemplateRepository;
-	
+
 	final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
 	@Override
 	public PlatformQuery getTranslatedQuery(String ontology, String query) {
 
-		List<QueryTemplate> templates = new ArrayList<>(
+		final List<QueryTemplate> templates = new ArrayList<>(
 				queryTemplateRepository.findByOntologyIdentification(ontology));
 		templates.addAll(queryTemplateRepository.findByOntologyIdentificationIsNull());
 		MatchResult result = new MatchResult();
@@ -63,7 +63,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 			}
 
 			if (result.isMatch()) {
-				String newStringQuery = processQuery(template, result);
+				final String newStringQuery = processQuery(template, result);
 				return new PlatformQuery(newStringQuery, template.getType());
 			}
 		} catch (ScriptException | JSQLParserException | NoSuchMethodException e) {
@@ -84,10 +84,10 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	String replaceVariables(String queryGenerator, Map<String, VariableData> variables) {
 
 		String newQuery = queryGenerator;
-		Set<String> variableNames = variables.keySet();
-		for (String variableName : variableNames) {
-			VariableData variable = variables.get(variableName);
-			String newValue = variable.getStringValue();
+		final Set<String> variableNames = variables.keySet();
+		for (final String variableName : variableNames) {
+			final VariableData variable = variables.get(variableName);
+			final String newValue = variable.getStringValue();
 			newQuery = newQuery.replace("@" + variableName, newValue);
 		}
 
@@ -95,7 +95,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	}
 
 	String processQuery(String query, String templateName) throws ScriptException, NoSuchMethodException {
-		
+
 		try {
 			final String scriptPostprocessFunction = "function postprocess(){ " + query + " }";
 			final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
@@ -108,7 +108,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 		} catch (final ScriptException e) {
 			log.trace("Error processing query in query template: " + templateName, e);
 			throw e;
-		} catch (NoSuchMethodException e) {
+		} catch (final NoSuchMethodException e) {
 			log.trace("Error invoking processing function in query template: " + templateName, e);
 			throw e;
 		}
@@ -136,7 +136,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 
 	@Override
 	public QueryTemplate getQueryTemplateById(String id) {
-		return queryTemplateRepository.findById(id);
+		return queryTemplateRepository.findById(id).orElse(null);
 	}
 	
 	@Override
@@ -147,14 +147,16 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	@Override
 	public void updateQueryTemplate(QueryTemplate queryTemplate) {
 		if (queryTemplateExists(queryTemplate)) {
-			final QueryTemplate queryTemplateDB = queryTemplateRepository.findById(queryTemplate.getId());
-			queryTemplateDB.setName(queryTemplate.getName());
-			queryTemplateDB.setDescription(queryTemplate.getDescription());
-			queryTemplateDB.setOntology(queryTemplate.getOntology());
-			queryTemplateDB.setQueryGenerator(queryTemplate.getQueryGenerator());
-			queryTemplateDB.setQuerySelector(queryTemplate.getQuerySelector());
-			queryTemplateDB.setType(queryTemplate.getType());
-			queryTemplateRepository.save(queryTemplateDB);
+			queryTemplateRepository.findById(queryTemplate.getId()).ifPresent(queryTemplateDB -> {
+				queryTemplateDB.setName(queryTemplate.getName());
+				queryTemplateDB.setDescription(queryTemplate.getDescription());
+				queryTemplateDB.setOntology(queryTemplate.getOntology());
+				queryTemplateDB.setQueryGenerator(queryTemplate.getQueryGenerator());
+				queryTemplateDB.setQuerySelector(queryTemplate.getQuerySelector());
+				queryTemplateDB.setType(queryTemplate.getType());
+				queryTemplateRepository.save(queryTemplateDB);
+			});
+
 		} else
 			throw new QueryTemplateServiceException("Cannot update a query template that does not exist");
 	}

@@ -22,10 +22,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.controlpanel.controller.user.UserPendingValidation;
 import com.minsait.onesait.platform.controlpanel.security.twofactorauth.Verification;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.VerificationInUse;
 
 @Configuration
 public class HazelcastCacheConfig {
@@ -75,9 +77,14 @@ public class HazelcastCacheConfig {
 		return hazelcastInstance.getMap("purgatoryCache");
 	}
 
-	@Bean(name = "cachePendingResetPassword")
-	public Map<String, String> pendingResetPassword() {
-		return hazelcastInstance.getMap("cachePendingResetPassword");
+	@Bean(name = "resourcesInUseCache")
+	public Map<String, VerificationInUse> resourcesInUseCache() {
+		return hazelcastInstance.getMap("resourcesInUseCache");
+	}
+	@Bean(name = "revokedTokens")
+	public Map<String, Long> revokedTokens() {
+		final IMap<String, Long> revokedTokens = hazelcastInstance.getMap("revokedTokens");
+		return revokedTokens;
 	}
 
 }

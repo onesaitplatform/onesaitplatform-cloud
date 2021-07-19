@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.ViewerRepository;
+import com.minsait.onesait.platform.config.services.exceptions.ViewerServiceException;
 import com.minsait.onesait.platform.config.services.utils.ZipUtil;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -54,26 +56,29 @@ public class ViewerHelper {
 
 	@PostConstruct
 	public void init() {
-		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+		final Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		try {
-			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
+			final TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
 
 			cfg.setTemplateLoader(templateLoader);
 			indexViewerTemplate = cfg.getTemplate("indexViewerTemplate.ftl");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Error configuring the template loader.", e);
 		}
 	}
 
 	public File generateProject(String id) {
 
-		Viewer viewer = viewerRepo.findById(id);
+		final Optional<Viewer> opt = viewerRepo.findById(id);
+		if (!opt.isPresent())
+			throw new ViewerServiceException("Viewer not found");
+		final Viewer viewer = opt.get();
 
-		String projectDirectory = tempDir + File.separator + UUID.randomUUID();
+		final String projectDirectory = tempDir + File.separator + UUID.randomUUID();
 
-		File src = new File(projectDirectory + File.separator + viewer.getIdentification() + File.separator);
+		final File src = new File(projectDirectory + File.separator + viewer.getIdentification() + File.separator);
 		if (!src.exists()) {
-			Boolean success = src.mkdirs();
+			final Boolean success = src.mkdirs();
 			if (!success) {
 				log.error("Creating project for Viewer falied");
 				return null;
@@ -84,7 +89,7 @@ public class ViewerHelper {
 			return null;
 		}
 
-		Map<String, Object> dataMap = new HashMap<String, Object>();
+		final Map<String, Object> dataMap = new HashMap<>();
 		dataMap.put("jsCode", viewer.getJs());
 
 		PrintWriter outLogic = null;
@@ -95,7 +100,7 @@ public class ViewerHelper {
 
 			// Create index.html
 			log.info("New file is going to be generate on: " + src.getAbsolutePath());
-			File index = new File(src.getAbsolutePath());
+			final File index = new File(src.getAbsolutePath());
 			if (!index.isDirectory()) {
 				index.mkdirs();
 			}
@@ -104,7 +109,7 @@ public class ViewerHelper {
 			outLogic.println(viewer.getJs().replace("\\n", System.getProperty("line.separator")));
 			outLogic.flush();
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error generating Viewer project", e);
 		} finally {
 
@@ -112,28 +117,28 @@ public class ViewerHelper {
 				if (null != outLogic) {
 					outLogic.close();
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				log.error("Error closing File object", e);
 			}
 		}
 
-		File fileProjectDirectory = new File(projectDirectory);
+		final File fileProjectDirectory = new File(projectDirectory);
 		try {
 			zipUtil.zipDirectory(fileProjectDirectory, zipFile);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Zip file viewer failed", e);
 		}
 
 		// Removes the directory
-		this.deleteDirectory(fileProjectDirectory);
+		deleteDirectory(fileProjectDirectory);
 
 		return zipFile;
 	}
 
 	private boolean deleteDirectory(File directoryToBeDeleted) {
-		File[] allContents = directoryToBeDeleted.listFiles();
+		final File[] allContents = directoryToBeDeleted.listFiles();
 		if (allContents != null) {
-			for (File file : allContents) {
+			for (final File file : allContents) {
 				deleteDirectory(file);
 			}
 		}

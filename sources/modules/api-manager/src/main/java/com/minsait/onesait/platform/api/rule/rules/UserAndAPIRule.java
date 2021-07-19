@@ -29,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
@@ -99,16 +100,24 @@ public class UserAndAPIRule extends DefaultRuleBase {
 
 		Api api = null;
 		if (user == null && JWT_TOKEN.length() > 0 && jwtService != null) {
-			final Authentication auth = jwtService.getAuthentication(JWT_TOKEN);
-			if (auth != null) {
-				if (auth.getPrincipal() instanceof UserPrincipal) {
-					final UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
-					MultitenancyContextHolder.setTenantName(principal.getTenant());
-					MultitenancyContextHolder.setVerticalSchema(principal.getVerticalSchema());
+			try {
+				final Authentication auth = jwtService.getAuthentication(JWT_TOKEN);
+
+				if (auth != null) {
+					if (auth.getPrincipal() instanceof UserPrincipal) {
+						final UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+						MultitenancyContextHolder.setTenantName(principal.getTenant());
+						MultitenancyContextHolder.setVerticalSchema(principal.getVerticalSchema());
+					}
+					detailsService.loadUserByUsername(auth.getName());
+					SecurityContextHolder.getContext().setAuthentication(auth);
+					user = userService.getUser(auth.getName());
 				}
-				detailsService.loadUserByUsername(auth.getName());
-				SecurityContextHolder.getContext().setAuthentication(auth);
-				user = userService.getUser(auth.getName());
+			} catch (final InvalidTokenException e) {
+				log.error("Invalid token {}", JWT_TOKEN);
+				stopAllNextRules(facts, "Invalid token " + JWT_TOKEN, DefaultRuleBase.ReasonType.SECURITY,
+						HttpStatus.UNAUTHORIZED);
+				return;
 			}
 		}
 		if (user == null) {

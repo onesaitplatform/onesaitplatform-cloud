@@ -15,8 +15,11 @@
 package com.minsait.onesait.platform.quartz.services.ontologyKPI;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -26,8 +29,11 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
+import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.scheduler.SchedulerType;
@@ -135,4 +141,40 @@ public class OntologyKPIServiceImpl implements OntologyKPIService {
 			ontologyKPIRepository.save(oKPI);
 		}
 	}
+	
+	@Override
+	public void cloneOntologyKpi(Ontology ontology, Ontology clonnedOntology, User user) {
+			
+			final List<OntologyKPI> kpis = ontologyKPIRepository.findByOntology(ontology);
+			for(OntologyKPI ontologyKPIDTO : kpis) {
+				final OntologyKPI oKPI = new OntologyKPI();
+				oKPI.setCron(ontologyKPIDTO.getCron());
+				oKPI.setDateFrom(ontologyKPIDTO.getDateFrom());
+				oKPI.setDateTo(ontologyKPIDTO.getDateTo());
+				if (ontologyKPIDTO.getDateTo() != null && ontologyKPIDTO.getDateFrom() == null) {
+					final Date now = new Date();
+					if (ontologyKPIDTO.getDateTo().before(now)) {
+						final Calendar dateFrom = Calendar.getInstance();
+						dateFrom.setTime(ontologyKPIDTO.getDateTo());
+						dateFrom.add(Calendar.HOUR, -1);
+						oKPI.setDateFrom(dateFrom.getTime());
+					} else {
+						oKPI.setDateFrom(now);
+					}
+				}
+				if (ontologyKPIDTO.getDateTo() != null && ontologyKPIDTO.getDateFrom() != null
+						&& ontologyKPIDTO.getDateTo().before(ontologyKPIDTO.getDateFrom())) {
+					oKPI.setDateFrom(null);
+					oKPI.setDateTo(null);
+				}
+				oKPI.setActive(Boolean.FALSE);
+				oKPI.setOntology(clonnedOntology);
+				oKPI.setQuery(ontologyKPIDTO.getQuery());
+				oKPI.setUser(user);
+				oKPI.setPostProcess(ontologyKPIDTO.getPostProcess());
+				ontologyKPIRepository.save(oKPI);
+				scheduleKpi(oKPI);
+			}
+				
+		}
 }

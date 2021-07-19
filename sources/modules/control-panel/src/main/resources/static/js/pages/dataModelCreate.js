@@ -11,6 +11,7 @@ var dataModelCreateController  = function(){
 	
 	// CONTROLLER PRIVATE FUNCTIONS
 	
+
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
         // for more info visit the official plugin documentation: 
@@ -81,7 +82,6 @@ var dataModelCreateController  = function(){
 		cleanFields('datamodel_create_form');
 	});
 
-	
 	
 	// REDIRECT URL
 	var navigateUrl = function(url){

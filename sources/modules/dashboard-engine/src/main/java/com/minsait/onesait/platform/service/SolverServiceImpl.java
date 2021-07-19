@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.service;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,13 +209,19 @@ public class SolverServiceImpl implements SolverService {
 		boolean externalValidation = true;
 		if (validationService != null) {
 			try {
+				log.info("dashboard engine plugin active ");
 				final com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage message = new com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage();
+				// map to message
 				message.setDashboard(im.getDashboard());
 				message.setDs(im.getDs());
-				message.setFilter(im.getFilter().stream()
-						.map(f -> new com.minsait.onesait.platform.security.dashboard.engine.dto.FilterStt(f.getField(),
-								f.getOp(), f.getExp()))
-						.collect(Collectors.toList()));
+				if (im.getFilter() == null) {
+					message.setFilter(new ArrayList<>());
+				} else {
+					message.setFilter(im.getFilter().stream().map(
+							f -> new com.minsait.onesait.platform.security.dashboard.engine.dto.FilterStt(f.getField(),
+									f.getOp(), f.getExp()))
+							.collect(Collectors.toList()));
+				}
 				message.setGroup(im.getGroup());
 				message.setLimit(im.getLimit());
 				message.setOffset(im.getOffset());
@@ -257,9 +264,70 @@ public class SolverServiceImpl implements SolverService {
 				message.setRol(user.getRole().getName());
 
 				externalValidation = validationService.validate(message);
+
+				log.info("dashboard engine externalValidation ");
+				// output map
+
+				im.setDashboard(message.getDashboard());
+				im.setDs(message.getDs());
+				if (message.getFilter() == null) {
+					im.setFilter(new ArrayList<>());
+				} else {
+					im.setFilter(message.getFilter().stream()
+							.map(f -> new com.minsait.onesait.platform.dto.socket.querystt.FilterStt(f.getField(),
+									f.getOp(), f.getExp()))
+							.collect(Collectors.toList()));
+				}
+
+				im.setGroup(message.getGroup());
+				im.setLimit(message.getLimit());
+				im.setOffset(message.getOffset());
+
+				if (message.getParam() != null && message.getParam().size() > 0) {
+					final List<com.minsait.onesait.platform.dto.socket.querystt.ParamStt> param = new ArrayList<>();
+					for (final Iterator iterator = message.getParam().iterator(); iterator.hasNext();) {
+						final com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt pastt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt) iterator
+								.next();
+						param.add(new com.minsait.onesait.platform.dto.socket.querystt.ParamStt(pastt.getField(),
+								pastt.getValue()));
+					}
+					im.setParam(param);
+				}
+
+				if (message.getProject() != null && message.getProject().size() > 0) {
+					final List<com.minsait.onesait.platform.dto.socket.querystt.ProjectStt> project = new ArrayList<>();
+					for (final Iterator iterator = message.getProject().iterator(); iterator.hasNext();) {
+						final com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt projectStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt) iterator
+								.next();
+						project.add(new com.minsait.onesait.platform.dto.socket.querystt.ProjectStt(
+								projectStt.getField(), projectStt.getOp(), null, projectStt.getAlias()));
+					}
+					im.setProject(project);
+				}
+
+				if (message.getSort() != null && message.getSort().size() > 0) {
+					final List<com.minsait.onesait.platform.dto.socket.querystt.OrderByStt> sort = new ArrayList<>();
+					for (final Iterator iterator = message.getSort().iterator(); iterator.hasNext();) {
+						final com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt orderByStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt) iterator
+								.next();
+						sort.add(new com.minsait.onesait.platform.dto.socket.querystt.OrderByStt(orderByStt.getField(),
+								orderByStt.isAsc()));
+					}
+
+					im.setSort(sort);
+				}
+
+				gd.setQuery(message.getQuery());
+
+				/*
+				 * if (message.getOntology() != null) { gd.setOntology(
+				 * ontologyService.getOntologyByIdentification(message.getOntology(),
+				 * user.getUserId())); } log.info("message.getOntology() ");
+				 */
+
 			} catch (final Exception e) {
 				externalValidation = false;
-				log.error("external security plugin error", e.getMessage());
+				log.error("external security plugin error", e);
 			}
 		}
 		return externalValidation;
@@ -307,7 +375,10 @@ public class SolverServiceImpl implements SolverService {
 		final AccessType access = dashboardCache.getAccess();
 
 		if (access == AccessType.NOCHECKED) {
-			final Dashboard d = dashboardRepository.findById(dashboardId);
+			final Optional<Dashboard> opt = dashboardRepository.findById(dashboardId);
+			if (!opt.isPresent())
+				return false;
+			final Dashboard d = opt.get();
 			if (d.isPublic() || d.getUser().getUserId().equals(utils.getUserId())) {
 				dashboardCache.setAccess(AccessType.ALLOW);
 				return true;

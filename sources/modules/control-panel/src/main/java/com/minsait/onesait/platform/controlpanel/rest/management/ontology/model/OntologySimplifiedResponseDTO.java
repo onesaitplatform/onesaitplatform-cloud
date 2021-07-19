@@ -94,7 +94,7 @@ public class OntologySimplifiedResponseDTO {
 		this.isPublic = ontology.isPublic();
 		this.metainf = ontology.getMetainf();
 		this.ontologyClass = ontology.getOntologyClass();
-		this.topic = ontology.getTopic();
+		//this.topic = ontology.getTopic();
 		this.dataModel = DataModelDTO.fromDataModel(ontology.getDataModel());
 		this.authorizations = new ArrayList<>();
 		this.msg = "OK";

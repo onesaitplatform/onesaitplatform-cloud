@@ -47,6 +47,8 @@ public interface UserService {
 
 	User getUser(String userId);
 
+	User getUserNoCache(String userId);
+
 	List<Role> getAllRoles();
 
 	List<UserToken> getUserToken(User userId);
@@ -57,6 +59,8 @@ public interface UserService {
 
 	List<UserAmplified> getAllUsersByCriteriaList(String userId, String fullName, String email, String roleType,
 			Boolean active);
+
+	List<UserAmplified> getAllUsersActiveByUsernameLike(String usernameLike);
 
 	List<User> getAllUsersByCriteria(String userId, String fullName, String email, String roleType, Boolean active);
 
@@ -105,5 +109,9 @@ public interface UserService {
 	public void registerRoleAdministrator(User user);
 
 	public boolean deactivateUser(String userId);
+
+	void evictFromCache(User user);
+
+	long countUsers();
 
 }

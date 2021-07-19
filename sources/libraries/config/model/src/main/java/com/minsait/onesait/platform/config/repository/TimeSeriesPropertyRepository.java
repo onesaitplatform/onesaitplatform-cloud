@@ -24,12 +24,11 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 
 public interface TimeSeriesPropertyRepository extends JpaRepository<OntologyTimeSeries, String> {
 
-	OntologyTimeSeriesProperty findById(String id);
-
 	List<OntologyTimeSeriesProperty> findByOntology(Ontology ontology);
 
 	void deleteByOntology(Ontology ontology);
 
+	@Override
 	void deleteById(String id);
 
 }

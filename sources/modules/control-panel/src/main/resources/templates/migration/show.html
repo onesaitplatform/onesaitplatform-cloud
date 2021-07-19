@@ -25,15 +25,17 @@
 
         
         <!-- WEB FONTs -->
-        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
-        <script>
+		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
+		<!-- <script src="/controlpanel/static/vendor/google/1.6.16/webfont.js"></script>
+		<script>
           WebFont.load({
             google: {"families":["Poppins:300,400,500,600,700","Open Sans:300,400,500,600,700"]},
             active: function() {
                 sessionStorage.fonts = true;
             }
           });
-        </script>
+		</script> -->
 
         <!-- STYLE SHEETS -->
         <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -127,7 +129,7 @@
                                             <div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->                                                              
                                             </div>
                                             <div class="col-md-12">                                     
-                                                <form th:action="@{/migration/loadimport}" role="form" id="import_form_file" th:object="${importData}" method="post" class="form" enctype="multipart/form-data">                                                    
+                                                <form th:action="@{/migration/loadimport}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" role="form" id="import_form_file" th:object="${importData}" method="post" class="form" enctype="multipart/form-data">                                                    
                                                    
                                                     <div id="contentForm" th:style="${(classNames == null OR classNames.size() == 0) AND errors == null} ? 'display:block' : 'display:none'" class="margin-bottom-10">
 									                    <input id="content" name="content" class="btn btn-default" type="file" style="width:100%" th:field="*{content}" onchange="loadContentId();"/>
@@ -211,9 +213,8 @@
 												<div class="input-group">
 												<label class="" th:text="#{migration.option} + ':'">Select an option</label>
 													<div class="col-md-12 col-sm-6 col-xs-12">
-													
 														<div id="options" >
-															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<div class="col-md-2 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
 																<input type="radio" id="all"  name="export" value="all"/><p class="bold" style="display:inline;  padding-left: 10px" th:attr="data-content=#{migration.export.info}" th:text="#{migration.export.all}">Export all</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -221,7 +222,7 @@
 																	<span th:text="#{migration.export.info.all}"> info.</span>
 																</div>	
 															</div>
-															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<div class="col-md-2 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
 																<input type="radio" id="user"  name="export" value="user" th:attr="data-content=#{migration.export.info}"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.user}">Export by user</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -235,7 +236,7 @@
 								                  					</select>
 																</div>
 															</div>
-															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<div class="col-md-2 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
 																<input type="radio" id="project"  name="export" value="project"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.project}">Export project</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -249,7 +250,7 @@
 								                  					</select>
 																</div>
 															</div>
-															<div class="col-md-3 col-sm-6 col-xs-12">
+															<div class="col-md-2 col-sm-6 col-xs-12">
 																<input type="radio" id="userAux"  name="export" value="userAux"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.user.option}">Export user</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -263,20 +264,20 @@
 								                  					</select>
 																</div>
 															</div>
-															<div class="col-md-3 col-sm-6 col-xs-12">
+															<div class="col-md-4 col-sm-6 col-xs-12">
 																<input type="radio" id="mongo"  name="export" value="mongo"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.mongo}">Export Mongo Data</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
 																	<i class="fa fa-info-circle"></i>
 																	<span th:text="#{migration.export.mongo.info}"> info.</span>
 																</div>
-																<div class="col-md-12">
+																<div class="col-md-6">
 								                  					<label th:text="#{migration.export.mongo.ontology}" > Select ontologies </label>
 								                  					<select  id="ontologies" class="form-control" name="ontologies" disabled="disabled" multiple="multiple">
 					                                					<option th:each="ontology:${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}"></option>
 								                  					</select>
 																</div>
-																<div class="col-md-12">
+																<div class="col-md-6">
 																	<div class="form-group">
 																		<label class="" th:text="#{migration.export.mongo.user} + ':'">User</label><span class="required"> *</span>
 																		<input th:tabindex="1" disabled="disabled" id="userMongo" name="userMongo" type="text"   th:required="true" maxlength="50" class="form-control "  th:placeholder="#{migration.export.mongo.user}"/>
@@ -296,16 +297,15 @@
 	                                                <button type="button" class="btn grey-mint btn-outline sbold"
 			                                            onclick="exportData()">
 			                                        <i class="flaticon-share"></i> 
-			                                        <span th:text="#{migration.exportData}">Export Data</span>
+			                                        <span th:text="#{migration.exportData}">Start Exporting...</span>
 			                                        </button>   
 												</div>
 											</div>
-										
-                                            <div class="col-md-1 col-xs-12">                                                                                    
+											<div class="col-md-1 col-xs-12">                                                                                    
 		                                        <button type="button" class="btn grey-mint btn-outline sbold"
-		                                            onclick="location.href='../migration/exportSchema'">
+		                                            onclick="DownloadExport()">
 		                                        <i class="flaticon-share"></i>
-		                                        <span th:text="#{migration.exportSchema}">Export Schema</span>
+		                                        <span th:text="#{migration.download.export.button}">Download File</span>
 		                                        </button>                                                                              
                                             </div>
                                         </div>
@@ -313,10 +313,13 @@
                                     <div class="tab-pane" id="tab_3">
                                     <!-- compare schema -->
                                         <div class="row">
-                                            <div class="col-md-12 alert-zone">                                                            
-                                            </div>     
+                                       		<div class="alert alert-info alert-dismissable">
+												<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+												<i class="fa fa-info-circle"></i>
+												<span th:text="#{migration.schema.info}"> info.</span>
+											</div>	
                                             <div th:style="*{diffs == null} ? 'display:block' : 'display:none'" class="col-md-12">                                     
-                                                <form th:action="@{/migration/compareSchema}" role="form" id="compare_form" th:object="${otherSchema}" method="post" class="form" enctype="multipart/form-data">
+                                                <form th:action="@{/migration/compareSchema}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" role="form" id="compare_form" th:object="${otherSchema}" method="post" class="form" enctype="multipart/form-data">
                                                     <div id="contentFormSchema" th:style="*{fileName== null OR fileName== ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
                                                         <input id="contentSchema" name="contentSchema" class="btn btn-default" type="file" style="width:100%" th:field="*{content}" onchange="loadContentIdSchema();"/>
                                                     </div>
@@ -325,6 +328,13 @@
                                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>                                               
                                             </div>
                                          
+                                          	<div class="col-md-1 col-xs-12">                                                                                    
+		                                        <button type="button" class="btn grey-mint btn-outline sbold"
+		                                            onclick="location.href='../migration/exportSchema'">
+		                                        <i class="flaticon-share"></i>
+		                                        <span th:text="#{migration.exportSchema}">Export Schema</span>
+		                                        </button>                                                                              
+                                            </div> 
                                             <div th:style="*{diffs != null} ? 'display:block' : 'display:none'" class="col-md-12 col-xs-12">   
                                                  <button id="returnShowFromSchema" type="button" class="btn grey-mint btn-outline sbold" name="go" value="show" th:onclick="'javascript:navigateUrl(\'' + @{|/migration/show|} + '\');'"><i class="la la-check"></i> <span th:text="#{migration.return}">Return</span></button>                                            
                                                  <div>
@@ -350,32 +360,32 @@
     <footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
     
     <!-- CORE JS CONTROLLERS -->
-    <script th:src="@{/static/js/app.js}"/>
-    <script th:src="@{/static/js/layout.js}"/>
+    <script th:src="@{/static/js/app.js}"></script>
+    <script th:src="@{/static/js/layout.js}"></script>
 
     <!-- PLUGINS -->
-    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-    <script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>  
-    <script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
-    <script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
-    <script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
-    <script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" />
-    <script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
-    <script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" />
-    <script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" />
+    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>  
+    <script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+    <script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
     
     
-    <script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
-    <script th:src="@{/static/vendor/ace/mode-json.js}"/>
-    <script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+    <script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+    <script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+    <script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
     
     <!-- BLOCKUI -->
-	<script th:src="@{/static/vendor/blockUI.js}"/>
+	<script th:src="@{/static/vendor/blockUI.js}"></script>
     
     <!-- BEAUTIFIER -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-css.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-html.js"></script>
+    <script src="/controlpanel/static/vendor/beautify/beautify.js"></script>
+    <script src="/controlpanel/static/vendor/beautify/beautify-css.js"></script>
+    <script src="/controlpanel/static/vendor/beautify/beautify-html.js"></script>
     
     <!-- TEMPLATE CONTROLLER  -->   
         
@@ -414,8 +424,142 @@
 			exportt(url, type);
 		}else if($('#mongo').is(":checked")){
 			exportMongo();
+		}else{
+	    	$.confirm({
+				icon: 'fas fa-chart-pie',
+				title: "Exporting Data...",
+				theme: 'light',
+				columnClass: 'medium',
+				content:[[#{migration.export.select.option.error}]],
+				draggable: true,
+				dragWindowGap: 100,
+				backgroundDismiss: true,
+				closeIcon: true,
+				buttons: {
+					Ok: {
+						text: "Ok",
+						btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+						action: function(){ 
+							App.unblockUI("div#migrationPortlet");
+						}											
+					}
+				}
+			});
 		}
     };
+    
+    function showModal(){
+    	dialogContent = [[#{migration.export.progress}]];
+			
+    	$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: "Exporting Data...",
+			theme: 'light',
+			columnClass: 'medium',
+			content:dialogContent,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 
+					}											
+				}
+			}
+		});
+    }
+    
+    function DownloadExport(){
+    	var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		
+		$.ajax({
+            type: "get",
+            async: "false",
+            url: "/controlpanel/migration/checkDownloadExport",
+            headers: {
+				[csrf_header]: csrf_value
+		    },
+            success: function (data) {
+            	App.unblockUI("div#migrationPortlet");
+            	if(data == "true"){
+            		window.location.href = "/controlpanel/migration/downloadExport";
+            	}else if(data == "false"){
+            		$.confirm({
+        				icon: 'fas fa-chart-pie',
+        				title: "Exporting Data...",
+        				theme: 'light',
+        				columnClass: 'medium',
+        				content:[[#{migration.download.export.nofinished}]],
+        				draggable: true,
+        				dragWindowGap: 100,
+        				backgroundDismiss: true,
+        				closeIcon: true,
+        				buttons: {
+        					Ok: {
+        						text: "Ok",
+        						btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+        						action: function(){ 
+        							App.unblockUI("div#migrationPortlet");
+        						}											
+        					}
+        				}
+        			});
+            	}else if(data == "null"){
+            		$.confirm({
+        				icon: 'fas fa-chart-pie',
+        				title: "Exporting Data...",
+        				theme: 'light',
+        				columnClass: 'medium',
+        				content:[[#{migration.export.donwload.error}]],
+        				draggable: true,
+        				dragWindowGap: 100,
+        				backgroundDismiss: true,
+        				closeIcon: true,
+        				buttons: {
+        					Ok: {
+        						text: "Ok",
+        						btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+        						action: function(){ 
+        							App.unblockUI("div#migrationPortlet");
+        						}											
+        					}
+        				}
+        			});
+            	}else if(data == "error"){
+            		$.confirm({
+        				icon: 'fas fa-chart-pie',
+        				title: "Exporting Data...",
+        				theme: 'light',
+        				columnClass: 'medium',
+        				content:[[#{migration.export.error}]],
+        				draggable: true,
+        				dragWindowGap: 100,
+        				backgroundDismiss: true,
+        				closeIcon: true,
+        				buttons: {
+        					Ok: {
+        						text: "Ok",
+        						btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+        						action: function(){ 
+        							App.unblockUI("div#migrationPortlet");
+        						}											
+        					}
+        				}
+        			});
+            	}
+            },
+            error: function(xhr){
+            	App.unblockUI("div#migrationPortlet");
+            	$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: xhr.responseText});
+    			return false;
+            }
+        });
+		
+    }
     
     function exportt(url, type){
     	var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -424,18 +568,15 @@
             type: type,
             url: url,
             headers: {
-				[csrf_header]: csrf_value
+				[csrf_header]: csrf_value,
+				"Authorization": "Bearer " + [[${session.oauthToken}]]
 		    },
             success: function () {
-            	var a = document.createElement('A');
-		    	a.href = url;
-		    	a.download = url;
-		    	document.body.appendChild(a);
-		    	a.click();
-		    	document.body.removeChild(a);
-		    	App.unblockUI("div#migrationPortlet");	
+            	App.unblockUI("div#migrationPortlet");
+            	showModal();
             },
             error: function(xhr){
+            	App.unblockUI("div#migrationPortlet");
             	$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: xhr.responseText});
     			return false;
             }

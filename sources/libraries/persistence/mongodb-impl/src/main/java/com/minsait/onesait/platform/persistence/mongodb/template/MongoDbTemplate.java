@@ -34,6 +34,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.model.WriteModel;
 
 /**
  * This component provides a lightweight integration with the MongoDB java
@@ -54,8 +55,8 @@ public interface MongoDbTemplate extends Serializable {
 	 * @param pipeline
 	 * @return
 	 */
-	MongoIterable<BasicDBObject> aggregate(String database, String collection, List<BasicDBObject> pipeline, boolean allowDiskUse)
-			throws PersistenceException;
+	MongoIterable<BasicDBObject> aggregate(String database, String collection, List<BasicDBObject> pipeline,
+			boolean allowDiskUse) throws PersistenceException;
 
 	/**
 	 * Runs a db.<collection>.distinct(<key>, <query>) command in the given
@@ -364,7 +365,8 @@ public interface MongoDbTemplate extends Serializable {
 	/**
 	 * Gets active operations that have been running more time than provided
 	 *
-	 * @param secsRunning gte
+	 * @param secsRunning
+	 *            gte
 	 */
 	Document getCurrentOps(int secsRunning);
 
@@ -375,4 +377,8 @@ public interface MongoDbTemplate extends Serializable {
 	 * @return
 	 */
 	Document killOp(long opID);
+
+	List<BulkWriteResult> bulkUpsert(String rtdbSchema, String collection, List<WriteModel<BasicDBObject>> bulkWrites,
+			boolean includeIds, boolean ordered, List<String> instances);
+
 }

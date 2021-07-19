@@ -29,11 +29,14 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 
-import com.minsait.onesait.platform.config.model.AppRoleList;
+import com.minsait.onesait.platform.config.model.AppRoleListOauth;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ExtendedTokenEnhancer implements TokenEnhancer {
 
 	@Value("${security.jwt.client-id}")
@@ -52,7 +55,8 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 
 	@Override
 	public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-
+		final long start = System.currentTimeMillis();
+		log.debug("Starting extended token enhancer");
 		final Map<String, Object> additionalInfo = new HashMap<>();
 
 		additionalInfo.put("name", authentication.getName());
@@ -60,6 +64,7 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 		additionalInfo.put("parameters", authentication.getOAuth2Request().getRequestParameters());
 		additionalInfo.put("clientId", authentication.getOAuth2Request().getClientId());
 		additionalInfo.put("grantType", authentication.getOAuth2Request().getGrantType());
+		log.debug("Extended token enhancer before first query {}ms", System.currentTimeMillis() - start);
 		if (multitenancyEnabled) {
 			multitenancyService.findUser(authentication.getName()).ifPresent(u -> {
 				additionalInfo.put(VERTICAL,
@@ -68,24 +73,29 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 				additionalInfo.put("verticals",
 						u.getTenant().getVerticals().stream().map(Vertical::getName).collect(Collectors.toList()));
 			});
+
 		}
 		final String clientId = authentication.getOAuth2Request().getClientId();
 		if (clientId.equals(defaultClientId)) {
 			additionalInfo.put("authorities", getPlatformAuthorities(authentication));
 		} else {
+			log.debug("Extended token enhancer before queries {}ms", System.currentTimeMillis() - start);
+			final long now = System.currentTimeMillis();
 			final String userId = authentication.getUserAuthentication().getName();
-			final List<AppRoleList> roles = tokenUtil.getAppRoles(userId, clientId);
-
-			additionalInfo.put("apps", tokenUtil.getChildRoles(roles));
+			final List<AppRoleListOauth> roles = tokenUtil.getAppRoles(userId, clientId);
+			Map<String, Set<String>> childRoles = tokenUtil.getChildRoles(roles, userId);
+			childRoles = tokenUtil.addChildRolesNotAssociated(userId, clientId, childRoles);
+			additionalInfo.put("apps", childRoles);
 			additionalInfo.put("authorities", getAuthorities(roles));
+			log.debug("Extended token enhancer after queries {}ms", System.currentTimeMillis() - now);
 		}
 		((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-
+		log.debug("End token enhancer chain, time: {}", System.currentTimeMillis() - start);
 		return accessToken;
 	}
 
-	private Set<String> getAuthorities(List<AppRoleList> roles) {
-		return roles.stream().map(AppRoleList::getName).collect(Collectors.toSet());
+	private Set<String> getAuthorities(List<AppRoleListOauth> roles) {
+		return roles.stream().map(AppRoleListOauth::getName).collect(Collectors.toSet());
 	}
 
 	private List<String> getPlatformAuthorities(OAuth2Authentication authentication) {

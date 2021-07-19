@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.controlpanel.rest.management.mail;
 
 import static com.minsait.onesait.platform.controlpanel.rest.management.mail.MailManagementUrl.OP_MAIL;
 
+import java.util.Optional;
+
 import javax.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.config.model.SupportRequest;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.SupportRepository;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -52,7 +55,7 @@ public class MailManagementController {
 
 	@Value("${onesaitplatform.mailService.mailSupport}")
 	private String suportRequest;
-	
+
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
 	private static final String STATUS_FAIL = "{\"status\" : \"fail\"}";
 	private static final String SUPPORT_REQUEST = "Support Request";
@@ -71,7 +74,7 @@ public class MailManagementController {
 	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
 	@PostMapping(OP_MAIL + "/sendSupport")
 	public ResponseEntity<String> sendSupport(@RequestParam("message") String message) {
-		User user = userService.getUserByIdentification(utils.getUserId());
+		final User user = userService.getUserByIdentification(utils.getUserId());
 		final String supportRequest;
 		supportRequest = "User: " + user.getUserId() + "\nEmail: " + user.getEmail() + "\nText:\n    " + message;
 
@@ -90,10 +93,9 @@ public class MailManagementController {
 	public ResponseEntity<String> sendSupportHtml(@RequestParam("htmlMessage") String htmlMessage,
 			String attachmentName, @RequestBody String attachment) {
 		try {
-		    String[] to = new String[1];
-            to[0] = suportRequest;
-			mailService.sendHtmlMailWithFile(to, SUPPORT_REQUEST, htmlMessage, attachmentName, attachment,
-					true);
+			final String[] to = new String[1];
+			to[0] = suportRequest;
+			mailService.sendHtmlMailWithFile(to, SUPPORT_REQUEST, htmlMessage, attachmentName, attachment, true);
 		} catch (final RuntimeException | MessagingException e) {
 			log.error(ERROR_REQUEST + e.getMessage());
 			return new ResponseEntity<>(STATUS_FAIL, HttpStatus.BAD_REQUEST);
@@ -121,7 +123,7 @@ public class MailManagementController {
 	@PostMapping(OP_MAIL + "/sendMultiple")
 	public ResponseEntity<String> send(@RequestParam("to") String[] to, @RequestParam("message") String message,
 			String subject) {
-		User user = userService.getUserByIdentification(utils.getUserId());
+		final User user = userService.getUserByIdentification(utils.getUserId());
 
 		try {
 			mailService.sendMail(to, subject,
@@ -132,15 +134,15 @@ public class MailManagementController {
 		}
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
-	
+
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-    @ApiOperation(value = "Send mail")
-    @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
-    @PostMapping(OP_MAIL + "/send")
-    public ResponseEntity<String> sendToOne(@RequestParam("to") String to, @RequestParam("message") String message,
-            String subject) {	    
-	    return send(toArray(to), message, subject);
-    }
+	@ApiOperation(value = "Send mail")
+	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@PostMapping(OP_MAIL + "/send")
+	public ResponseEntity<String> sendToOne(@RequestParam("to") String to, @RequestParam("message") String message,
+			String subject) {
+		return send(toArray(to), message, subject);
+	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send html mail")
@@ -157,16 +159,16 @@ public class MailManagementController {
 		}
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
-	
+
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-    @ApiOperation(value = "Send html mail")
-    @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
-    @PostMapping(OP_MAIL + "/sendHtml")
-    public ResponseEntity<String> sendHtmlToOne(@RequestParam("to") String to,
-            @RequestParam("htmlMessage") String htmlMessage, String attachmentName, @RequestBody String attachment,
-            String subject) {
-        return sendHtml(toArray(to), htmlMessage, attachmentName, attachment, subject);
-    }
+	@ApiOperation(value = "Send html mail")
+	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@PostMapping(OP_MAIL + "/sendHtml")
+	public ResponseEntity<String> sendHtmlToOne(@RequestParam("to") String to,
+			@RequestParam("htmlMessage") String htmlMessage, String attachmentName, @RequestBody String attachment,
+			String subject) {
+		return sendHtml(toArray(to), htmlMessage, attachmentName, attachment, subject);
+	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send mail with file")
@@ -183,16 +185,16 @@ public class MailManagementController {
 		}
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
-	
+
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-    @ApiOperation(value = "Send mail with file")
-    @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
-    @PostMapping(OP_MAIL + "/sendMailWithFile")
-    public ResponseEntity<String> sendMailWithFileToOne(@RequestParam("to") String to,
-            @RequestParam("Message") String message, String attachmentName, @RequestBody String attachment,
-            String subject) {
-        return sendMailWithFile(toArray(to), message, attachmentName, attachment, subject);
-    }
+	@ApiOperation(value = "Send mail with file")
+	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@PostMapping(OP_MAIL + "/sendMailWithFile")
+	public ResponseEntity<String> sendMailWithFileToOne(@RequestParam("to") String to,
+			@RequestParam("Message") String message, String attachmentName, @RequestBody String attachment,
+			String subject) {
+		return sendMailWithFile(toArray(to), message, attachmentName, attachment, subject);
+	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@ApiOperation(value = "Send mail with templates")
@@ -209,16 +211,16 @@ public class MailManagementController {
 		}
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
-	
+
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-    @ApiOperation(value = "Send mail with templates")
-    @ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
-    @PostMapping(OP_MAIL + "/sendTemplates")
-    public ResponseEntity<String> sendTemplatesToOne(@RequestParam("to") String to,
-            @RequestParam("template") SimpleMailMessage template, @RequestParam("templateArgs") String templateArgs,
-            String subject) {
-        return sendTemplates(toArray(to), template, templateArgs, subject);
-    }
+	@ApiOperation(value = "Send mail with templates")
+	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@PostMapping(OP_MAIL + "/sendTemplates")
+	public ResponseEntity<String> sendTemplatesToOne(@RequestParam("to") String to,
+			@RequestParam("template") SimpleMailMessage template, @RequestParam("templateArgs") String templateArgs,
+			String subject) {
+		return sendTemplates(toArray(to), template, templateArgs, subject);
+	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@ApiOperation(value = "Send support Request mail")
@@ -226,9 +228,12 @@ public class MailManagementController {
 	public ResponseEntity<String> sendEmail(@RequestParam("supportRequestId") String supportRequestId,
 			@RequestParam("message") String message) {
 
-		User user = supportRepository.findById(supportRequestId).getUser();
+		final Optional<SupportRequest> opt = supportRepository.findById(supportRequestId);
+		if (!opt.isPresent())
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		final User user = opt.get().getUser();
 
-		try {		    
+		try {
 			mailService.sendMail(user.getEmail(), SUPPORT_REQUEST, message);
 			log.info("Send email to: " + user.getEmail() + "with the message" + message);
 		} catch (final RuntimeException e) {
@@ -238,10 +243,10 @@ public class MailManagementController {
 
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
-	
+
 	private String[] toArray(String address) {
-	    String[] array = new String[1];
-	    array[0] = address;
-	    return array;
+		final String[] array = new String[1];
+		array[0] = address;
+		return array;
 	}
 }

@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.controlpanel.security;
 
 import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN;
 import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN_PARAMS;
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.INVALIDATE_SESSION_FORCED;
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.ROLE_ANONYMOUS;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -52,6 +54,7 @@ import com.minsait.onesait.platform.controlpanel.security.twofactorauth.TwoFacto
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import jline.internal.Log;
 import lombok.extern.slf4j.Slf4j;
@@ -60,12 +63,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Securityhandler implements AuthenticationSuccessHandler {
 
+	private static final String OAUTH_TOKEN = "oauthToken";
 	private static final String URI_CONTROLPANEL = "/controlpanel";
 	private static final String URI_MAIN = "/main";
 	private static final String URI_VERIFY = "/verify";
 	private static final String URI_TENANT_PROMOTE = "/promote";
 
-	@Autowired
+	@Autowired(required = false)
 	private LoginManagementController controller;
 
 	@Autowired
@@ -83,37 +87,65 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 	private IntegrationResourcesService integrationResourcesService;
 	@Autowired
 	private MultitenancyService multitenancyService;
+	@Autowired(required = false)
+	private PlugableOauthAuthenticator plugableOauthAuthenticator;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException {
 
 		final HttpSession session = request.getSession();
-		multitenancyService.resetFailedAttemp(authentication.getName());
+
 		if (session != null) {
-			loadMenuAndUrlsToSession(request);
-			generateTokenOauth2ForControlPanel(request, authentication);
-			if (authentication.getAuthorities().toArray()[0].toString()
-					.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
-				twoFactorAuthService.newVerificationRequest(authentication.getName());
-				response.sendRedirect(request.getContextPath() + URI_VERIFY);
-			} else if (authentication.getAuthorities().toArray()[0].toString()
-					.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
-				response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
+			if (plugableOauthAuthenticator != null) {
+				log.info("Post processing plugin authentication");
+				plugableOauthAuthenticator.postProcessAuthentication(authentication);
+				final Authentication newAuthentication = SecurityContextHolder.getContext().getAuthentication();
+				if (newAuthentication != null && !newAuthentication.getAuthorities().isEmpty()
+						&& !newAuthentication.getAuthorities().toArray()[0].toString().equals(ROLE_ANONYMOUS)) {
+					request.getSession().setAttribute(OAUTH_TOKEN,
+							plugableOauthAuthenticator.generateTokenForControlpanel(authentication));
+					authentication = newAuthentication;
+				}
+
 			}
-			final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
-			if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
-				// we do not forget to clean this attribute from session
-				session.removeAttribute(BLOCK_PRIOR_LOGIN);
-				// then we redirect
-				response.sendRedirect(request.getContextPath() + redirectUrl.replace(URI_CONTROLPANEL, "")
-						.concat(getEncodedParametersFromPreviousRequest(session)));
+			if (authentication.getAuthorities().isEmpty()
+					|| authentication.getAuthorities().toArray()[0].toString().equals(ROLE_ANONYMOUS)) {
+				SecurityContextHolder.getContext().setAuthentication(null);
+				log.info("ANONYMOUS USER, invalidating session");
+				request.setAttribute(INVALIDATE_SESSION_FORCED, true);
+				request.getSession().invalidate();
 			} else {
-				response.sendRedirect(request.getContextPath() + URI_MAIN);
+				loadMenuAndUrlsToSession(request);
+				generateTokenOauth2ForControlPanel(request, authentication);
+				if (authentication.getAuthorities().toArray()[0].toString()
+						.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
+					twoFactorAuthService.newVerificationRequest(authentication.getName());
+					response.sendRedirect(request.getContextPath() + URI_VERIFY);
+					return;
+				} else if (authentication.getAuthorities().toArray()[0].toString()
+						.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
+					response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
+
+				} else {
+					final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
+					if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
+						// we do not forget to clean this attribute from session
+						session.removeAttribute(BLOCK_PRIOR_LOGIN);
+						// then we redirect
+						response.sendRedirect(request.getContextPath() + redirectUrl.replace(URI_CONTROLPANEL, "")
+						.concat(getEncodedParametersFromPreviousRequest(session)));
+
+					} else {
+						response.sendRedirect(request.getContextPath() + URI_MAIN);
+
+					}
+				}
 			}
 
 		} else {
 			response.sendRedirect(request.getContextPath() + URI_MAIN);
+
 		}
 
 	}
@@ -121,19 +153,24 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 	private void generateTokenOauth2ForControlPanel(HttpServletRequest request, Authentication authentication) {
 		final String password = request.getParameter("password");
 		final String username = request.getParameter("username");
-		if (!StringUtils.isEmpty(password) && !StringUtils.isEmpty(username)) {
+		if (!StringUtils.isEmpty(password) && !StringUtils.isEmpty(username) && controller != null) {
 			final RequestLogin oauthRequest = new RequestLogin();
 			oauthRequest.setPassword(password);
 			oauthRequest.setUsername(username);
 			try {
-				request.getSession().setAttribute("oauthToken",
+				request.getSession().setAttribute(OAUTH_TOKEN,
 						controller.postLoginOauth2(oauthRequest).getBody().getValue());
 			} catch (final Exception e) {
 
 				Log.error(e.getMessage());
 			}
 		} else if (authentication != null && authentication.isAuthenticated()) {
-			request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
+			if (plugableOauthAuthenticator != null) {
+				//NO-OP
+			} else if (controller != null) {
+				request.getSession().setAttribute(OAUTH_TOKEN,
+						controller.postLoginOauthNopass(authentication).getValue());
+			}
 		}
 	}
 
@@ -149,8 +186,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 	@Bean
 	@ConditionalOnProperty(value = "onesaitplatform.authentication.twofa.enabled", havingValue = "true")
-	public FilterRegistrationBean preVerifiedUsersFilter() {
-		final FilterRegistrationBean filter = new FilterRegistrationBean();
+	public FilterRegistrationBean<OncePerRequestFilter> preVerifiedUsersFilter() {
+		final FilterRegistrationBean<OncePerRequestFilter> filter = new FilterRegistrationBean<>();
 		filter.setFilter(new OncePerRequestFilter() {
 
 			@Override
@@ -160,11 +197,11 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
 					// FIX-ME CHANGE LOG LEVEL
-					log.info("preVerifiedUsersFilter: true, auth: {}, {}", auth);
+					log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
 					response.sendRedirect(request.getContextPath() + URI_VERIFY);
 				} else {
 					// FIX-ME CHANGE LOG LEVEL
-					log.info("preVerifiedUsersFilter: false, auth: {}", auth);
+					log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
 					filterChain.doFilter(request, response);
 				}
 			}
@@ -185,8 +222,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 	@Bean
 	@ConditionalOnProperty(value = "onesaitplatform.multitenancy.enabled", havingValue = "true")
-	public FilterRegistrationBean preverifiedTenantUsersFilter() {
-		final FilterRegistrationBean filter = new FilterRegistrationBean();
+	public FilterRegistrationBean<OncePerRequestFilter> preverifiedTenantUsersFilter() {
+		final FilterRegistrationBean<OncePerRequestFilter> filter = new FilterRegistrationBean<>();
 		filter.setFilter(new OncePerRequestFilter() {
 
 			@Override

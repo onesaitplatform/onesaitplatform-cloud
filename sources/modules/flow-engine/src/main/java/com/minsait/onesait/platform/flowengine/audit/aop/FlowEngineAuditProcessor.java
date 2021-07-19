@@ -14,10 +14,12 @@
  */
 package com.minsait.onesait.platform.flowengine.audit.aop;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.audit.bean.AuditConst;
@@ -32,6 +34,9 @@ import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
 import com.minsait.onesait.platform.flowengine.audit.bean.FlowEngineAuditEvent;
 import com.minsait.onesait.platform.flowengine.audit.bean.FlowEngineAuditEvent.FlowEngineAuditEventBuilder;
 
@@ -116,6 +121,83 @@ public class FlowEngineAuditProcessor {
 		return getEvent(ontology, null, null, data, message, domainName, OperationType.INSERT);
 	}
 
+	public FlowEngineAuditEvent processInvokeAPI(FlowEngineInvokeRestApiOperationRequest invokeRequest,
+			ResponseEntity<String> retVal) {
+		String message = "Executed invocation on API [v" + invokeRequest.getApiVersion() + "] - "
+				+ invokeRequest.getApiName() + " - Operation: " + invokeRequest.getOperationName() + "("
+				+ invokeRequest.getOperationMethod() + ")";
+		final User platformUser = domainService.getFlowDomainByIdentification(invokeRequest.getDomainName()).getUser();
+		ResultOperationType resultOperation = ResultOperationType.SUCCESS;
+		if (retVal.getStatusCodeValue() != 200) {
+			resultOperation = ResultOperationType.ERROR;
+		}
+		return getEvent(invokeRequest.getDomainName(), platformUser.getUserId(), OperationType.API_INVOCATION, message,
+				resultOperation);
+	}
+
+	public FlowEngineAuditEvent processCheckDataflowStatus(String domainName, String pipelineIdentification,
+			ResponseEntity<String> retVal) {
+		String message = "Executed Status Check on Dataflow " + pipelineIdentification;
+		final User platformUser = domainService.getFlowDomainByIdentification(domainName).getUser();
+		ResultOperationType resultOperation = ResultOperationType.SUCCESS;
+		if (retVal.getStatusCodeValue() != 200) {
+			resultOperation = ResultOperationType.ERROR;
+		}
+		return getEvent(domainName, platformUser.getUserId(), OperationType.CKECK_STATUS_DATAFLOW, message,
+				resultOperation);
+	}
+
+	public FlowEngineAuditEvent processStopDataflow(String domainName, String pipelineIdentification,
+			ResponseEntity<String> retVal) {
+		String message = "Executed Stop Dataflow " + pipelineIdentification;
+		final User platformUser = domainService.getFlowDomainByIdentification(domainName).getUser();
+		ResultOperationType resultOperation = ResultOperationType.SUCCESS;
+		if (retVal.getStatusCodeValue() != 200) {
+			resultOperation = ResultOperationType.ERROR;
+		}
+		return getEvent(domainName, platformUser.getUserId(), OperationType.STOP_DATAFLOW, message, resultOperation);
+	}
+
+	public FlowEngineAuditEvent processStartDataflow(String domainName, String pipelineIdentification,
+			ResponseEntity<String> retVal) {
+		String message = "Executed Start Dataflow " + pipelineIdentification;
+		final User platformUser = domainService.getFlowDomainByIdentification(domainName).getUser();
+		ResultOperationType resultOperation = ResultOperationType.SUCCESS;
+		if (retVal.getStatusCodeValue() != 200) {
+			resultOperation = ResultOperationType.ERROR;
+		}
+		return getEvent(domainName, platformUser.getUserId(), OperationType.START_DATAFLOW, message, resultOperation);
+	}
+
+	public FlowEngineAuditEvent processSendMail(MailRestDTO mail) {
+		String message = "Mail sent. TO:" + Arrays.toString(mail.getTo()) + ", SUBJECT: " + mail.getSubject();
+		final User platformUser = domainService.getFlowDomainByIdentification(mail.getDomainName()).getUser();
+
+		return getEvent(mail.getDomainName(), platformUser.getUserId(), OperationType.START_DATAFLOW, message,
+				ResultOperationType.SUCCESS);
+	}
+
+	public FlowEngineAuditEvent processInvokeNotebook(NotebookInvokeDTO notebookInvocationData,
+			ResponseEntity<String> retVal) {
+		StringBuilder message = new StringBuilder();
+		if (Boolean.TRUE.equals(notebookInvocationData.getExecuteNotebook())) {
+			// full notebook execution
+			message.append("Executed Notebook ").append(notebookInvocationData.getNotebookId());
+		} else {
+			// just paragraph execution
+			message.append("Executed Paragraph ").append(notebookInvocationData.getParagraphId())
+					.append(" from Notebook ").append(notebookInvocationData.getNotebookId());
+		}
+		final User platformUser = domainService.getFlowDomainByIdentification(notebookInvocationData.getDomainName())
+				.getUser();
+		ResultOperationType resultOperation = ResultOperationType.SUCCESS;
+		if (retVal.getStatusCodeValue() != 200) {
+			resultOperation = ResultOperationType.ERROR;
+		}
+		return getEvent(notebookInvocationData.getDomainName(), platformUser.getUserId(),
+				OperationType.NOTEBOOK_INVOCATION, message.toString(), resultOperation);
+	}
+
 	public FlowEngineAuditEvent getEvent(String ontology, String query, String queryType, String data, String message,
 			String domainName, OperationType operation) {
 
@@ -124,9 +206,9 @@ public class FlowEngineAuditProcessor {
 
 		try {
 
-			final User sofia2User = domainService.getFlowDomainByIdentification(domainName).getUser();
+			final User platformUser = domainService.getFlowDomainByIdentification(domainName).getUser();
 
-			event = getEvent(null, sofia2User.getUserId(), operation, message, ResultOperationType.SUCCESS);
+			event = getEvent(null, platformUser.getUserId(), operation, message, ResultOperationType.SUCCESS);
 			event.setData(data);
 			event.setOntology(ontology);
 			event.setQuery(query);
@@ -165,9 +247,9 @@ public class FlowEngineAuditProcessor {
 
 		try {
 
-			final User sofia2User = domainService.getFlowDomainByIdentification(domainName).getUser();
+			final User platformUser = domainService.getFlowDomainByIdentification(domainName).getUser();
 
-			event = createErrorEvent(sofia2User.getUserId(), message, ex);
+			event = createErrorEvent(platformUser.getUserId(), message, ex);
 		} catch (Exception e) {
 			log.error("error getting error event", e);
 		}

@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology.model
 
 import javax.validation.constraints.NotNull;
 
-import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
+import com.minsait.onesait.platform.business.services.ontology.ColumnDefinitionBusiness;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,26 +56,23 @@ public class ColumnDefinitionDTO implements java.io.Serializable {
 	@Setter
     private String colComment = null;
 	
-	public ColumnDefinitionDTO(ColumnRelational column) {
-		this.name = column.getColumnName();
-		this.type= column.getColDataType().getDataType();
+	public ColumnDefinitionDTO(ColumnDefinitionBusiness column) {
+		this.name = column.getName();
+		this.type= column.getType();
 		this.notNull = column.isNotNull();
 		this.autoIncrement = column.isAutoIncrement();
-		this.defautlValue = column.getColDefautlValue();
+		this.defautlValue = column.getDefautlValue();
 		this.colComment = column.getColComment();
 	}
 	
-	public ColumnRelational toColumnRelational() {
-		ColumnRelational column = new ColumnRelational();
-		column.setColumnName(this.name);
-		ColDataType dType = new ColDataType();
-		dType.setDataType(this.type);
-		column.setColDataType(dType);
+	public ColumnDefinitionBusiness toColumnRelational() {
+		ColumnDefinitionBusiness column = new ColumnDefinitionBusiness();
+		column.setName(this.name);
+		column.setType(this.type);
 		column.setNotNull(this.notNull);
 		column.setAutoIncrement(this.autoIncrement);
-		column.setColDefautlValue(this.defautlValue);
+		column.setDefautlValue(this.defautlValue);
 		column.setColComment(this.colComment);
-		
 		return column;
 	}
 

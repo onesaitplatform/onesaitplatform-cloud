@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -59,6 +60,8 @@ public interface DashboardService {
 	boolean dashboardExists(String identification);
 
 	void saveDashboardModel(String id, String model, String userId);
+
+	void saveDashboardHeaderLibs(String id, String HeaderLibs, String userId);
 
 	List<DashboardUserAccess> getDashboardUserAccesses(Dashboard dashboard);
 
@@ -115,6 +118,10 @@ public interface DashboardService {
 	long getClientMaxHeartbeatTime();
 
 	DashboardExportDTO exportDashboardDTO(String dashboardId, String userId);
+
+	DashboardExportDTO getBungleDashboardDTO(String dashboardId, String userId);
+	
+	JSONArray getGadgets(List<String> dashboardList, String userId);
 
 	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
 	// usersAccessType, boolean updated);

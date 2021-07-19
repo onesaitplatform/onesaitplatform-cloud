@@ -149,9 +149,9 @@ public class ReportController {
 	public String list(Model model) {
 		model.addAttribute("owners",
 				userService.getAllActiveUsers().stream()
-						.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
-								&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
-						.map(User::getUserId).collect(Collectors.toList()));
+				.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
+						&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
+				.map(User::getUserId).collect(Collectors.toList()));
 		model.addAttribute("types", Arrays.asList(ReportType.values()).stream().filter(t -> !t.equals(ReportType.JRXML))
 				.collect(Collectors.toList()));
 		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
@@ -168,9 +168,9 @@ public class ReportController {
 	public String runReport(@PathVariable("id") String id, Model model) {
 		model.addAttribute("owners",
 				userService.getAllActiveUsers().stream()
-						.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
-								&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
-						.map(User::getUserId).collect(Collectors.toList()));
+				.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
+						&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
+				.map(User::getUserId).collect(Collectors.toList()));
 		model.addAttribute("types", Arrays.asList(ReportType.values()).stream().filter(t -> !t.equals(ReportType.JRXML))
 				.collect(Collectors.toList()));
 		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
@@ -319,6 +319,9 @@ public class ReportController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW)) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
 		final List<ReportParameter> parameters = mapper.readValue(params, new TypeReference<List<ReportParameter>>() {
@@ -421,7 +424,7 @@ public class ReportController {
 		try {
 			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
 					null, new ParameterizedTypeReference<List<ReportParameter>>() {
-					});
+			});
 
 			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {

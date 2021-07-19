@@ -15,6 +15,9 @@
 package com.minsait.onesait.platform.controlpanel.controller.apimanager;
 
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,7 +36,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,8 +48,11 @@ import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
 import com.minsait.onesait.platform.controlpanel.helper.apimanager.ApiManagerHelper;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,16 +63,14 @@ public class ApiManagerController {
 
 	@Autowired
 	private ApiManagerService apiManagerService;
-
 	@Autowired
 	private ApiManagerHelper apiManagerHelper;
-
 	@Autowired
 	private AppWebUtils utils;
-
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_404 = "error/404";
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
@@ -88,7 +91,9 @@ public class ApiManagerController {
 				|| !apiManagerService.isApiStateValidForEditAuth(id))
 			return ERROR_403;
 		apiManagerHelper.populateApiManagerUpdateForm(model, id);
-
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
+			
 		return "apimanager/create";
 	}
 
@@ -146,7 +151,7 @@ public class ApiManagerController {
 		}
 	}
 
-	@PutMapping(value = "/update/{id}", produces = "text/html")
+	@PostMapping(value = "/update/{id}", produces = "text/html")
 	public String update(@PathVariable("id") String id, ApiMultipart api, BindingResult bindingResult,
 			@RequestParam(required = false) String operationsObject,
 			@RequestParam(required = false) String authenticationObject,
@@ -168,6 +173,7 @@ public class ApiManagerController {
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
 
+			resourcesInUseService.removeByUser(id, utils.getUserId());
 			return "redirect:/apimanager/show/" + api.getId();
 		} catch (final Exception e) {
 			log.error("Could not update API: {}", e);
@@ -302,5 +308,12 @@ public class ApiManagerController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
+	}
+
 
 }

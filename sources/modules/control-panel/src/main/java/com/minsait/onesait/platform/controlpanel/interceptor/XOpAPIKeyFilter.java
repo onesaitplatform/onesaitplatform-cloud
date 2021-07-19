@@ -69,9 +69,13 @@ public class XOpAPIKeyFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		final HttpServletRequest req = (HttpServletRequest) request;
+		boolean hasSession = false;
 		if (req.getHeader(X_OP_APIKEY) != null) {
 			log.debug("Detected header {} in request, loading autenthication", X_OP_APIKEY);
-			InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession());
+			hasSession = req.getSession(false) != null;
+			if (hasSession) {
+				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
+			}
 			final String token = req.getHeader(X_OP_APIKEY);
 			try {
 				final UserDetails details = detailsService.loadUserByUserToken(token);
@@ -89,9 +93,13 @@ public class XOpAPIKeyFilter implements Filter {
 
 			} finally {
 				log.debug("Clearing authentication contexts");
-				InterceptorCommon.clearContexts(
-						(Authentication) req.getSession().getAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH),
-						req.getSession());
+				if (hasSession) {
+					InterceptorCommon.clearContexts(req.getSession(false));
+				} else {
+					if (req.getSession(false) != null) {
+						req.getSession(false).invalidate();
+					}
+				}
 			}
 		} else {
 			chain.doFilter(request, response);

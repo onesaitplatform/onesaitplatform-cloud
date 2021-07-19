@@ -211,4 +211,16 @@ public class DefaultBasicOpsDBRepository implements BasicOpsDBRepository {
 		throw new DBPersistenceException(NOT_SUPPORTED);
 	}
 
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
 }

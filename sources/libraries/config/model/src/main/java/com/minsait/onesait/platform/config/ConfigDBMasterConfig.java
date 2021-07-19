@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
@@ -48,9 +48,11 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import com.minsait.onesait.platform.commons.security.PasswordEncoder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 import com.minsait.onesait.platform.multitenant.util.DataSourceUtil;
+import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,6 +69,8 @@ public class ConfigDBMasterConfig {
 
 	@Autowired
 	private Tenant2SchemaMapper schemaMapper;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Value("${spring.jpa.properties.hibernate.dialect:org.hibernate.dialect.MySQL5InnoDBDialect}")
 	private String hibernateDialect;
@@ -79,21 +83,21 @@ public class ConfigDBMasterConfig {
 
 	@Bean(name = "masterDataSource")
 	@Primary
-	@ConfigurationProperties(prefix = "master.datasource")
+	@ConfigurationProperties(prefix = "master.datasource.hikari")
 	public DataSource masterDataSource() {
-		return DataSourceBuilder.create().build();
+		return new HikariDataSource();
 	}
 
 	@Bean(name = "masterEntityManagerFactory")
 	public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory() {
-		log.info("DatasourceProperties: " + masterDataSource().toString());
 		final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(masterDataSource());
 		em.setPackagesToScan("com.minsait.onesait.platform.multitenant.config.model");
 		em.setPersistenceUnitName("onesaitPlatform-masterdb");
 		final JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		em.setJpaVendorAdapter(vendorAdapter);
-		em.setJpaPropertyMap(jpaProperties().getHibernateProperties(masterDataSource()));
+
+		em.setJpaPropertyMap(jpaProperties().getHibernateProperties(new HibernateSettings()));
 		return em;
 	}
 
@@ -201,11 +205,11 @@ public class ConfigDBMasterConfig {
 		return emfBean;
 	}
 
-	@ConfigurationProperties("spring.datasource")
+	@ConfigurationProperties("spring.datasource.hikari")
 	@Bean(DEFAULT_DS_BEAN_NAME)
 	@Scope("prototype")
 	public DataSource defaultDS() {
-		return DataSourceBuilder.create().build();
+		return new HikariDataSource();
 	}
 
 }

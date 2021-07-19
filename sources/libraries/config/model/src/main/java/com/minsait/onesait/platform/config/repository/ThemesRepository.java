@@ -23,22 +23,20 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.Themes;
 
 public interface ThemesRepository extends JpaRepository<Themes, String> {
-	
+
 	@Override
 	List<Themes> findAll();
-	
-	Themes findById(String id);
 
 	@SuppressWarnings("unchecked")
 	@Override
 	Themes save(Themes entity);
-	
+
 	@Query("SELECT o.id FROM Themes AS o WHERE o.identification=:identification")
 	String findIdByIdentification(@Param("identification") String identification);
-	
+
 	@Query("SELECT o FROM Themes AS o WHERE o.active=1")
 	List<Themes> findActive();
-	
+
 	@Override
 	void delete(Themes id);
 }

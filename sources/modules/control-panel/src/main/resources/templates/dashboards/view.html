@@ -26,13 +26,7 @@
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
 		<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
-		
-	
-    	 <th:block th:utext="${headerlibs}" >    	 	
-    	 </th:block>
-		
-	
-		
+
 	</head>	
 	
 	<script th:inline="javascript">
@@ -84,7 +78,10 @@
 		window.__env.i18njson = /*[[${i18njson}]]*/ "{}";
 		window.__env.i18njson = JSON.parse(window.__env.i18njson);
 		window.__env.globalSockMaxWaitTimeout = [[${heartbeatMaxTimeout}]];
-		
+		window.__env.milliIntervalSaveLocalStorage = 10000;
+		window.__env.maxItemsLocalStorage = 5;
+		window.__env.codeLocalStorage = getCodeLocalStorageParameter();
+		window.__env.resourceinuse = [[${resourceinuse}]];
 	 
      //Function that catch url parameters and return these like a map   
      function getURLParameters()
@@ -95,7 +92,7 @@
 	 	    for (var i = 0; i < sURLVariables.length; i++){
 	 	    	if(sURLVariables[i].length>0){	 	    		
 	 	       		var sParameterName = sURLVariables[i].split('=');
-	 	    		if(sParameterName[0]!=="oauthtoken"){	 	    			
+	 	    		if(sParameterName[0]!=="oauthtoken" && sParameterName[0]!=="__hist_dash"){	 	    			
 	 	       			urlParametersMap[sParameterName[0]] = sParameterName[1];
 	 	    		}
 	 	    	}
@@ -121,6 +118,23 @@
 	 	   return null;
 	    }
      
+     function getCodeLocalStorageParameter()
+		{	    	 
+	 	    var sPageURL = window.location.search.substring(1);	
+	 	    var sURLVariables = sPageURL.split('&');	
+	 	    var urlParametersMap={};
+	 	    for (var i = 0; i < sURLVariables.length; i++)	
+	 	    {
+	 	    	if(sURLVariables[i].length>0){
+	 	       		var sParameterName = sURLVariables[i].split('=');	 	       		
+	 	       		if(sParameterName[0]==="__hist_dash"){
+	 	       			return sParameterName[1]
+	 	       		}	 	       		
+	 	    	}
+	 	    }    
+	 	   return null;
+	    } 
+     
 	     function getOauthtoken(){
 	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
 	 		
@@ -142,7 +156,7 @@
 	</script>
 
 	
-	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>	
+	<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>	
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>	
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/gridster.css"/>	
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
@@ -153,8 +167,9 @@
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
 
+	<th:block th:utext="${headerlibs}"></th:block>
 
-	<!-- VUE and onesait components -->
+ 	<!-- VUE and onesait components -->
  	
  	
  	 	<!-- page-sidebar-closed to start page with collapsed menu -->
@@ -222,7 +237,6 @@
 	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 	<!-- End Monaco Require -->
 
- 
 
 </body>
 </html> 

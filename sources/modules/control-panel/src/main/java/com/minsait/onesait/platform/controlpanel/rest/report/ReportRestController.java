@@ -122,7 +122,7 @@ public class ReportRestController {
 			@ApiParam(value = "Parameters") @RequestBody(required = false) ReportParameter[] params,
 			@ApiParam(value = "Output file format", required = true) @PathVariable("extension") ReportType extension)
 			throws UnsupportedEncodingException {
-		final Report entity = reportService.findById(id);
+		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -152,7 +152,7 @@ public class ReportRestController {
 			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id)
 			throws UnsupportedEncodingException {
 
-		final Report report = reportService.findById(id);
+		final Report report = reportService.findByIdentificationOrId(id);
 		if (report == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

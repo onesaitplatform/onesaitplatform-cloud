@@ -52,7 +52,7 @@ public class Layer extends OPResource {
 	private String description;
 
 	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY", referencedColumnName = "ID", nullable = true)
 	@Getter
 	@Setter

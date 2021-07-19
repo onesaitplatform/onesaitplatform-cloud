@@ -19,8 +19,8 @@ import java.io.Serializable;
 import com.minsait.onesait.platform.config.model.UserApi;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
 public class UserApiDTO implements Serializable {

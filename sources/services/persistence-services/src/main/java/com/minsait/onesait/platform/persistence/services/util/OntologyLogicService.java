@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
+import com.minsait.onesait.platform.config.services.ontology.OntologyServiceImpl;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 
@@ -36,6 +37,10 @@ public class OntologyLogicService {
 	@Autowired
 	private ManageDBRepositoryFactory manageDBPersistence;
 
+	@Autowired
+	private OntologyServiceImpl ontologyService;
+
+	
 	public void createOntology(Ontology ontology, Map<String, String> config) {
 
 		try {
@@ -47,6 +52,9 @@ public class OntologyLogicService {
 			}
 
 		} catch (final Exception e) {
+			if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && ontologyService.existsOntology(ontology.getIdentification())) {
+				ontologyService.delete(ontology);
+			}
 			throw new OntologyServiceException("Problems creating table for ontology." + e.getMessage(), e);
 		}
 

@@ -150,7 +150,7 @@ public class ApiManagerService {
 		return objectId.length() == 0 || !objectId.startsWith("/");
 	}
 
-	public ApiOperation getCustomSQL(String pathInfo, Api api) {
+	public ApiOperation getCustomSQL(String pathInfo, Api api, String httpVerb) {
 
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
@@ -162,10 +162,21 @@ public class ApiManagerService {
 		opIdentifier = opIdentifier.split("/")[0];
 
 		final List<ApiOperation> operaciones = apiOperationRepository.findByApiOrderByOperationDesc(api);
-
+		Type opType = null;
+		if (httpVerb != null) {
+			opType = Type.valueOf(httpVerb);
+		}
 		for (final ApiOperation operacion : operaciones) {
-			if (operacion.getIdentification().equals(opIdentifier)) {
-				return operacion;
+			if (operacion.getIdentification().equals(opIdentifier)
+					|| !api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)
+							&& operacion.getPath().startsWith("/" + opIdentifier)) {
+				if (opType != null) {
+					if (opType.equals(operacion.getOperation())) {
+						return operacion;
+					}
+				} else {
+					return operacion;
+				}
 			}
 		}
 		return null;

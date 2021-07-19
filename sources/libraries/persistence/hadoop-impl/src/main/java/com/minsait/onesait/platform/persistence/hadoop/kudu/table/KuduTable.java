@@ -17,8 +17,6 @@ package com.minsait.onesait.platform.persistence.hadoop.kudu.table;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.minsait.onesait.platform.persistence.hadoop.hive.table.HiveColumn;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +28,7 @@ public class KuduTable {
 
 	@Getter
 	@Setter
-	private List<HiveColumn> columns = new ArrayList<>();
+	private List<KuduColumn> columns = new ArrayList<>();
 
 	@Getter
 	@Setter
@@ -78,13 +76,26 @@ public class KuduTable {
 			int numOfColumns = columns.size();
 			int i = 0;
 
-			for (HiveColumn column : columns) {
+			for (KuduColumn column : columns) {
 				sentence.append(column.getName()).append(" ").append(column.getColumnType());
 
 				if (column.isRequired()) {
 					sentence.append(" NOT NULL");
 				}
 
+				if (column.getDefaultValue() != null && !((String)column.getDefaultValue()).isEmpty()) {
+					sentence.append(" DEFAULT ");
+					if (column.getColumnType().equalsIgnoreCase("string")) {
+						sentence.append("'").append(column.getDefaultValue()).append("'");
+					} else {
+						sentence.append(column.getDefaultValue());
+					}
+				}
+
+				if (column.getComment() != null) {
+					sentence.append(" COMMENT ").append("'").append(column.getComment()).append("'");
+				}
+				
 				if (i < numOfColumns - 1) {
 					sentence.append(", ");
 				}
@@ -115,4 +126,51 @@ public class KuduTable {
 		return sentence.toString();
 	}
 
+	public String buildCreate() {
+		StringBuilder sentence = new StringBuilder();
+
+		sentence.append("CREATE TABLE IF NOT EXISTS ");
+		sentence.append(name);
+		sentence.append(" (");
+
+		if (columns != null && !columns.isEmpty()) {
+			int numOfColumns = columns.size();
+			int i = 0;
+
+			for (KuduColumn column : columns) {
+				sentence.append(column.getName()).append(" ").append(column.getColumnType());
+
+				if (column.isRequired()) {
+					sentence.append(" NOT NULL");
+				}
+
+				if (column.getDefaultValue() != null && !((String)column.getDefaultValue()).isEmpty()) {
+					sentence.append(" DEFAULT ");
+					if (column.getColumnType().equalsIgnoreCase("string")) {
+						sentence.append("'").append(column.getDefaultValue()).append("'");
+					} else {
+						sentence.append(column.getDefaultValue());
+					}
+				}
+
+				if (column.getComment() != null) {
+					sentence.append(" COMMENT ").append("'").append(column.getComment()).append("'");
+				}
+				
+				if (i < numOfColumns - 1) {
+					sentence.append(", ");
+				}
+				i++;
+			}
+		}
+		if (primarykey != null) {
+			sentence.append(",\n PRIMARY KEY (" + String.join(",", primarykey) + ")");
+		}
+		sentence.append(")");
+		if(npartitions > 1) {
+			sentence.append(" PARTITION BY HASH (" + String.join(",", partition) + ")");
+			sentence.append(" PARTITIONS " + npartitions);
+		}
+		return sentence.toString();
+	}
 }

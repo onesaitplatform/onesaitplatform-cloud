@@ -27,6 +27,8 @@ import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValida
 import com.minsait.onesait.platform.flowengine.exception.NotAuthorizedException;
 import com.minsait.onesait.platform.flowengine.exception.ResourceNotFoundException;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,6 +44,9 @@ public class FlowEngineValidationNodeServiceImpl implements FlowEngineValidation
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private MasterUserRepository masterUserRepository;
 
 	@Autowired
 	private FlowDomainService domainService;
@@ -116,8 +121,11 @@ public class FlowEngineValidationNodeServiceImpl implements FlowEngineValidation
 	public DecodedAuthentication decodeAuth(String authentication) {
 		try {
 			final DecodedAuthentication decodedAuth = new DecodedAuthentication(authentication);
-			if (decodedAuth.getVerticalSchema() != null)
+			final MasterUser user = masterUserRepository.findByUserId(decodedAuth.getUserId());
+			MultitenancyContextHolder.setTenantName(user.getTenant().getName());
+			if (decodedAuth.getVerticalSchema() != null) {
 				MultitenancyContextHolder.setVerticalSchema(decodedAuth.getVerticalSchema());
+			}
 			return decodedAuth;
 		} catch (final Exception e) {
 			throw new IllegalArgumentException("Authentication is null or cannot be decoded.");

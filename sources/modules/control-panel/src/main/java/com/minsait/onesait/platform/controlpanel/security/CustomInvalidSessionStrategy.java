@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.security;
 
 import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN;
 import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.BLOCK_PRIOR_LOGIN_PARAMS;
+import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.INVALIDATE_SESSION_FORCED;
 import static com.minsait.onesait.platform.controlpanel.security.SpringSecurityConfig.LOGIN_STR;
 
 import java.io.IOException;
@@ -40,8 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomInvalidSessionStrategy implements InvalidSessionStrategy {
 
-	// TO-DO adapt Spring Boot 2
-	@Value("${server.contextPath:/controlpanel}")
+	@Value("${server.servlet.contextPath:/controlpanel}")
 	private String contextPath;
 	private String destination;
 	private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
@@ -57,17 +57,23 @@ public class CustomInvalidSessionStrategy implements InvalidSessionStrategy {
 		log.debug("Invalid session, creating new one and redirecting to {}", destination);
 		// always new session
 		request.getSession();
-		if (!LOGIN_STR.equals(request.getServletPath()))
-			request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getServletPath());
-		if (request.getParameterMap() != null && !request.getParameterMap().isEmpty()) {
-			log.debug("Request contains parameters, adding to redirect through session");
-			final HashMap<String, String[]> parameterMap = request.getParameterMap().entrySet().stream().collect(
-					Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
-			request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, parameterMap);
+		if (request.getAttribute(INVALIDATE_SESSION_FORCED) != null) {
+			log.info("Session forced to invalidate, redirecting to: {}", request.getAttribute(BLOCK_PRIOR_LOGIN));
+			redirectStrategy.sendRedirect(request, response, (String) request.getAttribute(BLOCK_PRIOR_LOGIN));
+		} else {
+			if (!LOGIN_STR.equals(request.getServletPath())) {
+				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getServletPath());
+			}
+			if (request.getParameterMap() != null && !request.getParameterMap().isEmpty()) {
+				log.debug("Request contains parameters, adding to redirect through session");
+				final HashMap<String, String[]> parameterMap = request.getParameterMap().entrySet().stream().collect(
+						Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
+				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, parameterMap);
 
+			}
+
+			redirectStrategy.sendRedirect(request, response, destination);
 		}
-
-		redirectStrategy.sendRedirect(request, response, destination);
 
 	}
 

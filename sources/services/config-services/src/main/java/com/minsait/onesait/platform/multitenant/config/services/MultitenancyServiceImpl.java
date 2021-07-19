@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -38,18 +40,26 @@ import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
+import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
+import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDigitalTwinDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserHistoric;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterDeviceTokenRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterDigitalTwinDeviceTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserHistoricRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserTokenRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.OAuthAccessTokenRepository;
+import com.minsait.onesait.platform.multitenant.config.repository.OAuthRefreshTokenRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.TenantRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 import com.minsait.onesait.platform.multitenant.exception.TenantDBException;
@@ -72,6 +82,10 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	@Autowired
 	private MasterUserTokenRepository masterUserTokenRepository;
 	@Autowired
+	private MasterDeviceTokenRepository masterDeviceTokenRepository;
+	@Autowired
+	private MasterDigitalTwinDeviceTokenRepository masterDigitalTwinDeviceTokenRepository;
+	@Autowired
 	private VerticalResolver verticalResolver;
 	@Autowired
 	private UserService userService;
@@ -81,6 +95,14 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	private FlowDomainRepository flowDomainRepository;
 	@Autowired
 	private MasterUserHistoricRepository masterUserHistoricRepository;
+	@Autowired
+	private OAuthAccessTokenRepository oauthAccessTokenRepository;
+	@Autowired
+	private OAuthRefreshTokenRepository oauthRefreshTokenRepository;
+	@Autowired
+	private ClientPlatformService deviceService;
+	@Autowired
+	private DigitalTwinDeviceService digitalTwinDeviceService;
 
 	@Override
 	public Optional<MasterUser> findUser(String userId) {
@@ -149,6 +171,11 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	public Optional<Vertical> getVertical(String vertical) {
 		return Optional.ofNullable(verticalRepository.findByNameOrSchema(vertical));
 	}
+	
+	@Override
+	public Optional<String> getVerticalSchema(String vertical) {
+		return Optional.ofNullable(verticalRepository.findSchemaByNameOrSchema(vertical));
+	}
 
 	@Override
 	public List<Vertical> getAllVerticals() {
@@ -170,10 +197,11 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	@Override
 	public List<Tenant> getTenantsForCurrentVertical() {
 		final Optional<Vertical> v = getVertical(MultitenancyContextHolder.getVerticalSchema());
-		if (v.isPresent())
+		if (v.isPresent()) {
 			return new ArrayList<>(v.get().getTenants());
-		else
+		} else {
 			return new ArrayList<>();
+		}
 	}
 
 	@Override
@@ -249,7 +277,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 			MultitenancyContextHolder.clear();
 
 		});
-
 	}
 
 	private User getUserOrReplicate(String userId, Vertical vertical, String tenant) {
@@ -362,8 +389,21 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	}
 
 	@Override
+	public MasterUser setResetPass(String userId) {
+		final MasterUser masterUser = masterUserRepository.findByUserId(userId);
+		if (masterUser != null) {
+			masterUser.setResetPass(new Date());
+			masterUserRepository.save(masterUser);
+		}
+		return masterUser;
+
+	}
+
+	@Override
 	public boolean isValidPass(String userId, String newPass, int numberLastEntriesToCheck) {
-		// MasterUser masterUser = masterUserRepository.findByUserId(userId);
+		if (numberLastEntriesToCheck < 0) {
+			return true;
+		}
 		final List<MasterUserHistoric> list = masterUserHistoricRepository.findByMasterUserLastNvalues(userId,
 				numberLastEntriesToCheck + 1);
 		final JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
@@ -385,6 +425,46 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	@Override
 	public List<MasterUser> getActiveUsersForCurrentVertical(boolean active) {
 		return masterUserRepository.findByVerticalAndActive(MultitenancyContextHolder.getVerticalSchema(), active);
+	}
+
+	@Override
+	public MasterDeviceToken getMasterDeviceToken(String token) {
+		return masterDeviceTokenRepository.findByTokenName(token);
+	}
+
+	@Transactional
+	@Override
+	public void changeUserTenant(String userId, String tenant) {
+		final MasterUser user = masterUserRepository.findByUserId(userId);
+		if (user != null) {
+			getTenant(tenant).ifPresent(t -> {
+				if (!user.getTenant().getName().equals(t.getName())) {
+					user.setTenant(t);
+					masterUserRepository.save(user);
+
+					oauthAccessTokenRepository.findByUserName(userId).forEach(token -> {
+						oauthRefreshTokenRepository.deleteById(token.getRefreshToken());
+						oauthAccessTokenRepository.deleteById(token.getTokenId());
+					});
+					masterUserTokenRepository.findByUserId(userId).forEach(ut -> {
+						ut.setTenant(t);
+						masterUserTokenRepository.save(ut);
+					});
+
+					deviceService.getAllClientPlatformByCriteria(userId, null, null).forEach(d -> {
+						d.getTokens().clear();
+						deviceService.update(d);
+					});
+
+					digitalTwinDeviceService.getAllByUserId(userId).forEach(dtd -> {
+						final MasterDigitalTwinDeviceToken dtdToken = masterDigitalTwinDeviceTokenRepository
+								.findByTokenName(dtd.getDigitalKey());
+						dtdToken.setTenant(tenant);
+						masterDigitalTwinDeviceTokenRepository.save(dtdToken);
+					});
+				}
+			});
+		}
 	}
 
 }

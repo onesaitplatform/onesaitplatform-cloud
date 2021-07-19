@@ -64,6 +64,7 @@ import net.sf.jasperreports.engine.export.HtmlExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.Exporter;
@@ -164,7 +165,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 					.map(p -> ReportParameter.builder().name(p.getName()).description(p.getDescription())
 							.type(ReportParameterType.fromJavaType(p.getValueClass().getName()))
 							.value(p.getDefaultValueExpression() != null
-									? p.getDefaultValueExpression().getText().replaceAll("\"", "")
+							? p.getDefaultValueExpression().getText().replaceAll("\"", "")
 									: null)
 							.build())
 					.collect(Collectors.toList());
@@ -173,7 +174,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 					.map(parameter -> {
 						return parameter.getDefaultValueExpression() != null
 								? parameter.getDefaultValueExpression().getText()
-								: "";
+										: "";
 					}).findFirst().orElse("");
 		}
 
@@ -363,6 +364,9 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			exporter = new JRXlsxExporter();
 			break;
 
+		case DOCX:
+			exporter = new JRDocxExporter();
+			break;
 		case PDF:
 		default:
 			exporter = new JRPdfExporter();

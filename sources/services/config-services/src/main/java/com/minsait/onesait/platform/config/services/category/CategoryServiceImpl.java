@@ -91,5 +91,15 @@ public class CategoryServiceImpl implements CategoryService {
 	public Category getCategoryByIdentification(String identification) {
 		return categoryRepository.findByIdentification(identification).get(0);
 	}
+	
+	@Override
+	public List<Category> getCategoryByIdentificationLike(String identification) {
+		return categoryRepository.findByIdentificationLike(identification);
+	}
+	
+	@Override
+	public List<Category> getCategoryByDescriptionLike(String description) {
+		return categoryRepository.findByDescriptionLike(description);
+	}
 
 }

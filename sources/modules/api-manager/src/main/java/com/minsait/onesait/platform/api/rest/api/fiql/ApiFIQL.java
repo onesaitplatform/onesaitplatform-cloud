@@ -87,8 +87,7 @@ public class ApiFIQL {
 			apiDTO.setOntologyId(api.getOntology().getId());
 		}
 
-		apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v")
-				.concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 
 		apiDTO.setEndpointExt(api.getEndpointExt());
 		apiDTO.setDescription(api.getDescription());

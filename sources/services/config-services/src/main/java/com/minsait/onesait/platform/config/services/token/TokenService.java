@@ -16,7 +16,9 @@ package com.minsait.onesait.platform.config.services.token;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Token;
 
 public interface TokenService {
@@ -32,5 +34,9 @@ public interface TokenService {
 	public void deactivateToken(Token token, boolean active);
 
 	List<Token> getTokens(ClientPlatform clientPlatform);
+	
+	public ClientPlatformTokenDTO getClientPlatformIdByTokenName(String tokenName);
+
+	List<ClientPlatformInstanceSimulation> getSimulations(Token token);
 
 }

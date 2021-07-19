@@ -99,9 +99,9 @@ public class SAMLUserDetails implements SAMLUserDetailsService {
 	private User importUserToDB(String username) {
 		final User user = new User();
 		if (username.equals(admin))
-			user.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()));
+			user.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()).orElse(null));
 		else
-			user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()));
+			user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()).orElse(null));
 		user.setUserId(username);
 		user.setActive(true);
 		user.setEmail(username.concat("@domain.com"));

@@ -45,6 +45,9 @@ public class UserSimplified implements Comparable<UserSimplified> {
 	@ApiModelProperty(required = true)
 	private String role;
 
+	@ApiModelProperty(required = false)
+	private String tenant;
+
 	private String extraFields;
 	private byte[] avatar;
 
@@ -53,11 +56,13 @@ public class UserSimplified implements Comparable<UserSimplified> {
 		mail = user.getEmail();
 		fullName = user.getFullName();
 		role = user.getRole().getId();
-		if (user.getAvatar() != null && user.getAvatar().length > 0)
+		if (user.getAvatar() != null && user.getAvatar().length > 0) {
 			avatar = user.getAvatar();
+		}
 
-		if (user.getExtraFields() != null)
+		if (user.getExtraFields() != null) {
 			extraFields = user.getExtraFields();
+		}
 
 	}
 

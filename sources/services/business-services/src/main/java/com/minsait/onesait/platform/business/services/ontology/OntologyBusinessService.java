@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 
 public interface OntologyBusinessService {
 	public boolean existsOntology(String identificacion);
@@ -47,12 +46,14 @@ public interface OntologyBusinessService {
 
 	public String getSqlTableDefinitionFromSchema(String ontology, String schema, VirtualDatasourceType datasource);
 
-	public String getSQLCreateTable(CreateStatement statement, VirtualDatasourceType datasource);
+	public String getSQLCreateTable(CreateStatementBusiness statement, VirtualDatasourceType datasource);
 
 	public Object getStringSupportedFieldDataTypes();
 
 	public Object getStringSupportedConstraintTypes();
 
 	public void deleteOntology(String id, String userId);
+	
+	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config) throws OntologyBusinessServiceException;
 
 }

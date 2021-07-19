@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,11 +34,11 @@ public class DataSourceUtil {
 	private static final String CONFIGDB_DEFAULT_DB = "onesaitplatform_config";
 	private static final String DEFAULT_DS_BEAN_NAME = "defaultDS";
 
-	@Value("${spring.datasource.url}")
+	@Value("${spring.datasource.hikari.jdbc-url}")
 	private String connUrl;
-	@Value("${spring.datasource.username}")
+	@Value("${spring.datasource.hikari.username}")
 	private String username;
-	@Value("${spring.datasource.password}")
+	@Value("${spring.datasource.hikari.password}")
 	private String passphrase;
 
 	@Autowired
@@ -51,11 +52,9 @@ public class DataSourceUtil {
 	}
 
 	private DataSource createAndConfigureDataSource(String schema) {
-		final org.apache.tomcat.jdbc.pool.DataSource defaultDS = (org.apache.tomcat.jdbc.pool.DataSource) context
-				.getBean(DEFAULT_DS_BEAN_NAME);
-		final String newURL = defaultDS.getUrl().replace(CONFIGDB_DEFAULT_DB, schema);
-		defaultDS.setUrl(newURL);
-		log.info("Registering tenant datasource {}", defaultDS.toString());
+		final DataSource defaultDS = (DataSource) context.getBean(DEFAULT_DS_BEAN_NAME);
+		final String newURL = ((HikariDataSource) defaultDS).getJdbcUrl().replace(CONFIGDB_DEFAULT_DB, schema);
+		((HikariDataSource) defaultDS).setJdbcUrl(newURL);
 		return defaultDS;
 	}
 

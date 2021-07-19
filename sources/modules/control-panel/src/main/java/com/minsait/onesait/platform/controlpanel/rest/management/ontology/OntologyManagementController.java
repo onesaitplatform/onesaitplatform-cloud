@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -100,6 +102,7 @@ import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServ
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.quartz.services.ontologyKPI.OntologyKPIService;
 
+import edu.emory.mathcs.backport.java.util.Collections;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -307,7 +310,7 @@ public class OntologyManagementController {
 
 	@ApiOperation(value = "Create new rest ontology")
 	@PostMapping(value = { "/rest" })
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> createRestOntology(
 			@ApiParam(value = "OntologyCreate", required = true) @Valid @RequestBody OntologyRestDTO ontologyDTO) {
 
@@ -331,7 +334,7 @@ public class OntologyManagementController {
 
 	@ApiOperation(value = "Create new virtual ontology")
 	@PostMapping(value = { "/virtual" })
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> createVirtualOntology(
 			@ApiParam(value = "OntologyCreate", required = true) @Valid @RequestBody OntologyVirtualDTO ontologyDTO,
 			HttpServletRequest request) {
@@ -356,7 +359,7 @@ public class OntologyManagementController {
 
 	@PostMapping(value = { "/timeseries" })
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> createTSOntology(@Valid @RequestBody OntologyTimeSeriesDTO ontologyTimeSeriesDTO) {
 
 		ResponseEntity<?> response;
@@ -432,7 +435,7 @@ public class OntologyManagementController {
 	}
 
 	@PostMapping(value = { "/kpi" })
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@Transactional
 	public ResponseEntity<?> createKPIOntology(@Valid @RequestBody OntologyKpiDTO ontologyDTO) {
 
@@ -522,6 +525,38 @@ public class OntologyManagementController {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 		return new ResponseEntity<>("Ontology updated successfully", HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "Clone an Ontology by ontology identification")
+	@PostMapping(value = "/clone/{identification}")
+	@Transactional
+	public ResponseEntity<?> cloneOntology(
+			@ApiParam(value = "Ontology identification", required = true) @PathVariable("identification") String identification,
+			@ApiParam(value = "New Identification") @RequestParam(required = true) String newIdentification) {
+		try {
+			final User user = userService.getUser(utils.getUserId());
+			final Ontology ontology = ontologyService.getOntologyByIdentification(identification, user.getUserId());
+			if (ontology == null) {
+				return new ResponseEntity<>(ONTOLOGY_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
+			}
+			if (!ontologyService.hasUserPermissionForQuery(user, ontology)) {
+				return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.BAD_REQUEST);
+			}
+
+			ontologyBusinessService.cloneOntology(ontology.getId(), newIdentification, user.getUserId(), null);
+
+			if (ontology.getOntologyKPI() != null) {
+				Ontology cloneOntology = ontologyConfigService.getOntologyByIdentification(newIdentification);
+				ontologyKPIService.cloneOntologyKpi(ontology, cloneOntology, user);
+			}
+
+			return new ResponseEntity<>("Ontology clonned successfully", HttpStatus.OK);
+
+		} catch (final OntologyServiceException exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+		} catch (final OntologyBusinessServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	@ApiOperation(value = "Get users access authorizations for an ontology by ontology identification")
@@ -1164,7 +1199,7 @@ public class OntologyManagementController {
 
 	public HttpHeaders exportHeaders(String ontologyNameFile) {
 		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.TEXT_PLAIN);
+		headers.setContentType(MediaType.parseMediaType("application/octet-stream"));
 		headers.set("Content-Disposition", "attachment; filename=\"" + ontologyNameFile + ".json\"");
 		return headers;
 	}
@@ -1234,7 +1269,10 @@ public class OntologyManagementController {
 		try {
 			final OntologyDTO ontologyDTO = exportOntology(ontologyIdentification);
 			final HttpHeaders headers = exportHeaders(ontologyIdentification.trim());
-			response = new ResponseEntity<>(ontologyDTO, headers, HttpStatus.OK);
+			final byte[] payload = new ObjectMapper().writeValueAsBytes(ontologyDTO);
+			final ByteArrayResource resource = new ByteArrayResource(payload);
+			headers.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(payload.length));
+			response = new ResponseEntity<>(resource, headers, HttpStatus.OK);
 
 		} catch (final OntologyServiceException exception) {
 			log.error("Error exporting ontology: {}", exception.getMessage());
@@ -1260,6 +1298,14 @@ public class OntologyManagementController {
 				final OntologyDTO ontologyDTO = exportOntology(ontology.getIdentification());
 				exportedOntologies.add(ontologyDTO);
 			}
+
+			Collections.sort(exportedOntologies, new Comparator<OntologyDTO>() {
+				@Override
+				public int compare(OntologyDTO s1, OntologyDTO s2) {
+					return s1.getCreatedAt().compareToIgnoreCase(s2.getCreatedAt());
+				}
+			});
+
 			final HttpHeaders headers = exportHeaders(utils.getUserId() + "_ontologies");
 			final ObjectMapper mapper = new ObjectMapper();
 			final String responseString = mapper.writerFor(new TypeReference<List<OntologyDTO>>() {
@@ -1316,8 +1362,9 @@ public class OntologyManagementController {
 	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
 	public ResponseEntity<ValidationReport> validateSchema(@RequestBody String payload,
 			@PathVariable("identification") String identification) {
-		if (!ontologyService.existsOntology(identification))
+		if (!ontologyService.existsOntology(identification)) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 		final ObjectMapper mapper = new ObjectMapper();
 		JsonNode instance = null;
 		try {

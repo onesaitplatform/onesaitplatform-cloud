@@ -33,6 +33,8 @@ import com.minsait.onesait.platform.config.model.KsqlResource.KsqlResourceType;
 import com.minsait.onesait.platform.config.repository.KsqlResourceRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlResourceServiceException;
 import com.minsait.onesait.platform.config.services.ksql.resource.pojo.KsqlResourceForUpdate;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 import com.minsait.onesait.platform.router.service.app.service.KafkaTopicKsqlNotificationService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,8 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 	private KafkaService kafkaService;
 	@Autowired(required = false)
 	private KsqlService ksqlService;
+	@Autowired
+	private VerticalRepository verticalRepository;
 
 	private final Pattern creation = Pattern.compile(
 			"(?i)\\s*CREATE\\s+(TABLE|STREAM)\\s+(\\w+)\\s+(\\(((?!\\)\\s+WITH\\s+\\().)+\\))\\s*(WITH\\s+\\((\\w+\\s*\\=\\s*'[\\w]+')?(\\s*,\\s*(\\w+\\s*\\=\\s*'[\\w]+'))*\\))?.*;");
@@ -89,7 +93,10 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 		validateKsqlResource(ksqlResource);
 		// Check if topic exists. If not, then create it
 		if (ksqlResource.getResourceType() == FlowResourceType.ORIGIN) {
-			kafkaService.createTopicForKsqlInput(ksqlResource.getOntology().getIdentification());
+
+			kafkaService.createTopicForKsqlInput(ksqlResource.getOntology().getIdentification(),
+					verticalRepository.findBySchema(MultitenancyContextHolder.getVerticalSchema()).getName(),
+					MultitenancyContextHolder.getTenantName());
 		} else if (ksqlResource.getResourceType() == FlowResourceType.DESTINY) {
 			kafkaService.createTopic(ksqlResource.getKafkaTopic());
 		}
@@ -177,7 +184,7 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 
 	@Override
 	public KsqlResource getKsqlResourceById(String id) {
-		return ksqlResourceRepository.findById(id);
+		return ksqlResourceRepository.findById(id).orElse(null);
 	}
 
 	@Override

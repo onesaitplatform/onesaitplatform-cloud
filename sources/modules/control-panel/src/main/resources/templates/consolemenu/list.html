@@ -113,6 +113,27 @@
 										<div id="contenedor-tabla-outside"
 											class="contiene margin-bottom-30">
 											<div>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right">
+												
+													<!--  CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED -->
+													<!-- <button id="clearFilters" th:value="#{gen.resetBtn}" class="btn btn-default btn-sm"><i class="fa fa-times"></i></button> -->												
+													
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{consolemenu.role}"	data-column="0"> Role</label>
+														<label class="toggle-vis"
+															th:text="#{gen.created}" data-column="1"> Created At</label>
+														<label class="toggle-vis"
+														th:text="#{consolemenu.updated}" data-column="2"> Updated At</label>
+														<label class="toggle-vis"
+															th:text="#{gen.options}" data-column="3"> Options</label>
+													</div>
+												</div>
 												<!-- DATATABLE DANDELION CONF. -->
 												<table id="consolemenus" class="table table-hover table-striped"
 													dt:table="true" dt:paginationtype="full_numbers">
@@ -178,27 +199,7 @@
 													</tbody>
 												</table>
 
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
 												
-													<!--  CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED -->
-													<!-- <button id="clearFilters" th:value="#{gen.resetBtn}" class="btn btn-default btn-sm"><i class="fa fa-times"></i></button> -->												
-													
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
-														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler"
-														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis"
-															th:text="#{consolemenu.role}"	data-column="0"> Role</label>
-														<label class="toggle-vis"
-															th:text="#{gen.created}" data-column="1"> Created At</label>
-														<label class="toggle-vis"
-														th:text="#{consolemenu.updated}" data-column="2"> Updated At</label>
-														<label class="toggle-vis"
-															th:text="#{gen.options}" data-column="3"> Options</label>
-													</div>
-												</div>
 											</div>
 										</div>
 									</div>
@@ -222,13 +223,13 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" />
-	<script th:src="@{/static/js/layout.js}" />
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" ></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" ></script>
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" ></script>
 
 
 	<script th:inline="javascript">		
@@ -327,8 +328,10 @@
 	$(window).load(function(){ 
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$.each([1],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
-		$('#dataTable-vis-toggle').removeClass('hide');
+		$('#dataTable-vis-toggle').removeClass('hide');		
+		
 		
 	});
 	

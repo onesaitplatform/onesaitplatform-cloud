@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.flowdomain;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.model.Flow;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -25,11 +26,11 @@ public interface FlowDomainService {
 
 	public FlowDomain getFlowDomainByIdentification(String identification);
 
-	public void deleteFlowDomainFlows(String domainIdentification,  User user);
+	public void deleteFlowDomainFlows(String domainIdentification, User user);
 
 	public void deleteFlowdomain(String domainIdentification);
 
-	public FlowDomain createFlowDomain(String identification, User user);
+	public FlowDomain createFlowDomain(String identification, User user,  String... domainAttributes);
 
 	public boolean flowDomainExists(FlowDomain domain);
 
@@ -42,4 +43,6 @@ public interface FlowDomainService {
 	public boolean hasUserManageAccess(String id, String userId);
 
 	public boolean hasUserViewAccess(String id, String userId);
+
+	public List<Flow> getFlows(FlowDomain domain);
 }

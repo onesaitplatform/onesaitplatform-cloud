@@ -22,8 +22,6 @@ import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
 
 public interface DashboardUserAccessTypeRepository extends JpaRepository<DashboardUserAccessType, Integer> {
 
-	DashboardUserAccessType findById(Integer id);
-
 	List<DashboardUserAccessType> findByName(String name);
 
 }

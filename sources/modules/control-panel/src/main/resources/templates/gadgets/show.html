@@ -49,7 +49,7 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
-		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+		<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>
 	
 		<!-- <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/gadgets.css}"/> -->
 		<!-- THEME -->
@@ -173,11 +173,11 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/gadgetsCreate.js}"/>
+	<script th:src="@{/static/js/pages/gadgetsCreate.js}"></script>
 	
 	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
 	<script src="/controlpanel/static/dashboards/gridster.js"></script>

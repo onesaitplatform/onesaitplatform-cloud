@@ -243,6 +243,53 @@ var AppCreateController = function() {
 	var valRoles = function() {
 		return (validateRoles().length > 0);
 	}
+	
+	var resetAuthorizations = function(newArray){
+		// if app has authorizations we load it!.
+		authorizationsJson = newArray;			
+		if (authorizationsJson.length > 0 ){
+			
+			// MOUNTING AUTHORIZATIONS ARRAY
+			var authid_update, role_update , userid_update , authorizationUpdate , authorizationIdUpdate = '';
+			authorizationsArr = []
+			$.each( authorizationsJson, function (key, object){			
+				
+				authid_update 		= object.id; 
+				role_update 		= object.roleName; 
+				userid_update 		= object.user;					
+				
+				logControl ? console.log('      |----- authorizations object on Update, ID: ' +  authid_update + ' ROLE: ' +  role_update + ' USER: ' +  userid_update  ) : '';
+				
+				// AUTHs-table {"users":user,"roles":role,"id": response.id}
+				authorizationUpdate = {"users": userid_update, "rolesName": role_update, "id": authid_update};					
+				authorizationsArr.push(authorizationUpdate);
+				
+				// AUTH-Ids {[user_id]:auth_id}
+				authorizationIdUpdate = {[userid_update]:authid_update};
+				authorizationsIds.push(authorizationIdUpdate);
+				
+			});
+
+			// TO-HTML
+			if ($('#authorizations').attr('data-loaded') === 'true'){
+				$('#app_autthorizations > tbody').html("");
+				$('#app_autthorizations > tbody').append(mountableModel);
+			}
+			logControl ? console.log('authorizationsArr on UPDATE: ' + authorizationsArr.length + ' Arr: ' + JSON.stringify(authorizationsArr)) : '';
+			$('#app_autthorizations').mounTable(authorizationsArr,{
+				model: '.authorization-model',
+				noDebug: false							
+			});
+			
+			// hide info , disable user and show table
+			$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));					
+			$('#authorizations').removeClass('hide');
+			$('#authorizations').attr('data-loaded',true);// TO-HTML
+			$("#users").selectpicker('deselectAll');
+			$("#roles").selectpicker('deselectAll');
+
+		}
+	}
 
 	// INIT TEMPLATE ELEMENTS
 	var initTemplateElements = function() {
@@ -456,7 +503,6 @@ var AppCreateController = function() {
 				
 			}
 		}
-
 	}
 
 	var addRoleRow = function() {
@@ -486,6 +532,14 @@ var AppCreateController = function() {
 				title : 'ERROR!',				
 				theme : 'light',
 				content : appCreateReg.fieldEmpty
+			});
+			return false;
+		}
+		if(roleName.length > 24) {
+			$.alert({
+				title : 'ERROR!',				
+				theme : 'light',
+				content : appCreateReg.longField
 			});
 			return false;
 		}
@@ -920,10 +974,10 @@ var AppCreateController = function() {
 	};
 
 	// return position to find authId.
-	var foundIndexAuth = function(what,item,arr){
+	var foundIndexAuth = function(what,item,what2,item2,arr){
 		var found = '';
 		arr.forEach(function(element, index, array) {
-			if ( what === element[item]){ found = index;  console.log("a[" + index + "] = " + element[item] + ' Founded in position: ' + found ); } 
+			if ( what === element[item] && what2 === element[item2]){ found = index;  console.log("a[" + index + "] = " + element[item] + ' Founded in position: ' + found ); } 
 			
 		});		
 		return found;
@@ -1091,7 +1145,7 @@ var AppCreateController = function() {
 				var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();
 				var selRole = $(obj).closest('tr').find("input[name='rolesName\\[\\]']").val();				
 				
-				var removeIndex = foundIndexAuth(selUser,'users',authorizationsArr);				
+				var removeIndex = foundIndexAuth(selUser,'users',selRole,'rolesName',authorizationsArr);				
 				var selAuthorizationId = authorizationsIds[removeIndex][selUser];
 				
 				console.log('removeAuthorization:' + selAuthorizationId);
@@ -1163,6 +1217,10 @@ var AppCreateController = function() {
 		
 		getGroups : function(){
 			getGroups();
+		},
+		
+		resetAuthorizations : function(newArray){
+			resetAuthorizations(newArray);
 		}
 	};
 }();

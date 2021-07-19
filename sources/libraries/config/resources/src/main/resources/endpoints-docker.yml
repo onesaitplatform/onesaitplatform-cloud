@@ -1,0 +1,44 @@
+#Integration Resources docker
+onesaitplatform:
+  urls: 
+    domain:
+      base: https://${SERVER_NAME}/
+    digitalTwinBroker:
+      base: http://digitaltwinbrokerservice:19300/digitaltwinbroker
+    controlpanel:
+      base: https://${SERVER_NAME}/controlpanel
+    iotbroker:
+      base: http://iotbrokerservice:19000/iot-broker
+      advice: http://iotbrokerservice:19000/iot-broker/advice
+    scriptingEngine:
+      base:
+      advice:
+    flowEngine:
+      base: http://flowengineservice:20100/flowengine/admin
+      advice: http://flowengineservice:5050/
+      proxyurl: https://${SERVER_NAME}/nodered/
+    routerStandAlone:
+      base: https://routerservice:20000/router
+      advice: http://routerservice:20000/router/router/advice/
+      management: http://routerservice:20000/router/management/
+      router: http://routerservice:20000/router/router/
+      hawtio: http://${SERVER_NAME}/hawtio/index.html
+      swaggerUI: http://${SERVER_NAME}/router/swagger-ui.html
+    apiManager:
+      base: https://${SERVER_NAME}/api-manager/
+      api: https://${SERVER_NAME}/api-manager/server/api/
+      swaggerUI: https://${SERVER_NAME}/api-manager/swagger-ui.html?url=
+      swaggerUIManagement: https://${SERVER_NAME}/api-manager/services/management/api-docs?url=/api-manager/services/management/swagger.json
+      swaggerJson: https://${SERVER_NAME}/api-manager/services/management/swagger/
+    notebook:
+      url: https://${SERVER_NAME}/controlpanel/notebooks/app/
+    monitoringUI:
+      base: https://${SERVER_NAME}/monitoring
+      embedded: https://${SERVER_NAME}/monitoring/indexNoHeader.html
+    rulesEngine:
+      base: https://${SERVER_NAME}/rules-engine
+      advice: http://rules-engine-service:20200/rules-engine/advice
+    dashboardEngine:
+      edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
+      view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
+      onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/

@@ -72,31 +72,33 @@ public class MessageProcessorDelegate implements MessageProcessor {
 	public <T extends SSAPBodyMessage> SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<T> message,
 			GatewayInfo info) {
 
-		// CHECK: PRE-PROCESSORS
-		// DONE: PROCESS
-		// DONE: CHECK SSAP COMPLIANCE
-		// DONE: CHECK CREDENTIALS
-		// DONE: CHECK AUTHRIZATIONS & PERMISSIONS
-		// CHECK: VALIDATE ONTOLOGY SCHEMA IF NECESSARY
-		// DONE: GET PROCESSOR AN PROCESS
-		// CHECK: POST-PROCESSORS
-		// DONE: RETURN
-
 		SSAPMessage<SSAPBodyReturnMessage> response = null;
 		Optional<IoTSession> session = Optional.empty();
 		try {
-			final Optional<SSAPMessage<SSAPBodyReturnMessage>> validation = validateMessage(message);
+			
+			session = securityPluginManager.getSession(message.getSessionKey());
+			
+			final Optional<SSAPMessage<SSAPBodyReturnMessage>> error = validateMessage(message, session);
 
-			if (validation.isPresent()) {
-				return validation.get();
+			if (error.isPresent()) {
+				return error.get();
 			}
-			if (SSAPMessageTypes.LEAVE.equals(message.getMessageType())) {
-				session = securityPluginManager.getSession(message.getSessionKey());
-			}
+			
+			
 			final MessageTypeProcessor processor = proxyProcesor(message);
 
 			processor.validateMessage(message);
-			response = processor.process(message, info);
+			
+			if (session.isPresent()) {
+				String clientPlatform = session.get().getClientPlatform();
+				String clientPlatformInstance = session.get().getDevice();
+				deviceManager.registerActivity(message, clientPlatform, clientPlatformInstance, info);
+			} 
+			
+			//session parameter can be changed by processors. For example join does it.
+			//this is an optimization to avoid multiple calls to getSession. Multiple calls to getSession has bad performance on
+			//high load scenarios, even getting sessions from cache  
+			response = processor.process(message, info, session);
 
 			if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
 				response.setDirection(SSAPMessageDirection.RESPONSE);
@@ -121,29 +123,23 @@ public class MessageProcessorDelegate implements MessageProcessor {
 			response = SSAPUtils.generateErrorMessage(message, SSAPErrorCode.PROCESSOR,
 					String.format(e.getMessage(), message.getMessageType().name()));
 		} finally {
-			if (SSAPMessageTypes.JOIN.equals(message.getMessageType())) {
-				session = response != null ? securityPluginManager.getSession(response.getSessionKey())
-						: Optional.empty();
-			} else if (!SSAPMessageTypes.LEAVE.equals(message.getMessageType()) || !session.isPresent()) {
-				session = securityPluginManager.getSession(message.getSessionKey());
-			}
+			
 			final SSAPMessage<SSAPBodyReturnMessage> resp = response;
 
-			session.ifPresent((s) -> {
-
-				deviceManager.registerActivity(message, resp, s, info);
+			session.ifPresent( s -> {
 
 				// Metrics
-				String ontology = null;
-				if (message.getBody() instanceof SSAPBodyOntologyMessage) {
-					ontology = ((SSAPBodyOntologyMessage) message.getBody()).getOntology();
-				}
-
-				String metricsStatus = "OK";
-				if (null == resp || null == resp.getBody() || !resp.getBody().isOk()) {
-					metricsStatus = "KO";
-				}
-				if (null != metricsManager) {
+				if (null != metricsManager && metricsManager.isMetricsEnabled()) {
+					String ontology = null;
+					if (message.getBody() instanceof SSAPBodyOntologyMessage) {
+						ontology = ((SSAPBodyOntologyMessage) message.getBody()).getOntology();
+					}
+	
+					String metricsStatus = "OK";
+					if (null == resp || null == resp.getBody() || !resp.getBody().isOk()) {
+						metricsStatus = "KO";
+					}
+				
 					metricsManager.logMetricDigitalBroker(s.getUserID(), ontology, message.getMessageType(),
 							Source.IOTBROKER, metricsStatus);
 				}
@@ -174,7 +170,7 @@ public class MessageProcessorDelegate implements MessageProcessor {
 	}
 
 	private Optional<SSAPMessage<SSAPBodyReturnMessage>> validateMessage(
-			SSAPMessage<? extends SSAPBodyMessage> message) {
+			SSAPMessage<? extends SSAPBodyMessage> message, Optional<IoTSession> session) {
 		SSAPMessage<SSAPBodyReturnMessage> response = null;
 
 		// Check presence of sessionKey and authorization of sessionKey
@@ -186,7 +182,7 @@ public class MessageProcessorDelegate implements MessageProcessor {
 		}
 
 		if (message.getBody().isSessionKeyMandatory()) {
-			if (!securityPluginManager.checkSessionKeyActive(message.getSessionKey())) {
+			if (!securityPluginManager.checkSessionKeyActive(session)) {
 				response = SSAPMessageGenerator.generateResponseErrorMessage(message, SSAPErrorCode.AUTENTICATION,
 						String.format(MessageException.ERR_SESSIONKEY_NOT_VALID, message.getMessageType().name()));
 				return Optional.of(response);
@@ -202,7 +198,7 @@ public class MessageProcessorDelegate implements MessageProcessor {
 			}
 
 			if (!securityPluginManager.checkAuthorization(message.getMessageType(), body.getOntology(),
-					message.getSessionKey())) {
+					session)) {
 				response = SSAPMessageGenerator.generateResponseErrorMessage(message, SSAPErrorCode.AUTHORIZATION,
 						String.format(MessageException.ERR_ONTOLOGY_AUTH, message.getMessageType().name()));
 				return Optional.of(response);

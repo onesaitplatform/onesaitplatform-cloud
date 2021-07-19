@@ -41,7 +41,7 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 	private OntologyRepository ontologyRepository;
 
 	public RtdbDatasource getOntologyDataSource(String ontologyId) {
-		Ontology ds = ontologyRepository.findByIdentification(ontologyId);
+		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
 		return ds.getRtdbDatasource();
 	}
 
@@ -221,6 +221,16 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 			throws DBPersistenceException {
 		return basicOpsDBRepositoryFactory.getInstance(collection)
 				.queryDeleteTransactionCompensationNativeById(collection, objectId);
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		return basicOpsDBRepositoryFactory.getInstance(ontology).querySQLAsJson(ontology, query, offset, limit);
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
+		return basicOpsDBRepositoryFactory.getInstance(collection).updateBulk(collection, queries, includeIds);
 	}
 
 }

@@ -164,7 +164,7 @@
 																			<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
 																		</div>															
 																	</div>															
-																	<div class="col-md-2 col-sm-6 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
+																	<div class="col-md-2 col-sm-6 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 																		<div class="form-group">
 																			<label class="" th:text="#{ontology.active} + ':'">Active</label>
 																			<div class="mt-checkbox-list">
@@ -527,12 +527,12 @@
 														<div class="form-actions">
 															<div class="pull-left">
 																<!-- CANCEL TO-DO: authentication and control -->
-																<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.go(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-																<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.go(\'' + @{/ontologies/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+																<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+																<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 															</div>
 															<div class="pull-right">																
 																<!-- REMOVE -->
-																<button th:if="${ontology?.id} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="la la-trash"></i> <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+																<button th:if="${ontology?.id} != null" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="la la-trash"></i> <span th:text="#{gen.deleteBtn}"> Delete </span></button>
 																
 																<span th:if="${ontology?.id} != null" class="sep no-border "></span>
 																
@@ -652,12 +652,12 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
 	
@@ -671,22 +671,22 @@
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 	
 	<!-- JSON EDITOR -->
-	<script th:src="@{/static/vendor/json/json2.min.js}"/>
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- DATATABLE -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/ontologyApiRestCreate.js}"/>
+	<script th:src="@{/static/js/pages/ontologyApiRestCreate.js}"></script>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">

@@ -24,8 +24,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface TwitterListeningRepository extends JpaRepository<TwitterListening, String> {
 
-	TwitterListening findById(String id);
-
 	List<TwitterListening> findByUser(User user);
 
 	List<TwitterListening> findByOntology(Ontology ontology);
@@ -34,6 +32,7 @@ public interface TwitterListeningRepository extends JpaRepository<TwitterListeni
 
 	void deleteByOntology(Ontology ontology);
 
+	@Override
 	void deleteById(String id);
 
 	TwitterListening findByJobName(String jobName);

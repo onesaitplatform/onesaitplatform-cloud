@@ -15,18 +15,24 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import javax.transaction.Transactional;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Subscription;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
+public interface SubscriptionRepository extends JpaRepository<Subscription, String> {
 
 	List<Subscription> findAllByOrderByIdentificationAsc();
 
-	Subscription findById(String id);
+	Optional<Subscription> findById(String id);
 
 	List<Subscription> findByIdentificationContainingAndDescriptionContainingOrderByIdentificationAsc(
 			String identification, String description);
@@ -35,7 +41,31 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 			String identification, String description);
 
 	List<Subscription> findByIdentification(String identification);
+	
+	@Cacheable(cacheNames = "SubscriptionRepositoryByOntologyIdentification")
+	List<Subscription> findByOntologyIdentification(String ontologyIdentification);
+	
+	@Override
+	@CacheEvict(cacheNames = "SubscriptionRepositoryByOntologyIdentification", allEntries = true)
+	@Transactional
+	void deleteById(String id);
 
-	List<Subscription> findByOntology(Ontology ontology);
+	@Override
+	@CacheEvict(cacheNames = "SubscriptionRepositoryByOntologyIdentification", allEntries = true)
+	@Transactional
+	void delete(Subscription entity);
+
+	@Override
+	@CacheEvict(cacheNames = "SubscriptionRepositoryByOntologyIdentification", allEntries = true)
+	@Transactional
+	<S extends Subscription> S save(S flow);
+
+	@Override
+	@CacheEvict(cacheNames = "SubscriptionRepositoryByOntologyIdentification", allEntries = true)
+	@Transactional
+	void flush();
+
+	@Query("SELECT o.identification FROM Subscription AS o where o.ontology.identification=:ontology ORDER BY o.identification ASC")
+	List<String> findIdentificationByOntology(@Param("ontology") String ontology);
 
 }

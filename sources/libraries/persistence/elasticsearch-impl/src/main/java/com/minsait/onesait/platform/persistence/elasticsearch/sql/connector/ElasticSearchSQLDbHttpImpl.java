@@ -20,7 +20,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Lazy;
@@ -44,31 +43,30 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 	private static final String BUILDING_ERROR = "Error building URL";
 	private static final String PARSING_ERROR = "Error Parsing Result from query:";
 
-
 	private String endpoint;
 
 	@Autowired
 	private BaseHttpClient httpClient;
-	
+
 	@Autowired
-    private IntegrationResourcesService resourcesService;
-	
+	private IntegrationResourcesService resourcesService;
+
 	@PostConstruct
-    public void init() {
-        Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object>  elasticsearch = (Map<String, Object>) database.get("elasticsearch");
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object>  sql = (Map<String, Object>) elasticsearch.get("sql");
-        
-        endpoint = (String) sql.get("endpoint");
-    }
+	public void init() {
+		final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
+
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
+
+		@SuppressWarnings("unchecked")
+		final Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
+
+		endpoint = (String) sql.get("endpoint");
+	}
 
 	@Override
 	public String queryAsJson(String query, int scrollInit, int scrollEnd) {
-		String url = buildUrl();
+		final String url = buildUrl();
 		String body = query;
 		String res = null;
 		try {
@@ -81,27 +79,25 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 
 				final String scroll = "SELECT /*! USE_SCROLL(" + scrollInit + "," + scrollEnd + ")*/ ";
 				body = scroll + result;
-				
+
 			} else if (scrollInit == 0 && scrollEnd > 0) {
-			    body = buildQuery(query, 0, scrollEnd, false);
+				body = buildQuery(query, 0, scrollEnd, false);
 			}
 
 		} catch (final UnsupportedEncodingException e) {
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-		StringBuilder bodyBuilder = new StringBuilder();
+		final StringBuilder bodyBuilder = new StringBuilder();
 		bodyBuilder.append("{\"sql\": \"");
 		bodyBuilder.append(body);
 		bodyBuilder.append("\"}");
-		final String result = httpClient.invokeSQLPlugin(url, bodyBuilder.toString(), HttpMethod.POST, BaseHttpClient.ACCEPT_TEXT_CSV, null);
-		try {
-			res = ElasticSearchUtil.parseElastiSearchResult("" + result, queryHasSelectId(query));
-			return res;
-		} catch (final JSONException e) {
-			log.error(PARSING_ERROR + query, e);
-			throw new DBPersistenceException(PARSING_ERROR + query, e);
-		}
+		final String result = httpClient.invokeSQLPlugin(url, bodyBuilder.toString(), HttpMethod.POST,
+				BaseHttpClient.ACCEPT_TEXT_CSV, null);
+
+		res = ElasticSearchUtil.parseElastiSearchResult("" + result, queryHasSelectId(query));
+		return res;
+
 	}
 
 	@Override
@@ -110,20 +106,18 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 		String body;
 		String res = null;
 		try {
-		    url = buildUrl();
-		    body = buildQuery(query, 0, limit, false);
+			url = buildUrl();
+			body = buildQuery(query, 0, limit, false);
 		} catch (final UnsupportedEncodingException e) {
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-		final String result = httpClient.invokeSQLPlugin(url, body, HttpMethod.POST, BaseHttpClient.ACCEPT_TEXT_CSV, null);
-		try {
-			res = ElasticSearchUtil.parseElastiSearchResult(result, queryHasSelectId(query));
-			return res;
-		} catch (final JSONException e) {
-			log.error(PARSING_ERROR + query, e);
-			throw new DBPersistenceException(PARSING_ERROR + query, e);
-		}
+		final String result = httpClient.invokeSQLPlugin(url, body, HttpMethod.POST, BaseHttpClient.ACCEPT_TEXT_CSV,
+				null);
+
+		res = ElasticSearchUtil.parseElastiSearchResult(result, queryHasSelectId(query));
+		return res;
+
 	}
 
 	private String buildQuery(String query, int offset, int limit, boolean encode) throws UnsupportedEncodingException {
@@ -138,7 +132,7 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 		if (encode) {
 			params = URLEncoder.encode(params, "UTF-8");
 		}
-		//return (endpoint + "/_nlpcn/sql?sql=" + params);
+		// return (endpoint + "/_nlpcn/sql?sql=" + params);
 		return params;
 	}
 

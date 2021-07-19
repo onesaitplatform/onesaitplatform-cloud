@@ -19,9 +19,15 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.MigrationData;
+import com.minsait.onesait.platform.config.model.MigrationData.DataType;
+import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface MigrationDataRepository extends JpaRepository<MigrationData, String> {
 
 	List<MigrationData> findByUser(User user);
+
+	List<MigrationData> findByUserAndType(User user, DataType type);
+
+	List<MigrationData> findByUserAndTypeAndStatus(User user, DataType type, Status status);
 }

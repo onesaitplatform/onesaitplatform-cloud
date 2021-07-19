@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400,700');
+@import url('/controlpanel/static/vendor/google/libre-baskerville.js)');
 
 .card{
 	box-shadow:2px 2px 20px rgba(0,0,0,0.3); 

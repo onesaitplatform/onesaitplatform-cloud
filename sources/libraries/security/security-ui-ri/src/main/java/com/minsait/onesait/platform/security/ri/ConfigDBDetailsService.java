@@ -28,10 +28,10 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
-import com.minsait.onesait.platform.multitenant.config.model.Vertical;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
+import com.minsait.onesait.platform.multitenant.config.model.VerticalParent;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepositoryLazy;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserTokenRepository;
 import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ConfigDBDetailsService implements UserDetailsService {
 
 	@Autowired
-	private MasterUserRepository masterUserRepository;
+	private MasterUserRepositoryLazy masterUserRepository;
 	@Autowired
 	private MasterUserTokenRepository masterUserTokenRepository;
 	@Autowired
@@ -55,23 +55,28 @@ public class ConfigDBDetailsService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String username) {
+		final MasterUserLazy user = masterUserRepository.findByUserId(username);
+		return loadUserByUsername(user);
+	}
 
-		final MasterUser user = masterUserRepository.findByUserId(username);
+	public UserDetails loadUserByUsername(MasterUserLazy user) {
 
 		if (user == null) {
-			log.info("LoadUserByUserName: User not found by name: {}", username);
-			throw new UsernameNotFoundException("User not found by name: " + username);
+			log.info("LoadUserByUserName: User not found by name: {}", user.getUserId());
+			throw new UsernameNotFoundException("User not found by name: " + user.getUserId());
 		}
 
 		String role = Role.Type.ROLE_PREVERIFIED_TENANT_USER.name();
-		Vertical vertical = null;
+		VerticalParent vertical = null;
 		final String tenant = user.getTenant().getName();
 		if (tenantDBResolver.hasSingleTenantSchemaAssociated(user) || MultitenancyContextHolder.isForced()) {
 
 			vertical = tenantDBResolver.getSingleVerticalIfPossible(user);
 			MultitenancyContextHolder.setVerticalSchema(vertical.getSchema());
 			MultitenancyContextHolder.setTenantName(tenant);
-			role = userRepository.findByUserId(user.getUserId()).getRole().getId();
+			synchronized (this) {
+				role = userRepository.findByUserId(user.getUserId()).getRole().getId();
+			}
 
 		}
 
@@ -96,7 +101,7 @@ public class ConfigDBDetailsService implements UserDetailsService {
 	}
 
 	private org.springframework.security.core.userdetails.User toUserDetails(String username, String password,
-			Vertical vertical, String tenant, String role) {
+			VerticalParent vertical, String tenant, String role) {
 		return new UserPrincipal(username, password, Arrays.asList(new SimpleGrantedAuthority(role)), vertical, tenant);
 
 	}

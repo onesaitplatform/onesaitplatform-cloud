@@ -64,7 +64,7 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local && \
-    chmod -R 777 /opt/nodeRed
+    chmod -R 777 /opt/nodeRed &&
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 

@@ -34,7 +34,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/actuator/**", "/actuator", "/v2/api-docs/", "/v2/api-docs/**", "/swagger-resources/",
 						"/swagger-resources/**", "/swagger-ui.html")
 				.permitAll().and().authorizeRequests().anyRequest().authenticated().and().csrf().disable()
-				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class);
+				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new BearerExtractorFilter(), AnonymousAuthenticationFilter.class);
 	}
 
 	@Bean

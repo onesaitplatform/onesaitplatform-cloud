@@ -14,14 +14,9 @@
  */
 package com.minsait.onesait.platform.config.services.templates;
 
-import net.sf.jsqlparser.statement.Block;
-import net.sf.jsqlparser.statement.Commit;
-import net.sf.jsqlparser.statement.SetStatement;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.UseStatement;
+import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
@@ -36,6 +31,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 public class StatementVisitorComparator implements StatementVisitor{
 
@@ -46,7 +42,12 @@ public class StatementVisitorComparator implements StatementVisitor{
         this.result = result;
         this.otherStatement = otherStatement;
     }
-    
+
+    @Override
+    public void visit(Comment comment) {
+
+    }
+
     @Override
     public void visit(Commit commit) {
     	// Do nothing because not necessary
@@ -123,8 +124,53 @@ public class StatementVisitorComparator implements StatementVisitor{
     }
 
     @Override
+    public void visit(ShowColumnsStatement set) {
+
+    }
+
+    @Override
     public void visit(Merge merge) {
     	// Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(Upsert upsert) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(UseStatement use) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(Block block) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(ValuesStatement values) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(DescribeStatement describe) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(ExplainStatement aThis) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(ShowStatement aThis) {
+        // Do nothing because not necessary
+    }
+
+    @Override
+    public void visit(DeclareStatement aThis) {
+        // Do nothing because not necessary
     }
 
     @Override
@@ -141,21 +187,6 @@ public class StatementVisitorComparator implements StatementVisitor{
         } else {
             result.setResult(false);
         }
-    }
-
-    @Override
-    public void visit(Upsert upsert) {
-    	// Do nothing because not necessary
-    }
-
-    @Override
-    public void visit(UseStatement use) {
-    	// Do nothing because not necessary
-    }
-
-    @Override
-    public void visit(Block block) {
-    	// Do nothing because not necessary
     }
 
 }

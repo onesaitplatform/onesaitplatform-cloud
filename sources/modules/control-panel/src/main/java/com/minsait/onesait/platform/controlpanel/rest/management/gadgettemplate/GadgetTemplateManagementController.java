@@ -49,116 +49,126 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping("api/gadgettemplates")
 public class GadgetTemplateManagementController {
-	
+
 	@Autowired
 	GadgetTemplateService templatesService;
-	
+
 	@Autowired
 	UserRepository userRepo;
-	
+
 	@Autowired
 	AppWebUtils utils;
 
-	@ApiOperation(value="Get user gadget templates")
+	@ApiOperation(value = "Get user gadget templates")
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
 	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<?> getUserTemplates(){
-		
-		
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	public ResponseEntity<?> getUserTemplates() {
+
 		final List<GadgetTemplate> userGadgets = templatesService.getUserGadgetTemplate(utils.getUserId());
-		
-        final List<GadgetTemplateDTO> dtos = new ArrayList<>();
-		if (userGadgets!=null){
+
+		final List<GadgetTemplateDTO> dtos = new ArrayList<>();
+		if (userGadgets != null) {
 			new ArrayList<GadgetTemplateDTO>(userGadgets.size());
-		}else{
+		} else {
 			new ArrayList<GadgetTemplateDTO>(0);
 		}
-		for (GadgetTemplate t : userGadgets){
+		for (GadgetTemplate t : userGadgets) {
 			dtos.add(toGadgetTemplateDTO(t));
 		}
-		return new ResponseEntity<>(dtos,HttpStatus.OK);
+		return new ResponseEntity<>(dtos, HttpStatus.OK);
 	}
-	
-	@ApiOperation(value="Get gadget template by identification")
-	@GetMapping(value="/{identification}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<?> getUserTemplates(@ApiParam(value="identification of the template", required= true) @PathVariable("identification") String identification){
-		
-		
+
+	@ApiOperation(value = "Get gadget template by identification")
+	@GetMapping(value = "/{identification}")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	public ResponseEntity<?> getUserTemplates(
+			@ApiParam(value = "identification of the template", required = true) @PathVariable("identification") String identification) {
+
 		final GadgetTemplate template = templatesService.getGadgetTemplateByIdentification(identification);
-		
+
 		if (template == null) {
 			return new ResponseEntity<>("The gadget template does not exist", HttpStatus.NOT_FOUND);
 		}
 		if (!templatesService.hasUserPermission(template.getId(), utils.getUserId()) && !template.isPublic()) {
-			return new ResponseEntity<>("The user does not have permission to view the gadget template", HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>("The user does not have permission to view the gadget template",
+					HttpStatus.UNAUTHORIZED);
 		}
-		
-		return new ResponseEntity<>(toGadgetTemplateDTO(template),HttpStatus.OK);
-		
+
+		return new ResponseEntity<>(toGadgetTemplateDTO(template), HttpStatus.OK);
+
 	}
-	
-	@ApiOperation(value="Create gadget template")
+
+	@ApiOperation(value = "Create gadget template")
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<?> createGadgetTemplate( @Valid @RequestBody GadgetTemplateDTOCreate dto){
-		
-		if (dto.getIdentification() == null || dto.getIdentification().isEmpty() || dto.getHtml() == null || dto.getJs() == null)
-			return new ResponseEntity<>("Missing required fields. Required = [identification, html, js]", HttpStatus.BAD_REQUEST);
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	public ResponseEntity<?> createGadgetTemplate(@Valid @RequestBody GadgetTemplateDTOCreate dto) {
+
+		if (dto.getIdentification() == null || dto.getIdentification().isEmpty() || dto.getHtml() == null
+				|| dto.getJs() == null)
+			return new ResponseEntity<>("Missing required fields. Required = [identification, html, js]",
+					HttpStatus.BAD_REQUEST);
 		GadgetTemplate existing = templatesService.getGadgetTemplateByIdentification(dto.getIdentification());
 		if (existing != null)
-			return new ResponseEntity<>(String.format("The gadget template with identification %s already exists",dto.getIdentification()),HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(
+					String.format("The gadget template with identification %s already exists", dto.getIdentification()),
+					HttpStatus.BAD_REQUEST);
 		if (!dto.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-		    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+					HttpStatus.BAD_REQUEST);
 		}
-		
+
 		final GadgetTemplate template = toGadgetTemplate(dto);
 		templatesService.createGadgetTemplate(template);
-		return new ResponseEntity<>(dto,HttpStatus.OK);
+		return new ResponseEntity<>(dto, HttpStatus.OK);
 	}
-	
-	@ApiOperation(value="Update gadget template")
+
+	@ApiOperation(value = "Update gadget template")
 	@PutMapping
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<?> updateGadgetTemplate( @Valid @RequestBody GadgetTemplateDTOCreate dto){
-		
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	public ResponseEntity<?> updateGadgetTemplate(@Valid @RequestBody GadgetTemplateDTOCreate dto) {
+
 		if (dto.getIdentification() == null || dto.getIdentification().isEmpty())
 			return new ResponseEntity<>("Missing required fields. Required = [identification]", HttpStatus.BAD_REQUEST);
-		
+
 		final GadgetTemplate existing = templatesService.getGadgetTemplateByIdentification(dto.getIdentification());
 		if (existing == null) {
-			return new ResponseEntity<>(String.format("The gadget template with identification %s does not exist",dto.getIdentification()),HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(
+					String.format("The gadget template with identification %s does not exist", dto.getIdentification()),
+					HttpStatus.BAD_REQUEST);
 		}
 		if (!templatesService.hasUserPermission(existing.getId(), utils.getUserId())) {
-			return new ResponseEntity<>("The user does not have permission to edit the gadget template", HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>("The user does not have permission to edit the gadget template",
+					HttpStatus.UNAUTHORIZED);
 		}
-		
+
 		copyProperties(existing, dto);
 		templatesService.updateGadgetTemplate(existing);
-		return new ResponseEntity<>(dto,HttpStatus.OK);
+		return new ResponseEntity<>(dto, HttpStatus.OK);
 	}
-	
-	@ApiOperation(value="Delete template")
-	@DeleteMapping(value="/{identification}")
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<?> deleteGadgetTemplate(@ApiParam(value="identification", required= true) @PathVariable("identification") String identification){
-		
+
+	@ApiOperation(value = "Delete template")
+	@DeleteMapping(value = "/{identification}")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	public ResponseEntity<?> deleteGadgetTemplate(
+			@ApiParam(value = "identification", required = true) @PathVariable("identification") String identification) {
+
 		GadgetTemplate gT = templatesService.getGadgetTemplateByIdentification(identification);
 		if (gT == null) {
-			return new ResponseEntity<>("The gadget template does not exist",HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("The gadget template does not exist", HttpStatus.BAD_REQUEST);
 		}
 		if (!templatesService.hasUserPermission(gT.getId(), utils.getUserId())) {
-			return new ResponseEntity<>("The user does not have permission to delete the gadget template", HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>("The user does not have permission to delete the gadget template",
+					HttpStatus.UNAUTHORIZED);
 		}
 
 		templatesService.deleteGadgetTemplate(gT.getId(), utils.getUserId());
 
-		return new ResponseEntity<>("The gadget template has been removed",HttpStatus.OK);
+		return new ResponseEntity<>("The gadget template has been removed", HttpStatus.OK);
 	}
-	
+
 	private GadgetTemplateDTO toGadgetTemplateDTO(GadgetTemplate template) {
-		
+
 		GadgetTemplateDTO dto = new GadgetTemplateDTO();
 		dto.setIdentification(template.getIdentification());
 		dto.setDescription(template.getDescription());
@@ -168,24 +178,24 @@ public class GadgetTemplateManagementController {
 		dto.setUser(template.getUser().getUserId());
 		return dto;
 	}
-	
+
 	private void copyProperties(GadgetTemplate template, GadgetTemplateDTOCreate dto) {
 		if (dto.getDescription() == null) {
 			template.setDescription("");
-		}else{
+		} else {
 			template.setDescription(dto.getDescription());
 		}
 		template.setPublic(dto.isPublic());
 		template.setTemplate(dto.getHtml());
 		template.setTemplateJS(dto.getJs());
 	}
-	
+
 	private GadgetTemplate toGadgetTemplate(GadgetTemplateDTOCreate dto) {
 		final GadgetTemplate template = new GadgetTemplate();
 		template.setIdentification(dto.getIdentification());
 		if (dto.getDescription() == null) {
 			template.setDescription("");
-		}else{
+		} else {
 			template.setDescription(dto.getDescription());
 		}
 		template.setPublic(dto.isPublic());

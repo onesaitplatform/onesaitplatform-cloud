@@ -17,11 +17,8 @@ package com.minsait.onesait.platform.videobroker;
 import javax.annotation.PostConstruct;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.endpoint.MetricsEndpoint;
-import org.springframework.boot.actuate.endpoint.MetricsEndpointMetricReader;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -42,11 +39,6 @@ public class VideBrokerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(VideBrokerApplication.class, args);
-	}
-
-	@Bean
-	public MetricsEndpointMetricReader metricsEndpointMetricReader(MetricsEndpoint metricsEndpoint) {
-		return new MetricsEndpointMetricReader(metricsEndpoint);
 	}
 
 	@PostConstruct

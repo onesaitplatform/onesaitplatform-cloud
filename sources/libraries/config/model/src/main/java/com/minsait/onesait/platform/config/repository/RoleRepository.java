@@ -24,10 +24,6 @@ public interface RoleRepository extends JpaRepository<Role, String> {
 
 	@Override
 
-	<S extends Role> List<S> save(Iterable<S> entities);
-
-	@Override
-
 	void flush();
 
 	@Override
@@ -50,8 +46,6 @@ public interface RoleRepository extends JpaRepository<Role, String> {
 	long countByName(String name);
 
 	Role findByName(String name);
-
-	Role findById(String id);
 
 	long countById(String id);
 

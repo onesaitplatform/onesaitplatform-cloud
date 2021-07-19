@@ -25,8 +25,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface GadgetRepository extends JpaRepository<Gadget, String> {
 
-	Gadget findById(String Id);
-
 	List<Gadget> findByUser(User user);
 
 	List<Gadget> findByType(String type);
@@ -66,5 +64,5 @@ public interface GadgetRepository extends JpaRepository<Gadget, String> {
 
 	@Query("SELECT distinct(g.type) FROM Gadget AS g ORDER BY g.type")
 	List<String> findGadgetTypes();
-	
+
 }

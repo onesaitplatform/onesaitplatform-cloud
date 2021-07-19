@@ -67,9 +67,32 @@ public class CategoryController {
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-
-		final List<Category> categories = categoryConfigService.findAllCategories();
-		model.addAttribute("categories", categories);
+		
+		// Scaping "" string values for parameters
+		if (identification == null) {
+			identification = "";
+		}
+		
+		if (description == null) {
+			description = "";
+		}
+		
+		if (description.equals("") && identification.equals("")) {
+			final List<Category> categories = categoryConfigService.findAllCategories();
+			model.addAttribute("categories", categories);
+		}
+		if (!description.equals("") && identification.equals("")) {
+			final List<Category> categories = categoryConfigService.getCategoryByDescriptionLike(description);
+			model.addAttribute("categories", categories);
+		}
+		if (description.equals("") && !identification.equals("")) {
+			final List<Category> categories = categoryConfigService.getCategoryByIdentificationLike(identification);
+			model.addAttribute("categories", categories);
+		}
+		if (!description.equals("") && !identification.equals("")) {
+			final List<Category> categories = categoryConfigService.getCategoriesByIdentificationAndDescription(identification, description);
+			model.addAttribute("categories", categories);
+		}
 		return "categories/list";
 	}
 

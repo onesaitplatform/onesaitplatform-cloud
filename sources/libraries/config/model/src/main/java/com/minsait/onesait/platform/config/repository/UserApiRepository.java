@@ -25,8 +25,6 @@ import com.minsait.onesait.platform.config.model.UserApi;
 
 public interface UserApiRepository extends JpaRepository<UserApi, String> {
 
-	UserApi findById(String id);
-
 	List<UserApi> findByUser(User user);
 
 	@Query("SELECT ua FROM UserApi AS ua WHERE ua.api.id = :api")

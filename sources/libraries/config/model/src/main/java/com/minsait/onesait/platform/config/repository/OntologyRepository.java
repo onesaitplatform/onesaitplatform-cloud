@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -37,9 +38,10 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
-			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true)
-	<S extends Ontology> List<S> save(Iterable<S> entities);
+			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue", "OntologyRepositorySchema",
+			"ClientPlatformOntologyRepository", "ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	<S extends Ontology> List<S> saveAll(Iterable<S> entities);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
@@ -49,15 +51,17 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
-			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true)
+			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue", "OntologyRepositorySchema",
+			"ClientPlatformOntologyRepository", "ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	<S extends Ontology> S saveAndFlush(S entity);
 
 	@SuppressWarnings("unchecked")
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
-			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true)
+			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue", "OntologyRepositorySchema",
+			"ClientPlatformOntologyRepository", "ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	Ontology save(Ontology entity);
 
 	@Override
@@ -134,8 +138,9 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 
 	List<Ontology> findByActiveTrue();
 
+	@Override
 	@Cacheable(cacheNames = "OntologyRepository", key = "#p0")
-	Ontology findById(String id);
+	Optional<Ontology> findById(String id);
 
 	List<Ontology> findByUserAndIsPublicTrue(User user);
 
@@ -181,6 +186,24 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 			+ "FROM Ontology AS o " + "WHERE o.user=:user ORDER BY o.identification ASC")
 	List<OntologyForList> findOntologiesForListByUser(@Param("user") User user);
 
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o "
+			+ "WHERE o.user=:user AND o.description like %:description% ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByUserAndDescriptionLike(@Param("user") User user,
+			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o "
+			+ "WHERE o.user=:user AND o.identification like %:identification% ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByUserAndIdentificationLike(@Param("user") User user,
+			@Param("identification") String identification);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OntologyForList(o.id, o.identification, o.description, o.user, o.isPublic,  o.active, 'null', o.createdAt, o.updatedAt, o.dataModel, o.rtdbDatasource) "
+			+ "FROM Ontology AS o "
+			+ "WHERE o.user=:user AND o.identification like %:identification% AND o.description like %:description% ORDER BY o.identification ASC")
+	List<OntologyForList> findOntologiesForListByUserAndIdentificationLikeAndDescriptionLike(@Param("user") User user,
+			@Param("identification") String identification, @Param("description") String description);
+
 	@Query("SELECT o " + "FROM Ontology AS o "
 			+ "WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
 	List<Ontology> findByIdentificationLikeAndDescriptionLike(@Param("identification") String identification,
@@ -218,6 +241,7 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@Query("SELECT o FROM Ontology AS o WHERE o.user=:user AND o.active=true AND o.dataModel=:datamodel ORDER BY o.identification ASC")
 	List<Ontology> findAllByUserOwnerAndDataModel(@Param("user") User user, @Param("datamodel") DataModel datamodel);
 
+	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
 			"OntologyRepositorySchema" }, allEntries = true, beforeInvocation = true)

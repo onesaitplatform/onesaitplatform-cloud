@@ -118,6 +118,7 @@ public class GraphController {
 						.map(r -> (DigitalTwinDevice) r).collect(Collectors.toList()), null));
 		arrayLinks.addAll(graphUtil.constructGraphWithFlows(resources.stream().filter(r -> r instanceof FlowDomain)
 				.map(r -> (FlowDomain) r).collect(Collectors.toList()), null));
+
 		if (webproject != null) {
 			arrayLinks.addAll(graphUtil.constructGraphWithWebProjects(
 					webproject.stream().map(WebProjectDTO::convert).collect(Collectors.toList()), null));

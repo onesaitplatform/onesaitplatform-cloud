@@ -1,12 +1,14 @@
 apimanager: https://development.onesaitplatform.com/api-manager
-oauth-server: https://development.onesaitplatform.com/oauth-server
+oauth-server: https://10.22.205.151/oauth-server
 controlpanel: https://development.onesaitplatform.com/controlpanel
 microservice: https://development.onesaitplatform.com/restaurants
+host: http://localhost:18000/
 
-client-id: GovConsole
+vertical: Engine
+client-id: RealmEssentials
 client-secret: onesaitplatform
-username: developer
-password: Changed2019!
+username: administrator
+password: OpenP2019!
 logging:
    level:
       com.minsait: INFO

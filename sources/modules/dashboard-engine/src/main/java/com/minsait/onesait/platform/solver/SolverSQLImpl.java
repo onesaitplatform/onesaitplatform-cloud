@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
+import net.sf.jsqlparser.statement.select.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +48,6 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.Limit;
-import net.sf.jsqlparser.statement.select.Offset;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 
 @Component
 @Qualifier("SQLSolver")
@@ -172,8 +166,13 @@ public class SolverSQLImpl implements SolverInterface {
 		select.setWhere(buildWhereV2(where, "", selectItems, querywhere));
 
 		if (group != null && !group.isEmpty()) {
-			List<Expression> querygroup = select.getGroupByColumnReferences();
-			select.setGroupByColumnReferences(buildGroupByV2(group, "", selectItems, querygroup));
+			List<Expression> querygroup = null;
+			if (select.getGroupBy() != null){
+				querygroup = select.getGroupBy().getGroupByExpressions();
+			}
+			GroupByElement gbyelement = new GroupByElement();
+			gbyelement.setGroupByExpressions(buildGroupByV2(group, "", selectItems, querygroup));
+			select.setGroupByElement(gbyelement);
 			select.setHaving(buildHavingV2(where, "", selectItems, querywhere));
 		}
 

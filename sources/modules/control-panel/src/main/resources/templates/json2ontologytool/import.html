@@ -84,8 +84,11 @@
 					<div class="modal-content">
 						<div class="modal-header">
 							<button type="button" class="close" data-dismiss="modal"></button>
-							<h4 class="modal-title" id="response">Error</h4>
-						</div>											      
+							<h4 class="modal-title" th:text="#{user.template.warning.advice_3_3}"></h4>
+						</div>	
+						  <div class="modal-body" style="text-align: left; width:100%">
+					         <label class="modal-title" id="response"></label>
+					       </div>											      
 						<div class="modal-footer">
 							<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 						</div>
@@ -148,7 +151,7 @@
 												 
 												    <br/>
 												    
-												    <input id="file2" type="file" class="form-control-file hide"  onchange="JsonToolController.loadJsonFromDoc(this.files)" accept=".xml,.json,.csv"/>
+												    <input id="file2" type="file" class="form-control-file hide" onclick="resetFile()" onchange="JsonToolController.loadJsonFromDoc(this.files)" accept=".xml,.json,.csv"/>
 												
 												 	<br/>
 												 </div>
@@ -255,8 +258,11 @@
 					    <div class="modal-content">
 					      <div class="modal-header">
 					        <button type="button" class="close" data-dismiss="modal"></button>
-					        <h4 class="modal-title" id="response">r</h4>
-					      </div>											      
+					        <h4 class="modal-title" ></h4>
+					      </div>	
+					        <div class="modal-body" style="text-align: center; width:50%">
+					         <label class="modal-title" id="response"></label>
+					       </div>										      
 					      <div class="modal-footer">
 					        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					      </div>
@@ -293,22 +299,22 @@
 	
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- UTILS -->	
-	<script th:src="@{/static/js/utils/schemaGen.js}"/>
-	<script th:src="@{/static/js/utils/xml2json.js}"/>
-	<script th:src="@{/static/js/utils/underscore.js}"/>
-	<script th:src="@{/static/js/utils/underscoreString.js}"/>
-	<script th:src="@{/static/js/utils/csvjson.js}"/>
+	<script th:src="@{/static/js/utils/schemaGen.js}"></script>
+	<script th:src="@{/static/js/utils/xml2json.js}"></script>
+	<script th:src="@{/static/js/utils/underscore.js}"></script>
+	<script th:src="@{/static/js/utils/underscoreString.js}"></script>
+	<script th:src="@{/static/js/utils/csvjson.js}"></script>
 	
 	<!-- MONACO EDITOR-->
 	<script>var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };</script>
@@ -317,7 +323,7 @@
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 		
 	<!-- MAIN INIT -->
-	<script th:src="@{/static/js/pages/jsontoolController.js}"/>
+	<script th:src="@{/static/js/pages/jsontoolController.js}"></script>
 
 	
 	
@@ -335,6 +341,10 @@
 		var invalidOnto = [[#{json2ont.invalidont}]];
 		var emptyParam = [[#{user.create.error.empty}]];
 	
+		function resetFile(){
+			var input = $("#file2");
+			input.replaceWith(input.val('').clone(true));
+		}
 </script>	
 </body>
 </html>

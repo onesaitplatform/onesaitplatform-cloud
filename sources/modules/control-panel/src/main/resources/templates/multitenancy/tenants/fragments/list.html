@@ -45,6 +45,19 @@
 							<th dt:sortable="false" dt:renderFunction="Tenant.List.dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
 						</tr>
 					</thead>
+					<tbody th:remove="all-but-first">
+						<tr th:each="tenant : ${tenants}" pages:paginate="10">
+							<td class="text-left " th:text="${tenant.name}"></td>
+							<td class="text-left " th:text="${tenant.vertical}"></td>
+							<td class="text-left " th:text="${tenant.users}"></td>
+							<td class="text-left " >		
+							 <div class="grupo-iconos text-center">
+								<a th:href="@{'/multitenancy/tenants/'+${tenant.name}+'/show'}"><span th:attr="data-id=${tenant.name}" class="icon-edit btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="la la-edit font-hg"></i></span></a>'
+							</div>
+							</td>
+						</tr>
+					
+					</tbody>
 				</table><!-- // DATATABLE DANDELION CONF. -->
 			</div>
 		</div>											

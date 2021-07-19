@@ -33,8 +33,6 @@ public interface KsqlRelationRepository extends JpaRepository<KsqlRelation, Stri
 
 	public List<KsqlRelation> findByKsqlFlow(KsqlFlow ksqlFlow);
 
-	public KsqlRelation findById(String id);
-
 	public List<KsqlRelation> findByKsqlResource(KsqlResource ksqlResource);
 
 	public KsqlRelation findByKsqlFlowAndKsqlResource(KsqlFlow ksqlFlow, KsqlResource ksqlResource);

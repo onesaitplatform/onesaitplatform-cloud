@@ -64,6 +64,7 @@ import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.rollback.RollbackController;
 import com.minsait.onesait.platform.controlpanel.helper.gis.viewer.ViewerHelper;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -105,6 +106,9 @@ public class ViewerController {
 	@Autowired(required = false)
 	private JWTService jwtService;
 
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	private static final String REDIRECT_VIEWERS_VIEW = "viewers/view";
 	private static final String REDIRECT = "redirect";
@@ -116,7 +120,7 @@ public class ViewerController {
 	private static final String USER_NOT_PERMISSION = "User has not permission";
 	private static final String REDIRECT_LOGIN = "redirect:/login";
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String description) {
@@ -139,7 +143,7 @@ public class ViewerController {
 		return "viewers/list";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		Map<String, String> layersTypes = layerService.getLayersTypes(utils.getUserId());
@@ -150,7 +154,7 @@ public class ViewerController {
 		return "viewers/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/create")
 	@Transactional
 	public ResponseEntity<Map<String, String>> createViewer(org.springframework.ui.Model model,
@@ -205,7 +209,7 @@ public class ViewerController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@PutMapping(value = "/update/{id}")
 	@Transactional
 	public ResponseEntity<Map<String, String>> updateViewer(org.springframework.ui.Model model,
@@ -272,14 +276,14 @@ public class ViewerController {
 		}
 
 		viewerService.create(viewer, viewerDTO.getBaseLayer());
-
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(REDIRECT, LIST);
 		response.put(STATUS, "ok");
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/update/{id}")
 	public String update(Model model, @PathVariable("id") String id) {
 
@@ -312,10 +316,13 @@ public class ViewerController {
 		model.addAttribute("layersTypes", layersTypes);
 		model.addAttribute("tecnology", viewer.getBaseLayer().getTechnology());
 		model.addAttribute("layersInUse", layers);
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+		resourcesInUseService.put(id, utils.getUserId());
+
 		return "viewers/create";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/doRollback/{id}")
 	// @Transactional
 	public @ResponseBody String doRollback(Model model, @PathVariable("id") String id) {
@@ -347,7 +354,7 @@ public class ViewerController {
 
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
@@ -514,6 +521,12 @@ public class ViewerController {
 			log.error("Error processing the template loades. {}", e.getMessage());
 		}
 		return null;
+	}
+
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
 	}
 
 }

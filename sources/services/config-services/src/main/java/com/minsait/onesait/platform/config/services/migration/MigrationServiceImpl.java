@@ -60,9 +60,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
 import com.minsait.onesait.platform.config.converters.MasterUserConverter;
 import com.minsait.onesait.platform.config.model.MigrationData;
+import com.minsait.onesait.platform.config.model.MigrationData.DataType;
+import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectExport;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.MigrationDataRepository;
@@ -124,6 +127,7 @@ public class MigrationServiceImpl implements MigrationService {
 	private static final String FIELDTYPE_STR = "fieldType";
 	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.ProjectExport";
+	private static final String FLOWDOMAIN = "com.minsait.onesait.platform.config.model.Flow";
 
 	@Getter
 	private final MigrationErrors exportErrors = new MigrationErrors();
@@ -183,12 +187,24 @@ public class MigrationServiceImpl implements MigrationService {
 			IllegalArgumentException.class })
 	public MigrationError persistEntity(Object entity, Serializable id) {
 		final Class<?> clazz = entity.getClass();
-		Object storedObj = entityManager.merge(entity);
+		Object storedObj = null;
 		String identification = null;
 		try {
 			identification = MigrationUtils.getIdentificationField(entity);
 		} catch (IllegalAccessException e1) {
 		}
+		try {
+			storedObj = entityManager.merge(entity);
+		} catch (Exception e) {
+			Instance instance;
+			try {
+				instance = new Instance(clazz, id, identification, null);
+			} catch (final IllegalArgumentException e2) {
+				instance = new Instance(clazz, null, identification, null);
+			}
+			return new MigrationError(instance, null, MigrationError.ErrorType.ERROR, "Error persisting entity");
+		}
+
 		if (storedObj == null) {
 			Instance instance;
 			try {
@@ -234,6 +250,7 @@ public class MigrationServiceImpl implements MigrationService {
 				final Object entity = it.next();
 				final Serializable id = MigrationUtils.getId(entity);
 				final Class<?> entityClazz = entity.getClass();
+
 				log.debug("Entity to process: " + entityClazz + ID_STR + id);
 				if (!processedEntities.contains(entity) && !entitiesForTheNextStep.contains(entity)) {
 					doPersistData(entity, entityClazz, id, managedTypes);
@@ -635,15 +652,10 @@ public class MigrationServiceImpl implements MigrationService {
 		try {
 
 			if (!isProjectLoad && !isUserLoad) {
-				return doImportData(config, data, override);
-			} else if (isProjectLoad) {
-				// If is a project: first we have to persist the users, then the resource
-				// entities and finally the
-				// project itself to avoid persistence problems
 
 				final MigrationConfiguration configAux = new MigrationConfiguration();
-				List<String> users = new ArrayList<>();
 				log.debug("User loading: First the user");
+				List<String> users = new ArrayList<>();
 				for (int i = 0; i < config.size(); i++) {
 					final Instance inst = config.getInstance(i);
 					final Class<?> clazz = inst.getClazz();
@@ -655,27 +667,80 @@ public class MigrationServiceImpl implements MigrationService {
 
 				final MigrationErrors errors = doImportData(configAux, data, override);
 
-				log.debug("Project loading: Second the resources");
+				log.debug("User loading: Second the rest of the entities");
 				for (int i = 0; i < config.size(); i++) {
 					final Instance inst = config.getInstance(i);
 					final Class<?> clazz = inst.getClazz();
-					if (!clazz.getName().startsWith(PROJECT)) {
-						configAux.add(inst);
+					if (clazz.getName().equals(USER_EXPORT)) {
+						config.removeClazz(clazz);
+					}
+				}
+				errors.addAll(doImportData(config, data, override).getErrors());
+				createMasterUsers(users);
+				return errors;
+
+			} else if (isProjectLoad) {
+
+				// If is a project: first we have to persist the users, then the resource
+				// entities and finally the
+				// project itself to avoid persistence problems
+
+				MigrationConfiguration configAux = new MigrationConfiguration();
+				List<String> users = new ArrayList<>();
+				log.debug("User loading: First the user");
+
+				Map<Instance, List<String>> mapUsers = new HashMap<>();
+				for (int i = 0; i < config.size(); i++) {
+					final Instance inst = config.getInstance(i);
+					final Class<?> clazz = inst.getClazz();
+					if (clazz.getName().equals(USER_EXPORT)) {
+						Map<String, Object> instanceData = data.getInstanceData(clazz, inst.getId());
+						List<String> projects = new ArrayList<>((Collection<String>) instanceData.get("projects"));
+						mapUsers.put(inst, projects);
+						instanceData.put("projects", new ArrayList<>());
+						configAux.addUser(inst.getClazz(), inst.getId());
+						users.add(inst.getId().toString());
+					}
+				}
+
+				final MigrationErrors errors = doImportData(configAux, data, true);
+
+				configAux = new MigrationConfiguration();
+				log.debug("Project loading: second the project");
+				for (int i = 0; i < config.size(); i++) {
+					final Instance inst = config.getInstance(i);
+					final Class<?> clazz = inst.getClazz();
+					if (clazz.getName().equals(PROJECT)) {
+						configAux.addProject(inst.getClazz(), inst.getId(), inst.getIdentification());
 					}
 				}
 
 				errors.addAll(doImportData(configAux, data, override).getErrors());
 
-				log.debug("Project loading: Finally the project");
-				for (int i = 0; i < config.size(); i++) {
-					final Instance inst = config.getInstance(i);
-					final Class<?> clazz = inst.getClazz();
-					if (!clazz.getName().startsWith(PROJECT)) {
-						config.removeClazz(clazz);
+				for (Map.Entry<Instance, List<String>> entry : mapUsers.entrySet()) {
+					Instance instance = entry.getKey();
+					List<String> projects = entry.getValue();
+					if (!projects.isEmpty()) {
+						Map<String, Object> instanceData = data.getInstanceData(UserExport.class, instance.getId());
+						instanceData.put("projects", projects);
+						configAux = new MigrationConfiguration();
+						configAux.addUser(instance.getClazz(), instance.getId());
 					}
 				}
 
-				errors.addAll(doImportData(config, data, override).getErrors());
+				errors.addAll(doImportData(configAux, data, override).getErrors());
+
+				configAux = new MigrationConfiguration();
+				log.debug("Project loading: finally the resources");
+				for (int i = 0; i < config.size(); i++) {
+					final Instance inst = config.getInstance(i);
+					final Class<?> clazz = inst.getClazz();
+					if (!clazz.getName().equals(PROJECT) && !clazz.getName().equals(USER_EXPORT)) {
+						configAux.addProject(inst.getClazz(), inst.getId(), inst.getIdentification());
+					}
+				}
+
+				errors.addAll(doImportData(configAux, data, override).getErrors());
 
 				createMasterUsers(users);
 
@@ -708,9 +773,7 @@ public class MigrationServiceImpl implements MigrationService {
 				}
 
 				errors.addAll(doImportData(config, data, override).getErrors());
-
 				createMasterUsers(users);
-
 				return errors;
 			}
 		} catch (final Exception ex) {
@@ -763,6 +826,7 @@ public class MigrationServiceImpl implements MigrationService {
 			 * persist the data following that order. The correct order can be obtained from
 			 * the messages returned by the persistData. (variable erros).
 			 */
+			log.error("Error importing data", e);
 			final Predicate<MigrationError> persistedEntitiesFilter = error -> error
 					.getType() == MigrationError.ErrorType.INFO && "Entity Persisted".equals(error.getMsg());
 			final List<MigrationError> instancesToBeProcessed = errors.getErrors(persistedEntitiesFilter);
@@ -918,8 +982,9 @@ public class MigrationServiceImpl implements MigrationService {
 	}
 
 	@Override
-	public void storeMigrationData(User user, String name, String description, String fileName, byte[] file) {
-		final List<MigrationData> migrationData = repository.findByUser(user);
+	public void storeMigrationData(User user, String name, String description, String fileName, byte[] file,
+			DataType type, Status status) {
+		final List<MigrationData> migrationData = repository.findByUserAndType(user, DataType.IMPORT);
 		MigrationData fileForImport;
 
 		if (migrationData != null && !migrationData.isEmpty()) {
@@ -936,12 +1001,27 @@ public class MigrationServiceImpl implements MigrationService {
 		fileForImport.setDescription(description);
 		fileForImport.setFileName(fileName);
 		fileForImport.setFile(file);
+		fileForImport.setType(type);
+		fileForImport.setStatus(status);
 		repository.save(fileForImport);
 	}
 
 	@Override
-	public MigrationData findMigrationData(User user) {
-		final List<MigrationData> migrationData = repository.findByUser(user);
+	public void updateStoreMigrationData(User user, String json, DataType type) {
+		final MigrationData migrationData = repository.findByUserAndTypeAndStatus(user, type, Status.IN_PROGRESS)
+				.get(0);
+		if (json != null) {
+			migrationData.setStatus(Status.FINISHED);
+			migrationData.setFile(json.getBytes());
+		} else {
+			migrationData.setStatus(Status.ERROR);
+		}
+		repository.save(migrationData);
+	}
+
+	@Override
+	public MigrationData findMigrationData(User user, DataType type) {
+		final List<MigrationData> migrationData = repository.findByUserAndType(user, type);
 		if (migrationData != null && !migrationData.isEmpty()) {
 			if (migrationData.size() > 1) {
 				throw new IllegalStateException("There should be only one migration data per user");
@@ -951,4 +1031,14 @@ public class MigrationServiceImpl implements MigrationService {
 		return null;
 	}
 
+	@Override
+	public List<MigrationData> findByUserAndTypeAndStatus(User user, DataType type, Status status) {
+		return repository.findByUserAndTypeAndStatus(user, type, status);
+	}
+
+	@Override
+	public void deleteMigrationData(MigrationData data) {
+		repository.delete(data);
+
+	}
 }

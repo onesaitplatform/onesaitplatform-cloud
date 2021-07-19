@@ -36,12 +36,12 @@ EXPOSE 18300
 ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
-	  REALTIMEDBUSEAUTH=true \
-	  REALTIMEDBUSER=platformadmin \
-	  REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
+    REALTIMEDBUSEAUTH=true \
+	REALTIMEDBUSER=platformadmin \
+	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
     REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
-		CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
-		CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
@@ -55,16 +55,16 @@ ENV SERVER_NAME=localhost \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     ENABLEHADOOP=false \
-	  HDFSURL=hdfs://127.0.0.1:8020 \
-	  HDFSPATH=/user/hdfs \
-	  HIVEURL=jdbc:hive2://localhost:10000/default \
-	  HIVEUSERNAME=cloudera-scm \
-	  HIVEPASSWORD=cloudera-scm \
-	  HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
-	  IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
-	  KUDUNUMREPLICAS=1 \
-	  KUDUURL=localhost:7051 \
-	  INCLUDEKUDUTABLENAME=false \
+	HDFSURL=hdfs://127.0.0.1:8020 \
+	HDFSPATH=/user/hdfs \
+	HIVEURL=jdbc:hive2://localhost:10000/default \
+	HIVEUSERNAME=cloudera-scm \
+	HIVEPASSWORD=cloudera-scm \
+	HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
+	IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
+	KUDUNUMREPLICAS=1 \
+	KUDUURL=localhost:7051 \
+	INCLUDEKUDUTABLENAME=false \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
@@ -95,10 +95,12 @@ ENV SERVER_NAME=localhost \
     WSBROKERCHANNELMAXPOOL=40 \
     WSBROKERCHANNELQUEUESIZE= \
     WSCACHELIMIT=1024 \
-    WSLOGGINGPERIOD=30000
+    WSLOGGINGPERIOD=30000 \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201
 
 COPY docker-entrypoint.sh /usr/local/bin/
-
 RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh
 
 USER onesait

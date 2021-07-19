@@ -70,45 +70,89 @@
             "url": "",
             "submenu": []
         },
-        {
+       {
             "title": {
-                "EN": "EDGE MANAGEMENT",
-                "ES": "ADMINITRACIÓN EDGE"
+                "EN": "LANDSCAPE",
+                "ES": "LANDSCAPE"
             },
-            "icon": "flaticon-analytics",
+            "icon": "flaticon-technology",
             "url": "",
             "submenu": [
                 {
                     "title": {
-                        "EN": "Devices Management",
-                        "ES": "Gestión de Dispositivos"
+                        "EN": "Edge Devices",
+                        "ES": "Dispositivos Edge"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/devices"
+                    "url": "/controlpanel/edge/landscape/devices"
                 },
                 {
                     "title": {
-                        "EN": "Clusters Management",
-                        "ES": "Gestión de Clusters"
+                        "EN": "Field Devices",
+                        "ES": "Gestión de campos"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/bastions"
+                    "url": "/controlpanel/edge/landscape/field"
                 },
                 {
                     "title": {
-                        "EN": "Landscape Management",
-                        "ES": "Gestión de Landscape"
+                        "EN": "Cloud to Cloud",
+                        "ES": "Cloud to Cloud"
                     },
                     "icon": "",
-                    "url": ""
-                },
+                    "url": "/controlpanel/edge/landscape/cloud2cloud"
+                }
+            ]
+        },
+         {
+            "title": {
+                "EN": "EDGE PROJECT",
+                "ES": "PROYECTOS EDGE"
+            },
+            "icon": "flaticon-folder",
+            "url": "",
+            "submenu": [
                 {
                     "title": {
-                        "EN": "Repositories Management",
-                        "ES": "Gestión de Repositorios"
+                        "EN": "Projects",
+                        "ES": "Proyectos"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/organizations"
+                    "url": "/controlpanel/edge/projects"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "CONNECTORS",
+                "ES": "CONECTORES"
+            },
+            "icon": "flaticon-more-v4",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Connectors",
+                        "ES": "Conectores"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/connectors"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "REGISTRY",
+                "ES": "REGISTRY"
+            },
+            "icon": "flaticon-download",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Registry",
+                        "ES": "Registry"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/registry"
                 }
             ]
         },
@@ -203,20 +247,20 @@
                     "url": "/controlpanel/files/list"
                 },
                 {
+					"title": {
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
+				},
+                {
                     "title": {
                         "EN": "My REST Services Planner",
                         "ES": "Mis planificador de servicios REST"
                     },
                     "icon": "",
                     "url": "/controlpanel/restplanner/list"
-                },
-                {
-                    "title": {
-                        "EN": "My Caches",
-                        "ES": "Mis cachés"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/caches/list"
                 },
                 {
                     "title": {
@@ -236,8 +280,8 @@
                 },
                 {
 					"title": {
-						"EN": "My JDBC Connections",
-						"ES": "Mis conexiones JDBC"
+						"EN": "My External Database Connections",
+						"ES": "Mis Conexiones Externas a Base de datos"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"

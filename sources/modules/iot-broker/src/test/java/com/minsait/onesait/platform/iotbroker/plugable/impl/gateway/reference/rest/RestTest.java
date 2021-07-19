@@ -74,7 +74,7 @@ public class RestTest {
 
 		when(securityPluginManager.authenticate(any(), any(), any(), any())).thenReturn(Optional.of(session));
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 

@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.api.processor.impl;
 
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
+import com.minsait.onesait.platform.api.cache.ApiCacheService;
 import com.minsait.onesait.platform.api.processor.ApiProcessor;
 import com.minsait.onesait.platform.api.processor.ScriptProcessorFactory;
 import com.minsait.onesait.platform.api.processor.utils.ApiProcessorUtils;
@@ -39,6 +41,7 @@ import com.minsait.onesait.platform.api.service.Constants;
 import com.minsait.onesait.platform.api.service.impl.ApiServiceImpl.ChainProcessingStatus;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.model.InsertResult;
+import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -63,6 +66,9 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 	private static boolean cacheable;
 
 	@Autowired
+	private ApiCacheService apiCacheService;
+
+	@Autowired
 	private ScriptProcessorFactory scriptEngine;
 
 	@Override
@@ -70,14 +76,26 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 	public Map<String, Object> process(Map<String, Object> data) throws GenericOPException {
 		final StopWatch watch = new StopWatch();
 		try {
-			watch.start();
-			data = processQuery(data);
-			watch.stop();
-			log.info("API Process in {} ms", watch.getTotalTimeMillis());
-			watch.start();
-			data = postProcess(data);
-			watch.stop();
-			log.info("API PostProcess in {} ms", watch.getTotalTimeMillis());
+			final Api api = (Api) data.get(Constants.API);
+			if (api.getApicachetimeout() != null) {
+				data = apiCacheService.getCache(data, api.getApicachetimeout());
+			}
+
+			if (data.get(Constants.OUTPUT) == null) {
+				watch.start();
+				data = processQuery(data);
+				watch.stop();
+				log.info("API Process in {} ms", watch.getTotalTimeMillis());
+				watch.start();
+				data = postProcess(data);
+				watch.stop();
+				log.info("API PostProcess in {} ms", watch.getTotalTimeMillis());
+			}
+
+			if (api.getApicachetimeout() != null) {
+				apiCacheService.putCache(data, api.getApicachetimeout());
+			}
+
 			return data;
 		} catch (final Exception e) {
 			watch.stop();
@@ -103,15 +121,14 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		final String QUERY = (String) data.get(Constants.QUERY);
 		final String OBJECT_ID = (String) data.get(Constants.OBJECT_ID);
 
-		// final String METHODQUERYINLINE = getQueryMethod(QUERY);
-
 		OperationType operationType = OperationType.GET;
 
 		String body;
 		if (METHOD.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
 			body = QUERY;
+			operationType = getOperationType(METHOD, QUERY);
 		} else {
-			operationType = getOperationType(METHOD);
+			operationType = getOperationType(METHOD, QUERY);
 			body = BODY == null ? "" : new String(BODY);
 		}
 
@@ -147,10 +164,16 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		return "QUERY";
 	}
 
-	private OperationType getOperationType(String method) {
+	private OperationType getOperationType(String method, String query) {
 		OperationType operationType = null;
 		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
-			operationType = OperationType.QUERY;
+			if (query.trim().toLowerCase().startsWith("update")) {
+				operationType = OperationType.UPDATE;
+			} else if (query.trim().toLowerCase().startsWith("delete")) {
+				operationType = OperationType.DELETE;
+			} else {
+				operationType = OperationType.QUERY;
+			}
 		} else if (method.equalsIgnoreCase(ApiOperation.Type.POST.name())) {
 			operationType = OperationType.INSERT;
 		} else if (method.equalsIgnoreCase(ApiOperation.Type.PUT.name())) {

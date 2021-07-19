@@ -33,9 +33,13 @@ public class SecurityService {
 	private AppWebUtils utils;
 
 	public boolean hasAnyRole(List<String> roles) {
-		Role role = roleRepository.findById(utils.getRole());
-		for (String roleName : roles) {
-			Role roleAuth = roleRepository.findById(roleName);
+		final Role role = roleRepository.findById(utils.getRole()).orElse(null);
+		if (role == null)
+			return false;
+		for (final String roleName : roles) {
+			final Role roleAuth = roleRepository.findById(roleName).orElse(null);
+			if (roleAuth == null)
+				return false;
 			if (role.getId().equalsIgnoreCase(roleAuth.getId()) || (role.getRoleParent() != null
 					&& role.getRoleParent().getId().equalsIgnoreCase(roleAuth.getId()))) {
 				return true;

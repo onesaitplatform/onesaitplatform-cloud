@@ -48,7 +48,7 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	private static final long serialVersionUID = 1L;
 
 	public enum VirtualDatasourceType {
-		ORACLE,ORACLE11,MYSQL,MARIADB,SQLSERVER,POSTGRESQL,IMPALA,HIVE,OP_QUERYDATAHUB
+		ORACLE,ORACLE11,MYSQL,MARIADB,SQLSERVER,POSTGRESQL,IMPALA,HIVE,OP_QUERYDATAHUB,KUDU
 	}
 
 	@ManyToOne

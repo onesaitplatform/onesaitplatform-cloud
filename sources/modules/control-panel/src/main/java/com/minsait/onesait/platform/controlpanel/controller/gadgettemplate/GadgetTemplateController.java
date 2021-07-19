@@ -35,9 +35,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GadgetTemplateController {
 
 	private static final String GADGET_TEMPLATE = "gadgetTemplate";
+	private static final String GADGET_TEMPLATE_TYPES = "gadgetTemplateTypes";
 	private static final String MESSAGE = "message";
 
 	@Autowired
@@ -59,7 +62,11 @@ public class GadgetTemplateController {
 	@Autowired
 	private AppWebUtils utils;
 
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
+
 	private static final String REDIRECT_GADGET_TEMP_LIST = "redirect:/gadgets/list";
+	private static final String REDIRECT_SHOW = "redirect:/gadgettemplates/view/";
 
 	@RequestMapping(method = RequestMethod.POST, value = "getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
@@ -70,7 +77,7 @@ public class GadgetTemplateController {
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createGadget(Model model) {
 		model.addAttribute(GADGET_TEMPLATE, new GadgetTemplate());
-
+		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
 		return "gadgettemplates/create";
 
 	}
@@ -106,7 +113,8 @@ public class GadgetTemplateController {
 			return "gadgettemplates/create";
 		}
 
-		return REDIRECT_GADGET_TEMP_LIST;
+		return REDIRECT_SHOW + this.gadgetTemplateService
+				.getGadgetTemplateByIdentification(gadgetTemplate.getIdentification()).getId();
 
 	}
 
@@ -114,6 +122,10 @@ public class GadgetTemplateController {
 	@GetMapping(value = "/update/{gadgetTemplateId}", produces = "text/html")
 	public String createGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
+		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
+		model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+				resourcesInUseService.isInUse(gadgetTemplateId, utils.getUserId()));
+		resourcesInUseService.put(gadgetTemplateId, utils.getUserId());
 		return "gadgettemplates/create";
 	}
 
@@ -130,7 +142,19 @@ public class GadgetTemplateController {
 		return "gadgettemplates/gadgetViewer";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@GetMapping(value = "/gadgetViewerVue", produces = "text/html")
+	public String showGadgetViewerVue(Model model) {
+		return "gadgettemplates/gadgetViewerVue";
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@GetMapping(value = "/gadgetViewerReact", produces = "text/html")
+	public String showGadgetViewerReact(Model model) {
+		return "gadgettemplates/gadgetViewerReact";
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		this.gadgetTemplateService.deleteGadgetTemplate(id, utils.getUserId());
@@ -151,20 +175,42 @@ public class GadgetTemplateController {
 			return "error/403";
 
 		this.gadgetTemplateService.updateGadgetTemplate(gadgetTemplate);
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		return REDIRECT_SHOW + id;
+	}
 
-		return REDIRECT_GADGET_TEMP_LIST;
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@GetMapping(value = "getUserGadgetTemplate/{type}")
+	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplate(@PathVariable("type") String type) {
+		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId(), type);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "getUserGadgetTemplate")
-	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplate() {
+	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplateByType() {
 		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId());
 	}
 
+	// Method can't be with user because public dashboard with templates
 	@GetMapping(value = "getGadgetTemplateByIdentification/{identification}")
 	public @ResponseBody GadgetTemplate getGadgetTemplateByIdentification(
 			@PathVariable("identification") String identification) {
-		return this.gadgetTemplateService.getGadgetTemplateByIdentification(identification, utils.getUserId());
+		return this.gadgetTemplateService.getGadgetTemplateByIdentification(identification);
 	}
 
+	@GetMapping(value = "/freeResource/{id}")
+	public @ResponseBody void freeResource(@PathVariable("id") String id) {
+		resourcesInUseService.removeByUser(id, utils.getUserId());
+		log.info("free resource", id);
+	}
+
+	@GetMapping(value = "/getTemplateTypes")
+	public @ResponseBody List<GadgetTemplateType> getTemplateTypes() {
+		return gadgetTemplateService.getTemplateTypes();
+	}
+
+	@GetMapping(value = "/getTemplateTypeById/{id}")
+	public @ResponseBody GadgetTemplateType getTemplateTypeById(@PathVariable("id") String id) {
+		return gadgetTemplateService.getTemplateTypeById(id);
+	}
 }

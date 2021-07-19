@@ -1,6 +1,7 @@
 master:
    datasource:
-      url: ${CONFIGDBMASTERURL}
+     hikari:
+      jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
      
@@ -10,9 +11,11 @@ onesaitplatform:
    init:
       configdb: ${LOADCONFIGDB}
       mongodb: ${LOADMONGODB}
+      samples: ${LOADTESTDATA}
       elasticdb: ${LOADELASTICDB}
       mailconfig: ${LOADMAILCONFIG}
       multitenant.update-mode: ${UPDATE_MODE_MULTITENANT}
+      graylog: ${LOADGRAYLOGDB}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -32,12 +35,25 @@ onesaitplatform:
       url: https://${SERVER_NAME}/controlpanel
    server.name: ${SERVER_NAME}
    server.controlpanelservice: ${SERVER_NAME}
+   graylog:
+         user: ${GRAYLOG_USER}
+         password: ${GRAYLOG_PASS}
+         enabled: ${GRAYLOG_ENABLED}
+         host: ${GRAYLOG_HOST}
+         port: ${GRAYLOG_PORT}
+         externalUri: ${GRAYLOG_EXTERNAL_URI}
+         
 spring:
    datasource:
-      url: ${CONFIGDBURL}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
+      hikari:
+         jdbc-url: ${CONFIGDBURL}
+         username: ${CONFIGDBUSER}
+         password: ${CONFIGDBPASS}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+
+opendata:
+   load-ontologies: ${OPENDATA_ONTOLOGIES}
+

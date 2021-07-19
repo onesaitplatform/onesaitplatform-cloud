@@ -37,8 +37,6 @@ public interface ClientConnectionRepository extends JpaRepository<ClientConnecti
 	@Query("SELECT o FROM ClientConnection o WHERE o.clientPlatform.user= :#{#user}")
 	List<ClientConnection> findByUser(@Param("user") User user);
 
-	ClientConnection findById(String id);
-
 	List<ClientConnection> findByIdentification(String identification);
 
 	long countByIdentification(String identification);

@@ -39,7 +39,6 @@ import com.minsait.onesait.platform.commons.ksql.KsqlExecutionException;
 import com.minsait.onesait.platform.config.model.KsqlFlow;
 import com.minsait.onesait.platform.config.model.KsqlRelation;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlFlowServiceException;
 import com.minsait.onesait.platform.config.services.ksql.flow.KsqlFlowService;
@@ -73,7 +72,7 @@ public class KsqlFlowController {
 
 	private static final String KSQL_FLOW_VALIDATION_ERROR = "ksql.flow.validation.error";
 	private static final String REDIRECT_KSQL_FLOW_LIST = "redirect:/ksql/flow/list";
-	private static final String KSQL_FLOW= "ksqlFlow";
+	private static final String KSQL_FLOW = "ksqlFlow";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
@@ -145,17 +144,19 @@ public class KsqlFlowController {
 			RedirectAttributes redirect) {
 		// Flow info
 		KsqlFlow ksqlFlow = ksqlFlowService.getKsqlFlowWithId(id);
-		
-		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId()) || userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+
+		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId())
+				|| userService.getUser(utils.getUserId()).isAdmin()) {
 			model.addAttribute(KSQL_FLOW, ksqlFlow);
 			// Relations Info
-			List<KsqlRelation> ksqlRelations = ksqlRelationService.getKsqlRelationsWithFlowIdDescriptionAndIdentification(
-					userService.getUser(utils.getUserId()), id, relationIdentification, relationDescription);
+			List<KsqlRelation> ksqlRelations = ksqlRelationService
+					.getKsqlRelationsWithFlowIdDescriptionAndIdentification(userService.getUser(utils.getUserId()), id,
+							relationIdentification, relationDescription);
 			model.addAttribute("ksqlRelations", ksqlRelationFIQL.toKsqlRelationDTO(ksqlRelations));
 			// Available Ontologies Info
 			List<Ontology> ontologies = ontologyService.getOntologiesByUserId(ksqlFlow.getUser().getUserId());
 			List<OntologyJsonSchemaDto> ontologiesDto = new ArrayList<>();
-			for(Ontology ontol:ontologies){
+			for (Ontology ontol : ontologies) {
 				OntologyJsonSchemaDto dto = new OntologyJsonSchemaDto();
 				dto.setIdentification(ontol.getIdentification());
 				dto.setJsonSchema(ontol.getJsonSchema());
@@ -216,16 +217,18 @@ public class KsqlFlowController {
 			RedirectAttributes redirect) {
 		// Flow info
 		KsqlFlow ksqlFlow = ksqlFlowService.getKsqlFlowWithId(id);
-		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId()) || userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId())
+				|| userService.getUser(utils.getUserId()).isAdmin()) {
 			model.addAttribute(KSQL_FLOW, ksqlFlow);
 			// Relations Info
-			List<KsqlRelation> ksqlRelations = ksqlRelationService.getKsqlRelationsWithFlowIdDescriptionAndIdentification(
-					userService.getUser(utils.getUserId()), id, relationIdentification, relationDescription);
+			List<KsqlRelation> ksqlRelations = ksqlRelationService
+					.getKsqlRelationsWithFlowIdDescriptionAndIdentification(userService.getUser(utils.getUserId()), id,
+							relationIdentification, relationDescription);
 			model.addAttribute("ksqlRelations", ksqlRelationFIQL.toKsqlRelationDTO(ksqlRelations));
 			// Available Ontologies Info
 			List<Ontology> ontologies = ontologyService.getOntologiesByUserId(utils.getUserId());
 			List<OntologyJsonSchemaDto> ontologiesDto = new ArrayList<>();
-			for(Ontology ontol:ontologies){
+			for (Ontology ontol : ontologies) {
 				OntologyJsonSchemaDto dto = new OntologyJsonSchemaDto();
 				dto.setIdentification(ontol.getIdentification());
 				dto.setJsonSchema(ontol.getJsonSchema());

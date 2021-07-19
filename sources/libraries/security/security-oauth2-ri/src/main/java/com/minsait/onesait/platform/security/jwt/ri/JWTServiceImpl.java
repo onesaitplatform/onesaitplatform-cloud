@@ -17,11 +17,13 @@ package com.minsait.onesait.platform.security.jwt.ri;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
+import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 @Service
 public class JWTServiceImpl implements JWTService {
@@ -29,12 +31,16 @@ public class JWTServiceImpl implements JWTService {
 	@Resource(name = "tokenServices")
 	CustomTokenService tokenServices;
 
-	public String extractToken(HttpServletRequest request) {
-		String authorization = request.getHeader("Authorization");
-		if (authorization != null && authorization.contains("Bearer")) {
-			String tokenId = authorization.substring("Bearer".length() + 1);
+	@Autowired(required = false)
+	private PlugableOauthAuthenticator plugableOauthAuthenticator;
 
-			OAuth2Authentication authentication = tokenServices.loadAuthentication(tokenId);
+	@Override
+	public String extractToken(HttpServletRequest request) {
+		final String authorization = request.getHeader("Authorization");
+		if (authorization != null && authorization.contains("Bearer")) {
+			final String tokenId = authorization.substring("Bearer".length() + 1);
+
+			final OAuth2Authentication authentication = loadAuthentication(tokenId);
 
 			return authentication.getUserAuthentication().getName();
 		} else {
@@ -42,12 +48,13 @@ public class JWTServiceImpl implements JWTService {
 		}
 	}
 
+	@Override
 	public String extractToken(String tokenId) {
-		OAuth2Authentication authentication = tokenServices.loadAuthentication(tokenId);
+		final OAuth2Authentication authentication = loadAuthentication(tokenId);
 
 		if (null != authentication && null != authentication.getUserAuthentication()
 				&& null != authentication.getPrincipal()) {
-			Authentication au = authentication.getUserAuthentication();
+			final Authentication au = authentication.getUserAuthentication();
 
 			return au.getName();
 		} else {
@@ -56,13 +63,27 @@ public class JWTServiceImpl implements JWTService {
 
 	}
 
+	@Override
 	public Object extractTokenPrincipal(String tokenId) {
-		OAuth2Authentication authentication = tokenServices.loadAuthentication(tokenId);
+		final OAuth2Authentication authentication = loadAuthentication(tokenId);
 		return authentication.getPrincipal();
 	}
 
+	@Override
 	public Authentication getAuthentication(String tokenId) {
-		return tokenServices.loadAuthentication(tokenId);
+		return loadAuthentication(tokenId);
+	}
+
+	private OAuth2Authentication loadAuthentication(String token) {
+		if (plugableOauthAuthenticator == null) {
+			return tokenServices.loadAuthentication(token);
+		} else {
+			final Authentication auth = plugableOauthAuthenticator.loadOauthAuthentication(token);
+			if (auth != null) {
+				return (OAuth2Authentication) auth;
+			}
+		}
+		return null;
 	}
 
 }

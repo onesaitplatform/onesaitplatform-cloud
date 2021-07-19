@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.iotbroker.processor;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
@@ -23,6 +24,7 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface MessageTypeProcessor {
 
@@ -30,6 +32,6 @@ public interface MessageTypeProcessor {
 
 	boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message);
 	
-	SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) 
+	SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) 
 			throws OntologyBusinessServiceException, IOException;
 }

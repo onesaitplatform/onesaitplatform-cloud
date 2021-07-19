@@ -25,5 +25,5 @@ public class MessageException {
 	public static final String ERR_FIELD_IS_MANDATORY = "%s field is mandatory for %s messages";
 	public static final String ERR_DATABASE = "Database query error, check your message";
 	public static final String ERR_SESSIONKEY_NOT_OWNER = "The session key exists and its not assigned to this device";
-
+    public static final String ERR_CLIENTPLATFORM_INSTANCE_LIMIT_REACHED = "The ClientPlatform cannot create more instances, limit is reached";
 }

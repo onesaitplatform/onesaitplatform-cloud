@@ -14,91 +14,23 @@
  */
 package com.minsait.onesait.platform.commons.security;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.util.List;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
+@Component
 public class PasswordEncoder {
-	private static PasswordEncoder instance;
-	private static final int ITERATION_COUNT = 5;
 
-	private static final String SALT_KEY = "PveFT7isDjGYFTaYhc2Fzw==";
+	@Autowired
+	private static List<PasswordEncoderBean> passwordEncoders;
 
-	private PasswordEncoder() {
+	@Autowired
+	public void setPasswordEncoders(List<PasswordEncoderBean> passwordEncoders) {
+		PasswordEncoder.passwordEncoders = passwordEncoders;
 	}
 
-	public static synchronized PasswordEncoder getInstance() {
-		if (instance == null) {
-			return new PasswordEncoder();
-		} else
-			return instance;
-	}
-
-	public synchronized String encodeSHA256(String password) throws GenericOPException {
-		return encodeSHA256(password, SALT_KEY);
-
-	}
-
-	public synchronized String encodeSHA256(String password, String saltKey) throws GenericOPException {
-		String encodedPassword = null;
-		byte[] salt = base64ToByte(saltKey);
-
-		MessageDigest digest = null;
-		try {
-			digest = MessageDigest.getInstance("SHA-256");
-			digest.reset();
-			digest.update(salt);
-		} catch (NoSuchAlgorithmException e) {
-			log.error("encodeSHA256", e);
-			throw new GenericOPException(e);
-		}
-
-		byte[] btPass = null;
-		try {
-			btPass = digest.digest(password.getBytes("UTF-8"));
-			for (int i = 0; i < ITERATION_COUNT; i++) {
-				digest.reset();
-				btPass = digest.digest(btPass);
-			}
-
-			encodedPassword = byteToBase64(btPass);
-			return encodedPassword;
-		} catch (UnsupportedEncodingException e) {
-			log.error("encodeSHA256", e);
-			throw new GenericOPException(e);
-		}
-	}
-
-	private byte[] base64ToByte(String str) {
-		return Base64.getDecoder().decode(str);
-	}
-
-	private String byteToBase64(byte[] bt) {
-		return Base64.getEncoder().encodeToString(bt);
-	}
-
-	public static void main(String[] args) throws Exception {
-		String pass = "Secrete@343";
-		String hash1 = null;
-		String hash2 = null;
-
-		// Assume from UI
-		PasswordEncoder encoder1 = PasswordEncoder.getInstance();
-		hash1 = encoder1.encodeSHA256(pass, SALT_KEY);
-
-		// Assume the same present in db
-		PasswordEncoder encoder2 = PasswordEncoder.getInstance();
-		hash2 = encoder2.encodeSHA256(pass, SALT_KEY);
-
-		if (hash1.equalsIgnoreCase(hash2))
-			log.debug("Both hash Matches..");
-		else
-			log.debug("Hash matches fails..");
+	public static PasswordEncoderBean getInstance() {
+		return passwordEncoders.stream().filter(PasswordEncoderBean::supportsEncryption).findFirst().orElse(null);
 	}
 }

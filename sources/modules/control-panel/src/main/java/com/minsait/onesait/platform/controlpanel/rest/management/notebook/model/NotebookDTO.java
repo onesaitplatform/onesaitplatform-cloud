@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.notebook.model;
 
-import com.minsait.onesait.platform.config.model.User;
 import lombok.Data;
 
 @Data

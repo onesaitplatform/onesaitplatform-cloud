@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.business.services.swagger;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -27,7 +26,7 @@ public class SwaggerApiImporterService {
 	public String getApiDefinition(String url) {
 		String apiDoc = null;
 		final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-		ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+		final ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 		apiDoc = response.getBody();
 		return apiDoc;
 	}

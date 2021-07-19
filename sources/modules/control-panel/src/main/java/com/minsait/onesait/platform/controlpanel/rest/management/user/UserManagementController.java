@@ -19,8 +19,10 @@ import static com.minsait.onesait.platform.controlpanel.rest.management.user.Use
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import javax.validation.Valid;
 
@@ -51,6 +53,8 @@ import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorVali
 import com.minsait.onesait.platform.controlpanel.rest.management.user.model.UserId;
 import com.minsait.onesait.platform.controlpanel.rest.management.user.model.UserSimplified;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.libraries.mail.MailService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import io.swagger.annotations.Api;
@@ -64,7 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("api" + OP_USER)
 @ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+	@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 @Slf4j
 public class UserManagementController {
 
@@ -79,18 +83,37 @@ public class UserManagementController {
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private ConfigurationService configurationService;
+	@Autowired
+	private MailService mailService;
 
 	@ApiOperation(value = "Get user by id")
 	@GetMapping("/{id}")
 	@ApiResponses(@ApiResponse(response = UserAmplified.class, code = 200, message = "OK"))
 	public ResponseEntity<?> get(
 			@ApiParam(value = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
+		log.debug("New GET request for user {}", userId);
 		if (isUserAdminOrSameAsRequest(userId)) {
 			if (userService.getUser(userId) == null) {
+				log.warn("User {} does not exist", userId);
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
+			log.debug("Found user {}", userId);
 			return new ResponseEntity<>(new UserAmplified(userService.getUser(userId)), HttpStatus.OK);
 		} else {
+			log.warn("Forbidden access", userId);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+	}
+
+	@ApiOperation(value = "Get user by id")
+	@GetMapping("/username/like/{filter}")
+	@ApiResponses(@ApiResponse(response = UserAmplified.class, code = 200, message = "OK"))
+	public ResponseEntity<List<UserAmplified>> getByUserIdLike(
+			@ApiParam(value = "Filter search", example = "dev", required = true) @PathVariable("filter") String filter) {
+		if (utils.isAdministrator()) {
+			final List<UserAmplified> users = userService.getAllUsersActiveByUsernameLike(filter);
+			return ResponseEntity.ok().body(users);
+		}else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
@@ -203,6 +226,10 @@ public class UserManagementController {
 			userDb.setEmail(user.getMail());
 			try {
 				userDb.setRole(userService.getUserRoleById(user.getRole()));
+				if (!StringUtils.isEmpty(user.getTenant())) {
+					multitenancyService.getTenant(user.getTenant())
+					.ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
+				}
 				userService.createUser(userDb);
 				return new ResponseEntity<>(HttpStatus.CREATED);
 			} catch (final UserServiceException e) {
@@ -259,6 +286,9 @@ public class UserManagementController {
 					userService.updatePassword(userDb);
 				} else if (!StringUtils.isEmpty(user.getPassword())) {
 					throw new UserServiceException("New password format is not valid");
+				}
+				if (utils.isAdministrator() && !StringUtils.isEmpty(user.getTenant())) {
+					multitenancyService.changeUserTenant(user.getUsername(), user.getTenant());
 				}
 				userService.updateUser(userDb);
 				return new ResponseEntity<>(HttpStatus.OK);
@@ -393,6 +423,64 @@ public class UserManagementController {
 		return user;
 	}
 
+	@ApiOperation("Reset password by userId")
+	@PostMapping("/{email}/reset-password")
+	public ResponseEntity<?> resetPassword(@ApiParam("email") @PathVariable("email") String email) {
+
+		final User user = userService.getUserByEmail(email);
+
+		if (user == null) {
+			return new ResponseEntity<>("Invalid mail", HttpStatus.BAD_REQUEST);
+		} else {
+			final String upperCase = String.valueOf((char) (new Random().nextInt(26) + 'a')).toUpperCase();
+			final String newPassword = upperCase + UUID.randomUUID().toString().substring(0, 10) + "$";
+			user.setPassword(newPassword);
+			userService.updatePassword(user);
+			multitenancyService.setResetPass(user.getUserId());
+			log.info("Send new password to user by email {}", user.getEmail());
+
+			final Configuration configuration = configurationService
+					.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+			.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
+			final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
+
+			final StringBuilder body = new StringBuilder();
+			body.append(utils.getMessage("user.new.pass.for.user", "Your new password for user: "));
+			body.append(user.getUserId());
+			body.append(System.lineSeparator());
+			body.append(utils.getMessage("user.new.pass.for.user.is", " is : "));
+			body.append(" ");
+			body.append(newPassword);
+			body.append(System.lineSeparator());
+			body.append(utils.getMessage("user.new.pass.for.user.time.for.update.1", " You have "));
+			body.append(" ");
+			body.append(hours);
+			body.append(" ");
+			body.append(utils.getMessage("user.new.pass.for.user.time.for.update.2",
+					" hours to change this password but your user account will be blocked and you must contact the administrator. "));
+
+			try {
+				mailService.sendMail(user.getEmail(),
+						utils.getMessage("user.new.pass.title.message", "[Onesait Plaform] Reset Password"),
+						body.toString());
+			} catch (final Exception e) {
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			final StringBuilder okmessage = new StringBuilder();
+			okmessage.append(utils.getMessage("user.reset.rest.mail.ok.1",
+					"an email has been sent with the new password, you have"));
+			okmessage.append(" ");
+			okmessage.append(hours);
+			okmessage.append(" ");
+			okmessage.append(utils.getMessage("user.reset.rest.mail.ok.2",
+					"hours to change it or your accounts will be blocked"));
+			return new ResponseEntity<>(okmessage.toString(), HttpStatus.OK);
+		}
+	}
+
 	@ApiOperation(value = "Get all active users filtered by 'extra_fields' attribute")
 	@GetMapping("/filter/extra-fields/{jsonPath}/{value}")
 	@ApiResponses(@ApiResponse(response = UserSimplified[].class, code = 200, message = "OK"))
@@ -416,10 +504,9 @@ public class UserManagementController {
 				return false;
 			}).forEach(u -> users.add(new UserSimplified(u)));
 			return new ResponseEntity<>(users, HttpStatus.OK);
-		} else
-
-		{
+		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
 		}
 	}
 

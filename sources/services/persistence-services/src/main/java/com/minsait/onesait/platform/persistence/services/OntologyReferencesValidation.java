@@ -17,9 +17,10 @@ package com.minsait.onesait.platform.persistence.services;
 import java.io.IOException;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 
 public interface OntologyReferencesValidation {
 
-	public void validate(OperationModel operationModel) throws IOException, GenericOPException;
+	public void validate(OperationModel operationModel, Ontology ontology) throws IOException, GenericOPException;
 }

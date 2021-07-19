@@ -144,7 +144,7 @@ Report.Create = (function() {
 	}
 	
 	function submitForm($form, action, method) {
-		$form.attr('action', action);
+		$form.attr('action', action + "?" + csrfParameter + "=" + csrfValue);
 		$form.attr('method', 'post');
 		$form[0].submit();
 	}

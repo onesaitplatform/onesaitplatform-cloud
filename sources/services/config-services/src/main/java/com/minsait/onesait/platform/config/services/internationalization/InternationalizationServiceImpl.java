@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.internationalization;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -134,12 +135,12 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 	@Override
 	public void deleteInternationalization(String internationalizationId, String userId) {
 		final Internationalization internationalization = internationalizationRepository
-				.findById(internationalizationId);
+				.findById(internationalizationId).orElse(null);
 		if (internationalization != null) {
 			if (resourceService.isResourceSharedInAnyProject(internationalization))
 				throw new OPResourceServiceException(
 						"This Internationalization is shared within a Project, revoke access from project prior to deleting");
-			final I18nResources i18nR = i18nRRepository.findById(internationalization.getId());
+			final I18nResources i18nR = i18nRRepository.findById(internationalization.getId()).orElse(null);
 			if (i18nR != null) {
 				i18nRRepository.delete(i18nR);
 			}
@@ -158,7 +159,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 			if (resourceService.isResourceSharedInAnyProject(internationalization))
 				throw new OPResourceServiceException(
 						"This Internationalization is shared within a Project, revoke access from project prior to deleting");
-			final I18nResources i18nR = i18nRRepository.findById(internationalization.getId());
+			final I18nResources i18nR = i18nRRepository.findById(internationalization.getId()).orElse(null);
 			if (i18nR != null) {
 				i18nRRepository.delete(i18nR);
 			}
@@ -183,20 +184,20 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 	@Override
 	public void saveInternationalization(String id, Internationalization internationalization, String userId) {
 
-		final Internationalization internationalizationEnt = internationalizationRepository
-				.findById(internationalization.getId());
-		internationalizationEnt.setIdentification(internationalization.getIdentification());
-		internationalizationEnt.setDescription(internationalization.getDescription());
-		internationalizationEnt.setJsoni18n(internationalization.getJsoni18n());
-		internationalizationEnt.setPublic(internationalization.isPublic());
+		internationalizationRepository.findById(internationalization.getId()).ifPresent(internationalizationEnt -> {
+			internationalizationEnt.setIdentification(internationalization.getIdentification());
+			internationalizationEnt.setDescription(internationalization.getDescription());
+			internationalizationEnt.setJsoni18n(internationalization.getJsoni18n());
+			internationalizationEnt.setPublic(internationalization.isPublic());
 
-		internationalizationRepository.save(internationalizationEnt);
+			internationalizationRepository.save(internationalizationEnt);
+		});
 
 	}
 
 	@Override
 	public Internationalization getInternationalizationById(String id, String userId) {
-		return internationalizationRepository.findById(id);
+		return internationalizationRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -218,14 +219,14 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 		d.setUser(userRepository.findByUserId(userId));
 
 		// Controlar formato del json antes de guardarlo
-		String jsoni18n = internationalization.getJsoni18n();
+		final String jsoni18n = internationalization.getJsoni18n();
 		if (restapi) {
 			try {
-				JSONObject obj = new JSONObject(jsoni18n);
+				final JSONObject obj = new JSONObject(jsoni18n);
 				if (obj.getJSONObject("languages") != null && obj.getString("default") != null) {
 					d.setJsoni18n(jsoni18n);
 				}
-			} catch (JSONException e) {
+			} catch (final JSONException e) {
 				throw new InternationalizationServiceException(e.getMessage()
 						+ "\n Json must be like this:  \"jsoni18n\":\"{\\\"languages\\\":{\\\"ES\\\":{\\\"Hi\\\":\\\"Hola\\\"}, \\\"EN\\\":{\\\"Hi\\\":\\\"Hello\\\"}}, \\\"default\\\":\\\"ES\\\"}\"");
 			}
@@ -256,10 +257,12 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 	@Transactional
 	@Override
 	public String updatePublicInternationalization(Internationalization internationalization, String userId) {
-		if (!internationalizationExists(internationalization.getIdentification())) {
+		final Optional<Internationalization> opt = internationalizationRepository
+				.findById(internationalization.getId());
+		if (!opt.isPresent()) {
 			throw new InternationalizationServiceException(JSON18N_NOT_EXIST);
 		} else {
-			final Internationalization d = internationalizationRepository.findById(internationalization.getId());
+			final Internationalization d = opt.get();
 			d.setDescription(internationalization.getDescription());
 			d.setIdentification(internationalization.getIdentification());
 			d.setJsoni18n(internationalization.getJsoni18n());
@@ -292,7 +295,7 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 	@Override
 	public Internationalization getInternationalizationEditById(String id, String userId) {
 		if (hasUserEditPermission(id, userId)) {
-			return internationalizationRepository.findById(id);
+			return internationalizationRepository.findById(id).orElse(null);
 		}
 		throw new InternationalizationServiceException(
 				"Cannot view Internationalization that does not exist or don't have permission");
@@ -304,26 +307,33 @@ public class InternationalizationServiceImpl implements InternationalizationServ
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
-			final boolean propietary = internationalizationRepository.findById(id).getUser().getUserId().equals(userId);
-			if (propietary) {
-				return true;
+			final Optional<Internationalization> opt = internationalizationRepository.findById(id);
+			if (opt.isPresent()) {
+				final boolean propietary = opt.get().getUser().getUserId().equals(userId);
+				if (propietary) {
+					return true;
+				}
+				return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
+			} else {
+				return false;
 			}
-			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
 		}
 	}
 
 	@Override
 	public boolean hasUserViewPermission(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
-
-		if (internationalizationRepository.findById(id).isPublic()) {
+		final Optional<Internationalization> opt = internationalizationRepository.findById(id);
+		if (!opt.isPresent())
+			return false;
+		if (opt.get().isPublic()) {
 			return true;
 		} else if (userId.equals(ANONYMOUSUSER) || user == null) {
-			return internationalizationRepository.findById(id).isPublic();
+			return opt.get().isPublic();
 		} else if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
-			final boolean propietary = internationalizationRepository.findById(id).getUser().getUserId().equals(userId);
+			final boolean propietary = opt.get().getUser().getUserId().equals(userId);
 			if (propietary) {
 				return true;
 			}

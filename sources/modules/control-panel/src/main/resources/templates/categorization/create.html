@@ -147,7 +147,7 @@
 								<div class="pull-right">
 									<button th:if="!${categorization.Id}" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:create();'"><span th:text="#{gen.createBtn}">New</span></button>
 									<button th:if="${categorization.Id} AND !${show}" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:edit(\'' + ${categorization.Id} + '\');'"><span th:text="#{gen.editBtn}">Edit</span></button>
-									<button th:if="${categorization.Id} AND ${show}" class="btn btn-circle btn-outline blue" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.Id}/|} + '\');'"><span th:text="#{gen.editBtn}">Edit</span></button>
+									<button th:if="${categorization.Id} AND ${show} AND (${#authentication.name} == ${categorization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-circle btn-outline blue" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.Id}/|} + '\');'"><span th:text="#{gen.editBtn}">Edit</span></button>
 								</div>
 							</div>								
 							<!-- form end -->	
@@ -163,20 +163,21 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
+
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
-	
-	<script th:src="@{/static/js/pages/categorization.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	<script th:src="@{/static/js/pages/categorization.js}"></script>
+
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/jstree/dist/jstree.min.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/jstree/dist/jstree.min.js}"></script>
 	
 	
 	<script th:inline="javascript">

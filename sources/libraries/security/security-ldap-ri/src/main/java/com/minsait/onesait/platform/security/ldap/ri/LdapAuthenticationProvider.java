@@ -18,9 +18,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -105,12 +102,9 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 
 		if (authenticated) {
 			final List<String> groups = ldapTemplateBase
-					.search(LdapUtils.emptyLdapName(), filter.encode(), new AttributesMapper<List<String>>() {
-						@Override
-						public List<String> mapFromAttributes(Attributes attributes) throws NamingException {
-							Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
-							return Collections.list(enMember);
-						}
+					.search(LdapUtils.emptyLdapName(), filter.encode(), (AttributesMapper<List<String>>) attributes -> {
+						final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+						return Collections.list(enMember);
 					}).get(0);
 
 			User user = userRepository.findByUserId(userId);

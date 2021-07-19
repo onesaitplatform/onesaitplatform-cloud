@@ -78,6 +78,21 @@ var DigitalTwinCreateController = function() {
 		window.location.href = url; 
 	}
 	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/digitaltwindevices/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
 	$("#button3").on('click', function(){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -232,11 +247,11 @@ var DigitalTwinCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
 		},
-		
-		submitform: function(){
-			
-			//TODO
-			
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';			
+			freeResource(id,url);
+		},
+		submitform: function(){			
 			$("#digitaltwindevice_create_form").submit();
 		},
 		

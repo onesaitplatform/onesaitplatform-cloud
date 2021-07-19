@@ -44,13 +44,10 @@ import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
-@Slf4j
 public class JoinProcessorWithTokenTest {
 
 	@Autowired

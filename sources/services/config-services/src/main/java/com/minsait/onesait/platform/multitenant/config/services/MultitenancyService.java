@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
@@ -67,6 +68,8 @@ public interface MultitenancyService {
 	Optional<MasterUserToken> getMasterTokenByToken(String token);
 
 	Optional<Vertical> getVertical(String vertical);
+	
+	Optional<String> getVerticalSchema(String vertical);
 
 	void createVertical(Vertical vertical);
 
@@ -91,5 +94,11 @@ public interface MultitenancyService {
 	MasterUser resetFailedAttemp(String userId);
 
 	boolean isValidPass(String userId, String newPass, int numberLastEntriesToCheck);
+
+	MasterUser setResetPass(String userId);
+
+	MasterDeviceToken getMasterDeviceToken(String token);
+
+	void changeUserTenant(String userId, String tenant);
 
 }

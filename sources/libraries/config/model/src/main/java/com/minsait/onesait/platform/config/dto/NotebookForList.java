@@ -14,11 +14,8 @@
  */
 package com.minsait.onesait.platform.config.dto;
 
-import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
 import com.minsait.onesait.platform.config.model.User;
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class NotebookForList {

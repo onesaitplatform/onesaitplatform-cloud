@@ -34,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -90,6 +91,9 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 	@Autowired
 	private SQLGenerator sqlGenerator;
+
+	@Value("#{'${onesaitplatform.database.excludeParse:dual}'.split(',')}")
+	private List<String> excludeParse;
 
 	private NamedParameterJdbcTemplate getJdbTemplate(final String ontology) {
 		try {
@@ -161,18 +165,25 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 			if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE)
 					|| ontologyVirtualDatasource.getSgdb()
-							.equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE11)) {
+					.equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE11)) {
 				// ORACLE ON JDBC DOES NOT SUPPORT INSERT BULK WITH RETURN ID, PRODUCES
 				// ORA-00933: SQL command not properly ended
 				affected = jdbcTemplate.update(sql.getStatement(), sql.getParams());
 				keyList = new ArrayList<>();
+			} else if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.HIVE)
+					|| ontologyVirtualDatasource.getSgdb()
+					.equals(OntologyVirtualDatasource.VirtualDatasourceType.IMPALA)) {
+
+				jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()));
+				keyList = null;
+				affected = instances.size();
 			} else {
 				final GeneratedKeyHolder holder = new GeneratedKeyHolder();
 				affected = jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()), holder);
 				keyList = holder.getKeyList();
 			}
 
-			if (!keyList.isEmpty()) {
+			if (keyList != null && !keyList.isEmpty()) {
 				switch (ontologyVirtualDatasource.getSgdb()) {
 				case MYSQL:
 				case MARIADB:
@@ -183,13 +194,13 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 					// Only last inserted id recoverable
 					// https://github.com/microsoft/mssql-jdbc/issues/245
 					final List<DBResult> resultsDb = IntStream.range(0, affected - 1)
-							.mapToObj(index -> new DBResult().setOk(true)).collect(Collectors.toList());
+					.mapToObj(index -> new DBResult().setOk(true)).collect(Collectors.toList());
 					resultsDb.add(
 							new DBResult().setId(String.valueOf(keyList.get(0).get("GENERATED_KEYS"))).setOk(true));
 					return resultsDb;
 				case POSTGRESQL:
 					final String objId = ontologyVirtualRepository
-							.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+					.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
 					if (objId != null) {
 						return IntStream.range(0, affected)
 								.mapToObj(index -> String.valueOf(keyList.get(index).get(objId)))
@@ -321,7 +332,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 			final OntologyVirtualDatasource dataSource = virtualDatasourcesManager.getDatasourceForOntology(ontology);
 
-			ps.setStatement(SQLTableReplacer.replaceTableNameInSelect(ps.getStatement(), ontologyVirtualRepository));
+			ps.setStatement(SQLTableReplacer.replaceTableNameInSelect(ps.getStatement(), ontologyVirtualRepository,
+					excludeParse));
 
 			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getSgdb());
 			ps.setStatement(helper.parseGeometryFields(ps.getStatement(), ontology));
@@ -556,7 +568,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 				jsonObj.addProperty("ordinal_position", rs.getString("ORDINAL_POSITION"));
 				jsonObj.addProperty("column_name", rs.getString("COLUMN_NAME").trim());
 				jsonObj.addProperty("data_type", rs.getString("DATA_TYPE"));
-				jsonObj.addProperty("column_def", rs.getString("COLUMN_DEF"));
+				// jsonObj.addProperty("column_def", rs.getString("COLUMN_DEF")); it's not used
+				// and can have SQLException 99999 in fetching with oracle
 				jsonObj.addProperty("is_nullable", rs.getString("IS_NULLABLE"));
 				jsonObj.addProperty("remarks", rs.getString("REMARKS"));
 				columns.add(jsonObj);
@@ -630,8 +643,9 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		case Types.NULL:
 			return null;
 		case Types.BOOLEAN:
-		case Types.TINYINT:
 		case Types.BIT:
+		case Types.TINYINT:
+
 			return Boolean.TRUE;
 		case Types.INTEGER:
 		case Types.SMALLINT:
@@ -734,6 +748,16 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	@Override
 	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
 			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException("Operation not supported for Virtual Ontology");
+	}
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		return queryNativeAsJson(ontology, query, offset, limit);
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException("Operation not supported for Virtual Ontology");
 	}

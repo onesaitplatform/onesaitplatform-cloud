@@ -1,5 +1,6 @@
 FROM onesaitplatform/baseimage:latest
 
+
 # metadata
 LABEL platform.image.name="iotbroker"
 
@@ -33,6 +34,7 @@ EXPOSE 19000 1883 8883
 
 ENV SERVER_NAME=localhost \
     KAFKAENABLED=false \
+    KAFKABROKERS=none \    
     KAFKAHOST=kafka \
     KAFKAPORT=9095 \
     REALTIMEDBSERVERS=realtimedb:27017 \
@@ -54,7 +56,7 @@ ENV SERVER_NAME=localhost \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
     OP_LOG_LEVEL=INFO \
-    MAX_DEVICES_PER_CLIENT=0 \
+    MAX_DEVICES_PER_CLIENT=20 \
     ENABLE_METRICS=true \
     STOMPENABLED=true \
     STOMPPOOL=200 \
@@ -65,7 +67,10 @@ ENV SERVER_NAME=localhost \
     MQTTPOOL=200 \
     MQTTHOST=0.0.0.0 \
     MQTTSTORE=/tmp/moquette_store_bin.mapdb \
-    MOQUETTE_MAX_BYTES_IN_MESSAGE=8092
+    MOQUETTE_MAX_BYTES_IN_MESSAGE=8092 \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201
 
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

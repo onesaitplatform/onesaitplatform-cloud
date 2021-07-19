@@ -211,7 +211,7 @@
 									<div class="form-actions">
 										<div class="pull-left">
 											<!-- CANCEL TO-DO: authentication and control -->
-											<a th:href="@{/dataflow/instances}" type="button"  class="btn btn-circle btn-outline blue no-border" ><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}" >Cancel</span></a>
+											<a    th:onclick="'javascript:cancelButton(\'' + ${instance.id} + '\',\'' +@{/dataflow/instances} + '\');'"    type="button"  class="btn btn-circle btn-outline blue no-border" ><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}" >Cancel</span></a>
 										</div>
 										<div class="pull-right">
 											<!-- CREATE -->
@@ -236,13 +236,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 
 	<script type="text/javascript">
 	//<![CDATA[
@@ -257,6 +257,22 @@
 		sendRequest("POST");
 	}
 
+	function cancelButton(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/dataflow/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)	
+	}
+	
+	
 	function updateDataflowInstance(){
 		sendRequest("PUT");
 	}

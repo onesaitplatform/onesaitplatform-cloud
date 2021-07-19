@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.s
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,9 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 @Configuration
 public class KafkaConsumerConfig {
 
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
+	private String kafkaBrokers;
+	
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
 
@@ -62,10 +66,17 @@ public class KafkaConsumerConfig {
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.consumer.maxAge:5000}")
 	private String maxAge;
+	
+	private static final String EMPTY_BROKERS = "none";
+	private static final String KAFKA_DEFAULTPORT = "9092";	
 
 	public ConsumerFactory<String, String> consumerFactory(String groupId) {
 		Map<String, Object> props = new HashMap<>();
-		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -79,7 +90,11 @@ public class KafkaConsumerConfig {
 
 	public ConsumerFactory<String, String> consumerFactoryManualAck(String groupId) {
 		Map<String, Object> props = new HashMap<>();
-		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -94,7 +109,11 @@ public class KafkaConsumerConfig {
 
 	public ConsumerFactory<String, String> consumerFactoryBatch(String groupId) {
 		Map<String, Object> props = new HashMap<>();
-		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -107,7 +126,7 @@ public class KafkaConsumerConfig {
 	}
 
 	private void applySecurity(Map<String, Object> config) {
-		if (!kafkaPort.contains("9092")) {
+		if (!kafkaPort.contains(KAFKA_DEFAULTPORT) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
 

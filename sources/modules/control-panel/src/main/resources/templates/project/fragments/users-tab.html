@@ -22,9 +22,16 @@
 			<input id="check-realm" name="useRealm" type="checkbox" class="form-control no-remove" th:checked="${#lists.isEmpty(members)}" /> 
 			<span></span> 
 		</label>
-		<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="">
+		<div class="row" style="margin-bottom: 0px; margin-top: 0px;">
+		<div class="col-md-9 col-sm-6 col-xs-12">
+		<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="alert alert-info" id="alert-realm">	
+			<i class="fa fa-info-circle"></i>
+			<span th:text="#{project.norealm}">There are not realms to this user yet</span>
+		</div>
+		</div></div>
+		<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="" id="create-realm">
 			<button id="createRealm" type="button" class="btn btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\''+@{|/apps/create|}+'\')'">
-				<span th:text="#{gen.createBtn}"> Create</span>
+				<span th:text="#{app.create}"> Create</span>
 			</button>
 		</div>
 		<div th:if="${projectObj.app != null}" class="">
@@ -34,7 +41,6 @@
 			</button>
 		</div>
 	</div>
-	
 </div>
 <div th:if="${!#lists.isEmpty(realms) AND projectObj.app ==null AND #lists.isEmpty(members)}"  class="col-md-3 col-sm-6 col-xs-12" id="realms-select">
 	<div class="form-group">
@@ -46,7 +52,7 @@
 	</div>
 	<div class="form-group pull-right">
 		<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.setRealm()" th:text="#{project.link.realm}"></button>																		
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/apps/create|}+'\')'" th:text="#{gen.createBtn}"></button>
+		<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/apps/create|}+'\')'" th:text="#{app.create}"></button>
 	</div>
 </div>
 <div th:if="${projectObj.app ==null}" th:classappend="${!#lists.isEmpty(members) AND projectObj.app ==null ? '' : 'hide'}" class="col-md-3 col-sm-6 col-xs-12" id="platform-users">

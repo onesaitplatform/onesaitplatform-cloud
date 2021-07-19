@@ -60,6 +60,7 @@ public class CustomAuthenticationEntryPoint extends LoginUrlAuthenticationEntryP
 				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, parameterMap);
 
 			}
+
 		}
 		super.commence(request, response, authException);
 	}

@@ -21,9 +21,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 
+public interface PropertyDigitalTwinTypeRepository extends JpaRepository<PropertyDigitalTwinType, String> {
 
-public interface PropertyDigitalTwinTypeRepository extends JpaRepository<PropertyDigitalTwinType, String>{
-	
 	List<PropertyDigitalTwinType> findByNameIgnoreCase(String name);
 
 	List<PropertyDigitalTwinType> findByDescription(String description);
@@ -35,13 +34,11 @@ public interface PropertyDigitalTwinTypeRepository extends JpaRepository<Propert
 	List<PropertyDigitalTwinType> findByDescriptionContaining(String description);
 
 	List<PropertyDigitalTwinType> findByNameContaining(String name);
-	
+
 	List<PropertyDigitalTwinType> findByNameLikeAndDescriptionLike(String name, String description);
-	
+
 	List<PropertyDigitalTwinType> findByNameContainingAndDescriptionContaining(String name, String description);
-	
-	PropertyDigitalTwinType findById(String id);
-	
+
 	List<PropertyDigitalTwinType> findByTypeId(DigitalTwinType digitalTwinType);
-	
+
 }

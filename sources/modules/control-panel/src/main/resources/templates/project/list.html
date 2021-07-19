@@ -112,7 +112,7 @@
 								</div>
 								<div class="actions margin-right-20">
 									<div class="btn-group">
-										<button sec:authorize="hasAuthority('ROLE_DEVELOPER') OR hasAuthority('ROLE_DATASCIENTIST')"
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
 											type="button" class="btn btn-circle btn-outline btn-primary"
 											onclick="location.href='../projects/create'">
 											<span th:text="#{gen.create}">New </span>
@@ -289,13 +289,13 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" />
-	<script th:src="@{/static/js/layout.js}" />
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" ></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" ></script>
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" ></script>
 
 
 	<script th:inline="javascript">		
@@ -392,13 +392,13 @@
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([ 2 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([ 2 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 	

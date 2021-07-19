@@ -139,7 +139,7 @@
 								 			<input type="hidden" id="id" th:field="*{id}"/>
 								 			<div class="form-body">
 									 			<div class="row">											
-													<div class="col-md-4 col-sm-12">
+													<div class="col-md-3 col-sm-12">
 														<div class="form-group">
 															 <label class="control-label"  th:text="#{gadgettemplates.identification} + ':'">Identification</label><span class="required"> (*)</span>
 															<div class="input-icon ">
@@ -147,8 +147,14 @@
 																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gadgettemplates.identification}" />
 															</div>
 														</div>
-													</div>	
-													<div class="col-md-8 col-sm-12">														
+													</div>
+													<div class="col-md-2 col-sm-12">
+														<div class="form-group">
+															<label class="control-label">Type</label>
+															<input id="type" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{type}" class="form-control " th:readonly="*{type}" />
+														</div>
+													</div>
+													<div class="col-md-5 col-sm-12">
 														<div class="form-group">
 															<label class="control-label"  th:text="#{gadgettemplates.description} + ':'">Description</label><span class="required"> (*)</span>
 																														
@@ -157,9 +163,22 @@
 														</div>
 													</div>		
 													<div class="clearfix"></div>													
-												</div>											
-															
-											
+												</div>
+
+											<div class="portlet light no-pad no-shadow">
+												<div class="portlet-title">
+													<div class="tools hide">
+														<a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
+														<a href="" class="fullscreen" data-original-title="" title=""> </a>
+													</div>
+													<label data-toggle="collapse" href="#headerlibscodeWrapper"><a>Header Libs</a></label>
+												</div>
+												<div id="headerlibscodeWrapper" class="portlet-body" style="margin-top: -30px;">
+													<textarea id="headerlibsCode" name="headerlibs" th:field="*{headerlibs}" th:required="true"  class="hidden"></textarea>
+													<div style="height:200px" id="hlcode" role="tabpanel"></div>
+												</div>
+											</div>
+
 											<!-- Json-->
 											<div class="row">
 												<div class="col-md-6 col-sm-6 col-xs-6">
@@ -208,7 +227,7 @@
 											<label th:text="#{gadgettemplates.template.result}">Previsualization</label>	
 											
 											<!-- VIEWER -->
-											<iframe style="height:400px;width:100%;border:none" src="/controlpanel/gadgettemplates/gadgetViewer" id="icontent"></iframe>
+											<div style="height:400px;width:100%;border:none" id="icontent"></div>
 											
 											<div class="clearfix"></div>
 											<div style="margin-top:20px" class="form-actions">
@@ -216,7 +235,11 @@
 													<!-- CANCEL  -->
 													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 												</div>
-											
+												<div class="pull-right">
+													<!-- UPDATE -->
+													<button id="goEdit" type="button" class="btn btn-circle btn-outline btn-primary " name="edit" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgettemplates/update/} + ${gadgetTemplate.id} + '\');'"><span th:text="#{gen.editBtn}" > Edit</span></button>
+
+												</div>
 											</div>
 											
 											
@@ -240,11 +263,14 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
-	
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/gadgetTemplatesCreate.js}"/>
+	<script th:src="@{/static/js/pages/gadgetTemplatesCreate.js}"></script>
 	
 	<script
 		th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
@@ -255,7 +281,7 @@
 		<script th:if="${lang} == 'es'"
 		th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
 		type="text/javascript"></script>
-	<script>var require = { paths: { 'vs': '../../../static/vendor/vs' } };</script>
+	<script>var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };</script>
 	<script th:src="@{/static/vendor/vs/loader.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>

@@ -25,7 +25,7 @@ public class Oauth2AuthenticationProvider implements AuthenticationProvider {
 
 	@Override
 	public Authentication authenticate(Authentication authentication) {
-		Optional token = (Optional) authentication.getPrincipal();
+		final Optional<Object> token = Optional.ofNullable(authentication.getPrincipal());
 		if (!token.isPresent() || token.get() != null) {
 			throw new BadCredentialsException("Invalid token");
 		}

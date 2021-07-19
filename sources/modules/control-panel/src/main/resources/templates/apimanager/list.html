@@ -93,7 +93,7 @@
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="location.href='../apimanager/token/list'"><span th:text="#{apimanager.usertoken}"> Token </span></button>
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../apimanager/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../apimanager/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
 								</div>
 							</div>
@@ -159,21 +159,34 @@
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="apis" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none"  dt:paginationtype="full_numbers">
-													<thead>
+													<thead>	
+													<tr class="cabecera-tabla">
+															<th class="titulo-columnas text-center" > </th>
+															<th class="titulo-columnas text-left" > <span id="identifierfilter"></span></th>
+															<th class="titulo-columnas text-left "  > </th>
+															<th class="titulo-columnas text-center" > </th>
+															<th class="titulo-columnas text-center" >  </th>
+															<th class="titulo-columnas text-center"> </th>
+															<th class="titulo-columnas text-center" > </th>
+															<th class="titulo-columnas text-center"> <span id="statefilter" ></span></th>
+															<th class="titulo-columnas text-center"> </th>															
+															<th class="titulo-columnas text-center" ></th>
+														</tr>												 
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas text-center" ><span th:text="#{apimanager.image}"> image </span></th>
-															<th class="titulo-columnas text-left" dt:filterable="true" dt:filterCssClass="input-small" dt:selector="userFilter" ><span th:text="#{apimanager.id} + ' - ' + #{apimanager.numversion}">Identification</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{apimanager.id} + ' - ' + #{apimanager.numversion}">Identification</span><span ></span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{apimanager.description}">Description</span></th>
 															<th class="titulo-columnas text-center" > <span th:text="#{gen.created}">Created At</span></th>
 															<th class="titulo-columnas text-center" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas text-center"><span th:text="#{gen.public}">Public</span></th>
 															<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Name</span></th>
-															<th class="titulo-columnas text-center" id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="stateFilter" dt:filterCssClass="input-small"><span th:text="#{apimanager.state}" >State</span></th>
+															<th class="titulo-columnas text-center"><span th:text="#{apimanager.state}" >State</span><span   ></span></th>
 															<th class="titulo-columnas text-center"><span th:text="#{apimanager.auth}">Authorizations</span></th>															
 															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
+														
 													</thead>
-													<tbody th:remove="all-but-first">
+													<tbody th:remove="all-but-first">													 
 														<tr th:each="api : ${apis}" pages:paginate="10">
 															<!-- IMAGE -->
 															<td class="text-center no-wrap">
@@ -202,11 +215,12 @@
 															<td class="text-center" th:if="${api.userApiAccesses.isEmpty()}"><span class=""><i class="la la-times-circle-o text-danger font-hg"></i> </span></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
-
 																
-																
-																
-															
+																<span class="btn-xs btn-no-border btn-circle btn-outline blue tooltips btn-client-gen" data-container="body" data-placement="bottom" th:data-original-title="#{apimanager.client-js}">
+																	<a class="" >
+																		<img style="width:22px" th:src="@{/static/images/javascript.png}"></img>
+																	</a>
+																</span>
 																<!-- VIEW -->															
 																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/show/${api.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																
@@ -214,6 +228,9 @@
 
 																<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'} OR ${api.state.name() == 'PUBLISHED'}))"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/update/${api.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
 																<!--  <span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType.name() == 'NODE_RED'}))"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|${api.endpointExt}|} + '\');'"><i class="la la-edit font-hg"></i></span> -->
+
+																<!--  CLONE -->
+																<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'} OR ${api.state.name() == 'PUBLISHED'}))"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.clone}" th:data-original-title="#{gen.clone}" th:onclick="'javascript:cloneApi(\'' + ${api.id} + '\', \'' + ${api.identification} + '\');'"><i class="la la-clone font-hg"></i></span>
 															
 																<!-- SWAGGER UI -->	
 																<span th:if="(${api.state.name() != 'DELETED'})" title="SWAGGER" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="SWAGGER" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/invoke/${api.id}/|} + '\');'"><i class="la la-code font-hg"></i></span>
@@ -226,6 +243,7 @@
 																<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.PUBLISH}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/PUBLISHED|} + '\');'"><i class="la la-upload font-hg"></i></span>
                               									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'PUBLISHED'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.DEPRECATE}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/DEPRECATED|} + '\');'"> <span th:text="#{apimanager.state.action.DEPRECATE}" >DEPRECATED</span></span>
                               									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'DEPRECATED'}))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.DELETE}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/DELETED|} + '\');'"> <i class="la la-minus-circle font-hg"></i></span>							                              							
+                              									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND ((${api.state.name() == 'DEPRECATED'}) OR (${api.state.name() == 'DELETED'})))" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{apimanager.state.action.CREATE}" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/updateState/${api.id}/CREATED|} + '\');'"> <i class="la la-rotate-left font-hg"></i></span>
 																<!-- DELETE -->
 																<span th:if="${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteApi(\'' + ${api.id} + '\');'"><i class="la la-trash font-hg"></i></span>
 																
@@ -233,28 +251,6 @@
 														</tr>
 													</tbody>
 												</table>
-												
-												<!-- DATATABLE DANDELION CONF. -->
-												<div dt:conf="apis">
-													<div dt:confType="extrahtml" dt:uid="0">
-														<!-- TABLE FILTERS AUX. ROW -->
-														<table id="filteringTable" class="hide">
-																<tr id="filtering" class="hide" role="row">
-																	<th></th>
-																	<th id="userFilter" class="dtFilter text-left"></th>
-																	<th></th>
-																	<th></th>
-																	<th></th>
-																	<th></th>
-																	<th></th>
-																	<th id="stateFilter" class="dtFilter text-center"></th>
-																	<th></th>
-																</tr>
-														</table>
-													</div>
-												</div>
-												
-												
 												
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
 												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
@@ -290,7 +286,82 @@
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
 					</div><!-- END COL-12 -->						
-				</div><!-- END MAIN ROW -->				
+				</div><!-- END MAIN ROW -->		
+				<!-- Modal Client JS-->
+				<div id="clientGenModal" class="modal fade" role="dialog">
+				  <div class="modal-dialog modal-sm">
+				
+				    <!-- Modal content-->
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal"></button>
+				        <h4 class="modal-title" th:text="#{apimanager.client-js}">Generate JS client</h4>
+				      </div>		
+				      <div class="modal-body">
+						<div class="row">
+							<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{apimanager.framework}">JS Framework</label>
+									<select id="framework" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+										<!-- <option value="" th:text="#{apimanager.select.framework}"> Select framework...</option> -->
+										<option value="REACT_JS"> React JS</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label class="control-label" th:text="#{apimanager.list.auth.apiversion}">API-Version</label>
+									<select id="apis-select" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+										<option value="" th:text="#{apimanager.select.api}"> Select API...</option>
+										<option th:each="api :${apis}"  th:if="${api.state != 'DELETED' && api.ontology != null}" th:value="${api.id}" th:text="${api.identification}  +' (v'+ ${api.numversion} +')'" ></option>														
+									</select>
+								</div>
+								<div class="form-group pull-right">
+									<button type="button" class="btn btn-circle btn-primary" onclick="addAPIToTable(this)" th:text="#{apimanager.add.api}" >Insert File Authorization</button>																		
+								</div>												
+							</div>
+							<div class="col-md-8 col-sm-6 col-xs-12">
+							<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+								<div class="form-group">
+									<label class="control-label" th:text="#{apimanager.apis.included} + ':'">APIs</label>
+									<div id="alert-apis-modal" class="alert alert-info">
+										<i class="fa fa-info-circle"></i> <span th:text="#{apimanager.apis.included.info}"> </span>
+									</div>
+									<div id="client-generation" class="margin-bottom-20 hide">
+										<table class="table" id="table-client-generation" data-loaded="false">
+											<thead>
+												<tr class="cabecera-tabla" role="row" >
+													<th class="titulo-columnas" th:text="#{apimanager.id}">Identification</th>
+													<th class="titulo-columnas" th:text="#{apimanager.numversion}">Version</th>
+													<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr class="table-model">
+													
+													<td><input type="text" name="identifications[]" readonly="readonly"   class="form-control"/></td>
+													<td><input type="text" name="versions[]" readonly="readonly"   class="form-control"/></td>
+													<td width="150px" class="no-wrap text-center">																																
+														<button type="button" class="btn btn-sm btn-circle btn-outline blue btn-mountable-remove btn-mountable-authorization-remove" onclick="removeAPIFromTable(this)"><i class="fa fa-trash"></i> <span th:text="#{project.removeauthorization}">Remove</span></button>
+													</td>	
+													<td><input type="text" name="ids[]" readonly="readonly"   class="form-control hide"/></td>		
+												</tr>
+											</tbody>														
+										</table>
+										<div id="alert-apis-modal" class="alert alert-info">
+										<i class="fa fa-info-circle"></i> <span th:text="#{apimanager.apis.gen.info}"> </span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+				      </div>									      
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-circle btn-outline btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+				    	<button disabled type="button" class="btn-generate btn btn-circle btn-outline btn-primary" th:text="#{digitaltwindevice.generate}">Generate</button>
+				      </div>
+				    </div>
+				
+				  </div>
+				</div>		
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -300,18 +371,20 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/modernizr.js}"/>
-	
-	<script th:src="@{/static/js/pages/apiList.js}"/>
-	 
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/modernizr.js}"></script>
+	<script th:src="@{/static/js/pages/apiList.js}"></script>
+	 <script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 	
 	<script th:inline="javascript">	
 	
@@ -320,6 +393,8 @@
 	var userparam = [[${param.user}]] || '';
 	var stateparam = [[${param.state}]] || '';
 	var deleteUrl =  [[@{/apimanager}]];
+	var apis = [[${apis}]]
+	
 	
 	//GET SEARCH DATA
 	apiId ? $('#apiId').val(apiId) : apiId = '';
@@ -340,6 +415,8 @@
 	
 	<script th:inline="javascript">	
 	var optionName = 'APIMANAGER';
+	var mountableModel2 = $('#table-client-generation').find('tr.table-model')[0].outerHTML;
+	var apisToMount = [];
 	
 	function navigateUrl(url){  window.location.href = url;	}
 	
@@ -351,6 +428,7 @@
 		var Remove = headerReg.btnEliminar;
 		var Title = headerReg.titleConfirm + ':';
 
+		
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
 			icon: 'fa fa-warning',
@@ -392,7 +470,56 @@
 			}
 		});
 	}
+	addAPIToTable = (e) =>{
+		var selected= $('#apis-select').val();
+		if(selected === '')
+			return;
+		if(apisToMount.some(a => a.ids === selected))
+			return;
+		var api = apis.filter(a => a.id === selected).reduce((o,i) => o)
+		var item = {ids: api.id, identifications: api.identification, versions: `v${api.numversion}` }
+		apisToMount.push(item);
+		mountClientGenTable();
+		$('.btn-generate').prop( "disabled", false );
+		
+	}
 	
+	removeAPIFromTable = (obj) => {
+		console.log(apisToMount)
+		var id = $(obj).closest('tr').find("input[name='ids\\[\\]']").val();
+		console.log(id)
+		apisToMount = apisToMount.filter(a => a.ids!=id)
+		if(apisToMount.length === 0)
+			resetTable();
+		else
+			mountClientGenTable();
+	}
+	
+	resetTable = (e) => {
+		apisToMount = []
+		$('#alert-apis-modal').removeClass('hide');					
+		$('#client-generation').addClass('hide');
+		$('.btn-generate').prop( "disabled", true );
+		
+	}
+	
+	mountClientGenTable = () =>{
+		// TO-HTML
+		if ($('#client-generation').attr('data-loaded') === 'true'){
+			$('#table-client-generation > tbody').html("");
+			$('#table-client-generation > tbody').append(mountableModel2);
+		}
+		
+		$('#table-client-generation').mounTable(apisToMount,{
+			model: '.table-model',
+			noDebug: false							
+		});
+		console.log(apisToMount)
+		// hide info , disable user and show table
+		$('#alert-apis-modal').addClass('hide');			
+		$('#client-generation').removeClass('hide');
+		$('#client-generation').attr('data-loaded',true);
+	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -427,11 +554,116 @@
 		//Stretchy
 	   loadStretchy();
 		
+	   $('.btn-client-gen').each(function() {
+			$(this).on('click', function (e) {
+				e.preventDefault(); 
+				var id = $(this).data('id'); 
+				resetTable();
+				$("#clientGenModal").modal('show');
+			});
+		});
+		
+	   $('.btn-generate').off().on('click', function(e){
+		   generateClientRequest();
+	   })
 	});
 	 
+	generateClientRequest = () =>{
+		var framework = $('#framework').val();
+		var ids = []
+		ids = apisToMount.map(a => a.ids);
+		// Use XMLHttpRequest instead of Jquery $ajax
+		xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		    var a;
+		    if (xhttp.readyState === 4 && xhttp.status === 200) {
+		        // Trick for making downloadable link
+		        a = document.createElement('a');
+		        a.href = window.URL.createObjectURL(xhttp.response);
+		        // Give filename you wish to download
+		        a.download = "client-js.zip";
+		        a.style.display = 'none';
+		        document.body.appendChild(a);
+		        a.click();
+		    }
+		};
+		// Post data to URL which handles post request
+		xhttp.open("POST", "/controlpanel/api/apis/client-js?framework=" + framework);
+		xhttp.setRequestHeader("Content-Type", "application/json");
+		// You should set responseType as blob for binary responses
+		xhttp.responseType = 'blob';
+		xhttp.send(JSON.stringify(ids));
+		
+		
+		
+	}
+	
+	//CLONE
+	function cloneApi(id, identification) {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		var identification_text = [[#{apimanager.id}]];
+		
+		$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: [[#{apimanager.clone}]],
+			theme: 'light',
+			columnClass: 'medium',
+			content: "<label>"+identification_text+"</label><input class='col-md-12 form-control' type='text' id='cloneIdentification' value='" + identification + "'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Wrong Identification Structure.</label>",
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			onContentReady: function () {
+				// INPUT MASK FOR api identification allow only letters, numbers and -_
+				$("#cloneIdentification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
+			},
+			closeIcon: true,
+			buttons: {
+				close: {
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+					action: function() {
+						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val()
+								|| $("#cloneIdentification").val().length < 5 || $('#cloneIdentification').val().match(/^[0-9]/)){
+							console.log("identification empty");
+							$("#patternAlert").removeClass("hidden");
+							return false;
+						} else {
+							var cloneIdentification = $("#cloneIdentification").val().trim();
+							url = '/controlpanel/apimanager/clone/';
+							$.ajax({ url: url, headers: {[csrf_header]: csrf_value}, type: 'POST',data:{'id': id, 'identification': cloneIdentification},
+								success: function (source) {			 
+									navigateUrl('/controlpanel/apimanager/list'); //redirigir al show
+								},
+								 error: function(xhr, status, error) {
+									 var errorMessage = 'ERROR!';
+									 if(typeof xhr.responseJSON !== 'undefined' && 
+											 typeof xhr.responseJSON.cause !== 'undefined' ){
+										 errorMessage = xhr.responseJSON.cause;
+									 }
+									 $.alert({
+											title : 'ERROR!',
+											type : 'red',
+											theme : 'light',
+											content :  errorMessage
+										});
+									}
+							});
+						}
+					}											
+				}						
+			}
+		});
+	}
+
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
-	
+		$.each([ 0,2,8 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });		
 		//DATATABLE 
 		var oTable = $('#apis').DataTable();
 		
@@ -449,23 +681,22 @@
 			yadcf.exResetAllFilters(oTable);		
 		});			
 		
-		// ADJUST CSS FOR DATATABLE FILTERS 
-		var filters = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter');
-		var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
-		filters.addClass('input-small font-sm');
-		filtersResets.addClass('hide');
-		
+	 
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([ 0,2,8 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	
 		
-		$('#yadcf-filter--apis-1').attr("placeholder", [[#{apimanager.list.text.placeholder}]]);
-		$('#yadcf-filter--apis-5 option[value="-1"]').text([[#{apimanager.list.value.placeholder}]]);
+	       yadcf.init(oTable, [	 			
+				    {column_number : 1, filter_type: "text",  filter_container_id:"identifierfilter",filter_default_label: [[#{apimanager.list.text.placeholder}]]},				
+				    {column_number : 7,   filter_type: "select",filter_container_id:"statefilter",filter_default_label: [[#{apimanager.list.value.placeholder}]]}				 
+				  ]);
 		
-		$('#yadcf-filter--apis-5').on('click', function() { 
-			$('#yadcf-filter--apis-5 option[value="-1"]').text([[#{apimanager.list.value.placeholder}]]); })
-
-		
+	       var filtersResets = $('.yadcf-filter-reset-button');
+		 	 filtersResets.css('margin-left', '10px'); 
+		     filtersResets.html('<i class="fa fa-times"></i>');
+		     filtersResets.addClass("btn btn-default btn-sm");
 	});
+	
+	
 	
 	</script>
 	

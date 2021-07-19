@@ -18,7 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.minsait.onesait.platform.config.model.*;
+import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppUser;
+import com.minsait.onesait.platform.config.model.Project;
+import com.minsait.onesait.platform.config.model.ProjectList;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
 public interface ProjectService {

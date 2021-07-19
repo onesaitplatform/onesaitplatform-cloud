@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,7 +37,7 @@ public interface OntologyVirtualDatasourceRepository extends JpaRepository<Ontol
 	@Query("SELECT o FROM OntologyVirtualDatasource AS o " + "WHERE (o.datasourceName like %:datasouceName%) ORDER BY o.datasourceName ASC")
 	List<OntologyVirtualDatasource> findAllByDatasourceNameLikeOrderByDatasourceNameAsc(@Param("datasouceName") String datasouceName);
 
-	OntologyVirtualDatasource findById(String id);
+	Optional<OntologyVirtualDatasource> findById(String id);
 
 	List<OntologyVirtualDatasource> findByIsPublicTrue();
 	

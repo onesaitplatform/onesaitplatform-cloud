@@ -40,10 +40,10 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.categorization.CategorizationService;
 import com.minsait.onesait.platform.config.services.categorization.user.CategorizationUserService;
+import com.minsait.onesait.platform.config.services.device.dto.ClientPlatformDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.categorization.model.CategorizationDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.categorization.model.CategorizationUserDTO;
-import com.minsait.onesait.platform.controlpanel.rest.management.client.model.ClientPlatformDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import io.swagger.annotations.Api;

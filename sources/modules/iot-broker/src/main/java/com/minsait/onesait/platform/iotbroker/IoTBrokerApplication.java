@@ -22,12 +22,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @EnableAutoConfiguration(exclude = { HibernateJpaAutoConfiguration.class })
-@ComponentScan(basePackages = { "com.minsait.onesait.platform.iotbroker" }, lazyInit = false)
+@ComponentScan(basePackages = { "com.minsait.onesait.platform" }, lazyInit = false)
 public class IoTBrokerApplication {
 
 	@Configuration
 	@Profile("default")
-	@ComponentScan(basePackages = { "com.minsait.onesait.platform.iotbroker" }, lazyInit = false)
+	@ComponentScan(basePackages = { "com.minsait.onesait.platform" }, lazyInit = false)
 	static class LocalConfig {
 	}
 

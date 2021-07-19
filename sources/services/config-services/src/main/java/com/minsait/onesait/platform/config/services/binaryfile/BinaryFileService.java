@@ -19,6 +19,7 @@ import java.util.List;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFileAccess;
+import com.minsait.onesait.platform.config.model.BinaryFileAccess.Type;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface BinaryFileService {
@@ -53,4 +54,9 @@ public interface BinaryFileService {
 	public BinaryFileAccess updateBinaryFileAccess(String id, String accesstype, User user) throws GenericOPException;
 
 	public boolean canUserEditAccess(User user, String id);
+
+	public void setAuthorization(String id, Type accessType, User user);
+	
+	public void deleteAuthorization(String id, User user) throws GenericOPException;
+
 }

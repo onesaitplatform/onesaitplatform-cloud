@@ -21,13 +21,15 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString()
 public class DeployRequestRecord {
 
@@ -94,10 +96,10 @@ public class DeployRequestRecord {
 	private String pingTimer;
 	@Getter
 	@Setter
-	private String url;	
+	private String url;
 	@Getter
 	@Setter
-	private String apiUrl;	
+	private String apiUrl;
 	@Getter
 	@Setter
 	private String description;
@@ -119,7 +121,7 @@ public class DeployRequestRecord {
 	private String queryParams;
 	@Getter
 	@Setter
-	private ArrayList<Map<String,String>> multipartElements;
+	private ArrayList<Map<String, String>> multipartElements;
 	@Getter
 	@Setter
 	private Boolean retryAfterError;

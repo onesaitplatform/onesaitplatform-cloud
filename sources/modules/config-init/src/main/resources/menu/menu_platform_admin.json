@@ -19,6 +19,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/multitenancy/verticals"
+				},
+				{
+					"title": {
+						"EN": "Multitenant Configurations",
+						"ES": "Configuraciones multiinquilino"
+					},
+					"icon": "",
+					"url": "/controlpanel/multitenancy/configuration"
 				}
 			]
 		},

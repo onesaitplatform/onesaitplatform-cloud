@@ -329,7 +329,7 @@
 									<div class="form-actions">									
 										<div class="pull-left">
 											<!-- CANCEL TO-DO: authentication and control -->
-											<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue " style="border: none !important"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/viewers/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+											<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue " style="border: none !important"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:cancelGo(\'' + ${viewer.id} + '\',\'' + @{/viewers/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 										</div>
 									
 										<div class="pull-right">											
@@ -372,19 +372,19 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
 
 	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
     <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
     <script th:src="@{/static/vendor/jquery-form/jquery.form.min.js}" type="text/javascript"></script>
-    <script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
+    <script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
 	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
 
@@ -394,19 +394,19 @@
 		
 	<!-- JAVASCRIPT EDITOR -->
 	
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
-	<script th:src="@{/static/vendor/codemirror/mode/yaml/yaml.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/yaml/yaml.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
 
 	<!-- INPUTMASK -->	
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- JQUERY RESIZABLE -->	
 	<script th:src="@{/static/vendor/jquery-resizable/jquery-resizable.js}" type="text/javascript"></script>	
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/viewerCreate.js}"/>
+	<script th:src="@{/static/js/pages/viewerCreate.js}"></script>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
@@ -439,7 +439,22 @@
 		window.location.href = url; 
 	}
 	
-		
+    function cancelGo(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/viewers/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
+	
 	
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
 	// CREATE WIZARD CONTROLLER LOAD AND INIT ITSELF

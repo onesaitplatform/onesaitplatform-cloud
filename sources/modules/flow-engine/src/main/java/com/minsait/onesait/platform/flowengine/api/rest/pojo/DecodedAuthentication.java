@@ -18,11 +18,15 @@ import java.util.Base64;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
 public class DecodedAuthentication {
 
 	@Getter

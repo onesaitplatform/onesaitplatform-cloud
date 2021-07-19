@@ -39,7 +39,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.repository.WebProjectRepository;
@@ -146,7 +145,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Override
 	public WebProjectDTO getWebProjectById(String webProjectId, String userId) {
-		final WebProject webProject = webProjectRepository.findById(webProjectId);
+		final WebProject webProject = webProjectRepository.findById(webProjectId).orElse(null);
 		final User user = userService.getUser(userId);
 		if (webProject != null) {
 			if (hasUserPermissionToEditWebProject(user, webProject)) {
@@ -175,7 +174,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Override
 	public void updateWebProject(WebProjectDTO webProject, String userId) {
-		final WebProject wp = webProjectRepository.findById(webProject.getId());
+		final WebProject wp = webProjectRepository.findByIdentification(webProject.getIdentification());
 		final User user = userService.getUser(userId);
 
 		if (wp != null) {
@@ -201,28 +200,32 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Override
 	public void deleteWebProject(String webProjectId, String userId) {
-		final WebProject wp = webProjectRepository.findById(webProjectId);
-		final User user = userService.getUser(userId);
+		webProjectRepository.findById(webProjectId).ifPresent(wp -> {
+			final User user = userService.getUser(userId);
 
-		if (hasUserPermissionToEditWebProject(user, wp)) {
-			deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
-			webProjectRepository.delete(wp);
-		} else {
-			throw new WebProjectServiceException(USER_UNAUTH);
-		}
+			if (hasUserPermissionToEditWebProject(user, wp)) {
+				deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
+				webProjectRepository.delete(wp);
+			} else {
+				throw new WebProjectServiceException(USER_UNAUTH);
+			}
+		});
+
 	}
 
 	@Override
 	public void deleteWebProjectById(String id, String userId) {
-		final WebProject wp = webProjectRepository.findById(id);
-		final User user = userService.getUser(userId);
+		webProjectRepository.findById(id).ifPresent(wp -> {
+			final User user = userService.getUser(userId);
 
-		if (hasUserPermissionToEditWebProject(user, wp)) {
-			deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
-			webProjectRepository.delete(wp);
-		} else {
-			throw new WebProjectServiceException(USER_UNAUTH);
-		}
+			if (hasUserPermissionToEditWebProject(user, wp)) {
+				deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
+				webProjectRepository.delete(wp);
+			} else {
+				throw new WebProjectServiceException(USER_UNAUTH);
+			}
+		});
+
 	}
 
 	@Override
@@ -441,6 +444,11 @@ public class WebProjectServiceImpl implements WebProjectService {
 		} else {
 			return null;
 		}
+	}
+
+	@Override
+	public List<WebProjectDTO> getAllWebProjects() {
+		return webProjectRepository.findAll().stream().map(WebProjectDTO::convert).collect(Collectors.toList());
 	}
 
 }

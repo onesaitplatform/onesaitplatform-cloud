@@ -13,15 +13,11 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.config.repository;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 
-public interface ApiQueryParameterRepository extends JpaRepository<ApiQueryParameter,String> {
-
-
-	ApiQueryParameter findById(String id);
-
-
+public interface ApiQueryParameterRepository extends JpaRepository<ApiQueryParameter, String> {
 
 }

@@ -35,7 +35,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -52,17 +51,13 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 	@Autowired
 	private RouterService routerService;
 	@Autowired
-	SecurityPluginManager securityPluginManager;
-	@Autowired
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = (SSAPMessage<SSAPBodyUnsubscribeMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
 		response.setBody(new SSAPBodyReturnMessage());
-
-		final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
 
 		final SubscriptionModel model = new SubscriptionModel();
 		model.setSuscriptionId(unsubscribeMessage.getBody().getSubscriptionId());

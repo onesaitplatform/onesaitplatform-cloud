@@ -3,6 +3,9 @@ var authorizationUpdateArr  = []; // get authorizations of the ontology
 var authorizationsIds 		= []; // get authorizations ids for actions
 var authorizationObj 		= {}; // object to receive authorizations
 
+var accessUserArr 			= []; // add user data Access
+var accessRoleArr 			= []; // get role data Access
+
 // responses.
 var referencesArr 			=[]; // references LD array
 var referencesIds			=[]; // references ID avoid duplication
@@ -25,6 +28,9 @@ var OntologyCreateController = function() {
 	// save html-model for when select new datamodel, is remove current and
 	// create a new one.
 	var mountableModel2 = $('#ontology_autthorizations').find('tr.authorization-model')[0].outerHTML;
+	var mountableModel3 = $('#ontology_userdataaccess').find('tr.userdataaccess-model')[0].outerHTML;
+	var mountableModel4 = $('#ontology_roledataaccess').find('tr.roledataaccess-model')[0].outerHTML;
+	
 	var validIdName = false;
 	var validJsonSchema = false;
 	var validMetaInf = false;
@@ -770,6 +776,15 @@ var OntologyCreateController = function() {
 			return false;
 		  }
 		});
+		
+		// data access tab control
+		$(".nav-tabs a[href='#tab_data']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			$.alert({title: 'INFO!',  theme: 'light', content: ontologyCreateReg.validations.notDataAccess});
+			return false;
+		  }
+		});
 
 
 		// INPUT MASK FOR ontology identification allow only letters, numbers
@@ -808,26 +823,12 @@ var OntologyCreateController = function() {
 		});
 		
 		$("#rtdbInstance").on('change', function(){
-			if(this.value == "KUDU"){
-				$("#kuduProps").removeClass("hidden");
-			}
-			else if(this.value == "COSMOS_DB"){
+			if(this.value == "COSMOS_DB"){
 				$(".cosmosProps").removeClass("hidden");
 			}else{
 				$(".cosmosProps").addClass("hidden");
-				$("#kuduProps").addClass("hidden");
 			}
-		});
-		
-		$("#enablePartitionIndexes").on('click', function(){
-			if($('#enablePartitionIndexes').is(':checked')){
-				$(".kuduAdvancedProps").removeClass("hidden");
-			}
-			else{
-				$(".kuduAdvancedProps").addClass("hidden");
-			}
-		});
-		
+		});		
 
 		// INSERT MODE ACTIONS (ontologyCreateReg.actionMode = NULL )
 		if ( ontologyCreateReg.actionMode === null){
@@ -889,6 +890,69 @@ var OntologyCreateController = function() {
 				$("#users").selectpicker('deselectAll');
 
 			}
+			
+			// if ontology has dataaccess we load it!.
+			dataaccessesJson = ontologyCreateReg.dataaccesses;
+			if (dataaccessesJson.length > 0 ){
+				
+				// MOUNTING DATA ACCESS ARRAY
+				$.each( dataaccessesJson, function (key, object){
+					
+					if (object.userId!=null && object.userId!=''){
+						var propUserAccess = {"user": object.userId, "rule": object.rule, "idDataAccess": object.id};
+						
+						accessUserArr.push(propUserAccess);
+						
+						logControl ? console.log('      |----- dataaccess object , ID: ' + object.id + ' USER: ' +  object.userId + ' RULE: ' +  object.rule ) : '';
+					} else {
+						
+						var propRoleAccess = {"realm": object.appName, "role": object.appRoleName, "rolerule": object.rule, "idDataAccessRule": object.id};
+						
+						accessRoleArr.push(propRoleAccess);
+						
+						logControl ? console.log('      |----- dataaccess object , ID: ' + object.id + ' REALM: ' +  object.realm + ' ROLE: ' +  object.role + ' RULE: ' +  object.rule ) : '';					
+					}
+				});
+
+				if (accessUserArr.length > 0) {
+					// TO-HTML
+					if ($('#userdataaccess').attr('data-loaded') === 'true'){
+						$('#ontology_userdataaccess > tbody').html("");
+						$('#ontology_userdataaccess > tbody').append(mountableModel3);
+					}
+					logControl ? console.log('accessUserArr on UPDATE: ' + accessUserArr.length + ' Arr: ' + JSON.stringify(accessUserArr)) : '';
+					$('#ontology_userdataaccess').mounTable(accessUserArr,{
+						model: '.userdataaccess-model',
+						noDebug: false
+					});
+	
+					// hide info , disable user and show table
+					$('#alert-userdataaccess').toggle($('#alert-userdataaccess').hasClass('hide'));
+					$('#userdataaccess').removeClass('hide');
+					$('#userdataaccess').attr('data-loaded',true);// TO-HTML
+					$("#users").selectpicker('deselectAll');
+				}
+				if (accessRoleArr.length > 0) {
+					// TO-HTML
+					if ($('#roledataaccess').attr('data-loaded') === 'true'){
+						$('#ontology_roledataaccess > tbody').html("");
+						$('#ontology_roledataaccess > tbody').append(mountableModel4);
+					}
+					logControl ? console.log('accessRoleArr on UPDATE: ' + accessRoleArr.length + ' Arr: ' + JSON.stringify(accessRoleArr)) : '';
+					$('#ontology_roledataaccess').mounTable(accessRoleArr,{
+						model: '.roledataaccess-model',
+						noDebug: false
+					});
+	
+					// hide info , disable user and show table
+					$('#alert-roledataaccess').toggle($('#alert-roledataaccess').hasClass('hide'));
+					$('#roledataaccess').removeClass('hide');
+					$('#roledataaccess').attr('data-loaded',true);// TO-HTML
+					$("#realmdata").selectpicker('deselectAll');
+					$("#roledata").selectpicker('deselectAll');
+				}
+
+			}			
 
 			// take schema from ontology and load it
 			schema = ontologyCreateReg.schemaEditMode;
@@ -902,7 +966,36 @@ var OntologyCreateController = function() {
 			else
 				theSelectedModel.trigger('click');
 			
-			
+					
+			$('#realmdata').change(function(){
+				var csrf_value = $("meta[name='_csrf']").attr("content");
+				var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+				if ($('#realmdata').val() !== ''){
+					$.ajax({
+						url:'/controlpanel/apps/getRoles',
+						headers: {
+							[csrf_header]: csrf_value
+					    },
+						type:"GET",
+						async: true,
+						data: {"appId": $('#realmdata').val()},			 
+						dataType:"json",
+						success: function(response,status){
+							$('#roledata').find('option').remove();
+							$('#roledata').append($('<option>', {value: '', text: 'Select a role...'}));
+							$.each(response, function(key,value){
+								$('#roledata').append($('<option>', {value: key, text: value}));
+								$('#roledata').selectpicker('refresh');
+	    					});
+						}	
+					});
+				}
+				else{
+					$('#roledata').find('option').remove();
+					$('#roledata').append($('<option>', {value: '', text: 'Select a role...'}));
+					$('#roledata').selectpicker('refresh');
+				}
+			});	
 
 		}
 	}
@@ -931,7 +1024,7 @@ var OntologyCreateController = function() {
 		logControl ? console.log('deleteOntologyConfirmation() -> formAction: ' + $('.delete-ontology').attr('action') + ' ID: ' + $('#delete-ontologyId').attr('ontologyId')) : '';
 
 		// call ontology Confirm at header.
-		HeaderController.showConfirmDialogOntologia('delete_ontology_form');
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form',ontologyId);
 	}
 
 
@@ -1474,6 +1567,142 @@ var OntologyCreateController = function() {
 			});
 		}
 	};
+	
+	var dataAccess = function(action,ontId,realm,role,user,rule,selId,btn){
+		logControl ? console.log('|---> authorization()') : '';	
+		var insertURL = '/controlpanel/ontologies/dataaccess';
+		var deleteURL = '/controlpanel/ontologies/dataaccess/delete';
+		var response = {};
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		
+		if (action === 'insert'){
+			console.log('    |---> Inserting... ' + insertURL);
+			
+			$.ajax({
+				url:insertURL,
+                headers: {
+					[csrf_header]: csrf_value
+			    },
+				type:"POST",
+				async: true,
+				data: {"ontId": ontId, "realm": realm, "role": role, "user": user,"rule": rule, "id": selId},			 
+				dataType:"json",
+				success: function(response,status){							
+					if (response.userId!=null && response.userId!=""){
+					
+						var propUserAccess = {"user": response.userId, "rule": response.rule, "idDataAccess": response.id};
+						
+						// remove object
+						const elementIndex = accessUserArr.findIndex(function(item) {return item.idDataAccess == response.id;});
+						
+						if (elementIndex!=-1){
+							accessUserArr[elementIndex]=propUserAccess;
+						} else {
+							accessUserArr.push(propUserAccess);							
+						}
+
+						console.log('     |---> JSONtoTable: ' + accessUserArr.length + ' data: ' + JSON.stringify(accessUserArr));
+											
+						// TO-HTML
+						if ($('#userdataaccess').attr('data-loaded') === 'true'){
+							$('#ontology_userdataaccess > tbody').html("");
+							$('#ontology_userdataaccess > tbody').append(mountableModel3);
+						}
+						console.log('accessUserArr: ' + accessUserArr.length + ' Arr: ' + JSON.stringify(accessUserArr));
+						$('#ontology_userdataaccess').mounTable(accessUserArr,{
+							model: '.userdataaccess-model',
+							noDebug: false							
+						});
+						
+						// hide info , disable user and show table
+						$('#alert-userdataaccess').toggle($('#alert-userdataaccess').hasClass('hide'));			
+						$("#usersdata").selectpicker('deselectAll');
+						$("#userattribute").val("");
+						$("#userattributevalue").val("");
+						$('#userdataaccess').removeClass('hide');
+						$('#userdataaccess').attr('data-loaded',true);
+					
+					} else {
+						
+						var propRoleAccess = {"realm": response.appName, "role": response.appRoleName, "rolerule": response.rule, "idDataAccessRule": response.id};
+						
+						// remove object
+						const elementIndex = accessRoleArr.findIndex(function(item) {return item.idDataAccessRule == response.id;});
+						
+						if (elementIndex!=-1){
+							accessRoleArr[elementIndex]=propRoleAccess;
+						} else {
+							accessRoleArr.push(propRoleAccess);							
+						}
+						
+						console.log('     |---> JSONtoTable: ' + accessRoleArr.length + ' data: ' + JSON.stringify(accessRoleArr));
+											
+						// TO-HTML
+						if ($('#roledataaccess').attr('data-loaded') === 'true'){
+							$('#ontology_roledataaccess > tbody').html("");
+							$('#ontology_roledataaccess > tbody').append(mountableModel4);
+						}
+						console.log('accessUserArr: ' + accessRoleArr.length + ' Arr: ' + JSON.stringify(accessRoleArr));
+						$('#ontology_roledataaccess').mounTable(accessRoleArr,{
+							model: '.roledataaccess-model',
+							noDebug: false							
+						});
+						
+						// hide info , disable user and show table
+						$('#alert-roledataaccess').toggle($('#alert-roledataaccess').hasClass('hide'));			
+						$("#realmdata").selectpicker('deselectAll');
+						$("#roledata").selectpicker('deselectAll');
+						$("#roleattribute").val("");
+						$("#roleattributevalue").val("");
+						$('#roledataaccess').removeClass('hide');
+						$('#roledataaccess').attr('data-loaded',true);
+					}
+					
+				},
+				error: function(response,status){
+					$.alert({title: 'ALERT!', theme: 'dark', type: 'orange', content: "ERROR"}); 
+				}
+			});	
+			
+		}
+		if (action  === 'delete'){
+			console.log('    |---> Deleting... with dataAccessId:' + selId );
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			$.ajax({url:deleteURL, type:"POST", async: true,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				data: {"id": selId},
+				dataType:"json",
+				success: function(response,status){
+
+					// remove object
+					accessUserArr = accessUserArr.filter(function(item) {return item.idDataAccess!== selId;});
+					// remove object
+					accessRoleArr = accessRoleArr.filter(function(item) {return item.idDataAccessRule !== selId;});
+
+					// refresh interface. TO-DO: EL this este fallará
+					if ( response  ){
+						$(btn).closest('tr').remove();
+						if (accessUserArr.length == 0){
+							$('#alert-userdataaccess').toggle(!$('#alert-authorizations').is(':visible'));
+							$('#userdataaccess').addClass('hide');
+						}
+						if (accessRoleArr.length == 0){
+							$('#alert-roledataaccess').toggle(!$('#alert-authorizations').is(':visible'));
+							$('#roledataaccess').addClass('hide');
+						}
+
+					}
+					else{
+						$.alert({title: 'ALERT!', theme: 'light',  content: 'NO RESPONSE!'});
+					}
+				}
+			});
+		}
+	};
 
 	var checkRtdbClean = function(){
 		if($('#rtdbclean').is(':checked')){
@@ -1506,6 +1735,21 @@ var OntologyCreateController = function() {
 		return found;
 	}
 
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/ontologies/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
 
 	// CONTROLLER PUBLIC FUNCTIONS
 	return{
@@ -1573,6 +1817,11 @@ var OntologyCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';
 			navigateUrl(url);
 		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
+			
+			freeResource(id,url);
+		},
 
 		// DELETE ONTOLOGY
 		deleteOntology: function(ontologyId){
@@ -1614,8 +1863,6 @@ var OntologyCreateController = function() {
 		updateJsonschemaInput: function(){
 			$('#jsonschema').val(editor.getText());
 		},
-
-
 
 
 		// CHECK PROPERTIES TYPE
@@ -1851,6 +2098,119 @@ var OntologyCreateController = function() {
 				else { console.log('no hay cambios');}
 			}
 		},
+		
+		// INSERT USER DATA AUTHORIZATION
+		insertUserDataAccess: function(cond){
+			logControl ? console.log(LIB_TITLE + ': insertUserDataAccess()') : '';
+			if ( ontologyCreateReg.actionMode !== null){
+				// UPDATE MODE ONLY AND VALUES on user and accesstype
+				if (($('#usersdata').val() !== '') && ($("#usersdata option:selected").attr('disabled') !== 'disabled') && ($('#userattribute').val() !== '') && ($('#userattribute').val() !== '')){
+
+					// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
+					// object with data.
+					
+					//(if rule exist)
+					var rule = '';
+					var ruleItem = accessUserArr.find(function(item) {return item.user == $('#usersdata').val();});
+					
+					if (ruleItem) {
+						rule = ruleItem.rule + ' ' + cond + ' ';
+					}
+					
+					rule = rule + $('#userattribute').val() + ' = ' + $('#userattributevalue').val();
+					
+					dataAccess('insert', ontologyCreateReg.ontologyId, '', '', $('#usersdata').val(), rule, '');
+
+				} else {  $.alert({title: 'ERROR!', theme: 'light',  content: ontologyCreateReg.validations.authuser}); }
+			}
+		},
+		
+		// UPDATE USER DATA AUTHORIZATION
+		updateUserDataAccess: function(obj){
+			logControl ? console.log(LIB_TITLE + ': updateUserDataAccess()') : '';
+			if ( ontologyCreateReg.actionMode !== null){
+				// UPDATE MODE ONLY AND VALUES on user and accesstype
+
+				// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
+				// object with data.
+				var selUser = $(obj).closest('tr').find("input[name='user']").val();
+				var selRule = $(obj).closest('tr').find("input[name='rule']").val();
+				
+				dataAccess('insert', ontologyCreateReg.ontologyId, '', '', selUser, selRule, '');
+			}
+		},
+		
+		// REMOVE USER DATA AUTHORIZATION
+		removeUserDataAccess: function(obj){
+			logControl ? console.log(LIB_TITLE + ': removeUserDataAccess()') : '';
+			if ( ontologyCreateReg.actionMode !== null){
+
+				// AJAX REMOVE
+				// object with data.
+				var selDataAccess = $(obj).closest('tr').find("input[name='idDataAccess']").val();
+
+				console.log('removeDataAccess:' + selDataAccess);
+
+				dataAccess('delete', '', '', '', '', '', selDataAccess, obj);
+			}
+		},
+		
+		// INSERT ROLE DATA AUTHORIZATION
+		insertRoleDataAccess: function(cond){
+			logControl ? console.log(LIB_TITLE + ': insertUserDataAccess()') : '';
+			if ( ontologyCreateReg.actionMode !== null){
+				// UPDATE MODE ONLY AND VALUES on user and accesstype
+				if (($('#roledata').val() !== '') && ($("#roledata option:selected").attr('disabled') !== 'disabled') && ($('#roleattribute').val() !== '') && ($('#roleattributevalue').val() !== '')){
+
+					// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
+					// object with data.
+					//(if rule exist) 
+					var rule = '';
+					var ruleItem = accessRoleArr.find(function(item) {return ((item.role == $('#roledata option:selected').text()) && (item.realm == $('#realmdata option:selected').text()))});
+					
+					if (ruleItem) {
+						rule = ruleItem.rolerule + ' ' + cond + ' ';
+					}
+										
+					rule = rule + $('#roleattribute').val() + ' = ' + $('#roleattributevalue').val();					
+										
+					dataAccess('insert', ontologyCreateReg.ontologyId, $('#realmdata option:selected').text(), $('#roledata option:selected').text(), '', rule, '');
+
+				} else {  $.alert({title: 'ERROR!', theme: 'light',  content: ontologyCreateReg.validations.authrole}); }
+			}
+		},
+		
+		// UPDATE ROLE DATA AUTHORIZATION
+		updateRoleDataAccess: function(obj){
+			logControl ? console.log(LIB_TITLE + ': insertUserDataAccess()') : '';
+			if ( ontologyCreateReg.actionMode !== null){
+				// UPDATE MODE ONLY AND VALUES on user and accesstype
+
+				// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
+				// object with data.
+				var selRealm = $(obj).closest('tr').find("input[name='realm']").val();
+				var selRole = $(obj).closest('tr').find("input[name='role']").val();
+				var selRule = $(obj).closest('tr').find("input[name='rolerule']").val();
+									
+				dataAccess('insert', ontologyCreateReg.ontologyId, selRealm, selRole, '', selRule, '');
+			}
+		},
+		
+		// REMOVE ROLE DATA AUTHORIZATION
+		removeRoleDataAccess: function(obj){
+			logControl ? console.log(LIB_TITLE + ': removeUserDataAccess()') : '';
+			if ( ontologyCreateReg.actionMode !== null){
+
+				// AJAX REMOVE
+				// object with data.
+				var selDataAccess = $(obj).closest('tr').find("input[name='idDataAccessRule']").val();
+
+				console.log('removeDataAccess:' + selDataAccess);
+
+				dataAccess('delete', '', '', '', '', '', selDataAccess, obj);
+			}
+		},
+		
 		// GENERATE DUMMY ONTOLOGY INSTANCES
 		setRtdbDatasource: function(){
 			$('#rtdb').val($('#rtdbInstance').val());

@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.persistence.mongodb;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +22,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +33,6 @@ import org.springframework.web.client.ResourceAccessException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.BulkWriteResult;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
@@ -52,6 +51,9 @@ import com.minsait.onesait.platform.persistence.mongodb.timeseries.MongoDBTimeSe
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoIterable;
+import com.mongodb.client.model.UpdateManyModel;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.util.JSON;
 
 import lombok.Getter;
@@ -122,9 +124,12 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	private long getExecutionTimeout() {
 		try {
-			return ((Long) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("execution-timeout"))
+			final Long executionTiemout =  ((Long) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("execution-timeout"))
 					.longValue();
+			log.info("Execution timeout is {}", executionTiemout);
+			return executionTiemout;
 		} catch (final Exception e) {
+			log.error("Error retrieving execution timeout from central config");
 			return queryExecutionTimeout;
 		}
 	}
@@ -134,7 +139,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		log.debug("insertInstance", ontology, instance);
 		try {
 			if (ontologyTimeSeriesRepository.isTimeSeries(ontology)) {
-				final List<TimeSeriesResult> result = timeSeriesProcessor.processTimeSerie(ontology, instance);
+				final List<TimeSeriesResult> result = timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), ontology, instance);
 				return objectMapper.writeValueAsString(result);
 			} else {
 				final ObjectId objectId = mongoDbConnector.insert(Tenant2SchemaMapper.getRtdbSchema(), ontology,
@@ -158,7 +163,13 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		final ComplexWriteResult result = new ComplexWriteResult();
 		try {
 			if (ontologyTimeSeriesRepository.isTimeSeries(ontology)) {
-				final List<TimeSeriesResult> data = timeSeriesProcessor.processTimeSerie(ontology, instances.get(0));
+				// new
+				final List<TimeSeriesResult> data = new ArrayList<>();
+				for (final String instance : instances) {
+					data.addAll(timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), ontology, instance));
+				}
+				// final List<TimeSeriesResult> data =
+				// timeSeriesProcessor.processTimeSerie(ontology, instances.get(0));
 
 				result.setType(ComplexWriteResultType.TIME_SERIES);
 				result.setData(data);
@@ -219,6 +230,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			log.error(UPDATE, e);
 			throw new DBPersistenceException("Error on updating native", e);
 		}
+
 	}
 
 	private int endOfQuery(String query) {
@@ -266,71 +278,65 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 	}
 
 	@Override
+	public ComplexWriteResult updateBulk(String collection, String queriesList, boolean includeIds) {
+		log.debug(UPDATE, collection, queriesList);
+
+		String[] split = queriesList.split("db.".concat(collection));
+		List<String> queries = new ArrayList<>();
+
+		for (int i = 1; i < split.length; i++) {
+			String queryAux = null;
+			if (split[i].endsWith(","))
+				queryAux = "db.".concat(collection).concat(split[i].substring(0, split[i].length() - 1));
+			else
+				queryAux = "db.".concat(collection).concat(split[i]);
+
+			queries.add(queryAux);
+		}
+
+		final ComplexWriteResult result = new ComplexWriteResult();
+		List<WriteModel<BasicDBObject>> bulkWrites = new ArrayList<>();
+		List<String> instances = new ArrayList<>();
+		for (String query : queries) {
+			String updateQuery = null;
+			if (query.indexOf(".update(") != -1) {
+				updateQuery = util.getQueryContent(query);
+			}
+
+			final int endOfQuery = endOfQuery(updateQuery);
+			query = updateQuery.substring(0, endOfQuery + 1);
+
+			String dataToUpdate = updateQuery.substring(endOfQuery + 1, updateQuery.length());
+			dataToUpdate = dataToUpdate.substring(dataToUpdate.indexOf(',') + 1, dataToUpdate.length());
+
+			UpdateOptions options = new UpdateOptions();
+
+			if (dataToUpdate.contains("{\"upsert\":true}")) {
+				options.upsert(true);
+				dataToUpdate = dataToUpdate.replace(",{\"upsert\":true}", "");
+			}
+
+			UpdateManyModel upsert = new UpdateManyModel(Document.parse(query),
+					new Document("$set", Document.parse(dataToUpdate)), options);
+			instances.add(dataToUpdate);
+			bulkWrites.add(upsert);
+
+		}
+
+		final List<BulkWriteResult> data = mongoDbConnector.bulkUpsert(Tenant2SchemaMapper.getRtdbSchema(), collection,
+				bulkWrites, includeIds, false, instances);
+
+		result.setType(ComplexWriteResultType.BULK);
+		result.setData(data);
+		return result;
+	}
+
+	@Override
 	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(String collection, String objectId,
 			String bodyData) {
 		final String updateQuery = "db." + collection + ".update({\"_id\": {\"$oid\" : \"" + objectId + "\" }}, {$set:"
 				+ bodyData + " })";
 		return updateNative(collection, updateQuery, false);
-	}
-
-	/*
-	 * @Override public List<String> updateNative(String ontology, String statement)
-	 * throws DBPersistenceException { log.debug(UPDATE, statement); String
-	 * statementAux = statement; String data = ""; String query = ""; try { if
-	 * (statementAux == null || statementAux.length() == 0) throw new
-	 * DBPersistenceException("Statement null: " + statement);
-	 *
-	 * if (statementAux.startsWith("{")) { statementAux = statementAux.substring(1);
-	 * } if (statementAux.endsWith("}")) { statementAux = statementAux.substring(0,
-	 * statementAux.length() - 1); } if (!statementAux.endsWith(";")) { statementAux
-	 * = statementAux.concat(";"); } if
-	 * (!statementAux.toLowerCase().startsWith("db.")) {
-	 * log.warn("updateByNativeQuery", "Expected MongoDB update statement"); throw
-	 * new DBPersistenceException("Expected MongoDB update statement"); } if
-	 * (statementAux.contains("db.")) { statementAux = statementAux.replace("db.",
-	 * ""); } if (statementAux.contains("update(")) { statementAux =
-	 * statementAux.substring(statementAux.indexOf("(") + 1,
-	 * statementAux.lastIndexOf(")")); statementAux = statementAux.trim();
-	 *
-	 * int anidamiento = 0; int indiceInicioObjeto = 0; List<String> objetos = new
-	 * ArrayList<String>(); for (int i = 0; i < statementAux.length(); i++) { if
-	 * (statementAux.charAt(i) == '{') { anidamiento++; } else if
-	 * (statementAux.charAt(i) == '}') { anidamiento--; } if
-	 * ((statementAux.charAt(i) == ',' || i == statementAux.length() - 1) &&
-	 * anidamiento == 0) { if (statementAux.charAt(i) == ',') { objetos.add(new
-	 * String(statementAux.substring(indiceInicioObjeto, i))); } else {
-	 * objetos.add(new String(statementAux.substring(indiceInicioObjeto))); }
-	 * indiceInicioObjeto = i + 1; } }
-	 *
-	 * if (objetos.size() >= 2) { query = objetos.get(0); data = objetos.get(1);
-	 *
-	 * } else { log.warn(UPDATE,
-	 * "Expected {$set:{[field:value]}} ||  {$inc:{[field:value]}}"); throw new
-	 * DBPersistenceException("Expected {$set:{[field:value]}} ||  {$inc:{[field:value]}}"
-	 * ); } } /* Native updates specify the document to be replaced; SQL-LIKE ones
-	 * specify an update operator. We should remove this inconsistency. String
-	 * updateOperation = util.prepareQuotes(data); String result =
-	 * getUpdateStatement(data, ontology);return
-	 *
-	 * updateNative(ontology, query, updateOperation); }catch(
-	 *
-	 * Exception e) { log.error(UPDATE, e, statement); throw new
-	 * DBPersistenceException("Necessary indicate a valid value " + e.getMessage());
-	 * } }
-	 */
-
-	private String getUpdateStatement(String data, String collection) throws IOException {
-		if (data.contains("$set")) {
-			final Map<String, Object> mapa = objectMapper.readValue(data, new TypeReference<Map<String, Object>>() {
-			});
-			return (String) mapa.get("$set");
-		} else {
-			// FIX: in these cases, we replace one document with another one.
-			// The $set makes the new
-			// driver raise an exception.
-			// return buildStatementForUpdateNativeFromSSAPResourceData(data);
-			return data;
-		}
 	}
 
 	@Override
@@ -373,8 +379,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		final List<String> result = new ArrayList<>();
 		try {
 			final MongoIterable<BasicDBObject> cursor = queryNativeMongo(ontology, query, offset, limit);
-			for (final BasicDBObject obj : cursor)
+			for (final BasicDBObject obj : cursor) {
 				result.add(obj.toJson());
+			}
 			return result;
 		} catch (final DBPersistenceException e) {
 			log.error("find", e, query, ontology);
@@ -412,8 +419,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			final BasicDBObject o = mongoDbConnector.findById(Tenant2SchemaMapper.getRtdbSchema(), collection,
 					objectId);
-			if (o != null)
+			if (o != null) {
 				return o.toJson();
+			}
 			return null;
 		} catch (final Exception e) {
 			log.error("findById", e, objectId);
@@ -428,7 +436,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String findAllAsJson(String ontology, int limit) {
-		return JSON.serialize(findAll(ontology));
+		return JSON.serialize(findAll(ontology, limit));
 	}
 
 	@Override
@@ -441,8 +449,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		final List<String> result = new ArrayList<>();
 		log.debug("findAll", collection, limit);
 		for (final BasicDBObject obj : mongoDbConnector.findAll(Tenant2SchemaMapper.getRtdbSchema(), collection, 0,
-				limit, getExecutionTimeout()))
+				limit, getExecutionTimeout())) {
 			result.add(obj.toJson());
+		}
 		return result;
 	}
 
@@ -481,9 +490,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			if (e.getCause().getClass().equals(ResourceAccessException.class)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 				return "{}";
-			}
-			else
+			} else {
 				throw e;
+			}
 		} catch (final Exception e) {
 			log.error(QUASAR_QUERY_ERROR + query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
@@ -502,12 +511,38 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			throw e;
 		} catch (final DBPersistenceException e) {
 			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
-			if (e.getCause().getClass().equals(ResourceAccessException.class)) {
+			if (e.getCause().getClass().equals(ResourceAccessException.class)
+					& !mongoDbConnector.collectionExists(Tenant2SchemaMapper.getRtdbSchema(), ontology)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 				return "{}";
-			}
-			else
+			} else {
 				throw e;
+			}
+		} catch (final Exception e) {
+			log.error(QUASAR_QUERY_ERROR + query, e);
+			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
+		}
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		try {
+			if (isMetricsOntology(ontology)) {
+				return processMetricsQuery(ontology, query);
+			}
+			return quasarMongoConnector.queryAsJson(ontology, query, offset, limit > 0 ? limit : getMaxRegisters());
+		} catch (final QueryNativeFormatException e) {
+			log.error("QueryNativeFormatException:" + e.getMessage(), e);
+			throw e;
+		} catch (final DBPersistenceException e) {
+			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
+			if (e.getCause().getClass().equals(ResourceAccessException.class)
+					& !mongoDbConnector.collectionExists(Tenant2SchemaMapper.getRtdbSchema(), ontology)) {
+				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
+				return "{}";
+			} else {
+				throw e;
+			}
 		} catch (final Exception e) {
 			log.error(QUASAR_QUERY_ERROR + query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);

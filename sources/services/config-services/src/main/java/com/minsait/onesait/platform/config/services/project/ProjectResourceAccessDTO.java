@@ -31,5 +31,5 @@ public class ProjectResourceAccessDTO {
 	private ResourceAccessType access;
 	@NotNull
 	private String authorizing;
-
+	private String resourceType;
 }

@@ -14,24 +14,52 @@
  */
 package com.minsait.onesait.platform.router.service.app.service.advice;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.model.OntologyKafkaTopic;
+import com.minsait.onesait.platform.config.model.OntologyKafkaTopic.TopicType;
+import com.minsait.onesait.platform.config.services.ontologykafkatopic.OntologyKafkaTopicService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.router.service.app.service.KafkaTopicOntologyNotificationService;
 
 @Service
-public class KafkaTopicOntologyNotificationServiceImpl implements KafkaTopicOntologyNotificationService{
+public class KafkaTopicOntologyNotificationServiceImpl implements KafkaTopicOntologyNotificationService {
 
-	@Autowired
-	private OntologyService ontologyService;
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.notification.prefix:ontology_output_}")
+	private String ontologyNotificationPrefix;
 	
+	@Autowired
+	private MultitenancyService multitenancyService;
+	@Autowired
+	private OntologyKafkaTopicService ontologyKafkaTopicService;
+
 	@Override
 	public String getKafkaTopicOntologyNotification(String ontologyIdentification) {
-		// TODO Auto-generated method stub
-		Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification);
-		return ontology.getNotificationTopic();
+
+		final String verticalSchema = MultitenancyContextHolder.getVerticalSchema();
+		String vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
+		Optional<Vertical> verticalOpt = multitenancyService.getVertical(verticalSchema);
+		if (verticalOpt.isPresent()) {
+			vertical = verticalOpt.get().getName();
+		}
+		final String tenant = MultitenancyContextHolder.getTenantName();
+		String topicEnding = ontologyNotificationPrefix + ontologyIdentification;
+		if (!vertical.equals(Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME)
+				|| !tenant.equals(Tenant2SchemaMapper.defaultTenantName(vertical))) {
+			// not default values on tenant or vertical, not default case
+			topicEnding = ontologyNotificationPrefix.substring(0,ontologyNotificationPrefix.length()-1) + "-" + vertical + "-" + tenant + "-" + ontologyIdentification;
+		}
+		topicEnding = topicEnding.toUpperCase();
+		// search if any notification topic matches by ending
+		OntologyKafkaTopic topic = ontologyKafkaTopicService.getTopicByTypeAndEnding(TopicType.OUTPUT, topicEnding);
+		return topic == null ? null : topic.getIdentification();
 	}
 
 }

@@ -16,21 +16,21 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.DataflowInstance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.PipelineForList;
+import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 
+	@Override
 	List<Pipeline> findAll();
 
 	Pipeline findByIdentification(String pipelineId);
-	
-	Pipeline findById(String id);
 
 	List<Pipeline> findByUser(User user);
 
@@ -43,4 +43,6 @@ public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 
 	Pipeline findByIdstreamsets(String idstreamsets);
 
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.PipelineForList(o.id, o.identification, o.idstreamsets, o.user, o.isPublic, 'null') " + "FROM Pipeline AS o ")
+	List<PipelineForList> findAllPipelineList();
 }

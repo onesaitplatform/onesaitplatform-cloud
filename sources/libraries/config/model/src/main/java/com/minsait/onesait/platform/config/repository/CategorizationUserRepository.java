@@ -25,28 +25,28 @@ import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface CategorizationUserRepository extends JpaRepository<CategorizationUser, String> {
-	
-	CategorizationUser findById(String id);
-	
+
 	List<CategorizationUser> findByCategorization(Categorization categorization);
-	
+
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user!=:user AND o.categorization=:categorization")
-	List<CategorizationUser> findByCategorizationNotOwn(@Param("user") User user, @Param("categorization") Categorization categorization);
-	
+	List<CategorizationUser> findByCategorizationNotOwn(@Param("user") User user,
+			@Param("categorization") Categorization categorization);
+
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user")
 	List<CategorizationUser> findByUserAndAuth(@Param("user") User user);
-	
+
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user AND o.categorization=:categorization")
-	CategorizationUser findByUserAndCategorization(@Param("user") User user, @Param("categorization") Categorization categorization);
+	CategorizationUser findByUserAndCategorization(@Param("user") User user,
+			@Param("categorization") Categorization categorization);
 
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user AND o.active=TRUE")
 	List<CategorizationUser> findByUserAndActive(@Param("user") User user);
-	
+
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.authorizationType='OWNER'")
 	List<CategorizationUser> findAllOwner();
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
-	CategorizationUser save (CategorizationUser entity);
+	CategorizationUser save(CategorizationUser entity);
 
 }

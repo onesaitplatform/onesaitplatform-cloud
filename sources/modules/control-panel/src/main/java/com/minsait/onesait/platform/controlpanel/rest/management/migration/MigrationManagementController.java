@@ -20,10 +20,12 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
+import javax.ws.rs.ClientErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,11 +39,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.model.AppChildExport;
+import com.minsait.onesait.platform.config.model.AppExport;
+import com.minsait.onesait.platform.config.model.AppRoleChildExport;
+import com.minsait.onesait.platform.config.model.AppRoleExport;
+import com.minsait.onesait.platform.config.model.AppUserExport;
+import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 import com.minsait.onesait.platform.config.model.FlowDomain;
+import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.MigrationData;
+import com.minsait.onesait.platform.config.model.MigrationData.DataType;
+import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.Notebook;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.ProjectExport;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessExport;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.migration.DataFromDB;
 import com.minsait.onesait.platform.config.services.migration.ExportResult;
 import com.minsait.onesait.platform.config.services.migration.Instance;
@@ -84,6 +106,9 @@ public class MigrationManagementController {
 	private static final String NOTEBOOK_DATA = "notebookData";
 	private static final String IDZEP = "idzep";
 	private static final String DATAFLOW_DATA = "dataflowData";
+	private static final String NOTEBOOK = "com.minsait.onesait.platform.config.model.Notebook";
+	private static final String DATAFLOW = "com.minsait.onesait.platform.config.model.Pipeline";
+	private static final String FLOW_DOMAIN = "com.minsait.onesait.platform.config.model.FlowDomain";
 
 	@Autowired
 	private MigrationService migrationService;
@@ -114,10 +139,10 @@ public class MigrationManagementController {
 		try {
 			if (utils.isAdministrator()) {
 				ExportResult allData = migrationService.exportAll();
-				allData = this.exportDomain(allData);
-				allData = this.exportNotebooks(allData);
-				allData = this.exportDataflow(allData);
-				String json = migrationService.getJsonFromData(allData.getData());
+				allData = exportDomain(allData);
+				allData = exportNotebooks(allData);
+				allData = exportDataflow(allData);
+				final String json = migrationService.getJsonFromData(allData.getData());
 				log.info("Exporting all data successfuly.");
 				return new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
@@ -139,10 +164,10 @@ public class MigrationManagementController {
 		try {
 			if (utils.isAdministrator()) {
 				ExportResult userData = migrationService.exportUser(userService.getUser(user));
-				userData = this.exportDomain(userData);
-				userData = this.exportNotebooks(userData);
-				userData = this.exportDataflow(userData);
-				String json = migrationService.getJsonFromData(userData.getData());
+				userData = exportDomain(userData);
+				userData = exportNotebooks(userData);
+				userData = exportDataflow(userData);
+				final String json = migrationService.getJsonFromData(userData.getData());
 				log.info("Exporting data by user {} successfuly.", user);
 				return new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
@@ -163,8 +188,11 @@ public class MigrationManagementController {
 
 		try {
 			if (utils.isAdministrator()) {
-				ExportResult userData = migrationService.exportProject(project);
-				String json = migrationService.getJsonFromData(userData.getData());
+				ExportResult projectData = migrationService.exportProject(project);
+				projectData = exportDomain(projectData);
+				projectData = exportNotebooks(projectData);
+				projectData = exportDataflow(projectData);
+				final String json = migrationService.getJsonFromData(projectData.getData());
 				log.info("Exporting data by project {} successfuly.", project);
 				return new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
@@ -185,8 +213,8 @@ public class MigrationManagementController {
 
 		try {
 			if (utils.isAdministrator()) {
-				ExportResult userData = migrationService.exportUsers(users);
-				String json = migrationService.getJsonFromData(userData.getData());
+				final ExportResult userData = migrationService.exportUsers(users);
+				final String json = migrationService.getJsonFromData(userData.getData());
 				log.info("Exporting users {} successfuly.", users);
 				return new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
@@ -206,8 +234,8 @@ public class MigrationManagementController {
 
 		try {
 			if (utils.isAdministrator()) {
-				SchemaFromDB schema = migrationService.exportSchema();
-				String json = migrationService.getJsonFromSchema(schema);
+				final SchemaFromDB schema = migrationService.exportSchema();
+				final String json = migrationService.getJsonFromSchema(schema);
 				log.info("Exporting schema successfuly.");
 				return new ResponseEntity<>(json, HttpStatus.OK);
 			} else {
@@ -229,9 +257,9 @@ public class MigrationManagementController {
 
 		try {
 			if (utils.isAdministrator()) {
-				SchemaFromDB currentSchema = migrationService.exportSchema();
-				String currentSchemaJson = migrationService.getJsonFromSchema(currentSchema);
-				String diffs = migrationService.compareSchemas(currentSchemaJson, otherSchema);
+				final SchemaFromDB currentSchema = migrationService.exportSchema();
+				final String currentSchemaJson = migrationService.getJsonFromSchema(currentSchema);
+				final String diffs = migrationService.compareSchemas(currentSchemaJson, otherSchema);
 				log.info("Compare schema successfuly.");
 				return new ResponseEntity<>(diffs, HttpStatus.OK);
 			} else {
@@ -244,18 +272,24 @@ public class MigrationManagementController {
 		}
 	}
 
-//	@ApiOperation(value = "Export Ontolgoies data.")
-//	@PostMapping(value = "/exportMongo/{ontologies}")
-//	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
-//	public ResponseEntity<String> exportMongo(Model model, HttpServletResponse response, HttpServletRequest request,
-//			@ApiParam(value = "Ontologies List", required = true) @PathVariable("ontologies") List<String> ontologies,
-//			@ApiParam(value = "User and password of Mongo in the following format: {'userMongo': <userMongo>, 'passwordMongo': <passwordMongo>}", required = true) @Valid @RequestBody String data)
-//			throws IOException {
-//		JSONObject dataJson = new JSONObject(data);
-//		File file = migrationHelper.generateFiles(ontologies, dataJson.getString("userMongo"),
-//				dataJson.getString("passwordMongo"));
-//		return new ResponseEntity<>(file.getPath(), HttpStatus.OK);
-//	}
+	// @ApiOperation(value = "Export Ontolgoies data.")
+	// @PostMapping(value = "/exportMongo/{ontologies}")
+	// @ApiResponses(@ApiResponse(response = String.class, code = 200, message =
+	// "OK"))
+	// public ResponseEntity<String> exportMongo(Model model, HttpServletResponse
+	// response, HttpServletRequest request,
+	// @ApiParam(value = "Ontologies List", required = true)
+	// @PathVariable("ontologies") List<String> ontologies,
+	// @ApiParam(value = "User and password of Mongo in the following format:
+	// {'userMongo': <userMongo>, 'passwordMongo': <passwordMongo>}", required =
+	// true) @Valid @RequestBody String data)
+	// throws IOException {
+	// JSONObject dataJson = new JSONObject(data);
+	// File file = migrationHelper.generateFiles(ontologies,
+	// dataJson.getString("userMongo"),
+	// dataJson.getString("passwordMongo"));
+	// return new ResponseEntity<>(file.getPath(), HttpStatus.OK);
+	// }
 
 	@ApiOperation(value = "Import Data.")
 	@PostMapping("/import")
@@ -265,25 +299,58 @@ public class MigrationManagementController {
 
 		try {
 			if (utils.isAdministrator()) {
-				User user = userService.getUser(utils.getUserId());
-				DataFromDB data = migrationService.getDataFromJson(json);
+				final User user = userService.getUser(utils.getUserId());
+				final DataFromDB data = migrationService.getDataFromJson(json);
 				migrationService.storeMigrationData(user, "data.json", "File for import", "data.json",
-						json.getBytes(StandardCharsets.UTF_8));
-				List<String> classNames = new ArrayList<>();
-				for (Class<?> clazz : data.getClasses()) {
+						json.getBytes(StandardCharsets.UTF_8), DataType.IMPORT, Status.NO_STATUS);
+				final List<String> classNames = new ArrayList<>();
+				for (final Class<?> clazz : data.getClasses()) {
 					classNames.add(clazz.getName());
 				}
-				MigrationData migrationData = migrationService.findMigrationData(user);
+				final MigrationData migrationData = migrationService.findMigrationData(user, DataType.IMPORT);
 				if (migrationData == null) {
 					log.error("Error: data cannot be null");
 					return new ResponseEntity<>("Error: data cannot be null", HttpStatus.BAD_REQUEST);
 				}
-				MigrationConfiguration config = new MigrationConfiguration();
+				final MigrationConfiguration config = new MigrationConfiguration();
 
-				for (Class<?> clazz : data.getClasses()) {
+				final List<Class<?>> sortedClazz = new LinkedList<>();
+				sortedClazz.add(ProjectExport.class);
+				sortedClazz.add(OPResource.class);
+				sortedClazz.add(Pipeline.class);
+				sortedClazz.add(Notebook.class);
+				sortedClazz.add(FlowDomain.class);
+				sortedClazz.add(Ontology.class);
+				sortedClazz.add(OntologyVirtualDatasource.class);
+				sortedClazz.add(OntologyVirtual.class);
+				sortedClazz.add(OntologyTimeSeries.class);
+				sortedClazz.add(OntologyTimeSeriesWindow.class);
+				sortedClazz.add(OntologyTimeSeriesProperty.class);
+				sortedClazz.add(Api.class);
+				sortedClazz.add(ApiOperation.class);
+				sortedClazz.add(ApiQueryParameter.class);
+				sortedClazz.add(GadgetDatasource.class);
+				sortedClazz.add(AppChildExport.class);
+				sortedClazz.add(AppExport.class);
+				sortedClazz.add(AppRoleChildExport.class);
+				sortedClazz.add(AppRoleExport.class);
+				sortedClazz.add(AppUserExport.class);
+				sortedClazz.add(ClientPlatform.class);
+				sortedClazz.add(ClientPlatformInstance.class);
+				sortedClazz.add(ProjectResourceAccessExport.class);
+
+				for (final Class<?> c : sortedClazz) {
+					for (final Serializable id : data.getInstances(c)) {
+						final Map<String, Object> result = data.getInstanceData(c, id);
+						config.add(c, id, (Serializable) result.get(IDENTIFICATION),
+								(Serializable) result.get("numversion"));
+					}
+				}
+
+				for (final Class<?> clazz : data.getClasses()) {
 					if (classNames.contains(clazz.getName())) {
-						for (Serializable id : data.getInstances(clazz)) {
-							Map<String, Object> result = data.getInstanceData(clazz, id);
+						for (final Serializable id : data.getInstances(clazz)) {
+							final Map<String, Object> result = data.getInstanceData(clazz, id);
 							if (clazz.getName().startsWith(PROJECT)) {
 								config.addProject(clazz, id, (Serializable) result.get(IDENTIFICATION));
 							} else if (clazz.getName().equals(USER)) {
@@ -305,29 +372,34 @@ public class MigrationManagementController {
 					errors = migrationService.importData(config, data, false, false, override);
 				}
 
-				this.importDomain(data, override);
-				errors = this.importNotebook(data, errors, override);
-				errors = this.importDataflow(data, errors, override);
+				if (classNames.contains(FLOW_DOMAIN)) {
+					importDomain(data, errors, override);
+				}
+				if (classNames.contains(NOTEBOOK)) {
+					errors = importNotebook(data, errors, override);
+				}
+				if (classNames.contains(DATAFLOW)) {
+					errors = importDataflow(data, errors, override);
+				}
 
 				return new ResponseEntity<>(errors.getErrors(), HttpStatus.OK);
 			} else {
 				log.error(USER_FORBIDDEN, utils.getUserId());
 				return new ResponseEntity<>(FORBIDDEN, HttpStatus.FORBIDDEN);
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error importing data from migration service. {}", e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	private ExportResult exportDomain(ExportResult data) {
-		// if data has FlowDomain.class then all domain data are exported too
-		Iterator<Serializable> iterator = data.getData().getInstances(FlowDomain.class).iterator();
+		final Iterator<Serializable> iterator = data.getData().getInstances(FlowDomain.class).iterator();
 		while (iterator.hasNext()) {
-			Serializable id = iterator.next();
-			Map<String, Object> obj = data.getData().getInstanceData(FlowDomain.class, id);
+			final Serializable id = iterator.next();
+			final Map<String, Object> obj = data.getData().getInstanceData(FlowDomain.class, id);
 			try {
-				ResponseEntity<String> result = flowengineController
+				final ResponseEntity<String> result = flowengineController
 						.exportFlowDomainByIdentification(obj.get(IDENTIFICATION).toString());
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					obj.put(DOMAIN_DATA, JSON.parse(result.getBody()));
@@ -336,7 +408,7 @@ public class MigrationManagementController {
 							result.getStatusCode().name());
 					obj.put(DOMAIN_DATA, JSON.parse("[]"));
 				}
-			} catch (NoderedAuthException e) {
+			} catch (final NoderedAuthException e) {
 				log.warn("Domain are not started. {}", e.getMessage());
 				obj.put(DOMAIN_DATA, JSON.parse("[]"));
 			}
@@ -344,16 +416,17 @@ public class MigrationManagementController {
 		return data;
 	}
 
-	private void importDomain(DataFromDB data, Boolean override) {
+	private void importDomain(DataFromDB data, MigrationErrors errors, Boolean override) {
 		// if data has FlowDomain.class then all domain data are exported too
-		Iterator<Serializable> iterator = data.getInstances(FlowDomain.class).iterator();
+		final Iterator<Serializable> iterator = data.getInstances(FlowDomain.class).iterator();
+		final ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
-			Serializable id = iterator.next();
-			Map<String, Object> obj = data.getInstanceData(FlowDomain.class, id);
+			final Serializable id = iterator.next();
+			final Map<String, Object> obj = data.getInstanceData(FlowDomain.class, id);
 			try {
-				ResponseEntity<String> result = flowengineController.importFlowDomainToUserAdmin(
-						obj.get(DOMAIN_DATA).toString(), obj.get(IDENTIFICATION).toString(), obj.get("user").toString(),
-						override);
+				final ResponseEntity<String> result = flowengineController.importFlowDomainToUserAdmin(
+						mapper.writeValueAsString(obj.get(DOMAIN_DATA)), obj.get(IDENTIFICATION).toString(),
+						obj.get("user").toString(), override);
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					log.info("Domain data imported successfully for domain {} and user {}",
 							obj.get(IDENTIFICATION).toString(), obj.get("user").toString());
@@ -361,21 +434,27 @@ public class MigrationManagementController {
 					log.error("Error importing domain data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 							result.getStatusCode().name());
 				}
-			} catch (NoderedAuthException e) {
+			} catch (final NoderedAuthException e) {
 				log.warn("Domain {} are not started, data are not imported. {}", obj.get(IDENTIFICATION).toString(),
 						e.getMessage());
+			} catch (final JsonProcessingException e) {
+				log.error("Error importing FlowEngine data {}. Error parsing JSON data {}",
+						obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Notebook.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
 			}
 		}
 	}
 
 	private ExportResult exportNotebooks(ExportResult data) {
 		// if data has Notebook.class then all notebooks data are exported too
-		Iterator<Serializable> iterator = data.getData().getInstances(Notebook.class).iterator();
+		final Iterator<Serializable> iterator = data.getData().getInstances(Notebook.class).iterator();
 		while (iterator.hasNext()) {
-			Serializable id = iterator.next();
-			Map<String, Object> obj = data.getData().getInstanceData(Notebook.class, id);
+			final Serializable id = iterator.next();
+			final Map<String, Object> obj = data.getData().getInstanceData(Notebook.class, id);
 
-			ResponseEntity<?> result = notebookController.exportNotebook(obj.get(IDZEP).toString());
+			final ResponseEntity<?> result = notebookController.exportNotebook(obj.get(IDZEP).toString());
 			if (result.getStatusCode().equals(HttpStatus.OK)) {
 				obj.put(NOTEBOOK_DATA, JSON.parse(new String((byte[]) result.getBody(), StandardCharsets.UTF_8)));
 			} else {
@@ -390,15 +469,16 @@ public class MigrationManagementController {
 
 	private MigrationErrors importNotebook(DataFromDB data, MigrationErrors errors, Boolean override) {
 		// if data has FlowDomain.class then all domain data are exported too
-		Iterator<Serializable> iterator = data.getInstances(Notebook.class).iterator();
-		ObjectMapper mapper = new ObjectMapper();
+		final Iterator<Serializable> iterator = data.getInstances(Notebook.class).iterator();
+		final ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
-			Serializable id = iterator.next();
-			Map<String, Object> obj = data.getInstanceData(Notebook.class, id);
+			final Serializable id = iterator.next();
+			final Map<String, Object> obj = data.getInstanceData(Notebook.class, id);
 
 			try {
-				ResponseEntity<?> result = notebookController.importNotebook(obj.get(IDENTIFICATION).toString(),
-						override, true, mapper.writeValueAsString(obj.get(NOTEBOOK_DATA)));
+				final ResponseEntity<?> result = notebookController.importNotebookData(
+						obj.get(IDENTIFICATION).toString(), override, true,
+						mapper.writeValueAsString(obj.get(NOTEBOOK_DATA)));
 
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					log.info("Notebook data imported successfully notebook {} and user {}",
@@ -413,7 +493,7 @@ public class MigrationManagementController {
 							new Instance(Notebook.class, id, obj.get(IDENTIFICATION).toString(), null), null,
 							MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
 				}
-			} catch (JsonProcessingException e) {
+			} catch (final JsonProcessingException e) {
 				log.error("Error importing Notebook data {}. Error parsing JSON data {}",
 						obj.get(IDENTIFICATION).toString());
 				errors.addError(
@@ -427,13 +507,13 @@ public class MigrationManagementController {
 
 	private ExportResult exportDataflow(ExportResult data) {
 		// if data has Pipeline.class then all pipelines data are exported too
-		Iterator<Serializable> iterator = data.getData().getInstances(Pipeline.class).iterator();
+		final Iterator<Serializable> iterator = data.getData().getInstances(Pipeline.class).iterator();
 		while (iterator.hasNext()) {
-			Serializable id = iterator.next();
-			Map<String, Object> obj = data.getData().getInstanceData(Pipeline.class, id);
+			final Serializable id = iterator.next();
+			final Map<String, Object> obj = data.getData().getInstanceData(Pipeline.class, id);
 
 			try {
-				ResponseEntity<?> result = dataflowController.exportPipeline(obj.get(IDENTIFICATION).toString());
+				final ResponseEntity<?> result = dataflowController.exportPipeline(obj.get(IDENTIFICATION).toString());
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					obj.put(DATAFLOW_DATA, JSON.parse(result.getBody().toString()));
 				} else {
@@ -441,7 +521,7 @@ public class MigrationManagementController {
 							result.getStatusCode().name());
 					obj.put(DATAFLOW_DATA, JSON.parse("[]"));
 				}
-			} catch (UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				log.error("Error exportin dataflow data: {}. {}", obj.get(IDENTIFICATION).toString(), e);
 			}
 
@@ -450,15 +530,16 @@ public class MigrationManagementController {
 	}
 
 	private MigrationErrors importDataflow(DataFromDB data, MigrationErrors errors, Boolean override) {
-		Iterator<Serializable> iterator = data.getInstances(Pipeline.class).iterator();
-		ObjectMapper mapper = new ObjectMapper();
+		final Iterator<Serializable> iterator = data.getInstances(Pipeline.class).iterator();
+		final ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
-			Serializable id = iterator.next();
-			Map<String, Object> obj = data.getInstanceData(Pipeline.class, id);
+			final Serializable id = iterator.next();
+			final Map<String, Object> obj = data.getInstanceData(Pipeline.class, id);
 
 			try {
-				ResponseEntity<?> result = dataflowController.importPipeline(obj.get(IDENTIFICATION).toString(),
-						override, mapper.writeValueAsString(obj.get(DATAFLOW_DATA)));
+				final ResponseEntity<?> result = dataflowController.importPipelineData(
+						obj.get(IDENTIFICATION).toString(), override,
+						mapper.writeValueAsString(obj.get(DATAFLOW_DATA)));
 
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					log.info("Dataflow data imported successfully dataflow {} and user {}",
@@ -473,14 +554,19 @@ public class MigrationManagementController {
 							new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null), null,
 							MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
 				}
-			} catch (JsonProcessingException e) {
+			} catch (final JsonProcessingException e) {
 				log.error("Error importing Dataflow data. Error parsing JSON data {}",
 						obj.get(IDENTIFICATION).toString());
 				errors.addError(
 						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
 								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
-			} catch (UnsupportedEncodingException e) {
+			} catch (final UnsupportedEncodingException e) {
 				log.error("Error importing Dataflow data {}. {}", obj.get(IDENTIFICATION).toString());
+				errors.addError(
+						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
+								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));
+			} catch (final ClientErrorException e) {
+				log.error("Error importing Dataflow data {}. {}", obj.get(IDENTIFICATION).toString(), e.getMessage());
 				errors.addError(
 						new MigrationError(new Instance(Pipeline.class, id, obj.get(IDENTIFICATION).toString(), null),
 								null, MigrationError.ErrorType.ERROR, "There was an error importing an entity"));

@@ -45,9 +45,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.Project;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.AppRoleRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
@@ -59,6 +59,7 @@ import com.minsait.onesait.platform.config.services.project.ProjectDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.helper.app.AppHelper;
+import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.security.ldap.ri.service.LdapUserService;
 
@@ -97,6 +98,8 @@ public class AppController {
 	@Value("${ldap.base}")
 	private String ldapBaseDn;
 	private static final String LDAP = "ldap";
+	@Autowired
+	private ResourcesInUseService resourcesInUseService;
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification) {
@@ -111,7 +114,7 @@ public class AppController {
 
 	@GetMapping(value = "/create")
 	public String create(Model model) {
-		model.addAttribute("app", new AppCreateDTO());
+		appHelper.populateAppCreate(model);
 		return "apps/create";
 	}
 
@@ -133,15 +136,19 @@ public class AppController {
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	@Transactional
 	public String update(Model model, @PathVariable("id") String id) {
-		final App app = appService.getById(id);
+		final AppList app = appService.getAppListById(id);
 
 		if (app != null) {
 
 			final User sessionUser = userService.getUser(utils.getUserId());
 			if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-					|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) {
+					|| sessionUser.isAdmin()) {
 
 				appHelper.populateAppUpdate(model, app, sessionUser, ldapBaseDn, ldapActive());
+
+				model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+						resourcesInUseService.isInUse(id, utils.getUserId()));
+				resourcesInUseService.put(id, utils.getUserId());
 
 				return "apps/create";
 
@@ -165,38 +172,40 @@ public class AppController {
 
 		try {
 
-			final App app = appService.getById(id);
+			final AppList app = appService.getAppListById(id);
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
 				if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) {
+						|| sessionUser.isAdmin()) {
 					appService.updateApp(appDTO);
 				} else {
+					resourcesInUseService.removeByUser(id, utils.getUserId());
 					return REDIRECT_APPS_LIST;
 				}
 			} else {
+				resourcesInUseService.removeByUser(id, utils.getUserId());
 				return REDIRECT_APPS_LIST;
 			}
 
 		} catch (final AppServiceException e) {
 			log.debug("Cannot update app");
-			utils.addRedirectMessage("app.update.error", redirect);
-			return REDIRECT_APPS_CREATE;
+			utils.addRedirectMessage(e.getMessage(), redirect);
+			return REDIRECT_APPS_UPDATE + id;
 		}
-
+		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_APPS_LIST;
 	}
 
 	@GetMapping("/show/{id}")
 	@Transactional
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
-		final App app = appService.getById(id);
+		final AppList app = appService.getAppListById(id);
 
 		if (app != null) {
 
 			final User sessionUser = userService.getUser(utils.getUserId());
 			if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-					|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId())) {
+					|| sessionUser.isAdmin()) {
 
 				appHelper.populateAppShow(model, app);
 
@@ -218,8 +227,7 @@ public class AppController {
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
 				if ((((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-						|| Role.Type.ROLE_ADMINISTRATOR.toString().equals(sessionUser.getRole().getId()))
-						&& (app.getProject() == null)) {
+						|| sessionUser.isAdmin()) && (app.getProject() == null)) {
 					appService.deleteApp(app);
 				} else {
 					return URL_APP_LIST;
@@ -244,7 +252,7 @@ public class AppController {
 			final String appUserId = appService.createUserAccess(appId, userId, roleId);
 			final UserAppCreateDTO appUserDTO = new UserAppCreateDTO();
 			appUserDTO.setId(appUserId);
-			appUserDTO.setRoleName(appRoleRepository.findOne(roleId).getName());
+			appUserDTO.setRoleName(appRoleRepository.findById(roleId).orElse(null).getName());
 			appUserDTO.setUser(userId);
 			appUserDTO.setRoleId(roleId);
 
@@ -260,12 +268,13 @@ public class AppController {
 			@RequestParam String appId, @RequestParam String userId, @RequestParam String dn)
 			throws GenericOPException {
 		try {
-			if (userService.getUser(userId) == null)
+			if (userService.getUser(userId) == null) {
 				ldapUserService.createUser(userId, dn);
+			}
 			final String appUserId = appService.createUserAccess(appId, userId, roleId);
 			final UserAppCreateDTO appUserDTO = new UserAppCreateDTO();
 			appUserDTO.setId(appUserId);
-			appUserDTO.setRoleName(appRoleRepository.findOne(roleId).getName());
+			appUserDTO.setRoleName(appRoleRepository.findById(roleId).orElse(null).getName());
 			appUserDTO.setUser(userId);
 			appUserDTO.setRoleId(roleId);
 

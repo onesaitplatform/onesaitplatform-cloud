@@ -77,9 +77,13 @@ public class MicrosoftTeamsTokenFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		final HttpServletRequest req = (HttpServletRequest) request;
+		boolean hasSession = false;
 		if (requiresAuthentication(req, true)) {
 			log.debug("Detected header {} in API request, loading temp autenthication", TEAMS_TOKEN_HEADER);
-			InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession());
+			hasSession = req.getSession(false) != null;
+			if (hasSession) {
+				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
+			}
 			try {
 				final String token = req.getHeader(TEAMS_TOKEN_HEADER);
 				authenticateUser(token);
@@ -90,9 +94,13 @@ public class MicrosoftTeamsTokenFilter implements Filter {
 
 			} finally {
 				log.debug("Clearing authentication contexts");
-				InterceptorCommon.clearContexts(
-						(Authentication) req.getSession().getAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH),
-						req.getSession());
+				if (hasSession) {
+					InterceptorCommon.clearContexts(req.getSession(false));
+				} else {
+					if (req.getSession(false) != null) {
+						req.getSession(false).invalidate();
+					}
+				}
 			}
 		} else if (requiresAuthentication(req, false)) {
 			log.debug("Detected header {} in API request, loading full autenthication", TEAMS_TOKEN_HEADER);
@@ -134,7 +142,7 @@ public class MicrosoftTeamsTokenFilter implements Filter {
 		user.setEmail(userId);
 		user.setActive(true);
 		user.setPassword(DEFAULT_IMPORT_PASS_WORD + UUID.randomUUID().toString().substring(1, 5));
-		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()));
+		user.setRole(roleRepository.findById(Role.Type.ROLE_USER.name()).orElse(null));
 		userService.createUser(user);
 	}
 

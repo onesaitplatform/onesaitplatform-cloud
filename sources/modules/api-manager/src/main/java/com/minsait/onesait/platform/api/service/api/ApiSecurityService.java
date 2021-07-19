@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.api.service.api;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Api;
@@ -28,9 +30,12 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
+import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -54,11 +59,14 @@ public class ApiSecurityService {
 	@Autowired
 	private ConfigDBDetailsService detailsService;
 
+	@Autowired(required = false)
+	private JWTService jwtService;
+
 	@Autowired
 	private OntologyUserAccessRepository ontologyUserAccessRepository;
 
 	public boolean isAdmin(final User user) {
-		return (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId()));
+		return user.isAdmin();
 	}
 
 	public boolean isCol(final User user) {
@@ -99,7 +107,7 @@ public class ApiSecurityService {
 		boolean autorizado = false;
 
 		// is administrator, then true
-		if (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId())) {// Rol administrador
+		if (user.isAdmin()) {// Rol administrador
 			autorizado = true;
 
 		} else if (api.getUser().getUserId() != null && api.getUser().getUserId().equals(user.getUserId())) {
@@ -130,8 +138,7 @@ public class ApiSecurityService {
 			return false;
 
 		boolean can = api.getState().name().equalsIgnoreCase(Api.ApiStates.CREATED.name())
-				&& ((api.getUser().getUserId().equals(user.getUserId())
-						|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())));
+				&& ((api.getUser().getUserId().equals(user.getUserId()) || user.isAdmin()));
 		if (can)
 			return true;
 		else {
@@ -178,7 +185,7 @@ public class ApiSecurityService {
 
 		Boolean authorize = false;
 		// If the role is Manager always allows the operation
-		if (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId())) {// Rol administrador
+		if (user.isAdmin()) {// Rol administrador
 			authorize = true;
 
 		} else {
@@ -204,6 +211,25 @@ public class ApiSecurityService {
 
 		}
 		return authorize;
+	}
+
+	public User getUserOauth(String tokenOauth) {
+		try {
+			final Authentication auth = jwtService.getAuthentication(tokenOauth);
+			if (auth != null) {
+				if (auth.getPrincipal() instanceof UserPrincipal) {
+					final UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+					MultitenancyContextHolder.setTenantName(principal.getTenant());
+					MultitenancyContextHolder.setVerticalSchema(principal.getVerticalSchema());
+				}
+				detailsService.loadUserByUsername(auth.getName());
+				SecurityContextHolder.getContext().setAuthentication(auth);
+				return (userService.getUser(auth.getName()));
+			}
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 }

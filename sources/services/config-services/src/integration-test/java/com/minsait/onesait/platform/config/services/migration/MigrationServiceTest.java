@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -115,7 +116,7 @@ public class MigrationServiceTest {
 
 	@Before
 	public void configFiles() {
-		ClassLoader classLoader = getClass().getClassLoader();
+		final ClassLoader classLoader = getClass().getClassLoader();
 		exportFile = new File(classLoader.getResource("migration-examples/export.json").getFile());
 		importFile = new File(classLoader.getResource("migration-examples/import.json").getFile());
 		importDeviceFile = new File(classLoader.getResource("migration-examples/import-device.json").getFile());
@@ -138,7 +139,7 @@ public class MigrationServiceTest {
 		u.setFullName("Developer of the Platform");
 		u.setEmail("developer@onesaitplatform.com");
 		u.setActive(true);
-		u.setRole(this.roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()));
+		u.setRole(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
 		u = userRepository.save(u);
 
 		Ontology ontology1 = new Ontology();
@@ -167,18 +168,18 @@ public class MigrationServiceTest {
 		ontology2.setAllowsCypherFields(false);
 		ontology2 = ontologyRepository.save(ontology2);
 
-		MigrationConfiguration config = new MigrationConfiguration();
+		final MigrationConfiguration config = new MigrationConfiguration();
 		config.add(User.class, "developer-test-migration", null, null);
 		config.add(Ontology.class, "ontology-1", "OntologyMaster-1", null);
 		config.add(Ontology.class, "ontology-2", "OntologyMaster-2", null);
 
-		ExportResult result = migrationService.exportData(config, false);
+		final ExportResult result = migrationService.exportData(config, false);
 		return result;
 	}
 
 	private ExportResult exportOneDevice() throws IllegalArgumentException, IllegalAccessException {
 
-		ClientPlatformInstance device = new ClientPlatformInstance();
+		final ClientPlatformInstance device = new ClientPlatformInstance();
 		device.setAccesEnum(StatusType.OK);
 		device.setConnected(true);
 		device.setCreatedAt(new Date());
@@ -188,16 +189,15 @@ public class MigrationServiceTest {
 		device.setJsonActions("nothing");
 		device.setLocation(new double[] { 1.1, 2.1 });
 		device.setProtocol("http");
-		device.setSessionKey("1234");
 		device.setStatus("ok");
 		device.setTags("test");
 		device.setUpdatedAt(new Date());
 		deviceRepository.save(device);
 
-		MigrationConfiguration config = new MigrationConfiguration();
+		final MigrationConfiguration config = new MigrationConfiguration();
 		config.add(ClientPlatformInstance.class, "TEST-DEVICE", "TEST-DEVICE", null);
 
-		ExportResult result = migrationService.exportData(config, false);
+		final ExportResult result = migrationService.exportData(config, false);
 		return result;
 	}
 
@@ -209,22 +209,22 @@ public class MigrationServiceTest {
 			throws IOException, VersionNotSupportedException, NamespaceMismatchException, ProcessStepException,
 			IOReadException, ClassNotFoundException, NoSuchFieldException, SecurityException, IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
-		byte[] encoded = Files.readAllBytes(Paths.get(fullImportFile.getAbsolutePath()));
-		String json = new String(encoded, StandardCharsets.UTF_8);
-		DataFromDB readData = migrationService.getDataFromJson(json);
+		final byte[] encoded = Files.readAllBytes(Paths.get(fullImportFile.getAbsolutePath()));
+		final String json = new String(encoded, StandardCharsets.UTF_8);
+		final DataFromDB readData = migrationService.getDataFromJson(json);
 
-		MigrationConfiguration config = new MigrationConfiguration();
-		Set<Class<?>> classes = readData.getClasses();
-		for (Class<?> clazz : classes) {
-			Set<Serializable> instances = readData.getInstances(clazz);
-			for (Serializable instance : instances) {
+		final MigrationConfiguration config = new MigrationConfiguration();
+		final Set<Class<?>> classes = readData.getClasses();
+		for (final Class<?> clazz : classes) {
+			final Set<Serializable> instances = readData.getInstances(clazz);
+			for (final Serializable instance : instances) {
 				config.add(clazz, instance, null, null);
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData, false);
+		final LoadEntityResult result = migrationService.loadData(config, readData, false);
 
-		MigrationErrors errors = new MigrationErrors();
+		final MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(Lists.newArrayList(result.getAllObjects()), errors);
 
 		// Includ here all the assert that you want
@@ -236,26 +236,26 @@ public class MigrationServiceTest {
 			throws IOException, VersionNotSupportedException, NamespaceMismatchException, ProcessStepException,
 			IOReadException, ClassNotFoundException, NoSuchFieldException, SecurityException, IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
-		byte[] encoded = Files.readAllBytes(Paths.get(importClintPlatform2File.getAbsolutePath()));
-		String json = new String(encoded, StandardCharsets.UTF_8);
-		DataFromDB readData = migrationService.getDataFromJson(json);
+		final byte[] encoded = Files.readAllBytes(Paths.get(importClintPlatform2File.getAbsolutePath()));
+		final String json = new String(encoded, StandardCharsets.UTF_8);
+		final DataFromDB readData = migrationService.getDataFromJson(json);
 
-		MigrationConfiguration config = new MigrationConfiguration();
-		Set<Class<?>> classes = readData.getClasses();
-		for (Class<?> clazz : classes) {
-			Set<Serializable> instances = readData.getInstances(clazz);
-			for (Serializable instance : instances) {
+		final MigrationConfiguration config = new MigrationConfiguration();
+		final Set<Class<?>> classes = readData.getClasses();
+		for (final Class<?> clazz : classes) {
+			final Set<Serializable> instances = readData.getInstances(clazz);
+			for (final Serializable instance : instances) {
 				config.add(clazz, instance, null, null);
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData, false);
+		final LoadEntityResult result = migrationService.loadData(config, readData, false);
 
-		MigrationErrors errors = new MigrationErrors();
+		final MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(Lists.newArrayList(result.getAllObjects()), errors);
 
-		Predicate<MigrationError> infoErrorSelector = error -> error.getType() == MigrationError.ErrorType.INFO;
-		List<MigrationError> infoErrors = errors.getErrors(infoErrorSelector);
+		final Predicate<MigrationError> infoErrorSelector = error -> error.getType() == MigrationError.ErrorType.INFO;
+		final List<MigrationError> infoErrors = errors.getErrors(infoErrorSelector);
 
 		assertTrue("There should be 18 info msgs", infoErrors.size() == 18);
 	}
@@ -270,26 +270,26 @@ public class MigrationServiceTest {
 			throws IOException, VersionNotSupportedException, NamespaceMismatchException, ProcessStepException,
 			IOReadException, ClassNotFoundException, NoSuchFieldException, SecurityException, IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
-		byte[] encoded = Files.readAllBytes(Paths.get(importClintPlatformFile.getAbsolutePath()));
-		String json = new String(encoded, StandardCharsets.UTF_8);
-		DataFromDB readData = migrationService.getDataFromJson(json);
+		final byte[] encoded = Files.readAllBytes(Paths.get(importClintPlatformFile.getAbsolutePath()));
+		final String json = new String(encoded, StandardCharsets.UTF_8);
+		final DataFromDB readData = migrationService.getDataFromJson(json);
 
-		MigrationConfiguration config = new MigrationConfiguration();
-		Set<Class<?>> classes = readData.getClasses();
-		for (Class<?> clazz : classes) {
-			Set<Serializable> instances = readData.getInstances(clazz);
-			for (Serializable instance : instances) {
+		final MigrationConfiguration config = new MigrationConfiguration();
+		final Set<Class<?>> classes = readData.getClasses();
+		for (final Class<?> clazz : classes) {
+			final Set<Serializable> instances = readData.getInstances(clazz);
+			for (final Serializable instance : instances) {
 				config.add(clazz, instance, null, null);
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData, false);
+		final LoadEntityResult result = migrationService.loadData(config, readData, false);
 
-		MigrationErrors errors = new MigrationErrors();
+		final MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(Lists.newArrayList(result.getAllObjects()), errors);
 
-		Predicate<MigrationError> infoErrorSelector = error -> error.getType() == MigrationError.ErrorType.INFO;
-		List<MigrationError> infoErrors = errors.getErrors(infoErrorSelector);
+		final Predicate<MigrationError> infoErrorSelector = error -> error.getType() == MigrationError.ErrorType.INFO;
+		final List<MigrationError> infoErrors = errors.getErrors(infoErrorSelector);
 
 		assertTrue("There should be 9 info msgs", infoErrors.size() == 9);
 	}
@@ -300,21 +300,21 @@ public class MigrationServiceTest {
 			throws IOException, VersionNotSupportedException, NamespaceMismatchException, ProcessStepException,
 			IOReadException, ClassNotFoundException, NoSuchFieldException, SecurityException, IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
-		byte[] encoded = Files.readAllBytes(Paths.get(importDeviceFile.getPath()));
-		String json = new String(encoded, StandardCharsets.UTF_8);
+		final byte[] encoded = Files.readAllBytes(Paths.get(importDeviceFile.getPath()));
+		final String json = new String(encoded, StandardCharsets.UTF_8);
 
-		DataFromDB readData = migrationService.getDataFromJson(json);
+		final DataFromDB readData = migrationService.getDataFromJson(json);
 
-		MigrationConfiguration config = new MigrationConfiguration();
-		Set<Class<?>> classes = readData.getClasses();
-		for (Class<?> clazz : classes) {
-			Set<Serializable> instances = readData.getInstances(clazz);
-			for (Serializable instance : instances) {
+		final MigrationConfiguration config = new MigrationConfiguration();
+		final Set<Class<?>> classes = readData.getClasses();
+		for (final Class<?> clazz : classes) {
+			final Set<Serializable> instances = readData.getInstances(clazz);
+			for (final Serializable instance : instances) {
 				config.add(clazz, instance, null, null);
 			}
 		}
 
-		LoadEntityResult result = migrationService.loadData(config, readData, false);
+		final LoadEntityResult result = migrationService.loadData(config, readData, false);
 
 		assertTrue("The device should be imported", result.getAllObjects().size() == 1);
 	}
@@ -324,27 +324,27 @@ public class MigrationServiceTest {
 	public void given_OneDevice_When_ItIsSerializedAndDeserialized_Then_FieldValuesAreNotLost()
 			throws IllegalArgumentException, IllegalAccessException, IOException, ClassNotFoundException,
 			NoSuchFieldException, SecurityException, InstantiationException {
-		ExportResult result = exportOneDevice();
+		final ExportResult result = exportOneDevice();
 
-		deviceRepository.delete("TEST-DEVICE");
+		deviceRepository.deleteById("TEST-DEVICE");
 
-		DataFromDB data = result.getData();
+		final DataFromDB data = result.getData();
 
-		MigrationConfiguration config = new MigrationConfiguration();
-		Set<Class<?>> classes = data.getClasses();
-		for (Class<?> clazz : classes) {
-			Set<Serializable> instances = data.getInstances(clazz);
-			for (Serializable instance : instances) {
+		final MigrationConfiguration config = new MigrationConfiguration();
+		final Set<Class<?>> classes = data.getClasses();
+		for (final Class<?> clazz : classes) {
+			final Set<Serializable> instances = data.getInstances(clazz);
+			for (final Serializable instance : instances) {
 				config.add(clazz, instance, null, null);
 			}
 		}
 
-		LoadEntityResult importResult = migrationService.loadData(config, data, false);
+		final LoadEntityResult importResult = migrationService.loadData(config, data, false);
 
-		Map<Serializable, Object> devicesData = importResult.getEntities().get(ClientPlatformInstance.class);
-		Object deviceData = devicesData.get("TEST-DEVICE");
+		final Map<Serializable, Object> devicesData = importResult.getEntities().get(ClientPlatformInstance.class);
+		final Object deviceData = devicesData.get("TEST-DEVICE");
 
-		ClientPlatformInstance device = (ClientPlatformInstance) deviceData;
+		final ClientPlatformInstance device = (ClientPlatformInstance) deviceData;
 
 		assertTrue("The id of the device should be \"TEST-DEVICE\"", "TEST-DEVICE".equals(device.getId()));
 	}
@@ -354,10 +354,10 @@ public class MigrationServiceTest {
 	public void given_OneUserAndTwoOntologiesOfSuchUser_When_IsRequestedToObtainData_Then_TheDataAreObtainedWithWarningsInDataSchema()
 			throws JsonGenerationException, JsonMappingException, IOException, IllegalArgumentException,
 			IllegalAccessException {
-		ExportResult result = exportOneUserTwoOntologies();
+		final ExportResult result = exportOneUserTwoOntologies();
 		assertTrue("There should be data exported", result.getData() != null);
-		Predicate<MigrationError> typeWarnings = error -> error.getType() == MigrationError.ErrorType.WARN;
-		int size = result.getErrors().getErrors(typeWarnings).size();
+		final Predicate<MigrationError> typeWarnings = error -> error.getType() == MigrationError.ErrorType.WARN;
+		final int size = result.getErrors().getErrors(typeWarnings).size();
 		assertTrue("There should be 1 warnings", size == 1);
 	}
 
@@ -366,19 +366,19 @@ public class MigrationServiceTest {
 	@Transactional
 	public void given_OneExportResultWithOneUserAndTwoOntologies_When_ItIsSerializedAndDeserialized_Then_FieldValuesAreNotLost()
 			throws IOException, IllegalArgumentException, IllegalAccessException {
-		ExportResult result = exportOneUserTwoOntologies();
+		final ExportResult result = exportOneUserTwoOntologies();
 
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
+		final ObjectMapper mapper = new ObjectMapper();
+		final SimpleModule module = new SimpleModule();
 		module.addSerializer(DataFromDB.class, new DataFromDBJsonSerializer());
 		module.addDeserializer(DataFromDB.class, new DataFromDBJsonDeserializer());
 		mapper.registerModule(module);
 
-		String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.getData());
+		final String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.getData());
 
-		DataFromDB data = mapper.readValue(json, DataFromDB.class);
+		final DataFromDB data = mapper.readValue(json, DataFromDB.class);
 
-		String json2 = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
+		final String json2 = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data);
 
 		assertTrue("Jsons should be equals after a serialization/desirialization/serialization process",
 				json.equals(json2));
@@ -390,12 +390,12 @@ public class MigrationServiceTest {
 	public void given_OneExportResultWithOneUserAndTwoOntologies_When_ItIsTransformedInJsonAndRestauredAsData_Then_FieldValuesAreNotLost()
 			throws IllegalArgumentException, IllegalAccessException, JsonProcessingException,
 			VersionNotSupportedException, NamespaceMismatchException, ProcessStepException, IOReadException {
-		ExportResult result = exportOneUserTwoOntologies();
-		String json = migrationService.getJsonFromData(result.getData());
+		final ExportResult result = exportOneUserTwoOntologies();
+		final String json = migrationService.getJsonFromData(result.getData());
 
-		DataFromDB data = migrationService.getDataFromJson(json);
+		final DataFromDB data = migrationService.getDataFromJson(json);
 
-		String json2 = migrationService.getJsonFromData(data);
+		final String json2 = migrationService.getJsonFromData(data);
 
 		assertTrue("Json and Json2 should be equals", json.equals(json2));
 	}
@@ -406,7 +406,7 @@ public class MigrationServiceTest {
 	public void given_OneClassInTheBlackList_When_ItIsExported_Then_ItisIgnored()
 			throws IllegalArgumentException, IllegalAccessException {
 
-		MigrationConfiguration config = new MigrationConfiguration();
+		final MigrationConfiguration config = new MigrationConfiguration();
 		config.add(Role.class, "ROLE_DEVELOPER", null, null);
 		assertTrue("Role can not be exported", config.getTypes().size() == 0);
 	}
@@ -415,23 +415,23 @@ public class MigrationServiceTest {
 	@Transactional
 	public void given_OneOntologyInDB_When_ItIsPersistedOnDiskAndRestored_Then_TheEntityHasTheSameValuesThanInTheBegining()
 			throws IllegalArgumentException, IllegalAccessException, IOException {
-		String user = "administrator";
+		final String user = "administrator";
 
-		MigrationConfiguration config = new MigrationConfiguration();
+		final MigrationConfiguration config = new MigrationConfiguration();
 		config.add(Ontology.class, ontologyService.getOntologyByIdentification("GeoAirQuality", user).getId(),
 				"GeoAirQuality", null);
 		config.add(Ontology.class, ontologyService.getOntologyByIdentification("AirQuality", user).getId(),
 				"AirQuality", null);
-		ExportResult result = migrationService.exportData(config, false);
-		String jsonOri = migrationService.getJsonFromData(result.getData());
+		final ExportResult result = migrationService.exportData(config, false);
+		final String jsonOri = migrationService.getJsonFromData(result.getData());
 
 		try (BufferedWriter out = Files.newBufferedWriter(Paths.get(exportFile.getPath()), StandardCharsets.UTF_8)) {
 			out.write(jsonOri);
 			out.flush();
 		}
 
-		byte[] encoded = Files.readAllBytes(Paths.get(exportFile.getPath()));
-		String jsonRecovered = new String(encoded, StandardCharsets.UTF_8);
+		final byte[] encoded = Files.readAllBytes(Paths.get(exportFile.getPath()));
+		final String jsonRecovered = new String(encoded, StandardCharsets.UTF_8);
 
 		assertTrue("Data should be equal after persit it on disk", jsonOri.equals(jsonRecovered));
 	}
@@ -443,41 +443,42 @@ public class MigrationServiceTest {
 			SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException,
 			VersionNotSupportedException, NamespaceMismatchException, ProcessStepException, IOReadException {
 
-		byte[] encoded = Files.readAllBytes(Paths.get(importFile.getPath()));
-		String json = new String(encoded, StandardCharsets.UTF_8);
+		final byte[] encoded = Files.readAllBytes(Paths.get(importFile.getPath()));
+		final String json = new String(encoded, StandardCharsets.UTF_8);
 
-		DataFromDB readData = migrationService.getDataFromJson(json);
+		final DataFromDB readData = migrationService.getDataFromJson(json);
 
-		MigrationConfiguration config = new MigrationConfiguration();
-		Set<Class<?>> classes = readData.getClasses();
-		for (Class<?> clazz : classes) {
-			Set<Serializable> instances = readData.getInstances(clazz);
-			for (Serializable instance : instances) {
+		final MigrationConfiguration config = new MigrationConfiguration();
+		final Set<Class<?>> classes = readData.getClasses();
+		for (final Class<?> clazz : classes) {
+			final Set<Serializable> instances = readData.getInstances(clazz);
+			for (final Serializable instance : instances) {
 				config.add(clazz, instance, null, null);
 			}
 		}
 
-		LoadEntityResult importDataIntoDB = migrationService.loadData(config, readData, false);
-		List<Object> allObjects = importDataIntoDB.getAllObjects();
-		Predicate<MigrationError> typeWarnings = error -> error.getType() == MigrationError.ErrorType.WARN;
+		final LoadEntityResult importDataIntoDB = migrationService.loadData(config, readData, false);
+		final List<Object> allObjects = importDataIntoDB.getAllObjects();
+		final Predicate<MigrationError> typeWarnings = error -> error.getType() == MigrationError.ErrorType.WARN;
+
 		assertTrue("There should be 0 warnings", importDataIntoDB.getErrors().getErrors(typeWarnings).size() == 0);
 		assertTrue("There should be 4 entities to persist", allObjects.size() == 4);
 
-		MigrationErrors errors = new MigrationErrors();
+		final MigrationErrors errors = new MigrationErrors();
 		migrationService.persistData(allObjects, errors);
 
-		User user = userRepository.findOne("TestingImportUser");
-		assertTrue("TestingImportUser should be persisted", user != null);
-		assertTrue("TestingImportUser should be persisted", user.getUserId().equals("TestingImportUser"));
+		final Optional<User> user = userRepository.findById("TestingImportUser");
+		assertTrue("TestingImportUser should be persisted", user.isPresent());
+		assertTrue("TestingImportUser should be persisted", user.get().getUserId().equals("TestingImportUser"));
 
-		Ontology ontology = ontologyRepository.findOne("TestingImportOntology");
-		assertTrue("TestingImportOntology should be persisted", ontology != null);
-		assertTrue("TestingImportOntology should be persisted", ontology.getId().equals("TestingImportOntology"));
+		final Optional<Ontology> ontology = ontologyRepository.findById("TestingImportOntology");
+		assertTrue("TestingImportOntology should be persisted", ontology.isPresent());
+		assertTrue("TestingImportOntology should be persisted", ontology.get().getId().equals("TestingImportOntology"));
 
-		Ontology ontology2 = ontologyRepository.findOne("TestingImportOntology2");
-		assertTrue("TestingImportOntology2 should be persisted", ontology2 != null);
+		final Optional<Ontology> ontology2 = ontologyRepository.findById("TestingImportOntology2");
+		assertTrue("TestingImportOntology2 should be persisted", ontology2.isPresent());
 		assertTrue("TestingImportOntology2 should have one UserAccess",
-				ontology2.getOntologyUserAccesses().size() == 1);
+				ontology2.get().getOntologyUserAccesses().size() == 1);
 	}
 
 	@Test
@@ -485,14 +486,14 @@ public class MigrationServiceTest {
 	public void given_OneExportResult_When_TheExportedDataIsTransformedToJsonAndToJavaObjectSeveralTimes_Then_TheDataExportedIsNotChanged()
 			throws IllegalArgumentException, IllegalAccessException, JsonProcessingException,
 			VersionNotSupportedException, NamespaceMismatchException, ProcessStepException, IOReadException {
-		ExportResult result = exportOneUserTwoOntologies();
-		DataFromDB data = result.getData();
+		final ExportResult result = exportOneUserTwoOntologies();
+		final DataFromDB data = result.getData();
 
-		Verjson<DataFromDB> verjson = Verjson.create(DataFromDB.class, new ImportExportVersions());
-		String vjson = verjson.write(data);
-		DataFromDB vdata = verjson.read(vjson);
+		final Verjson<DataFromDB> verjson = Verjson.create(DataFromDB.class, new ImportExportVersions());
+		final String vjson = verjson.write(data);
+		final DataFromDB vdata = verjson.read(vjson);
 
-		String vjson2 = verjson.write(vdata);
+		final String vjson2 = verjson.write(vdata);
 		assertTrue("vjson and vjson2 should be equals", vjson.equals(vjson2));
 	}
 
@@ -506,13 +507,13 @@ public class MigrationServiceTest {
 			throws IOException, VersionNotSupportedException, NamespaceMismatchException, ProcessStepException,
 			IOReadException {
 
-		byte[] encoded = Files.readAllBytes(Paths.get(importFileOldOntology.getPath()));
-		String jsonRecovered = new String(encoded, StandardCharsets.UTF_8);
+		final byte[] encoded = Files.readAllBytes(Paths.get(importFileOldOntology.getPath()));
+		final String jsonRecovered = new String(encoded, StandardCharsets.UTF_8);
 
-		Verjson<DataFromDB> verjson = Verjson.create(DataFromDB.class, new TestVersions());
-		DataFromDB vdata = verjson.read(jsonRecovered);
+		final Verjson<DataFromDB> verjson = Verjson.create(DataFromDB.class, new TestVersions());
+		final DataFromDB vdata = verjson.read(jsonRecovered);
 
-		Map<String, Object> instanceData = vdata.getInstanceData(Ontology.class, "TestingImportOntology");
+		final Map<String, Object> instanceData = vdata.getInstanceData(Ontology.class, "TestingImportOntology");
 		assertTrue("allowsCypherFields should exist after importing the data",
 				(Boolean) instanceData.get("allowsCypherFields") == false);
 	}
@@ -521,39 +522,39 @@ public class MigrationServiceTest {
 	@Transactional
 	public void given_OneConfigDBWithDefaultData_When_AllDataIsExported_Then_NoDataIsExported()
 			throws IllegalArgumentException, IllegalAccessException {
-		Set<ManagedType<?>> managedTypes = em.getMetamodel().getManagedTypes();
-		MigrationConfiguration config = new MigrationConfiguration();
-		for (ManagedType<?> managedType : managedTypes) {
-			Class<?> javaType = managedType.getJavaType();
-			JpaRepository<?, Serializable> repository = MigrationUtils.getRepository(javaType, ctx);
+		final Set<ManagedType<?>> managedTypes = em.getMetamodel().getManagedTypes();
+		final MigrationConfiguration config = new MigrationConfiguration();
+		for (final ManagedType<?> managedType : managedTypes) {
+			final Class<?> javaType = managedType.getJavaType();
+			final JpaRepository<?, Serializable> repository = MigrationUtils.getRepository(javaType, ctx);
 			if (repository != null) {
-				List<?> entities = repository.findAll();
-				for (Object entity : entities) {
-					Serializable id = MigrationUtils.getId(entity);
+				final List<?> entities = repository.findAll();
+				for (final Object entity : entities) {
+					final Serializable id = MigrationUtils.getId(entity);
 					config.add(entity.getClass(), id, null, null);
 				}
 			}
 		}
 
-		ExportResult result = migrationService.exportData(config, false);
-		DataFromDB data = result.getData();
+		final ExportResult result = migrationService.exportData(config, false);
+		final DataFromDB data = result.getData();
 		System.out.println("Classes to be exported in test");
-		for (Class<?> clazz : data.getClasses()) {
+		for (final Class<?> clazz : data.getClasses()) {
 			System.out.println(clazz.getName());
-			Set<Serializable> instances = data.getInstances(clazz);
-			for (Serializable id : instances) {
+			final Set<Serializable> instances = data.getInstances(clazz);
+			for (final Serializable id : instances) {
 				System.out.println("\t" + id);
 			}
 		}
 
-		int size = data.getClasses().size();
+		final int size = data.getClasses().size();
 		assertTrue("A clean database should not produce anything to export", size == 0);
 	}
 
 	@Test
 	@Transactional
 	public void given_OnePlatformDeployed_When_TheSchemaIsExported_Then_TheSchemaIsExportedBasedOnTheJPAClasses() {
-		SchemaFromDB schema = migrationService.exportSchema();
+		final SchemaFromDB schema = migrationService.exportSchema();
 		// We test that almost one class is exported.
 		assertTrue("Ontology class schema should be exported", schema.getClasses().contains(Ontology.class.getName()));
 		// We test that almost one field for the class is exported
@@ -563,60 +564,60 @@ public class MigrationServiceTest {
 	@Test
 	@Transactional
 	public void given_OneSchema_When_ItIsSerializedAsJson_Then_AValidJsonSchemaIsGenerated() throws IOException {
-		SchemaFromDB schema = migrationService.exportSchema();
-		String json = migrationService.getJsonFromSchema(schema);
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule();
+		final SchemaFromDB schema = migrationService.exportSchema();
+		final String json = migrationService.getJsonFromSchema(schema);
+		final ObjectMapper mapper = new ObjectMapper();
+		final SimpleModule module = new SimpleModule();
 		module.addSerializer(SchemaFromDB.class, new SchemaFromDBJsonSerializer());
 		module.addDeserializer(SchemaFromDB.class, new SchemaFromDBJsonDeserializer());
 		mapper.registerModule(module);
 
-		SchemaFromDB recoveredSchema = mapper.readValue(json, SchemaFromDB.class);
-		String recoveredJson = migrationService.getJsonFromSchema(recoveredSchema);
+		final SchemaFromDB recoveredSchema = mapper.readValue(json, SchemaFromDB.class);
+		final String recoveredJson = migrationService.getJsonFromSchema(recoveredSchema);
 		assertTrue("The json serialization should not have size effects", json.equals(recoveredJson));
 	}
 
 	@Test
 	@Transactional
 	public void given_TwoDataSchemaVersions_When_TheyAreCompared_ThenTheDifferencesAreIdentified() throws IOException {
-		byte[] encodedOldSchema = Files.readAllBytes(Paths.get(oldSchemaFile.getPath()));
-		String oldSchemaJson = new String(encodedOldSchema, StandardCharsets.UTF_8);
-		byte[] encodedCurrentSchema = Files.readAllBytes(Paths.get(currentSchemaFile.getPath()));
-		String currentSchemaJson = new String(encodedCurrentSchema, StandardCharsets.UTF_8);
+		final byte[] encodedOldSchema = Files.readAllBytes(Paths.get(oldSchemaFile.getPath()));
+		final String oldSchemaJson = new String(encodedOldSchema, StandardCharsets.UTF_8);
+		final byte[] encodedCurrentSchema = Files.readAllBytes(Paths.get(currentSchemaFile.getPath()));
+		final String currentSchemaJson = new String(encodedCurrentSchema, StandardCharsets.UTF_8);
 
-		String diffs = migrationService.compareSchemas(currentSchemaJson, oldSchemaJson);
+		final String diffs = migrationService.compareSchemas(currentSchemaJson, oldSchemaJson);
 
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode diffsNode = mapper.readTree(diffs);
+		final ObjectMapper mapper = new ObjectMapper();
+		final JsonNode diffsNode = mapper.readTree(diffs);
 
 		assertTrue("It should return an array of diffs", diffsNode.isArray());
 
-		ArrayNode diffsArray = (ArrayNode) diffsNode;
-		Iterator<JsonNode> elements = diffsArray.elements();
+		final ArrayNode diffsArray = (ArrayNode) diffsNode;
+		final Iterator<JsonNode> elements = diffsArray.elements();
 
 		while (elements.hasNext()) {
-			JsonNode element = elements.next();
-			JsonNode classNode = element.get("class");
-			String className = classNode.asText();
-			JsonNode typeNode = element.get("type");
-			String typeOfChange = typeNode.asText();
+			final JsonNode element = elements.next();
+			final JsonNode classNode = element.get("class");
+			final String className = classNode.asText();
+			final JsonNode typeNode = element.get("type");
+			final String typeOfChange = typeNode.asText();
 			switch (className) {
 			case "com.minsait.onesait.platform.config.model.Ontology":
 				assertTrue("The type of change must be 'class changed'", typeOfChange.equals("class changed"));
-				ArrayNode changes = (ArrayNode) element.get("changes");
-				Iterator<JsonNode> changesIt = changes.elements();
+				final ArrayNode changes = (ArrayNode) element.get("changes");
+				final Iterator<JsonNode> changesIt = changes.elements();
 				while (changesIt.hasNext()) {
-					JsonNode change = changesIt.next();
-					String changeType = change.get("type").asText();
-					String fieldName = change.get("fieldName").asText();
-					String fieldType = change.get("fieldType").asText();
+					final JsonNode change = changesIt.next();
+					final String changeType = change.get("type").asText();
+					final String fieldName = change.get("fieldName").asText();
+					final String fieldType = change.get("fieldType").asText();
 					switch (changeType) {
 					case "add":
 						assertTrue("Unexpected field name", fieldName.equals("new"));
 						assertTrue("Unexpected field type", fieldType.equals("java.lang.String"));
 						break;
 					case "change":
-						String oldFieldType = change.get("oldFieldType").asText();
+						final String oldFieldType = change.get("oldFieldType").asText();
 						assertTrue("Unexpected field name", fieldName.equals("allowsCreateTopic"));
 						assertTrue("Unexpected field type", fieldType.equals("java.lang.String"));
 						assertTrue("Unexpected old field type", oldFieldType.equals("boolean"));

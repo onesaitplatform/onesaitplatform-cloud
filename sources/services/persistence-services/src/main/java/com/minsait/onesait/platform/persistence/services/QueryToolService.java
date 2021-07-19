@@ -31,6 +31,9 @@ public interface QueryToolService {
 	String querySQLAsJson(String user, String ontology, String query, int offset)
 			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
 
+	String querySQLAsJson(String user, String ontology, String query, int offset, int limit)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
+
 	String queryNativeAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset,
 			int limit);
 

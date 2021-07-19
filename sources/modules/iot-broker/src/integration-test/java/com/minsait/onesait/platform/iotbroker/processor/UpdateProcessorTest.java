@@ -51,13 +51,10 @@ import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepositor
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
-@Slf4j
 public class UpdateProcessorTest {
 
 	@Autowired
@@ -99,7 +96,7 @@ public class UpdateProcessorTest {
 		when(deviceManager.registerActivity(any(), any(), any(), any())).thenReturn(true);
 
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 

@@ -61,8 +61,9 @@ public class XSSQueryRule extends DefaultRuleBase {
 
 	private String stripXSS(String value) {
 		String cleanValue = null;
-		if (value != null) {
-			cleanValue = Normalizer.normalize(value, Normalizer.Form.NFD);
+		if (value != null) {  
+		    //TO-DO fix accents
+			//cleanValue = Normalizer.normalize(value, Normalizer.Form.NFD);
 
 			// Avoid null characters
 			cleanValue = cleanValue.replaceAll("\0", "");

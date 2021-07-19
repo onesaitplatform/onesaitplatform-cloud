@@ -22,8 +22,6 @@ import com.minsait.onesait.platform.config.model.DashboardConf;
 
 public interface DashboardConfRepository extends JpaRepository<DashboardConf, String> {
 
-	DashboardConf findById(String id);
-
 	List<DashboardConf> findByIdentification(String identification);
 
 	List<DashboardConf> findAllByOrderByIdentificationAsc();

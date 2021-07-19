@@ -45,13 +45,25 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 
 import com.minsait.onesait.platform.config.services.app.AppService;
+import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
+import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
+import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
+import com.minsait.onesait.platform.libraries.mail.MailService;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableAuthorizationServer
+@Slf4j
 public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfigurerAdapter {
 
 	@Value("${security.jwt.client-id}")
@@ -76,6 +88,16 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 	@Autowired
 	private AppService appService;
+	@Autowired
+	private MultitenancyService multitenancyService;
+	@Autowired
+	private ConfigurationService configurationService;
+	@Autowired
+	private ServiceUtils utils;
+	@Autowired
+	private UserService userService;
+	@Autowired
+	private MailService mailService;
 
 	private static final String PSW_INCORRECT = "Password incorrect";
 	private static final String USER_NOT_FOUND = "User not exists";
@@ -84,6 +106,9 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
 		security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()").allowFormAuthenticationForClients();
 	}
+
+	@Autowired
+	private CorrelationInterceptor correlationInterceptor;
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
@@ -97,8 +122,8 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		endpoints.tokenStore(tokenStore);
 		endpoints.accessTokenConverter(jwtAccessTokenConverter);
 		endpoints.exceptionTranslator(webResponseExceptionTranslator());
+		endpoints.addInterceptor(correlationInterceptor);
 		endpoints.addInterceptor(userInRealmApplication());
-
 		endpoints.reuseRefreshTokens(false);
 
 	}
@@ -119,7 +144,7 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	}
 
 	@Bean
-	public WebResponseExceptionTranslator webResponseExceptionTranslator() {
+	public WebResponseExceptionTranslator<OAuth2Exception> webResponseExceptionTranslator() {
 		return new DefaultWebResponseExceptionTranslator() {
 
 			@Override
@@ -130,19 +155,61 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 				headers.setAll(responseEntity.getHeaders().toSingleValueMap());
 
 				HttpStatus responseCode = responseEntity.getStatusCode();
+				log.error("Handling Oauth error, code:{}, body:{}, exception:{}", responseCode, body, e.getMessage());
 				if (body.getMessage() == null) {
 					return new ResponseEntity<>(body, headers, responseCode);
 				}
-
-				if (body.getMessage().contains(PSW_INCORRECT))
+				if(e.getMessage().contains("v_token1_bearer_ERROR"))
+				{
+					return new ResponseEntity<>(body, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				if (body.getMessage().contains(PSW_INCORRECT)) {
 					responseCode = HttpStatus.BAD_REQUEST;
-				else if (body.getMessage().contains(USER_NOT_FOUND))
+					final ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder
+							.currentRequestAttributes();
+					authenticationFailure(attr.getRequest().getParameter("username"));
+				} else if (body.getMessage().contains(USER_NOT_FOUND)) {
 					responseCode = HttpStatus.NOT_FOUND;
-				else
+				} else if (body.getMessage().contains("User is not in clientId")) {
+					responseCode = HttpStatus.FORBIDDEN;
+				} else {
 					responseCode = HttpStatus.UNAUTHORIZED;
+				}
 				return new ResponseEntity<>(body, headers, responseCode);
 			}
 		};
+	}
+
+	private void authenticationFailure(String userName) {
+		// if user exist increase failed attemps
+		final MasterUser masterUser = multitenancyService.increaseFailedAttemp(userName);
+		if (masterUser != null) {
+
+			// validate limit
+			final com.minsait.onesait.platform.config.model.Configuration configuration = configurationService
+					.getConfiguration(com.minsait.onesait.platform.config.model.Configuration.Type.EXPIRATIONUSERS,
+							"default", null);
+			final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+					.fromYaml(configuration.getYmlConfig()).get("Authentication");
+			final int limitFailedAttemp = (Integer) ymlExpirationUsersPassConfig.get("limitFailedAttemp");
+
+			if (masterUser.getFailedAtemps() >= limitFailedAttemp && limitFailedAttemp >= 0) {
+				// if the limit is equal or higher
+				if (userService.deactivateUser(userName)) {
+					// send mail
+					try {
+						final String defaultTitle = "[Onesait Plaform] User account locked";
+						final String defaultMessage = "Your account has been blocked contact your administrator.";
+						final String emailTitle = utils.getMessage("user.attemp.bloqued.mail.title", defaultTitle);
+						final String emailMessage = utils.getMessage("user.attemp.bloqued.mail.body", defaultMessage);
+						mailService.sendMail(masterUser.getEmail(), emailTitle, emailMessage);
+					} catch (final Exception e) {
+
+					}
+				}
+			}
+		}
+
 	}
 
 	public WebRequestInterceptor userInRealmApplication() {
@@ -150,6 +217,8 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 			@Override
 			public void preHandle(WebRequest request) throws Exception {
+				final long start = System.currentTimeMillis();
+				log.debug("New preHandle process");
 				final Map<String, String[]> map = request.getParameterMap();
 				// only grant_type password scope
 				final boolean isInterceptable = map.entrySet().stream().filter(e -> e.getKey().equals("grant_type"))
@@ -162,9 +231,12 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 					final String username = request.getParameter("username");
 
 					if (!oAuthClientId.equals(platformClientId) && !appService.isUserInApp(username, oAuthClientId)) {
-						throw OAuth2Exception.create(OAuth2Exception.ACCESS_DENIED, "User is not in clientId/Realm");
+						throw OAuth2Exception.create(OAuth2Exception.ACCESS_DENIED,
+								"User is not in clientId/Realm. Username: " + username + " , clientId: "
+										+ oAuthClientId);
 					}
 				}
+				log.debug("End preHandle process, time: {}", System.currentTimeMillis() - start);
 			}
 
 			@Override

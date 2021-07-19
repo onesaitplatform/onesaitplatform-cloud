@@ -25,8 +25,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface GadgetTemplateRepository extends JpaRepository<GadgetTemplate, String> {
 
-	GadgetTemplate findById(String Id);
-
 	List<GadgetTemplate> findByUser(User user);
 
 	List<GadgetTemplate> findByUserAndIdentificationContaining(User user, String identification);
@@ -47,15 +45,22 @@ public interface GadgetTemplateRepository extends JpaRepository<GadgetTemplate, 
 
 	GadgetTemplate findByIdentification(String identification);
 
+	List<GadgetTemplate> findByType(String type);
+
 	@Query("SELECT o FROM GadgetTemplate AS o WHERE (o.user.userId LIKE %:userId% ) OR o.isPublic IS true")
 	List<GadgetTemplate> findGadgetTemplateByUserAndIsPublicTrue(@Param("userId") String userId);
+
+	@Query("SELECT o FROM GadgetTemplate AS o WHERE ((o.user.userId LIKE %:userId% ) OR o.isPublic IS true) AND o.type = :type")
+	List<GadgetTemplate> findGadgetTemplateByUserAndIsPublicTrueAndType(@Param("userId") String userId, @Param("type") String type);
 
 	@Query("SELECT o FROM GadgetTemplate AS o WHERE ((o.user.userId LIKE %:userId% ) OR o.isPublic IS true) AND o.identification=:identification ")
 	GadgetTemplate findGadgetTemplateByUserAndIsPublicTrueAndIdentification(@Param("userId") String userId,
 			@Param("identification") String identification);
-	
+
 	@Query("SELECT o FROM GadgetTemplate AS o WHERE ((o.user.userId LIKE %:userId% ) OR o.isPublic IS true) AND o.identification LIKE %:identification% ")
 	List<GadgetTemplate> findGadgetTemplateByUserAndIsPublicTrueAndIdentificationLike(@Param("userId") String userId,
 			@Param("identification") String identification);
+
+
 
 }

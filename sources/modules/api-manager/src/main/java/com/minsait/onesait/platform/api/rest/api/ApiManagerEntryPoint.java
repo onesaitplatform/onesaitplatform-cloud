@@ -65,13 +65,14 @@ public class ApiManagerEntryPoint {
 			@RequestBody(required = false) byte[] requestBody) {
 		Map<String, Object> mData = new HashMap<>();
 		try {
+			log.debug("Processing request data");
 			mData = apiService.processRequestData(request, response, requestBody);
 			ChainProcessingStatus status = (ChainProcessingStatus) mData.get(Constants.STATUS);
 			if (status == ChainProcessingStatus.STOP) {
 				log.error("STOP state detected: exiting");
 				return buildErrorResponse(mData);
 			}
-
+			log.debug("Processing logic ");
 			mData = apiService.processLogic(mData);
 			status = (ChainProcessingStatus) mData.get(Constants.STATUS);
 			if (status == ChainProcessingStatus.STOP) {
@@ -79,9 +80,9 @@ public class ApiManagerEntryPoint {
 				return buildErrorResponse(mData);
 
 			}
-
+			log.debug("Processing output");
 			mData = apiService.processOutput(mData);
-
+			log.debug("Building response data");
 			return buildResponse(mData);
 
 		} catch (final Exception e) {

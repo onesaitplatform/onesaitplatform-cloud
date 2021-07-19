@@ -25,9 +25,9 @@ public interface SecurityPlugin {
 
 	public boolean closeSession(String sessionKey);
 
-	public boolean checkSessionKeyActive(String sessionKey);
+	public boolean checkSessionKeyActive(Optional<IoTSession> session);
 
-	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, String sessionKey);
+	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, Optional<IoTSession> session);
 
 	public Optional<IoTSession> getSession(String sessionKey);
 }

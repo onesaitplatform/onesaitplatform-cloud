@@ -154,7 +154,30 @@
 															</td>
 														</tr>
 													</tbody>
-												</table>																							
+												</table>
+													<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right" >
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{dataflow.instances.identification}" data-column="0">Identification</label>
+														<label class="toggle-vis"
+															th:text="#{dataflow.instances.url}" data-column="1"> URL</label>
+														<label class="toggle-vis"
+															th:text="#{dataflow.instances.assigned}" data-column="2"> Assigned to</label>														
+														<label 
+															class="toggle-vis"
+															th:text="#{dataflow.instances.management}" data-column="3">Management</label>														 
+														<label  
+															class="toggle-vis"
+															th:text="#{gen.options}" data-column="4"> Options</label>															
+														 
+													</div>
+												</div>																							
 											</div>
 										</div>											
 									</div>
@@ -173,13 +196,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -283,12 +306,19 @@
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			var column = $('#instances').DataTable().column( $(this).attr('data-column') ); 
+			column.visible( ! column.visible() );
+			$(this).toggleClass('text-muted line-through');			
+		});	
 	});
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
-		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');

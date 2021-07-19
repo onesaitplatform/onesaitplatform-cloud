@@ -24,6 +24,7 @@ import org.springframework.security.access.event.AuthorizationFailureEvent;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.oauth2.client.filter.OAuth2AuthenticationFailureEvent;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
@@ -139,6 +140,31 @@ public class Sofia2EventListener {
 		s2event.setUser(errorEvent.getAuthentication().getName());
 		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
 
+		s2event.setResultOperation(ResultOperationType.ERROR);
+
+		if (errorEvent.getAuthentication().getDetails() != null) {
+			final Object details = errorEvent.getAuthentication().getDetails();
+			setAuthValues(details, s2event);
+		}
+
+		getEventRouter().notify(s2event.toJson());
+	}
+
+	@EventListener
+	@Async
+	public void handleAuthorizationFailureEvent(OAuth2AuthenticationFailureEvent errorEvent) {
+		log.error("OAuth2AuthenticationFailureEvent", errorEvent.getException());
+		log.info("authorization failure  event for user {} ", errorEvent.getAuthentication().getPrincipal().toString());
+
+		final OPAuthAuditEvent s2event = OPEventFactory.builder().build().createAuditAuthEvent(EventType.SECURITY,
+				"Login Failed (AuthorizationFailure) for User: "
+						+ errorEvent.getAuthentication().getPrincipal().toString());
+
+		s2event.setOperationType(OperationType.LOGIN.name());
+		s2event.setModule(Module.CONTROLPANEL);
+		s2event.setUser(errorEvent.getAuthentication().getName());
+		s2event.setOtherType(AuthorizationFailureEvent.class.getName());
+		s2event.setMessage(errorEvent.getException().getMessage());
 		s2event.setResultOperation(ResultOperationType.ERROR);
 
 		if (errorEvent.getAuthentication().getDetails() != null) {

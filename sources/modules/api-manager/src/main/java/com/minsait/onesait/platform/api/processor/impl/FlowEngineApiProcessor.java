@@ -44,10 +44,12 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
+import com.minsait.onesait.platform.api.cache.ApiCacheService;
 import com.minsait.onesait.platform.api.processor.ApiProcessor;
 import com.minsait.onesait.platform.api.processor.ScriptProcessorFactory;
 import com.minsait.onesait.platform.api.processor.utils.ApiProcessorUtils;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
+import com.minsait.onesait.platform.api.service.Constants;
 import com.minsait.onesait.platform.api.service.api.ApiManagerService;
 import com.minsait.onesait.platform.api.service.impl.ApiServiceImpl.ChainProcessingStatus;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -79,6 +81,9 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 
 	@Autowired
 	private ScriptProcessorFactory scriptEngine;
+	
+	@Autowired
+	private ApiCacheService apiCacheService;
 
 	@PostConstruct
 	void setUTF8Encoding() {
@@ -89,8 +94,19 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 	@Override
 	@ApiManagerAuditable
 	public Map<String, Object> process(Map<String, Object> data) throws GenericOPException {
-		data = proxyHttp(data);
-		data = postProcess(data);
+		Api api = (Api) data.get(Constants.API);
+		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
+			data = apiCacheService.getCache(data, api.getApicachetimeout());
+		}
+		
+		if (data.get(Constants.OUTPUT)==null) {
+			data = proxyHttp(data);
+			data = postProcess(data);
+		}
+		
+		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
+			apiCacheService.putCache(data, api.getApicachetimeout());
+		}
 		return data;
 	}
 

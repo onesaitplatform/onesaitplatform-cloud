@@ -36,7 +36,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.device.ClientPlatformInstanceService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
@@ -80,7 +79,7 @@ public class DeviceManagerController {
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) throws JsonProcessingException {
 
-		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
+		if (!utils.isAdministrator()) {
 			final List<ClientPlatformInstance> devices = new ArrayList<>();
 			for (final ClientPlatform client : clientPlatformService
 					.getclientPlatformsByUser(userService.getUser(utils.getUserId()))) {

@@ -12,45 +12,37 @@
             "url": "",
             "submenu": []
         },
-        {
+         {
             "title": {
-                "EN": "EDGE MANAGEMENT",
-                "ES": "ADMINITRACIÓN EDGE"
+                "EN": "LANDSCAPE",
+                "ES": "LANDSCAPE"
             },
-            "icon": "flaticon-analytics",
+            "icon": "flaticon-technology",
             "url": "",
             "submenu": [
                 {
                     "title": {
-                        "EN": "Devices Management",
-                        "ES": "Gestión de Dispositivos"
+                        "EN": "Edge Devices",
+                        "ES": "Dispositivos Edge"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/devices"
+                    "url": "/controlpanel/edge/landscape/devices"
                 },
                 {
                     "title": {
-                        "EN": "Clusters Management",
-                        "ES": "Gestión de Clusters"
+                        "EN": "Field Devices",
+                        "ES": "Gestión de campos"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/bastions"
+                    "url": "/controlpanel/edge/landscape/field"
                 },
                 {
                     "title": {
-                        "EN": "Landscape Management",
-                        "ES": "Gestión de Landscape"
+                        "EN": "Cloud to Cloud",
+                        "ES": "Cloud to Cloud"
                     },
                     "icon": "",
-                    "url": ""
-                },
-                {
-                    "title": {
-                        "EN": "Repositories Management",
-                        "ES": "Gestión de Repositorios"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/edge/organizations"
+                    "url": "/controlpanel/edge/landscape/cloud2cloud"
                 }
             ]
         },

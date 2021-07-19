@@ -19,6 +19,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -51,10 +52,10 @@ public class MailServiceImpl implements MailService {
 			throw e;
 		}
 	}
-	
+
 	@Override
 	public void sendMail(String to, String subject, String text) {
-	    sendMail(toArray(to), subject, text);	    
+		sendMail(toArray(to), subject, text);
 	}
 
 	@Override
@@ -62,10 +63,10 @@ public class MailServiceImpl implements MailService {
 		final String text = String.format(template.getText(), templateArgs);
 		sendMail(to, subject, text);
 	}
-	
+
 	@Override
 	public void sendMailWithTemplate(String to, String subject, SimpleMailMessage template, String... templateArgs) {
-        sendMailWithTemplate(toArray(to), subject, template, templateArgs);
+		sendMailWithTemplate(toArray(to), subject, template, templateArgs);
 	}
 
 	@Override
@@ -77,7 +78,7 @@ public class MailServiceImpl implements MailService {
 			// pass 'true' to the constructor to create a multipart message
 			if (attachment != null && attachName != null && attachName != "") {
 				helper = new MimeMessageHelper(message, true);
-				byte[] decode = Base64.decodeBase64(attachment);
+				final byte[] decode = Base64.decodeBase64(attachment);
 				helper.addAttachment(attachName, new ByteArrayResource(decode));
 			} else {
 				helper = new MimeMessageHelper(message);
@@ -94,16 +95,16 @@ public class MailServiceImpl implements MailService {
 			throw e;
 		}
 	}
-	
+
 	@Override
 	public void sendHtmlMailWithFile(String to, String subject, String text, String attachmentName, String attachment,
-	        boolean htmlenable) throws MessagingException {
-        sendHtmlMailWithFile(toArray(to), subject, text, attachmentName, attachment, htmlenable);	    
+			boolean htmlenable) throws MessagingException {
+		sendHtmlMailWithFile(toArray(to), subject, text, attachmentName, attachment, htmlenable);
 	}
-	
+
 	private String[] toArray(String address) {
-	    String[] toArray = new String[1];
-        toArray[0] = address;
-        return toArray;
+		final String[] toArray = new String[1];
+		toArray[0] = address;
+		return toArray;
 	}
 }

@@ -128,4 +128,16 @@ public class RtdbMaintainerAuditProcessor {
 				.module(Module.RTDBMAINTAINER).type(EventType.BATCH).operationType(OperationType.DELETE.name())
 				.resultOperation(ResultOperationType.SUCCESS).build();
 	}
+	
+	public RtdbMaintainerAuditEvent getEventKPIExecution(String user, String query, String ontology, ResultOperationType resultOperation) {
+
+		final String message = "KPI Execution for User: " + user + " - Using Query: " + query + " - On Ontology: " + ontology;
+
+		final Date today = new Date();
+		return RtdbMaintainerAuditEvent.builder().id(UUID.randomUUID().toString()).timeStamp(today.getTime())
+				.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).message(message)
+				.user(user).module(Module.RTDBMAINTAINER).type(EventType.BATCH)
+				.operationType(com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType.KPI_EXECUTION.name()).resultOperation(resultOperation).build();
+
+	}
 }

@@ -42,11 +42,23 @@ ENV SERVER_NAME=localhost \
     LDAP_USER_DN="" \
     LDAP_GROUP_OF_NAMES_ATT="" \
     LDAP_ROLES_MEMBER_ATT="" \
+    LDAP_ADMIN_WHITELIST=administrator,admin \
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
     MULTITENANCY_ENABLED=false \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
-    HZ_ZOOKEEPER_URL=zookeeper:2181   
+    HZ_ZOOKEEPER_URL=zookeeper:2181 \
+    ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
+    ENCRYPTION_ITERATIONS=5 \
+    JWT_KEY=ENC(BXYVNNRDiawMsH4sY79FUPig6FWPGbcoMusSVrXXb6ZLtZ4qhIEUazqv6XrcRm39s8zEu2d1G8yTowyE/sEv7YF0vrLNdb1m) \
+    JWT_CLIENT_SECRET=ENC(siZm4DUe6Y1FkxoUH7y0oUCiGDIq/vRX) \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201 \
+    REVOKED_TOKENS_EVICT_SEC=1800 \
+    REVOKED_TOKENS_SIZE=100000 \
+    REVOKED_TOKENS_SIZE_POLICY=PER_NODE \
+    CORS_ALLOWED_URLS="*"
 
 # Timezone
 RUN apk add --no-cache tzdata \
@@ -76,8 +88,8 @@ RUN chown -R onesait:onesait /var/log/platform-logs && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
-EXPOSE 21000
 
+EXPOSE 21000
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
 

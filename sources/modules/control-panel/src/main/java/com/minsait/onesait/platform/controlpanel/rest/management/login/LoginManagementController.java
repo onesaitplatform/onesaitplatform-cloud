@@ -28,6 +28,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,7 @@ import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.controlpanel.rest.management.login.model.RequestLogin;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
+import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 import com.minsait.onesait.platform.security.jwt.ri.CustomTokenService;
 import com.minsait.onesait.platform.security.jwt.ri.ResponseToken;
 
@@ -66,6 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 @Api(value = "Login Oauth", tags = { "Login Oauth service" })
 @RestController
 @RequestMapping("api" + OP_LOGIN)
+@ConditionalOnMissingBean(PlugableOauthAuthenticator.class)
 @Slf4j
 public class LoginManagementController {
 

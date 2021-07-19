@@ -33,6 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,10 +46,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OauthServerIntegrationTest extends AbstractTestNGSpringContextTests {
 
+	private static final String VERTICAL2 = "vertical";
+
+	private static final String BASIC = "Basic ";
+
 	@Autowired
 	private TestRestTemplate restTemplate;
 
 	private static final String OAUTH_TOKEN_ENDPOINT = "/oauth/token";
+	private static final String OAUTH_CHECK_TOKEN_ENDPOINT = "/oauth/check_token";
 	private static final String GRANT_TYPE = "grant_type";
 	private static final String SCOPE = "openid";
 	private static final String SCOPE_DEFAULT = "openid";
@@ -62,6 +68,8 @@ public class OauthServerIntegrationTest extends AbstractTestNGSpringContextTests
 	private String clientId;
 	@Value("${client-secret}")
 	private String clientSecret;
+	@Value("${vertical:onesaitplatform}")
+	private String vertical;
 
 	@Value("${oauth-server}")
 	private String oauthServer;
@@ -73,13 +81,45 @@ public class OauthServerIntegrationTest extends AbstractTestNGSpringContextTests
 		params.add(SCOPE, SCOPE_DEFAULT);
 		params.add(GRANT_TYPE_PASSWORD, pass_word);
 		params.add(USER, username);
+		params.add(VERTICAL2, vertical);
 		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.AUTHORIZATION, "Basic "
+		headers.add(HttpHeaders.AUTHORIZATION, BASIC
 				+ Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8)));
 		final ResponseEntity<JsonNode> response = restTemplate.exchange(oauthServer + OAUTH_TOKEN_ENDPOINT,
 				HttpMethod.POST, new HttpEntity<>(params, headers), JsonNode.class);
 		log.info("Token: {}", response.getBody().get("access_token").asText());
 		assertTrue(response.getStatusCode() == HttpStatus.OK);
+	}
+
+	@Test
+	public void checkTocken() {
+		final HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization",
+				BASIC + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()));
+
+		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(oauthServer + OAUTH_CHECK_TOKEN_ENDPOINT)
+				.queryParam("token", getOauthToken()).queryParam(VERTICAL2, vertical);
+
+		final HttpEntity<?> entity = new HttpEntity<>(headers);
+
+		final ResponseEntity<String> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity,
+				String.class);
+		assertTrue(response.getStatusCode() == HttpStatus.OK);
+	}
+
+	private String getOauthToken() {
+		final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add(GRANT_TYPE, GRANT_TYPE_PASSWORD);
+		params.add(SCOPE, SCOPE_DEFAULT);
+		params.add(GRANT_TYPE_PASSWORD, pass_word);
+		params.add(USER, username);
+		params.add(VERTICAL2, vertical);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.AUTHORIZATION, BASIC
+				+ Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8)));
+		final ResponseEntity<JsonNode> response = restTemplate.exchange(oauthServer + OAUTH_TOKEN_ENDPOINT,
+				HttpMethod.POST, new HttpEntity<>(params, headers), JsonNode.class);
+		return response.getBody().get("access_token").asText();
 	}
 
 }

@@ -45,7 +45,7 @@ public class RoleTypeRepositoryIntegrationTest {
 
 	@Before
 	public void setUp() {
-		List<Type> types = new ArrayList<Type>(Arrays.asList(Role.Type.values()));
+		final List<Type> types = new ArrayList<>(Arrays.asList(Role.Type.values()));
 		if (types.isEmpty()) {
 			// log.info("No types en tabla.Adding...");
 			throw new RuntimeException("No role types in class Role...");
@@ -55,20 +55,20 @@ public class RoleTypeRepositoryIntegrationTest {
 	@Test
 	@Transactional
 	public void given_SomeRoleTypesExist_When_TheyAreCounted_Then_TheCorrectNumberIsObtained() {
-		Assert.assertTrue(this.repository.findAll().size() == 9);
-		Assert.assertTrue(this.repository.count() == 9);
+		Assert.assertTrue(repository.findAll().size() == 9);
+		Assert.assertTrue(repository.count() == 9);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeRoleTypesExist_When_TheyAreCountedById_Then_OneIsReturned() {
-		Assert.assertTrue(this.repository.countById("ROLE_ADMINISTRATOR") == 1L);
+		Assert.assertTrue(repository.countById("ROLE_ADMINISTRATOR") == 1L);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeRoleTypesExist_When_ItIsSearchedByName_Then_TheCorrectObjectIsObtained() {
-		Assert.assertTrue(this.repository.findById("ROLE_ADMINISTRATOR").getName().equals("Administrator"));
+		Assert.assertTrue(repository.findById("ROLE_ADMINISTRATOR").isPresent());
 	}
 
 }

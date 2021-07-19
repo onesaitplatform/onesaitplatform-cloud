@@ -252,15 +252,15 @@
 															
 															
 															<!-- REMOVE -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDigitalTwinDeviceConfirmation(\'' + ${digitaltwindevice.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+															<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDigitalTwinDeviceConfirmation(\'' + ${digitaltwindevice.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 															
 															<span class="sep"></span>
 															
 															<!-- CREATE -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/digitaltwindevices/} + 'create' + '\');'" ><span th:text="#{gen.createBtn}"> New</span></button>
+															<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/digitaltwindevices/} + 'create' + '\');'" ><span th:text="#{gen.createBtn}"> New</span></button>
 															
 															<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-															<button sec:authorize="!hasAuthority('ROLE_PARTNER')"  id="editBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/digitaltwindevices/update/${digitaltwindevice.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+															<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')"  id="editBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/digitaltwindevices/update/${digitaltwindevice.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 															
 															
 														</div>
@@ -289,12 +289,12 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
 	
@@ -307,19 +307,19 @@
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 	
 	<!-- JSON EDITOR -->
-	<script th:src="@{/static/vendor/json/json2.min.js}"/>
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
+	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 	
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
 	
 	<!-- API GOOGLE MAPS -->
-	<script async="async" defer="defer" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCw_li1D20_XNhQEslPPHWn49sAZSYdzag&amp;callback=initMap"></script>
+	<script async="async" defer="defer" src="/controlpanel/static/vendor/google-maps/AIzaSyCw_li1D20_XNhQEslPPHWn49sAZSYdzag.js&amp;callback=initMap"></script>
 	
 	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"/>
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 
 	<!-- MAIN INIT -->

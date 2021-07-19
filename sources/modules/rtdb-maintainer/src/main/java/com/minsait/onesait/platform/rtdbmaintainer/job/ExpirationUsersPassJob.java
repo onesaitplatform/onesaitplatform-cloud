@@ -90,21 +90,29 @@ public class ExpirationUsersPassJob {
 				log.debug("masterUser.getLastLogin() :" + masterUser.getLastLogin());
 				log.debug("masterUser.getLastPswdUpdate() :" + masterUser.getLastPswdUpdate());
 
-				if (masterUser.getLastLogin() != null && masterUser.getLastLogin().before(inactiveLimitDate)) {
+				if (masterUser.getLastLogin() != null && masterUser.getLastLogin().before(inactiveLimitDate)
+						&& maxInactiveDays >= 0) {
+
 					log.debug("masterUser.getLastLogin().before(inactiveLimitDate)): "
 							+ masterUser.getLastLogin().before(inactiveLimitDate));
 					// block User and send mail
+
+					showLogs(timeLifePass, noticesDaysBefore, maxInactiveDays, now, inactiveLimitDate, timeLifeDate,
+							noticesDateBeforeDate, masterUser, "disabled user due to inactivity");
 					userService.deactivateUser(masterUser.getUserId());
 					sendInactivityEmail(masterUser);
-				} else if (masterUser.getLastPswdUpdate() != null
-						&& masterUser.getLastPswdUpdate().before(timeLifeDate)) {
+				} else if (masterUser.getLastPswdUpdate() != null && masterUser.getLastPswdUpdate().before(timeLifeDate)
+						&& timeLifePass >= 0) {
 					log.debug(" masterUser.getLastPswdUpdate().before(timeLifeDate)): "
 							+ masterUser.getLastPswdUpdate().before(timeLifeDate));
 					// block User and send mail
+					showLogs(timeLifePass, noticesDaysBefore, maxInactiveDays, now, inactiveLimitDate, timeLifeDate,
+							noticesDateBeforeDate, masterUser, "expired password");
 					userService.deactivateUser(masterUser.getUserId());
 					sendPasswordExpiredEmail(masterUser);
 				} else if (masterUser.getLastPswdUpdate() != null
-						&& masterUser.getLastPswdUpdate().before(noticesDateBeforeDate)) {
+						&& masterUser.getLastPswdUpdate().before(noticesDateBeforeDate) && timeLifePass >= 0
+						&& noticesDaysBefore >= 0) {
 					log.debug("masterUser.getLastPswdUpdate().before(noticesDateBeforeDate): "
 							+ masterUser.getLastPswdUpdate().before(noticesDateBeforeDate));
 					// send mail
@@ -112,9 +120,28 @@ public class ExpirationUsersPassJob {
 							getDiffDates(noticesDateBeforeDate, masterUser.getLastPswdUpdate()));
 				}
 				log.debug("----------------------------------");
-
 			}
 		});
+	}
+
+	private void showLogs(int timeLifePass, int noticesDaysBefore, int maxInactiveDays, Date now,
+			Date inactiveLimitDate, Date timeLifeDate, Date noticesDateBeforeDate, MasterUser masterUser,
+			String cause) {
+		log.info("----------------------------------");
+		log.info("CAUSE :" + cause);
+		log.info("USER :" + masterUser.getUserId());
+		log.info("now :" + now);
+		log.info("maxInactiveDays :" + maxInactiveDays);
+		log.info("timeLifePass :" + timeLifePass);
+		log.info("noticesDaysBefore :" + noticesDaysBefore);
+
+		log.info("inactiveLimitDate :" + inactiveLimitDate);
+		log.info("timeLifeDate :" + timeLifeDate);
+		log.info("noticesDateBeforeDate :" + noticesDateBeforeDate);
+
+		log.info("masterUser.getLastLogin() :" + masterUser.getLastLogin());
+		log.info("masterUser.getLastPswdUpdate() :" + masterUser.getLastPswdUpdate());
+		log.info("----------------------------------");
 	}
 
 	private int getDiffDates(Date dateA, Date dateB) {
@@ -165,7 +192,7 @@ public class ExpirationUsersPassJob {
 		final String emailTitle = getMessage("user.expiration.inactivity.notice.title", defaultTitle);
 		String emailBody = getMessage("user.expiration.pass.expired.body", defaultMessage);
 
-		log.info("Send email to {} in order to report next password expiration", masterUser.getEmail());
+		log.info("Send email to {} in order to report his password has expired", masterUser.getEmail());
 		mailService.sendMail(masterUser.getEmail(), emailTitle, emailBody);
 	}
 

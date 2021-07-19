@@ -26,8 +26,6 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface ModelRepository extends JpaRepository<Model, String> {
 
-	Model findById(String id);
-
 	List<Model> findByIdentification(String identification);
 
 	List<Model> findByIdentificationContaining(String identification);

@@ -27,7 +27,7 @@ import com.minsait.onesait.platform.config.model.User;
 public interface ConfigurationRepository extends JpaRepository<Configuration, String> {
 
 	@Override
-	<S extends Configuration> List<S> save(Iterable<S> entities);
+	<S extends Configuration> List<S> saveAll(Iterable<S> entities);
 
 	@Override
 	void flush();
@@ -47,8 +47,6 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	List<Configuration> findByUser(User user);
 
-	Configuration findById(String id);
-
 	Configuration findByDescription(String description);
 
 	List<Configuration> findByType(Type type);
@@ -59,6 +57,7 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	List<Configuration> findByUserAndType(User userId, Type type);
 
+	@Override
 	@Transactional
 	void deleteById(String id);
 

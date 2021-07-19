@@ -32,7 +32,7 @@ public class QueryAsTextRestDBImpl implements QueryAsTextDBRepository {
 	private ExternalApiRestOpsDBRepository apiRestOntologyOps;
 
 	private static final String ERRORQUERYNATIVEASJSON = "Error queryNativeAsJson:";
-	
+
 	@Override
 	public String queryNativeAsJson(String ontology, String query, int offset, int limit) {
 		try {
@@ -55,6 +55,16 @@ public class QueryAsTextRestDBImpl implements QueryAsTextDBRepository {
 
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset) {
+		try {
+			return apiRestOntologyOps.querySQLAsJson(ontology, query, offset);
+		} catch (Exception e) {
+			log.error(ERRORQUERYNATIVEASJSON + e.getMessage());
+			throw new DBPersistenceException(e);
+		}
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
 		try {
 			return apiRestOntologyOps.querySQLAsJson(ontology, query, offset);
 		} catch (Exception e) {

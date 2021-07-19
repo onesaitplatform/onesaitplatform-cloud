@@ -22,8 +22,10 @@
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
 		
-		<!-- BEGIN WEB FONT -->
-		<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+		<!-- WEB FONTs -->
+		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
+		<!-- <script src="/controlpanel/static/vendor/google/1.6.16/webfont.js"></script>
 		<script>
           WebFont.load({
             google: {"families":["Poppins:300,400,500,600,700","Open Sans:300,400,500,600,700"]},
@@ -31,8 +33,7 @@
                 sessionStorage.fonts = true;
             }
           });
-		</script>
-
+		</script> -->
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
@@ -73,8 +74,8 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><i class="la la-home"></i> <a th:href="@{/}">Home</a><i class="fa fa-circle"></i></li>
-						<li><a th:href="@{/kafka/monitoring/list}"> <span th:text="#{kafka.monitoring.breadcrumb}">Kafka monitoring</span></a><i class="fa fa-circle"></i></li>						
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/kafka/monitoring/list}"> <span th:text="#{kafka.monitoring.breadcrumb}">Kafka monitoring</span></a></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -157,7 +158,21 @@
 															</td>
 														</tr>
 													</tbody>
-												</table>																							
+												</table>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<span th:text="#{gen.columns}">Columns </span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{kafka.monitoring.client.group.name}"> Client Group</label>
+														<label class="toggle-vis" data-column="1" th:text="#{kafka.monitoring.client.group.partition.count}"> Partition count</label>
+														<label class="toggle-vis" data-column="2" th:text="#{kafka.monitoring.client.group.total.lag}">Total lag</label>
+														<label class="toggle-vis" data-column="3" th:text="#{kafka.monitoring.client.group.completion.percentage}">Completion Percentage</label>														
+														<label class="toggle-vis" data-column="4" th:text="#{kafka.monitoring.client.group.state}">State</label>																				
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>
+													</div>
+												</div>																									
 											</div>
 										</div>
 									</div>
@@ -177,13 +192,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	
 	<script th:inline="javascript">	
@@ -219,7 +234,7 @@
 		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
-			var column = $('#kafkamonitoring_groups').DataTable().column( $(this).attr('data-column') ); 
+			var column = $('#client-groups').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
@@ -230,14 +245,13 @@
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
-		
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 2 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		
+		 
 	});
 	
 	//]]>

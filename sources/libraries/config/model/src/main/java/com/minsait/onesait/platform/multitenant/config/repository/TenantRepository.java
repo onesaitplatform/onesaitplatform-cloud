@@ -16,24 +16,48 @@ package com.minsait.onesait.platform.multitenant.config.repository;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 
 public interface TenantRepository extends JpaRepository<Tenant, String> {
+	public static final String TENANT_REPOSITORY = "TenantRepository";
 
 	List<Tenant> findByVerticalsIn(Vertical vertical);
 
+	@Cacheable(cacheNames = TENANT_REPOSITORY, unless = "#result == null", key = "#p0")
 	Tenant findByName(String name);
 
-	// @Query("SELECT t FROM Tenant AS t WHERE t IN (SELECT v.tenants FROM Vertical
-	// AS v WHERE v.name=:vertical) AND t.name=:tenant")
-	// Tenant findByVerticalAndTenant(@Param("vertical") String vertical,
-	// @Param("tenant") String tenant);
+	@Override
+	@CacheEvict(cacheNames = TENANT_REPOSITORY, key = "#p0.name")
+	@Transactional
+	void delete(Tenant entity);
 
-	// @Query("SELECT t.users FROM Tenant AS t WHERE t IN (SELECT v.tenants FROM
-	// Vertical AS v WHERE v.name=:vertical) AND t.name=:tenant")
-	// List<MasterUser> findUsersByVerticalAndTenant(@Param("vertical") String
-	// vertical, @Param("tenant") String tenant);
+	@Override
+	@CacheEvict(cacheNames = TENANT_REPOSITORY, allEntries = true)
+	@Transactional
+	void deleteById(String id);
+
+	@Override
+	@CacheEvict(cacheNames = TENANT_REPOSITORY, allEntries = true)
+	void flush();
+
+	@Override
+	@CachePut(cacheNames = TENANT_REPOSITORY, key = "#p0.name", unless = "#result == null")
+	<S extends Tenant> S saveAndFlush(S entity);
+
+	@Override
+	@CachePut(cacheNames = TENANT_REPOSITORY, key = "#p0.name", unless = "#result == null")
+	<S extends Tenant> S save(S entity);
+
+	@Override
+	@CacheEvict(cacheNames = TENANT_REPOSITORY, allEntries = true)
+	@Transactional
+	void deleteAll();
+
 }

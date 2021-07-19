@@ -28,8 +28,11 @@ import org.springframework.util.CollectionUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.model.VerticalLazy;
+import com.minsait.onesait.platform.multitenant.config.model.VerticalParent;
 import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 import com.minsait.onesait.platform.multitenant.exception.TenantDBException;
 
@@ -51,13 +54,15 @@ public class VerticalResolver implements ApplicationListener<ContextRefreshedEve
 
 			final Tenant tenant = master.getTenant();
 			final Set<Vertical> verticals = tenant.getVerticals();
-			if (!CollectionUtils.isEmpty(verticals) && verticals.size() == 1)
+			if (!CollectionUtils.isEmpty(verticals) && verticals.size() == 1) {
 				return verticals.iterator().next().getSchema();
+			}
 		}
 		// Maybe is already set in MContext
 		final Vertical v = verticalRepository.findByNameOrSchema(MultitenancyContextHolder.getVerticalSchema());
-		if (v != null)
+		if (v != null) {
 			return v.getSchema();
+		}
 
 		throw new TenantDBException(
 				"User has more than one vertical or tenant associated, can not infer database schema");
@@ -73,11 +78,33 @@ public class VerticalResolver implements ApplicationListener<ContextRefreshedEve
 		}
 	}
 
+	public boolean hasSingleTenantSchemaAssociated(MasterUserLazy master) {
+		try {
+			return master.getTenant().getVerticals().size() == 1;
+		} catch (final Exception e) {
+			log.debug("User has more than one vertical associated");
+			return false;
+		}
+	}
+
+
 	public Vertical getSingleVerticalIfPossible(MasterUser master) {
 		if (master.getTenant() != null) {
 			final Set<Vertical> verticals = master.getTenant().getVerticals();
-			if (!CollectionUtils.isEmpty(verticals) && verticals.size() == 1)
+			if (!CollectionUtils.isEmpty(verticals) && verticals.size() == 1) {
 				return verticals.iterator().next();
+			}
+
+		}
+		return verticalRepository.findByNameOrSchema(MultitenancyContextHolder.getVerticalSchema());
+
+	}
+	public VerticalParent getSingleVerticalIfPossible(MasterUserLazy master) {
+		if (master.getTenant() != null) {
+			final Set<VerticalLazy> verticals = master.getTenant().getVerticals();
+			if (!CollectionUtils.isEmpty(verticals) && verticals.size() == 1) {
+				return verticals.iterator().next();
+			}
 
 		}
 		return verticalRepository.findByNameOrSchema(MultitenancyContextHolder.getVerticalSchema());

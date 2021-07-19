@@ -25,6 +25,24 @@ var DashboardsCreateController = function() {
 	var navigateUrl = function(url) {
 		window.location.href = url;
 	}
+	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/dashboards/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
+	$('.selectpicker').selectpicker({iconBase: 'fa', tickIcon: 'fa-check'});
+	
 	// DELETE DASHBOARD
 	var deleteDashboardConfirmation = function(dashboardId){
 		console.log('deleteDashoardConfirmation() -> formId: '+ dashboardId);		
@@ -193,7 +211,7 @@ var DashboardsCreateController = function() {
 	            	  x.attr("class", "hide");
 	            	  y.insertAfter("#checkboxPublic_aux");
             	    
-            	    
+	            	formAux.attr("action", "?" + csrfParameter + "=" + csrfValue)
             	    success1.show();
 					error1.hide();					
 					formAux.submit();		
@@ -216,7 +234,7 @@ var DashboardsCreateController = function() {
 	            	  x.attr("class", "hide");
 	            	  y.insertAfter("#checkboxPublic_aux");
             	    
-            	    
+	            	formAux.attr("action", "?" + csrfParameter + "=" + csrfValue)
             	    success1.show();
 					error1.hide();					
 					formAux.submit();	
@@ -296,7 +314,7 @@ var DashboardsCreateController = function() {
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+			$("#identification").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
 			
 			/*EDITION MODE*/
 			/*Hide dimensions*/
@@ -315,6 +333,10 @@ var DashboardsCreateController = function() {
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
+		},
+		cancel: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': cancel()') : '';	
+			freeResource(id,url); 
 		},
 		
 		getFieldsFromQueryResult: function (jsonString){

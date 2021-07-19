@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.minsait.onesait.platform.commons.kafka.KafkaService;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
@@ -37,14 +36,18 @@ import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
+import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
+import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationServiceImpl;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
+import com.minsait.onesait.platform.persistence.hadoop.kudu.KuduManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicService;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicServiceException;
 
@@ -60,8 +63,8 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	@Autowired
 	private OntologyLogicService ontologyLogicService;
 
-	@Autowired(required = false)
-	private KafkaService kafkaService;
+	@Autowired
+	private KafkaAuthorizationServiceImpl kafkaAuthorizationService;
 
 	@Autowired
 	private UserService userService;
@@ -86,7 +89,13 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired
 	private CosmosDBBasicOpsDBRepository cosmosBasicOpsRepository;
+	
+	@Autowired
+	private OntologyTimeSeriesService ontologyTimeSeriesService;
 
+	@Autowired(required = false)
+	private KuduManageDBRepository kuduManageRepository;
+	
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
@@ -95,9 +104,6 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.ILLEGAL_ARGUMENT,
 					"Ontology identification is not valid");
 		}
-
-		final String ontologyName = ontology.getIdentification();
-		boolean topicCreated = false;
 
 		final User user = userService.getUser(userId);
 		ontology.setUser(user);
@@ -111,6 +117,10 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					"The provided json schema is not valid", e);
 		}
 
+		if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && config.getDatasource().equals(RtdbDatasource.KUDU.toString())) {
+			ontology.setRtdbDatasource(RtdbDatasource.KUDU);
+		}
+			
 		if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && !hadoopEnable) {
 			metricsManagerLogControlPanelOntologyCreation(userId, "KO");
 
@@ -118,42 +128,10 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
 					"Hadoop installation not available");
 		}
-
-		if (ontology.isAllowsCreateTopic()) {
-			if (kafkaService != null) {
-				topicCreated = kafkaService.createInputTopicForOntology(ontologyName);
-			}
-
-			if (topicCreated) {
-				ontology.setTopic(kafkaService.getTopicName(ontologyName));
-			} else {
-				metricsManagerLogControlPanelOntologyCreation(userId, "KO");
-
-				throw new OntologyBusinessServiceException(
-						OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
-			}
-		}
-
-		if (ontology.isAllowsCreateNotificationTopic()) {
-			if (kafkaService != null) {
-				topicCreated = kafkaService.createNotificationTopicForOntology(ontologyName);
-			}
-
-			if (topicCreated) {
-				ontology.setNotificationTopic(kafkaService.getNotificationTopicName(ontologyName));
-			} else {
-				metricsManagerLogControlPanelOntologyCreation(userId, "KO");
-
-				throw new OntologyBusinessServiceException(
-						OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
-			}
-		}
-
+		
 		prepareOntologyRtdbToHdb(ontology);
-
-		invokeCreateOntology(ontology, config, topicCreated);
-
-		invokeCreateOntologyLogic(ontology, config, topicCreated);
+		invokeCreateOntology(ontology, config);
+		invokeCreateOntologyLogic(ontology, config);
 	}
 
 	private void prepareOntologyRtdbToHdb(Ontology ontology) {
@@ -167,63 +145,26 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		}
 	}
 
-	private void invokeCreateOntology(Ontology ontology, OntologyConfiguration config, boolean topicCreated)
-			throws OntologyBusinessServiceException {
-		try {
-			ontologyService.createOntology(ontology, config);
-		} catch (final Exception e) {
-			rollBackInvokeCreateOntology(e, ontology, config, topicCreated);
-
-		}
-
+	private void invokeCreateOntology(Ontology ontology, OntologyConfiguration config) {
+		ontologyService.createOntology(ontology, config);
 	}
 
-	private void rollBackInvokeCreateOntology(Exception e, Ontology ontology, OntologyConfiguration config,
-			boolean topicCreated) throws OntologyBusinessServiceException {
-		final String errorRollingBack = "Error creating the ontology";
-		final String errorRollingBackKafka = "it was not possible to undo the kafka topic creation";
-		String errorMsg = errorRollingBack;
-
-		try {
-			if (topicCreated) {
-				kafkaService.deleteTopic(ontology.getIdentification());
-			}
-		} catch (final Exception e2) {
-			errorMsg = errorRollingBack + ", " + errorRollingBackKafka;
-			throw new OntologyBusinessServiceException(
-					OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR_UNCLEAN, errorMsg, e);
-		}
-
-	}
-
-	private void invokeCreateOntologyLogic(Ontology ontology, OntologyConfiguration config, boolean topicCreated)
+	private void invokeCreateOntologyLogic(Ontology ontology, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
 		try {
-
 			ontologyLogicService.createOntology(ontology, config == null ? null : configToConfigMap(config));
 		} catch (final Exception e) {
-			rollBackInvokeCreateOntologyLogic(e, ontology, config, topicCreated, true);
+			rollBackInvokeCreateOntologyLogic(e, ontology, true);
 		}
 
 	}
 
-	private void rollBackInvokeCreateOntologyLogic(Exception e, Ontology ontology, OntologyConfiguration config,
-			boolean topicCreated, boolean externalTableCreated) throws OntologyBusinessServiceException {
+	private void rollBackInvokeCreateOntologyLogic(Exception e, Ontology ontology, boolean externalTableCreated)
+			throws OntologyBusinessServiceException {
 		boolean raiseException = false;
 		final String errorRollingBack = "Error creating the persistence infrastructure for ontology";
-		final String errorRollingBackKafka = "it was not possible to undo the ontology configuration and/or the kafka topic creation";
 		final String errorRollingBackExternalTable = "it was not possible to undo the ontology configuration and/or the external table creation";
 		String errorMsg = errorRollingBack;
-
-		try {
-			if (topicCreated) {
-				kafkaService.deleteTopic(ontology.getIdentification());
-			}
-			ontologyService.delete(ontology);
-		} catch (final Exception e2) {
-			errorMsg = errorRollingBack + ", " + errorRollingBackKafka;
-			raiseException = true;
-		}
 
 		try {
 			if (externalTableCreated) {
@@ -231,10 +172,6 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			}
 		} catch (final Exception e3) {
 			errorMsg = errorRollingBack + ", " + errorRollingBackExternalTable;
-
-			if (raiseException) {
-				errorMsg = errorRollingBack + ", " + errorRollingBackKafka + " and " + errorRollingBackExternalTable;
-			}
 			raiseException = true;
 		}
 
@@ -259,6 +196,47 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 		((ObjectNode) schemaSubTree).put("additionalProperties", true);
 		return schemaSubTree;
+	}
+	
+	@Override
+	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config) 
+			throws OntologyBusinessServiceException {
+		final Ontology ontology = ontologyService.getOntologyById(id, userId);
+		final User user = userService.getUser(userId);
+		
+		if (ontologyService.existsOntology(identification)) {
+			throw new OntologyServiceException("Ontology already exists", OntologyServiceException.Error.EXISTING_ONTOLOGY);
+		} else if (!ontologyService.hasUserPermissionForQuery(user, ontology)) {
+			throw new OntologyServiceException("The user is not authorized", OntologyServiceException.Error.PERMISSION_DENIED);
+		}
+		if (!ontologyService.isIdValid(ontology.getIdentification())) {
+			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.ILLEGAL_ARGUMENT,
+					"Ontology identification is not valid");
+		}
+
+		if (!ontology.getDataModel().getId().equals("MASTER-DataModel-30")) {
+			final Ontology clone = new Ontology();
+			
+			clone.setIdentification(identification);
+			clone.setUser(user);
+			clone.setDescription(ontology.getDescription());
+			clone.setActive(ontology.isActive());
+			clone.setPublic(ontology.isPublic());
+			clone.setDataModel(ontology.getDataModel());
+			clone.setDataModelVersion(ontology.getDataModelVersion());
+			clone.setJsonSchema(ontology.getJsonSchema());
+			clone.setMetainf(ontology.getMetainf());
+			clone.setRtdbToHdbStorage(ontology.getRtdbToHdbStorage());
+			clone.setRtdbDatasource(ontology.getRtdbDatasource());
+			clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
+			clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
+			clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
+			
+			ontologyService.createOntology(clone, config);
+		}else {
+			ontologyTimeSeriesService.cloneOntologyTimeSeries(identification, ontology, user, config);			
+		}
+		
 	}
 
 	@Override
@@ -333,7 +311,10 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public String getSQLCreateTable(CreateStatement statement, VirtualDatasourceType datasource) {
+	public String getSQLCreateTable(CreateStatementBusiness statementBusiness, VirtualDatasourceType datasource) {
+		if (datasource.equals(VirtualDatasourceType.KUDU))
+			return kuduManageRepository.getSQLCreateStatement(statementBusiness.toCreateStatementKudu());
+		final CreateStatement statement = statementBusiness.toCreateStatement();
 		return virtualRepo.getSQLCreateStatment(statement, datasource);
 	}
 
@@ -387,7 +368,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 							OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
 							"Error updating the ontology configuration: " + e.getMessage(), e);
 				}
-			} else {
+				/*} else {
 				try {
 					ontologyLogicService.checkSameInternalDBConfig(ontology, configToConfigMap(config));
 				} catch (OntologyLogicServiceException | OntologyDataJsonProblemException e) {
@@ -396,33 +377,10 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 							"Error cannot update internal config with data in ontology, please remove data and update it again. The error is the following: "
 									+ e.getMessage(),
 							e);
-				}
+				}*/
 			}
 		}
-		if (ontology.isAllowsCreateTopic()) {
-			Boolean topicCreated = false;
-			if (kafkaService != null) {
-				topicCreated = kafkaService.createInputTopicForOntology(ontology.getIdentification());
-				if (Boolean.TRUE.equals(topicCreated)) {
-					ontology.setTopic(kafkaService.getTopicName(ontology.getIdentification()));
-				} else {
-					throw new OntologyBusinessServiceException(
-							OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
-				}
-			}
-		}
-		if (ontology.isAllowsCreateNotificationTopic()) {
-			Boolean notificationTopicCreated = false;
-			if (kafkaService != null) {
-				notificationTopicCreated = kafkaService.createNotificationTopicForOntology(ontology.getIdentification());
-				if (Boolean.TRUE.equals(notificationTopicCreated)) {
-					ontology.setNotificationTopic(kafkaService.getNotificationTopicName(ontology.getIdentification()));
-				} else {
-					throw new OntologyBusinessServiceException(
-							OntologyBusinessServiceException.Error.KAFKA_TOPIC_CREATION_ERROR, ERROR_KAFKA_TOPIC);
-				}
-			}
-		}
+		kafkaAuthorizationService.checkOntologyAclAfterUpdate(ontology);
 	}
 
 	@Override

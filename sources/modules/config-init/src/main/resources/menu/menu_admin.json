@@ -30,19 +30,11 @@
 				},
 				{
 					"title": {
-						"EN": "JDBC Connections Management",
-						"ES": "Gestión de conexiones JDBC"
+						"EN": "External Database Connection Management",
+						"ES": "Gestión de Conexiones Externas a Base de datos"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
-				},
-				{
-					"title": {
-						"EN": "Configuration Management",
-						"ES": "Gestión de Configuraciones"
-					},
-					"icon": "",
-					"url": "/controlpanel/configurations/list"
 				},
 				{
 					"title": {
@@ -104,41 +96,6 @@
 			"icon": "flaticon-more-v3",
 			"url": "",
 			"submenu": []
-		},
-
-		{
-			"title": {
-				"EN": "ANALYTICS TOOLS",
-				"ES": "HERR. ANALYTICS"
-			},
-			"icon": "flaticon-analytics",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "DataFlow Management",
-						"ES": "Gestión de DataFlows"
-					},
-					"icon": "",
-					"url": "/controlpanel/dataflow/list"
-				},
-				{
-					"title": {
-						"EN": "Notebooks Management",
-						"ES": "Gestión de Notebooks"
-					},
-					"icon": "",
-					"url": "/controlpanel/notebooks/list"
-				},
-				{
-					"title": {
-						"EN": "Models Management",
-						"ES": "Gestión de Modelos"
-					},
-					"icon": "",
-					"url": "/controlpanel/models/list"
-				}
-			]
 		},
 		
 		{
@@ -269,76 +226,46 @@
 
 		{
 			"title": {
-				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO"
+				"EN": "ANALYTICS TOOLS",
+				"ES": "HERR. ANALÍTICA"
 			},
-			"icon": "flaticon-open-box",
+			"icon": "flaticon-analytics",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "Export & Import Environment Tool",
-						"ES": "Exportación & Importación de Datos"
+						"EN": "DataFlow Management",
+						"ES": "Gestión de DataFlows"
 					},
 					"icon": "",
-					"url": "/controlpanel/migration/show"
+					"url": "/controlpanel/dataflow/list"
 				},
 				{
 					"title": {
-						"EN": "Data to Ontology Import Tools",
-						"ES": "Herramientas de importación de datos a ontología"
+						"EN": "Notebooks Management",
+						"ES": "Gestión de Notebooks"
 					},
 					"icon": "",
-					"url": "/controlpanel/jsontool/tools"
+					"url": "/controlpanel/notebooks/list"
 				},
 				{
 					"title": {
-						"EN": "Web Projects Management",
-						"ES": "Gestión Proyectos Web"
+						"EN": "Models Management",
+						"ES": "Gestión de Modelos"
 					},
 					"icon": "",
-					"url": "/controlpanel/webprojects/list"
+					"url": "/controlpanel/models/list"
 				},
-				{
-					"title": {
-						"EN": "Files Management",
-						"ES": "Gestión de ficheros"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
-						"EN": "REST Services Planner Management",
-						"ES": "Gestión Planificación de Servicios REST"
-					},
-					"icon": "",
-					"url": "/controlpanel/restplanner/list"
-				},
-				{
-					"title": {
-						"EN": "Cache Management",
-						"ES": "Gestión de caché"
-					},
-					"icon": "",
-					"url": "/controlpanel/caches/list"
-				},
-				{
-					"title": {
-						"EN": "Internationalizations Management",
-						"ES": "Gestión de internacionalizaciones"
-					},
-					"icon": "",
-					"url": "/controlpanel/internationalizations/list"
-				},
-				{
-					"title": {
-						"EN": "Query Templates Management",
-						"ES": "Gestión de Plantillas de Consulta"
-					},
-					"icon": "",
-					"url": "/controlpanel/querytemplates/list"
-				}
+				 {
+                    "title": {
+                        "EN": "DataRefiner Management",
+                        "ES": "Gestion de DataRefiner"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/datacleanerui"
+                }
+				
+				
 			]
 		},
 
@@ -416,6 +343,89 @@
 				}
 			]
 		},
+
+		{
+			"title": {
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Export & Import Environment Tool",
+						"ES": "Exportación & Importación de Datos"
+					},
+					"icon": "",
+					"url": "/controlpanel/migration/show"
+				},
+				{
+					"title": {
+						"EN": "Data to Ontology Import Tools",
+						"ES": "Herramientas de importación de datos a ontología"
+					},
+					"icon": "",
+					"url": "/controlpanel/jsontool/tools"
+				},
+				{
+					"title": {
+						"EN": "Web Projects Management",
+						"ES": "Gestión Proyectos Web"
+					},
+					"icon": "",
+					"url": "/controlpanel/webprojects/list"
+				},
+				{
+					"title": {
+						"EN": "Files Management",
+						"ES": "Gestión de ficheros"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "Centralized Configuration",
+						"ES": "Configuración Centralizada"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
+				},
+				{
+					"title": {
+						"EN": "REST Services Planner Management",
+						"ES": "Gestión Planificación de Servicios REST"
+					},
+					"icon": "",
+					"url": "/controlpanel/restplanner/list"
+				},
+				{
+					"title": {
+						"EN": "Cache Management",
+						"ES": "Gestión de caché"
+					},
+					"icon": "",
+					"url": "/controlpanel/caches/list"
+				},
+				{
+					"title": {
+						"EN": "Internationalizations Management",
+						"ES": "Gestión de internacionalizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/internationalizations/list"
+				},
+				{
+					"title": {
+						"EN": "Query Templates Management",
+						"ES": "Gestión de Plantillas de Consulta"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytemplates/list"
+				}
+			]
+		},
 		
 		{
 			"title": {
@@ -433,6 +443,14 @@
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
 				},
+				{
+                    "title": {
+                        "EN": "UI Generation Tools",
+                        "ES": "Herramientas de generación de UI"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/low-code/"
+                },
 				{
 					"title": {
 						"EN": "System Audit",

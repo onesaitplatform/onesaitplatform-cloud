@@ -39,15 +39,22 @@
 		<!-- PLUGINS STYLE SHEETS AND BOOSTRAP-TIMEPICKER -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
-		
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
 	</head>	
 	
 	<!-- Funciones AJAX -->
 	<script th:inline="javascript">
 		/* <![CDATA[ */
-		function getQueryExecutedFragment() {
 			
+			var timeStart;
+			var queryResponse = {};
+		function getQueryExecutedFragment() {
+		
 			var query = $("#query").val();
+			
+			if (isNative(query)){
+				$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: [[#{datasources.queryError}]]});
+			}
 			var indexfrom = query.toLowerCase().indexOf("from ");
 			var indexOf = query.toLowerCase().indexOf(" ",indexfrom + 5);
 			if(indexOf == -1) {
@@ -69,13 +76,67 @@
 			$.ajaxSetup({'headers': {
 				[csrf_header]: csrf_value
 		    }});
+			timeStart = Date.now();
+			$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': $("#query").val(), 'queryType': 'SQL', 'ontologyIdentification': testOntology},function(response){
+				callbackQuery(response);
+			});
 			
-			$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': $("#query").val(), 'queryType': 'SQL', 'ontologyIdentification': testOntology});
-			$("#dimensionsPanel").show();
+			$("#dimensionsPanel").show();	
 		} 
 		
+		function isNative(query){
+			if ((query.indexOf('.') == -1 || query.toLowerCase().indexOf(".find(") == -1
+					|| (query.indexOf('.') > query.toLowerCase().indexOf(".find(")))
+					&& (query.indexOf('.') == -1 || query.toLowerCase().indexOf(".count(") == -1
+							|| (query.indexOf('.') > query.toLowerCase().indexOf(".count(")))
+					&& (query.indexOf('.') == -1 || query.toLowerCase().indexOf(".distinct(") == -1
+							|| (query.indexOf('.') > query.toLowerCase().indexOf(".distinct(")))
+					&& (query.indexOf('.') == -1 || query.toLowerCase().indexOf(".aggregate(") == -1
+							|| (query.indexOf('.') > query.toLowerCase().indexOf(".aggregate(")))
+					&& (query.indexOf('.') == -1 || query.toLowerCase().indexOf(".insert(") == -1
+							|| (query.indexOf('.') > query.toLowerCase().indexOf(".insert(")))
+					&& (query.indexOf('.') == -1 || query.toLowerCase().indexOf(".update(") == -1
+							|| (query.indexOf('.') > query.toLowerCase().indexOf(".update(")))
+					&& (query.indexOf('.') == -1 || query.toLowerCase().indexOf(".remove(") == -1
+							|| (query.indexOf('.') > query.toLowerCase().indexOf(".remove(")))) {
+				return false;
+			}
+			return true;
+		}
+
+		function callbackQuery(response){			
+			var time = Date.now() - timeStart;		
+			$('#timeResult').text('(Querytime: ' + time + ' ms)');
+			if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
+			
+		
+			queryResponse = $(response);	
+			
+			// check for valid json, or server string error like java.lang.Exception...
+			var IS_JSON = true;
+			try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+			
+			
+			if (!IS_JSON){					
+			    $('#toggleTableView').addClass("hide");
+				var text=""+queryResponse.text();
+				// Our own JSON string to mark non JSON ERRORs
+				queryErrorResponse = text;										
+			}
+			
+			if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+			if (IS_JSON) { 
+			    $('#toggleTableView').removeClass("hide");
+				dataJSON = queryResponse.text(); 
+				editor.setText(queryResponse.text()); 
+				editor.setMode('view');
+				if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+							
+		}
+	
+		
 		function getOntologyFromQuery(query){			
-			query = query.replace(/(\r\n\t|\n|\r\t)/gm," ");
+			query = query.replace(/(\r\n\t|\n|\r\t|\r|\t)/gm," ");
 			query = query.replace(/  +/g, ' ');
 			var list = query.split(/from /i);
 			if(list.length>1){
@@ -91,7 +152,7 @@
 					}
 				}
 			}else{ 
-				return "";
+				return $("#ontologyIdentification").val();
 			}
 		}
 	
@@ -238,8 +299,8 @@
 																								 
 													<div class="pull-left col-md-10 col-sm-8 col-xs-12">
 														<label th:text="#{datasources.query}">Datasource Query </label>
-                                                        <textarea readonly="readonly" th:if="${datasource.id} == null" id="query" name="query" class="element textarea extra-small form-control">select * from ontology limit 1</textarea>
-                                                        <textarea readonly="readonly" th:if="${datasource.id} != null" id="query" th:field="*{query}" class="element textarea extra-small form-control"></textarea>
+                                                        <div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>	
+                                                        <input  id="query" type="hidden" th:value="${datasource.query}">                                                    
 													</div>
                                                     <div class="pull-right col-md-2 col-sm-4 col-xs-12">
                                                         <div class="btn-group">
@@ -249,15 +310,22 @@
                                                     <div class="clearfix"></div>									
 												</div>
                                                 <!-- PANEL DE RESULTADOS -->
+                                                <div class="panel-heading panel-sofia2" style="padding: 8px 0px 12px 0px !important;">
+													
+																			
+												
+											</div>
                                                 <div class="panel panel-white margin-top-10">
                                                     <div class="panel-heading">
-                                                        <h3 class="panel-title uppercase font-grey-mint" th:text="#{datasource.queryresults}">Datasource Query Results</h3>                                         
+                                                        <h3 class="panel-title uppercase font-grey-mint" th:text="#{datasource.queryresults}">Datasource Query Results</h3>   
+                                                         <div id="timeResult">Time</div>		                                      
                                                     </div>
                                                     <div class="panel-body no-space">
                                                         <div class="col-md-12 margin-top-10 margin-bottom-20">
-                                                            <div th:fragment="query" id="Canvasrespuesta" style="max-height: 500px; overflow-y:auto;">                                                      
-                                                            <p th:text="${queryResult}"></p>
-                                                            </div>                                              
+                                                            <div  class="hide" id="Canvasrespuesta" style="max-height: 600px; overflow-y:auto;" >                                                      
+                                                           
+                                                            </div> 
+                                                            <div id="jsoneditor" style="height: 600px;" data-loaded="false"></div>                                             
                                                         </div>
                                                     </div>
                                                 </div>
@@ -309,14 +377,28 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	
+		<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>	
+	
+	<!-- MONACO EDITOR -->
+	<script>	 
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
+	</script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
 		<script th:inline="javascript">
@@ -352,6 +434,57 @@
 				}
 			});
 		}	
+		
+		// CREATE EDITOR FOR JSON SCHEMA 
+		var createEditor = function(){		
+			
+			var container = document.getElementById('jsoneditor');	
+			var options = {
+				mode: 'text',
+				theme: 'bootstrap3',
+				required_by_default: true,
+				modes: ['text', 'tree', 'view'], // allowed modes
+				error: function (err) {
+					$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
+					return false;
+				},
+				onChange: function(){
+					
+					//showLog ? console.log('se modifica el editor en modo:' + editor.mode + ' contenido: ' + editor.getText()) : '';
+				}
+			};
+			
+			editor = new jsoneditor.JSONEditor(container, options, "");		
+			
+		}
+		
+		//Functions to manage Monaco Editor
+		var codeEditor;		
+		var setMonacoValue = function (value){
+			if (codeEditor){
+				codeEditor.setValue(value);
+			}
+		}
+		var getMonacoValue = function (){
+			if (codeEditor){
+				return codeEditor.getValue();
+			}
+		}
+		
+		$(window).load(function(){
+			var htmlelement = document.getElementById('querySql');
+			codeEditor = monaco.editor.create(htmlelement, {
+			       language: 'sql', 
+			       readOnly: true,
+			       scrollBeyondLastLine: false,	 
+			       theme: "vs-dark",	 
+			       automaticLayout: true	 
+			});
+			
+			
+		        setMonacoValue($('#query').val());
+		        
+		});
 		
 		// REDIRECT URL
 		var navigateUrl = function(url) {

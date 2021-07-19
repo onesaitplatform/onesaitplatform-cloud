@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Dashboard;
@@ -99,6 +101,8 @@ public class DashboardManagementRestController {
 	@Value("${onesaitplatform.dashboardengine.url.view}")
 	private String viewUrl;
 
+	protected ObjectMapper objectMapper;
+
 	private static final String PATH = "/dashboard";
 	private static final String CONSTANT_DASHBOARD_NOT_FOUND = "\"Dashboard not found\"";
 	private static final String CONSTANT_DASHBOARD_NOT_FOUND_OR_UNAUTHORIZED = "\"Dashboard not found or unauthorized\"";
@@ -117,8 +121,7 @@ public class DashboardManagementRestController {
 			String categoryIdentification = null;
 			String subCategoryIdentification = null;
 			if (categoryRelationship != null) {
-				final Category category = categoryService
-						.getCategoryByIdentification(categoryRelationship.getCategory());
+				final Category category = categoryService.getCategoryById(categoryRelationship.getCategory());
 				final Subcategory subcategory = subCategoryService
 						.getSubcategoryById(categoryRelationship.getSubcategory());
 				categoryIdentification = category.getIdentification();
@@ -163,7 +166,7 @@ public class DashboardManagementRestController {
 		String categoryIdentification = null;
 		String subCategoryIdentification = null;
 		if (categoryRelationship != null) {
-			Category category = categoryService.getCategoryByIdentification(categoryRelationship.getCategory());
+			Category category = categoryService.getCategoryById(categoryRelationship.getCategory());
 			Subcategory subcategory = subCategoryService.getSubcategoryById(categoryRelationship.getSubcategory());
 			categoryIdentification = category.getIdentification();
 			subCategoryIdentification = subcategory.getIdentification();
@@ -191,8 +194,8 @@ public class DashboardManagementRestController {
 		try {
 			final DashboardCreateDTO dashboardCreateDTO = dashboardFIQL.fromCommandToDashboardCreate(commandDTO, null);
 
-			if (!dashboardCreateDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+			if (!dashboardCreateDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN_SPACES)) {
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_', ' '",
 						HttpStatus.BAD_REQUEST);
 			}
 
@@ -314,6 +317,7 @@ public class DashboardManagementRestController {
 		DashboardExportDTO dashboardExportDTO;
 		try {
 			dashboardExportDTO = dashboardService.exportDashboardDTO(dashboardId, utils.getUserId());
+
 		} catch (DashboardServiceException e) {
 			switch (e.getErrorType()) {
 			case NOT_FOUND:
@@ -334,6 +338,11 @@ public class DashboardManagementRestController {
 			@ApiParam(value = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
 			@ApiParam(value = "DashboardDTO", required = true) @Valid @RequestBody DashboardExportDTO dashboardimportDTO,
 			Errors errors) {
+
+		if (!dashboardimportDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN_SPACES)) {
+			return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_', ' '",
+					HttpStatus.BAD_REQUEST);
+		}
 
 		DashboardImportResponsetDTO dashboardResutl = dashboardService.importDashboard(dashboardimportDTO,
 				utils.getUserId(), overwrite, importAuthorizations);
@@ -429,6 +438,17 @@ public class DashboardManagementRestController {
 		return new ResponseEntity<>(dashboardService.insertDashboardUserAccess(dashboard, usersAccessDTO, false),
 				HttpStatus.OK);
 
+	}
+
+	@ApiOperation(value = "Get all Gadgets from a list of Dashboards")
+	@PostMapping(PATH + "/gadgetsFromDashboards")
+	public ResponseEntity<?> gadgetsFromDashboards(
+			@ApiParam(value = "Dashboards id list", required = true) @RequestBody List<String> dashboardsList,
+			Errors errors) {
+		JSONArray result = new JSONArray();
+		result = dashboardService.getGadgets(dashboardsList, utils.getUserId());
+
+		return new ResponseEntity<>(result.toString(), HttpStatus.OK);
 	}
 
 	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = DashboardDTO.class))

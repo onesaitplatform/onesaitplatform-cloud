@@ -6,19 +6,39 @@ var GadgetsTemplateCreateController = function() {
     var logControl = 1;
 	var LANGUAGE = ['es'];
 	var currentLanguage = ''; // loaded from template.	
-	var internalLanguage = 'en';	
-	//var myCodeMirror;
-	//var myCodeMirrorJS;
+	var internalLanguage = 'en';
 	var myVSHTML;
 	var myVSHTML_isfullscreen;
 	var myVSJS;
 	var myVSJS_isfullscreen;
+	var myVSHL;
 	var timerWrite;
-	// CONTROLLER PRIVATE FUNCTIONS	
-	
-	
+	var languaje=$("#type").val();
+	var paramMap;
+	var isEdit = window.location.href.indexOf("/gadgettemplates/update/") != -1;
+
+	// CONTROLLER PRIVATE FUNCTIONS
 	
 	var navigateUrl = function(url){ window.location.href = url; }
+	
+	
+	var freeResource = function(id,url){
+		console.log('freeResource() -> id: '+ id);
+		$.get("/controlpanel/gadgettemplates/freeResource/" + id).done(
+				function(data){
+					console.log('freeResource() -> ok');
+					navigateUrl(url); 
+				}
+			).fail(
+				function(e){
+					console.error("Error freeResource", e);
+					navigateUrl(url); 
+				}
+			)		
+	}
+	
+	
+	
 	// DELETE GADGET
 	var deleteGadgetTemplateConfirmation = function(gadgetTemplateId){
 		console.log('deleteGadgetConfirmation() -> formId: '+ gadgetTemplateId);
@@ -35,16 +55,14 @@ var GadgetsTemplateCreateController = function() {
 	// INIT CODEMIRROR
 	var handleVS = function () {
 		logControl ? console.log('handleCodeMirror() on -> templateCode') : '';	
-		
+
+		var myTextAreaHL = document.getElementById('headerlibsCode');
         var myTextArea = document.getElementById('templateCode');
         var myTextAreaJS = document.getElementById('templateCodeJS');
-        
+
+        var hlelement = document.getElementById('hlcode');
         var htmlelement = document.getElementById('htmlcode');
-        
-        if(!$("#id").val()  && ($('#templateCode').text().trim().length == 0 && $('#templateCodeJS').text().trim().length == 0)){
-        	myTextArea.value = "<!--Write your HTML <div></div> and CSS <style></style> here -->\n\n<!--Focus here and F1 to show help \n    F11/ESC to enable/disable full screen editor\n    Ctrl + F to find/replace, ... -->\n\n<!--When you are editing this template, in this section, you can drop params in the cursor position. \n    To test this params go to show view or added it to a dashboard-->";
-        	myTextAreaJS.value = "//Write your controller (JS code) code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\nvm.initLiveComponent = function(){\n\n};\n\n//This function will be call when data change. On first execution oldData will be null\nvm.drawLiveComponent = function(newData, oldData){\n\n};\n\n//This function will be call on element resize\nvm.resizeEvent = function(){\n\n}\n\n//This function will be call when element is destroyed\nvm.destroyLiveComponent = function(){\n\n};";       
-        }
+        var jselement = document.getElementById('jscode');
         
         myVSHTML = monaco.editor.create(htmlelement, {
     		value: myTextArea.value,
@@ -65,13 +83,15 @@ var GadgetsTemplateCreateController = function() {
           	var line = vsinstance.getPosition();
           	var range = new monaco.Range(line.lineNumber, line.column, line.lineNumber, line.column);
           	var id = { major: 1, minor: 1 };             
-          	var text = dataFromId(data);
+          	var text = dataFromId(data,vsinstance._configuration._rawOptions.language);
           	var op = {identifier: id, range: range, text: text, forceMoveMarkers: true};
           	vsinstance.executeEdits("my-source", [op]);
       	}
         
         htmlelement.ondragover = function(e){allowDrop(e)};
         htmlelement.ondrop = function(e){dropParam(e,myVSHTML)};
+        jselement.ondragover = function(e){allowDrop(e)};
+        jselement.ondrop = function(e){dropParam(e,myVSJS)};
         
         myVSJS = monaco.editor.create(document.getElementById('jscode'), {
     		value: myTextAreaJS.value,
@@ -81,6 +101,15 @@ var GadgetsTemplateCreateController = function() {
     		theme: "vs-dark",
     		automaticLayout: true
     	});
+
+    	myVSHL = monaco.editor.create(hlelement, {
+            value: myTextAreaHL.value,
+            language: 'html',
+            readOnly: myTextArea.disabled,
+            scrollBeyondLastLine: false,
+            theme: "vs-dark",
+            automaticLayout: true
+        });
         
         myVSHTML.addCommand(monaco.KeyCode.F11, function() {
         	if(!myVSHTML_isfullscreen){
@@ -164,41 +193,35 @@ var GadgetsTemplateCreateController = function() {
         
         
         if(myTextArea.disabled){
-        	searchPropertiesAndEditForm(myVSHTML.getValue());
+        	searchPropertiesAndEditForm(myVSHTML.getValue(),myVSJS.getValue());
         }
         else{
-        	searchProperties(myVSHTML.getValue());
+        	searchProperties(myVSHTML.getValue(),myVSJS.getValue());
         }
-        
-        myVSHTML.onDidChangeModelContent(function() {
-        	if(timerWrite){
-        		clearTimeout(timerWrite)
-        	}
-        	timerWrite = window.setTimeout(
-        			function(){
-        				$('#templateCode').val(myVSHTML.getValue());
-        				$('#templateCodeJS').val(myVSJS.getValue());
-        				searchProperties(myVSHTML.getValue());
-        				updatePreview();
-        			},
-        			1000
-        	);
-    	})
 
-    	myVSJS.onDidChangeModelContent(function() {
-    		if(timerWrite){
-        		clearTimeout(timerWrite)
-        	}
-        	timerWrite = window.setTimeout(
-        			function(){
-        				$('#templateCode').val(myVSHTML.getValue());
-        				$('#templateCodeJS').val(myVSJS.getValue());
-        				updatePreview();
-        			},
-        			1000
-        	);
-    	})
-    }	
+        function modelChange(){
+            if(timerWrite){
+                clearTimeout(timerWrite)
+            }
+            timerWrite = window.setTimeout(
+                function(){
+                    $('#templateCode').val(myVSHTML.getValue());
+                    $('#templateCodeJS').val(myVSJS.getValue());
+                    $('#headerlibsCode').val(myVSHL.getValue());
+                    searchProperties(myVSHTML.getValue(),myVSJS.getValue());
+                    updatePreview();
+                },2000
+            );
+        }
+
+        myVSHTML.onDidChangeModelContent(modelChange);
+    	myVSJS.onDidChangeModelContent(modelChange);
+    	myVSHL.onDidChangeModelContent(modelChange);
+
+    	if(!$("#id").val()  && ($('#templateCode').text().trim().length == 0 && $('#templateCodeJS').text().trim().length == 0)){
+            changeInitCodeView(languaje);
+        }
+    }
 	
 	// FORM VALIDATION
 	var handleValidation = function() {
@@ -286,37 +309,45 @@ var GadgetsTemplateCreateController = function() {
 				});
 	}
 	
+	var handleInitEditor = function(){
+        $("#type").on("change",changeViewIframe);
+	}
 	
-	
-	function dataFromId(id){
+	function dataFromId(id,type){
 		var ident = new Uint32Array(1);
 		window.crypto.getRandomValues(ident);
-		
+		var initParam, endParam;
+		if(type === "html"){
+		    initParam = '<!--'
+		    endParam = '-->'
+		}
+		else{
+		    initParam = '/*'
+            endParam = '*/'
+		}
+		var data;
 		switch(id) {
-	    case "label_text":	    
-	        return '<!--label-osp  name="parameterName-'+ident+'" type="text"-->';
-	        break;
-	    case "label_number":	    	
-	    	  return '<!--label-osp  name="parameterName-'+ident+'" type="number"-->';
-	        break;
-	    case "label_ds":	    	
-	    	  return '<!--label-osp  name="parameterName-'+ident+'" type="ds"-->';
-	        break;	  
-	    case "label_ds_parameter":	    	
-	    	  return '<!--label-osp  name="parameterName-'+ident+'" type="ds_parameter"-->';
-	        break;	  
-	    case "select_options":	    	
-	   	  return '<!--select-osp  name="parameterName-'+ident+'" type="ds" options="a,b,c" -->';	    	        
-	      break;
-	    default:
-	        return "";
+            case "label_text":
+                data = 'label-osp  name="parameterName-'+ident+'" type="text"';
+                break;
+            case "label_number":
+                data = 'label-osp  name="parameterName-'+ident+'" type="number"';
+                break;
+            case "label_ds":
+                data = 'label-osp  name="parameterName-'+ident+'" type="ds"';
+                break;
+            case "label_ds_parameter":
+                data = 'label-osp  name="parameterName-'+ident+'" type="ds_parameter"';
+                break;
+            case "select_options":
+                data = 'select-osp  name="parameterName-'+ident+'" type="ds" options="a,b,c"';
+                break;
+            default:
+                data = "";
+            }
+        return initParam + data + endParam;
 	}
-		
-	}
-	
 
-	
-	
 	function searchTag(regex,str){
 		let m;
 		let found=[];
@@ -345,13 +376,14 @@ var GadgetsTemplateCreateController = function() {
 		return content;
 	}
 	
-	function searchProperties(str){
+	function searchProperties(strhtml,strjs){
 
-		const regex =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\>/g;
+		const regexHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\>/g; //html param tag
+		const regexJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g; //js param tag
 		const regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
 
 		let found=[];
-		found = searchTag(regex,str);		
+		found = searchTag(regexHTML,strhtml).concat(searchTag(regexJS,strjs));
 
 		$('#parameters-form').empty();
 		$('#parameters-form').append('<li class="list-group-item bg-blue-hoki font-grey-cararra">'+gadgetTemplateCreateJson.titleParametersSelected+'</li>');
@@ -379,13 +411,14 @@ var GadgetsTemplateCreateController = function() {
 	
 	}
 	
-	function searchPropertiesAndEditForm(str){
+	function searchPropertiesAndEditForm(strhtml,strjs){
 
-		const regex =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\>/g;
+		const regexHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\>/g; //html param tag
+        const regexJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g; //js param tag
 		const regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
 
 		let found=[];
-		found = searchTag(regex,str);		
+		found = searchTag(regexHTML,strhtml).concat(searchTag(regexJS,strjs));
 
 		$('#parameters-form').empty();
 		$('#parameters-form').append('<li class="list-group-item bg-blue-hoki font-grey-cararra">'+gadgetTemplateCreateJson.titleParametersSelected+'</li>');
@@ -484,61 +517,85 @@ var GadgetsTemplateCreateController = function() {
 			$.each($('#parameters-form').find("li select"), function(){
 				mapEntries[this.getAttribute("data")] = $(this).find("option:selected").text();				
 			})
-			updatePreview(mapEntries);
+			updatePreview(mapEntries,);
 		})
 	
 	}
 
-	var updatePreview = function (paramMap){
-		var iframe = document.getElementById("icontent");
-		iframe.src = iframe.src;
-		iframe.onload = function() {
-			var iframe = document.getElementById("icontent");
-			var iframeWindow = (iframe.contentWindow || iframe.contentDocument);
-	        var scope = iframeWindow.angular.element(iframeWindow.document.getElementsByTagName('livehtml')[0]).scope();
-			var templateCodeHTML = {};
-			templateCodeHTML.currentValue = $('#templateCode').val() || "";
-			templateCodeHTML.isFirstChange = function(){return false}
-			if(paramMap){
-				templateCodeHTML.currentValue = parseProperties(templateCodeHTML.currentValue, paramMap);
-				if(paramMap["datasource"]){
-					scope.$$childHead.vm.$onChanges({datasource: {currentValue: {name: paramMap["datasource"], refresh: 0, type: "query"}, previousValue: ""}});
-				}
-			}
-			var templateCodeJS = {}; 
-			templateCodeJS.currentValue = $('#templateCodeJS').val()  || ""
-			templateCodeJS.isFirstChange = function(){return false}
-			
-			scope.$$childHead.vm.livecontent=templateCodeHTML.currentValue;
-			scope.$$childHead.vm.livecontentcode=templateCodeJS.currentValue;
-			
-	        scope.$$childHead.vm.$onChanges({livecontentcode: templateCodeJS,livecontent: templateCodeHTML});
-		}
+	var updatePreview = function (paramMapAux){
+		refreshIframe();
+		paramMap = paramMapAux;
 	}
+
+	var updateComponent = function (){
+    	var iframe = document.querySelector("#icontent iframe");
+        var iframeWindow = (iframe.contentWindow || iframe.contentDocument);
+        var scope = iframeWindow.angular.element(iframeWindow.document.getElementsByTagName((languaje.startsWith("angularJS")?'livehtml':(languaje.startsWith("vueJS")?'vuetemplate':'reacttemplate')))[0]).scope();
+        scope.$$childHead.vm.id="gapp";
+
+        var templateCodeHTML = {};
+        templateCodeHTML.currentValue = $('#templateCode').val() || "";
+        templateCodeHTML.isFirstChange = function(){return false}
+
+        var templateCodeJS = {};
+        templateCodeJS.currentValue = $('#templateCodeJS').val()  || ""
+        templateCodeJS.isFirstChange = function(){return false}
+
+        if(paramMap){
+            templateCodeHTML.currentValue = parseProperties(templateCodeHTML.currentValue, paramMap);
+            templateCodeJS.currentValue = parseProperties(templateCodeJS.currentValue, paramMap, true);
+            if(paramMap["datasource"]){
+                scope.$$childHead.vm.$onChanges({datasource: {currentValue: {name: paramMap["datasource"], refresh: 0, type: "query"}, previousValue: ""}});
+            }
+        }
+
+        scope.$$childHead.vm.livecontent=templateCodeHTML.currentValue;
+        scope.$$childHead.vm.livecontentcode=templateCodeJS.currentValue;
+
+        scope.$$childHead.vm.$onChanges({livecontentcode: templateCodeJS,livecontent: templateCodeHTML});
+    }
 	
 	/** this function Replace parameteres for his selected values*/
-    function parseProperties(str, paramMap){
+    function parseProperties(str, paramMap, jsparam){ //the third param build replace with short circuit param: "param ||" for compatibility with default value in js
 
-      var regexTag =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
+      var regexTagHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
+      var regexTagJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g;
       var regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
       var regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\:\,\+\_\/]*\s*\"/g;
       var found=[];
-      found = searchTag(regexTag,str);	
+      found = searchTag(regexTagHTML,str).concat(searchTag(regexTagJS,str));
   
       var parserList=[];
       for (var i = 0; i < found.length; i++) {
-        var tag = found[i];			
-        var paramValue = paramMap[tag];
-        if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                 
-          parserList.push({tag:tag,value:paramValue});   
+        var tag = found[i];
+        var paramValue;
+        if((tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0) ||
+           (tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0) ||
+           (tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0)){
+            if(!jsparam){
+                paramValue = paramMap[tag];
+            }
+            else{
+                paramValue = "'" + paramMap[tag] + "' || ";
+            }
+            parserList.push({tag:tag,value:paramValue});
         }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-          parserList.push({tag:tag,value:paramValue});   
-        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                
-          parserList.push({tag:tag,value:"{{ds[0]."+paramValue+"}}"});        
-        }else if(tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                                            
-          parserList.push({tag:tag,value:paramValue});        
-        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){                
-          parserList.push({tag:tag,value:paramValue});  
+            if(!jsparam){
+                paramValue = paramMap[tag];
+            }
+            else{
+                paramValue = paramMap[tag] + " || ";
+            }
+            parserList.push({tag:tag,value:paramValue});
+        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+            if(!jsparam){
+                paramValue = paramMap[tag];
+                parserList.push({tag:tag,value:"{{ds[0]."+paramValue+"}}"});
+            }
+            else{
+                paramValue = "'" + paramMap[tag] + "' || ";
+                parserList.push({tag:tag,value:"ds[0]."+paramValue+""});
+            }
         }
       } 
       //Replace parameteres for his values
@@ -550,7 +607,57 @@ var GadgetsTemplateCreateController = function() {
 	
 	 var drag = function (ev) {		 
 		    ev.dataTransfer.setData("content", ev.target.id);
-		}	
+		}
+
+	var changeInitCodeView = function(languajeC){
+        fetch('/controlpanel/gadgettemplates/getTemplateTypeById/' + languajeC)
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(json) {
+            myVSJS.setValue(json.templateJS.slice());
+            myVSHTML.setValue(json.template.slice());
+            myVSHL.setValue(json.headerlibs.slice());
+            languaje=languajeC;
+        });
+	}
+
+	var refreshIframe = function (){
+	    var request;
+        if($("#type").val().startsWith("angularJS")){
+            request = fetch('/controlpanel/gadgettemplates/gadgetViewer');
+        }
+        else if($("#type").val().startsWith("vueJS")){
+            request = fetch('/controlpanel/gadgettemplates/gadgetViewerVue');
+        }
+        else{
+            request = fetch('/controlpanel/gadgettemplates/gadgetViewerReact');
+        }
+
+        request.then(function(response) {
+            return response.text();
+        })
+        .then(function(html) {
+            var ifrmdiv = document.getElementById('icontent');
+            ifrmdiv.innerHTML = "";
+            var ifrm = document.createElement('iframe');
+            ifrmdiv.appendChild(ifrm);
+
+            ifrm.style.height='400px';
+            ifrm.style.width='100%';
+            ifrm.style.border='none';
+
+            ifrm = ifrm.contentWindow || ifrm.contentDocument.document || ifrm.contentDocument;
+            ifrm.document.open();
+            ifrm.document.write(html.replace('<!--headerlibs-->',myVSHL.getValue()));
+            ifrm.document.close();
+        })
+    }
+
+    var changeViewIframe = function(){
+        refreshIframe();
+        GadgetsTemplateCreateController.changeInitCodeView($("#type").val());
+    }
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{		
@@ -567,15 +674,29 @@ var GadgetsTemplateCreateController = function() {
 			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			handleVS();
 			handleValidation();
+			handleInitEditor();
 		},
 		
 		// REDIRECT
-		go: function(url){
-			logControl ? console.log(LIB_TITLE + ': go()') : '';	
-			navigateUrl(url); 
+		go: function(id,url){
+			logControl ? console.log(LIB_TITLE + ': go()') : '';
+			if(!isEdit){
+				if(id == "null"){
+					navigateUrl(url);
+				}else{
+					  navigateUrl(id);
+				}
+			}
+			else{
+			    freeResource(id,url);
+			}
 		},
 		updatePreview: function(){
 			updatePreview();
+		},
+
+		updateComponent: function(){
+		    updateComponent();
 		},
 	
 		// DELETE GADGET DATASOURCE 
@@ -593,6 +714,10 @@ var GadgetsTemplateCreateController = function() {
 		
 		dropParam: function(ev){
 			dropParam(ev);
+		},
+
+		changeInitCodeView: function(type){
+		    changeInitCodeView(type);
 		}
 		
 	};

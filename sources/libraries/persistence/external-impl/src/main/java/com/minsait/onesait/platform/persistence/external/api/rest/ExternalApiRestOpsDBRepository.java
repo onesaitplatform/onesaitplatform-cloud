@@ -79,17 +79,17 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String insert(String ontology, String instance) {
-		OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
+		final OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
 
 		// try to find default UpdateById operation
-		List<OntologyRestOperation> operations = this.ontologyRestOperationService
+		final List<OntologyRestOperation> operations = ontologyRestOperationService
 				.getAllOperationsFromOntologyRest(ontologyRest);
-		Optional<OntologyRestOperation> insertOpertaion = operations.stream()
+		final Optional<OntologyRestOperation> insertOpertaion = operations.stream()
 				.filter(operation -> operation.getDefaultOperationType() == DefaultOperationType.INSERT).findFirst();
 		if (insertOpertaion.isPresent()) {
-			String completeUrl = ontologyRest.getBaseUrl() + insertOpertaion.get().getPath();
-			APIRestResponse response = this.apiRestClient.invokePost(completeUrl, instance,
-					Optional.of(this.getHeadersAndSecurity(ontologyRest)), Optional.of(new HashMap<String, String>()),
+			final String completeUrl = ontologyRest.getBaseUrl() + insertOpertaion.get().getPath();
+			final APIRestResponse response = apiRestClient.invokePost(completeUrl, instance,
+					Optional.of(getHeadersAndSecurity(ontologyRest)), Optional.of(new HashMap<String, String>()),
 					Optional.of(new HashMap<String, String>()));
 			if (response.getResponse() == 200) {
 				return response.getBody();
@@ -109,25 +109,25 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
-		for (String instance : instances) {
-			this.insert(ontology, instance);
+		for (final String instance : instances) {
+			insert(ontology, instance);
 		}
 		return new ComplexWriteResult();
 	}
 
 	@Override
 	public MultiDocumentOperationResult updateNative(String ontology, String updateStmt, boolean includeIds) {
-		return this.update(ontology, updateStmt, Optional.ofNullable(null));
+		return update(ontology, updateStmt, Optional.ofNullable(null));
 	}
 
 	@Override
 	public MultiDocumentOperationResult updateNative(String collection, String query, String data, boolean includeIds) {
-		return this.update(collection, query, Optional.ofNullable(data));
+		return update(collection, query, Optional.ofNullable(data));
 	}
 
 	private MultiDocumentOperationResult update(String ontology, String updateStmt, Optional<String> data) {
 
-		OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
+		final OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
 		QueryAnalysisResult parserResult = sqlRestParser.parseRestSqlStatement(updateStmt, new ArrayList<>(),
 				new ArrayList<>());
 		if (!parserResult.getState()) {
@@ -135,11 +135,11 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		OntologyRestOperation updateOperation = null;
 		if (parserResult.getOperation() != null) {
-			updateOperation = this.ontologyRestOperationService.getOntologyRestOperationByName(ontologyRest,
+			updateOperation = ontologyRestOperationService.getOntologyRestOperationByName(ontologyRest,
 					parserResult.getOperation());
 		} else {
 			// try to find default UpdateById operation
-			List<OntologyRestOperation> operations = this.ontologyRestOperationService
+			final List<OntologyRestOperation> operations = ontologyRestOperationService
 					.getAllOperationsFromOntologyRest(ontologyRest);
 			updateOperation = operations.stream()
 					.filter(operation -> operation.getDefaultOperationType() == DefaultOperationType.UPDATE_BY_ID)
@@ -147,26 +147,29 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		// if update operation found
 		if (updateOperation != null) {
-			List<OntologyRestOperationParam> params = ontologyRestOperationService
+			final List<OntologyRestOperationParam> params = ontologyRestOperationService
 					.getOntologyRestOperationParams(updateOperation);
-			List<String> pathParamNames = new ArrayList<>();
-			List<String> queryParamsNames = new ArrayList<>();
+			final List<String> pathParamNames = new ArrayList<>();
+			final List<String> queryParamsNames = new ArrayList<>();
 			params.forEach(param -> {
-				if (param.getType() == ParamOperationType.PATH)
+				if (param.getType() == ParamOperationType.PATH) {
 					pathParamNames.add(param.getName());
-				if (param.getType() == ParamOperationType.QUERY)
+				}
+				if (param.getType() == ParamOperationType.QUERY) {
 					queryParamsNames.add(param.getName());
+				}
 			});
 			parserResult = sqlRestParser.parseRestSqlStatement(updateStmt, pathParamNames, queryParamsNames);
-			String completeUrl = ontologyRest.getBaseUrl() + updateOperation.getPath();
+			final String completeUrl = ontologyRest.getBaseUrl() + updateOperation.getPath();
 			String dataToUpdate = parserResult.getJsonObject();
-			if (data.isPresent())
+			if (data.isPresent()) {
 				dataToUpdate = data.get();
-			APIRestResponse response = this.apiRestClient.invokePut(completeUrl, dataToUpdate,
-					Optional.of(this.getHeadersAndSecurity(ontologyRest)), Optional.of(parserResult.getPathParams()),
+			}
+			final APIRestResponse response = apiRestClient.invokePut(completeUrl, dataToUpdate,
+					Optional.of(getHeadersAndSecurity(ontologyRest)), Optional.of(parserResult.getPathParams()),
 					Optional.of(parserResult.getQueryParams()));
 			if (response.getResponse() == 200) {
-				MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+				final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 				result.setCount(1);
 				return result;
 			} else {
@@ -212,12 +215,12 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String querySQLAsJson(String ontology, String query) {
 
-		OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
-		List<String> pathParamNames = new ArrayList<>();
-		List<String> queryParamsNames = new ArrayList<>();
+		final OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
+		final List<String> pathParamNames = new ArrayList<>();
+		final List<String> queryParamsNames = new ArrayList<>();
 
 		// get headers and security
-		Map<String, String> headers = getHeadersAndSecurity(ontologyRest);
+		final Map<String, String> headers = getHeadersAndSecurity(ontologyRest);
 
 		String completeUrl = ontologyRest.getBaseUrl();
 
@@ -233,16 +236,16 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 							+ analyzedQuery.getQueryType().toString() + " was received."));
 		}
 
-		String operationName = analyzedQuery.getOperation();
+		final String operationName = analyzedQuery.getOperation();
 
 		// Get complete information of operation
 		OntologyRestOperation operation = null;
 		if (operationName == null) {
 			// If no operation was specified in query, check if there is a
 			// getAll defined
-			List<OntologyRestOperation> operations = ontologyRestOperationService
+			final List<OntologyRestOperation> operations = ontologyRestOperationService
 					.getAllOperationsFromOntologyRest(ontologyRest);
-			Optional<OntologyRestOperation> optionalOperation = operations.stream()
+			final Optional<OntologyRestOperation> optionalOperation = operations.stream()
 					.filter(oper -> oper.getDefaultOperationType() == DefaultOperationType.GET_ALL).findAny();
 			if (!optionalOperation.isPresent()) {
 				throw new DBPersistenceException(new NotSupportedOperationException(
@@ -258,9 +261,9 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		completeUrl += operation.getPath();
 
-		List<OntologyRestOperationParam> params = ontologyRestOperationService
+		final List<OntologyRestOperationParam> params = ontologyRestOperationService
 				.getOntologyRestOperationParams(operation);
-		for (OntologyRestOperationParam param : params) {
+		for (final OntologyRestOperationParam param : params) {
 			if (param.getType() == ParamOperationType.PATH) {
 				pathParamNames.add(param.getName());
 			} else {
@@ -270,29 +273,29 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		// Parse again with parameters set to the operation selected
 		analyzedQuery = sqlRestParser.parseRestSqlStatement(query, pathParamNames, queryParamsNames);
 
-		Optional<Map<String, String>> pathParams = Optional.of(analyzedQuery.getPathParams());
-		Optional<Map<String, String>> queryParams = Optional.of(analyzedQuery.getQueryParams());
+		final Optional<Map<String, String>> pathParams = Optional.of(analyzedQuery.getPathParams());
+		final Optional<Map<String, String>> queryParams = Optional.of(analyzedQuery.getQueryParams());
 
-		APIRestResponse response = this.apiRestClient.invokeGet(completeUrl, Optional.of(headers), pathParams,
+		final APIRestResponse response = apiRestClient.invokeGet(completeUrl, Optional.of(headers), pathParams,
 				queryParams);
 
 		if (response.getResponse() == 200) {
 			String jsonPath = "";
 			// Apply filters
-			String filters = analyzedQuery.getJsonPathfilter();
+			final String filters = analyzedQuery.getJsonPathfilter();
 			if (filters.isEmpty()) {
 				jsonPath = "$.[*]";
 			} else {
 				jsonPath = "$.[?(" + filters + ")]";
 			}
 			// Apply Select clause if != *
-			List<String> selectedFfields = analyzedQuery.getProjectionFields().stream()
+			final List<String> selectedFfields = analyzedQuery.getProjectionFields().stream()
 					.filter(field -> !("_id".equalsIgnoreCase(field) || "*".equalsIgnoreCase(field)))
 					.collect(Collectors.toList());
 			if (!analyzedQuery.isSelectAll() && !selectedFfields.isEmpty()) {
-				StringBuffer selectFilterBuffer = new StringBuffer("[");
+				final StringBuffer selectFilterBuffer = new StringBuffer("[");
 
-				for (String field : selectedFfields) {
+				for (final String field : selectedFfields) {
 					selectFilterBuffer.append("'" + field + "',");
 				}
 				selectFilterBuffer.deleteCharAt(selectFilterBuffer.length() - 1);
@@ -302,11 +305,13 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 			String responseJson = JsonPath.read(response.getBody(), jsonPath).toString();
 			// filter SKIP and LIMIT
 			String skip = "0";
-			if (analyzedQuery.getHasSkip())
+			if (analyzedQuery.getHasSkip()) {
 				skip = String.valueOf(analyzedQuery.getSkip());
+			}
 			String limit = "";
-			if (analyzedQuery.getHasLimit())
+			if (analyzedQuery.getHasLimit()) {
 				limit = String.valueOf(analyzedQuery.getLimit());
+			}
 			jsonPath = "$.[" + skip + ":" + limit + "]";
 			responseJson = JsonPath.read(responseJson, jsonPath).toString();
 			return responseJson;
@@ -360,17 +365,18 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public List<String> findAll(String ontology, int limit) {
 		String json = querySQLAsJson(ontology, SELECT_ALL_FROM + ontology);
-		if (limit > 0)
+		if (limit > 0) {
 			json += " LIMIT " + limit;
+		}
 
-		List<String> result = new ArrayList<>();
+		final List<String> result = new ArrayList<>();
 		ArrayNode arrayResult;
 		try {
 			arrayResult = (ArrayNode) mapper.readTree(json);
-			for (JsonNode node : arrayResult) {
+			for (final JsonNode node : arrayResult) {
 				result.add(node.toString());
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Error parsing query result to array. Cause ={}, message = {}", e.getCause(), e.getMessage());
 			throw new DBPersistenceException("Error parsing query result to array", e);
 		}
@@ -386,24 +392,24 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public MultiDocumentOperationResult delete(String ontology, boolean includeIds) {
 		// Check if DELETE_ALL exists
-		OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
+		final OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(ontology);
 
-		List<OntologyRestOperation> operations = ontologyRestOperationService
+		final List<OntologyRestOperation> operations = ontologyRestOperationService
 				.getAllOperationsFromOntologyRest(ontologyRest);
-		OntologyRestOperation deleteAllOperation = operations.stream()
+		final OntologyRestOperation deleteAllOperation = operations.stream()
 				.filter(operation -> operation.getDefaultOperationType() == DefaultOperationType.DELETE_ALL).findFirst()
 				.orElse(null);
 
 		if (deleteAllOperation != null) {
 
 			// get headers and security
-			Map<String, String> headers = getHeadersAndSecurity(ontologyRest);
-			long numRegs = this.count(ontology);
-			String completeUrl = ontologyRest.getBaseUrl() + deleteAllOperation.getPath();
-			APIRestResponse response = this.apiRestClient.invokeDelete(completeUrl, Optional.of(headers),
+			final Map<String, String> headers = getHeadersAndSecurity(ontologyRest);
+			final long numRegs = count(ontology);
+			final String completeUrl = ontologyRest.getBaseUrl() + deleteAllOperation.getPath();
+			final APIRestResponse response = apiRestClient.invokeDelete(completeUrl, Optional.of(headers),
 					Optional.of(new HashMap<String, String>()), Optional.of(new HashMap<String, String>()));
 			if (response.getResponse() == 200) {
-				MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+				final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 				result.setCount(numRegs);
 				return result;
 			} else {
@@ -421,12 +427,12 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public MultiDocumentOperationResult deleteNative(String collection, String query, boolean includeIds) {
 
-		OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(collection);
-		List<String> pathParamNames = new ArrayList<>();
-		List<String> queryParamsNames = new ArrayList<>();
+		final OntologyRest ontologyRest = ontologRestService.getOntologyRestByIdentification(collection);
+		final List<String> pathParamNames = new ArrayList<>();
+		final List<String> queryParamsNames = new ArrayList<>();
 
 		// get headers and security
-		Map<String, String> headers = getHeadersAndSecurity(ontologyRest);
+		final Map<String, String> headers = getHeadersAndSecurity(ontologyRest);
 
 		String completeUrl = ontologyRest.getBaseUrl();
 
@@ -438,10 +444,10 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		OntologyRestOperation deleteOperation = null;
 		if (analyzedQuery.getOperation() != null) {
-			deleteOperation = this.ontologyRestOperationService.getOntologyRestOperationByName(ontologyRest,
+			deleteOperation = ontologyRestOperationService.getOntologyRestOperationByName(ontologyRest,
 					analyzedQuery.getOperation());
 		} else {
-			List<OntologyRestOperation> operations = this.ontologyRestOperationService
+			final List<OntologyRestOperation> operations = ontologyRestOperationService
 					.getAllOperationsFromOntologyRest(ontologyRest);
 			deleteOperation = operations.stream()
 					.filter(operation -> operation.getDefaultOperationType() == DefaultOperationType.DELETE_BY_ID)
@@ -449,17 +455,19 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 
 		if (deleteOperation != null) {
-			List<OntologyRestOperationParam> params = ontologyRestOperationService
+			final List<OntologyRestOperationParam> params = ontologyRestOperationService
 					.getOntologyRestOperationParams(deleteOperation);
 			params.forEach(param -> {
-				if (param.getType() == ParamOperationType.PATH)
+				if (param.getType() == ParamOperationType.PATH) {
 					pathParamNames.add(param.getName());
-				if (param.getType() == ParamOperationType.QUERY)
+				}
+				if (param.getType() == ParamOperationType.QUERY) {
 					queryParamsNames.add(param.getName());
+				}
 			});
 			analyzedQuery = sqlRestParser.parseRestSqlStatement(query, pathParamNames, queryParamsNames);
 			completeUrl = ontologyRest.getBaseUrl() + deleteOperation.getPath();
-			APIRestResponse response = this.apiRestClient.invokeDelete(completeUrl, Optional.of(headers),
+			final APIRestResponse response = apiRestClient.invokeDelete(completeUrl, Optional.of(headers),
 					Optional.of(analyzedQuery.getPathParams()), Optional.of(analyzedQuery.getQueryParams()));
 			if (response.getResponse() == 200) {
 				return new MultiDocumentOperationResult();
@@ -495,20 +503,20 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 
 	private Map<String, String> getHeadersAndSecurity(OntologyRest ontologyRest) {
 		// Implement security into headers
-		Map<String, String> headers = new HashMap<>();
-		ObjectMapper mapperObj = new ObjectMapper();
-		TypeReference<Map<String, String>> mapType = new TypeReference<Map<String, String>>() {
+		final Map<String, String> headers = new HashMap<>();
+		final ObjectMapper mapperObj = new ObjectMapper();
+		final TypeReference<Map<String, String>> mapType = new TypeReference<Map<String, String>>() {
 		};
 		Map<String, String> securityConf;
 		try {
 			securityConf = mapperObj.readValue(ontologyRest.getSecurityId().getConfig(), mapType);
-		} catch (IOException e1) {
+		} catch (final IOException e1) {
 			throw new DBPersistenceException(
 					new NotSupportedOperationException("Defined Security Headers could no be retrieved"));
 		}
 
-		String user = securityConf.get("user");
-		String password = securityConf.get("password");
+		final String user = securityConf.get("user");
+		final String password = securityConf.get("password");
 		String auth;
 		switch (ontologyRest.getSecurityType()) {
 		case API_KEY:
@@ -526,16 +534,16 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 			break;
 		}
 		// transform headersConfig into map
-		String headersConfig = ontologyRest.getHeaderId().getConfig();
-		TypeReference<List<HashMap<String, String>>> typeRef = new TypeReference<List<HashMap<String, String>>>() {
+		final String headersConfig = ontologyRest.getHeaderId().getConfig();
+		final TypeReference<List<HashMap<String, String>>> typeRef = new TypeReference<List<HashMap<String, String>>>() {
 		};
 
 		try {
-			List<Map<String, String>> headersList = mapperObj.readValue(headersConfig, typeRef);
-			for (Map<String, String> headerMap : headersList) {
+			final List<Map<String, String>> headersList = mapperObj.readValue(headersConfig, typeRef);
+			for (final Map<String, String> headerMap : headersList) {
 				headers.put(headerMap.get("key"), headerMap.get("value"));
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new DBPersistenceException("Defined Headers could no be retrieved", e);
 		}
 		return headers;
@@ -577,6 +585,18 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
 			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_SUPPORTED);
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+
+		return this.querySQLAsJson(ontology, query, offset);
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException(NOT_SUPPORTED);
 	}

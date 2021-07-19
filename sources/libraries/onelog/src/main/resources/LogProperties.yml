@@ -1,0 +1,57 @@
+# GrayLog Default configurations (each logback file could override it):
+
+
+# IP or hostname of graylog server.
+graylog_host: 127.0.0.1
+
+# Port of graylog server.
+graylog_port: 12201
+
+#Maximum time (in milliseconds) to wait for establishing a connection. A value of 0 disables the connect timeout.
+connect_timeout: 15000
+
+# Time interval (in seconds) after an existing connection is closed and re-opened. A value of -1 disables automatic reconnects.
+reconnect_interval: 300
+
+# Number of retries. A value of 0 disables retry attempts. 
+max_retries: 2
+
+# Time (in milliseconds) between retry attempts. Ignored if maxRetries is 0.
+retry_delay: 3000
+
+# Number of concurrent tcp connections (minimum 1).
+pool_size: 2
+
+# Maximum amount of time (in milliseconds) to wait for a connection to become available from the pool. A value of -1 disables the timeout.
+pool_max_wait_time: 5000
+
+
+# Origin hostname - will be auto detected if not specified 
+origin_host:
+
+# If true, the raw message (with argument placeholders) will be sent, too.
+include_raw_message: false
+
+# If true, logback markers will be sent, too.
+include_marker: true
+
+# If true, MDC keys/values will be sent, too.
+include_mdc_data: true
+
+# If true, caller data (source file-, method-, class name and line) will be sent, too.
+include_caller_data: true
+
+# If true, root cause exception of the exception passed with the log message will be exposed in the exception field.
+include_root_cause_data: true
+
+# If true, the log level name (e.g. DEBUG) will be sent, too.
+include_level_name: true
+
+# Log numbers as String. 
+numbers_as_string: false
+
+# Short message format 
+short_pattern_layout_str: '%m%nopex'
+
+# Full message format (Stacktrace) 
+full_pattern_layout_str: '%m%n'

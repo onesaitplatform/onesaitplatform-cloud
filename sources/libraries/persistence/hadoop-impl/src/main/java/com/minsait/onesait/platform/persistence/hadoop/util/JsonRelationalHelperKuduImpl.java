@@ -61,8 +61,8 @@ public class JsonRelationalHelperKuduImpl {
 
 	@Autowired
 	private KuduTableGenerator kuduTableGenerator;
-	
-	private static final String DATE_OPERATOR="$date";
+
+	private static final String DATE_OPERATOR = "$date";
 
 	public void instanceToPartialRow(Schema schema, String instance, PartialRow prow, String id, boolean onlyPKey) {
 		JSONObject obj = new JSONObject(instance);
@@ -89,26 +89,31 @@ public class JsonRelationalHelperKuduImpl {
 					}
 				} else if (isTimestamp(o)) {
 					if (!onlyPKey || (onlyPKey && schema.getColumn(key + HiveFieldType.LONGITUDE_FIELD).isKey())) {
-						prow.addTimestamp(key, new Timestamp(
-								ISODateTimeFormat.dateTimeParser().parseDateTime((String) o.get(DATE_OPERATOR)).getMillis()));
+						prow.addTimestamp(key, new Timestamp(ISODateTimeFormat.dateTimeParser()
+								.parseDateTime((String) o.get(DATE_OPERATOR)).getMillis()));
 					}
 				} else if (isContextData(key)) {
 					if (!onlyPKey || (onlyPKey && schema.getColumn(CONTEXT_DATA_FIELD_DEVICE_TEMPLATE).isKey())) {
-						prow.addString(CONTEXT_DATA_FIELD_DEVICE_TEMPLATE, (String) o.get(FIELD_DEVICE_TEMPLATE));
+						prow.addString(CONTEXT_DATA_FIELD_DEVICE_TEMPLATE,
+								o.isNull(FIELD_DEVICE_TEMPLATE) ? "" : (String) o.get(FIELD_DEVICE_TEMPLATE));
 					}
 					if (!onlyPKey || (onlyPKey && schema.getColumn(CONTEXT_DATA_FIELD_DEVICE).isKey())) {
-						prow.addString(CONTEXT_DATA_FIELD_DEVICE, (String) o.get(FIELD_DEVICE));
+						prow.addString(CONTEXT_DATA_FIELD_DEVICE,
+								o.isNull(FIELD_DEVICE) ? "" : (String) o.get(FIELD_DEVICE));
+
 					}
 					if (!onlyPKey
 							|| (onlyPKey && schema.getColumn(CONTEXT_DATA_FIELD_DEVICE_TEMPLATE_CONNECTION).isKey())) {
 						prow.addString(CONTEXT_DATA_FIELD_DEVICE_TEMPLATE_CONNECTION,
-								(String) o.get(FIELD_DEVICE_TEMPLATE_CONNECTION));
+								o.isNull(FIELD_DEVICE_TEMPLATE_CONNECTION) ? ""
+										: (String) o.get(FIELD_DEVICE_TEMPLATE_CONNECTION));
 					}
 					if (!onlyPKey || (onlyPKey && schema.getColumn(CONTEXT_DATA_FIELD_CLIENT_SESSION).isKey())) {
-						prow.addString(CONTEXT_DATA_FIELD_CLIENT_SESSION, (String) o.get(FIELD_CLIENT_SESSION));
+						prow.addString(CONTEXT_DATA_FIELD_CLIENT_SESSION,
+								o.isNull(FIELD_CLIENT_SESSION) ? "" : (String) o.get(FIELD_CLIENT_SESSION));
 					}
 					if (!onlyPKey || (onlyPKey && schema.getColumn(CONTEXT_DATA_FIELD_USER).isKey())) {
-						prow.addString(CONTEXT_DATA_FIELD_USER, (String) o.get(FIELD_USER));
+						prow.addString(CONTEXT_DATA_FIELD_USER, o.isNull(FIELD_USER) ? "" : (String) o.get(FIELD_USER));
 					}
 					if (!onlyPKey || (onlyPKey && schema.getColumn(CONTEXT_DATA_FIELD_TIMEZONE_ID).isKey())) {
 						prow.addString(CONTEXT_DATA_FIELD_TIMEZONE_ID, (String) o.get(FIELD_TIMEZONE_ID));

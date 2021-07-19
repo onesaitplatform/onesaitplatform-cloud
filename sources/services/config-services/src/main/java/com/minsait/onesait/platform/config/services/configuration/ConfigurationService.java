@@ -38,7 +38,6 @@ public interface ConfigurationService {
 
 	List<Configuration> getAllConfigurations(User user);
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	void deleteConfiguration(String id);
 
 	Configuration getConfiguration(String id);
@@ -75,7 +74,7 @@ public interface ConfigurationService {
 
 	OpenshiftConfiguration getOpenshiftConfiguration(String id);
 
-	List<Configuration.Type> getAllConfigurationTypes();
+	List<Configuration.Type> getAllConfigurationTypes(User user);
 
 	Configuration createConfiguration(Configuration configuration);
 

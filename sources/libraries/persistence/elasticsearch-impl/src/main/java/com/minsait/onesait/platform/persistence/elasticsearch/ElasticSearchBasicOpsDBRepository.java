@@ -34,9 +34,9 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESCountService;
-import com.minsait.onesait.platform.persistence.elasticsearch.api.ESSearchService;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESDeleteService;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESInsertService;
+import com.minsait.onesait.platform.persistence.elasticsearch.api.ESSearchService;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESUpdateService;
 import com.minsait.onesait.platform.persistence.elasticsearch.sql.connector.ElasticSearchSQLDbHttpImpl;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
@@ -78,7 +78,8 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 	private static final String ERROR_QUERY_CANT_BE_NULL = "Query can't be null or empty";
 	private static final String ERROR_ID_CANT_BE_NULL = "ID can't be null or empty";
 	private static final String ERROR_OFFSET = "Offset must be greater or equals to 0";
-	//private static final String ERROR_SCHEMA_CANT_BE_NULL = "Schema can't be null or empty";
+	// private static final String ERROR_SCHEMA_CANT_BE_NULL = "Schema can't be null
+	// or empty";
 	private static final String ERROR_INSTANCE_CANT_BE_NULL = "Instance can't be null or empty";
 	private static final String ERROR_STATEMENT_CANT_BE_NULL = "Statement can't be null or empty";
 	private static final String ERROR_COLLECTION_CANT_BE_NULL = "Collection can't be null or empty";
@@ -97,7 +98,8 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 					ontology);
 			List<? extends DBResult> output = null;
 			final List<String> instances = Arrays.asList(instance);
-			output = eSInsertService.bulkInsert(ontology.toLowerCase(), instances, dbOntology.getJsonSchema()).getData();
+			output = eSInsertService.bulkInsert(ontology.toLowerCase(), instances, dbOntology.getJsonSchema())
+					.getData();
 			return ((BulkWriteResult) output.get(0)).getId();
 		} catch (final DBPersistenceException e) {
 			throw e;
@@ -134,12 +136,13 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			Assert.hasLength(updateStmt, ERROR_STATEMENT_CANT_BE_NULL);
 			log.debug("ElasticSearchBasicOpsDBRepository :Update Native");
-			
-			Map<String, String> stmt = ElasticSearchUtil.processUpdateStatement(updateStmt);
-			
-			long count = eSUpdateService.updateByQueryAndFilter(ontology.toLowerCase(), stmt.get("source_script"), stmt.get("query"));			
-			
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+
+			final Map<String, String> stmt = ElasticSearchUtil.processUpdateStatement(updateStmt);
+
+			final long count = eSUpdateService.updateByQueryAndFilter(ontology.toLowerCase(), stmt.get("source_script"),
+					stmt.get("query"));
+
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(count);
 			return result;
 		} catch (final DBPersistenceException e) {
@@ -158,8 +161,8 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(ontology, ERROR_COLLECTION_CANT_BE_NULL);
 			Assert.hasLength(query, ERROR_QUERY_CANT_BE_NULL);
 			Assert.hasLength(data, ERROR_DATA_CANT_BE_NULL);
-			long count = eSUpdateService.updateByQueryAndFilter(ontology.toLowerCase(), data, query);
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			final long count = eSUpdateService.updateByQueryAndFilter(ontology.toLowerCase(), data, query);
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(count);
 			return result;
 		} catch (final DBPersistenceException e) {
@@ -240,8 +243,8 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(query, ERROR_QUERY_CANT_BE_NULL);
 			Assert.isTrue(offset >= 0, ERROR_OFFSET);
 			Assert.isTrue(limit >= 1, ERROR_LIMIT);
-			return  eSDataService.findAllAsJson(ontology.toLowerCase(), offset, limit);
-			//return ElasticSearchUtil.parseElastiSearchResult(response, true);
+			return eSDataService.findAllAsJson(ontology.toLowerCase(), offset, limit);
+			// return ElasticSearchUtil.parseElastiSearchResult(response, true);
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -256,7 +259,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			Assert.hasLength(objectId, ERROR_ID_CANT_BE_NULL);
-			return (eSDataService.findByIndex(ontology.toLowerCase(), objectId));
+			return eSDataService.findByIndex(ontology.toLowerCase(), objectId);
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -332,7 +335,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 	public String findAllAsJson(String ontology) {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
-			return (eSDataService.findAllAsJson(ontology.toLowerCase(), 200));
+			return eSDataService.findAllAsJson(ontology.toLowerCase(), 200);
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -347,7 +350,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			Assert.isTrue(limit >= 0, "Limit must be greater or equals to 0");
-			return (eSDataService.findAllAsJson(ontology.toLowerCase(), limit));
+			return eSDataService.findAllAsJson(ontology.toLowerCase(), limit);
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -361,7 +364,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 	public List<String> findAll(String ontology) {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
-			return (eSDataService.findAll(ontology.toLowerCase()));
+			return eSDataService.findAll(ontology.toLowerCase());
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -376,7 +379,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			Assert.isTrue(limit >= 0, "Limit must be greater or equals to 0");
-			return (eSDataService.findAll(ontology.toLowerCase(), limit));
+			return eSDataService.findAll(ontology.toLowerCase(), limit);
 		} catch (final DBPersistenceException e) {
 			throw e;
 		} catch (final Exception e) {
@@ -406,7 +409,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			final boolean all = eSDeleteService.deleteAll(ontology.toLowerCase());
 
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			if (all) {
 				result.setCount(1);
 			} else {
@@ -441,9 +444,9 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 	public MultiDocumentOperationResult deleteNativeById(String ontology, String objectId) {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
-			Assert.hasLength(objectId, ERROR_ID_CANT_BE_NULL);			
+			Assert.hasLength(objectId, ERROR_ID_CANT_BE_NULL);
 			final boolean all = eSDeleteService.deleteById(ontology.toLowerCase(), objectId);
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			if (all) {
 				result.setCount(1);
 			} else {
@@ -467,7 +470,7 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(objectId, ERROR_ID_CANT_BE_NULL);
 			Assert.hasLength(body, "Body can't be null or empty");
 			final boolean response = eSUpdateService.updateIndex(ontology.toLowerCase(), objectId, body);
-			MultiDocumentOperationResult result = new MultiDocumentOperationResult();
+			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			if (response) {
 				result.setCount(1);
 			} else {
@@ -521,6 +524,18 @@ public class ElasticSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Override
 	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
 			throws DBPersistenceException {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
+		// TODO Auto-generated method stub
+		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
+	}
+
+	@Override
+	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
 	}

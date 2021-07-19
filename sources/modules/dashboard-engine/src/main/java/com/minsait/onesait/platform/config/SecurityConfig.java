@@ -33,10 +33,17 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import com.minsait.onesait.platform.filter.CustomFilter;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.security.CustomBasicAuthenticationEntryPoint;
+import org.springframework.session.MapSessionRepository;
+import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
+import org.springframework.session.web.http.CookieSerializer;
+import org.springframework.session.web.http.DefaultCookieSerializer;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
+@EnableSpringHttpSession
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${onesaitplatform.dashboardengine.auth.token.endpoint:'http://localhost:18000/controlpanel/api/login/info'}")
@@ -73,9 +80,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.cors().and().authorizeRequests().antMatchers("/**").authenticated().and().httpBasic()
-				.authenticationEntryPoint(authenticationEntryPoint).and()
-				.authenticationProvider(configDBAuthenticationProvider);
+		http.cors().and().authorizeRequests().antMatchers("/actuator/**").permitAll().and().authorizeRequests()
+				.antMatchers("/**").authenticated().and().httpBasic().authenticationEntryPoint(authenticationEntryPoint)
+				.and().authenticationProvider(configDBAuthenticationProvider);
 
 		http.csrf().disable();
 
@@ -90,5 +97,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/resources/**");
 	}
+
+	@Bean
+	public MapSessionRepository sessionRepository() {
+		return new MapSessionRepository(new ConcurrentHashMap<>());
+	}
+
+	@Bean
+	public CookieSerializer cookieSerializer(@Value("${onesaitplatform.secure.cookie}") boolean secure) {
+		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+		if (secure) {
+			serializer.setSameSite("None");
+		}
+		serializer.setUseHttpOnlyCookie(true);
+		serializer.setUseSecureCookie(secure);
+		return serializer;
+	}
+
 
 }

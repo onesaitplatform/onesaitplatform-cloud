@@ -44,4 +44,15 @@ public interface AppRepository extends JpaRepository<App, String> {
 	@Query("SELECT o FROM AppList AS o WHERE (o.identification = :identification) ORDER BY o.identification ASC")
 	AppList findAppListByIdentification(@Param("identification") String identification);
 
+	@Query("SELECT o FROM AppList AS o WHERE (o.id = :id)")
+	AppList findAppListById(@Param("id") String id);
+
+	@Query("SELECT r.name FROM AppList o JOIN o.appRoles r WHERE o.id= :id")
+	List<String> findRolesListByAppId(@Param("id") String id);
+
+	@Query("SELECT c.identification FROM AppList o JOIN o.childApps c WHERE (o.identification = :identification)")
+	List<String> findChildAppsList(@Param("identification") String identification);
+
+
+
 }

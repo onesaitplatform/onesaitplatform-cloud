@@ -40,5 +40,11 @@ public class GadgetTemplateDTO {
 	@Getter
 	@Setter
 	private String templateJS;
+	@Getter
+	@Setter
+	private String type;
+	@Getter
+	@Setter
+	private String headerlibs;
 
 }

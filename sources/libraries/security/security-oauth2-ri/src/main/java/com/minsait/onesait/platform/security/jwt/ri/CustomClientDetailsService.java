@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.security.jwt.ri;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,8 +32,8 @@ import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 
 import com.minsait.onesait.platform.config.model.AppList;
-import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.repository.AppRepository;
+import com.minsait.onesait.platform.security.dto.ClientDetailsServiceDTO;
 
 public class CustomClientDetailsService implements ClientDetailsService {
 
@@ -50,10 +52,26 @@ public class CustomClientDetailsService implements ClientDetailsService {
 	@Value("${security.jwt.scopes}")
 	private String scopes;
 
+	private final Map<String, ClientDetailsServiceDTO> localCache = new HashMap<>();
+	private static final Long OBSOLESCENCE_TIME = 30000L;
+
 	@Override
 	@Transactional
-	public ClientDetails loadClientByClientId(String clientId) {
+	//TO-DO this is being called too many times per request -> LOCAL CACHE, non-global bcause of changes in related entities App,AppRole,AppUser..
+	public synchronized ClientDetails loadClientByClientId(String clientId) {
+		final long now = System.currentTimeMillis();
+		final ClientDetailsServiceDTO details = localCache.get(clientId);
+		if(details == null || details.getCreatedTime() < now - OBSOLESCENCE_TIME) {
+			final ClientDetails realDetails = getRealClientDetails(clientId);
+			localCache.put(clientId, ClientDetailsServiceDTO.builder().createdTime(now).clientDetails(realDetails).build());
+			return realDetails;
+		}else {
+			return details.getClientDetails();
+		}
 
+	}
+
+	private ClientDetails getRealClientDetails(String clientId) {
 		final Collection<String> types = Arrays.asList(grantType.split("\\s*,\\s*"));
 		final Collection<String> scopeList = Arrays.asList(scopes.split("\\s*,\\s*"));
 
@@ -65,7 +83,7 @@ public class CustomClientDetailsService implements ClientDetailsService {
 		details.setAuthorizedGrantTypes(types);
 		details.setScope(scopeList);
 		if (!clientId.equals(defaultClientId)) {
-			final Set<GrantedAuthority> authorities = app.getAppRoles().stream().map(AppRoleList::getName)
+			final Set<GrantedAuthority> authorities = appRepository.findRolesListByAppId(app.getId()).stream()
 					.map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 			details.setAuthorities(authorities);
 

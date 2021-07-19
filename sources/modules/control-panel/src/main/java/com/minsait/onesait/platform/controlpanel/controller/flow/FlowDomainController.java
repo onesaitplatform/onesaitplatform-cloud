@@ -233,8 +233,9 @@ public class FlowDomainController {
 	public ResponseEntity<String> startStop(@PathVariable("id") String id) {
 		try {
 			final FlowDomain domain = domainService.getFlowDomainById(id);
-			if (!domainService.hasUserManageAccess(domain.getId(), utils.getUserId()))
+			if (!domainService.hasUserManageAccess(domain.getId(), utils.getUserId())) {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
 			final FlowEngineDomain engineDom = FlowEngineDomain.builder().domain(domain.getIdentification())
 					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort()).build();
 			if (State.STOP.name().equals(domain.getState())) {
@@ -260,11 +261,13 @@ public class FlowDomainController {
 		try {
 			final FlowDomain domain = domainService.getFlowDomainByIdentification(domainStatus.getDomain());
 			final ResponseEntity<?> re = startStop(domain.getId());
-			if (!re.getStatusCode().equals(HttpStatus.OK))
-				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN))
+			if (!re.getStatusCode().equals(HttpStatus.OK)) {
+				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
 					return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-				else
+				} else {
 					throw new GenericOPException();
+				}
+			}
 			domainStatus.setState(State.START.name());
 			model.addAttribute(FLOW_ENGINE_ACTIVE_STR, true);
 		} catch (final GenericOPException e) {
@@ -282,11 +285,13 @@ public class FlowDomainController {
 		try {
 			final FlowDomain domain = domainService.getFlowDomainByIdentification(domainStatus.getDomain());
 			final ResponseEntity<?> re = startStop(domain.getId());
-			if (!re.getStatusCode().equals(HttpStatus.OK))
-				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN))
+			if (!re.getStatusCode().equals(HttpStatus.OK)) {
+				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
 					return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-				else
+				} else {
 					throw new GenericOPException();
+				}
+			}
 			// Clean status not executing
 			domainStatus.setState(State.STOP.name());
 			domainStatus.setCpu("--");
@@ -302,7 +307,7 @@ public class FlowDomainController {
 
 	@GetMapping(value = "/show/{domainId}", produces = "text/html")
 	public String showNodeRedPanelForm(Model model, @PathVariable(value = "domainId") String domainId,
-			@RequestParam(value = "flow", required = false) String flowId) {
+			@RequestParam(value = "flow", required = false) String flowId, RedirectAttributes ra) {
 		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainId);
 		if (domainService.hasUserViewAccess(domain.getId(), utils.getUserId())) {
 			try {
@@ -322,7 +327,34 @@ public class FlowDomainController {
 				model.addAttribute("proxy", proxyUrlAndDomain);
 				return "flows/show";
 			} catch (final Exception e) {
+				utils.addRedirectException(e, ra);
+				return REDIRECT_FLOWS_LIST;
+			}
+		} else {
+			return ERROR_403;
+		}
+
+	}
+
+	@GetMapping(value = "/monitor/{domainId}", produces = "text/html")
+	public String showNodeRedMonitoringPanelForm(Model model, @PathVariable(value = "domainId") String domainId,
+			@RequestParam(value = "flow", required = false) String flowId) {
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainId);
+		if (domainService.hasUserViewAccess(domain.getId(), utils.getUserId())) {
+			try {
+
+				final String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(),
+						domainId);
+				String proxyUrlAndDomain = proxyUrl + domainId + "/appmetrics-dash/?x-op-nodekey=" + accessToken;
+				if (flowId != null) {
+					proxyUrlAndDomain += "#flow/" + flowId;
+				}
+
+				model.addAttribute("proxy", proxyUrlAndDomain);
+				return "flows/monitor";
+			} catch (final Exception e) {
 				return "flows/list";
+
 			}
 		} else {
 			return ERROR_403;
@@ -338,7 +370,7 @@ public class FlowDomainController {
 	@GetMapping(value = "/check/amount/{domainId}")
 	public @ResponseBody boolean checkDomainAmountByUser(@PathVariable(value = "domainId") String domainId) {
 		final User user = userService.getUser(utils.getUserId());
-		return (checkDomainsOwnedByUser(user) <= 0);
+		return checkDomainsOwnedByUser(user) <= 0;
 	}
 
 	private List<FlowEngineDomainStatus> getUserDomains(Model model) {

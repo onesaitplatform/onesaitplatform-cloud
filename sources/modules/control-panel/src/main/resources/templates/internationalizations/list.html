@@ -90,7 +90,7 @@
 								<div class="actions margin-right-20">
 									<div class="btn-group">										
 										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>								
-										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createInternationalizationButton" onclick="location.href='/controlpanel/internationalizations/create'"><span th:text="#{internationalizations.create}">New Internationalization</span></button>
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createInternationalizationButton" onclick="location.href='/controlpanel/internationalizations/create'"><span th:text="#{internationalizations.create}">New Internationalization</span></button>
 									</div>										
 								</div>
 							</div>
@@ -159,10 +159,10 @@
 																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/internationalizations/show/${internationalization.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																																			
 																	
 																	<!-- EDIT ACCESS-->
-																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${internationalization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{internationalizations.auth.title} " th:data-original-title="#{internationalizations.auth.title} " th:onclick="'javascript:navigateUrl(\'' + @{|/internationalizations/internationalizationconf/${internationalization.id}/|} + '\');'"><i class="la la-cog font-hg"></i></span>
+																	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${internationalization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{internationalizations.auth.title} " th:data-original-title="#{internationalizations.auth.title} " th:onclick="'javascript:navigateUrl(\'' + @{|/internationalizations/internationalizationconf/${internationalization.id}/|} + '\');'"><i class="la la-cog font-hg"></i></span>
 																	
 																    <!-- DELETE -->
-																    <span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${internationalization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteInternationalizationConfirmation(\''+${internationalization.id}+'\');'"><i class="la la-trash font-hg"></i></span>
+																    <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${internationalization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteInternationalizationConfirmation(\''+${internationalization.id}+'\');'"><i class="la la-trash font-hg"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -205,13 +205,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	
 	<script type="text/javascript" th:inline="javascript">	
 	
@@ -386,12 +386,12 @@
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([1,3],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([1,3],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});	
 

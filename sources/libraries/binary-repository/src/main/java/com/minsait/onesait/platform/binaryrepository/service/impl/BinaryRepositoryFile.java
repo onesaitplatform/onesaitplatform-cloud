@@ -75,7 +75,7 @@ public class BinaryRepositoryFile implements BinaryRepository {
 		try {
 			final File file = new File(path);
 			boolean deleted = file.delete();
-			log.info("Deleted file:"+deleted+" at {}", path);
+			log.info("Deleted file:" + deleted + " at {}", path);
 		} catch (final RuntimeException e) {
 			log.error("Could not delete file {}", id);
 			throw new BinaryRepositoryException("Could not delete file", e);
@@ -133,9 +133,20 @@ public class BinaryRepositoryFile implements BinaryRepository {
 		final File file = new File(path);
 
 		file.getParentFile().mkdirs();
-		boolean newFile= file.createNewFile();
-		log.debug("Created new File:"+newFile);
+		boolean newFile = file.createNewFile();
+		log.debug("Created new File:" + newFile);
 		return file;
+	}
+
+	@Override
+	public String getBinaryFileForPaginate(String id, Long startLine, Long maxLines, Boolean skipHeaders)
+			throws IOException, BinaryRepositoryException {
+		return null;
+	}
+
+	@Override
+	public Boolean closePaginate(String id) throws IOException, BinaryRepositoryException {
+		return null;
 	}
 
 }

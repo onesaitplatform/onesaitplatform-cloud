@@ -92,7 +92,7 @@ public class ApiMultipart {
 
 	@Getter
 	@Setter
-	private Integer cachetimeout;
+	private Integer apicachetimeout;
 
 	@Getter
 	@Setter

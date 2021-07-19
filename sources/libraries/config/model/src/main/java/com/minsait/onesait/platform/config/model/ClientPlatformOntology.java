@@ -57,7 +57,7 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID {
 
 	@ManyToOne
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
 	private Ontology ontology;

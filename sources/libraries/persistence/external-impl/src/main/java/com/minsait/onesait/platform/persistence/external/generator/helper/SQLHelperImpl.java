@@ -223,7 +223,7 @@ public class SQLHelperImpl implements SQLHelper {
 	public Constraint getContraintWithSpecs(final Constraint constraint) {
 		if (constraint.getType().contains("PRIMARY")) {
 			constraint.setType("PRIMARY KEY");
-			constraint.setName(null);
+			constraint.setName((String)null);
 
 		} else if (constraint.getType().contains("FOREIGN")
 				&& (constraint.getReferencedTable() != null && constraint.getReferencedColumn() != null)) {
@@ -233,14 +233,14 @@ public class SQLHelperImpl implements SQLHelper {
 			idxSpec.add("REFERENCES");
 			idxSpec.add(constraint.getReferencedTable() + "(" + constraint.getReferencedColumn() + ")");
 			constraint.setIndexSpec(idxSpec);
-			constraint.setName(null);
+			constraint.setName((String)null);
 		}
 
 		else if (constraint.getType().contains("UNIQUE")) {
 			constraint.setType("UNIQUE");
 			ArrayList<String> idxSpec = new ArrayList<>();
 			constraint.setIndexSpec(idxSpec);
-			constraint.setName(null);
+			constraint.setName((String)null);
 		}
 
 		return constraint;
@@ -319,7 +319,7 @@ public class SQLHelperImpl implements SQLHelper {
 		return query.replace("\"", "'");
 	}
 
-	private String refactorQueryAll(JSONObject columns, OntologyVirtual virtual, Select selectStatement, Alias alias,
+	protected String refactorQueryAll(JSONObject columns, OntologyVirtual virtual, Select selectStatement, Alias alias,
 			String item) {
 		Iterator<String> keys = columns.keys();
 		while (keys.hasNext()) {
@@ -343,7 +343,7 @@ public class SQLHelperImpl implements SQLHelper {
 
 	}
 
-	private String refactorQuery(OntologyVirtual virtual, String query, Alias alias, SelectItem item) {
+	protected String refactorQuery(OntologyVirtual virtual, String query, Alias alias, SelectItem item) {
 		SelectExpressionItem i = (SelectExpressionItem) item;
 		Alias itemAlias = i.getAlias();
 		if (itemAlias == null

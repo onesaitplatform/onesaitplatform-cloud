@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.iotbroker.processor.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -40,6 +41,7 @@ import com.minsait.onesait.platform.iotbroker.common.exception.OntologySchemaExc
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.model.TransactionModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
@@ -66,7 +68,7 @@ public class TransactionProcessor implements MessageTypeProcessor {
 	}
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info)
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session)
 			throws BaseException {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
@@ -97,16 +99,31 @@ public class TransactionProcessor implements MessageTypeProcessor {
 
 			model.setLockTransaction(((SSAPBodyCommitTransactionMessage) message.getBody()).isLockOntologies());
 			transactionResult = routerService.commitTransaction(model);
-
+			try {
+				bodyReturn.setData(
+						objectMapper.readTree(String.format("{\"result\": \"%s\"}", transactionResult.getResult())));
+			} catch (JsonProcessingException e) {
+				log.error("Error processing JSON in COMMIT_TRANSACTION. {}", e);
+			} catch (IOException e) {
+				log.error("Error writing data in COMMIT_TRANSACTION. {}", e);
+			}
 			break;
 		case ROLLBACK_TRANSACTION:
 			model.setType(TransactionModel.OperationType.ROLLBACK_TRANSACTION);
 
 			transactionResult = routerService.rollbackTransaction(model);
-
+			try {
+				bodyReturn.setData(
+						objectMapper.readTree(String.format("{\"result\": \"%s\"}", transactionResult.getResult())));
+			} catch (JsonProcessingException e) {
+				log.error("Error processing JSON in ROLLBACK_TRANSACTION. {}", e);
+			} catch (IOException e) {
+				log.error("Error writing data in ROLLBACK_TRANSACTION. {}", e);
+			}
 			break;
 		}
 		bodyReturn.setOk(transactionResult.isStatus());
+
 		if (!transactionResult.isStatus()) {
 			bodyReturn.setError(transactionResult.getMessage());
 			bodyReturn.setErrorCode(SSAPErrorCode.AUTHORIZATION);

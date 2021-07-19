@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.controlpanel.controller.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import javax.validation.Valid;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,15 +44,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
+import com.minsait.onesait.platform.config.services.exceptions.AppServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
@@ -89,6 +92,9 @@ public class ProjectController {
 	private DashboardService dashboardService;
 	@Autowired
 	private GadgetDatasourceService datasourceService;
+	/*
+	 * @Autowired private ResourcesInUseService resourcesInUseService;
+	 */
 
 	private static final String ALL_USERS = "ALL";
 	private static final String PROJECT_OBJ_STR = "projectObj";
@@ -97,6 +103,8 @@ public class ProjectController {
 	private static final String PROJ_FRAG_USERTAB = "project/fragments/users-tab";
 	private static final String PROJ_FRAG_RESTAB = "project/fragments/resources-tab";
 	private static final String ACCESSES = "accesses";
+	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
+	private String rootWWW;
 
 	@GetMapping("list")
 
@@ -115,13 +123,17 @@ public class ProjectController {
 
 	@GetMapping("show/{id}")
 	public String show(Model model, @PathVariable("id") String projectId) {
-		if (!projectService.isUserInProject(utils.getUserId(), projectId) && !utils.isAdministrator())
+		if (!projectService.isUserInProject(utils.getUserId(), projectId) && !utils.isAdministrator()) {
 			return ERROR_403;
+		}
 		final String creator = projectService.getById(projectId).getUser().toString();
 		final boolean isCreator = creator.equals(utils.getUserId());
 		model.addAttribute("urlsMap", getUrlsMap());
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		model.addAttribute("userRole", utils.getRole());
+		model.addAttribute("rootWWW", rootWWW);
+		model.addAttribute("reportTypes", Arrays.asList(ReportType.values()).stream().filter(t -> !t.equals(ReportType.JRXML))
+				.collect(Collectors.toList()));
 		if (utils.getRole().equals("ROLE_ADMINISTRATOR") || isCreator) {
 			final Set<ProjectResourceAccess> pr = projectService.getById(projectId).getProjectResourceAccesses();
 			final Collection<List<ProjectResourceAccess>> prfil = pr.stream()
@@ -155,19 +167,27 @@ public class ProjectController {
 	@GetMapping("update/{id}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String update(Model model, @PathVariable("id") String id) {
-		if (!projectService.isUserAuthorized(id, utils.getUserId()))
+		if (!projectService.isUserAuthorized(id, utils.getUserId())) {
 			return ERROR_403;
+		}
 		populateUsertabData(model, id);
 		model.addAttribute("projectTypes", Project.ProjectType.values());
 		model.addAttribute("resourceTypes", Resources.values());
+		/*
+		 * model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
+		 * resourcesInUseService.isInUse(id, utils.getUserId()));
+		 * resourcesInUseService.put(id, utils.getUserId());
+		 */
+
 		return "project/create";
 	}
 
 	@GetMapping("share/{id}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String share(Model model, @PathVariable("id") String id) {
-		if (!projectService.isUserInProject(utils.getUserId(), id))
+		if (!projectService.isUserInProject(utils.getUserId(), id)) {
 			return ERROR_403;
+		}
 		populateUsertabData(model, id);
 		model.addAttribute("resourceTypes", Resources.values());
 		return "project/share";
@@ -176,18 +196,26 @@ public class ProjectController {
 	@PutMapping("update/{id}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String updateProject(Model model, @Valid ProjectDTO project, @PathVariable("id") String id) {
-		if (!projectService.isUserAuthorized(id, utils.getUserId()))
+		if (!projectService.isUserAuthorized(id, utils.getUserId())) {
 			return ERROR_403;
+		}
+		/* resourcesInUseService.removeByUser(id, utils.getUserId()); */
 		projectService.updateWithParameters(project);
 		return REDIRECT_PROJ_LIST;
 	}
 
 	@PostMapping("setrealm")
 	public String setRealm(Model model, @RequestParam("realm") String realmId,
-			@RequestParam("project") String projectId) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+			@RequestParam("project") String projectId, RedirectAttributes ra) {
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
-		projectService.setRealm(realmId, projectId);
+		}
+		try {
+			projectService.setRealm(realmId, projectId);
+		} catch (final AppServiceException e) {
+			log.error("Can not set realm {} to project {}", realmId, projectId, e);
+			utils.addRedirectException(e, ra);
+		}
 		populateUsertabData(model, projectId);
 		return PROJ_FRAG_USERTAB;
 	}
@@ -195,8 +223,9 @@ public class ProjectController {
 	@PostMapping("unsetrealm")
 	public String unsetRealm(Model model, @RequestParam("realm") String realmId,
 			@RequestParam("project") String projectId) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
+		}
 		projectService.unsetRealm(realmId, projectId);
 		populateUsertabData(model, projectId);
 
@@ -205,8 +234,9 @@ public class ProjectController {
 
 	@PostMapping("adduser")
 	public String addUser(Model model, @RequestParam("project") String projectId, @RequestParam("user") String userId) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
+		}
 		projectService.addUserToProject(userId, projectId);
 		populateUsertabData(model, projectId);
 		return PROJ_FRAG_USERTAB;
@@ -215,8 +245,9 @@ public class ProjectController {
 	@PostMapping("removeuser")
 	public String removeUser(Model model, @RequestParam("project") String projectId,
 			@RequestParam("user") String userId) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
+		}
 		projectService.removeUserFromProject(userId, projectId);
 		populateUsertabData(model, projectId);
 		return PROJ_FRAG_USERTAB;
@@ -225,8 +256,9 @@ public class ProjectController {
 	@PostMapping("addwebproject")
 	public String addWebProject(Model model, @RequestParam("webProject") String webProjectId,
 			@RequestParam("project") String projectId) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
+		}
 		projectService.addWebProject(webProjectId, projectId, utils.getUserId());
 		populateWebProjectTabData(model, projectId);
 		return "project/fragments/webprojects-tab";
@@ -234,8 +266,9 @@ public class ProjectController {
 
 	@PostMapping("removewebproject")
 	public String removeWebProject(Model model, @RequestParam("project") String projectId) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
+		}
 		projectService.removeWebProject(projectId);
 		populateWebProjectTabData(model, projectId);
 		return "project/fragments/webprojects-tab";
@@ -245,10 +278,11 @@ public class ProjectController {
 	public String getResources(Model model, @RequestParam("identification") String identification,
 			@RequestParam("type") Resources resource, @RequestParam("project") String projectId) {
 		if (!projectService.isUserAuthorized(projectId, utils.getUserId())
-				&& !projectService.isUserInProject(utils.getUserId(), projectId))
+				&& !projectService.isUserInProject(utils.getUserId(), projectId)) {
 			return ERROR_403;
+		}
 		model.addAttribute("resourcesMatch", getAllResourcesDTO2(identification, resource));
-		populateResourcesModal(model, projectId);
+		populateResourcesModal(model, projectId, resource);
 		return "project/fragments/resources-modal";
 	}
 
@@ -256,8 +290,9 @@ public class ProjectController {
 	public String getAssociated(Model model, @RequestParam("resourceId") String resourceId,
 			@RequestParam("type") String resource, @RequestParam("project") String projectId) {
 		if (!projectService.isUserAuthorized(projectId, utils.getUserId())
-				&& !projectService.isUserInProject(utils.getUserId(), projectId))
+				&& !projectService.isUserInProject(utils.getUserId(), projectId)) {
 			return ERROR_403;
+		}
 
 		JSONArray elementsJson = new JSONArray();
 		switch (resource) {
@@ -293,8 +328,9 @@ public class ProjectController {
 	@GetMapping("authorizations")
 	public String authorizationsTab(Model model, @RequestParam("project") String projectId) {
 		if (!projectService.isUserAuthorized(projectId, utils.getUserId())
-				&& !projectService.isUserInProject(utils.getUserId(), projectId))
+				&& !projectService.isUserInProject(utils.getUserId(), projectId)) {
 			return ERROR_403;
+		}
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		return PROJ_FRAG_RESTAB;
 	}
@@ -303,8 +339,9 @@ public class ProjectController {
 	@Transactional
 	public String insertAuthorization(Model model, @RequestBody @Valid ProjectResourceAccessDTO authorization) {
 		if (!projectService.isUserAuthorized(authorization.getProject(), utils.getUserId())
-				&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource()))
+				&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource())) {
 			return ERROR_403;
+		}
 		log.debug("New request for access for user {} with permission {} to resource {} in project {}",
 				authorization.getAuthorizing(), authorization.getAccess().name(), authorization.getResource(),
 				authorization.getProject());
@@ -313,9 +350,9 @@ public class ProjectController {
 		if (project.getApp() != null) {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
 				projectService.getProjectRoles(authorization.getProject())
-						.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-								resourceService.getResourceById(authorization.getResource()), project,
-								appService.findRole(ar.getId()))));
+				.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project,
+						appService.findRole(ar.getId()))));
 				resourceService.insertAuthorizations(accesses);
 			} else {
 				resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
@@ -326,7 +363,14 @@ public class ProjectController {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
 				project.getUsers().forEach(u -> accesses.add(new ProjectResourceAccess(u, authorization.getAccess(),
 						resourceService.getResourceById(authorization.getResource()), project, null)));
-				resourceService.insertAuthorizations(accesses);
+				if (authorization.getResourceType().equalsIgnoreCase(Resources.DATAFLOW.toString())
+						|| authorization.getResourceType().equalsIgnoreCase(Resources.NOTEBOOK.toString())) {
+					resourceService.insertAuthorizations(accesses.stream()
+							.filter(a -> userService.isUserAnalytics(a.getUser()))
+							.collect(Collectors.toSet()));
+				} else {
+					resourceService.insertAuthorizations(accesses);
+				}
 			} else {
 				resourceService.createUpdateAuthorization(new ProjectResourceAccess(
 						userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
@@ -344,16 +388,17 @@ public class ProjectController {
 			@RequestBody @Valid List<ProjectResourceAccessDTO> authorizations) {
 		for (final ProjectResourceAccessDTO authorization : authorizations) {
 			if (!projectService.isUserAuthorized(authorization.getProject(), utils.getUserId())
-					&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource()))
+					&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource())) {
 				return ERROR_403;
+			}
 			final Project project = projectService.getById(authorization.getProject());
 			final Set<ProjectResourceAccess> accesses = new HashSet<>();
 			if (project.getApp() != null) {
 				if (authorization.getAuthorizing().equals(ALL_USERS)) {
 					projectService.getProjectRoles(authorization.getProject())
-							.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-									resourceService.getResourceById(authorization.getResource()), project,
-									appService.findRole(ar.getId()))));
+					.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project,
+							appService.findRole(ar.getId()))));
 					resourceService.insertAuthorizations(accesses);
 
 				} else {
@@ -393,8 +438,9 @@ public class ProjectController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("{id}")
 	public String delete(Model model, @PathVariable("id") String projectId, RedirectAttributes ra) {
-		if (!projectService.isUserAuthorized(projectId, utils.getUserId()))
+		if (!projectService.isUserAuthorized(projectId, utils.getUserId())) {
 			return ERROR_403;
+		}
 		try {
 			projectService.deleteProject(projectId);
 		} catch (final Exception e) {
@@ -410,22 +456,25 @@ public class ProjectController {
 		model.addAttribute("realms", projectService.getAvailableRealmsForUser(utils.getUserId()));
 		model.addAttribute(ACCESSES, ResourceAccessType.values());
 		model.addAttribute("users",
-				userService.getAllActiveUsers().stream()
-						.filter(u -> !u.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
-						.collect(Collectors.toList()));
+				userService.getAllActiveUsers().stream().filter(u -> !u.isAdmin()).collect(Collectors.toList()));
 		model.addAttribute("webprojects",
 				webprojectService.getWebProjectsWithDescriptionAndIdentification(utils.getUserId(), "", ""));
 		model.addAttribute(PROJECT_OBJ_STR, project);
 	}
 
-	private void populateResourcesModal(Model model, String projectId) {
+	private void populateResourcesModal(Model model, String projectId, Resources type) {
 		final Project project = projectService.getById(projectId);
-		final List<ProjectUserDTO> members = projectService.getProjectMembers(project.getId());
+		List<ProjectUserDTO> members = projectService.getProjectMembers(project.getId());
+		if (type.name().equals(Resources.DATAFLOW.name()) || type.name().equals(Resources.NOTEBOOK.name())) {
+			members = members.stream().filter(m -> userService.isUserAnalytics(userService.getUser(m.getUserId())))
+					.collect(Collectors.toList());
+		}
 		model.addAttribute(ACCESSES, ResourceAccessType.values());
 		model.addAttribute(PROJECT_OBJ_STR, project);
 		model.addAttribute("members", members);
-		if (project.getApp() != null)
+		if (project.getApp() != null) {
 			model.addAttribute("roles", projectService.getProjectRoles(projectId));
+		}
 	}
 
 	private void populateWebProjectTabData(Model model, String projectId) {
@@ -463,10 +512,11 @@ public class ProjectController {
 	private List<ProjectResourceDTO> getAllResourcesDTO2(String identification, Resources type) {
 
 		String type_resource;
-		if (type.name().equals("DATAFLOW"))
+		if (type.name().equals("DATAFLOW")) {
 			type_resource = "PIPELINE";
-		else
+		} else {
 			type_resource = type.name();
+		}
 		final Collection<OPResource> resources2 = resourceService.getResourcesByType(utils.getUserId(), type_resource);
 
 		if (type_resource.equals("API")) {

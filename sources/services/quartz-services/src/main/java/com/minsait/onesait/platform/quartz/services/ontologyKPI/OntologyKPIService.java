@@ -17,7 +17,10 @@ package com.minsait.onesait.platform.quartz.services.ontologyKPI;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 
 public interface OntologyKPIService {
 
@@ -33,5 +36,7 @@ public interface OntologyKPIService {
 	JsonNode completeSchema(String schema, String identification, String description) throws IOException;
 
 	JsonNode organizeRootNodeIfExist(String schema) throws IOException;
+	
+	public void cloneOntologyKpi(Ontology ontology, Ontology clonnedOntology, User user);
 
 }

@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.utils;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +26,10 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionInformation;
@@ -61,9 +63,10 @@ public class AppWebUtils {
 	private MessageSource messageSource;
 
 	@Autowired
+	@Lazy
 	private SessionRegistry sessionRegistry;
 
-	@Autowired
+	@Autowired(required = false)
 	private LoginManagementController controller;
 
 	@Autowired
@@ -73,6 +76,7 @@ public class AppWebUtils {
 	private static final String INFO_MESSAGE_STR = "info";
 	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
 	public static final String IDENTIFICATION_PATERN = "[a-zA-Z0-9_-]*";
+	public static final String IDENTIFICATION_PATERN_SPACES = "[a-zA-Z 0-9_-]*";
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
@@ -96,48 +100,64 @@ public class AppWebUtils {
 
 	public String getUserId() {
 		final Authentication auth = getAuthentication();
-		if (auth == null)
+		if (auth == null) {
 			return null;
+		}
 		return auth.getName();
 	}
 
 	public String getRole() {
 		final Authentication auth = getAuthentication();
-		if (auth == null)
+		if (auth == null) {
 			return null;
+		}
 		return auth.getAuthorities().toArray()[0].toString();
 	}
 
 	public boolean isAdministrator() {
-		Role role = roleRepository.findById(getRole());
-		return ((role != null)
-				&& ((role.getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) || (role.getRoleParent() != null
-						&& role.getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))));
+		final Role role = roleRepository.findById(getRole()).orElse(null);
+
+		return role != null && (role.getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()) || role.getRoleParent() != null
+				&& role.getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()));
+	}
+
+	public boolean isDeveloper() {
+		final Role role = roleRepository.findById(getRole()).orElse(null);
+
+		return role != null && (role.getId().equals(Role.Type.ROLE_DEVELOPER.name()) || role.getRoleParent() != null
+				&& role.getRoleParent().getId().equals(Role.Type.ROLE_DEVELOPER.name()));
 	}
 
 	public boolean isPlatformAdmin() {
-		Role role = roleRepository.findById(getRole());
-		return ((role != null)
-				&& ((role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) || (role.getRoleParent() != null
-						&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))));
+
+		final Role role = roleRepository.findById(getRole()).orElse(null);
+
+		return role != null
+				&& (role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()) || role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()));
+
 	}
 
 	public boolean isAuthenticated() {
 		final Authentication auth = getAuthentication();
-		return (auth != null);
+		return auth != null;
 	}
 
 	public boolean isUser() {
-		Role role = roleRepository.findById(getRole());
-		return ((role != null) && ((role.getId().equals(Role.Type.ROLE_USER.name()))
-				|| (role.getRoleParent() != null && role.getRoleParent().getId().equals(Role.Type.ROLE_USER.name()))));
+
+		final Role role = roleRepository.findById(getRole()).orElse(null);
+
+		return role != null && (role.getId().equals(Role.Type.ROLE_USER.name())
+				|| role.getRoleParent() != null && role.getRoleParent().getId().equals(Role.Type.ROLE_USER.name()));
 	}
 
 	public boolean isDataViewer() {
-		Role role = roleRepository.findById(getRole());
-		return ((role != null)
-				&& ((role.getId().equals(Role.Type.ROLE_DATAVIEWER.name())) || (role.getRoleParent() != null
-						&& role.getRoleParent().getId().equals(Role.Type.ROLE_DATAVIEWER.name()))));
+
+		final Role role = roleRepository.findById(getRole()).orElse(null);
+
+		return role != null && (role.getId().equals(Role.Type.ROLE_DATAVIEWER.name()) || role.getRoleParent() != null
+				&& role.getRoleParent().getId().equals(Role.Type.ROLE_DATAVIEWER.name()));
+
 	}
 
 	public void addRedirectMessage(String messageKey, RedirectAttributes redirect) {
@@ -177,16 +197,21 @@ public class AppWebUtils {
 		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
 
 		if (request.isPresent()) {
-			String token = ((String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT));
-			if (null != token) {
-				return token;
-			} else if (null != request.get().getHeader("Authorization")) {
-				return request.get().getHeader("Authorization").substring("Bearer ".length());
-			} else
-				return null;
-		} else {
-			throw new GenericRuntimeOPException("No request currently active");
+			if (WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT) != null) {
+				return (String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT);
+			} else if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
+				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
+			} else if (SecurityContextHolder.getContext().getAuthentication() != null
+					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
+					&& controller != null) {
+				return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
+						.getValue();
+
+			}
+
 		}
+		throw new GenericRuntimeOPException("No request currently active");
+
 	}
 
 	private static Optional<HttpServletRequest> getCurrentHttpRequest() {
@@ -234,11 +259,9 @@ public class AppWebUtils {
 		if (enc == null) {
 			enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
 		}
-		try {
-			pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
-		} catch (final UnsupportedEncodingException uee) {
-			log.warn("Error encoding path segment " + uee.getMessage());
-		}
+
+		pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
+
 		return pathSegmentEncode;
 	}
 
@@ -248,8 +271,9 @@ public class AppWebUtils {
 
 	public boolean isFileExtensionForbidden(MultipartFile file) {
 		try {
-			if (getAllowedFileExtensions().stream().anyMatch(file.getOriginalFilename()::contains))
+			if (getAllowedFileExtensions().stream().anyMatch(file.getOriginalFilename()::contains)) {
 				return false;
+			}
 			final String contentType = tika.detect(file.getInputStream());
 			final String[] arrayMimeTypes = mimeTypesNotAllowed.split(",");
 			final boolean isForbidden = Arrays.stream(arrayMimeTypes).parallel().anyMatch(contentType::contains);
@@ -282,6 +306,25 @@ public class AppWebUtils {
 	}
 
 	public void renewOauth2AccessToken(HttpServletRequest request, Authentication authentication) {
-		request.getSession().setAttribute("oauthToken", (controller.postLoginOauthNopass(authentication).getValue()));
+		request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
 	}
+
+	public String getUserOauthTokenByCurrentHttpRequest() {
+		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
+
+		if (request.isPresent()) {
+			if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
+				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
+			} else if (SecurityContextHolder.getContext().getAuthentication() != null
+					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
+					&& controller != null) {
+				return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
+						.getValue();
+
+			}
+
+		}
+		throw new GenericRuntimeOPException("No request currently active");
+	}
+
 }

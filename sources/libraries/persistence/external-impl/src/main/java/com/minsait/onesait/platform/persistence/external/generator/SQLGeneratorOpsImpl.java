@@ -500,7 +500,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
         Map<String, Object> jdbcParams = new HashMap<>();
         final Update update = new Update();
         
-        update.setTables(Collections.singletonList(new Table(updateStatement.getOntology())));
+        update.setTable(new Table(updateStatement.getOntology()));
         update.setColumns(this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet())));
         Sequence seq = new Sequence();
         update.setExpressions(this.generateSQLExpressionList(updateStatement.getValues(), seq, jdbcParams, withParams).getExpressions());
@@ -518,7 +518,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
         Map<String, Object> jdbcParams = new HashMap<>();
         final Update update = new Update();
         
-        update.setTables(Collections.singletonList(new Table(updateStatement.getOntology())));
+        update.setTable(new Table(updateStatement.getOntology()));
         update.setColumns(this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet())));
         Sequence seq = new Sequence();
         update.setExpressions(this.generateSQLExpressionListForVirtual(updateStatement.getValues(), virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions());

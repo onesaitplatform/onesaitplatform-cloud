@@ -93,7 +93,7 @@
 										<div class="row">
 											<div class="col-md-12 col-sm-12 grid grid--effect-vega">																										
 												<!-- Creation Step By Step -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createwizard'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createwizard'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{ontology.stepbystep}" >Creation Step by Step</h3>																
 													<div class="stack">
 														
@@ -110,7 +110,7 @@
 												</a>
 												<!-- end Creation Step By Step -->		
 												<!-- Creation from file -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../jsontool/tools'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../jsontool/tools'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{ontology.fromfile}" >Creation from file</h3>																
 													<div class="stack">
 														<div class="stack__figure">
@@ -126,7 +126,7 @@
 												</a>
 												<!-- end creation from file -->	
 												<!-- Creation from a external relational database -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createvirtual'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createvirtual'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{ontology.fromexternaldb}" >Creation from a external relational database</h3>																
 													<div class="stack">
 														<div class="stack__figure">
@@ -142,7 +142,7 @@
 												</a>
 												<!-- end Creation from a external relational database -->	
 												<!-- Creation from external REST API , NOT READY: onclick="location.href='../ontologies/createapirest'" -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createapirest'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1" >
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createapirest'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1" >
 													<h3 class="grid__item-title" th:text="#{ontology.fromrestapi}" >Creation from external REST API </h3>																
 													<div class="stack">
 														<div class="stack__figure">
@@ -158,7 +158,7 @@
 												</a>
 												<!-- end Creation from external REST API -->	
 												<!-- Creation KPI -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createkpi'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createkpi'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{ontology.kpi}" >Creation KPI</h3>																
 													<div class="stack">
 														
@@ -175,7 +175,7 @@
 												</a>
 												<!-- end Creation KPI -->
 												<!-- Creation Ontology Timeseries -->
-												<a sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createtimeseries'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createtimeseries'" class="col-md-5 col-sm-6 col-xs-12 grid__item grid__item--c1">
 													<h3 class="grid__item-title" th:text="#{ontology.timeseries}" >Creation Timeseries</h3>																
 													<div class="stack">
 														
@@ -208,8 +208,8 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"/>
-	<script th:src="@{/static/js/layout.js}"/>	
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>	
 
 
 	

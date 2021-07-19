@@ -47,6 +47,8 @@ public interface DigitalTwinTypeService {
 	void deleteDigitalTwinType(DigitalTwinType digitalTwinType);
 
 	List<DigitalTwinType> getDigitalTwinTypesByUserId(String sessionUserId);
+	
+	List<DigitalTwinType> getDigitalTwinTypesByUserIdAndIdentification(String sessionUserId, String identification);
 
 	void createOntologyForShadow(DigitalTwinType type, HttpServletRequest httpServletRequest);
 
