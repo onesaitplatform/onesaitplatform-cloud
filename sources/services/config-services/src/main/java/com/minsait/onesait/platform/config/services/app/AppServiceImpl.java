@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.AppServiceException;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.multitenant.config.repository.OAuthAccessTokenRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,6 +80,8 @@ public class AppServiceImpl implements AppService {
 	private ProjectService projectService;
 	@Autowired
 	private AppListOauthRepository appListOauthRepository;
+	@Autowired
+	private OAuthAccessTokenRepository accessTokenRepository;
 
 	private static final String EXCEPTION_REACHED = "Exception reached ";
 
@@ -165,13 +168,14 @@ public class AppServiceImpl implements AppService {
 			app.setIdentification(appDTO.getIdentification());
 			app.setDescription(appDTO.getDescription());
 
-
-			//TO-DO review this logic
+			// TO-DO review this logic
 			app.getChildApps().clear();
 			updateAppRoles(app, appDTO);
 			appListOauthRepository.save(app);
+			accessTokenRepository.deleteByClientId(app.getIdentification());
 		}
 	}
+
 	private void updateAppRoles(AppListOauth app, AppCreateDTO appDTO) throws AppServiceException {
 		final ObjectMapper mapper = new ObjectMapper();
 		try {
@@ -208,9 +212,10 @@ public class AppServiceImpl implements AppService {
 				}
 			}
 
-			app.getAppRoles().removeIf(
-					r -> !roles.stream().map(AppRoleListOauth::getName).collect(Collectors.toList()).contains(r.getName()));
-			app.getAppRoles().addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRoleListOauth::getName)
+			app.getAppRoles().removeIf(r -> !roles.stream().map(AppRoleListOauth::getName).collect(Collectors.toList())
+					.contains(r.getName()));
+			app.getAppRoles()
+			.addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRoleListOauth::getName)
 					.collect(Collectors.toList()).contains(r.getName())).collect(Collectors.toSet()));
 			for (final AppRoleListOauth role : app.getAppRoles()) {
 				if (role.getApp() == null) {
@@ -225,7 +230,7 @@ public class AppServiceImpl implements AppService {
 					}));
 
 			updateAppAssociations(associations, app);
-		}catch (final Exception e) {
+		} catch (final Exception e) {
 			// TODO: handle exception
 		}
 	}
@@ -301,6 +306,7 @@ public class AppServiceImpl implements AppService {
 			}
 		}
 	}
+
 	private void updateAppAssociations(List<AppAssociatedCreateDTO> associations, AppListOauth app) {
 		if (!associations.isEmpty()) {
 			for (final AppAssociatedCreateDTO association : associations) {
@@ -382,6 +388,7 @@ public class AppServiceImpl implements AppService {
 		appListOauthRepository.save(fatherApp);
 
 	}
+
 	private void updateFatherAssociation(AppAssociatedCreateDTO association, App app) {
 		AppRole fatherRole = null;
 		final Optional<AppRole> fatherRoleOptional = app.getAppRoles().stream()
@@ -476,6 +483,7 @@ public class AppServiceImpl implements AppService {
 			}
 		}
 		appRepository.delete(app);
+		accessTokenRepository.deleteByClientId(app.getIdentification());
 	}
 
 	private void deleteChildApp(App application, App app) {
@@ -502,6 +510,10 @@ public class AppServiceImpl implements AppService {
 	@Override
 	public String createUserAccess(String appId, String userId, String roleId) {
 
+		if (!appUserRepository.findAppUserListOauthByUserAndAppIdAndRoleName(userId, appId, roleId).isEmpty()) {
+			throw new AppServiceException(
+					"Authorization exists for user: " + userId + " role: " + roleId + " appId: " + appId);
+		}
 		final Optional<AppRoleListOauth> appRoleDb = appRoleListOauthRepository.findById(roleId);
 		if (appRoleDb.isPresent()) {
 			final User sessionUser = new User();
@@ -512,6 +524,7 @@ public class AppServiceImpl implements AppService {
 			appUser.setRole(role);
 			appUser.setUser(sessionUser);
 			appUser = appUserRepository.save(appUser);
+			accessTokenRepository.deleteByClientIdAndUserName(appRoleDb.get().getApp().getIdentification(), userId);
 			return appUser.getId();
 
 		} else {
@@ -562,6 +575,8 @@ public class AppServiceImpl implements AppService {
 			result.put("childRoleName", childRole.get().getName());
 
 			appRepository.save(fatherApp);
+			accessTokenRepository.deleteByClientId(fatherApp.getIdentification());
+			accessTokenRepository.deleteByClientId(childApp.getIdentification());
 			return result;
 		} else {
 			throw new AppServiceException("Wrong roles, either father role or child role does not exist");
@@ -618,10 +633,12 @@ public class AppServiceImpl implements AppService {
 		}
 
 		appRepository.save(fatherApp);
+		accessTokenRepository.deleteByClientId(fatherApp.getIdentification());
 	}
 
 	@Override
 	public void updateApp(App app) {
+		accessTokenRepository.deleteByClientId(app.getIdentification());
 		appRepository.save(app);
 
 	}
@@ -682,12 +699,16 @@ public class AppServiceImpl implements AppService {
 
 	@Override
 	public void removeAuthorizations(String userId, String appIdentification) {
-		final List<AppUserListOauth> appUsers = appUserRepository.findAppUserByUserIdAndApp(userId,  appIdentification);
-		appUsers.forEach(u -> appUserRepository.deleteAppUserById(u.getId()));
+		final List<AppUserListOauth> appUsers = appUserRepository.findAppUserByUserIdAndApp(userId, appIdentification);
+		appUsers.forEach(u -> {
+			appUserRepository.deleteAppUserById(u.getId());
+			accessTokenRepository.deleteByClientIdAndUserName(appIdentification, userId);
+		});
 	}
 
 	@Override
 	public void updateApp(AppList appDTO) {
+		accessTokenRepository.deleteByClientId(appDTO.getIdentification());
 		appListRepository.save(appDTO);
 
 	}
@@ -708,20 +729,30 @@ public class AppServiceImpl implements AppService {
 	}
 
 	@Override
-	public List<AppUserListOauth> getAppUsersByAppAndUserIdLike(String appIdentification, String userIdLike){
+	public List<AppUserListOauth> getAppUsersByAppAndUserIdLike(String appIdentification, String userIdLike) {
 		return appUserRepository.findAppUserListByAppIdentificationAndUserIdLike(appIdentification, userIdLike);
+	}
+	
+	@Override
+	public List<AppUserListOauth> getAppUsersByUserIdAndRoleAndApp(String userId, String role, String appIdentification){
+		return appUserRepository.findAppUserByUserIdAndRoleAndApp(userId, role, appIdentification);
 	}
 
 	@Override
 	public AppRoleListOauth getByRoleNameAndAppListOauth(String roleName, AppList app) {
-		final List<AppRoleListOauth> roles = appRoleRepository.findAppRoleListOauthByAppIdentificationAndRoleName(app.getIdentification(), roleName);
+		final List<AppRoleListOauth> roles = appRoleRepository
+				.findAppRoleListOauthByAppIdentificationAndRoleName(app.getIdentification(), roleName);
 		return roles.stream().findFirst().orElse(null);
 	}
 
 	@Override
 	public void deleteUserAccess(String userId, String roleName, String appIdentification) {
-		final List<AppUserListOauth> appUsers = appUserRepository.findAppUserByUserIdAndRoleAndApp(userId, roleName, appIdentification);
-		appUsers.forEach(u -> appUserRepository.deleteAppUserById(u.getId()));
+		final List<AppUserListOauth> appUsers = appUserRepository.findAppUserByUserIdAndRoleAndApp(userId, roleName,
+				appIdentification);
+		appUsers.forEach(u -> {
+			appUserRepository.deleteAppUserById(u.getId());
+			accessTokenRepository.deleteByClientIdAndUserName(appIdentification, userId);
+		});
 	}
 
 	@Override

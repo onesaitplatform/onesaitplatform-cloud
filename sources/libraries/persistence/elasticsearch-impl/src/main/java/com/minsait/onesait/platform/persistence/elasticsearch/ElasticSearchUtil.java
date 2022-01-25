@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,6 +115,13 @@ public class ElasticSearchUtil {
 					source = h.getJSONObject("_source");
 					if (addId)
 						source.put("_id", h.getString("_id"));
+					JSONObject fields = h.optJSONObject("fields");
+					if(fields != null) {
+						for(String key : JSONObject.getNames(fields))
+						{
+							source.put(key, fields.get(key));
+						}
+					}
 					jsonArray.put(source);
 				}
 			} else if (hits.length() > 0) {

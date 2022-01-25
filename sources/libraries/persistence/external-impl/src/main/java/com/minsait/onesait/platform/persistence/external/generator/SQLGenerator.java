@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
+import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
@@ -34,17 +36,15 @@ import com.minsait.onesait.platform.persistence.external.generator.model.stateme
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualDatasourcesManager;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
-
 
 @Component
 public class SQLGenerator implements SQLGeneratorInt {
 
 	@Autowired
 	private OntologyRepository ontologyRepository;
-	
+
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
 
@@ -57,51 +57,54 @@ public class SQLGenerator implements SQLGeneratorInt {
 	private SQLGeneratorOps sqlGeneratorOps = new SQLGeneratorOpsImpl();
 
 	@Override
-	public SelectStatement buildSelect(){
+	public SelectStatement buildSelect() {
 		return new SelectStatement(this);
 	}
 
 	@Override
-	public InsertStatement buildInsert(){
+	public InsertStatement buildInsert() {
 		return new InsertStatement(this);
 	}
 
 	@Override
-	public UpdateStatement buildUpdate(){
+	public UpdateStatement buildUpdate() {
 		return new UpdateStatement(this);
 	}
 
 	@Override
-	public DeleteStatement buildDelete(){
+	public DeleteStatement buildDelete() {
 		return new DeleteStatement(this);
 	}
-	
+
 	@Override
-	public DropStatement buildDrop(){
+	public DropStatement buildDrop() {
 		return new DropStatement(this);
 	}
-	
-	@Override
-	public CreateStatement buildCreate(){
-		return new CreateStatement(this);
-	}	
 
-	private RtdbDatasource getDataSourceForOntology(final String ontology){
+	@Override
+	public CreateStatement buildCreate() {
+		return new CreateStatement(this);
+	}
+
+	private RtdbDatasource getDataSourceForOntology(final String ontology) {
 		return ontologyRepository.findByIdentification(ontology).getRtdbDatasource();
 	}
 
-	private VirtualDatasourceType getVirtualDataSourceTypeForOntology(final String ontology){
+	private VirtualDatasourceType getVirtualDataSourceTypeForOntology(final String ontology) {
 		return virtualDatasourcesManager.getDatasourceForOntology(ontology).getSgdb();
 	}
 
-	private Map<String, Integer> getTableMetadataForOntology(OntologyVirtualDatasource virtualDataSource, final String tableName){
+	private Map<String, Integer> getTableMetadataForOntology(OntologyVirtualDatasource virtualDataSource,
+			final String databaseName, final String schemaName, final String tableName) {
 		try {
-			return virtualOntologyDBRepository.getTableTypes(virtualDataSource.getDatasourceName(), tableName);
-		} catch (final SQLException exception){
-			throw new IllegalStateException("Error getting table metadata for the the ontology " + tableName, exception);
+			return virtualOntologyDBRepository.getTableTypes(virtualDataSource.getIdentification(), databaseName,
+					schemaName, tableName);
+		} catch (final SQLException exception) {
+			throw new IllegalStateException("Error getting table metadata for the the ontology " + tableName,
+					exception);
 		}
 	}
-	
+
 	public String getSqlTableDefinitionFromSchema(final Ontology ontology) {
 		VirtualDatasourceType datasource = getVirtualDataSourceTypeForOntology(ontology.getIdentification());
 		if (datasource == null) {
@@ -111,9 +114,10 @@ public class SQLGenerator implements SQLGeneratorInt {
 			throw new IllegalArgumentException("Ontology schema not found in ontology");
 		}
 		return getSqlTableDefinitionFromSchema(ontology.getIdentification(), ontology.getJsonSchema(), datasource);
-	}	
-	
-	public String getSqlTableDefinitionFromSchema(final String ontology, final String schema, VirtualDatasourceType datasource) {
+	}
+
+	public String getSqlTableDefinitionFromSchema(final String ontology, final String schema,
+			VirtualDatasourceType datasource) {
 		if (datasource == null) {
 			throw new IllegalArgumentException("Ontology must be a Virtual Ontology with relational datasource");
 		}
@@ -123,35 +127,41 @@ public class SQLGenerator implements SQLGeneratorInt {
 		final List<ColumnRelational> cols = sqlGeneratorOps.generateColumnsRelational(schema);
 		CreateStatement createStatement = buildCreate().setOntology(ontology);
 		createStatement.setColumnsRelational(cols);
-		
+
 		return sqlGeneratorOps.getStandardCreate(createStatement, datasource).getStatement();
-	}	
+	}
 
 	public PreparedStatement getSQLCreateTable(CreateStatement createStatement, VirtualDatasourceType datasource) {
 		PreparedStatement statement = null;
 		if (datasource.equals(VirtualDatasourceType.ORACLE)) {
 			// TODO: oracle databases drop if exists custom SQL
 			statement = sqlGeneratorOps.getStandardCreate(createStatement, datasource);
-		}
-		else {
+		} else {
 			statement = sqlGeneratorOps.getStandardCreate(createStatement, datasource);
 		}
-		
+
 		return statement;
 	}
 
 	@Override
 	public PreparedStatement generate(final SelectStatement selectStatement, boolean withParams) {
-		if(selectStatement != null){
+		if (selectStatement != null) {
 			final RtdbDatasource ontologyDS = getDataSourceForOntology(selectStatement.getOntology());
 			final PreparedStatement select;
-			if(ontologyDS.equals(RtdbDatasource.VIRTUAL)){
-				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager.getDatasourceForOntology(selectStatement.getOntology());
-				final String ontologyVirtualTable = ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(selectStatement.getOntology()).getDatasourceTableName();
-				
+			if (ontologyDS.equals(RtdbDatasource.VIRTUAL)) {
+				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager
+						.getDatasourceForOntology(selectStatement.getOntology());
+				OntologyVirtual ov = ontologyVirtualRepository
+						.findOntologyVirtualByOntologyIdentification(selectStatement.getOntology());
+				final String ontologyVirtualTable = ov.getDatasourceTableName();
+				final String ontologyVirtualDatabase = ov.getDatasourceDatabase();
+				final String ontologyVirtualSchema = ov.getDatasourceSchema();
+
 				final VirtualDatasourceType virtualDataSourceType = virtualDataSource.getSgdb();
-				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource, ontologyVirtualTable);
-				select = sqlGeneratorOps.getStandardSelect(selectStatement, virtualDataSourceType, metaData, withParams);
+				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource,
+						ontologyVirtualDatabase, ontologyVirtualSchema, ontologyVirtualTable);
+				select = sqlGeneratorOps.getStandardSelect(selectStatement, virtualDataSourceType, metaData,
+						withParams);
 			} else {
 				select = sqlGeneratorOps.getStandardSelect(selectStatement, withParams);
 			}
@@ -162,23 +172,30 @@ public class SQLGenerator implements SQLGeneratorInt {
 	}
 
 	@Override
-	public PreparedStatement generate(final InsertStatement insertStatement, boolean withParams){
-		if(insertStatement != null){
+	public PreparedStatement generate(final InsertStatement insertStatement, boolean withParams) {
+		if (insertStatement != null) {
 			final RtdbDatasource ontologyDS = getDataSourceForOntology(insertStatement.getOntology());
 			final PreparedStatement insert;
-			if(ontologyDS.equals(RtdbDatasource.VIRTUAL)){
-				
-				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager.getDatasourceForOntology(insertStatement.getOntology());
-				final String ontologyVirtualTable = ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(insertStatement.getOntology()).getDatasourceTableName();
-				
+			if (ontologyDS.equals(RtdbDatasource.VIRTUAL)) {
+
+				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager
+						.getDatasourceForOntology(insertStatement.getOntology());
+				OntologyVirtual ov = ontologyVirtualRepository
+						.findOntologyVirtualByOntologyIdentification(insertStatement.getOntology());
+				final String ontologyVirtualTable = ov.getDatasourceTableName();
+				final String ontologyVirtualDatabase = ov.getDatasourceDatabase();
+				final String ontologyVirtualSchema = ov.getDatasourceSchema();
+
 				final VirtualDatasourceType virtualDataSourceType = virtualDataSource.getSgdb();
-				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource, ontologyVirtualTable);
-				
-				if(virtualDataSourceType.equals(VirtualDatasourceType.ORACLE)
-				|| virtualDataSourceType.equals(VirtualDatasourceType.ORACLE11)) {
+				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource,
+						ontologyVirtualDatabase, ontologyVirtualSchema, ontologyVirtualTable);
+
+				if (virtualDataSourceType.equals(VirtualDatasourceType.ORACLE)
+						|| virtualDataSourceType.equals(VirtualDatasourceType.ORACLE11)) {
 					insert = sqlGeneratorOps.getOracleInsertSQL(insertStatement, metaData, withParams);
-				} else{
-					insert = sqlGeneratorOps.getStandardInsert(insertStatement, virtualDataSourceType, metaData, withParams);
+				} else {
+					insert = sqlGeneratorOps.getStandardInsert(insertStatement, virtualDataSourceType, metaData,
+							withParams);
 				}
 			} else {
 				insert = sqlGeneratorOps.getStandardInsert(insertStatement, true);
@@ -190,17 +207,23 @@ public class SQLGenerator implements SQLGeneratorInt {
 	}
 
 	@Override
-	public PreparedStatement generate(final DeleteStatement deleteStatement, boolean withParams){
-		if(deleteStatement != null){
+	public PreparedStatement generate(final DeleteStatement deleteStatement, boolean withParams) {
+		if (deleteStatement != null) {
 			final RtdbDatasource ontologyDS = getDataSourceForOntology(deleteStatement.getOntology());
-			if(ontologyDS.equals(RtdbDatasource.VIRTUAL)){
-				
-				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager.getDatasourceForOntology(deleteStatement.getOntology());
-				final String ontologyVirtualTable = ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(deleteStatement.getOntology()).getDatasourceTableName();
-				
+			if (ontologyDS.equals(RtdbDatasource.VIRTUAL)) {
+
+				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager
+						.getDatasourceForOntology(deleteStatement.getOntology());
+				OntologyVirtual ov = ontologyVirtualRepository
+						.findOntologyVirtualByOntologyIdentification(deleteStatement.getOntology());
+				final String ontologyVirtualTable = ov.getDatasourceTableName();
+				final String ontologyVirtualDatabase = ov.getDatasourceDatabase();
+				final String ontologyVirtualSchema = ov.getDatasourceSchema();
+
 				final VirtualDatasourceType virtualDataSourceType = virtualDataSource.getSgdb();
-				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource, ontologyVirtualTable);				
-				
+				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource,
+						ontologyVirtualDatabase, ontologyVirtualSchema, ontologyVirtualTable);
+
 				return sqlGeneratorOps.getStandardDelete(deleteStatement, virtualDataSourceType, metaData, withParams);
 			} else {
 				return sqlGeneratorOps.getStandardDelete(deleteStatement, withParams);
@@ -212,16 +235,22 @@ public class SQLGenerator implements SQLGeneratorInt {
 
 	@Override
 	public PreparedStatement generate(final UpdateStatement updateStatement, boolean withParams) {
-		if(updateStatement != null){
+		if (updateStatement != null) {
 			final RtdbDatasource ontologyDS = getDataSourceForOntology(updateStatement.getOntology());
-			if(ontologyDS.equals(RtdbDatasource.VIRTUAL)){
+			if (ontologyDS.equals(RtdbDatasource.VIRTUAL)) {
 
-				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager.getDatasourceForOntology(updateStatement.getOntology());
-				final String ontologyVirtualTable = ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(updateStatement.getOntology()).getDatasourceTableName();
-				
+				final OntologyVirtualDatasource virtualDataSource = virtualDatasourcesManager
+						.getDatasourceForOntology(updateStatement.getOntology());
+				OntologyVirtual ov = ontologyVirtualRepository
+						.findOntologyVirtualByOntologyIdentification(updateStatement.getOntology());
+				final String ontologyVirtualTable = ov.getDatasourceTableName();
+				final String ontologyVirtualDatabase = ov.getDatasourceDatabase();
+				final String ontologyVirtualSchema = ov.getDatasourceSchema();
+
 				final VirtualDatasourceType virtualDataSourceType = virtualDataSource.getSgdb();
-				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource, ontologyVirtualTable);					
-	
+				final Map<String, Integer> metaData = this.getTableMetadataForOntology(virtualDataSource,
+						ontologyVirtualDatabase, ontologyVirtualSchema, ontologyVirtualTable);
+
 				return sqlGeneratorOps.getStandardUpdate(updateStatement, virtualDataSourceType, metaData, withParams);
 			} else {
 				return sqlGeneratorOps.getStandardUpdate(updateStatement, withParams);
@@ -230,22 +259,22 @@ public class SQLGenerator implements SQLGeneratorInt {
 			throw new IllegalArgumentException("Update model can't be null");
 		}
 	}
-	
+
 	@Override
 	public PreparedStatement generate(final DropStatement dropStatement) {
-	    PreparedStatement statement = null;
-		if(dropStatement != null){
+		PreparedStatement statement = null;
+		if (dropStatement != null) {
 			if (dropStatement.getType() == null) {
 				dropStatement.setType("TABLE");
 			}
 			final RtdbDatasource ontologyDS = getDataSourceForOntology(dropStatement.getOntology());
-			if(ontologyDS.equals(RtdbDatasource.VIRTUAL)){
-				final VirtualDatasourceType virtualDataSource = this.getVirtualDataSourceTypeForOntology(dropStatement.getOntology());
+			if (ontologyDS.equals(RtdbDatasource.VIRTUAL)) {
+				final VirtualDatasourceType virtualDataSource = this
+						.getVirtualDataSourceTypeForOntology(dropStatement.getOntology());
 				if (virtualDataSource.equals(VirtualDatasourceType.ORACLE)) {
 					// TODO: oracle databases drop if exists custom SQL
 					statement = sqlGeneratorOps.getOracleDrop(dropStatement, virtualDataSource);
-				}
-				else {
+				} else {
 					statement = sqlGeneratorOps.getStandardDrop(dropStatement, virtualDataSource);
 				}
 			} else {
@@ -255,17 +284,18 @@ public class SQLGenerator implements SQLGeneratorInt {
 			throw new IllegalArgumentException("Drop model can't be null");
 		}
 		return statement;
-	}	
-	
+	}
+
 	@Override
 	public PreparedStatement generate(final CreateStatement createStatement) {
-	    PreparedStatement statement = null;
-		if(createStatement != null){
+		PreparedStatement statement = null;
+		if (createStatement != null) {
 			createStatement.setType("TABLE");
-			
+
 			final RtdbDatasource ontologyDS = getDataSourceForOntology(createStatement.getOntology());
-			if(ontologyDS.equals(RtdbDatasource.VIRTUAL)){
-				final VirtualDatasourceType virtualDataSource = this.getVirtualDataSourceTypeForOntology(createStatement.getOntology());
+			if (ontologyDS.equals(RtdbDatasource.VIRTUAL)) {
+				final VirtualDatasourceType virtualDataSource = this
+						.getVirtualDataSourceTypeForOntology(createStatement.getOntology());
 				statement = getSQLCreateTable(createStatement, virtualDataSource);
 			} else {
 				statement = sqlGeneratorOps.getStandardCreate(createStatement);
@@ -274,5 +304,5 @@ public class SQLGenerator implements SQLGeneratorInt {
 			throw new IllegalArgumentException("Create model can't be null");
 		}
 		return statement;
-	}	
+	}
 }

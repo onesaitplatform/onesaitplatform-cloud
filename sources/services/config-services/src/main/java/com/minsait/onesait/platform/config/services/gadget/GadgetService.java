@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
@@ -51,13 +52,17 @@ public interface GadgetService {
 	public void updateGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures);
 
 	public void addMeasuresGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures);
-	
-	public String getElementsAssociated (String gadgetId);
-	
+
+	public String getElementsAssociated(String gadgetId);
+
 	public boolean hasUserViewPermission(String id, String userId);
 
 	public Gadget getGadgetByIdentification(String userID, String gadgetIdentification);
 
 	public List<String> getGadgetTypes();
+
+	List<String> getAllIdentificationsByUser(String userId);
+
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
 
 }

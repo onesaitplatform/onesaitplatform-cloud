@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyDataAccess;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
@@ -97,6 +98,7 @@ import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyKPIDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceInfoDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
@@ -177,6 +179,7 @@ public class OntologyController {
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
 	private static final String ONTOLOGY_REST_STR = "ontologyRest";
+	private static final String ONTOLOGY_ELASTIC_STR = "ontologyElastic";
 	private static final String ONTOLOGIES_CREATE = "ontologies/create";
 	private static final String ONTOLOGIES_CREATE_TS = "ontologies/createtimeseries";
 	private static final String ONTOLOGIES_LIST = "ontologies/list";
@@ -265,6 +268,7 @@ public class OntologyController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createWizard(Model model) {
 		Ontology ontology = (Ontology) model.asMap().get(ONTOLOGY_STR);
+		model.addAttribute(ONTOLOGY_ELASTIC_STR, getDefaultElasticValues());
 		if (ontology == null) {
 			ontology = new Ontology();
 			ontology.setPublic(false);
@@ -324,12 +328,12 @@ public class OntologyController {
 
 	@PostMapping(value = "/clone")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	public ResponseEntity<Map<String, String>> cloneOntology(Model model,
-			@RequestParam String id, @RequestParam String identification, HttpServletRequest request) {
+	public ResponseEntity<Map<String, String>> cloneOntology(Model model, @RequestParam String id,
+			@RequestParam String identification, HttpServletRequest request) {
 
 		final Map<String, String> response = new HashMap<>();
 		final OntologyConfiguration config = new OntologyConfiguration(request);
-		
+
 		try {
 			ontologyBusinessService.cloneOntology(id, identification, utils.getUserId(), config);
 		} catch (final OntologyServiceException | OntologyBusinessServiceException e) {
@@ -341,16 +345,16 @@ public class OntologyController {
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@Transactional
 	@PostMapping(value = "/cloneKpi")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	public ResponseEntity<Map<String, String>> cloneOntologyKpi(Model model,
-			@RequestParam String id, @RequestParam String identification, HttpServletRequest request) {
+	public ResponseEntity<Map<String, String>> cloneOntologyKpi(Model model, @RequestParam String id,
+			@RequestParam String identification, HttpServletRequest request) {
 
 		final Map<String, String> response = new HashMap<>();
 		final OntologyConfiguration config = new OntologyConfiguration(request);
-		
+
 		try {
 			ontologyBusinessService.cloneOntology(id, identification, utils.getUserId(), config);
 			Ontology cloneOntology = ontologyConfigService.getOntologyByIdentification(identification);
@@ -365,7 +369,7 @@ public class OntologyController {
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@PostMapping(value = { "/create", "/createwizard", "/createapirest", "/createvirtual" })
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createOntology(Model model, @Valid Ontology ontology,
@@ -611,7 +615,7 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(USERS, users);
 				model.addAttribute(REALMS, realms);
-
+				final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
 				// InUseService
 				if (resourcesInUseService != null) {
 					model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
@@ -628,12 +632,39 @@ public class OntologyController {
 					for (final Map.Entry<String, String> entry : dbProperties.entrySet()) {
 						model.addAttribute(entry.getKey(), entry.getValue());
 					}
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)) {
+					// GET OntologyElastic object
+					final OntologyElastic elasticOntology = ontologyConfigService
+							.getOntologyElasticByOntologyId(ontology);
+					if (elasticOntology != null) {
+						elasticOntologyDTO.setReplicas(elasticOntology.getReplicas());
+						elasticOntologyDTO.setShards(elasticOntology.getShards());
+						elasticOntologyDTO.setCustomConfig(elasticOntology.getCustomConfig());
+						elasticOntologyDTO.setTemplateConfig(elasticOntology.getTemplateConfig());
+						elasticOntologyDTO.setPatternField(elasticOntology.getPatternField());
+						elasticOntologyDTO.setPatternFunction(elasticOntology.getPatternFunction().name());
+						elasticOntologyDTO.setSubstringStart(elasticOntology.getSubstringStart());
+						elasticOntologyDTO.setSubstringEnd(elasticOntology.getSubstringEnd());
+						elasticOntologyDTO.setCustomIdConfig(elasticOntology.getCustomIdConfig());
+						elasticOntologyDTO.setAllowsUpsertById(elasticOntology.getAllowsUpsertById());
+						elasticOntologyDTO.setCustomIdField(elasticOntology.getIdField());
+					}
 				}
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
 					final OntologyVirtual ontologyVirtual = ontologyConfigService
 							.getOntologyVirtualByOntologyId(ontology);
 					populateFormVirtual(model);
+					VirtualDatasourceInfoDTO vDTO = ontologyBusinessService
+							.getInfoFromDatasource(ontologyVirtual.getDatasourceId().getIdentification());
 					model.addAttribute("datasource", ontologyVirtual.getDatasourceId());
+					model.addAttribute("databaseName",
+							(ontologyVirtual.getDatasourceDatabase() == null
+									|| "".equals(ontologyVirtual.getDatasourceDatabase())) ? vDTO.getCurrentDatabase()
+											: ontologyVirtual.getDatasourceDatabase());
+					model.addAttribute("schemaName",
+							(ontologyVirtual.getDatasourceSchema() == null
+									|| "".equals(ontologyVirtual.getDatasourceSchema())) ? vDTO.getCurrentSchema()
+											: ontologyVirtual.getDatasourceSchema());
 					model.addAttribute("tableName", ontologyVirtual.getDatasourceTableName());
 					model.addAttribute("objId", ontologyVirtual.getObjectId());
 					model.addAttribute("objGeometry", ontologyVirtual.getObjectGeometry());
@@ -647,7 +678,7 @@ public class OntologyController {
 					model.addAttribute(ONTOLOGY_REST_STR, new OntologyRestDTO());
 					populateForm(model);
 				}
-
+				model.addAttribute(ONTOLOGY_ELASTIC_STR, elasticOntologyDTO);
 				return "ontologies/createwizard";
 
 			} else {
@@ -952,6 +983,24 @@ public class OntologyController {
 						utils.addRedirectMessage("ontology.notfound.error", redirect);
 						return REDIRECT_ONTOLOGIES_LIST;
 					}
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)) {
+					final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
+					final OntologyElastic elasticOntology = ontologyConfigService
+							.getOntologyElasticByOntologyId(ontology);
+					if (elasticOntology != null) {
+						elasticOntologyDTO.setReplicas(elasticOntology.getReplicas());
+						elasticOntologyDTO.setShards(elasticOntology.getShards());
+						elasticOntologyDTO.setCustomConfig(elasticOntology.getCustomConfig());
+						elasticOntologyDTO.setTemplateConfig(elasticOntology.getTemplateConfig());
+						elasticOntologyDTO.setPatternField(elasticOntology.getPatternField());
+						elasticOntologyDTO.setPatternFunction(elasticOntology.getPatternFunction().name());
+						elasticOntologyDTO.setSubstringStart(elasticOntology.getSubstringStart());
+						elasticOntologyDTO.setSubstringEnd(elasticOntology.getSubstringEnd());
+						elasticOntologyDTO.setCustomIdConfig(elasticOntology.getCustomIdConfig());
+						elasticOntologyDTO.setAllowsUpsertById(elasticOntology.getAllowsUpsertById());
+						elasticOntologyDTO.setCustomIdField(elasticOntology.getIdField());
+					}
+					model.addAttribute(ONTOLOGY_ELASTIC_STR, elasticOntologyDTO);
 				} else {
 					model.addAttribute("isOntologyRest", false);
 				}
@@ -985,14 +1034,11 @@ public class OntologyController {
 	private void populateForm(Model model) {
 		model.addAttribute(DATA_MODELS_STR, ontologyConfigService.getAllDataModels());
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
-		List<Ontology.RtdbDatasource> listRtdbs = ontologyConfigService.getDatasources()
-				.stream()
-				.filter(o -> !(Arrays.asList(RtdbDatasource.KUDU, 
-						RtdbDatasource.VIRTUAL, 
-						RtdbDatasource.API_REST, 
-						RtdbDatasource.DIGITAL_TWIN).contains(o))).
-				collect(Collectors.toList());
-		model.addAttribute(RTDBS, listRtdbs);	
+		List<Ontology.RtdbDatasource> listRtdbs = ontologyConfigService
+				.getDatasources().stream().filter(o -> !(Arrays.asList(RtdbDatasource.KUDU, RtdbDatasource.VIRTUAL,
+						RtdbDatasource.API_REST, RtdbDatasource.DIGITAL_TWIN).contains(o)))
+				.collect(Collectors.toList());
+		model.addAttribute(RTDBS, listRtdbs);
 		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("modes", Ontology.RtdbToHdbStorage.values());
 	}
@@ -1021,7 +1067,7 @@ public class OntologyController {
 		model.addAttribute("constraintTypes", ontologyBusinessService.getStringSupportedConstraintTypes());
 
 		List<VirtualDatasourceDTO> dsList = new ArrayList<>();
-		
+
 		if (!ontologyConfigService.getDatasourcesRelationals().isEmpty()) {
 			if (utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 				dsList = ontologyConfigService.getDatasourcesRelationals();
@@ -1030,10 +1076,10 @@ public class OntologyController {
 			}
 		}
 
-		dsList.add(new VirtualDatasourceDTO(RtdbDatasource.KUDU.toString(),""));
+		dsList.add(new VirtualDatasourceDTO(RtdbDatasource.KUDU.toString(), ""));
 		model.addAttribute("datasources", dsList);
 		model.addAttribute("collectionNames", new ArrayList<String>());
-		
+
 		model.addAttribute("datasource", new OntologyVirtualDatasource());
 	}
 
@@ -1142,6 +1188,77 @@ public class OntologyController {
 		}
 	}
 
+	@GetMapping(value = "/getDatabases/{datasource}")
+	public @ResponseBody ResponseEntity<?> getDatabases(@PathVariable("datasource") String datasource) {
+		try {
+			final List<String> tables = ontologyBusinessService.getDatabasesFromDatasource(datasource);
+			if (tables.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			} else {
+				return new ResponseEntity<>(tables, HttpStatus.OK);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(value = "/getDatasourceInfo/{datasource}")
+	public @ResponseBody ResponseEntity<?> getInfoDatasource(@PathVariable("datasource") String datasource) {
+		try {
+			final VirtualDatasourceInfoDTO infoDTO = ontologyBusinessService.getInfoFromDatasource(datasource);
+			return new ResponseEntity<>(infoDTO, HttpStatus.OK);
+		} catch (final Exception e) {
+			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(value = "/getSchemas/{datasource}")
+	public @ResponseBody ResponseEntity<?> getSchemas(@PathVariable("datasource") String datasource) {
+		return getSchemasDB(datasource, null);
+	}
+
+	@GetMapping(value = "/getSchemas/{datasource}/{database}")
+	public @ResponseBody ResponseEntity<?> getSchemasDB(@PathVariable("datasource") String datasource,
+			@PathVariable("database") String database) {
+		try {
+			final List<String> tables = ontologyBusinessService.getSchemasFromDatasourceDatabase(datasource, database);
+			if (tables.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			} else {
+				return new ResponseEntity<>(tables, HttpStatus.OK);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(value = "/getTables/{datasource}/db/{database}")
+	public @ResponseBody ResponseEntity<?> getTablesDB(@PathVariable("datasource") String datasource,
+			@PathVariable("database") String database) {
+		return getTablesDBSC(datasource, database, null);
+	}
+
+	@GetMapping(value = "/getTables/{datasource}/sc/{schema}")
+	public @ResponseBody ResponseEntity<?> getTablesSC(@PathVariable("datasource") String datasource,
+			@PathVariable("schema") String schema) {
+		return getTablesDBSC(datasource, null, schema);
+	}
+
+	@GetMapping(value = "/getTables/{datasource}/db/{database}/sc/{schema}")
+	public @ResponseBody ResponseEntity<?> getTablesDBSC(@PathVariable("datasource") String datasource,
+			@PathVariable("database") String database, @PathVariable("schema") String schema) {
+		try {
+			final List<String> tables = ontologyBusinessService.getTablesFromDatasource(datasource, database, schema);
+			if (tables.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			} else {
+				return new ResponseEntity<>(tables, HttpStatus.OK);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
 	@GetMapping(value = "/getTables/{datasource}")
 	public @ResponseBody ResponseEntity<?> getTables(@PathVariable("datasource") String datasource) {
 		try {
@@ -1186,7 +1303,36 @@ public class OntologyController {
 	public @ResponseBody ResponseEntity<?> getRelationalSchema(@PathVariable("datasource") String datasource,
 			@PathVariable("collection") String collection) {
 		try {
-			final String metaData = ontologyBusinessService.getRelationalSchema(datasource, collection);
+			final String metaData = ontologyBusinessService.getRelationalSchema(datasource, null, null, collection);
+			if (metaData.isEmpty()) {
+				return new ResponseEntity<>("Collection or datasource not found", HttpStatus.NOT_FOUND);
+			} else {
+				return new ResponseEntity<>(metaData, HttpStatus.OK);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>("Error processing the request", HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(value = "/getRelationalSchema/{datasource}/sc/{schema}/{collection}")
+	public @ResponseBody ResponseEntity<?> getRelationalSchemaSC(@PathVariable("datasource") String datasource,
+			@PathVariable("collection") String collection, @PathVariable("schema") String schema) {
+		return getRelationalSchemaDBSC(datasource, null, schema, collection);
+	}
+
+	@GetMapping(value = "/getRelationalSchema/{datasource}/db/{database}/{collection}")
+	public @ResponseBody ResponseEntity<?> getRelationalSchemaDB(@PathVariable("datasource") String datasource,
+			@PathVariable("collection") String collection, @PathVariable("database") String database) {
+		return getRelationalSchemaDBSC(datasource, database, null, collection);
+	}
+
+	@GetMapping(value = "/getRelationalSchema/{datasource}/db/{database}/sc/{schema}/{collection}")
+	public @ResponseBody ResponseEntity<?> getRelationalSchemaDBSC(@PathVariable("datasource") String datasource,
+			@PathVariable("database") String database, @PathVariable("schema") String schema,
+			@PathVariable("collection") String collection) {
+		try {
+			final String metaData = ontologyBusinessService.getRelationalSchema(datasource, database, schema,
+					collection);
 			if (metaData.isEmpty()) {
 				return new ResponseEntity<>("Collection or datasource not found", HttpStatus.NOT_FOUND);
 			} else {
@@ -1480,12 +1626,16 @@ public class OntologyController {
 	@PostMapping("/virtual/sql/converter/create/{identification}")
 	public ResponseEntity<String> getSQLCreateTable(
 			@ApiParam(value = "Ontology identification") @PathVariable("identification") String identification,
+			@ApiParam(value = "Ontology Database") @RequestParam(name = "database", required = false) String database,
+			@ApiParam(value = "Ontology Schema") @RequestParam(name = "schema", required = false) String schema,
 			@ApiParam(value = "Ontology json schema") @Valid @RequestBody(required = true) CreateStatementDTO statementDTO,
 			@ApiParam(value = "Datasource type") @RequestParam(required = true) VirtualDatasourceType datasource) {
 		ResponseEntity<String> response = null;
 		try {
 			final CreateStatementBusiness statement = statementDTO.toCreateStatement();
 			statement.setOntology(identification);
+			statement.setDatabase(database);
+			statement.setSchema(schema);
 			final String definition = ontologyBusinessService.getSQLCreateTable(statement, datasource);
 			final JsonObject responseBody = new JsonObject();
 			responseBody.addProperty("statement", definition);
@@ -1511,7 +1661,7 @@ public class OntologyController {
 				response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
 				if (userService.isUserAdministrator(user) || datasource.isPublic()
-						|| datasource.getUser().contentEquals(user.getUserId())) {
+						|| datasource.getUserId().contentEquals(user.getUserId())) {
 
 					final OntologyVirtualDataSourceDTO datasourceDTO = new OntologyVirtualDataSourceDTO(datasource);
 					response = new ResponseEntity<>(datasourceDTO, HttpStatus.OK);
@@ -1552,6 +1702,36 @@ public class OntologyController {
 		} catch (final RuntimeException e) {
 			return true;
 		}
+	}
+
+	private OntologyElasticDTO getDefaultElasticValues() {
+
+		OntologyElasticDTO elasticOntology = new OntologyElasticDTO();
+		try {
+			final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
+
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
+
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> defaults = (Map<String, Object>) elasticsearch.get("defaults");
+
+			elasticOntology.setReplicas((int) defaults.get("replicas"));
+			elasticOntology.setShards((int) defaults.get("shards"));
+		} catch (Exception e) {
+			log.error(
+					"Could not load values for ElasticSearc shards and replicas from configuration. Using default values.");
+			elasticOntology.setReplicas(0);
+			elasticOntology.setShards(5);
+		}
+		elasticOntology.setSubstringStart(0);
+		elasticOntology.setSubstringEnd(-1);
+		elasticOntology.setTemplateConfig(false);
+		elasticOntology.setCustomConfig(false);
+		elasticOntology.setCustomIdConfig(false);
+		elasticOntology.setAllowsUpsertById(false);
+		elasticOntology.setPatternFunction("NONE");
+		return elasticOntology;
 	}
 
 }

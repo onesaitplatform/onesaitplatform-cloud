@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.OntologyDataAccess;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
@@ -196,5 +198,13 @@ public interface OntologyService {
 	Map<String, List<String>> getResourcesFromOntology(Ontology ontology);
 
 	List<Ontology> getAllOntologiesByUser(String userId);
+
+	List<String> getIdentificationsByUserAndPermissions(String userId);
+
+	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
+
+	OntologyElastic getOntologyElasticByOntologyId(Ontology ontology);
+
+	String getElementsAssociated(String ontologyId);
 
 }

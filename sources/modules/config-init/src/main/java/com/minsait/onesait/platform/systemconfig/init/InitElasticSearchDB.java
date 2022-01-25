@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
+import com.minsait.onesait.platform.config.repository.OntologyElasticRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
@@ -139,22 +141,22 @@ public class InitElasticSearchDB {
 			}
 
 			connector.deleteIndex(INDEX_NAME);
-			connector.createIndex(INDEX_NAME);
 			final String dataMapping = "{  \"" + INDEX_NAME + "\": {" + " \"properties\": {\n"
 					+ "          \"gender\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          },"
 					+ "          \"address\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          },"
 					+ "          \"state\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          }" + "       }" + "   }"
 					+ "}";
-			connector.prepareIndex(INDEX_NAME, dataMapping);
+
+			connector.createIndex(INDEX_NAME, dataMapping, null);
+			//connector.prepareIndex(INDEX_NAME, dataMapping);
 
 			final List<String> list = ElasticSearchFileUtil.readLines(
 					new File(getClass().getClassLoader().getResource("examples/Accounts-dataset.json").getFile()));
 
 			final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
 					.collect(Collectors.toList());
-
-			sSInsertService.bulkInsert(INDEX_NAME, result, ontologyService
-					.getOntologyByIdentification(ACCOUNTS_STR, getUserDeveloper().getUserId()).getJsonSchema());
+			OntologyElastic elasticOntol = ontologyService.getOntologyElasticByOntologyId(ontologyService.getOntologyByIdentification(ACCOUNTS_STR, getUserDeveloper().getUserId()));
+			sSInsertService.bulkInsert(elasticOntol, result);
 
 		} catch (final Exception e) {
 			log.error("Error creating Restaurants DataSet...ignoring", e);

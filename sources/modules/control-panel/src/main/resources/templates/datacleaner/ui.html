@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -65,9 +65,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><span th:text="#{data.cleaner}">Data Cleaner</span></li>
-						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -77,9 +75,8 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">
+				<div class="row main">
 					<div class="col-md-12">
-					
 						<div class="portlet light">
 							<div class="portlet-title ">
 								<div class="caption">									
@@ -117,25 +114,19 @@
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	
-	
-	<script th:inline="javascript">	
-	
+	<script th:inline="javascript">		
 
 	</script>
 	
 	<script type="text/javascript">	
-	
-	
+
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
-	
-	
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
 		
-	
-		
+
 	});
 	
 	//]]>

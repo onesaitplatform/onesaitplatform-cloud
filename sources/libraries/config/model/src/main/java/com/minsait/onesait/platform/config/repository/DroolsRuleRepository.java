@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.DroolsRule;
+import com.minsait.onesait.platform.config.model.DroolsRule.TableExtension;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -41,7 +42,7 @@ public interface DroolsRuleRepository extends JpaRepository<DroolsRule, String> 
 
 	@Cacheable(cacheNames = "DroolsRulesBySourceOntology", unless = "#result == null", key = "#p0.identification")
 	List<DroolsRule> findBySourceOntologyAndActiveTrue(Ontology sourceOntology);
-	
+
 	@Cacheable(cacheNames = "DroolsRulesBySourceOntology", unless = "#result == null", key = "#p0")
 	List<DroolsRule> findBySourceOntologyIdentificationAndActiveTrue(String sourceOntologyIdentification);
 
@@ -50,6 +51,10 @@ public interface DroolsRuleRepository extends JpaRepository<DroolsRule, String> 
 
 	@Query("SELECT dr FROM DroolsRule dr WHERE dr.user.userId= :userId AND dr.sourceOntology.identification= :ontology")
 	List<DroolsRule> findBySourceOntologyAndUser(@Param("ontology") String ontology, @Param("userId") String userId);
+	
+
+	@Query("SELECT dr FROM DroolsRule dr WHERE  dr.sourceOntology.identification= :ontology OR dr.targetOntology.identification= :ontology")
+	List<DroolsRule> findBySourceOntologyOrTargetOntology(@Param("ontology") String ontology);
 
 	// @Cacheable(cacheNames = "DroolsRulesByIdentification", unless = "#result ==
 	// null", key = "#p0")
@@ -66,6 +71,12 @@ public interface DroolsRuleRepository extends JpaRepository<DroolsRule, String> 
 	@Modifying
 	@Query("update DroolsRule dr set dr.DRL = :drl where dr.identification = :identification")
 	int updateDRLByIdentification(@Param("drl") String drl, @Param("identification") String identification);
+
+	@CacheEvict(allEntries = true, cacheNames = { "DroolsRulesByUser", "DroolsRulesBySourceOntology" })
+	@Modifying
+	@Query("update DroolsRule dr set dr.decisionTable = :decisionTable, dr.extension = :extension where dr.identification = :identification")
+	int updateDecisionTableByIdentification(@Param("decisionTable") byte[] decisionTable,
+			@Param("extension") TableExtension extension, @Param("identification") String identification);
 
 	@CacheEvict(allEntries = true, cacheNames = { "DroolsRulesByUser", "DroolsRulesBySourceOntology" })
 	@Transactional

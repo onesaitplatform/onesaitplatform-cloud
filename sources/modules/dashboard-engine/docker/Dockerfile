@@ -51,7 +51,7 @@ ENV SERVER_NAME=localhost \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
-    AUDITGLOBALNOTIFY=false \
+    AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     ENABLEHADOOP=false \
@@ -98,7 +98,10 @@ ENV SERVER_NAME=localhost \
     WSLOGGINGPERIOD=30000 \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    USE_KEYCLOAK=false \
+    SBA_USERNAME=operations \
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh

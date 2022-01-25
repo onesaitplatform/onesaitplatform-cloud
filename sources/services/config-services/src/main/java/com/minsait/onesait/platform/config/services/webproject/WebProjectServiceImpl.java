@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WebProjectServiceImpl implements WebProjectService {
 
 	private static final String ERROR_ZIPPING_FILES = "Error zipping files ";
+	private static final String WTOP_ZIP = "wtop.zip";
 
 	@Autowired
 	private WebProjectRepository webProjectRepository;
@@ -68,6 +70,12 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Value("${onesaitplatform.webproject.rootfolder.path:/usr/local/webprojects/}")
 	private String rootFolder;
+
+	@Value("${onesaitplatform.webproject.template.zip:http://localhost:18000/controlpanel/static/wtop/wtop.zip}")
+	private String wtop;
+
+
+
 
 	@Override
 	public List<WebProjectDTO> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
@@ -122,7 +130,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Override
 	public boolean webProjectExists(String identification) {
-		return (webProjectRepository.findByIdentification(identification) != null);
+		return webProjectRepository.findByIdentification(identification) != null;
 	}
 
 	@Override
@@ -163,7 +171,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
-			return (webProject.getUser().getUserId().equals(user.getUserId()));
+			return webProject.getUser().getUserId().equals(user.getUserId());
 		}
 	}
 
@@ -180,10 +188,12 @@ public class WebProjectServiceImpl implements WebProjectService {
 		if (wp != null) {
 			if (hasUserPermissionToEditWebProject(user, wp)) {
 				if (webProjectExists(wp.getIdentification())) {
-					if (!StringUtils.isEmpty(webProject.getDescription()))
+					if (!StringUtils.isEmpty(webProject.getDescription())) {
 						wp.setDescription(webProject.getDescription());
-					if (!StringUtils.isEmpty(webProject.getMainFile()))
+					}
+					if (!StringUtils.isEmpty(webProject.getMainFile())) {
 						wp.setMainFile(webProject.getMainFile());
+					}
 					updateFolderWebProject(webProject.getIdentification(), userId);
 					webProjectRepository.save(wp);
 				} else {
@@ -237,6 +247,42 @@ public class WebProjectServiceImpl implements WebProjectService {
 		uploadFileToFolder(file, folder);
 		unzipFile(folder, file.getOriginalFilename());
 	}
+
+
+	@Override
+	public void uploadWebTemplate( String userId) {
+
+		final String folder = rootFolder + userId + SLASH_STRING;
+		deleteFolder(folder);
+		uploadWebTemplateToFolder( folder);
+		unzipFile(folder, WTOP_ZIP);
+	}
+
+	private void uploadWebTemplateToFolder(  String path) {
+
+		final String fileName = WTOP_ZIP;
+
+		try {
+			final InputStream is = new URL(wtop).openStream();
+			final File folder = new File(path);
+			if (!folder.exists()) {
+				folder.mkdirs();
+			}
+
+			final String fullPath = path + fileName;
+			final OutputStream os = new FileOutputStream(new File(fullPath));
+
+			IOUtils.copy(is, os);
+
+			is.close();
+			os.close();
+		} catch (final IOException e) {
+			throw new WebProjectServiceException("Error uploading files " + e);
+		}
+
+		log.debug("File: " + path + fileName + " uploaded");
+	}
+
 
 	private void uploadFileToFolder(MultipartFile file, String path) {
 
@@ -349,12 +395,13 @@ public class WebProjectServiceImpl implements WebProjectService {
 		} catch (final IOException e) {
 			throw new WebProjectServiceException("Error unzipping files " + e);
 		} finally {
-			if (is != null)
+			if (is != null) {
 				try {
 					is.close();
 				} catch (final IOException e) {
 					log.debug("Error: " + e);
 				}
+			}
 		}
 
 		if (folder.exists()) {

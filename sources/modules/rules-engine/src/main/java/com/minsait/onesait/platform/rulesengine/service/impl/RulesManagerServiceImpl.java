@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,11 +49,11 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 	public void manageRule(HazelcastRuleObject rule) {
 		log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
 		final DroolsRule droolsRule = droolsRuleService.getRule(rule.getIdentification());
-		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()))
-			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification());
+		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()) && rule.getDecisionTable() == null)
+			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification(), rule.getExtension());
 		else {
 			final Results results = kieServicesManager.updateRule(rule.getUserId(), rule.getIdentification(),
-					rule.getDRL());
+					rule.getDRL(), rule.getDecisionTable(), rule.getExtension());
 			if (results.hasMessages(Level.ERROR)) {
 				HazelcastMessageNotification.builder().rule(rule.getIdentification()).message(results.toString())
 						.build().toJson().ifPresent(m -> topicAsyncComm.publish(m));

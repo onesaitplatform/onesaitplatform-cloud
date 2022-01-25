@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -167,6 +167,7 @@
 									</div>
 									<div class="col-md-12">
 										<form role="form" id="ontology_create_form" th:object="${ontology}" method="post" class="form">																									
+											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 											<div class="col-md-3 col-sm-6 col-xs-12">
 												<div class="form-group">
 													<label class="" th:text="#{ontology.name} + ':'">Name</label><span class="required"> (*)</span>
@@ -218,8 +219,7 @@
 												</div>
 												<span class="help-block"><i class="la la-warning"></i> <small th:text="#{ontology.description.min}"></small></span>
 											</div>
-											
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>		
+										</form>		
 									</div>	
 										
 								</div>	

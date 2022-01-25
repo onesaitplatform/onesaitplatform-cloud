@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@
 -->
 <div class="col-md-12 col-xs-12">	
 	<div th:if="!${#lists.isEmpty(projectObj.projectResourceAccesses)}" class="form-group">
-		<div class="margin-bottom-20">
+		<div class="margin-bottom-20 margin-top-20">
 			<table id="resource-access-list" class="table" data-loaded="false">
 			
 				<thead>
 					<tr class="cabecera-tabla" role="row" >
 						<th class="titulo-columnas" onclick="ProjectCreateController.sortHTML('#resource-access-list', '.table-model','td:nth-child(1)', 'data-original-title')" th:text="#{project.resource.type}" style="cursor:pointer">Type</th>
-						<th class="titulo-columnas text-center sorting" th:text="#{project.resource.identification}" onclick="ProjectCreateController.sortHTML('#resource-access-list', '.table-model','td:nth-child(2)','title')" style="cursor:pointer">Identification</th>
-						<th class="titulo-columnas text-center" th:text="#{project.resource.accesstype}">Access Type</th>
-						<th th:if="${projectObj.app == null}" class="titulo-columnas text-center" th:text="#{project.resource.users}">Users</th>
-						<th th:if="${projectObj.app != null}" class="titulo-columnas text-center" th:text="#{project.resource.roles}">Roles</th>
+						<th class="titulo-columnas text-left sorting" th:text="#{project.resource.identification}" onclick="ProjectCreateController.sortHTML('#resource-access-list', '.table-model','td:nth-child(2)','title')" style="cursor:pointer">Identification</th>
+						<th class="titulo-columnas text-left" th:text="#{project.resource.accesstype}">Access Type</th>
+						<th th:if="${projectObj.app == null}" class="titulo-columnas text-left" th:text="#{project.resource.users}">Users</th>
+						<th th:if="${projectObj.app != null}" class="titulo-columnas text-left" th:text="#{project.resource.roles}">Roles</th>
 						<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
 					</tr>
 				</thead>
 				<tbody>
 					<th:block th:each="access : ${projectObj.projectResourceAccesses}">
 						<tr th:if="(${#authentication.name == access.resource.user.userId}) OR (${#authentication.name} == ${projectObj.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="table-model">
-							<td class="text-left">
+							<td class="text-center">
 								<i th:if="${access.resource.class.simpleName == 'Ontology'}" class="fa flaticon-network font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 								<i th:if="${access.resource.class.simpleName == 'Api'}" class="fa flaticon-multimedia font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 								<i th:if="${access.resource.class.simpleName == 'DigitalTwinDevice'}" class="fa flaticon-medical font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
@@ -43,9 +43,9 @@
 								<i th:if="${access.resource.class.simpleName == 'Dashboard'}" class="fa flaticon-graph font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 								<i th:if="${access.resource.class.simpleName == 'Pipeline'}" class="fa flaticon-technology font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Dataflow" th:data-original-title="Dataflow"></i>
 								<i th:if="${access.resource.class.simpleName == 'GadgetDatasource'}" class="la la-database font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Datasource" th:data-original-title="Datasource"></i>
+								<i th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" class="la la-database font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Datasource" th:data-original-title="Datasource"></i>
 								<i th:if="${access.resource.class.simpleName == 'Report'}" class="la la-folder-open font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 								<i th:if="${access.resource.class.simpleName == 'BinaryFile'}" class="la la-file font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-							
 							</td>
 							<td>
 								<input th:if="${access.resource.class.simpleName == 'Api'}" type="text" name="identifications[]" readonly="readonly"  class="form-control"  th:value="${access.resource.identification} +' - V' + ${access.resource.numversion}" th:title="${access.resource.identification} +' - V' + ${access.resource.numversion}"/>
@@ -69,7 +69,7 @@
 								<input type="text" name="users[]" readonly="readonly"  class="form-control" th:value="${access.appRole.name}  +' ('+ ${access.appRole.app.identification} +')'"/>
 							</td>											
 							<td width="150px" class="no-wrap text-center">											
-								<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'" th:text="#{project.removeauthorization}">Insert Assignment</button>
+								<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:onclick="'javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'"><i class="icon-delete"></i></button>
 							</td>			
 						</tr>
 					</th:block>

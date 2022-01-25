@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class IotBrokerAuditableAspect extends BaseAspect {
 			final SSAPMessage<SSAPBodyReturnMessage> returnVal = (SSAPMessage<SSAPBodyReturnMessage>) joinPoint
 					.proceed();
 			event = auditProcessor.completeEventWithResponseMessage(returnVal, event);
-			// eventProducer.publish(event);
+			eventProducer.publish(event);
 			return returnVal;
 		} catch (final Throwable e) {
 			log.error("Error processTx by:", e);
@@ -70,7 +70,7 @@ public class IotBrokerAuditableAspect extends BaseAspect {
 		log.debug("execute aspect iotborkerauditable method doRecoveryActions");
 		try {
 			final OPAuditError event = auditProcessor.getErrorEvent(message, info, ex);
-			// eventProducer.publish(event);
+			eventProducer.publish(event);
 		} catch (final Exception e) {
 			log.error("error auditing doRecoveryActions", e);
 		}

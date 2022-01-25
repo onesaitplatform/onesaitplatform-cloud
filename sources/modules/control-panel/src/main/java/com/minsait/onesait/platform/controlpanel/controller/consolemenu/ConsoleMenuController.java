@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ public class ConsoleMenuController {
 
 		model.addAttribute("option", "show");
 		model.addAttribute("menu", consoleMenuRepository.findById(id).orElse(new ConsoleMenu()).getJson());
+		model.addAttribute("role", consoleMenuRepository.findById(id).orElse(new ConsoleMenu()).getRoleType().getId());
 
 		return "consolemenu/show";
 	}
@@ -92,6 +93,7 @@ public class ConsoleMenuController {
 		model.addAttribute("option", "edit");
 		model.addAttribute("menu", consoleMenuRepository.findById(id).orElse(new ConsoleMenu()).getJson());
 		model.addAttribute("idCm", id);
+		model.addAttribute("role", consoleMenuRepository.findById(id).orElse(new ConsoleMenu()).getRoleType().getId());
 
 		return "consolemenu/show";
 	}

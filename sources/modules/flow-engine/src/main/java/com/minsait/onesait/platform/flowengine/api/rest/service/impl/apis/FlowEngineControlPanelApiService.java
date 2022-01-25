@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,6 @@ import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationDTO
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationParamDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValidationNodeService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -60,7 +58,10 @@ import lombok.extern.slf4j.Slf4j;
 public class FlowEngineControlPanelApiService {
 
 	private String swaggerUrl;
+
+	@Value("${onesaitplatform.platform.base.url:http://controlpanelservice:18000/controlpanel}")
 	private String controlpanelUrl;
+
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 	private Swagger swagger;
 	private static final String ERROR_DOMAIN = "{'error':'Domain ";
@@ -80,7 +81,8 @@ public class FlowEngineControlPanelApiService {
 	@PostConstruct
 	private void init() {
 		swagger = null;
-		controlpanelUrl = resourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE); // <host>/controlpanel
+		// controlpanelUrl = resourcesService.getUrl(Module.CONTROLPANEL,
+		// ServiceUrl.BASE);
 		swaggerUrl = controlpanelUrl + "/v2/api-docs?group=All groups";
 		swagger = getControlpanelApiSwaggerJson();
 	}
@@ -92,13 +94,15 @@ public class FlowEngineControlPanelApiService {
 		try {
 			result = restTemplate.exchange(swaggerUrl, org.springframework.http.HttpMethod.GET, entity, String.class);
 			json = result.getBody();
+
+			final SwaggerParser swaggerParser = new SwaggerParser();
+			return swaggerParser.parse(json);
 		} catch (Exception e) {
 			// TODO
 			log.error("Error getting ControlPanel API Swagger Json.Cause={}, message = {}.", e.getCause(),
-					e.getMessage());
+					e.getMessage(), e);
+			return null;
 		}
-		final SwaggerParser swaggerParser = new SwaggerParser();
-		return swaggerParser.parse(json);
 	}
 
 	public List<String> getControlPanelApis(String authentication) {

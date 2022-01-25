@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
 import com.minsait.onesait.platform.config.model.User;
@@ -146,5 +147,7 @@ public interface NotebookService {
 			boolean importAuthorizations);
 
 	List<Notebook> getNotebooksForListWithProjectsAccess(String userId);
+
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification);
 
 }

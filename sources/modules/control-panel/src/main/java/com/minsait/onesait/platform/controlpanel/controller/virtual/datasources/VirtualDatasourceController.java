@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,11 +44,13 @@ import com.minsait.onesait.platform.business.services.virtual.datasources.Virtua
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.VirtualDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,7 +77,8 @@ public class VirtualDatasourceController {
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false, name = "identification") String identification) {
 
-		model.addAttribute("datasources", virtualDatasourceService.getAllByDatasourceNameAndUser(identification, utils.getUserId()));
+		model.addAttribute("datasources",
+				virtualDatasourceService.getAllByDatasourceNameAndUser(identification, utils.getUserId()));
 		return "virtualdatasources/list";
 	}
 
@@ -84,10 +87,8 @@ public class VirtualDatasourceController {
 	public String create(Model model) {
 		model.addAttribute("fieldDisabled", "disabled");
 		model.addAttribute(DATASOURCE_STR, new OntologyVirtualDatasource());
-		model.addAttribute("rdbs", 
-				Arrays.stream(VirtualDatasourceType.values()).
-				filter(o -> !o.equals(VirtualDatasourceType.KUDU)).
-				collect(Collectors.toList()));
+		model.addAttribute("rdbs", Arrays.stream(VirtualDatasourceType.values())
+				.filter(o -> !o.equals(VirtualDatasourceType.KUDU)).collect(Collectors.toList()));
 		return VIRTUAL_DATASOURCE_CREATE;
 	}
 
@@ -96,7 +97,8 @@ public class VirtualDatasourceController {
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
 		try {
-			final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId());
+			final OntologyVirtualDatasource datasource = virtualDatasourceService
+					.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId(), ResourceAccessType.VIEW);
 			if (datasource != null) {
 				model.addAttribute(DATASOURCE_STR, datasource);
 				return "virtualdatasources/show";
@@ -114,14 +116,14 @@ public class VirtualDatasourceController {
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		try {
-			final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id, utils.getUserId());
+			final OntologyVirtualDatasource datasource = virtualDatasourceService
+					.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId(), ResourceAccessType.MANAGE);
 			if (datasource != null) {
 				model.addAttribute("fieldDisabled", "disabled");
 				model.addAttribute(DATASOURCE_STR, datasource);
-				model.addAttribute("rdbs", 
-						Arrays.stream(VirtualDatasourceType.values()).
-						filter(o -> !o.equals(VirtualDatasourceType.KUDU)).
-						collect(Collectors.toList()));
+				model.addAttribute("oldCredentials", datasource.getCredentials());
+				model.addAttribute("rdbs", Arrays.stream(VirtualDatasourceType.values())
+						.filter(o -> !o.equals(VirtualDatasourceType.KUDU)).collect(Collectors.toList()));
 				return VIRTUAL_DATASOURCE_CREATE;
 			} else {
 				return VIRTUAL_DATASOURCE_CREATE;
@@ -144,7 +146,7 @@ public class VirtualDatasourceController {
 		try {
 
 			final User user = userService.getUser(utils.getUserId());
-			datasource.setUserId(user);
+			datasource.setUser(user);
 			virtualDatasourceService.createDatasource(datasource);
 
 		} catch (final OntologyServiceException | GenericOPException e) {
@@ -159,7 +161,8 @@ public class VirtualDatasourceController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDatasource(Model model, @PathVariable("id") String id,
-			@Valid OntologyVirtualDatasource datasource, BindingResult bindingResult, RedirectAttributes redirect) {
+			@Valid OntologyVirtualDatasource datasource, BindingResult bindingResult, RedirectAttributes redirect,
+			HttpServletRequest httpServletRequest) {
 
 		if (bindingResult.hasErrors()) {
 			log.debug("Some virtual datasource properties missing");
@@ -168,9 +171,12 @@ public class VirtualDatasourceController {
 		}
 
 		try {
-			final OntologyVirtualDatasource datasourceOld = virtualDatasourceService.getDatasourceByIdAndUserId(id, utils.getUserId());	
-			datasource.setUserId(datasourceOld.getUserId());
-			this.virtualDatasourceService.updateOntology(datasource);
+			final OntologyVirtualDatasource datasourceOld = virtualDatasourceService
+					.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId(), ResourceAccessType.MANAGE);
+			datasource.setUser(datasourceOld.getUser());
+			this.virtualDatasourceService.updateOntology(datasource,
+					Boolean.valueOf(httpServletRequest.getParameter("credentialsMaintain")),
+					datasourceOld.getCredentials());
 		} catch (VirtualDatasourceServiceException e) {
 			log.error("Cannot update datasource", e);
 			utils.addRedirectMessage("datasource.update.error", redirect);
@@ -184,7 +190,8 @@ public class VirtualDatasourceController {
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
-		final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id, utils.getUserId());
+		final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id,
+				utils.getUserId());
 		if (datasource != null) {
 			try {
 				virtualDatasourceService.deleteDatasource(datasource);
@@ -212,10 +219,12 @@ public class VirtualDatasourceController {
 	@PostMapping(value = "/checkConnection")
 	public @ResponseBody ResponseEntity<?> getTables(@RequestParam String datasource, @RequestParam String user,
 			@RequestParam String credentials, @RequestParam String sgdb, @RequestParam String url,
-			@RequestParam String queryLimit) {
+			@RequestParam String queryLimit, @RequestParam Boolean isEncrypted) {
 		Boolean valid;
 		try {
-			valid = this.virtualDatasourceService.checkConnection(datasource, user, credentials, sgdb, url, queryLimit);
+			valid = this.virtualDatasourceService.checkConnection(datasource, user,
+					isEncrypted ? JasyptConfig.getEncryptor().decrypt(credentials) : credentials, sgdb, url,
+					queryLimit);
 			return new ResponseEntity<>(valid, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

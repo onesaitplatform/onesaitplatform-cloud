@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,6 +52,8 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 	ClientPlatformInstanceRepository cpiRepository;
 	@Autowired
 	ClientPlatformRepository cpRepository;
+	@Autowired
+	IoTSessionRepository iotsessionRepository;
 	@Autowired
 	ObjectMapper mapper;
 
@@ -195,6 +199,11 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 	@Override
 	public void deleteClientPlatformInstance(ClientPlatformInstance clientPlatformInstance) {
 		cpiRepository.deleteById(clientPlatformInstance);
+	}
+
+	@Override
+	public List<IoTSession> getSessionKeys(ClientPlatformInstance clientPlatformInstance) {
+		return iotsessionRepository.findByClientPlatformID(clientPlatformInstance.getId());
 	}
 
 }

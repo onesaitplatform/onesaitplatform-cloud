@@ -44,7 +44,7 @@ var GadgetsTemplateCreateController = function() {
 		console.log('deleteGadgetConfirmation() -> formId: '+ gadgetTemplateId);
 		
 		// no Id no fun!
-		if ( !gadgetTemplateId ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO GATGET TEMPLATE SELECTED!'}); return false; }
+		if ( !gadgetTemplateId ) {toastr.error('NO GATGET TEMPLATE SELECTED!',''); return false; }
 		
 		logControl ? console.log('deleteGadgetTemplateConfirmation() -> formAction: ' + $('.delete-gadget').attr('action') + ' ID: ' + $('.delete-gadget').attr('userId')) : '';
 		
@@ -230,8 +230,7 @@ var GadgetsTemplateCreateController = function() {
 		// http://docs.jquery.com/Plugins/Validation
 
 		var form1 = $('#gadget_create_form');
-		var error1 = $('.alert-danger');
-		var success1 = $('.alert-success');
+		
 
 		// set current language
 		currentLanguage = templateCreateReg.language || LANGUAGE;
@@ -271,9 +270,7 @@ var GadgetsTemplateCreateController = function() {
 																	// alert on
 																	// form
 																	// submit
-						success1.hide();
-						error1.show();
-						App.scrollTo(error1, -200);
+						toastr.error(messagesForms.validation.genFormError,'');
 					},
 					errorPlacement : function(error, element) {
 						if (element.is(':checkbox')) {
@@ -302,8 +299,7 @@ var GadgetsTemplateCreateController = function() {
 					// ALL OK, THEN SUBMIT.
 					submitHandler : function(form) {
 
-						 success1.show();
-			                error1.hide();
+							toastr.success(messagesForms.validation.genFormSuccess,'');
 							form.submit();
 					}
 				});
@@ -658,6 +654,48 @@ var GadgetsTemplateCreateController = function() {
         refreshIframe();
         GadgetsTemplateCreateController.changeInitCodeView($("#type").val());
     }
+
+	var initTemplateElements = function(){
+			
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+				$('.form').validate().element('#' + event.target.id);                // checks form for validity
+			});			
+			
+		// Reset form
+			$('#resetBtn').on('click',function(){ 
+				cleanFields('gadget_create_form');
+			});		
+			
+		}
+
+// CLEAN FIELDS FORM
+	var cleanFields = function (formId) {
+		
+		//CLEAR OUT THE VALIDATION ERRORS
+		$('#'+formId).validate().resetForm(); 
+		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
+			if(!$(this).hasClass("no-remove")){$(this).val('');}
+		});
+		
+		//CLEANING SELECTs
+		$(".selectpicker").each(function(){
+			$(this).val( '' );
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});
+		
+		$( "#public" ).prop( "checked", false );
+
+	
+		//CLEANING type
+		$("#type")[0].selectedIndex = 0;
+		changeInitCodeView($("#type option:first").val());
+		
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+	}
+	
+
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{		
@@ -675,6 +713,7 @@ var GadgetsTemplateCreateController = function() {
 			handleVS();
 			handleValidation();
 			handleInitEditor();
+			initTemplateElements();
 		},
 		
 		// REDIRECT

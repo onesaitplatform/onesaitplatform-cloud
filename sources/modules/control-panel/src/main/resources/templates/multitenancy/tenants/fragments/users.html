@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
     limitations under the License.
 
 -->
-
-										
 	<!-- TENANTS LIST -->
 	<div class="col-md-12">											
 		<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
@@ -34,7 +32,7 @@
 				</div><!-- // DATATABLE initCompleteCallback (DT function) -->
 																	
 				<!-- DATATABLE DANDELION CONF. -->												
-				<table id="tenants" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{'/multitenancy/tenants/'+${tenant.name}+'/users/data'}"
+				<table id="tenants" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full" dt:url="@{'/multitenancy/tenants/'+${tenant.name}+'/users/data'}"
 					dt:reloadSelector="#btn-tenants-reload" dt:reloadFunction="Tenant.List.reloadTable"
 					dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
 					<thead>

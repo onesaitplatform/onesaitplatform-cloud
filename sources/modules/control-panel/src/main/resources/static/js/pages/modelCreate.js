@@ -33,12 +33,18 @@ var ModelCreateController = function() {
 			'<option value="timestamp">timestamp</option></select></div>' +
 		    '</form>',
 		    buttons: {
+		        close: {
+					text: modelCreateJson.cancel,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
 		        formSubmit: {
-		            text: 'OK',
-		            btnClass: 'btn-blue',
+		            text: modelCreateJson.confirmBtn,
+		            btnClass: 'btn btn-primary',
 		            action: function () {
 		            	if($("#type").val()=='' || $("#type").val()=="select" || $("#parameter_name").val()=='' || $("#parameter_name").val()==undefined){
-		            		$.alert({title: 'ALERT!', theme: 'light',  content: modelCreateJson.validations.parameters});
+		            		
+							toastr.error(messagesForms.validation.genFormError,'');	
 		            		return;
 		            	}
 		            	
@@ -68,9 +74,7 @@ var ModelCreateController = function() {
 		            	
 		            	$("#parameter_" + $("#parameter_name").val()).append('<div class="col-md-12"><div class="btn-group pull-right"><span class="btn btn-circle btn-outline blue " onclick="ModelCreateController.editParameter(\''+ $("#parameter_name").val() +'\')" data-container="body" data-placement="bottom" id="edit_'+ $("#parameter_name").val() +'" th:text="#{gen.edit}"><i class="fa fa-edit"></i></span><span class="btn btn-circle btn-outline blue " onclick="ModelCreateController.deleteParameter(\''+ $("#parameter_name").val() +'\')" th:text="#{gen.deleteBtn}"><i class="fa fa-trash"></i></span></div></div>');
 		            }
-		        },
-		        cancel: function () {
-		        },
+		        }
 		    }
 		});
 	});
@@ -108,7 +112,8 @@ var ModelCreateController = function() {
 	$('input[type=radio][name=output]').change(function() {
 	    if (this.value == 'paragraph') {
 	    	if($("#notebook").val() == null || $("#notebook").val() == "" || $("#notebook").val() == undefined){
-	    		$.alert({title: 'ALERT!', theme: 'light',  content: modelCreateJson.validations.notebook});
+	    		
+				toastr.error(modelCreateJson.validations.notebook,'');	
 	    		return;
 	    	}
 	       $("#dashboard").attr("disabled", "disabled");
@@ -152,7 +157,7 @@ var ModelCreateController = function() {
 		var schemaObj = {};
 		
 		checkUnique = parameters.unique();
-		if (parameters.length !== checkUnique.length)  { $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitaltwintype.validations.duplicates}); return false; } 
+		if (parameters.length !== checkUnique.length)  {toastr.error(digitaltwintype.validations.duplicates,'');	 return false; } 
 		
 		if ( parameters.length ){	
 			$.each(parameters, function( index, value ) {
@@ -169,7 +174,7 @@ var ModelCreateController = function() {
 		console.log('deleteModelConfirmation() -> formId: '+ modelId);
 		
 		// no Id no fun!
-		if ( !modelId ) {$.alert({title: 'ERROR!', type: 'red' , theme: 'light', content: modelCreateJson.validations.validform}); return false; }
+		if ( !modelId ) {toastr.error(modelCreateJson.validations.validform,''); return false; }
 		
 		logControl ? console.log('deleteModelConfirmation() -> formAction: ' + $('.delete-model').attr('action') + ' ID: ' + $('#delete-modelId').attr('modelId')) : '';
 		
@@ -196,14 +201,13 @@ var ModelCreateController = function() {
 		
         if (dateDeleted != ""){
             if (dateCreated > dateDeleted){
-                $.confirm({icon: 'fa fa-warning', title: 'CONFIRM:', theme: 'dark',
+                $.confirm({title: 'CONFIRM:', theme: 'light',
 					content: userCreateReg.validation_dates,
 					draggable: true,
 					dragWindowGap: 100,
 					backgroundDismiss: true,
-					closeIcon: true,
 					buttons: {				
-						close: { text: userCreateReg.Close, btnClass: 'btn btn-sm btn-default btn-outline', action: function (){} //GENERIC CLOSE.		
+						close: { text: modelCreateJson.cancel, btnClass: 'btn btn-outline blue dialog', action: function (){} //GENERIC CLOSE.		
 						}
 					}
 				});
@@ -252,13 +256,28 @@ var ModelCreateController = function() {
             	notebook:		{ required: true },
                 identification:	{ minlength: 5, required: true },
 				description:	{ minlength: 5, required: true }
+				
             },
-            invalidHandler: function(event, validator) { // display error
-															// alert on form
-															// submit
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+            invalidHandler: function(event, validator) {  					
+					
+				if($('#categories_select').val()=='') {
+            	
+					$('#categories_select_div').removeClass('has-error');
+					$('#categories_select_div').addClass('has-error');
+            		 
+            	}else{
+					$('#categories_select_div').removeClass('has-error');
+				}
+															
+				if( $('#subcategories').val()=='') {
+            	
+					$('#subcategories_select_div').removeClass('has-error');
+					$('#subcategories_select_div').addClass('has-error');
+            		 
+            	}else{
+					$('#subcategories_select_div').removeClass('has-error');
+				}
+             	toastr.error(messagesForms.validation.genFormError,'');
             },
             errorPlacement: function(error, element) {
             	if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -282,17 +301,39 @@ var ModelCreateController = function() {
             submitHandler: function(form) {
             	
             	if(!$('#dashboard-radio').is(':checked') && !$('#paragraph-radio').is(':checked')) {
-            		$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: modelCreateJson.validations.outputSource});
+            		
+					toastr.error(modelCreateJson.validations.outputSource,'');	
             		return;
             	}
+				if($('#dashboard-radio').is(':checked') && $('#dashboard').val()==''){
+					
+					toastr.error(modelCreateJson.validations.outputSource,'');	
+            		return;
+				}
             	
-            	if($('#categories_select').val()=='' || $('#subcategories').val()=='') {
-            		$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: modelCreateJson.validations.category});
-            		return;
-            	}
-
+            	var caterror=false;		
+				if($('#categories_select').val()=='') {            	
+					$('#categories_select_div').removeClass('has-error');
+					$('#categories_select_div').addClass('has-error');
+            		 caterror= true;
+            	}else{
+					$('#categories_select_div').removeClass('has-error');
+				}
+															
+				if( $('#subcategories').val()=='') {
+            	
+					$('#subcategories_select_div').removeClass('has-error');
+					$('#subcategories_select_div').addClass('has-error');
+            		  caterror= true;
+            	}else{
+					$('#subcategories_select_div').removeClass('has-error');
+				}
+				if( caterror == true){		
+					toastr.error(modelCreateJson.validations.category,'');								
+					return false;
+				}
                 error1.hide();
-                
+              
                 updateSchemaProperties();
     			
 	   			 $.each(props, function(k,v){
@@ -306,11 +347,12 @@ var ModelCreateController = function() {
 					
 				// form.submit();
 				form1.ajaxSubmit({type: 'post', success : function(data){
-					
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					navigateUrl(data.redirect);
 					
 					}, error: function(data){
-						HeaderController.showErrorDialog(data.responseJSON.cause)
+						toastr.error(data.responseJSON.cause,'');
+						
 					}
 				})
 				
@@ -319,7 +361,75 @@ var ModelCreateController = function() {
         });
     }
 	
- 
+	 var initTemplateElements = function(){
+		
+	$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});			
+	
+		$('#categories_select').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			if($('#categories_select').val()=='') {            	
+					$('#categories_select_div').removeClass('has-error');
+					$('#categories_select_div').addClass('has-error');            		
+            	}else{
+					$('#categories_select_div').removeClass('has-error');
+				}
+		});			
+	
+	
+	$('#subcategories').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			if( $('#subcategories').val()=='') {
+            	
+					$('#subcategories_select_div').removeClass('has-error');
+					$('#subcategories_select_div').addClass('has-error');
+            		 
+            	}else{
+					$('#subcategories_select_div').removeClass('has-error');
+				}
+		});			
+		
+	// Reset form
+		$('#resetBtn').on('click',function(){ 
+			cleanFields('model_create_form');
+		});		
+		
+	}
+
+	
+	// CLEAN FIELDS FORM
+	var cleanFields = function (formId) {
+		
+		//CLEAR OUT THE VALIDATION ERRORS
+		$('#'+formId).validate().resetForm(); 
+		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
+			if(!$(this).hasClass("no-remove")){$(this).val('');}
+		});
+		
+		//CLEANING SELECTs
+		$(".selectpicker").each(function(){
+			$(this).val( '' );
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});
+		
+		// CLEANING tagsinput
+		$('.tagsinput').tagsinput('removeAll');
+		$('.tagsinput').prev().removeClass('tagsinput-has-error');
+		$('.tagsinput').nextAll('span:first').addClass('hide');
+
+		$('#subcategories_select_div').removeClass('has-error');
+		$('#categories_select_div').removeClass('has-error');
+		
+		$("#parameter").empty();
+		parameters=[];
+		
+		//CLEANING IMAGE
+		$('#image').val('');
+		$('#showedImgPreview').attr('src', '/controlpanel/img/APPLICATION.png');
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+	}
+	
 
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
@@ -334,7 +444,7 @@ var ModelCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 
 			handleValidation();
-
+			initTemplateElements();
 			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			
@@ -454,8 +564,8 @@ var ModelCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': checkParameter()') : '';
 			areUnique = parameters.unique();
 			if (parameters.length !== areUnique.length)  { 
-				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: modelCreateJson.validations.duplicates});
 				
+				toastr.error(modelCreateJson.validations.duplicates,'');	
 				return false;
 			}
 			return true;
@@ -566,12 +676,18 @@ var ModelCreateController = function() {
 					'</select></div>' +
 				    '</form>',
 				    buttons: {
+				    	close: {
+							text: modelCreateJson.cancel,
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.		
+						},
 				        formSubmit: {
-				            text: 'OK',
-				            btnClass: 'btn-blue',
+				            text: modelCreateJson.confirmBtn,
+				            btnClass: 'btn btn-primary',
 				            action: function () {
 				            	if($("#type").val()=='' || $("#type").val()=="select" || $("#parameter_name").val()=='' || $("#parameter_name").val()==undefined){
-				            		$.alert({title: 'ALERT!', theme: 'light',  content: modelCreateJson.validations.parameters});
+				            		
+									toastr.error(messagesForms.validation.genFormError,'');	
 				            		return;
 				            	}
 				            	
@@ -614,9 +730,7 @@ var ModelCreateController = function() {
 				            	
 				            	$("#parameter_" + element).append('<div class="col-md-12"><div class="btn-group pull-right"><span class="btn btn-circle btn-outline blue " onclick="ModelCreateController.editParameter(\''+ $("#parameter_name").val() +'\')" data-container="body" data-placement="bottom" id="edit_'+ $("#parameter_name").val() +'" th:text="#{gen.edit}"><i class="fa fa-edit"></i></span><span class="btn btn-circle btn-outline blue " onclick="ModelCreateController.deleteParameter(\''+ $("#parameter_name").val() +'\')" th:text="#{gen.deleteBtn}"><i class="fa fa-trash"></i></span></div></div>');
 				            }
-				        },
-				        cancel: function () {
-				        },
+				        }
 				    },
 				    onContentReady: function () {
 				        $("#type").val($("#type_" + element).text().trim());

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,15 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,7 +30,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_VIRTUAL_DATASOURCE")
-public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
+public class OntologyVirtualDatasource extends OPResource {
 
 	/**
 	 * 
@@ -48,28 +38,9 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	private static final long serialVersionUID = 1L;
 
 	public enum VirtualDatasourceType {
-		ORACLE,ORACLE11,MYSQL,MARIADB,SQLSERVER,POSTGRESQL,IMPALA,HIVE,OP_QUERYDATAHUB,KUDU
+		ORACLE, ORACLE11, MYSQL, MARIADB, SQLSERVER, POSTGRESQL, IMPALA, HIVE, OP_QUERYDATAHUB, KUDU
 	}
 
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User userId;
-
-	@OneToMany(mappedBy = "datasourceId", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@Getter
-	@Setter
-	private Set<OntologyVirtual> ontologyVirtuals = new HashSet<>();
-
-	@Column(name = "DATASOURCE_NAME", length = 128, nullable = false, unique = true)
-	@NotNull
-	@Getter
-	@Setter
-	private String datasourceName;
-	
 	@Column(name = "DATASOURCE_DOMAIN", length = 128, nullable = true)
 	@Getter
 	@Setter
@@ -90,7 +61,7 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 	@Column(name = "USER", length = 128, nullable = true)
 	@Getter
 	@Setter
-	private String user;
+	private String userId;
 
 	@Column(name = "CREDENTIALS", length = 128, nullable = true)
 	@Getter
@@ -117,34 +88,34 @@ public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 
 	@Transient
 	public String getValidationQuery() {
-	    switch (sgdb) {
-        case ORACLE:
-        case ORACLE11:
-            return "select 1 from dual";
-        case MYSQL:
-        case MARIADB:
-        case SQLSERVER:
-        case POSTGRESQL:
-        case HIVE:
-        case IMPALA:
-        default:
-	        return "select 1";
-        }
+		switch (sgdb) {
+		case ORACLE:
+		case ORACLE11:
+			return "select 1 from dual";
+		case MYSQL:
+		case MARIADB:
+		case SQLSERVER:
+		case POSTGRESQL:
+		case HIVE:
+		case IMPALA:
+		default:
+			return "select 1";
+		}
 	}
 
-    @Column(name = "VALIDATION_QUERY_TIMEOUT", columnDefinition = "integer default 5")
-    @Getter
-    @Setter
-    private Integer validationQueryTimeout;
+	@Column(name = "VALIDATION_QUERY_TIMEOUT", columnDefinition = "integer default 5")
+	@Getter
+	@Setter
+	private Integer validationQueryTimeout;
 
-    @Column(name = "TEST_ON_BORROW", columnDefinition = "BIT default 1")
-    @Getter
-    @Setter
-    private Boolean testOnBorrow;
+	@Column(name = "TEST_ON_BORROW", columnDefinition = "BIT default 1")
+	@Getter
+	@Setter
+	private Boolean testOnBorrow;
 
-    @Column(name = "TEST_WHILE_IDLE", columnDefinition = "BIT default 1")
-    @Getter
-    @Setter
-    private Boolean testWhileIdle;
+	@Column(name = "TEST_WHILE_IDLE", columnDefinition = "BIT default 1")
+	@Getter
+	@Setter
+	private Boolean testWhileIdle;
 
 }

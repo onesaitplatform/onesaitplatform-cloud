@@ -89,5 +89,11 @@
     	<eviction-policy>LFU</eviction-policy>
     	<max-size policy="USED_HEAP_PERCENTAGE">10</max-size>
   	</map>
+  	
+  	<map name="timeseriesUpdateTransaction">
+    	<time-to-live-seconds>5</time-to-live-seconds>
+    	<eviction-policy>NONE</eviction-policy>
+    	<max-size policy="PER_NODE">300</max-size>
+  	</map>
     
 </hazelcast>

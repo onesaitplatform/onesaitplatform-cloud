@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,24 @@
  */
 package com.minsait.onesait.platform.controlpanel.services.rules;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.DroolsRule;
+import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
+import com.minsait.onesait.platform.controlpanel.controller.rules.DroolsRuleDTO;
 import com.minsait.onesait.platform.controlpanel.controller.rules.RuleDTO;
 
 public interface BusinessRuleService {
 
-	void save(DroolsRule rule, String userId) throws GenericOPException;
+	void save(DroolsRuleDTO rule, String userId) throws GenericOPException, IOException;
 
 	void save(RuleDTO rule, String userId) throws GenericOPException;
 
-	void update(DroolsRule rule, String userId, String identification) throws GenericOPException;
+	void update(DroolsRuleDTO rule, String userId, String identification) throws GenericOPException, IOException;
 
 	void update(RuleDTO rule, String userId, String identification) throws GenericOPException;
 
@@ -46,5 +52,13 @@ public interface BusinessRuleService {
 	void changeDomainStates(boolean active);
 
 	DroolsRuleDomain createDomain(String user);
+
+	void updateDecisionTable(String identification, MultipartFile decisionTable) throws GenericOPException, IOException;
+
+	File createFolder(String path) throws GenericRuntimeOPException;
+
+	File uploadFileToFolder(byte[] bytes, String path, String ruleName, String extension);
+
+	boolean deleteDirectory(File directoryToBeDeleted);
 
 }

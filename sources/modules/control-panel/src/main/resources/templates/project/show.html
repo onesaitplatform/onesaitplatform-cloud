@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -230,6 +230,7 @@
 															class="la la-database font-hg font-blue-hoki tooltips"
 															data-container="body" data-placement="right"
 															th:title="Datasource" th:data-original-title="Datasource"></i>
+															<i th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" class="la la-database font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Datasource" th:data-original-title="Datasource"></i>
 															<i th:if="${access.resource.class.simpleName == 'Report'}" class="la la-folder-open font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 															<i th:if="${access.resource.class.simpleName == 'BinaryFile'}" class="la la-file font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 							

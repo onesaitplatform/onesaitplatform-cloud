@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import com.minsait.onesait.platform.config.components.AllConfiguration;
 import com.minsait.onesait.platform.config.components.GitlabConfiguration;
@@ -75,10 +76,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public List<Type> getAllConfigurationTypes(User user) {
-		if (user.isAdmin())
+		if (user.isAdmin()) {
 			return Arrays.asList(Configuration.Type.values());
-		else
+		} else {
 			return Arrays.asList(Configuration.Type.EXTERNAL_CONFIG);
+		}
 	}
 
 	@Override
@@ -91,9 +93,10 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 		Configuration oldConfiguration = configurationRepository.findByTypeAndEnvironmentAndSuffix(
 				configuration.getType(), configuration.getEnvironment(), configuration.getSuffix());
-		if (oldConfiguration != null)
+		if (oldConfiguration != null) {
 			throw new ConfigServiceException(
 					"Exist a configuration of this type for the environment and suffix:" + configuration.toString());
+		}
 
 		oldConfiguration = new Configuration();
 		oldConfiguration.setUser(configuration.getUser());
@@ -110,6 +113,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public void updateConfiguration(Configuration configuration) {
 		configurationRepository.findById(configuration.getId()).ifPresent(oc -> {
 			oc.setYmlConfig(configuration.getYmlConfig());
+			oc.setType(configuration.getType());
 			oc.setDescription(configuration.getDescription());
 			oc.setSuffix(configuration.getSuffix());
 			oc.setEnvironment(configuration.getEnvironment());
@@ -123,8 +127,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		try {
 			final Configuration config = this.getConfiguration(Configuration.Type.TWITTER, environment, suffix);
 			final AllConfiguration conf = getAllConfigurationFromDBConfig(config);
-			if (conf == null)
+			if (conf == null) {
 				return null;
+			}
 			return conf.getTwitter();
 		} catch (final Exception e) {
 			log.error("Error getting TwitterConfiguration", e);
@@ -134,7 +139,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public boolean existsConfiguration(Configuration configuration) {
-		return (configurationRepository.findById(configuration.getId()) != null);
+		return configurationRepository.findById(configuration.getId()) != null;
 	}
 
 	@Override
@@ -167,10 +172,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public Configuration getConfiguration(Configuration.Type type, String environment, String suffix) {
-		if (suffix == null)
+		if (suffix == null) {
 			return configurationRepository.findByTypeAndEnvironment(type, environment);
-		else
+		} else {
 			return configurationRepository.findByTypeAndEnvironmentAndSuffix(type, environment, suffix);
+		}
 	}
 
 	@Override
@@ -183,7 +189,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		final Configuration config = configurationRepository
 				.findByTypeAndEnvironment(Configuration.Type.ENDPOINT_MODULES, environment);
 		final Constructor constructor = new Constructor(ModulesUrls.class);
-		final Yaml yamlUrls = new Yaml(constructor);
+		final Representer representer = new Representer();
+		representer.getPropertyUtils().setSkipMissingProperties(true);
+		final Yaml yamlUrls = new Yaml(constructor, representer);
 		return yamlUrls.loadAs(config.getYmlConfig(), ModulesUrls.class).getOnesaitplatform().get("urls");
 
 	}
@@ -191,8 +199,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public GitlabConfiguration getGitlabConfiguration(String id) {
 		final Configuration config = configurationRepository.findById(id).orElse(null);
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(config).getGitlab();
 	}
 
@@ -200,8 +209,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public GitlabConfiguration getGitlabConfiguration(String suffix, String environment) {
 		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.GITLAB, environment,
 				suffix);
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(config).getGitlab();
 	}
 
@@ -213,16 +223,18 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public RancherConfiguration getRancherConfiguration(String id) {
 		final Configuration config = configurationRepository.findById(id).orElse(null);
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(config).getRancher();
 	}
 
 	@Override
 	public OpenshiftConfiguration getOpenshiftConfiguration(String id) {
 		final Configuration config = configurationRepository.findById(id).orElse(null);
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(config).getOpenshift();
 	}
 
@@ -234,8 +246,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public MailConfiguration getMailConfiguration(String environment) {
 		final Configuration configuration = configurationRepository.findByTypeAndEnvironment(Type.MAIL, environment);
-		if (configuration == null)
+		if (configuration == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(configuration).getMail();
 	}
 
@@ -243,8 +256,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment) {
 		final Configuration configuration = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS,
 				environment);
-		if (configuration == null)
+		if (configuration == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(configuration).getGoogleanalytics();
 	}
 
@@ -252,10 +266,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public RancherConfiguration getRancherConfiguration(String suffix, String environment) {
 		final Configuration config = configurationRepository
 				.findByTypeAndEnvironmentAndSuffix(Configuration.Type.RANCHER, environment, suffix);
-		if (config == null)
+		if (config == null) {
 			return null;
-		else
+		} else {
 			return getAllConfigurationFromDBConfig(config).getRancher();
+		}
 	}
 
 	@Override
@@ -266,8 +281,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public GlobalConfiguration getGlobalConfiguration(String environment) {
 		final Configuration config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, environment);
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(config).getOnesaitplatform();
 	}
 
@@ -275,8 +291,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	public JenkinsConfiguration getJenkinsConfiguration(String environment) {
 		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.JENKINS,
 				environment, "jenkins");
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		return getAllConfigurationFromDBConfig(config).getJenkins();
 	}
 
@@ -286,8 +303,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	}
 
 	private AllConfiguration getAllConfigurationFromDBConfig(Configuration config) {
-		if (config == null)
+		if (config == null) {
 			return null;
+		}
 		final Constructor constructor = new Constructor(AllConfiguration.class);
 		final Yaml yaml = new Yaml(constructor);
 		return yaml.loadAs(config.getYmlConfig(), AllConfiguration.class);
@@ -296,8 +314,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public String getDefaultJenkinsXML(String suffix) {
 		final Configuration configuration = this.getConfiguration(Type.JENKINS, DEFAULT, suffix);
-		if (configuration == null)
+		if (configuration == null) {
 			return "";
+		}
 		return configuration.getYmlConfig();
 	}
 

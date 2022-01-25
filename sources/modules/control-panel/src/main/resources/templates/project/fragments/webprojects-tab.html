@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,28 +14,35 @@
     limitations under the License.
 
 -->
-<div th:if="${projectObj.webProject == null}" class="col-md-6 col-sm-6 col-xs-12">
-	<div class="form-group">
-		<label class="control-label" th:text="#{project.webproject.list} + ':'">Webprojects:</label>
-		<select id="webprojects" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
-			<option value="" th:text="#{project.webprojectselect}"> Select Webproject...</option>									
-			<option th:each="webproject :${webprojects}" th:value="${webproject.id}" th:text="${webproject.identification}" ></option>
-		</select>
-	</div>
-	<div class="form-group pull-right">
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.addWebProject()" th:text="#{project.link.webproject}"></button>
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/webprojects/create|}+'\')'" th:text="#{gen.createBtn}"></button>																		
-	</div>
+<div class="row main">
+    <div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
+        <span th:text="#{marketasset.webproject}">Web Project</span>
+    </div>
 </div>
-<div th:if="${projectObj.webProject != null}" class="col-md-6 col-sm-6 col-xs-12">
-	<div class="form-group">
-		<label class="control-label" th:text="#{project.webproject.list} + ':'">Webprojects:</label>
-		<div class="input-icon">
-			<input class="form-control" type="text" readonly="true" th:value="${projectObj.webProject.identification}"/>
+<div class="row main">
+	<div th:if="${projectObj.webProject == null}" class="col-md-6 col-sm-6 col-xs-12">
+		<div class="form-group">
+			<label class="control-label" th:text="#{project.webproject.list}">Webprojects:</label>
+			<select id="webprojects" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
+				<option value="" th:text="#{project.webprojectselect}"> Select Webproject...</option>									
+				<option th:each="webproject :${webprojects}" th:value="${webproject.id}" th:text="${webproject.identification}" ></option>
+			</select>
+		</div>
+		<div class="form-group pull-right">
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.addWebProject()" th:text="#{project.link.webproject}"></button>
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/webprojects/create|}+'\')'" th:text="#{gen.createBtn}"></button>																		
 		</div>
 	</div>
-	<div class="form-group pull-right">
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.removeWebProject()" th:text="#{project.unlink.webproject}"></button>
+	<div th:if="${projectObj.webProject != null}" class="col-md-6 col-sm-6 col-xs-12">
+		<div class="form-group">
+			<label class="control-label" th:text="#{project.webproject.list}">Webprojects:</label>
+			<div class="input-icon">
+				<input class="form-control" type="text" readonly="true" th:value="${projectObj.webProject.identification}"/>
+			</div>
+		</div>
+		<div class="form-group pull-right">
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.removeWebProject()" th:text="#{project.unlink.webproject}"></button>
+		</div>
 	</div>
 </div>
 

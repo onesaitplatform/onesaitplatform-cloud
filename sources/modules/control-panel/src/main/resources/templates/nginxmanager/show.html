@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@
 									</div>
 									<div class="col-md-12">										
 										<form role="form" id="user_view_form" th:action="@{/nginxmanager/set}" th:object="${nginx}" method="post" class="form">
+											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 											<div class="form-body">
 												<div class="row">
 													<div class="col-md-12 col-sm-12 col-xs-12">
@@ -108,7 +109,6 @@
 												
 												<div class="pull-right">																								
 													
-													
 													<!-- MODIFY -->
 													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="editBtn" type="button" class="btn btn-circle btn-outline  blue" name="edit"  value="Edit" onclick="edit();"> <span th:text="#{gen.editBtn}"> Edit </span></button>
 													
@@ -121,12 +121,9 @@
 													
 													<!-- CREATE -->
 													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create"> <span text="DEPLOY NEW VERSION"> DEPLOY NEW VERSION</span></button>
-													
-													
-													
 												</div>
 											</div>									
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+										</form>
 										
 										<!-- AUXILIAR FORM TO DELETE CONFIGURATION -->
 										<!--<form id="delete_configuration_form" class="delete-configuration hide"  action=""  method="post">

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.controlpanel.controller.project;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +43,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
@@ -57,6 +55,7 @@ import com.minsait.onesait.platform.config.services.exceptions.AppServiceExcepti
 import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
+import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.project.ProjectDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectResourceAccessDTO;
@@ -92,6 +91,8 @@ public class ProjectController {
 	private DashboardService dashboardService;
 	@Autowired
 	private GadgetDatasourceService datasourceService;
+	@Autowired
+	private OntologyService ontologyService;
 	/*
 	 * @Autowired private ResourcesInUseService resourcesInUseService;
 	 */
@@ -126,14 +127,12 @@ public class ProjectController {
 		if (!projectService.isUserInProject(utils.getUserId(), projectId) && !utils.isAdministrator()) {
 			return ERROR_403;
 		}
-		final String creator = projectService.getById(projectId).getUser().toString();
+		final String creator = projectService.getById(projectId).getUser().getUserId().toString();
 		final boolean isCreator = creator.equals(utils.getUserId());
 		model.addAttribute("urlsMap", getUrlsMap());
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		model.addAttribute("userRole", utils.getRole());
 		model.addAttribute("rootWWW", rootWWW);
-		model.addAttribute("reportTypes", Arrays.asList(ReportType.values()).stream().filter(t -> !t.equals(ReportType.JRXML))
-				.collect(Collectors.toList()));
 		if (utils.getRole().equals("ROLE_ADMINISTRATOR") || isCreator) {
 			final Set<ProjectResourceAccess> pr = projectService.getById(projectId).getProjectResourceAccesses();
 			final Collection<List<ProjectResourceAccess>> prfil = pr.stream()
@@ -305,6 +304,9 @@ public class ProjectController {
 		case "DASHBOARD":
 			elementsJson = new JSONArray(dashboardService.getElementsAssociated(resourceId));
 			break;
+		case "ONTOLOGY":
+			elementsJson = new JSONArray(ontologyService.getElementsAssociated(resourceId));
+			break;
 		default:
 			break;
 		}
@@ -350,9 +352,9 @@ public class ProjectController {
 		if (project.getApp() != null) {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
 				projectService.getProjectRoles(authorization.getProject())
-				.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-						resourceService.getResourceById(authorization.getResource()), project,
-						appService.findRole(ar.getId()))));
+						.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+								resourceService.getResourceById(authorization.getResource()), project,
+								appService.findRole(ar.getId()))));
 				resourceService.insertAuthorizations(accesses);
 			} else {
 				resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
@@ -366,8 +368,7 @@ public class ProjectController {
 				if (authorization.getResourceType().equalsIgnoreCase(Resources.DATAFLOW.toString())
 						|| authorization.getResourceType().equalsIgnoreCase(Resources.NOTEBOOK.toString())) {
 					resourceService.insertAuthorizations(accesses.stream()
-							.filter(a -> userService.isUserAnalytics(a.getUser()))
-							.collect(Collectors.toSet()));
+							.filter(a -> userService.isUserAnalytics(a.getUser())).collect(Collectors.toSet()));
 				} else {
 					resourceService.insertAuthorizations(accesses);
 				}
@@ -396,9 +397,9 @@ public class ProjectController {
 			if (project.getApp() != null) {
 				if (authorization.getAuthorizing().equals(ALL_USERS)) {
 					projectService.getProjectRoles(authorization.getProject())
-					.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-							resourceService.getResourceById(authorization.getResource()), project,
-							appService.findRole(ar.getId()))));
+							.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+									resourceService.getResourceById(authorization.getResource()), project,
+									appService.findRole(ar.getId()))));
 					resourceService.insertAuthorizations(accesses);
 
 				} else {
@@ -547,6 +548,7 @@ public class ProjectController {
 		urls.put(Resources.ONTOLOGY.name(), "ontologies");
 		urls.put(Resources.DATAFLOW.name(), "dataflow");
 		urls.put(Resources.GADGETDATASOURCE.name(), "datasources");
+		urls.put(Resources.ONTOLOGYVIRTUALDATASOURCE.name(), "virtualdatasources");
 		return urls;
 	}
 }

@@ -39,6 +39,13 @@ buildImageSB2()
 	rm $1/docker/*.jar
 }
 
+buildImageKeycloakManager(){
+	echo "Docker image generation for onesaitplatform module: "$2
+	cd $1/docker
+	cp $1/target/*.jar $1/docker/
+	docker build -t $USERNAME/$2:$3 .
+	rm $1/docker/*.jar
+}
 buildImageTelegraf()
 {
 	echo "Docker image generation for telegraf"
@@ -72,6 +79,29 @@ buildCas(){
 	docker build -t $USERNAME/cas-server:$2 .
 	rm $1/docker/*.war
 	rm -R $1/docker/etc
+}
+
+buildKeycloakInfra(){
+	cd $1/onesaitplatform-keycloak-storage-provider
+	mvn package
+	cp target/onesaitplatform-keycloak-storage-provider.jar $1/server/
+	cd $1/server
+	docker build -t $USERNAME/keycloak:$2 .
+	rm onesaitplatform-keycloak-storage-provider.jar
+
+}
+
+buildPrestoInfra() {
+	cd $1/presto-server
+	docker build -t $USERNAME/presto-server:$2 .
+	cd $1/presto-metastore-server
+	docker build -t $USERNAME/presto-metastore-server:$2 .
+}
+
+buildMLFlow()
+{
+	echo "MLFlow image generation with Docker CLI: "
+	docker build --squash -t $USERNAME/modelsmanager:$1 .
 }
 
 buildConfigDB()
@@ -116,6 +146,15 @@ buildRealTimeDB40()
 	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
 }
 
+buildRealTimeDB50()
+{
+	echo "RealTimeDB image generation with Docker CLI: "
+	docker build -t $USERNAME/realtimedb:$1 .
+
+	echo "RealTimeDB image generation with Docker CLI: - No Auth"
+	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+}
+
 buildRealTimeDB36()
 {
 	echo "RealTimeDB image generation with Docker CLI: "
@@ -135,6 +174,12 @@ buildElasticSearchDB()
 {
 	echo "ElasticSearchDB image generation with Docker CLI: "
 	docker build --squash -t $USERNAME/elasticdb:$1 .
+}
+
+buildAuditDB()
+{
+	echo "Audit database image generation with Docker CLI: "
+	docker build --squash -t $USERNAME/auditdb:$1 .
 }
 
 buildKafka()
@@ -309,6 +354,14 @@ buildLogCentralizer()
 
 }
 
+buildTimescaleDB()
+{
+	echo "TimescaleDB image generation with Docker CLI: "
+    docker build -t $USERNAME/timescaledb:$1 .
+
+
+}
+
 prepareConfigInitExamples()
 {
 	echo "Compressing and Copying realtimedb file examples: "
@@ -401,17 +454,17 @@ pushImage2Registry()
 	fi
 }
 
-pushImage2ACRRegistry()
+pushImage2GCPRegistry()
 {
 	if [ "$NO_PROMT" = false ]; then
-		echo "¿Deploy "$1 " image to OCP registry y/n: "
+		echo "¿Deploy "$1 " image to GCP registry y/n: "
 		read confirmation
 	fi
 
 	if [[ "$confirmation" == "y" || "$NO_PROMT" = true ]]; then
 	    if [ "$(docker images -q $USERNAME/$1:$2)" ]; then
-			docker tag $USERNAME/$1:$2 solucionesregistry.azurecr.io/$USERNAME/$1:$2
-			docker push solucionesregistry.azurecr.io/$USERNAME/$1:$2
+			docker tag $USERNAME/$1:$2 europe-west1-docker.pkg.dev/dcme-npro-onst-snbx-osp-dev-00/platformregistry/$USERNAME/$1:$2
+			docker push europe-west1-docker.pkg.dev/dcme-npro-onst-snbx-osp-dev-00/platformregistry/$USERNAME/$1:$2
 		fi
 	fi
 }
@@ -575,6 +628,14 @@ if [[ "$MODULE_REPORT_ENGINE" = true && "$(docker images -q $USERNAME/report-eng
 	buildImage $homepath/../../../../sources/modules/report-engine report-engine $MODULE_TAG
 fi
 
+if [[ "$MODULE_KEYCLOAK_MANAGER" = true && "$(docker images -q $USERNAME/microservices-gateway 2> /dev/null)" == "" ]]; then
+	buildImageKeycloakManager $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager keycloak-manager $MODULE_TAG
+fi
+
+if [[ "$MODULE_SERVERLESS_MANAGER" = true && "$(docker images -q $USERNAME/serverless-manager 2> /dev/null)" == "" ]]; then
+	buildImage $homepath/../../../../sources/modules/serverless-manager serverless-manager $MODULE_TAG
+fi
+
 #####################################################
 # Persistence image generation
 #####################################################
@@ -614,6 +675,11 @@ if [[ "$PERSISTENCE_REALTIMEDB_44" = true && "$(docker images -q $USERNAME/realt
 	buildRealTimeDB40 $PERSISTENCE_TAG
 fi
 
+if [[ "$PERSISTENCE_REALTIMEDB_50" = true && "$(docker images -q $USERNAME/realtimedb:5.0 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/realtimedb50
+	buildRealTimeDB50 $PERSISTENCE_TAG
+fi
+
 if [[ "$PERSISTENCE_REALTIMEDB_36" = true && "$(docker images -q $USERNAME/realtimedb:36 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/realtimedb36
 	buildRealTimeDB36 $PERSISTENCE_TAG
@@ -622,6 +688,11 @@ fi
 if [[ "$PERSISTENCE_ELASTICDB" = true && "$(docker images -q $USERNAME/elasticdb 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/elasticsearch
 	buildElasticSearchDB $PERSISTENCE_TAG
+fi
+
+if [[ "$PERSISTENCE_AUDITOPDISTRO" = true && "$(docker images -q $USERNAME/auditdb 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/opendistro
+	buildAuditDB $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_KAFKA" = true && "$(docker images -q $USERNAME/kafka-secured 2> /dev/null)" == "" ]]; then
@@ -638,6 +709,13 @@ if [[ "$PERSISTENCE_KSQL" = true && "$(docker images -q $USERNAME/ksql-server 2>
 	cd $homepath/../dockerfiles/kafka-cluster/ksql-server
 	buildKsql $PERSISTENCE_TAG
 fi
+
+
+if [[ "$PERSISTENCE_TIMESCALEDB" = true ]]; then
+	cd $homepath/../dockerfiles/timescaledb
+	buildTimescaleDB  $PERSISTENCE_TAG
+fi
+
 
 #####################################################
 # Infrastructure image generation
@@ -708,6 +786,11 @@ if [[ "$INFRA_STREAMSETS313" = true && "$(docker images -q $USERNAME/streamsets 
 	buildStreamsets $INFRA_TAG
 fi
 
+if [[ "$INFRA_STREAMSETS318" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/streamsets318
+	buildStreamsets $INFRA_TAG
+fi
+
 if [[ "$INFRA_DASHBOARDEXPORTER" = true && "$(docker images -q $USERNAME/dashboardexporter 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/dashboardexporter
 	buildDashboardExporter $INFRA_TAG
@@ -772,58 +855,83 @@ if [[ "$INFRA_TELEGRAF" = true && "$(docker images -q $USERNAME/agent-metric-col
     buildImageTelegraf $INFRA_TAG
 fi
 
+if [[ "$INFRA_KEYCLOAK" = true  ]]; then
+	buildKeycloakInfra $homepath/../../../../tools/keycloak $INFRA_TAG
+fi
+
+if [[ "$INFRA_PRESTO" = true  ]]; then
+	buildPrestoInfra $homepath/../dockerfiles/presto $INFRA_TAG
+fi
+
+if [[ "$INFRA_MLFLOW" = true && "$(docker images -q $USERNAME/modelsmanager 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/mlflow
+	buildMLFlow $INFRA_TAG
+fi
+
 
 echo "Docker images successfully generated!"
 
-if [ "$PUSH2ACRREGISTRY" = true ]; then
-	echo "Pushing images to ACR registry..."
+if [ "$PUSH2GCPREGISTRY" = true ]; then
+	echo "Pushing images to GCP registry..."
 
-	pushImage2ACRRegistry configdb $PERSISTENCE_TAG
-	pushImage2ACRRegistry schedulerdb $PERSISTENCE_TAG
-	pushImage2ACRRegistry realtimedb $PERSISTENCE_TAG
-	pushImage2ACRRegistry realtimedb $PERSISTENCE_TAG-noauth
-	pushImage2ACRRegistry elasticdb $PERSISTENCE_TAG
-	pushImage2ACRRegistry zookeeper-secured $PERSISTENCE_TAG
-	pushImage2ACRRegistry kafka-secured $PERSISTENCE_TAG
-	pushImage2ACRRegistry ksql-server $PERSISTENCE_TAG
+	pushImage2GCPRegistry configdb $PERSISTENCE_TAG
+	pushImage2GCPRegistry schedulerdb $PERSISTENCE_TAG
+	pushImage2GCPRegistry realtimedb $PERSISTENCE_TAG
+	pushImage2GCPRegistry realtimedb $PERSISTENCE_TAG-noauth
+	pushImage2GCPRegistry elasticdb $PERSISTENCE_TAG
+	pushImage2GCPRegistry zookeeper-secured $PERSISTENCE_TAG
+	pushImage2GCPRegistry kafka-secured $PERSISTENCE_TAG
+	pushImage2GCPRegistry ksql-server $PERSISTENCE_TAG
+	pushImage2GCPRegistry timescaledb $PERSISTENCE_TAG
 
-	pushImage2ACRRegistry controlpanel $MODULE_TAG
-	pushImage2ACRRegistry iotbroker $MODULE_TAG
-	pushImage2ACRRegistry apimanager $MODULE_TAG
-	pushImage2ACRRegistry flowengine $MODULE_TAG
-	pushImage2ACRRegistry devicesimulator $MODULE_TAG
-	pushImage2ACRRegistry digitaltwin $MODULE_TAG
-	pushImage2ACRRegistry dashboard $MODULE_TAG
-	pushImage2ACRRegistry monitoringui $MODULE_TAG
-	pushImage2ACRRegistry configinit $MODULE_TAG
-	pushImage2ACRRegistry scalability $MODULE_TAG
-	pushImage2ACRRegistry chatbot $MODULE_TAG
-	pushImage2ACRRegistry cacheservice $MODULE_TAG
-	pushImage2ACRRegistry router $MODULE_TAG
-	pushImage2ACRRegistry oauthserver $MODULE_TAG
-	pushImage2ACRRegistry rtdbmaintainer $MODULE_TAG
-	pushImage2ACRRegistry videobroker $MODULE_TAG
-	pushImage2ACRRegistry installer $MODULE_TAG
-	pushImage2ACRRegistry microservices-gateway $MODULE_TAG
-	pushImage2ACRRegistry rules-engine $MODULE_TAG
-	pushImage2ACRRegistry bpm-engine $MODULE_TAG
-	pushImage2ACRRegistry rest-planner $MODULE_TAG
-	pushImage2ACRRegistry report-engine $MODULE_TAG
-	pushImage2ACRRegistry nginx $INFRA_TAG
-	pushImage2ACRRegistry quasar $INFRA_TAG
-	pushImage2ACRRegistry quasar 40
-	pushImage2ACRRegistry quasar 30
-	pushImage2ACRRegistry notebook $INFRA_TAG
-	pushImage2ACRRegistry mongoexpress $INFRA_TAG
-	pushImage2ACRRegistry streamsets $INFRA_TAG
-	pushImage2ACRRegistry dashboardexporter $INFRA_TAG
-	pushImage2ACRRegistry registryui $INFRA_TAG
-	pushImage2ACRRegistry burrow $INFRA_TAG
-	pushImage2ACRRegistry gravitee-management-api $INFRA_TAG
-	pushImage2ACRRegistry gravitee-management-ui $INFRA_TAG
-	pushImage2ACRRegistry gravitee-gateway $INFRA_TAG
-	pushImage2ACRRegistry consul-proxy-sidecar $INFRA_TAG
-	pushImage2ACRRegistry data-cleaner $INFRA_TAG
+	pushImage2GCPRegistry controlpanel $MODULE_TAG
+	pushImage2GCPRegistry iotbroker $MODULE_TAG
+	pushImage2GCPRegistry apimanager $MODULE_TAG
+	pushImage2GCPRegistry flowengine $MODULE_TAG
+	pushImage2GCPRegistry devicesimulator $MODULE_TAG
+	pushImage2GCPRegistry digitaltwin $MODULE_TAG
+	pushImage2GCPRegistry dashboard $MODULE_TAG
+	pushImage2GCPRegistry monitoringui $MODULE_TAG
+	pushImage2GCPRegistry configinit $MODULE_TAG
+	pushImage2GCPRegistry scalability $MODULE_TAG
+	pushImage2GCPRegistry chatbot $MODULE_TAG
+	pushImage2GCPRegistry cacheservice $MODULE_TAG
+	pushImage2GCPRegistry router $MODULE_TAG
+	pushImage2GCPRegistry oauthserver $MODULE_TAG
+	pushImage2GCPRegistry rtdbmaintainer $MODULE_TAG
+	pushImage2GCPRegistry videobroker $MODULE_TAG
+	pushImage2GCPRegistry installer $MODULE_TAG
+	pushImage2GCPRegistry microservices-gateway $MODULE_TAG
+	pushImage2GCPRegistry rules-engine $MODULE_TAG
+	pushImage2GCPRegistry bpm-engine $MODULE_TAG
+	pushImage2GCPRegistry rest-planner $MODULE_TAG
+	pushImage2GCPRegistry report-engine $MODULE_TAG
+	pushImage2GCPRegistry keycloak-manager $MODULE_TAG
+	pushImage2GCPRegistry serverless-manager $MODULE_TAG
+
+	pushImage2GCPRegistry baseimage $BASEIMAGE_TAG
+
+	pushImage2GCPRegistry loadbalancer $INFRA_TAG
+	pushImage2GCPRegistry nginx $INFRA_TAG
+	pushImage2GCPRegistry quasar $INFRA_TAG
+	pushImage2GCPRegistry quasar 40
+	pushImage2GCPRegistry quasar 30
+	pushImage2GCPRegistry notebook $INFRA_TAG
+	pushImage2GCPRegistry mongoexpress $INFRA_TAG
+	pushImage2GCPRegistry streamsets $INFRA_TAG
+	pushImage2GCPRegistry dashboardexporter $INFRA_TAG
+	pushImage2GCPRegistry registryui $INFRA_TAG
+	pushImage2GCPRegistry burrow $INFRA_TAG
+	pushImage2GCPRegistry gravitee-management-api $INFRA_TAG
+	pushImage2GCPRegistry gravitee-management-ui $INFRA_TAG
+	pushImage2GCPRegistry gravitee-gateway $INFRA_TAG
+	pushImage2GCPRegistry consul-proxy-sidecar $INFRA_TAG
+	pushImage2GCPRegistry data-cleaner $INFRA_TAG
+	pushImage2GCPRegistry log-centralizer $INFRA_TAG
+	pushImage2GCPRegistry keycloak $INFRA_TAG
+	pushImage2GCPRegistry presto-server $INFRA_TAG
+	pushImage2GCPRegistry presto-metastore-server $INFRA_TAG
+	pushImage2GCPRegistry modelsmanager $INFRA_TAG
 fi
 
 if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
@@ -834,9 +942,11 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry realtimedb $PERSISTENCE_TAG
 	pushImage2Registry realtimedb $PERSISTENCE_TAG-noauth
 	pushImage2Registry elasticdb $PERSISTENCE_TAG
+	pushImage2Registry auditdb $PERSISTENCE_TAG
 	pushImage2Registry zookeeper-secured $PERSISTENCE_TAG
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG
 	pushImage2Registry ksql-server $PERSISTENCE_TAG
+	pushImage2Registry timescaledb $PERSISTENCE_TAG
 
 	pushImage2Registry controlpanel $MODULE_TAG
 	pushImage2Registry iotbroker $MODULE_TAG
@@ -860,6 +970,8 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry bpm-engine $MODULE_TAG
 	pushImage2Registry rest-planner $MODULE_TAG
 	pushImage2Registry report-engine $MODULE_TAG
+	pushImage2Registry keycloak-manager $MODULE_TAG
+	pushImage2Registry serverless-manager $MODULE_TAG
 
 	pushImage2Registry baseimage $BASEIMAGE_TAG
 
@@ -882,6 +994,10 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry jdbc4datahub-baseimage $INFRA_TAG
 	pushImage2Registry jdbc4datahub $INFRA_TAG
 	pushImage2Registry data-cleaner $INFRA_TAG
+	pushImage2Registry keycloak $INFRA_TAG
+	pushImage2Registry presto-server $INFRA_TAG
+	pushImage2Registry presto-metastore-server $INFRA_TAG
+	pushImage2Registry modelsmanager $INFRA_TAG
 fi
 
 if [ "$PUSH2PRIVREGISTRY" = true ]; then
@@ -892,9 +1008,11 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry realtimedb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry realtimedb $PERSISTENCE_TAG-noauth $PRIVATE_REGISTRY/
 	pushImage2Registry elasticdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry auditdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry zookeeper-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry ksql-server $PERSISTENCE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry timescaledb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 
 	pushImage2Registry controlpanel $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry iotbroker $MODULE_TAG $PRIVATE_REGISTRY/
@@ -918,6 +1036,8 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry bpm-engine $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry rest-planner $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry report-engine $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry keycloak-manager $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry serverless-manager $MODULE_TAG $PRIVATE_REGISTRY/
 
 	pushImage2Registry baseimage $BASEIMAGE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry loadbalancer $INFRA_TAG $PRIVATE_REGISTRY/
@@ -941,7 +1061,11 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry jdbc4datahub $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry data-cleaner $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry log-centralizer $INFRA_TAG $PRIVATE_REGISTRY/
-        pushImage2Registry agent-metric-collector $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry agent-metric-collector $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry keycloak $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry presto-server $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry presto-metastore-server $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry modelsmanager $INFRA_TAG $PRIVATE_REGISTRY/
 fi
 
 exit 0

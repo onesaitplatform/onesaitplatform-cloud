@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -59,14 +59,35 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				
+				<!-- SEARCH FORM -->
+				<div id="searchFilter" class="row">
+					<!-- SEARCH FORM -->
+					<form id="form_datasource" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>					
+								<input id="identification" th:placeholder="#{datasource.identification}" name="identification" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_datasource" name="reset_datasource" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_datasource" name="search_datasource" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>												
+					</form>								
+				</div>				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/datasources/list}"> <span th:text="#{datasource.breadcrumb.list}">Datasources</span></a><i class="fa fa-angle-right"></i></li>						
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/virtualdatasources/list}"> 
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{datasource.breadcrumb.list.manage}">Datasources</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{datasource.breadcrumb.list.my}">Datasources</span>
+						</a><!--<i class="fa fa-angle-right"></i>--></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -76,140 +97,151 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
-					
+				<div class="row">					
 						<div class="portlet light">
 							<div class="portlet-title">
 								<div class="caption">									
-									<span class="caption-subject" th:text="#{ontology.virtual.datasource.create}"> My DAtasources </span>
-								</div>									
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{datasource.breadcrumb.list.manage}"> Manage Datasources </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{datasource.breadcrumb.list.my}"> My Datasources </span>
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+								</div>								
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>								
-								<div class="actions margin-right-20">
-									<div class="btn-group">									
-										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../virtualdatasources/create'" ><span th:text="#{gen.create}">New </span></button>									
-									</div>										
-								</div>								
+								</div>
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button type="button" class="btn btn-primary button-plus-create" onclick="location.href='../virtualdatasources/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>						
+															
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row">
-									<div class="col-md-12 alert-zone">
-										<!-- ALERT ZONE -->																			
-									</div>
-									<div id="searchFilter" class="col-md-12 hide">
-									<!-- SEARCH FORM -->
-										<form id="form_datasource" class="" role="form" method="get">											
-											<div class="form-body " style="border-bottom: 1px solid #eef1f5;">
-												<div class="row">
-													<div class="col-md-4 col-xs-12">
-														<div class="form-group">															
-															<div class="input-group">
-																<span class="input-group-addon">
-																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>															
-																<input id="identification" th:placeholder="#{datasource.identification}" name="identification" class="form-control" type="text" maxlength="50" value=""/>
-															</div>
-														</div>
-													</div>
-													<div class="col-md-4 col-xs-12">
-														<div class="btn-group">
-															<button type="button" id="search_datasource" name="search_datasource" th:title="#{gen.search}" class="btn btn-sm btn-outline btn-circle blue"><span th:text="#{gen.search}">Search</span></button>
-															<button type="button" id="reset_datasource" name="reset_datasource" value="Reset" class="btn btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
-														</div>
-													</div>
-												</div>
-											</div>												
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
-									</div>
+								<div class="row main">
+					
 									<!-- ONTOLOGY LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-											<div>
-													<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide pull-right">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{datasource.identification}"> Identification</label>
-														<label class="toggle-vis" data-column="1" th:text="#{datasource.domain}"> Domain</label>
-														<label class="toggle-vis" data-column="2" th:text="#{ontology.userId}"> Owner</label>	
-														<label class="toggle-vis" data-column="3"  > SGDB</label>	
-														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
-														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="7" th:text="#{gen.options}"> Options</label>																									
-													</div>
-												</div>		
-												
-												
-												<!-- DATATABLE DANDELION CONF.  -->												
-												<table id="datasource" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" >
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+											<div>	
+												<!-- DATATABLE DANDELION CONF.  -->							
+												<table id="datasource" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full" >
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{datasource.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{datasource.domain}">Identification</th>
-															<th class="titulo-columnas text-center" ><span th:text="#{ontology.userId}" >Owner</span></th>
-															<th class="titulo-columnas text-center">SGDB</th>
-															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>
-															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.userId}" >Owner</span></th>
+															<th class="titulo-columnas text-left">SGDB</th>
+															<th class="titulo-columnas text-left" th:text="#{gen.public}">Public</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="datasource : ${datasources}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left no-wrap " th:text="${datasource.datasourceName}"></td>
+															<td class="text-left no-wrap " th:text="${datasource.identification}"></td>
 															<!-- DOMAIN -->
 															<td class="text-left no-wrap " th:text="${datasource.datasourceDomain}"></td>
 															<!-- USER -->
-															<td class="text-center " th:text="${datasource.userId.userId}"></td>
+															<td class="text-left " th:text="${datasource.user.userId}"></td>
 															<!-- SGDB -->
-															<td class="text-center " th:text="${datasource.sgdb}"></td>
+															<td class="text-left " th:text="${datasource.sgdb}"></td>
 															<!-- PUBLIC -->
-															<td class="text-center" th:if="${datasource.public}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i></td>
-															<td class="text-center" th:if="${!datasource.public}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i></td>
+															<td class="text-left" th:if="${datasource.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!datasource.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
 															<!-- DATE -->
-															<td class="text-center" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${datasource.createdAt==null}" th:text="'---'"></td>
+															<td class="text-left" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${datasource.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-center" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${datasource.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-left" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${datasource.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-circle btn-outline blue no-border tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																				
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																				
 																	<!-- EDIT -->
-																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.userId.userId}" class="btn btn-xs btn-circle btn-outline blue no-border tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
-																	<!-- CHANGE PRIVATE/PUBLIC -->
-																	<span th:if="${!datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:title="#{datasource.public}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{datasource.public}" th:onclick="'javascript:makePublic(\''+${datasource.datasourceName}+'\')'"><i class="la la-user font-hg"></i></span>
-																	<span th:if="${datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:title="#{datasource.private}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{datasource.private}" th:onclick="'javascript:makePublic(\''+${datasource.datasourceName}+'\')'"><i class="la la-user-times font-hg"></i></span>
-																	<!-- CHECK CONNECTION -->
-																	<span class="btn btn-xs no-border btn-circle btn-outline blue  tooltips" data-container="body" data-placement="bottom" th:title="#{datasource.check}" th:data-original-title="#{datasource.check}" th:onclick="'javascript:checkConnection(\''+${datasource.datasourceName}+'\');'"><i class="la la-plug font-hg"></i></span>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'"><i class="icon-edit"></i></span>
+
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="dropdown">
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																	<ul class="dropdown-menu dropdown-menu-table download-menu">
+																		<li>
+																			<!-- CHANGE PRIVATE/PUBLIC -->
+																			<span th:if="${!datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{datasource.public}" data-container="body" data-placement="bottom" th:onclick="'javascript:makePublic(\''+${datasource.identification}+'\')'"><i class="icon-unlock"></i><span class="span-title-three-dots-icons" th:text="#{datasource.public}" > Public </span></span>
+																			<span th:if="${datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{datasource.private}" data-container="body" data-placement="bottom" th:onclick="'javascript:makePublic(\''+${datasource.identification}+'\')'"><i class="icon-lock"></i><span class="span-title-three-dots-icons" th:text="#{datasource.private}" > Private</span></span>
+																		</li>
+																		<li>
+																			<!-- CHECK CONNECTION -->
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i><span class="span-title-three-dots-icons" th:text="#{datasource.check}" > Check connection</span></span>
+																		</li>																																				<!-- DELETE -->
+																	    <li th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'">
+																	    	<span  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'showConfirmDeleteDialog(\''+${datasource.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																    	</li>
+																		
+																	</ul>
+																	</span>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:onclick="'javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i>
+																	</span>
 																</div>
 															</td>
 														</tr>
 													</tbody>
-												</table>											
+												</table>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{datasource.identification}"> Identification </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{datasource.domain}"> Domain </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{ontology.userId}"> Owner</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label> SGDB</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{gen.public}"> Public</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5"/>
+															<label th:text="#{gen.created}"> Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{gen.updated}"> Updated At</label>
+													</div>
+												</div>											
 											</div>
 										</div>											
 									</div>
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
+	<form id="delete_datasource_create_form" class="delete-ontology hide"   method="post">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input id="delete-datasourceId" type="hidden" name="datasourceId" />
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
 	
 	<!-- FOOTER-INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
@@ -233,8 +265,7 @@
 	
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	console.log('SEARCHING ... [ Identification: ' + search[0] +']');
-	if (( search[0] != '')) { $('#search-toggle').trigger('click'); }
-	
+	if (( search[0] != '')) { $('#search-toggle').trigger('click'); }	
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
@@ -270,13 +301,13 @@
 			dataType:"json",
 			success: function(data, textStatus, jqXHR ){				
 				if(jqXHR.status != 200){
-					$.alert({title: 'ERROR '+jqXHR.status+'!', type: 'red' , theme: 'dark', content: data }); return false; 
+					$.alert({title: 'ERROR '+jqXHR.status+'!', type: 'red' , theme: 'light', content: data }); return false; 
 				} else {
 					$.alert({title: 'OK!', content: [[#{datasource.check.success}]] }); return false; 
 				}
 			},
 			error: function(jqXHR , textStatus, errorThrown) {
-				$.alert({title: 'ERROR '+jqXHR.status+'! '+errorThrown, type: 'red' , theme: 'dark', content: jqXHR.responseText }); return false; 
+				$.alert({title: 'ERROR '+jqXHR.status+'! '+errorThrown, type: 'red' , theme: 'light', content: jqXHR.responseText }); return false; 
 			}
 		});
 	}
@@ -309,14 +340,14 @@
 		});
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#datasource').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
+			//$(this).toggleClass('text-muted line-through');			
 		});	
 		
 		// SEARCH FORM RESET
@@ -328,19 +359,58 @@
 		
 		// SEARCH FORM
 		$('#search_datasource').on('click',function(){ $('#form_datasource')[0].submit(); });
+		
 	});
+	 var deleteUrl = [[@{'/virtualdatasources/'}]];
+	var showConfirmDeleteDialog = function(id){	
+		$('#delete_datasource_create_form').attr('action', deleteUrl + id);
+		$('#datasourceId').val(id);
+		HeaderController.showConfirmDialogVirtualDatasource('delete_datasource_create_form');	
+	}
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){ 
+	$(window).load(function(){
+
+		var oTable = $('#datasource').dataTable({
+	      "bAutoWidth": false
+	      });
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)				
-		$.each([ 5 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 5 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
-		$('#dataTable-vis-toggle').appendTo($('#datasource_filter'));
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));
+		//$('#dataTable-vis-toggle').appendTo($('#datasource_filter'));
 		$('#dataTable-vis-toggle').removeClass('hide');
+
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#datasource_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#datasource_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#datasource_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
+			 var $menu = $("ul", this);	        
+	         offset = $menu.offset();
+	         position = $menu.position();
+	         $('body').append($menu);
+	         $menu.show();
+	         $menu.css('position', 'absolute');
+	         $menu.css('top', (offset.top) +'px');
+	         $menu.css('left',(offset.left) +'px');
+	         $menu.css('min-width', '100px');
+	        $(this).data("myDropdownMenu", $menu);
+	     });
+		$('.download-menu').parent().on('hide.bs.dropdown', function () {
+	         $(this).append($(this).data("myDropdownMenu"));
+	         $(this).data("myDropdownMenu").removeAttr('style');
+	     });
 		
-		
+		$("#contenedor-tabla-outside").removeClass("hidden");		
 	});
 	
 	//]]>

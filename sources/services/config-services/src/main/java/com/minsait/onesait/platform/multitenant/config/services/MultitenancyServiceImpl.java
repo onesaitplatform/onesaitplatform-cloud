@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	public Optional<Vertical> getVertical(String vertical) {
 		return Optional.ofNullable(verticalRepository.findByNameOrSchema(vertical));
 	}
-	
+
 	@Override
 	public Optional<String> getVerticalSchema(String vertical) {
 		return Optional.ofNullable(verticalRepository.findSchemaByNameOrSchema(vertical));
@@ -465,6 +465,21 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 				}
 			});
 		}
+	}
+
+	@Override
+	public List<MasterUserToken> getAdminTokensForVerticals() {
+		return masterUserTokenRepository.findAdminUsers();
+	}
+
+	@Override
+	public MasterUser getUser(String userId) {
+		return masterUserRepository.findByUserId(userId);
+	}
+
+	@Override
+	public Vertical getVerticalFromSchema(String schema) {
+		return verticalRepository.findByNameOrSchema(schema);
 	}
 
 }

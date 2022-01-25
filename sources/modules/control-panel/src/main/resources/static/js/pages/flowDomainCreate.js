@@ -18,6 +18,18 @@ var FlowDomainCreateController = function() {
 	}
 	
 	var initThresholds = function(){
+		
+		// Reset form
+		$('#resetBtn').on('click',function(){ 
+			cleanFields('domain_create_form');
+		});
+		
+		// Fields OnBlur validation
+		
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});		
+		
 		//load thresholds data into table
 		console.log(flowDomainCreateReg.thresholds);
 		var thresholds = JSON.parse(flowDomainCreateReg.thresholds);
@@ -50,18 +62,12 @@ var FlowDomainCreateController = function() {
 			if(!$(this).hasClass("no-remove")){$(this).val('');}
 		});
 		
-		//CLEANING SELECTs
-		$(".selectpicker").each(function(){
-			$(this).val( '' );
-			$(this).selectpicker('deselectAll').selectpicker('refresh');
-		});
+		// CLEANING NUMBER INPUTS
+		$(':input[type="number"]').val('');
 		
 		//CLEANING CHECKS
 		$('input:checkbox').not('.no-remove').removeAttr('checked');
-		
-		// CLEANING tagsinput
-		$('.tagsinput').tagsinput('removeAll');
-		
+
 		// CLEAN ALERT MSG
 		$('.alert-danger').hide();
 		
@@ -124,8 +130,6 @@ var FlowDomainCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#domain_create_form');
-        var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
 		
         // INPUT MASK FOR ontology identification allow only letters, numbers
 		// and -_
@@ -145,9 +149,7 @@ var FlowDomainCreateController = function() {
             	identification:	{ minlength: 5, required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit              
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+            	toastr.error(messagesForms.validation.genFormError,'');
             },
             errorPlacement: function(error, element) {				
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -184,42 +186,25 @@ var FlowDomainCreateController = function() {
    	   			 	
 	   	   			var conditionLimits = $("#condiointLimits tbody tr");
 	   	   			$.each(conditionLimits, function(i,item){
-	   	   				
 	   	   				if(item.id){
-	   	   					
 	   	   					//json.push({'filter': $("#"+item.id + " td")[0].innerHTML, 'limit': $("#"+item.id + "Limit").val(), 'active': $("#"+item.id + "Active").is(":checked")});
 	   	   					json.push({'filter':item.id, 'socketStatus': $("#"+item.id + " td")[0].innerHTML, 'limit': $("#"+item.id + "Limit").val(), 'active': $("#"+item.id + "Active").is(":checked")});
-	   	   					
 	   	   				}
-	   	   			   
-	   	   			    
 	   	   			 });
-	   	   			 	
 		   	   			$("<input type='hidden' value='"+JSON.stringify(json)+"' />")
 				         	.attr("name", "thresholds")
 				         	.attr("id", "thresholds").val(JSON.stringify(json))
 				         	.appendTo("#domain_create_form");
-   		   			 	error1.hide();
-   		                success1.show();
+		   	   			toastr.success(messagesForms.validation.genFormSuccess,'');
    		                form.submit();
    	   			 	} else{
-   	   			 		//Change style to red
-   	   			 		error1.find('span').text(flowDomainCreateReg.dupError);
+   	   			 		toastr.error(flowDomainCreateReg.dupError,'');
    	   			 		$('#domainId').closest('.form-group').addClass('has-error'); 
-   	   			 		success1.hide();
-   	   			 		error1.show();
-   	   			 		App.scrollTo(error1, -200);
    	   			 	}
 			 	} else{
-			 		//Change style to red
-			 		error1.find('span').text(flowDomainCreateReg.alreadyOwnsDomains);
+			 		toastr.error(flowDomainCreateReg.alreadyOwnsDomains,'');
 			 		$('#domainId').closest('.form-group').addClass('has-error'); 
-			 		success1.hide();
-			 		error1.show();
-			 		App.scrollTo(error1, -200);
 			 	}
-   			 	
-            					
 			}
         });
     }
@@ -247,20 +232,14 @@ var FlowDomainCreateController = function() {
 		     var success1 = $('.alert-success');
 			if($("#domain_create_form input[name='_method']").val() == 'PUT'){
 				freeDomains = true;
-				error1.hide();
 			} else{
 				checkDomainNameAvailable($('#identification').val());
-				 
-			     
 				if (ontologyExist) {
 		             error1.hide();
 				} else{
 					console.log('Domain Identification is not available.');
-					//Change style to red
-					error1.find('span').text("Domain must be unique.");
+					toastr.error(messagesForms.operations.genOpError,"Domain must be unique.");
 					$('#domainId').closest('.form-group').addClass('has-error'); 
-					success1.hide();
-		            error1.show();
 				}
 			}
 		},

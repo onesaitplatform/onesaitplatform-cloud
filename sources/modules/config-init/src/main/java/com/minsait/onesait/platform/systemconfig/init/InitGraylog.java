@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,9 @@ import java.util.Map.Entry;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.codec.binary.Base64;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,7 @@ import org.springframework.web.client.RestTemplate;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.encryptor.aop.Encryptable;
+import com.minsait.onesait.platform.systemconfig.init.graylog.backend.BackendResponseDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.index.IndexSetDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.index.IndexSetResponseDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.input.InputConfigurationDTO;
@@ -45,6 +49,8 @@ import com.minsait.onesait.platform.systemconfig.init.graylog.input.InputListRes
 import com.minsait.onesait.platform.systemconfig.init.graylog.input.InputRequestDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.node.NodeDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.node.NodesResponseDTO;
+import com.minsait.onesait.platform.systemconfig.init.graylog.role.RoleDTO;
+import com.minsait.onesait.platform.systemconfig.init.graylog.role.RoleResponseDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.session.SessionRequestDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.session.SessionResponseDTO;
 import com.minsait.onesait.platform.systemconfig.init.graylog.stream.StreamRequestDTO;
@@ -63,6 +69,10 @@ public class InitGraylog {
 
 	@Value("${onesaitplatform.graylog.user:admin}")
 	private String graylogUser;
+	@Value("${onesaitplatform.graylog.plugin.auth.path.token:http://localhost:21000/oauth-server/oauth/token}")
+	private String oauthTokenServicePath ;
+	@Value("${onesaitplatform.graylog.plugin.auth.path.userinfo: http://localhost:21000/oauth-server/oidc/userinfo}")
+	private String oauthUserinfoServicePath ;
 	@Value("${onesaitplatform.graylog.password}")
 	@Encryptable
 	private String graylogPassword;
@@ -76,6 +86,11 @@ public class InitGraylog {
 	private static final String XREQUESTEDBY = "X-Requested-By";
 	private static final String REQUESTER = "onesatiPlatformClient";
 	private static final String INDEX_SET_PATH = "/api/system/indices/index_sets?skip=0&limit=0&stats=false";
+	private static final String STREAM_AUTHORIZATION_PATH = "/api/authz/shares/entities/grn::::stream:";
+	private static final String SSO_AUTH_HEADER_PATH = "api/system/authentication/http-header-auth-config";
+	private static final String BACKEND_CREATE_PATH = "/api/system/authentication/services/backends";
+	private static final String BACKEND_ACTIVATE_PATH = "/api/system/authentication/services/configuration ";
+	private static final String ROLES_PATH = "/api/authz/roles?page=1&per_page=50&sort=name&order=asc";
 
 	private static final String DEFAULT_INPUT_NAME = "GELF TCP";
 
@@ -100,7 +115,7 @@ public class InitGraylog {
 			log.info("Graylog nodes info successfully read. Getting master...");
 			NodeDTO master = null;
 			for (NodeDTO node : nodes.getNodes()) {
-				if (Boolean.TRUE.equals(node.getIs_master())) {
+				if (Boolean.TRUE.equals(node.getIsMaster())) {
 					master = node;
 					break;
 				}
@@ -109,11 +124,20 @@ public class InitGraylog {
 				log.error("Graylog master was not found. Config aborted.");
 			} else {
 				log.info("Graylog master found.");
+				// Activate Single Sign On header
+				log.info("Activating Single Sign On header...");
+				activateSSOHeader(sessionToken.getSession_id());
+				log.info("Single Sign On header ACTIVATED.");
+				// Create and activate GraylogOnesaitPlatform Auth. plugin
+				log.info("Creating Graylog OnesaitPlatform Auth. plugin...");
+				activateGraylogOnesaitplatformAuthPlugin(sessionToken.getSession_id());
+				log.info(" Graylog OnesaitPlatform Auth. plugin created and active.");
+				
 				// CREATE INPUT
 				log.info("Creating INPUT...");
 				createGraylogInput(sessionToken.getSession_id(), master);
 				log.info("GELF TCP Input created.");
-				// CREATE STREAM
+				// CREATE STREAM (starting and sharing)
 				log.info("Creating Streams...");
 				for (Entry<String, String> module : modules.entrySet()) {
 
@@ -122,7 +146,7 @@ public class InitGraylog {
 					log.info("Stream created for {}." + module.getKey());
 				}
 				log.info("All Strams have been created");
-				// CREATE SIDECAR CONFIGS
+
 			}
 		} catch (Exception e) {
 			log.error("Error while configuring Graylog. Message={}, Cause={}", e.getMessage(), e.getCause());
@@ -156,7 +180,7 @@ public class InitGraylog {
 					.tlsClientAuthCertFile("").tlsEnable(false).tlsKeyFile("").tlsKeyPassword("").useNullDelimiter(true)
 					.build();
 			InputRequestDTO inputRequest = new InputRequestDTO();
-			inputRequest.setNode(node.getNode_id());
+			inputRequest.setNode(node.getNodeId());
 			inputRequest.setType("org.graylog2.inputs.gelf.tcp.GELFTCPInput");
 			inputRequest.setTitle(DEFAULT_INPUT_NAME);
 			inputRequest.setGlobal(false);
@@ -204,8 +228,10 @@ public class InitGraylog {
 		HttpEntity<?> entity = new HttpEntity<>(streamRequest, headers);
 		String url = graylogExternalUri + STREAM_PATH;
 		result = restTemplate.postForEntity(url, entity, StreamResponseDTO.class);
+		// Start Stream
 		startGraylogStream(sessionToken, result.getBody().getStreamId());
-
+		// Make Stream visible to readers
+		authorizeStreamToReader(sessionToken, result.getBody().getStreamId());
 	}
 
 	private void startGraylogStream(String sessionToken, String streamId) {
@@ -260,6 +286,75 @@ public class InitGraylog {
 		}
 		return null;
 	}
+
+	private void authorizeStreamToReader(String sessionToken, String streamId) {
+
+		HttpHeaders headers = getAuthHeadersForGraylog(sessionToken);
+		String url = graylogExternalUri + STREAM_AUTHORIZATION_PATH + streamId;
+		String requestJson = "{\"selected_grantee_capabilities\":{\"grn::::builtin-team:everyone\":\"view\"}}";
+		HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
+		restTemplate.postForObject(url, entity, String.class);
+	}
+
+	private void activateSSOHeader(String sessionToken) {
+
+		HttpHeaders headers = getAuthHeadersForGraylog(sessionToken);
+		String url = graylogExternalUri + SSO_AUTH_HEADER_PATH;
+		String requestJson = "{\"enabled\": true,\"username_header\": \"Remote-User\"}";
+		HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
+		restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, entity, String.class);
+	}
+
+	private void activateGraylogOnesaitplatformAuthPlugin(String sessionToken) throws JSONException {
+		// GET ROLES
+
+		log.info("   Getting roles...");
+		RoleDTO adminRole = null;
+		RoleDTO readerRole = null;
+		HttpHeaders headers = getAuthHeadersForGraylog(sessionToken);
+		String url = graylogExternalUri + ROLES_PATH;
+		HttpEntity<?> entity = new HttpEntity<>(null, headers);
+		ResponseEntity<RoleResponseDTO> result = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, RoleResponseDTO.class);
+		for(RoleDTO roleDto: result.getBody().getRoles()) {
+			if(roleDto.getName().equalsIgnoreCase("Admin")) {
+				adminRole = roleDto;
+			} else if(roleDto.getName().equalsIgnoreCase("Reader")) {
+				readerRole = roleDto;
+			}
+		}
+
+		// Load Plugin into Graylog
+
+		log.info("   Loading Plugin into Graylog...");
+		url = graylogExternalUri + BACKEND_CREATE_PATH;
+		JSONObject backendJsonObject = new JSONObject();
+		backendJsonObject.put("title", "OnesaitPlatform");
+		backendJsonObject.put("description", "OnesaitPlatform");
+		JSONArray defaultRoles = new JSONArray();
+		defaultRoles.put(readerRole.getId());
+		backendJsonObject.put("default_roles", defaultRoles);
+		JSONObject config = new JSONObject();
+		config.put("type", "onesaitplatform-auth-backend");
+		config.put("url_token", oauthTokenServicePath);
+		config.put("url_userinfo", oauthUserinfoServicePath);
+		config.put("admin_role", adminRole.getId());
+		config.put("reader_role", readerRole.getId());
+		backendJsonObject.put("config", config);
+		entity = new HttpEntity<>(backendJsonObject.toString(), headers);
+		BackendResponseDTO backend = restTemplate.postForObject(url, entity, BackendResponseDTO.class);
+
+		log.info("   Plugin loaded into Graylog.");
+		//Activate plugin
+
+		log.info("   Activating loaded Plugin...");
+		String requestJson = "{\"active_backend\": \""+backend.getBackend().getId()+"\"}";
+		entity = new HttpEntity<>(requestJson, headers);
+		url = graylogExternalUri + BACKEND_ACTIVATE_PATH;
+		restTemplate.postForObject(url, entity, String.class);
+		log.info("   Loaded Plugin Activated.");
+	}
+	
+	
 
 	private HttpHeaders getAuthHeadersForGraylog(String sessionToken) {
 		String plainCreds = sessionToken + ":session";

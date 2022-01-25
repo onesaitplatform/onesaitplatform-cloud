@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface VirtualDatasourceService {
@@ -30,12 +31,12 @@ public interface VirtualDatasourceService {
 
 	OntologyVirtualDatasource getDatasourceById(String id);
 
-	void updateOntology(OntologyVirtualDatasource datasource);
+	void updateOntology(OntologyVirtualDatasource datasource, Boolean maintainCredentials, String oldCredentials);
 
 	void deleteDatasource(OntologyVirtualDatasource datasource);
 
 	Boolean checkConnection(String datasource, String user, String credentials, String sgdb, String url,
-							String queryLimit) throws GenericOPException;
+			String queryLimit) throws GenericOPException;
 
 	Boolean checkConnectionExtern(String datasource) throws GenericOPException;
 
@@ -49,6 +50,7 @@ public interface VirtualDatasourceService {
 
 	OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId);
 
-	OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId);
-	
+	OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId,
+			ResourceAccessType type);
+
 }

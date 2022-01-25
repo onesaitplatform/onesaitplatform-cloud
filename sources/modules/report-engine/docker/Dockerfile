@@ -7,7 +7,12 @@ ADD *-exec.jar app.jar
 
 # Timezone
 RUN apk add --no-cache tzdata \
-    bash
+    bash 
+    
+#Fonts
+RUN apk --no-cache add msttcorefonts-installer fontconfig && \
+    update-ms-fonts && \
+    fc-cache -f
 
 # web projects folder & logs folder
 RUN mkdir -p /var/log/platform-logs && \
@@ -79,7 +84,14 @@ ENV SERVER_NAME=localhost \
     HZ_ZOOKEEPER_URL=zookeeper:2181  \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    USE_KEYCLOAK=false \
+    REPORT_LOCALE_LANG=es \
+    REPORT_LOCALE_COUNTRY=ES \
+    SBA_USERNAME=operations \
+	SBA_SECRET=changeIt2019!
+
+ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY"
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

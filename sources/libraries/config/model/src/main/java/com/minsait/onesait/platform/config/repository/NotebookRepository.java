@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@ package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
 
-import com.minsait.onesait.platform.config.dto.NotebookForList;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -36,11 +37,22 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 	@Query("SELECT o FROM Notebook AS o WHERE (o.user=:user OR o.isPublic=TRUE OR o.id IN (SELECT uo.notebook.id FROM NotebookUserAccess AS uo WHERE uo.user=:user)) ORDER BY o.identification ASC")
 	List<Notebook> findByUserAndAccess(@Param("user") User user);
 
+	@Query("SELECT o.identification FROM Notebook AS o WHERE (o.user=:user OR o.id IN (SELECT uo.notebook.id FROM NotebookUserAccess AS uo WHERE uo.user=:user)) ORDER BY o.identification ASC")
+	List<String> findIdentificationsByUserAndPermissions(@Param("user") User user);
+
 	List<Notebook> findByIdentificationAndIdzep(String notebookId, String idzep);
 
 	Notebook findByIdzep(String idzep);
 
-	@Query("SELECT new com.minsait.onesait.platform.config.dto.NotebookForList(o.id, o.identification, o.idzep, o.user, o.isPublic, 'null') " + "FROM Notebook AS o ")
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.NotebookForList(o.id, o.identification, o.idzep, o.user, o.isPublic, 'null') "
+			+ "FROM Notebook AS o ")
 	List<NotebookForList> findAllNotebookList();
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, 'null', o.createdAt, o.updatedAt, o.user, 'NOTEBOOK', 0) FROM Notebook AS o WHERE o.identification like %:identification%  ORDER BY o.identification ASC")
+	List<OPResourceDTO> findAllDto(@Param("identification") String identification);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, 'null', o.createdAt, o.updatedAt, o.user, 'NOTEBOOK', 0) FROM Notebook AS o WHERE (o.user=:user OR o.id IN (SELECT uo.notebook.id FROM NotebookUserAccess AS uo WHERE uo.user=:user)) AND o.identification like %:identification% ORDER BY o.identification ASC")
+	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
+			@Param("identification") String identification);
 
 }

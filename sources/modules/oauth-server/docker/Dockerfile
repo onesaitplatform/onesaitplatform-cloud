@@ -16,7 +16,7 @@ ENV SERVER_NAME=localhost \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
-    AUDITGLOBALNOTIFY=false \
+    AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
@@ -58,7 +58,9 @@ ENV SERVER_NAME=localhost \
     REVOKED_TOKENS_EVICT_SEC=1800 \
     REVOKED_TOKENS_SIZE=100000 \
     REVOKED_TOKENS_SIZE_POLICY=PER_NODE \
-    CORS_ALLOWED_URLS="*"
+    CORS_ALLOWED_URLS="*" \
+    SBA_USERNAME=operations \
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
 
 # Timezone
 RUN apk add --no-cache tzdata \
@@ -88,8 +90,8 @@ RUN chown -R onesait:onesait /var/log/platform-logs && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
-
 EXPOSE 21000
+
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
 

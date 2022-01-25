@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,10 @@ public interface SolverInterface {
 
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
 			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
-			String executeAs, String ontology)
+			String executeAs, String ontology, boolean isSimpleMode)
 			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException;
 
 	public String buildQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
 			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
-			String executeAs, String ontology);
+			String executeAs, String ontology, boolean isSimpleMode);
 }

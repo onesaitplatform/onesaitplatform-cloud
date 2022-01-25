@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class SQLGeneratorImplTest {
 	private final static String EXPECTED_IMPALA_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
 	private final static String EXPECTED_ORACLE_CREATE = "CREATE TABLE ontology (campo1 CHAR(255) COMMENT 'ontology/campo1', campo2 CHAR(255) COMMENT 'ontology/campo2')";
 	private final static String EXPECTED_SQLSERVER_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
-	private final static String EXPECTED_POSTGRESQL_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) , campo2 VARCHAR(255) )";
+	private final static String EXPECTED_POSTGRESQL_CREATE = "CREATE TABLE \"ontology\" (campo1 VARCHAR(255) , campo2 VARCHAR(255) )";
 	
 	/** EXPECTED CREATE **/
 	private final static String EXPECTED_MYSQL_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
@@ -67,7 +67,7 @@ public class SQLGeneratorImplTest {
 	private final static String EXPECTED_IMPALA_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
 	private final static String EXPECTED_ORACLE_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 CHAR(255) COMMENT 'ontology/campo1', campo2 CHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
 	private final static String EXPECTED_SQLSERVER_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
-	private final static String EXPECTED_POSTGRESQL_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) , campo2 VARCHAR(255) , PRIMARY KEY (campo1))";
+	private final static String EXPECTED_POSTGRESQL_CREATE_STATEMENT = "CREATE TABLE \"ontology\" (campo1 VARCHAR(255) , campo2 VARCHAR(255) , PRIMARY KEY (campo1))";
 	
 	private final static String EXAMPLE_SIMPLE_SCHEMA =  "{" + 
 			"    \"$schema\": \"http://json-schema.org/draft-03/schema\"," + 

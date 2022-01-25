@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,62 +32,89 @@ public class OntologyCreateDTO {
 	@Setter
 	@NotNull
 	private String identification;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private String description;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private String metainf;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private boolean active;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private boolean isPublic;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private boolean allowsCypherFields;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private String jsonSchema;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private boolean rtdbClean;
-	
+
 	@Getter
 	@Setter
 	private RtdbCleanLapse rtdbCleanLapse;
-		
+
 	@Getter
 	@Setter
 	private RtdbDatasource rtdbDatasource;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private boolean rtdbToHdb;
-	
+
 	@Getter
 	@Setter
 	private RtdbToHdbStorage rtdbToHdbStorage;
-	
+
 	@Getter
 	@Setter
 	@NotNull
 	private boolean allowsCreateTopic;
+
+	@Getter
+	@Setter
+	private boolean allowsCreateNotificationTopic;
+
+	@Getter
+	@Setter
+	private int shards;
+
+	@Getter
+	@Setter
+	private int replicas;
+
+	@Getter
+	@Setter
+	private String patternField;
 	
+	@Getter
+	@Setter
+	private String patternFunction;
+	
+	@Getter
+	@Setter
+	private int substringStart;
+	
+	@Getter
+	@Setter
+	private int substringEnd;
 }

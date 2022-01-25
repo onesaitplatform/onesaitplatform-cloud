@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,6 +42,7 @@ import com.minsait.onesait.platform.config.services.device.ClientPlatformInstanc
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -116,9 +118,16 @@ public class DeviceManagerController {
 	public String info(Model model, RedirectAttributes redirect, @PathVariable String id)
 			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		final ClientPlatformInstance device = deviceService.getById(id);
-		if (null == device)
+		if (null == device) {
 			return "redirect:/devices/management/list";
+		}
 		model.addAttribute("device", device);
+		Optional<IoTSession> sessionKey = deviceService.getSessionKeys(device).stream().findFirst();
+		if (sessionKey.isPresent()) {
+			model.addAttribute("sessionkey", sessionKey.get().getSessionKey());
+		} else {
+			model.addAttribute("sessionkey", "");
+		}
 		final String ontology = LOG_PREFIX + device.getClientPlatform().getIdentification().replaceAll(" ", "");
 		final String query = "select * from " + ontology + " as c where c.DeviceLog.device = \""
 				+ device.getIdentification() + "\" ORDER BY c.contextData.timestampMillis Desc limit 50";

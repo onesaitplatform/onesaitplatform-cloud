@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.client;
 import java.util.List;
 import java.util.Map;
 
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
@@ -64,5 +65,9 @@ public interface ClientPlatformService {
 	public ClientPlatformDTO parseClientPlatform(ClientPlatform clientPlatform);
 
 	public ClientPlatform update(ClientPlatform clientPlatform);
+
+	List<String> getclientPlatformsIdentificationByUser(String userId);
+
+	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
 
 }

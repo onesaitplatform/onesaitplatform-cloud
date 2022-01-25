@@ -29,6 +29,7 @@ RUN chown -R onesait:onesait /usr/local && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
+
 EXPOSE 19100
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
@@ -46,7 +47,7 @@ ENV SERVER_NAME=localhost \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
-    AUDITGLOBALNOTIFY=false \
+    AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
@@ -58,7 +59,10 @@ ENV SERVER_NAME=localhost \
     ENABLE_METRICS=true \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    USE_KEYCLOAK=false \
+    SBA_USERNAME=operations \
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh

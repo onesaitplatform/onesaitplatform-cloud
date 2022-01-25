@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,14 @@
  */
 package com.minsait.onesait.platform.rulesengine.drools;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +30,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.kie.api.KieServices;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.ReleaseId;
@@ -133,7 +141,8 @@ public class KieServicesManagerImpl implements KieServicesManager {
 		}
 		kfs.generateAndWritePomXML(getReleaseId(user));
 		fileSystems.put(user, kfs);
-		addRule(user, rule.getDRL(), rule.getIdentification());
+		addRule(user, rule.getDRL(), rule.getIdentification(), rule.getDecisionTable(),
+				rule.getExtension() != null ? rule.getExtension().name() : null);
 
 	}
 
@@ -162,24 +171,88 @@ public class KieServicesManagerImpl implements KieServicesManager {
 	}
 
 	@Override
-	public Results addRule(String user, String ruleDRL, String ruleName) {
+	public Results addRule(String user, String ruleDRL, String ruleName, byte[] decisionTable, String extension) {
 		if (fileSystems.get(user) == null) {
 			throw new GenericRuntimeOPException("User does not have any binded kie file system");
 		}
 		final KieFileSystem kfs = fileSystems.get(user);
-		kfs.write(PATH_TO_RULES + user + "/" + ruleName + ".drl",
-				ResourceFactory.newReaderResource(new StringReader(ruleDRL)));
-		final KieServices ks = kieServicesMap.get(user);
-		return ks.newKieBuilder(kfs).buildAll().getResults();
+		if (decisionTable == null) {
+			kfs.write(PATH_TO_RULES + user + File.separator + ruleName + ".drl",
+					ResourceFactory.newReaderResource(new StringReader(ruleDRL)));
+			final KieServices ks = kieServicesMap.get(user);
+			return ks.newKieBuilder(kfs).buildAll().getResults();
+		} else {
+			try {
+				File file = uploadFileToFolder(decisionTable, PATH_TO_RULES + user, ruleName, extension);
+
+				if (file.exists() && file.canRead())
+					kfs.write(ResourceFactory.newFileResource(file));
+
+				final KieServices ks = kieServicesMap.get(user);
+				deleteFile(file);
+				return ks.newKieBuilder(kfs).buildAll().getResults();
+			} catch (GenericRuntimeOPException e) {
+				throw new GenericRuntimeOPException("Error parsing decision table for Rule: " + e.getMessage());
+			}
+		}
+	}
+
+	private File uploadFileToFolder(byte[] bytes, String path, String ruleName, String extension) {
+
+		try {
+			createFolder(path);
+			final InputStream is = new ByteArrayInputStream(bytes);
+
+			final File folder = new File(path);
+			if (!folder.exists()) {
+				folder.mkdirs();
+			}
+
+			final String fullPath = path + File.separator + ruleName + "." + extension.toLowerCase();
+			File outputFile = new File(fullPath);
+			final OutputStream os = new FileOutputStream(outputFile);
+
+			IOUtils.copy(is, os);
+			is.close();
+			os.close();
+			return outputFile;
+		} catch (final IOException e) {
+			throw new GenericRuntimeOPException("Error uploading files " + e);
+		} catch (Exception e) {
+			throw new GenericRuntimeOPException("Error uploading files " + e);
+		}
+	}
+
+	private File createFolder(String path) throws GenericRuntimeOPException {
+		final File file = new File(path);
+		if (!file.exists()) {
+			final Boolean success = file.mkdirs();
+			if (!success) {
+				throw new GenericRuntimeOPException("Creating tmp file fot Decision Table failed");
+			}
+		}
+		return file;
+	}
+
+	private void deleteFile(File file) {
+		try {
+			Files.delete(file.toPath());
+		} catch (final IOException e) {
+			throw new GenericRuntimeOPException("Error deleting file: " + file.getAbsolutePath());
+		}
 	}
 
 	@Override
-	public void removeRule(String user, String ruleName) {
+	public void removeRule(String user, String ruleName, String extension) {
 		if (fileSystems.get(user) == null) {
 			throw new GenericRuntimeOPException("User does not have any binded kie file system");
 		}
 		final KieFileSystem kfs = fileSystems.get(user);
-		kfs.delete(PATH_TO_RULES + user + "/" + ruleName + ".drl");
+		if (extension == null)
+			kfs.delete(PATH_TO_RULES + user + File.separator + ruleName + ".drl");
+		else
+			kfs.delete(PATH_TO_RULES + user + File.separator + ruleName + "." + extension.toLowerCase());
+
 		final KieServices ks = kieServicesMap.get(user);
 		ks.newKieBuilder(kfs).buildAll();
 		cacheKieContainer.remove(user);
@@ -192,7 +265,8 @@ public class KieServicesManagerImpl implements KieServicesManager {
 
 	private void loadRulesForUser(String user) {
 		final List<DroolsRule> rules = droolsRuleService.getAllRules(user);
-		rules.forEach(dr -> addRule(dr.getUser().getUserId(), dr.getDRL(), dr.getIdentification()));
+		rules.forEach(dr -> addRule(dr.getUser().getUserId(), dr.getDRL(), dr.getIdentification(),
+				dr.getDecisionTable(), dr.getExtension() != null ? dr.getExtension().name() : null));
 	}
 
 	private ReleaseId getReleaseId(String user) {
@@ -201,9 +275,9 @@ public class KieServicesManagerImpl implements KieServicesManager {
 	}
 
 	@Override
-	public Results updateRule(String user, String ruleName, String drl) {
-		removeRule(user, ruleName);
+	public Results updateRule(String user, String ruleName, String drl, byte[] decisionTable, String extension) {
+		removeRule(user, ruleName, extension);
 		removeServices(RulesEngineServiceImpl.TEMP_JAR_PREFIX + ruleName);
-		return addRule(user, drl, ruleName);
+		return addRule(user, drl, ruleName, decisionTable, extension);
 	}
 }

@@ -41,7 +41,7 @@ ENV SERVER_NAME=localhost \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
-    AUDITGLOBALNOTIFY=false \
+    AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
@@ -50,6 +50,8 @@ ENV SERVER_NAME=localhost \
     REALTIMEDBNAME=onesaitplatform_rtdb \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    SBA_USERNAME=operations \
+	SBA_SECRET=changeIt2019!
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

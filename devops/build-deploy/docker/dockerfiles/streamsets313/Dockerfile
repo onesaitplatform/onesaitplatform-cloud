@@ -56,8 +56,7 @@ ENV OP_STREAMSETS_XMX=2048m \
 
 #USER onesait
 
-# Seems to be problematic with Docker version greater than 20
-# VOLUME ["sdc-stagelibs", "sdc-data"]
+VOLUME ["sdc-stagelibs", "sdc-data"]
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]

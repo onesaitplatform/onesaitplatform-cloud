@@ -119,11 +119,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var	Content = headerReg.genericConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.titleConfirm;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -131,16 +130,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {				
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!',theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -156,11 +154,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var	Content = headerReg.configurationConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.configurationDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -168,16 +165,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -193,11 +189,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var	Content = headerReg.dataModelConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.dataModelDelete;
 
 		// datamodel-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -205,16 +200,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},				
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -230,11 +224,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var	Content = headerReg.scheduledSearchConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.scheduledSearchDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -242,16 +235,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light' , content: 'NO FORM SELECTED!'}); }
 					}
@@ -268,11 +260,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.twitterListeningConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.scheduledSearchDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			type: 'red',
@@ -281,16 +272,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -308,7 +298,7 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.ontologyConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.ontologyDelete;
 		
 		$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
 				function(data){
@@ -343,8 +333,13 @@ var HeaderController = function() {
 							Content += "<br>" + data.clients[i];
 						}
 					}
+					if(data.resources.length > 0) {
+						Content += "<br><b> Open Data Resources: </b>";
+						for(var i=0; i<data.resources.length; i++){
+							Content += "<br>" + data.resources[i];
+						}
+					}
 					$.confirm({
-						icon: 'fa fa-warning',
 						title: Title,
 						theme: 'light',			
 						columnClass: 'medium',
@@ -352,16 +347,15 @@ var HeaderController = function() {
 						draggable: true,
 						dragWindowGap: 100,
 						backgroundDismiss: true,
-						closeIcon: true,
 						buttons: {
 							close: {
 								text: Close,
-								btnClass: 'btn btn-circle btn-outline blue',
+								btnClass: 'btn btn-outline blue dialog',
 								action: function (){} //GENERIC CLOSE.		
 							},
 							remove: {
 								text: Remove,
-								btnClass: 'btn btn-circle btn-outline btn-primary',
+								btnClass: 'btn btn-primary',
 								action: function(){ 
 									if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 								}
@@ -386,11 +380,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.layerConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.layerDelete;	
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -398,16 +391,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -425,11 +417,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.viewerConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.viewerDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -437,16 +428,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -464,11 +454,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.subscriptionConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.subscriptionDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -476,16 +465,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -503,11 +491,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.categoryConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.categoryDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -515,16 +502,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -541,11 +527,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.modelConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.modelDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -553,16 +538,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -579,11 +563,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.subcategoryConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.subcategoryDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -591,16 +574,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -618,11 +600,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.virtualDatasourceConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.virtualDatasourceDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -630,16 +611,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -657,11 +637,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.digitalTwinTypeConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.digitalTwinTypeDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -669,16 +648,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -696,11 +674,10 @@ var HeaderController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.digitalTwinDeviceConfirm;
-		var Title = headerReg.titleConfirm + ':';		
+		var Title = headerReg.digitalTwinDeviceDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',			
 			columnClass: 'medium',
@@ -708,16 +685,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
@@ -734,11 +710,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.userConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.userDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -746,16 +721,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!',theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -777,11 +751,10 @@ var HeaderController = function() {
 				Content = Content + gadgetlist[i] + "  ";
 			}
 		}
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.gadgetDatasourceDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -789,16 +762,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -815,16 +787,15 @@ var HeaderController = function() {
 		var Edit = headerReg.btnEditar;
 		var Content = "";
 		if (gadgetlist.length>0) {
-			Content = Content + '<BR>' + headerReg.gadgetDatasourceGadgetWarningConfirm + '<BR><BR>';
+			Content = Content + headerReg.gadgetDatasourceGadgetWarningConfirm + '<BR><BR>';
 		    for( var i = 0; i < gadgetlist.length; i++ ){
 				Content = Content + gadgetlist[i] + "  ";
 			}
 		}
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.gadgetDatasourceGadgetWarningEdit;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -832,16 +803,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				accept: {
 					text: Edit,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						window.location.href = url;
 					}											
@@ -857,11 +827,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.gadgetConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.gadgetDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -869,16 +838,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -894,11 +862,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.gadgetTemplateConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.gadgetTemplateDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -906,16 +873,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -931,11 +897,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.dashboardConfConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.dashboardConfDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -943,16 +908,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -970,11 +934,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.dashboardConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.dashboardDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -982,16 +945,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -1007,11 +969,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.deviceConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.deviceDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -1019,16 +980,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -1043,11 +1003,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.flowDomainConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.flowDomainDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -1055,16 +1014,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -1080,11 +1038,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.ksqlFlowConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.ksqlFlowDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -1092,16 +1049,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -1117,11 +1073,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.ksqlRelationConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.ksqlRelationDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -1129,16 +1084,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						deletionCallback(ksqlRelationId);
 					}											
@@ -1154,11 +1108,10 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = headerReg.queryTemplateConfirm;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.queryTemplateDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -1166,16 +1119,15 @@ var HeaderController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}											
@@ -1183,7 +1135,115 @@ var HeaderController = function() {
 			}
 		});
 	}
+
+
+	// INTERNATIONALIZATION-CONFIRM-DIALOG
+	var showInternationalizationConfirmDialog = function(formId){
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var	Content = headerReg.internationalizationConfirm;
+		var Title = headerReg.internationalizationDelete;
+
+		// internationalization-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},				
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});		
+	}
+
+	// MARKET-ASSETS-CONFIRM-DIALOG
+	var showMarketAssetConfirmDialog = function(formId){
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var	Content = headerReg.marketAssetConfirm;
+		var Title = headerReg.marketAssetDelete;
+
+		// market-assets-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},				
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});		
+	}
 	
+	// WEBPROYECT-CONFIRM-DELETE-DIALOG
+	var showConfirmDeleteDialogWebProject= function(url){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = headerReg.webprojectConfirm;
+		var Title = headerReg.webprojectDelete;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						 window.location.href = url; 
+					}											
+				}
+			}
+		});
+	}
+
+
+
 	// SERVER ERRORS-DIALOG
 	var errors = function(){		
 		var Close = headerReg.btnCancelar;
@@ -1191,55 +1251,17 @@ var HeaderController = function() {
 			var htmlContent= "";
 			headerReg.errores.split("\n").forEach(function(error){htmlContent+='<p>'+error+'</p>'});
 			// jquery-confirm DIALOG SYSTEM.
-			$.confirm({
-				icon: 'fa fa-bug',
-				title: 'ERROR',
-				theme: 'light',
-				content: htmlContent ,
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				closeIcon: true,
-				buttons: {				
-					close: {
-						text: Close,
-						btnClass: 'btn btn-circle btn-outline btn-primary',
-						action: function (){} //GENERIC CLOSE.		
-					}
-				}
-			});			
-		} else { logControl ? console.log('|---> errors() -> NO ERRORS FROM SERVER.') : ''; }		
+			toastr.error(messagesForms.operations.genOpError,htmlContent);
+			} else { logControl ? console.log('|---> errors() -> NO ERRORS FROM SERVER.') : ''; }		
 	}
 
 	// SERVER INFORMATION-DIALOG (ERRORS)
 	var information = function(){		
 		var Close = headerReg.btnCancelar;
-
 		if (headerReg.informacion !== null ){			
-			// jquery-confirm DIALOG SYSTEM.
-			$.confirm({
-				icon: 'fa fa-info-circle',
-				title: 'INFO',
-				theme: 'light',
-				content: headerReg.informacion,
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				closeIcon: true,
-				buttons: {				
-					close: {
-						text: Close,
-						btnClass: 'btn btn-circle btn-outline btn-primary',
-						action: function (){} //GENERIC CLOSE.		
-					}
-				}
-			});
+			// jquery-confirm DIALOG SYSTEM.			
+			toastr.info(messagesForms.operations.notification,headerReg.informacion);	
 		}
-//		var cookie = $.cookie("RELEASE");
-//		if(cookie == null){
-//			$('#new-release').modal('show');
-//			$.cookie("RELEASE",new Date().getTime(),{expires:30});
-//		}
 		else { logControl ? console.log('|---> information() -> NO ERROR INFO.') : ''; }		
 	}	
 
@@ -1286,18 +1308,16 @@ var HeaderController = function() {
 
 			// jquery-confirm DIALOG SYSTEM.
 			$.confirm({
-				icon: 'fa fa-bug',
-				title: 'ERROR',
+				title: 'Error',
 				theme: 'light',
 				content: message,
 				draggable: true,
 				dragWindowGap: 100,
 				backgroundDismiss: true,
-				closeIcon: true,
 				buttons: {				
 					close: {
 						text: Close,
-						btnClass: 'btn btn-circle btn-outline btn-primary',
+						btnClass: 'btn btn-outline blue dialog',
 						action: function (){} //GENERIC CLOSE.		
 					}
 				}
@@ -1409,6 +1429,10 @@ var HeaderController = function() {
 			logControl ? console.log('showConfirmDialogDashboard()...') : '';
 			showConfirmDialogGadget(formId);
 		},
+		showConfirmDeleteDialogWebProject : function(formId){		
+			logControl ? console.log('showConfirmDeleteDialogWebProject()...') : '';
+			showConfirmDeleteDialogWebProject(formId);
+		},		
 		showConfirmDialogDashboardConf : function(formId){		
 			logControl ? console.log('showConfirmDialogDashboardConf()...') : '';
 			showConfirmDialogDashboardConf(formId);
@@ -1438,12 +1462,21 @@ var HeaderController = function() {
 		showConfirmDialogQueryTemplate : function(formId){		
 			logControl ? console.log('showConfirmDialogQueryTemplate()...') : '';
 			showConfirmDialogQueryTemplate(formId);
+		},
+		// INTERNATIONALIZATION-CONFIRM-DIALOG
+		showInternationalizationConfirmDialog : function(formId){		
+			logControl ? console.log('showInternationalizationConfirmDialog()...') : '';
+			showInternationalizationConfirmDialog(formId);
+		},
+		// MARKET-ASSET-CONFIRM-DIALOG
+		showMarketAssetConfirmDialog : function(formId){		
+			logControl ? console.log('showMarketAssetConfirmDialog()...') : '';
+			showMarketAssetConfirmDialog(formId);
 		}
 	};
 }();
-
-//AUTO INIT CONTROLLER WHEN READY
-jQuery(document).ready(function() {
+var jseval=this;
+function theme(){
 	var csrf_value = $("meta[name='_csrf']").attr("content");
 	var csrf_header = $("meta[name='_csrf_header']").attr("content");
 	$.ajax({
@@ -1454,19 +1487,34 @@ jQuery(document).ready(function() {
 			[csrf_header]: csrf_value
 	    },
 		success : function(response){
+			
 			var img64 = response.HEADER_IMAGE;
+			var js = response.JS;
+			var css = response.CSS;
 			if (img64 != null && img64 != ""){
 				$('#imagen').append("<img id='headerImg' alt='logo' class='logo-default' src='data:image/jpeg;base64, "+img64+"'/>");
 			} else {
-				$('#imagen').append("<img id='headerImg' alt='logo'  style='width: 90px;    padding-top: 4px;  margin-left: 10px; '   class='logo-default' src='/controlpanel/static/images/logocontrolblue.png'/>");
+				$('#imagen').append("<img id='headerImg' alt='logo'  style='width: 133px;    padding-top: 14px;  margin-left: 12px; '   class='logo-default' src='/controlpanel/static/images/productlogo.svg'/>");
+			}
+			if(js!=null && js!="" && js.trim().length>0){
+				jseval.eval(js);
+			}
+			if(css!=null && css!="" && css.trim().length>0){
+				$('#headerStyle').append(css);
 			}
 		},
 	    error :  function () {
-	    	$('#imagen').append("<img id='headerImg' alt='logo' style='width:90px;padding-top: 4px;margin-left: 10px;  ' class='logo-default' src='/controlpanel/static/images/logocontrolblue.png'/>");
+	    	$('#imagen').append("<img id='headerImg' alt='logo' style='width:133px;padding-top: 14px;margin-left: 12px;  ' class='logo-default' src='/controlpanel/static/images/productlogo.svg'/>");
 	    	}
 	    
 	})
-
+	
+}
+theme();
+//AUTO INIT CONTROLLER WHEN READY
+jQuery(document).ready(function() {
+	
+	
 	// LOADING JSON DATA FROM THE TEMPLATE (CONST, i18, ...)
 	HeaderController.load(headerJson);
 
@@ -1488,5 +1536,12 @@ jQuery(document).ready(function() {
 	    if (e.keyCode == 13) {
 	        gotoSearch();
 	    }
+	}
+// TABS CONTROL
+	function handleTabsChange(){
+	    $('.tabContainer .option').click(function (ev) {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(ev.currentTarget).addClass('active');
+	    });
 	}
 	

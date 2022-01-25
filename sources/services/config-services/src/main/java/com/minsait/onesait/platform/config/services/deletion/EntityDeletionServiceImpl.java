@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepo
 import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
+import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
@@ -150,6 +151,8 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	private OntologyKPIRepository kpiRepository;
 	@Autowired
 	private AppUserRepository appUserRepository;
+	@Autowired
+	private DroolsRuleRepository droolsRuleRepository;
 
 	@Override
 	public void deleteOntology(String id, String userId) {
@@ -201,9 +204,13 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 						.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
 			}
 
+			if (!droolsRuleRepository.findBySourceOntologyOrTargetOntology(ontology.getIdentification()).isEmpty()) {
+				droolsRuleRepository.findBySourceOntologyOrTargetOntology(ontology.getIdentification()).forEach(a -> {
+					droolsRuleRepository.delete(a);
+				});
+			}
 			gadgetDatasourceRepository.findByOntology(ontology).forEach(g -> {
 				deleteGadgetDataSource(g.getId(), userId);
-
 			});
 
 			final List<OntologyKPI> kpi = kpiRepository.findByOntology(ontology);
@@ -212,7 +219,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 			if (!kpi.isEmpty()) {
 				kpiRepository.deleteAll(kpi);
 			} else if (!timeSeries.isEmpty()) {
-				ontologyTimeSeriesRepository.deleteAll(timeSeries);
+				ontologyTimeSeriesRepository.deleteByOntology(ontology);
 				final Ontology stats = ontologyRepository
 						.findByIdentification(timeSeries.get(0).getOntology().getIdentification() + "_stats");
 				if (stats != null) {

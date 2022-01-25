@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ public class UserController {
 		log.info("Hard deleting user \"{}\"", id);
 		try {
 			utils.deactivateSessions(id);
+            operations.deleteAuditOntology(id);
 			userService.hardDeleteUser(id);
 		} catch (final Exception e) {
 			log.error("Error deleting user \"{}\"", id);
@@ -372,6 +373,8 @@ public class UserController {
 			roleType = null;
 		}
 
+        model.addAttribute("roleTypes", userService.getAllRoles());
+        
 		if (userId == null && email == null && fullName == null && active == null && roleType == null) {
 			log.debug("No params for filtering, loading all users");
 			if(userService.countUsers() < 200L) {

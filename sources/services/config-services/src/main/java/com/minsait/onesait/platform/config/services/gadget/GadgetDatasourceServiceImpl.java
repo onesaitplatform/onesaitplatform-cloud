@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
@@ -104,6 +105,16 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 		}
 		return names;
+	}
+
+	@Override
+	public List<String> getAllIdentificationsByUser(String userId) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return gadgetDatasourceRepository.findAllIdentifications();
+		} else {
+			return gadgetDatasourceRepository.findIdentificationByUser(user);
+		}
 	}
 
 	@Override
@@ -382,6 +393,16 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		}
 		List<String> identificatinoList = new ArrayList<>(gadgetsIdentification.keySet());
 		return identificatinoList;
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return gadgetDatasourceRepository.findAllDto(identification, description);
+		} else {
+			return gadgetDatasourceRepository.findDtoByUserAndPermissions(user, identification, description);
+		}
 	}
 
 }

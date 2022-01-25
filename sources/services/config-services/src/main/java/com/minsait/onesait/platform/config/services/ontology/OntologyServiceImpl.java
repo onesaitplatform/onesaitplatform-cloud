@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -46,7 +47,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.report.ProcessingMessage;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
+import com.minsait.onesait.platform.commons.ActiveProfileDetector;
 import com.minsait.onesait.platform.commons.model.InsertResult;
+import com.minsait.onesait.platform.config.components.GlobalConfiguration;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.App;
@@ -60,6 +64,8 @@ import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyDataAccess;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
+import com.minsait.onesait.platform.config.model.OntologyElastic.PatternFunctionType;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRest.SecurityType;
@@ -84,6 +90,7 @@ import com.minsait.onesait.platform.config.repository.DataModelRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyDataAccessRepository;
+import com.minsait.onesait.platform.config.repository.OntologyElasticRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestHeadersRepository;
@@ -97,6 +104,7 @@ import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepo
 import com.minsait.onesait.platform.config.repository.OntologyVirtualDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.config.repository.SubscriptionRepository;
+import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
@@ -167,6 +175,8 @@ public class OntologyServiceImpl implements OntologyService {
 	private boolean ignoreTitleCaseCheck;
 	@Autowired
 	SecurityService securityService;
+	@Autowired
+	private OntologyElasticRepository elasticOntologyRepository;
 
 	@Autowired
 	ApiRepository apiRepository;
@@ -203,8 +213,35 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Autowired
 	private ObjectMapper mapper;
+	@Autowired
+	private ConfigurationService configurationService;
+	@Autowired
+	private ActiveProfileDetector profileDetector;
 
 	final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
+	private int defaultReplicas = 0;
+	private int defaultShards = 5;
+
+	@PostConstruct
+	void initializeIt() {
+		try {
+			String profile = profileDetector.getActiveProfile();
+			GlobalConfiguration globalConfiguration = configurationService.getGlobalConfiguration(profile);
+			final Map<String, Object> database = globalConfiguration.getEnv().getDatabase();
+
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
+
+			@SuppressWarnings("unchecked")
+			final Map<String, Object> defaults = (Map<String, Object>) elasticsearch.get("defaults");
+
+			defaultReplicas = (int) defaults.get("replicas");
+			defaultShards = (int) defaults.get("shards");
+		} catch (Exception e) {
+			log.warn("Error loading configuration values for elasticSearch indexes. Using defauts.");
+		}
+	}
 
 	@Override
 	public List<Ontology> getAllOntologies(String sessionUserId) {
@@ -608,6 +645,34 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	@Override
+	public List<String> getIdentificationsByUserAndPermissions(String userId) {
+		List<String> ontologies;
+		final User user = userService.getUser(userId);
+		if (userService.isUserAdministrator(user)) {
+			ontologies = ontologyRepository.findAllIdentifications();
+		} else {
+			ontologies = ontologyRepository.findIdentificationsByUserAndPermissions(user);
+		}
+
+		return ontologies;
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
+		description = description == null ? "" : description;
+		identification = identification == null ? "" : identification;
+
+		List<OPResourceDTO> ontologies;
+		final User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			ontologies = ontologyRepository.findAllDto(identification, description);
+		} else {
+			ontologies = ontologyRepository.findDtoByUserAndPermissions(user, identification, description);
+		}
+		return ontologies;
+	}
+
+	@Override
 	public Ontology getOntologyById(String ontologyId, String sessionUserId) {
 		final Ontology ontology = ontologyRepository.findById(ontologyId).orElse(null);
 		final User sessionUser = userService.getUser(sessionUserId);
@@ -691,7 +756,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Override
 	public OntologyVirtualDatasource getOntologyVirtualDatasourceByName(String datasourceName) {
-		return ontologyVirtualDatasourceRepository.findByDatasourceName(datasourceName);
+		return ontologyVirtualDatasourceRepository.findByIdentification(datasourceName);
 	}
 
 	@Override
@@ -721,6 +786,26 @@ public class OntologyServiceImpl implements OntologyService {
 				return resourceService.hasAccess(user.getUserId(), ontology.getId(), ResourceAccessType.VIEW);
 			}
 		}
+	}
+
+	@Override
+	public String getElementsAssociated(String ontologyId) {
+		final JSONArray elements = new JSONArray();
+
+		Ontology ontology = ontologyRepository.findById(ontologyId).get();
+		if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
+			final OntologyVirtual ontologyVirtual = ontologyvirtualRepository.findByOntologyId(ontology);
+
+			final JSONObject e = new JSONObject();
+			e.put("id", ontologyVirtual.getDatasourceId().getId());
+			e.put("identification", ontologyVirtual.getDatasourceId().getIdentification());
+			e.put("type", ontologyVirtual.getDatasourceId().getClass().getSimpleName());
+			elements.put(e);
+			return elements.toString();
+		} else {
+			return elements.toString();
+		}
+
 	}
 
 	@Override
@@ -1000,7 +1085,10 @@ public class OntologyServiceImpl implements OntologyService {
 					createRestOntology(ontology, config);
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
 					createVirtualOntology(ontology, config.getDatasource(), config.getDatasourceTableName(),
-							config.getObjectId(), config.getObjectGeometry());
+							config.getDatasourceDatabase(), config.getDatasourceSchema(), config.getObjectId(),
+							config.getObjectGeometry());
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)) {
+					createElasticOntology(ontology, config);
 				}
 			} else {
 				throw new OntologyServiceException("Invalid user");
@@ -1012,18 +1100,100 @@ public class OntologyServiceImpl implements OntologyService {
 
 	}
 
+	private void createElasticOntology(Ontology ontology, OntologyConfiguration config) {
+		// add default values if config does not have them set: shards & replicas
+		int shards = defaultShards;
+		int replicas = defaultReplicas;
+		int substringStart = 0;
+		int substringEnd = -1;
+		PatternFunctionType patternFunctionType = PatternFunctionType.NONE;
+		if (config == null) {
+			config = new OntologyConfiguration();
+		}
+		if (config.getShards() == null || config.getShards().isEmpty() || !config.isAllowsCustomElasticConfig()) {
+			config.setShards(String.valueOf(defaultShards));
+		} else {
+			try {
+				shards = Integer.parseInt(config.getShards());
+			} catch (Exception e) {
+				log.error("Invalid shards value '{}' for ElasticSearch Ontology {}", config.getShards(),
+						ontology.getIdentification());
+				throw new OntologyServiceException("Shards value '" + config.getShards() + "' is not valid.");
+			}
+		}
+		if (config.getReplicas() == null || config.getReplicas().isEmpty() || !config.isAllowsCustomElasticConfig()) {
+			config.setReplicas(String.valueOf(defaultReplicas));
+		} else {
+			try {
+				replicas = Integer.parseInt(config.getReplicas());
+			} catch (Exception e) {
+				log.error("Invalid replicas value '{}' for ElasticSearch Ontology {}", config.getReplicas(),
+						ontology.getIdentification());
+				throw new OntologyServiceException("Replicas value '" + config.getReplicas() + "' is not valid.");
+			}
+		}
+		if (config.getSubstringStart() != null) {
+			try {
+				substringStart = Integer.parseInt(config.getSubstringStart());
+			} catch (Exception e) {
+				log.error("Invalid substring start value '{}' for ElasticSearch Ontology {}",
+						config.getSubstringStart(), ontology.getIdentification());
+				throw new OntologyServiceException(
+						"Substring start value '" + config.getSubstringStart() + "' is not valid.");
+			}
+		}
+		if (config.getSubstringEnd() != null) {
+			try {
+				substringEnd = Integer.parseInt(config.getSubstringEnd());
+			} catch (Exception e) {
+				log.error("Invalid substring end value '{}' for ElasticSearch Ontology {}", config.getSubstringEnd(),
+						ontology.getIdentification());
+				throw new OntologyServiceException(
+						"Substring end value '" + config.getSubstringEnd() + "' is not valid.");
+			}
+		}
+		if (substringEnd != -1 && substringEnd <= substringStart) {
+			log.error(
+					"Invalid substring end value '{}' for ElasticSearch Ontology {}. End value must be greater than start value.",
+					config.getSubstringEnd(), ontology.getIdentification());
+			throw new OntologyServiceException("Substring end value '" + config.getSubstringEnd()
+					+ "' is not valid. End value must be greater than start value.");
+		}
+
+		if (config.getPatternFunction() != null && !config.getPatternFunction().isEmpty()) {
+			patternFunctionType = PatternFunctionType.valueOf(config.getPatternFunction());
+		}
+
+		final OntologyElastic elasticOntology = new OntologyElastic();
+		elasticOntology.setShards(shards);
+		elasticOntology.setReplicas(replicas);
+		elasticOntology.setOntologyId(ontology);
+		elasticOntology.setCustomConfig(config.isAllowsCustomElasticConfig());
+		elasticOntology.setTemplateConfig(config.isAllowsTemplateConfig());
+		elasticOntology.setPatternField(config.getPatternField());
+		elasticOntology.setPatternFunction(patternFunctionType);
+		elasticOntology.setSubstringStart(substringStart);
+		elasticOntology.setSubstringEnd(substringEnd);
+		elasticOntology.setCustomIdConfig(config.isAllowsCustomIdConfig());
+		elasticOntology.setIdField(config.getCustomIdField());
+		elasticOntology.setAllowsUpsertById(config.isAllowsUpsertById());
+		elasticOntologyRepository.save(elasticOntology);
+	}
+
 	private void createVirtualOntology(Ontology ontology, String datasourceName, String datasourceTableName,
-			String objectId, String objectGeometry) {
+			String datasourceDatabase, String datasourceSchema, String objectId, String objectGeometry) {
 		if (objectId == null || objectId.equals("")) {
 			objectId = null;
 		}
 		final OntologyVirtualDatasource datasource = ontologyVirtualDatasourceRepository
-				.findByDatasourceName(datasourceName);
+				.findByIdentification(datasourceName);
 
 		if (datasource != null) {
 			final OntologyVirtual ontologyVirtual = new OntologyVirtual();
 			ontologyVirtual.setDatasourceId(datasource);
 			ontologyVirtual.setDatasourceTableName(datasourceTableName);
+			ontologyVirtual.setDatasourceDatabase(datasourceDatabase);
+			ontologyVirtual.setDatasourceSchema(datasourceSchema);
 			ontologyVirtual.setOntologyId(ontology);
 			ontologyVirtual.setObjectId(objectId);
 			ontologyVirtual.setObjectGeometry(objectGeometry);
@@ -1513,7 +1683,7 @@ public class OntologyServiceImpl implements OntologyService {
 	public List<VirtualDatasourceDTO> getDatasourcesRelationals() {
 		final List<VirtualDatasourceDTO> virtualDatasetDTOList = new ArrayList<>();
 		final List<OntologyVirtualDatasource> virtualDatasources = ontologyVirtualDatasourceRepository
-				.findAllByOrderByDatasourceNameAsc();
+				.findAllByOrderByIdentificationAsc();
 
 		for (final OntologyVirtualDatasource ontologyVirtualDatasource : virtualDatasources) {
 			final VirtualDatasourceDTO virtualDatasetDTO = new VirtualDatasourceDTO(ontologyVirtualDatasource);
@@ -1528,7 +1698,7 @@ public class OntologyServiceImpl implements OntologyService {
 		final List<VirtualDatasourceDTO> virtualDatasetDTOList = new ArrayList<>();
 		final User sessionUser = userService.getUser(sessionUserId);
 		final List<OntologyVirtualDatasource> virtualDatasources = ontologyVirtualDatasourceRepository
-				.findByUserIdOrIsPublicTrue(sessionUser);
+				.findByUserOrIsPublicTrue(sessionUser);
 
 		for (final OntologyVirtualDatasource ontologyVirtualDatasource : virtualDatasources) {
 			final VirtualDatasourceDTO virtualDatasetDTO = new VirtualDatasourceDTO(ontologyVirtualDatasource);
@@ -1895,5 +2065,10 @@ public class OntologyServiceImpl implements OntologyService {
 		mapResources.put("clients", clients);
 
 		return mapResources;
+	}
+
+	@Override
+	public OntologyElastic getOntologyElasticByOntologyId(Ontology ontology) {
+		return elasticOntologyRepository.findByOntologyId(ontology);
 	}
 }

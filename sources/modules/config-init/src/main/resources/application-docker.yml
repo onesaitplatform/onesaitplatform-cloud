@@ -42,6 +42,8 @@ onesaitplatform:
          host: ${GRAYLOG_HOST}
          port: ${GRAYLOG_PORT}
          externalUri: ${GRAYLOG_EXTERNAL_URI}
+         plugin.auth.path.token: ${GRAYLOG_PLUGIN_AUTH_PATH_TOKEN}
+         plugin.auth.path.userinfo: ${GRAYLOG_PLUGIN_AUTH_PATH_USERINFO}
          
 spring:
    datasource:
@@ -53,7 +55,3 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-
-opendata:
-   load-ontologies: ${OPENDATA_ONTOLOGIES}
-

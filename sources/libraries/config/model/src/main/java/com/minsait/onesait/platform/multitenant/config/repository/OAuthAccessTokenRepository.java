@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.multitenant.config.repository;
 import java.util.Collection;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
@@ -29,5 +30,15 @@ public interface OAuthAccessTokenRepository extends JpaRepository<OAuthAccessTok
 	Collection<OAuthAccessToken> findByUserName(String userName);
 
 	OAuthAccessToken findByAuthenticationId(String authenticationId);
+
+	@Transactional
+	@Modifying
+	//	@Query("DELETE FROM OauthAccessToken o WHERE o.clientId= :clientId")
+	Long deleteByClientId(String clientId);
+
+	@Transactional
+	@Modifying
+	//	@Query("DELETE FROM OauthAccessToken o WHERE o.clientId= :clientId AND o.userName= :username")
+	Long deleteByClientIdAndUserName(String clientId, String username);
 
 }

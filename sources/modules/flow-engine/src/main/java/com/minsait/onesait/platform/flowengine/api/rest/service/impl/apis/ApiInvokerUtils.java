@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,22 @@ package com.minsait.onesait.platform.flowengine.api.rest.service.impl.apis;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -50,7 +55,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApiInvokerUtils {
 
+	@Value("${onesaitplatform.flowengine.apiinvoker.response.utf8.force:false}")
+	private boolean forceUtf8Response;
+
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
+	@PostConstruct
+	void setUTF8Encoding() {
+		restTemplate.getMessageConverters().removeIf(c -> c instanceof StringHttpMessageConverter);
+		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+	}
+
 
 	@SuppressWarnings("unchecked")
 	public ResponseEntity<String> callApiOperation(RestApiInvocationParams invocationParams) {
@@ -65,6 +80,7 @@ public class ApiInvokerUtils {
 		for (final Entry<String, String> entry : invocationParams.getPathParams().entrySet()) {
 			url = url.replaceAll("\\{" + entry.getKey() + "\\}", entry.getValue());
 		}
+
 		try {
 			switch (invocationParams.getMethod()) {
 			case GET:
@@ -91,8 +107,9 @@ public class ApiInvokerUtils {
 				((MultiValueMap<String, Object>) entity.getBody()).entrySet().forEach(e -> {
 					if (e.getValue() != null) {
 						final List<Object> params = e.getValue();
-						if (!params.isEmpty() && params.get(0) instanceof FileSystemResource)
+						if (!params.isEmpty() && params.get(0) instanceof FileSystemResource) {
 							((FileSystemResource) e.getValue().get(0)).getFile().delete();
+						}
 					}
 
 				});
@@ -131,11 +148,11 @@ public class ApiInvokerUtils {
 
 	public void fillSwaggerInvocationParams(Operation operation, FlowEngineInvokeRestApiOperationRequest invokeRequest,
 			RestApiInvocationParams resultInvocationParams) {
-		List<String> consumes = operation.getConsumes();
-		if(!consumes.isEmpty()) {
+		final List<String> consumes = operation.getConsumes();
+		if (consumes != null && !consumes.isEmpty()) {
 			resultInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, consumes.get(0));
 		}
-		
+
 		for (final Parameter param : operation.getParameters()) {
 			// QUERY, PATH, BODY (formData ignore) or HEADER
 			String value = "";
@@ -146,16 +163,16 @@ public class ApiInvokerUtils {
 				final String msg = "No value was found for parameter " + param.getName() + " in operation ["
 						+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName() + " from API ["
 						+ invokeRequest.getApiVersion() + "] - " + invokeRequest.getApiName() + ".";
-				if(param.getRequired()) {
+				if (param.getRequired()) {
 					log.error(msg);
 					throw new NoValueForParamIvocationException(msg);
 				} else {
-					log.debug("Skipping parameter. Optional parameter not received. "+msg);
+					log.debug("Skipping parameter. Optional parameter not received. " + msg);
 					skipParam = true;
 				}
 
 			}
-			if(!skipParam) {
+			if (!skipParam) {
 				switch (param.getIn().toUpperCase()) {
 				case "QUERY":
 					resultInvocationParams.getQueryParams().put(param.getName(), value);
@@ -171,13 +188,13 @@ public class ApiInvokerUtils {
 					break;
 				case "FORMDATA":
 					resultInvocationParams.setMultipart(true);
-					FormParameter formParam = (FormParameter) param;
+					final FormParameter formParam = (FormParameter) param;
 					if (formParam.getType().equalsIgnoreCase("file")) {
 
 						try {
 							// transform JSON (NodeJS) buffer to Bytes array
 							final ObjectMapper mapper = new ObjectMapper();
-							NodeREDAPIInvokerInputFile nodeFile = mapper.readValue(value,
+							final NodeREDAPIInvokerInputFile nodeFile = mapper.readValue(value,
 									NodeREDAPIInvokerInputFile.class);
 							final File file = new File("/tmp/" + nodeFile.getFileName());
 							Files.write(file.toPath(), nodeFile.getFile().getData());

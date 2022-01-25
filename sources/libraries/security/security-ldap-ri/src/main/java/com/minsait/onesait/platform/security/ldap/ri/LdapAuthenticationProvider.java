@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,11 +101,19 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		}
 
 		if (authenticated) {
-			final List<String> groups = ldapTemplateBase
-					.search(LdapUtils.emptyLdapName(), filter.encode(), (AttributesMapper<List<String>>) attributes -> {
-						final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
-						return Collections.list(enMember);
-					}).get(0);
+			log.info("User {} authenticated successfully against ldap", userId);
+			List<String> groups = null;
+			try {
+				groups = ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(),
+						(AttributesMapper<List<String>>) attributes -> {
+							@SuppressWarnings("unchecked")
+							final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt)
+							.getAll();
+							return Collections.list(enMember);
+						}).get(0);
+			} catch (final Exception e) {
+				log.error("Error while retrieving ldap groups for user {}", userId, e);
+			}
 
 			User user = userRepository.findByUserId(userId);
 			if (user == null) {
@@ -117,13 +125,13 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			final UserDetails details = userDetails.loadUserByUsername(userId);
 			return new UsernamePasswordAuthenticationToken(details, details.getPassword(), details.getAuthorities());
 		} else {
-
+			log.info("User {} was not authenticated against ldap", userId);
 			if (!matches.isEmpty()) {
 				throw new BadCredentialsException("Wrong password for user " + userId);
 			} else {
 				final User user = userRepository.findByUserId(userId);
 				if (user != null && user.isActive()) {
-					log.debug("User {} does not exist in LDAP, but exists in the ConfigDB, validating password...",
+					log.info("User {} does not exist in LDAP, but exists in the ConfigDB, validating password...",
 							userId);
 					try {
 						if (user.getPassword().equals(PasswordEncoder.getInstance().encodeSHA256(password))) {

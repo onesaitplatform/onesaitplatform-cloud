@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 
+import com.minsait.onesait.platform.audit.aop.DashboardEngineAuditable;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -26,8 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 public class StompConnectedEventListener implements ApplicationListener<SessionConnectedEvent> {
 
 	@Override
+	@DashboardEngineAuditable
 	public void onApplicationEvent(SessionConnectedEvent event) {
-		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+		final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 		log.info("Connection build successfully: {}", accessor.getUser());
 	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -65,4 +66,17 @@ public interface GadgetRepository extends JpaRepository<Gadget, String> {
 	@Query("SELECT distinct(g.type) FROM Gadget AS g ORDER BY g.type")
 	List<String> findGadgetTypes();
 
+	@Query("SELECT g.identification FROM Gadget AS g ORDER BY g.identification ASC")
+	List<String> findAllIdentifications();
+
+	@Query("SELECT g.identification FROM Gadget AS g WHERE g.user=:user ORDER BY g.identification ASC")
+	List<String> findAllIdentificationsByUser(@Param("user") User user);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'GADGET', 0) FROM Gadget AS o WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findAllDto(@Param("identification") String identification,
+			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'GADGET', 0) FROM Gadget AS o WHERE o.user=:user AND (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
+			@Param("identification") String identification, @Param("description") String description);
 }

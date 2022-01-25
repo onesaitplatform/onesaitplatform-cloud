@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,6 @@ import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
-import com.minsait.onesait.platform.config.model.DatasetResource;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
@@ -119,6 +118,8 @@ import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.model.I18nResources;
 import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.model.Layer;
+import com.minsait.onesait.platform.config.model.LineageRelations;
+import com.minsait.onesait.platform.config.model.LineageRelations.Group;
 import com.minsait.onesait.platform.config.model.MarketAsset;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
@@ -137,6 +138,8 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.Frecue
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.WindowType;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
+import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.Pipeline.PipelineStatus;
 import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Rollback;
@@ -174,6 +177,7 @@ import com.minsait.onesait.platform.config.repository.GadgetTemplateTypeReposito
 import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
 import com.minsait.onesait.platform.config.repository.InternationalizationRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
+import com.minsait.onesait.platform.config.repository.LineageRelationsRepository;
 import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
@@ -188,6 +192,7 @@ import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesWindowRe
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualDatasourceRepository;
+import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.PipelineUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.RollbackRepository;
@@ -244,8 +249,8 @@ public class InitConfigDB {
 	private static final String RESULT_STR = "result";
 	private static final String OPERATIONTYPE_STR = "operationType";
 	private static final String VALUE_STR = "value";
-	private static final String SHA_STR = "SHA256(DCxLLN6X4qrlIoI0vvuyEApc5xZWZgXgTfYkqyuhUTQ=)";
-	private static final String SHA_EDGE_STR = "SHA256(DCxLLN6X4qrlIoI0vvuyEApc5xZWZgXgTfYkqyuhUTQ=)";
+	private static final String SHA_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
+	private static final String SHA_EDGE_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
 	private static final String RESTSCHEMA_STR = "examples/Restaurants-schema.json";
 	private static final String GTKPEXAMPLE_STR = "GTKP-Example";
 	private static final String GENERALIOT_STR = "General,IoT";
@@ -273,6 +278,7 @@ public class InitConfigDB {
 
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
+
 
 	private static final String ISO3166_2 = "ISO3166_2";
 
@@ -397,6 +403,9 @@ public class InitConfigDB {
 	private OntologyTimeSeriesRepository ontologyTimeSeriesRepository;
 
 	@Autowired
+	private PipelineRepository pipelineRepository;
+
+	@Autowired
 	private OntologyTimeSeriesPropertyRepository ontologyTimeSeriesPropertyRepository;
 
 	@Autowired
@@ -404,6 +413,9 @@ public class InitConfigDB {
 
 	@Autowired
 	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private LineageRelationsRepository lineageRelationsRepository;
 
 	@Autowired
 	private SubcategoryRepository subcategoryRepository;
@@ -419,7 +431,7 @@ public class InitConfigDB {
 
 	@Value("${onesaitplatform.init.samples:false}")
 	private boolean initSamples;
-	
+
 	@Value("${onesaitplatform.init.database.mongodb.servers:realtimedb:27017}")
 	private String rtdbServers;
 
@@ -522,18 +534,17 @@ public class InitConfigDB {
 			initUser();
 			log.info("OK init_User");
 			//
-			
-			
+
 			initDataModel();
 			log.info("OK init_DataModel");
 			if (initSamples) {
 				initOntologyCategory();
 				log.info("OK init_OntologyCategory");
 			}
-			
+
 			initOntology();
 			log.info("OK init_Ontology");
-			
+
 			initOntologyUserAccess();
 			log.info("OK init_OntologyUserAccess");
 			initOntologyUserAccessType();
@@ -542,14 +553,13 @@ public class InitConfigDB {
 			if (initSamples) {
 				initClientPlatform();
 				log.info("OK init_ClientPlatform");
-			
-			
+
 				initClientPlatformOntology();
 				log.info("OK init_ClientPlatformOntology");
-			
 
 				initToken();
 				log.info("OK init_Token");
+
 			}
 
 			initUserToken();
@@ -558,15 +568,14 @@ public class InitConfigDB {
 			if (initSamples) {
 				initOntologyRestaurants();
 				log.info("OK init_OntologyRestaurants");
-			
-				
+
 				initGadgetDatasource();
 				log.info("OK init_GadgetDatasource");
 			}
-			
+
 			initGadgetTemplateType();
 			log.info("OK init_GadgetTemplate_Type");
-			
+
 			if (initSamples) {
 
 				initGadgetTemplate();
@@ -582,7 +591,7 @@ public class InitConfigDB {
 				initDashboard();
 				log.info("OK init_Dashboard");
 			}
-			
+
 			initDashboardConf();
 			log.info("OK init_DashboardConf");
 			initDashboardUserAccessType();
@@ -592,25 +601,25 @@ public class InitConfigDB {
 				initInternationalization();
 				log.info("OK init_Internationalization");
 			}
-			
+
 			initMenuControlPanel();
 			log.info("OK init_ConsoleMenu");
 			initConsoleMenuRollBack();
 			log.info("OK initConsoleMenuRollBack");
 			initConfiguration();
 			log.info("OK init_Configuration");
-			
+
 			if (initSamples) {
 				initFlowDomain();
 				log.info("OK init_FlowDomain");
-		
+
 				initDigitalTwin.initDigitalTwinType();
 				log.info("OK init_DigitalTwinType");
 
 				initDigitalTwin.initDigitalTwinDevice();
 				log.info("OK init_DigitalTwinDevice");
 			}
-			
+
 			initMarketPlace();
 			log.info("OK init_Market");
 
@@ -618,13 +627,17 @@ public class InitConfigDB {
 				initNotebook();
 				log.info("OK init_Notebook");
 			}
-			
+
 			initDataflowInstances();
 			log.info("OK init_dataflow");
 
+			if (initSamples) {
+				initPipeline();
+				log.info("OK init_Pipeline");
+			}
 			initNotebookUserAccessType();
 			log.info("OK init_notebook_user_access_type");
-			
+
 			initDataflowUserAccessType();
 			log.info("OK init_dataflow_user_access_type");
 
@@ -632,20 +645,19 @@ public class InitConfigDB {
 				initSimulations();
 				log.info("OK init_simulations");
 			}
-			
+
 			if (initSamples) {
 				initOpenFlightSample();
 				log.info("OK init_openflight");
 			}
-			
+
 			initBaseLayers();
 			log.info("OK init_BaseLayers");
 
 			if (initSamples) {
 				initQAWindTurbinesSample();
 				log.info("OK init_QA_WindTurbines");
-			
-				
+
 				initLayers();
 				log.info("OK init_Layers");
 
@@ -656,7 +668,7 @@ public class InitConfigDB {
 				log.info("OK initRealms");
 
 			}
-			
+
 			initCategories();
 			log.info("OK Categories");
 
@@ -665,21 +677,26 @@ public class InitConfigDB {
 				log.info("OK Typologies");
 				initTypologyDataset();
 				log.info("OK Typologies-Dataset");
-			
+
 				initInternationalizationSample();
 				log.info("OK initInternationalizationSample");
-			
-			// init_OntologyVirtualDatasource();
-			// log.info(" OK init_OntologyVirtualDatasource");
-			// init_realms();
+
+				// init_OntologyVirtualDatasource();
+				// log.info(" OK init_OntologyVirtualDatasource");
+				// init_realms();
 
 				initWebProject();
 				log.info("OK initWebProject");
-			
 
 				initApis();
 				log.info("Init API");
 			}
+			if (initSamples) {
+				initLineageRelations();
+				log.info("OK initLineageRelations");
+			}
+
+
 		}
 
 	}
@@ -716,6 +733,7 @@ public class InitConfigDB {
 	private @Autowired ApiRepository apiRepository;
 	private @Autowired ApiOperationRepository apiOperationRepository;
 
+
 	private void initSubscription() {
 		if (subscriptionRepository.findByIdentification("ticketStatus").isEmpty()) {
 			final Ontology ontology = ontologyRepository.findByIdentification(TICKET);
@@ -749,7 +767,7 @@ public class InitConfigDB {
 				o.setPublic(true);
 				ontologyRepository.save(o);
 			}
-			
+
 			Api api = new Api();
 			api.setIdentification(vueProjectApi);
 			api.setApiType(ApiType.INTERNAL_ONTOLOGY);
@@ -762,8 +780,6 @@ public class InitConfigDB {
 			api.setOntology(ontologyRepository.findByIdentification(projectOntology));
 			api.setId("MASTER-Api-1");
 			api = apiRepository.save(api);
-			
-			
 
 			ApiOperation operation = new ApiOperation();
 			operation.setIdentification("project_PUT");
@@ -1077,7 +1093,7 @@ public class InitConfigDB {
 		initGadgetDatasourceOpenFlight();
 		initGadgetMeasureOpenFlight();
 	}
-	
+
 	public void initQAWindTurbinesSample() {
 		initOntologyQAWindTurbines();
 		initDashboardQAWindTurbines();
@@ -1236,8 +1252,22 @@ public class InitConfigDB {
 			config.setSuffix("Nginx");
 			config.setYmlConfig(loadFromResources("configurations/nginx-template.conf"));
 			configurationRepository.save(config);
+
 		}
-		Configuration config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, DEFAULT);
+		Configuration config = configurationRepository.findByTypeAndEnvironment(Type.LINEAGE, DEFAULT);
+		if (config == null) {
+			config = new Configuration();
+			config.setId("MASTER-Configuration-24");
+			config.setSuffix("Lineage");
+			config.setType(Configuration.Type.LINEAGE);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setDescription("Lineage Config");
+			config.setYmlConfig(loadFromResources("configurations/LineageConfiguration.json"));
+			configurationRepository.save(config);
+		}
+
+		config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
 			config.setSuffix("Platform");
@@ -1266,6 +1296,7 @@ public class InitConfigDB {
 
 			configurationRepository.save(config);
 		}
+
 
 		config = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, DEFAULT);
 		if (config == null) {
@@ -1338,14 +1369,14 @@ public class InitConfigDB {
 			cpo.setAccess(Ontology.AccessType.ALL);
 			clientPlatformOntologyRepository.save(cpo);
 			//
-			
+
 			cpo = new ClientPlatformOntology();
 			cpo.setId("MASTER-ClientPlatformOntology-2");
 			cpo.setClientPlatform(clientPlatformRepository.findByIdentification(GTKPEXAMPLE_STR));
 			cpo.setOntology(ontologyRepository.findByIdentification(ONTOLOGY_HELSINKIPOPULATION));
 			cpo.setAccess(Ontology.AccessType.ALL);
 			clientPlatformOntologyRepository.save(cpo);
-			
+
 		}
 	}
 
@@ -1369,7 +1400,6 @@ public class InitConfigDB {
 			client.setEncryptionKey("f9dfe72e-7082-4fe8-ba37-3f569b30a691");
 			client.setDescription("ClientPatform created as Example");
 			clientPlatformRepository.save(client);
-			
 
 			client = new ClientPlatform();
 			client.setId("MASTER-ClientPlatform-3");
@@ -1383,6 +1413,14 @@ public class InitConfigDB {
 			client.setId("MASTER-ClientPlatform-4");
 			client.setUser(getUserDeveloper());
 			client.setIdentification("DeviceMaster");
+			client.setEncryptionKey(UUID.randomUUID().toString());
+			client.setDescription("Device template for testing");
+			clientPlatformRepository.save(client);
+
+			client = new ClientPlatform();
+			client.setId("MASTER-ClientPlatform-5");
+			client.setUser(getUserAnalytics());
+			client.setIdentification("DefaultClient");
 			client.setEncryptionKey(UUID.randomUUID().toString());
 			client.setDescription("Device template for testing");
 			clientPlatformRepository.save(client);
@@ -4293,6 +4331,16 @@ public class InitConfigDB {
 				ontologyService.createOntology(ontology, null);
 			}
 		}
+		if (clientPlatformOntologyRepository
+				.findByClientPlatform(clientPlatformRepository.findByIdentification("DefaultClient")) != null) {
+			ClientPlatformOntology cpo = new ClientPlatformOntology();
+			cpo.setId("MASTER-ClientPlatformOntology-3");
+			cpo.setClientPlatform(clientPlatformRepository.findByIdentification("DefaultClient"));
+			cpo.setOntology(ontologyRepository.findByIdentification(AIRPORT_STR));
+			cpo.setAccess(Ontology.AccessType.INSERT);
+			clientPlatformOntologyRepository.save(cpo);
+		}
+
 	}
 
 	public void initOntologyQAWindTurbines() {
@@ -4666,13 +4714,21 @@ public class InitConfigDB {
 			token.setClientPlatform(client);
 			token.setTokenName("a16b9e7367734f04bc720e981fcf483f");
 			tokenRepository.save(token);
-			
+
 			client = clientPlatformRepository.findByIdentification(GTKPEXAMPLE_STR);
 			token = new Token();
 			token.setId("MASTER-Token-3");
 			token.setClientPlatform(client);
 			token.setTokenName("690662b750274c8ba8748d7d55e9db5b");
 			tokenRepository.save(token);
+
+			client = clientPlatformRepository.findByIdentification("DefaultClient");
+			token = new Token();
+			token.setId("MASTER-Token-4");
+			token.setClientPlatform(client);
+			token.setTokenName("690662b750274c8ba8748d7d55e9db5m");
+			tokenRepository.save(token);
+
 		}
 
 	}
@@ -4801,7 +4857,7 @@ public class InitConfigDB {
 				//
 				type = new User();
 				type.setUserId("operations");
-				type.setPassword(SHA_STR);
+				type.setPassword("SHA256(DCxLLN6X4qrlIoI0vvuyEApc5xZWZgXgTfYkqyuhUTQ=)");
 				type.setFullName("Operations of the Platform");
 				type.setEmail("operations@onesaitplatform.com");
 				type.setActive(true);
@@ -4867,6 +4923,30 @@ public class InitConfigDB {
 			master.setFullName("Platform administrator");
 			master.setEmail("platformadmin@onesaitplatform.com");
 			userCDBRepository.save(master);
+		}
+	}
+
+	private void initLineageRelations() {
+		ClientPlatform client = clientPlatformRepository.findByIdentification("DefaultClient");
+		if (client != null && notebookRepository.findById("MASTER-Notebook-1").isPresent()
+				&& pipelineRepository.findById("MASTER-Pipeline-1").isPresent()) {
+			LineageRelations relation = new LineageRelations();
+			relation.setTarget(client);
+			relation.setSource(notebookRepository.findById("MASTER-Notebook-1").get());
+			relation.setUser(getUserAnalytics());
+			relation.setTargetGroup(Group.DIGITALCLIENT);
+			relation.setSourceGroup(Group.NOTEBOOK);
+
+			lineageRelationsRepository.save(relation);
+
+			relation = new LineageRelations();
+			relation.setTarget(client);
+			relation.setSource(pipelineRepository.findById("MASTER-Pipeline-1").get());
+			relation.setUser(getUserAnalytics());
+			relation.setTargetGroup(Group.DIGITALCLIENT);
+			relation.setSourceGroup(Group.DATAFLOW);
+
+			lineageRelationsRepository.save(relation);
 		}
 	}
 
@@ -5143,6 +5223,21 @@ public class InitConfigDB {
 			instance.setGuestCredentials(guestCredential.getEncryptedCredentials());
 
 			dataflowInstanceRepository.save(instance);
+		}
+	}
+
+	private void initPipeline() {
+		if (pipelineRepository.findAll().isEmpty()) {
+			Pipeline pipe = new Pipeline();
+			pipe.setIdentification("PipelineDefault");
+			pipe.setInstance(dataflowInstanceRepository.findByDefaultInstance(true));
+			pipe.setUser(getUserAnalytics());
+			pipe.setId("MASTER-Pipeline-1");
+			pipe.setPublic(false);
+			pipe.setStatus(PipelineStatus.STOPPED);
+			pipe.setIdstreamsets("PipelineDefault2e4803d3-d5e1-4e21-ae7d-26ea0e747d9d");
+			pipelineRepository.save(pipe);
+
 		}
 	}
 

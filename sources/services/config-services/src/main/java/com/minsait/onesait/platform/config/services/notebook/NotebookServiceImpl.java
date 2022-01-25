@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
 import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
@@ -1274,6 +1275,16 @@ public class NotebookServiceImpl implements NotebookService {
 		}
 		
 		return notebookList;
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification) {
+		final User user = userRepository.findByUserId(userId);
+		if (!userService.isUserAdministrator(user)) {
+			return notebookRepository.findAllDto(identification);
+		} else {
+			return notebookRepository.findDtoByUserAndPermissions(user, identification);
+		}
 	}
 
 }

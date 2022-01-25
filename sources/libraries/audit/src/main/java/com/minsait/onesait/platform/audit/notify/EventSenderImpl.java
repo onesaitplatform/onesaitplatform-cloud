@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventSenderImpl implements EventRouter {
 
-	public static final String AUDIT_QUEUE_NAME = "audit";
+	public static final String AUDIT_QUEUE_NAME = "auditQueue";
 	public static final int EXECUTOR_THREADS = 5;
 
 	@Value("${onesaitplatform.audit.global.notify:true}")

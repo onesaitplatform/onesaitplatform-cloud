@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -69,6 +69,15 @@
 
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+				<form role="form" id="dashboard_create_form" th:object="${dashboard}" method="post" class="form">											
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input th:if="${dashboard.id} == null" type="hidden" name="action" th:value="@{/dashboard/create}" />
+
+					<!-- FORM ACTIONS FOR UPDATE -->
+					<input th:if="${dashboard.id} != null" type="hidden" name="action" th:value="@{/dashboard/dashboardconf}" /> 
+					<input th:if="${dashboard.id} != null" type="hidden" name="_method" value="PUT" />
+
+
 
 				<div class="alert alert-success display-hide">
 					<span th:text="${globalMessage}"></span>
@@ -95,96 +104,88 @@
 				</h1>
 				<!-- END PAGE TITLE-->
 
-				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
-						<div class="portlet light container">
-							<div class="portlet-title">
-								<div class="caption">
-									<!-- FORM TITLE -->
-									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} == null" class="caption-subject" th:text="#{dashboards.create} + ':'"> Create Dashboards</span>
-									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} != null" class="caption-subject" th:text="#{dashboards.update} + ' ' + ${dashboard.identification} + ':'"> Update Dashboards</span>
-									
-									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} == null" class="caption-subject" th:text="#{dashboards.create.synoptic} + ':'"> Create Dashboards</span>
-									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} != null" class="caption-subject" th:text="#{dashboards.update.synoptic} + ' ' + ${dashboard.identification} + ':'"> Update Dashboards</span>
-
+				<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} == null" th:text="#{dashboards.create.synoptic}">Create Synoptic</span>
+									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} == null" th:text="#{dashboards.create}">Create Dashboards</span>
+									<span th:if="${#strings.toString(dashboard.type) == 'SYNOPTIC'} and ${dashboard.id} != null" th:text="#{dashboards.update.synoptic}">Update Synoptic </span>
+									<span th:if="${#strings.toString(dashboard.type) != 'SYNOPTIC'} and ${dashboard.id} != null" th:text="#{dashboards.update}">Update Dashboard </span>
 								</div>
-								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title="">
-									</a> <a href="" class="fullscreen" data-original-title="" title="">
-									</a>
-								</div>
-								<div class="actions hide">
-									<!-- ACTION INDICATORs -->
-									<span th:if="${dashboard.id} == null"
-										class="label label-success label-sm uppercase"><i
-										class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
-									<span th:if="${dashboard.id} != null"
-										class="label label-warning label-sm uppercase bold "><i
-										class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
-								</div>
-
 							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
+							
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE -->
+									<button th:if="${dashboard.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'DashboardsCreateController.deleteDashboard(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<span class="sep" th:if="(${dashboard.id} != null)"></span>
+										
+									<!-- CANCEL -->											
+									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardsCreateController.cancel(\''+${dashboard.id}+'\',\'' + @{/dashboards/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
-								<div class="row">
-									<div class="col-md-12 alert-zone">
-										<!-- ALERTS ZONE -->
-										<div class="alert alert-danger display-hide">
-											<button class="close" data-close="alert"></button>
-											<span th:text="#{gen.form.error}">You have some form
-												errors. Please check below.</span>
-										</div>
-										<div class="alert alert-success display-hide">
-											<button class="close" data-close="alert"></button>
-											<span th:text="#{gen.form.success}">Your form
-												validation is successful!</span>
+									<span class="sep no-border" th:if="(${dashboard.id} != null)"></span>
+									
+									<!-- RESET create -->
+									<button id="resetBtn" type="button" th:if="${dashboard.id} == null" 
+										class="btn btn-primary-cancel" name="reset"										
+										th:value="#{gen.resetBtn}">
+										 <span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
+									<!-- RESET authorizations-->
+									<button id="resetBtn" disabled="true" type="button" th:if="${dashboard.id} != null" 
+										class="btn btn-primary-cancel" name="reset"
+										
+										th:value="#{gen.resetBtn}">
+										 <span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
+									<!-- CREATE -->
+									<button th:if="${dashboard.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
+									<!-- UPDATE -->
+									<button th:if="${dashboard.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
+								</div>
+							</div>
+						</div>
+					</div>
+				<!-- MAIN ROW -->
+				<div class="mainPanel">							
+								
+									
+									<div class="row main">
+										<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+											<span th:text="#{gen.generalInformation}">General Information</span>
+									</div>
+										<div class="col-md-3 col-sm-3 col-xs-3">
+											<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 										</div>
 									</div>
-									<div class="col-md-12">
-										<form role="form" id="dashboard_create_form" th:object="${dashboard}" method="post" class="form">
-											
-											<!-- FORM ACTIONS FOR INSERT-->
-											<input th:if="${dashboard.id} == null" type="hidden" name="action" th:value="@{/dashboard/create}" />
-
-											<!-- FORM ACTIONS FOR UPDATE -->
-											<input th:if="${dashboard.id} != null" type="hidden" name="action" th:value="@{/dashboard/dashboardconf}" /> 
-											<input th:if="${dashboard.id} != null" type="hidden" name="_method" value="PUT" />
-											
-											<div class="form-body">												
-												<div class="row">
+									<div class="row main">
 													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label th:text="#{gen.identification} + ':'">Identification</label><span
-																class="required"> (*)</span>
-															<div class="input-icon ">
-																<i class="fa fa-credit-card"></i> <input
+															<label th:text="#{gen.identification}">Identification</label><span class="required"> *</span>
+															
+																<input
 																	id="identification" type="text" name="identification"
 																	th:required="true" maxlength="50"
 																	th:field="*{identification}" class="form-control "
 																	th:placeholder="#{gen.identification}"
-																	th:classappend="${dashboard.id} ? no-remove : ''" />
-															</div>
+																	th:classappend="${dashboard.id} ? no-remove : ''" />															
 														</div>
 													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12">
+													<div class="col-md-4 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label th:text="#{gen.description} + ':'">description</label><span
-																class="required"> (*)</span>
-															<div class="input-icon ">
+															<label th:text="#{gen.description}">description</label><span class="required"> *</span>															
 																<input
 																	id="description" type="text" name="description"
 																	th:required="true" maxlength="100"
 																	th:field="*{description}" class="form-control "
-																	th:placeholder="#{gen.description}"/>
-															</div>
+																	th:placeholder="#{gen.description}"/>															
 														</div>
 													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12">
+													<div class="col-md-2 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="" th:text="#{dashboards.public} + ':'">Public</label>
-															<div class="mt-checkbox-list"> 
-																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{dashboards.public.help},data-title=#{dashboards.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{dashboards.public} +'?'">Public?</div>
+															<div class="mt-checkbox-list margin-top-20"> 
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{dashboards.public.help},data-title=#{dashboards.public}"> <div class="inline font-xs" th:text="#{dashboards.public}">Public</div>
 																	<input  id="checkboxPublic" class="form-control no-remove"  name="checkboxPublic" type="checkbox" th:field="*{publicAccess}"   />
 																	<span></span>
 																</label>
@@ -193,8 +194,8 @@
 													</div>	
 													<div class="col-md-3 col-sm-6 col-xs-12" th:if="*{identification == null}">
 														<div class="form-group">
-															<label class="control-label" th:text="#{model.initial.style}">Initial Style</label>
-															<select id="dashboardConfId" class="form-control" data-size="5" data-live-search="true" data-width="100%" th:field="*{dashboardConfId}" onchange="updateHeaderLibs()"  >
+															<label th:text="#{model.initial.style}">Initial Style</label>
+															<select id="dashboardConfId" class="form-control selectpicker" data-size="5" data-live-search="true" data-width="100%" th:field="*{dashboardConfId}" onchange="updateHeaderLibs()"  >
 																<option th:each="schema :${schema}" th:value="${schema.id}" th:text="${schema.identification} +' (' + ${schema.description} + ')'" ></option>
 															</select>
 														</div>
@@ -216,7 +217,7 @@
 													</div>	
 													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{category.template.show}">Category</label>
+															<label   th:text="#{category.template.show}">Category</label>
 															<select id="categories_select" class="form-control" onchange="getSubcategories();" data-size="5" data-live-search="true" data-width="100%" th:field="*{category}">
 																<option value="" th:text="#{dashboards.categoryselect}"> Select Category...</option>
 																<option th:each="category :${categories}" th:value="${category.identification}" th:text="${category.identification}" ></option>
@@ -225,7 +226,7 @@
 													</div>
 													<div class="col-md-3 col-sm-6 col-xs-12">
 														<div class="form-group">
-															<label class="control-label" th:text="#{subcategory.template.show}">Subcategory</label>
+															<label th:text="#{subcategory.template.show}">Subcategory</label>
 															<select id="subcategories" class="form-control" data-size="5" data-live-search="true" data-width="100%" th:field="*{subcategory}" disabled="disabled">
 																<option value="" th:text="#{dashboards.subcategoryselect}"> Select Subategory...</option>		
 															</select>
@@ -265,14 +266,14 @@
 													<div class="col-md-4 col-sm-6 col-xs-12">
 														<!--  SELECTION -->
 															<div class="form-group">
-																<label class="control-label" th:text="#{dashboards.user}">User</label>
+																<label  th:text="#{dashboards.user}">User</label>
 																<select id="users" class="selectpicker form-control" data-size="5" data-live-search="true" data-width="100%" >
 																	<option value="" th:text="#{dashboards.userselect}"> Select User...</option>
 																	<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName +'('+user.userId+')'}" ></option>														
 																</select>
 															</div>
 															<div class="form-group">
-																<label class="control-label" th:text="#{dashboards.auth.accesstypes}">Access types:</label>
+																<label   th:text="#{dashboards.auth.accesstypes}">Access types</label>
 																<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >														
 																	<option value="EDIT">EDIT</option>
 																	<option value="VIEW">VIEW</option>													
@@ -285,7 +286,7 @@
 													<div class="col-md-8 col-sm-6 col-xs-12">
 														<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
 														<div class="form-group">
-															<label class="control-label" th:text="#{dashboards.auth.title} + ':'">Authorizations</label>
+															<label   th:text="#{ontology.authorizations}">Authorizations</label>
 															<div id="alert-authorizations" class="alert alert-info">
 																<i class="fa fa-info-circle"></i> <span th:text="#{dashboards.auth.info}"> Select a user, choose the type of Access you want to give to the dashboard and add it to the Authorizations. Repeat as many times as users want to authorize.</span>
 															</div>
@@ -316,72 +317,24 @@
 																	</tbody>														
 																</table>
 															</div>
-														</div>
+														
 													</div>
 												</div>
 												
-											</div>
+											
 											<!-- FORM BUTTONS -->
-											<div class="form-actions">
-												<div class="pull-left">
-												<!-- CANCEL  -->													
-													<button														
-														id="cancelBtn" type="button"
-														class="btn btn-circle btn-outline blue no-border"
-														name="cancel" th:value="#{gen.cancelBtn}" value="cancel"
-														th:onclick="'javascript:DashboardsCreateController.cancel(\''+${dashboard.id}+'\',\'' + @{/dashboards/list} + '\');'">
-														<i class="la la-arrow-left"></i><span
-															th:text="#{gen.cancelBtn}"> Cancel </span>
-													</button>
-												</div>
-												<div class="pull-right">
-													
-
-													<!-- REMOVE -->
-													<button th:if="${dashboard.id} != null" id="deleteBtn"
-														type="button" class="btn btn-circle btn-outline blue"
-														name="delete" value="Remove"
-														th:onclick="'DashboardsCreateController.deleteDashboard(\''+${dashboard.id}+'\');'">
-														 <span	th:text="#{gen.deleteBtn}"> Delete </span>
-													</button>
-													
-													<span class="sep no-border"></span>
-
-													<!-- RESET create -->
-													<button id="resetBtn" type="button" th:if="${dashboard.id} == null" 
-														class="btn btn-circle btn-outline blue" name="reset"
-														th:onclick="'DashboardsCreateController.go(\'' + @{/dashboards/create} + '\');'"
-														th:value="#{gen.resetBtn}">
-														 <span th:text="#{gen.resetBtn}"> Reset</span>
-													</button>
-													<!-- RESET authorizations-->
-													<button id="resetBtn" type="button" th:if="${dashboard.id} != null" 
-														class="btn btn-circle btn-outline blue" name="reset"
-														th:onclick="'DashboardsCreateController.go(\'' + @{/dashboards/dashboardconf/} + ${dashboard.id} + '\');'"
-														th:value="#{gen.resetBtn}">
-														 <span th:text="#{gen.resetBtn}"> Reset</span>
-													</button>
-													
-													<span class="sep" ></span>
-													
-													<!-- CREATE -->
-													<button th:if="${dashboard.id} == null" id="createBtn"
-														type="submit" class="btn btn-circle btn-outline btn-primary"
-														name="create" th:value="#{gen.createBtn}">
-														<span th:text="#{gen.createBtn}"> New</span>
-													</button>
-
-													<!-- UPDATE -->
-													<button th:if="${dashboard.id} != null" id="updateBtn"
-														type="submit" class="btn btn-circle btn-outline btn-primary"
-														name="update" th:value="#{gen.editBtn}">
-														<span th:text="#{gen.editBtn}">	Edit</span>
-													</button>
-
-													
-												</div>
-											</div>
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+											
+										
+								
+								</div>
+							
+						</div>
+						<!-- END PORTLET BASIC  -->
+					
+				</div>
+				<!-- END MAIN ROW -->
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+										</form>
 										<form role="form" id="dashboard_aux_create_form"
 											th:object="${dashboard}" method="post" class="form" enctype="multipart/form-data">
 												<!-- FORM ACTIONS FOR INSERT-->
@@ -416,21 +369,14 @@
 											<input id="type_aux" type="hidden" name="type"																	
 											th:field="*{type}"  />
 											
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+										</form>
 										<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
 										<form id="delete_dashboard_form" class="delete-dashboard hide"  th:action="@{'/dashboards/'+${dashboard.id}}"  method="post">
 											<input type="hidden" name="_method" value="DELETE"/>
 											<input type="hidden" name="id" th:value="${dashboard.id}"/>
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>		
-									</div>
-								</div>
-							</div>
-						</div>
-						<!-- END PORTLET BASIC  -->
-					</div>
-					<!-- END COL-12 -->
-				</div>
-				<!-- END MAIN ROW -->
+											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+										</form>		
 			</div>
 			<!-- END CONTENT BODY -->
 		</div>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	private String profile;
 
 	private Urls urls;
+
 	@Getter
 	private GlobalConfiguration globalConfiguration;
 
@@ -62,12 +63,16 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 
 	public enum ServiceUrl {
 		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY,
-		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL;
+		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL, ADMIN;
 	}
 
 	public enum Module {
-		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"), ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"), DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"), RULES_ENGINE("rulesEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"), REPORT_ENGINE("reportEngine"),EDGE("edge");
-
+		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"),
+		ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"),
+		DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"),
+		RULES_ENGINE("rulesEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
+		REPORT_ENGINE("reportEngine");
+		
 		String moduleString;
 
 		Module(String module) {
@@ -94,8 +99,11 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 		try {
 			switch (module) {
 			case CONTROLPANEL:
-				if (service.equals(ServiceUrl.BASE)) {
+				switch (service) {
+				case BASE:
 					return urls.getControlpanel().getBase();
+				default:
+					break;
 				}
 				break;
 			case IOTBROKER:
@@ -222,20 +230,12 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					break;
 				}
 				break;
-			case EDGE:
-				switch (service) {
-				case BASE:
-					return urls.getEdge().getBase();
-				default:
-					break;
-				}
-				break;
 			default:
 				break;
 			}
 		} catch (
 
-		final Exception e) {
+				final Exception e) {
 			log.error("Error : {}", e);
 		}
 		return "RESOURCE_URL_NOT_FOUND";
@@ -283,8 +283,7 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 			urls = configurationService.getEndpointsUrls(profile);
 		} catch (final Exception e) {
 			log.warn(
-					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator", e);
-			log.debug("Error: {}", e );
+					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
 			urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
 					.getOnesaitplatform().get("urls");
 		}

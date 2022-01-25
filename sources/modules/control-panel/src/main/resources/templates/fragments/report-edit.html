@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -93,11 +93,11 @@
 																			
 											<td width="150px" class="no-wrap text-center">	
 												<!-- UPDATE -->
-												<span th:attr="data-id=${resource.id}" class="btn btn-download-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{gen.download}" ><i class="la la-arrow-down font-hg"></i></span>
+												<span th:attr="data-id=${resource.id}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-download-resource" data-container="body" data-placement="bottom" th:title="#{gen.download}" th:data-original-title="#{gen.download}" ><i class="icon-download"></i></span>
 												<!-- UPDATE -->
-												<span  th:attr="data-id=${resource.id}, data-report=*{id}"  class="btn btn-update-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="la la-edit font-hg"></i></span>
+												<span  th:attr="data-id=${resource.id}, data-report=*{id}"  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-update-resource" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="icon-edit"></i></span>
 												<!-- DELETE -->
-												<span th:attr="data-id=${resource.id}, data-report=*{id}" class="btn btn-delete-resource btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}" ><i class="la la-trash font-hg"></i><span> <small></small></span></span>
+												<span th:attr="data-id=${resource.id}, data-report=*{id}" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-delete-resource" data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}" ><i class="icon-delete"></i><span> <small></small></span></span>
 											</td>			
 										</tr>
 									</tbody>														

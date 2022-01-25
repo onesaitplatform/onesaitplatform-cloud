@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class DataModel extends OPResource {
 
 	public enum MainType {
 		IOT, SMART_CITIES, GENERAL, SOCIAL_MEDIA, SMART_HOME, SMART_ENERGY, SMART_RETAIL, SMART_INDUSTRY, GSMA,
-		FIRMWARE_DATA_MODEL, SYSTEM_ONTOLOGY
+		FIWARE_DATA_MODEL, SYSTEM_ONTOLOGY
 	}
 
 	@Column(name = "JSON_SCHEMA", nullable = false)

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -62,14 +62,41 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+			
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_gadget" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>									 														
+								<input id="name" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>		
+								<select class="form-control" id="type" name="type" >														 
+									<option value=""  th:text="#{gadgets.type}" disabled selected></option>
+									<option th:each="gadgetType : ${gadgetTypes}" th:id="${gadgetType}" data-type="general" th:value="${gadgetType}" th:text="${gadgetType}"  ></option>
+									<option id="template" data-type="general" th:value="template" th:text="template"></option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6 col-sm-4  col-xs-12">
+							<div class="pull-right">
+								<button type="button" id="reset_gadget" name="reset_gadget" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_gadget" name="search_gadget" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/dashboards/list}"> <span th:text="#{dashboards.my}">My Dashboards</span></a><i class="fa fa-angle-right"></i></li>
 						<li><span th:text="#{gadgets.my}">My Gadgets</span></li>
 					</ul>						
 				</div>
@@ -81,184 +108,166 @@
 				
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="col-md-12">
-					
-						<div class="portlet light ">
-							<div class="portlet-title">
-								<div class="caption">
 									
-									<span class="caption-subject" th:text="#{gadgets.my}"> My Gadget </span>
-									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>									
-								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title=""> </a>
-									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>								
-								<div class="actions margin-right-20">
-									<div class="btn-group">										
-										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>
-										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../gadgettemplates/create'" ><span th:text="#{gadgettemplates.create}">New </span></button>									
-										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../gadgets/create'" ><span th:text="#{gadgets.create}">New </span></button>
-									</div>										
-								</div>
-							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
 								
-								<div class="row">									
-									<div id="searchFilter" class="col-md-12 hide">
-									<!-- SEARCH FORM -->
-										<form id="form_gadget" class="" role="form" method="get">												
-											<div  class="form-body " style="border-bottom: 1px solid #eef1f5;">
-												<div class="row">
-													<div class="col-md-4 col-xs-12">
-														<div class="form-group">															
-															<div class="input-group">
-																<span class="input-group-addon">
-																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>															
-																<input id="name" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
-															</div>
-														</div>
-													</div>
-													<div class="col-md-4 col-xs-12">
-														<div class="form-group">															
-															<div class="input-group">
-																<span class="input-group-addon">
-																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>
-																<select class="form-control" id="type" name="type" >														 
-																	<option value="" text="" selected="selected"></option>
-																	<option th:each="gadgetType : ${gadgetTypes}" th:id="${gadgetType}" data-type="general" th:value="${gadgetType}" th:text="${gadgetType}"  ></option>
-																	<option id="template" data-type="general" th:value="template" th:text="template"></option>
-																</select>
-															</div>
-														</div>
-													</div>
-													<div class="col-md-4 col-xs-12">
-														<div class="btn-group">
-															<button type="button" id="search_gadget" name="search_gadget" th:title="#{gen.search}" th:value="#{gadget_search_button_form}" value="Search" class="btn btn-sm btn-circle btn-outline blue" th:text="#{gen.search}"> Search </button>
-															<button type="button" id="reset_gadget" name="reset_gadget" value="Reset" class="btn btn-sm btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>														
-														</div>
-													</div>
-												</div>
-											</div>												
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
-									</div>
-									<!-- GADGET LIST -->
-									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-											<div>
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide  pull-right">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default">
-														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
-														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}" > Owner</label>
-														<label class="toggle-vis" data-column="2" th:text="#{gen.type}"> Type</label>
-														<label class="toggle-vis" data-column="3" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>
-													</div>
-												</div>		
-												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="gadgets" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
-													<thead>
-														<tr class="cabecera-tabla">
-															<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
-															<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
-															<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"  class="titulo-columnas text-center" th:text="#{gen.type}">Type</th>																
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
-														</tr>
-													</thead>
-													<tbody>
-														<tr th:each="gadget : ${gadgets}" pages:paginate="10">
-															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left " th:text="${gadget.identification}"></td>
-															<!-- USER -->
-															<td class="text-center " th:text="${gadget.user.userId}"></td>
-															<!-- DESCRIPTION -->
-															<td class="text-center" th:title="${gadget.type}">
-															<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
-															<i th:if="${gadget.type} == 'table'" class="fa fa-table font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'bar'" class="la la-bar-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'line'" class="la la-line-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'mixed'" class="la la-area-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'pie'" class="la la-pie-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'map'" class="la la-map font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'wordcloud'" class="la la-cloud font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'radar'" class="la la-bullseye font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															<i th:if="${gadget.type} == 'datadiscovery'" class="fa fa-align-justify font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
-															</td>
-															<!-- DATE -->
-															<td class="text-center" th:if="${gadget.createdAt!=null}"><span th:text="${#dates.format(gadget.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${gadget.createdAt==null}" th:text="'---'"></td>
-															<!-- UPDATE --> 
-															<td class="text-center" th:if="${gadget.updatedAt!=null}"><span th:text="${#dates.format(gadget.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${gadget.updatedAt==null}" th:text="'---'"></td>
-															<!-- OPTIONS -->
-															<td class="icon text-center" style="white-space: nowrap">
-																<div class="grupo-iconos text-center">
-																	<!-- VIEW -->
-																	<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgets/view/${gadget.id}} + '\');'"><i class="la la-eye font-hg"></i></span>
-																																																																			
-																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgets/update/${gadget.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i></span>
-																	
-																   <!-- DELETE -->
-																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteConfirmation(\''+${gadget.id}+'\');'"><i class="la la-trash font-hg"></i></span>
-																</div>
-															</td>
-														</tr>
-														<tr th:each="gadgettemp : ${gadgetTemplates}" pages:paginate="10">
-															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left " th:text="${gadgettemp.identification}"></td>
-															<!-- USER -->
-															<td class="text-center " th:text="${gadgettemp.user.userId}"></td>
-															<!-- DESCRIPTION -->
-															<td class="text-center" th:title="${gadgettemp.description}">
-															<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
-															<i class="fa fa-th-large font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Template" th:data-original-title="Template"></i>
-															</td>
-															<!-- DATE --> 
-															<td class="text-center" th:if="${gadgettemp.createdAt!=null}"><span th:text="${#dates.format(gadgettemp.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${gadgettemp.createdAt==null}" th:text="'---'"></td>
-															<!-- UPDATE --> 
-															<td class="text-center" th:if="${gadgettemp.updatedAt!=null}"><span th:text="${#dates.format(gadgettemp.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${gadgettemp.updatedAt==null}" th:text="'---'"></td>
-															<!-- OPTIONS -->
-															<td class="icon text-center" style="white-space: nowrap">
-																<div class="grupo-iconos text-center">																																																			
-																	<!-- VIEW -->
-																	<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgettemplates/view/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-eye font-hg"></i></span>
-																	
-																	<!-- EDIT -->
-																	<span  th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgettemplates/update/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i></span>
-																	
-																   <!-- DELETE -->
-																	<span  th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'javascript:deleteTemplateConfirmation(\''+${gadgettemp.id}+'\');'"><i class="la la-trash font-hg"></i></span>
-																</div>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-												
-																					
-											</div>
-										</div>											
-									</div>
+								<span class="caption-subject" th:text="#{gadgets.my}"> My Gadget </span>
+								<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+							</div>	
+							<div class="caption" style="padding: 22px 8px 8px 10px">
+								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+							</div>
+							<div id="search-on-title" class="hide input-icon search-icon">
+								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+							</div>						
+							<div class="tools hide">
+								<a href="" class="collapse" data-original-title="" title=""> </a>
+								<a href="" class="fullscreen" data-original-title="" title=""> </a>
+							</div>
+							<div class="pull-right btn-title-group">	
+								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline blue dialog btn-no-border" onclick="location.href='../gadgettemplates/create'" ><span th:text="#{gadgettemplates.create}">New </span></button>				
+								<div class="pull-right btn-group" id="divcreate" >															
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../gadgets/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>											
 								</div>
 							</div>
-						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
+						</div>
+						<div class="portlet-body" style="display: block; height: auto;">
+							
+							<div class="row main">
+								<!-- GADGET LIST -->
+								<div class="col-md-12">											
+									<div id="contenedor-tabla-outside" class="contiene hidden">																						
+										<div>		
+										<!-- DATATABLE DANDELION CONF. -->												
+											<table id="gadgets" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+												<thead>
+													<tr class="cabecera-tabla">
+														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
+														<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
+														<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"  class="titulo-columnas text-center" th:text="#{gen.type}">Type</th>																
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr th:each="gadget : ${gadgets}" pages:paginate="10">
+														<!-- IDENTIFICATION/NAME -->
+														<td class="text-left " th:text="${gadget.identification}"></td>
+														<!-- USER -->
+														<td class="text-center " th:text="${gadget.user.userId}"></td>
+														<!-- DESCRIPTION -->
+														<td class="text-center" th:title="${gadget.type}">
+														<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
+														<i th:if="${gadget.type} == 'table'" class="fa fa-table font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'bar'" class="la la-bar-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'line'" class="la la-line-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'mixed'" class="la la-area-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'pie'" class="la la-pie-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'map'" class="la la-map font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'wordcloud'" class="la la-cloud font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'radar'" class="la la-bullseye font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														<i th:if="${gadget.type} == 'datadiscovery'" class="fa fa-align-justify font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+														</td>
+														<!-- DATE -->
+														<td class="text-center" th:if="${gadget.createdAt!=null}"><span th:text="${#dates.format(gadget.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.createdAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-center" th:if="${gadget.createdAt==null}" th:text="'---'"></td>
+														<!-- UPDATE --> 
+														<td class="text-center" th:if="${gadget.updatedAt!=null}"><span th:text="${#dates.format(gadget.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.updatedAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-center" th:if="${gadget.updatedAt==null}" th:text="'---'"></td>
+														<!-- OPTIONS -->
+														<td class="icon text-center" style="white-space: nowrap">
+															<div class="grupo-iconos">
+																<!-- VIEW -->
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgets/view/${gadget.id}} + '\');'"><i class="la la-eye font-hg"></i></span>
+																																																																		
+																<!-- EDIT -->
+																<span  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgets/update/${gadget.id}/|(form)} + '=' + '\');'"><i class="icon-edit"></i></span>
+																
+															   <!-- DELETE -->
+																<span  class="btn btn-xs btn-no-border icon-on-table tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteConfirmation(\''+${gadget.id}+'\');'"><i class="icon-delete"></i></span>
+															</div>
+														</td>
+													</tr>
+													<tr th:each="gadgettemp : ${gadgetTemplates}" pages:paginate="10">
+														<!-- IDENTIFICATION/NAME -->
+														<td class="text-left " th:text="${gadgettemp.identification}"></td>
+														<!-- USER -->
+														<td class="text-center " th:text="${gadgettemp.user.userId}"></td>
+														<!-- DESCRIPTION -->
+														<td class="text-center" th:title="${gadgettemp.description}">
+														<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
+														<i class="fa fa-th-large font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Template" th:data-original-title="Template"></i>
+														</td>
+														<!-- DATE --> 
+														<td class="text-center" th:if="${gadgettemp.createdAt!=null}"><span th:text="${#dates.format(gadgettemp.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.createdAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-center" th:if="${gadgettemp.createdAt==null}" th:text="'---'"></td>
+														<!-- UPDATE --> 
+														<td class="text-center" th:if="${gadgettemp.updatedAt!=null}"><span th:text="${#dates.format(gadgettemp.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.updatedAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-center" th:if="${gadgettemp.updatedAt==null}" th:text="'---'"></td>
+														<!-- OPTIONS -->
+														<td class="icon text-center" style="white-space: nowrap">
+															<div class="grupo-iconos text-center">																																																			
+																<!-- VIEW -->
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgettemplates/view/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-eye font-hg"></i></span>
+																
+																<!-- EDIT -->
+																<span th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgettemplates/update/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="icon-edit"></i></span>
+																<span th:if="!(${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
+																
+															   <!-- DELETE -->
+																<span th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'javascript:deleteTemplateConfirmation(\''+${gadgettemp.id}+'\');'"><i class="icon-delete"></i></span>
+																<span th:if="!(${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} "><i class="icon-delete"></i></span>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+												
+												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+														<label th:text="#{gen.name}"> identification </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+														<label th:text="#{gen.owner}"> Owner </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+														<label th:text="#{gen.type}"> Type</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label th:text="#{gen.created}"> Created at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<label th:text="#{gen.updated}"> Updatet at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<label th:text="#{gen.options}"> Options</label>
+													</span>						
+												</div>
+											</div>								
+										</div>
+									</div>											
+								</div>
+							</div>
+						</div>
+					</div><!-- END PORTLET BASIC LIGHT -->			
 				</div><!-- END MAIN ROW -->	
 				<form id="delete_gadget_form" class="delete-gadget hide" method="post">
 					<input type="hidden" name="_method" value="DELETE"/>
 					<input type="hidden" id="delete-id" name="id" />
-				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>				
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -331,11 +340,10 @@
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = [[#{gadgettemplates.del.confirm}]];
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.gadgetTemplateDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -343,21 +351,20 @@
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						url = '/controlpanel/gadgets/gadgettemplates/'+id;
 						$.post(url).done(function(){navigateUrl("/controlpanel/gadgets/list");})
 
 					}											
-				},
-				close: {
-					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
 				}
 			}
 		});
@@ -389,7 +396,7 @@
 		});
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#gadgets').DataTable().column( $(this).attr('data-column') ); 
@@ -407,19 +414,56 @@
 		
 		// SEARCH FORM
 		$('#search_gadget').on('click',function(){ $('#form_gadget')[0].submit(); });
+		
 	});
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
+		
+		var oTable = $('#gadgets').dataTable({
+		      "bAutoWidth": false
+		      });
 		
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
 		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
-		$('#dataTable-vis-toggle').removeClass('hide');
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	
 		
+		//TABLE STYLES
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
+		$('#dataTable-vis-toggle').removeClass('hide');	
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall');
+		
+		$('#gadgets_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#gadgets_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+		$('#gadgets_wrapper > div:nth-child(1)').hide();
+		
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
+			 var $menu = $("ul", this);	        
+	         offset = $menu.offset();
+	         position = $menu.position();
+	         $('body').append($menu);
+	         $menu.show();
+	         $menu.css('position', 'absolute');
+	         $menu.css('top', (offset.top) +'px');
+	         $menu.css('left',(offset.left) +'px');
+	         $menu.css('min-width', '100px');
+	        $(this).data("myDropdownMenu", $menu);
+	     });
+	     $('.download-menu').parent().on('hide.bs.dropdown', function () {
+	         $(this).append($(this).data("myDropdownMenu"));
+	         $(this).data("myDropdownMenu").removeAttr('style');
+	     });
+		
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
 	
 	//]]>

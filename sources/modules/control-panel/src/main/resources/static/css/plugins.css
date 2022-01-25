@@ -319,7 +319,7 @@ Bootstrap Select
   border-color: #c2cad8; }
 
 .has-error .bootstrap-select .btn {
-  border-color: #fbe1e3; }
+  border-color: #b94a48; }
 
 .has-success .bootstrap-select .btn {
   border-color: #abe7ed; }
@@ -710,6 +710,9 @@ Modify bootstrap-tagsinput plugin's css
 
 .bootstrap-tagsinput-width-auto .bootstrap-tagsinput {
   display: inline-block; }
+  
+.bootstrap-tagsinput-error-width-auto .bootstrap-tagsinput {
+  display: inline-block; }  
 
 .mt-bootstrap-tables .mt-btm-transform .bars {
   height: auto; }
@@ -2007,7 +2010,7 @@ pre[class*="language-"] {
 	flex-wrap: wrap;	
 	align-items: center;
 	width: 100%;
-	padding: 1em 3em;
+	padding: 0em 7em;
 	perspective: 800px;
 	perspective-origin: 50% 100%;
 }
@@ -2017,12 +2020,13 @@ position: relative;
 display: initial;
 cursor: default;
 transform-style: preserve-3d;
-min-height: 340px;
 padding: 16px;
-border-radius: 4px;
+border-radius: 2px;
 background-color: #ffffff;
 box-shadow: 0 2px 20px 0 rgba(0, 0, 0, 0.05);
 margin: 12px;
+width: 296px;
+height: 232px;
 }
 
 .grid__item:hover,.grid__item:focus { outline: none; }
@@ -2030,11 +2034,20 @@ margin: 12px;
 .grid__item--c1,.grid__item--c1:hover,.grid__item--c1:focus { color: #52649e; }
 .grid__item--c2,.grid__item--c2:hover,.grid__item--c2:focus { color: #1b1c1e; }
 .grid__item--c3,.grid__item--c3:hover,.grid__item--c3:focus { color: #02723b; }
-.grid__item--c4,.grid__item--c4:hover,.grid__item--c4:focus { color: #4b8183  }
+.grid__item--c4,.grid__item--c4:hover,.grid__item--c4:focus { color: #4b8183; }
 .grid__item--c5,.grid__item--c5:hover,.grid__item--c5:focus { color: #fd5d1e; }
 .grid__item--c6,.grid__item--c6:hover,.grid__item--c6:focus { color: #820202; }
 .grid__item--c7,.grid__item--c7:hover,.grid__item--c7:focus { color: #563e26; }
 .grid__item--c8,.grid__item--c8:hover,.grid__item--c8:focus { color: #f7f295; }
+
+.grid__item--c1:hover { color: #52649e; border: 1.5px solid #1168A6 !important; }
+.grid__item--c2:hover { color: #1b1c1e; border: 1.5px solid #1168A6 !important; }
+.grid__item--c3:hover { color: #02723b; border: 1.5px solid #1168A6 !important; }
+.grid__item--c4:hover { color: #4b8183; border: 1.5px solid #1168A6 !important; }
+.grid__item--c5:hover { color: #fd5d1e; border: 1.5px solid #1168A6 !important; }
+.grid__item--c6:hover { color: #820202; border: 1.5px solid #1168A6 !important; }
+.grid__item--c7:hover { color: #563e26; border: 1.5px solid #1168A6 !important; }
+.grid__item--c8:hover { color: #f7f295; border: 1.5px solid #1168A6 !important; }
 
 .stack {
 	position: relative;
@@ -2097,14 +2110,14 @@ margin: 12px;
 }
 
 .grid__item-title {
-	width: 100%;
+width: 100%;
 margin: 10px 0 10px 24px;
 text-align: left;
 font-family: "Soho";
-color: #050B14;
-font-size: 16px;
+color: #000000;
+font-size: 17px;
 font-weight: 500;
-line-height: 32px;
+line-height: 24px;
 text-decoration: none;
 }
 
@@ -2131,7 +2144,9 @@ text-decoration: none;
 }
 
 .column--right .column__text {
-	color: #666;
+	color: #000000;
+  font-size: 12px;
+  line-height: 20px;
 }
 
 /* Individual effects */
@@ -2146,9 +2161,8 @@ text-decoration: none;
     min-height: 100px;
 }
 .jconfirm .jconfirm-box .jconfirm-buttons button {
-     padding: 6px 40px !important;
      font-weight: normal !important;
-     font-size: 11px !important";
+     font-size: 11px !important;
 }
 
 

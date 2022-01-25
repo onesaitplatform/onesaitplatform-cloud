@@ -50,7 +50,7 @@ var BinaryFilesController = function() {
 		    	navigateUrl(listPath);
 		    },
 			error: function (err) {
-			    $.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: err.responseText});
+				toastr.error(messagesForms.operations.genOpError + ':', xhr.responseText);
 			}
 		});
 	}
@@ -174,7 +174,8 @@ var BinaryFilesController = function() {
 					$("#users").selectpicker('refresh');
 					$('#authorizations').removeClass('hide');
 					$('#authorizations').attr('data-loaded',true);
-					
+
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 				}
 			});
 
@@ -195,7 +196,9 @@ var BinaryFilesController = function() {
 
 					// UPDATING STATUS...
 					$(btn).find("i").removeClass('fa fa-spin fa-refresh').addClass('fa fa-edit');
-					$(btn).find("span").text('Update');								
+					$(btn).find("span").text('Update');
+
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 				}
 			});
 			
@@ -226,9 +229,11 @@ var BinaryFilesController = function() {
 						if (authorizationsArr.length == 0){
 							$('#alert-authorizations').toggle(!$('#alert-authorizations').is(':visible'));					
 							$('#authorizations').addClass('hide');						}
+
+						toastr.success(messagesForms.validation.genFormSuccess,'');
 					}
 					else{ 
-						$.alert({title: 'ALERT!', theme: 'dark', type: 'orange', content: 'NO RESPONSE!'}); 
+						toastr.warning(messagesForms.validation.genFormError,'No response!');
 					}
 				}
 			});			
@@ -290,33 +295,31 @@ var BinaryFilesController = function() {
 			// i18 labels
 			var Remove = headerReg.btnEliminar;
 			var Close = headerReg.btnCancelar;
-			var	Content = headerReg.configurationConfirm;
-			var Title = headerReg.titleConfirm + ':';
+			var	Content = headerReg.binaryFileConfirm;
+			var Title = headerReg.binaryFileDelete;
 
 			// jquery-confirm DIALOG SYSTEM.
 			$.confirm({
-				icon: 'fa fa-warning',
 				title: Title,
-				theme: 'dark',
+				theme: 'light',
 				columnClass: 'medium',
 				content: Content,
 				draggable: true,
 				dragWindowGap: 100,
 				backgroundDismiss: true,
-				closeIcon: true,
 				buttons: {
+					close: {
+						text: Close,
+						btnClass: 'btn btn-outline blue dialog',
+						action: function (){} //GENERIC CLOSE.		
+					},
 					remove: {
 						text: Remove,
-						btnClass: 'btn btn-sm btn-danger btn-outline',
+						btnClass: 'btn btn-primary',
 						action: function(){ 
 							deleteFile(id);
 						}
-					},
-					close: {
-						text: Close,
-						btnClass: 'btn btn-sm btn-default btn-outline',
-						action: function (){} //GENERIC CLOSE.		
-					}
+					}					
 				}
 			});
 		},
@@ -385,9 +388,7 @@ var BinaryFilesController = function() {
 			$('#authFileId').val(id);
 			//TODO GET AUTHS AND GENERATE THEM
 			loadInitialAuths(id);
-			
 		}
-	
 	}
 }();
 

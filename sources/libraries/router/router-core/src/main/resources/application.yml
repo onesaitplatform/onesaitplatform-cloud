@@ -8,6 +8,7 @@ onesaitplatform: #Config onesaitplatform specific
       gateway:
          kafka:
             enable: true
+            brokers: none
             host: localhost
             port: 9092
             partitions: 1

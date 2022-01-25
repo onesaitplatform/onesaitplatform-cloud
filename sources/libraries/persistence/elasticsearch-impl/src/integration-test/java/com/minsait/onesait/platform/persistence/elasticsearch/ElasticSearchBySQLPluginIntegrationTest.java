@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
+import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESInsertService;
 import com.minsait.onesait.platform.persistence.elasticsearch.sql.connector.ElasticSearchSQLDbHttpImpl;
@@ -46,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ElasticSearchBySQLPluginIntegrationTest {
 
 	private final static String TEST_INDEX_ACCOUNT = "account";
+	private final static String TEST_ONTOLOGY_IDENTIFICATION = "Accounts";
 
 	@Autowired
 	private ElasticSearchSQLDbHttpImpl httpConnector;
@@ -53,27 +57,29 @@ public class ElasticSearchBySQLPluginIntegrationTest {
 
 	@Autowired
 	private ESBaseApi connector;
-
+	@Autowired
+	private OntologyService ontologyService;
 	@Autowired
 	private ESInsertService sSInsertService;
 
-	private String dataMapping = "{\"properties\": {\"gender\": {\"type\": \"text\",\"fielddata\": true }, \"address\": {\"type\": \"text\", \"fielddata\": true }, \"state\": {\"type\": \"text\", \"fielddata\": true}}}";
+	//private String dataMapping = "{\"properties\": {\"gender\": {\"type\": \"text\",\"fielddata\": true }, \"address\": {\"type\": \"text\", \"fielddata\": true }, \"state\": {\"type\": \"text\", \"fielddata\": true}}}";
 
 	@Before
 	public void setUp() throws Exception {
 		
-		connector.createIndex(TEST_INDEX_ACCOUNT);
-		connector.prepareIndex(TEST_INDEX_ACCOUNT, dataMapping);
+		//connector.createIndex(TEST_INDEX_ACCOUNT, dataMapping, null);
 
-		// final String jsonPath = "src/test/resources/accounts.json";
-
+		//Get "Accounts" ontology. This is created in ConfigInit.
+		Ontology testOntology = ontologyService.getOntologyByIdentification(TEST_ONTOLOGY_IDENTIFICATION);
+		OntologyElastic elasticOntol = ontologyService.getOntologyElasticByOntologyId(testOntology);
+		
 		final List<String> list = ElasticSearchFileUtil
 				.readLines(new File(this.getClass().getClassLoader().getResource("accounts.json").toURI()));
 
 		final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
 				.collect(Collectors.toList());
 
-		sSInsertService.bulkInsert(TEST_INDEX_ACCOUNT, result, dataMapping);
+		sSInsertService.bulkInsert(elasticOntol, result);
 
 		Thread.sleep(5000);
 

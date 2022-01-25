@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -73,17 +73,41 @@
 
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_project" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
+								<input id="project-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_project" name="reset_project" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_project" name="search_project" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+						
+					</form>
+				</div>
 
 				<!-- BEGIN PAGE HEADER-->
 
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/projects/list}"> <span
-								th:text="#{projects.my}">My Projects</span></a><i
-							class="fa fa-angle-right"></i></li>
-						<li><span th:text="#{projects.list}">My Projects</span></li>
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/projects/list}"> 
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"
+								th:text="#{projects.management}">Projects Management</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"
+								th:text="#{projects.my}">My Projects</span>
+							</a><!--<i
+							class="fa fa-angle-right"></i>!--></li>
+						<!--<li><span th:text="#{projects.list}">My Projects</span></li>-->
 					</ul>
 				</div>
 				<!-- END PAGE BAR -->
@@ -96,21 +120,29 @@
 
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="col-md-12">
-
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
 
-									<span class="caption-subject" th:text="#{projects.my}"> My Projects </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{projects.management}"> Projects Management </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{projects.my}"> My Projects </span>
 
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title="">
 									</a> <a href="" class="fullscreen" data-original-title="" title="">
 									</a>
 								</div>
-								<div class="actions margin-right-20">
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../projects/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>
+								<!--<div class="actions margin-right-20">
 									<div class="btn-group">
 										<button sec:authorize="@securityService.hasAnyRole('ROLE_DEVELOPER') OR @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
 											type="button" class="btn btn-circle btn-outline btn-primary"
@@ -118,39 +150,38 @@
 											<span th:text="#{gen.create}">New </span>
 										</button>
 									</div>
-								</div>
+								</div>-->
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
-								<div class="row">
+								<div class="row main">
 									<!-- PROJECT LIST -->
 									<div class="col-md-12">
 										<div id="contenedor-tabla-outside"
-											class="contiene margin-bottom-30">
+											class="contiene hidden">
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->
 												<table id="projects" class="table table-hover table-striped"
-													dt:table="true" dt:paginationtype="full_numbers">
+													dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th dt:sortInitDirection="asc" dt:sortInitOrder="0"
 																class="titulo-columnas" th:text="#{gen.name}">Name</th>
-															<th class="titulo-columnas text-center"
+															<th class="titulo-columnas text-left"
 																th:text="#{gen.owner}">Owner</th>
 															<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"
-																class="titulo-columnas text-center"
+																class="titulo-columnas text-left"
 																th:text="#{gen.type}">Type</th>
-															<th class="titulo-columnas text-center"><span
+															<th class="titulo-columnas text-left"><span
 																th:text="#{gen.description}"> Description </span></th>
-															<th class="titulo-columnas text-center"><span
+															<th class="titulo-columnas text-left"><span
 																th:text="#{app.realm}"> Realm </span></th>
-															<th class="titulo-columnas text-center"><span
+															<th class="titulo-columnas text-left"><span
 																th:text="#{marketasset.webproject}">Webproject </span></th>
-															<th class="titulo-columnas text-center"><span
+															<th class="titulo-columnas text-left"><span
 																th:text="#{gen.created}"> Created At </span></th>
-															<th class="titulo-columnas text-center"><span
+															<th class="titulo-columnas text-left"><span
 																th:text="#{gen.updated}"> Updated At </span></th>
-															<th class="titulo-columnas text-center"
-																dt:sortable="false"><span th:text="#{gen.options}">
+															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}">
 																	Options</span></th>
 														</tr>
 													</thead>
@@ -159,37 +190,37 @@
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left " th:text="${p.identification}"></td>
 															<!-- USER -->
-															<td class="text-center " th:text="${p.user.userId}"></td>
+															<td class="text-left " th:text="${p.user.userId}"></td>
 															<!-- TYPE -->
-															<td class="text-center" th:title="${p.type}"
+															<td class="text-left" th:title="${p.type}"
 																th:text="${p.type}"></td>
 															<!-- DESCRIPTION -->
-															<td class="text-center text-truncate-sm"
+															<td class="text-left text-truncate-sm"
 																th:title="${p.description}" th:text="${p.description}"></td>
 															<!-- REALM -->
-															<td class="text-center text-truncate-sm"
+															<td class="text-left text-truncate-sm"
 																th:if="${p.app != null}" th:text="${p.app.identification}"></td>
-															<td class="text-center text-truncate-sm"
+															<td class="text-left text-truncate-sm"
 																th:if="${p.app == null}"><span th:text="0" style="display:none" ></span><i
-																class="la la-times-circle-o text-danger  font-hg"></i></td>
+																class="icon-error text-danger"></i></td>
 															<!-- WEB PROJECT -->
-															<td class="text-center text-truncate-sm"
+															<td class="text-left text-truncate-sm"
 																th:if="${p.webProject != null}"
 																th:text="${p.webProject.identification}"></td>
-															<td class="text-center text-truncate-sm"
+															<td class="text-left text-truncate-sm"
 																th:if="${p.webProject == null}"><span th:text="0" style="display:none" ></span><i
-																class="la la-times-circle-o text-danger  font-hg"></i></td>
+																class="icon-error text-danger"></i></td>
 															<!-- DATE -->
-															<td class="text-center" th:if="${p.createdAt!=null}">
+															<td class="text-left" th:if="${p.createdAt!=null}">
 															<span th:text="${#dates.format(p.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
 															<span th:text="${#dates.format(p.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${p.createdAt==null}"
+															<td class="text-left" th:if="${p.createdAt==null}"
 																th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-center" th:if="${p.updatedAt!=null}">
+															<td class="text-left" th:if="${p.updatedAt!=null}">
 															<span th:text="${#dates.format(p.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
 															<span th:text="${#dates.format(p.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${p.updatedAt==null}"
+															<td class="text-left" th:if="${p.updatedAt==null}"
 																th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
@@ -197,40 +228,41 @@
 																	
 																	<!-- VIEW -->
 																	<span th:title="#{gen.view}"
-																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
 																		data-container="body" data-placement="bottom"
 																		th:data-original-title="#{gen.view}"
 																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/show/${p.id}/|} + '\');'"><i
 																		class="la la-eye font-hg"></i></span>
-																	
-																	<!-- SHARE -->
-																	<span
-																		th:if="(${#authentication.name} != ${p.user.userId}) AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"
-																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																		data-container="body" data-placement="bottom"
-																		th:title="#{binaryfiles.share}"
-																		th:data-original-title="#{binaryfiles.share}"
-																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/share/${p.id}/|} + '\');'"><i
-																		class="la la-share font-hg"></i></span>
+
 																	<!-- EDIT -->
 																	<span
 																		th:if="(${#authentication.name} == ${p.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" 
-																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
 																		data-container="body" data-placement="bottom"
 																		th:title="#{gen.edit}"
 																		th:data-original-title="#{gen.edit}"
 																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/update/${p.id}/|} + '\');'"><i
-																		class="la la-edit font-hg"></i></span>
+																		class="icon-edit"></i></span>
+																	
+																	<!-- SHARE -->
+																	<span
+																		th:if="(${#authentication.name} != ${p.user.userId}) AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"
+																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{binaryfiles.share}"
+																		th:data-original-title="#{binaryfiles.share}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/projects/share/${p.id}/|} + '\');'"><i
+																		class="icon-share"></i></span>														
 
 																	<!-- DELETE -->
 																	<span
 																		th:if="(${#authentication.name} == ${p.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"
-																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		class="btn btn-xs btn-no-border icon-on-table color-red tooltips"
 																		data-container="body" data-placement="bottom"
 																		th:title="#{gen.deleteBtn} "
 																		th:data-original-title="#{gen.deleteBtn} "
 																		th:onclick="'deleteConfirmation(\''+${p.id}+'\');'"><i
-																		class="la la-trash font-hg"></i></span>
+																		class="icon-delete"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -239,31 +271,40 @@
 
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
 												<div id="dataTable-vis-toggle"
-													class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown"
-														aria-expanded="false"
-														class="btn btn-square btn-sm btn-default "> <span
-														th:text="#{gen.columns}"></span> <i
-														class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler"
-														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" th:text="#{gen.name}"
-															data-column="0"> Name</label> <label class="toggle-vis"
-															th:text="#{gen.owner}" data-column="1"> Owner</label> <label
-															class="toggle-vis" th:text="#{gen.type}" data-column="2">
-															Type</label> <label class="toggle-vis"
-															th:text="#{gen.description}" data-column="3">
-															Description</label> <label class="toggle-vis"
-															th:text="#{app.realm}" data-column="4"> Realm</label> <label
-															class="toggle-vis" th:text="#{marketasset.webproject}"
-															data-column="5"> Web project</label> <label
-															class="toggle-vis" th:text="#{gen.created}"
-															data-column="6"> Created at</label><label
-															class="toggle-vis" th:text="#{gen.updated}"
-															data-column="7"> Updated at</label> <label
-															class="toggle-vis" th:text="#{gen.options}"
-															data-column="8"> Options</label>
+													class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{gen.owner}"> Owner </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<label th:text="#{gen.type}"> Type</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.description}"> Description</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{app.realm}"> Realm</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label th:text="#{marketasset.webproject}"> Web project</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{gen.created}"> Created at</label>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label th:text="#{gen.updated}"> Updated at</label>
+														</span>
 													</div>
 												</div>
 											</div>
@@ -273,8 +314,6 @@
 							</div>
 						</div>
 						<!-- END PORTLET BASIC LIGHT -->
-					</div>
-					<!-- END COL-12 -->
 				</div>
 				<!-- END MAIN ROW -->
 			</div>
@@ -327,11 +366,10 @@
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = [[#{project.del.confirm}]];
-		var Title = headerReg.titleConfirm + ':';
+		var Title = [[#{project.delete.confirm.title}]];
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -339,16 +377,15 @@
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-circle btn-outline blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-circle btn-outline btn-primary',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						console.log(id);
 						var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -378,28 +415,55 @@
 
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#projects').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
-		});	
+			//$(this).toggleClass('text-muted line-through');			
+		});
+
+		// SEARCH FORM RESET
+		$('#reset_project').on('click',function(){
+			$('#project-name').val('');
+			$('#projects').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_project').on('click',function(){
+			$('#projects').DataTable().column(0).search( $('#project-name').val()).draw();
+		});
 		
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).load(function(){
+
+		var oTable = $('#projects').dataTable({
+	      "bAutoWidth": false
+	      });  
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([ 2 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
-		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		// SHOW/HIDE DATATABLES COLUMN INIT 
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 		
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#projects_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#projects_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#projects_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
 		
+		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
 	
 	//]]>

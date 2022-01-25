@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -37,13 +38,17 @@ import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Configurable
 @Entity
 @Table(name = "API", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION", "NUM_VERSION" }))
+@EntityListeners(AuditEntityListener.class)
+@ToString
 public class Api extends OPResource {
 
 	private static final long serialVersionUID = 1L;
@@ -161,5 +166,10 @@ public class Api extends OPResource {
 	@Getter
 	@Setter
 	private String swaggerJson;
+
+	@Column(name = "GRAVITEE_ID", length = 100)
+	@Getter
+	@Setter
+	private String graviteeId;
 
 }

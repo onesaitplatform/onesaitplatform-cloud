@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -479,4 +479,33 @@ public class StreamsetsApiWrapper {
 		return rt.exchange(uri, HttpMethod.GET, headersEntity, String.class);
 	}
 
+	public static ResponseEntity<String> getCommittedOffsets(RestTemplate rt, HttpHeaders headers, String dataflowServiceUrl,
+			 String pipelineId){
+		// /rest/v1/pipeline/OPCUAdatab87df379-a083-4e25-846d-3d4b4859a28d/committedOffsets
+		
+		// configure headers
+		//headers.set(XREQUESTEDBY_STR, "sdc"); // this header is needed in POST, DELETE and PUT methods
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+		HttpEntity<?> headersEntity = new HttpEntity<>(headers);
+		
+		// construct url
+		StringBuilder urlBuilder = new StringBuilder();
+		String url = urlBuilder
+		.append(dataflowServiceUrl)
+		.append(CONTEXT)
+		.append(VERSION)
+		.append("/pipeline/{pipelineId}/committedOffsets")
+		.toString();
+		
+		// construct uri with url parameters
+		Map<String, String> uriParams = new HashMap<>();
+		uriParams.put(PIPELINEID_STR, pipelineId);
+		URI uri = UriComponentsBuilder.fromUriString(url).buildAndExpand(uriParams).toUri();
+		
+		//add query parameters
+		uri = UriComponentsBuilder.fromUri(uri).queryParam("rev", "0").build().toUri();
+		
+		return rt.exchange(uri, HttpMethod.GET, headersEntity, String.class);
+	}
+	
 }

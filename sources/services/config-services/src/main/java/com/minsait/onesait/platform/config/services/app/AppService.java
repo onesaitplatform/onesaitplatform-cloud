@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,8 +91,10 @@ public interface AppService {
 	public AppList getAppListById(String id);
 
 	public List<AppUserListOauth> getAppUsersByUserIdAndApp(String userId, String appIdentification);
-
+	
 	public List<AppUserListOauth> getAppUsersByApp(String appIdentification);
+
+	public List<AppUserListOauth> getAppUsersByUserIdAndRoleAndApp (String userId, String role, String appIdentification);
 
 	public List<AppUserListOauth> getAppUsersByAppAndUserIdLike(String appIdentification, String userIdLike);
 

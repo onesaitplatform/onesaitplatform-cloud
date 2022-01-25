@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -66,65 +66,66 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/support/create}"> <span th:text="#{support.title}">Support Request</span></a></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->			
 				
-				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
+                 <!-- BEGIN PAGE TITLE-->
+                <h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
+                <!-- END PAGE TITLE-->
+                
+				<div id="header">
+					<div class="row pageCreateHeader">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="margin-top-4">								
+								<span class="caption-subject " th:text="#{support.create}">Create Support Request</span>									
+							</div>
+					    </div>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <div class="pull-right">
+                                <!-- CANCEL --> 
+                                <button id="cancelBtn" type="button" class="btn btn-primary-cancel"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                
+                                <!-- CREATE -->   
+                                <button id="sendSR" type="button" class="btn btn-primary btn-primary-save" th:text="#{gen.submit}" th:onclick="'javascript:showCreateRequestDialog();'">Send</button> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+				
+                <!-- MAIN ROW -->
+                <div class="mainPanel">
+                	<div class="row main">
+						<button type="button" class="btn btn-outline btn-circle blue" style="margin: 10px" onclick="fillText('notification');" th:text="#{support.notification}">
+							<span>Notification</span>
+						</button>
+						<button type="button" class="btn btn-outline btn-circle blue" style="margin: 10px" onclick="fillText('changeRole');" th:text="#{support.changeRole}">
+							<span>Change Role</span>
+						</button>
+					</div>
 					
-						<div class="portlet light ">
-							<div class="portlet-title">
-								<div class="caption">									
-									<span class="caption-subject " th:text="#{support.create}">Create Support Request</span>									
-								</div>
-								
-							</div>
-							<div class="row">
-								<button type="button" class="btn btn-outline btn-circle blue" style="margin: 10px" onclick="fillText('notification');" th:text="#{support.notification}">
-									<span>Notification</span>
-								</button>
-								<button type="button" class="btn btn-outline btn-circle blue" style="margin: 10px" onclick="fillText('changeRole');" th:text="#{support.changeRole}">
-									<span>Change Role</span>
-								</button>
-							</div>
-							
-							<div id="changeTo" class="col-md-4 col-sm-6 col-xs-12 hide">
-								<div class="form-group">
-									<label class="control-label" th:text="#{support.changeRoleTo}">Role</label>
-									<select id="roles" class="selectpicker form-control" th:title="#{support.role}">
-										<!-- <option th:each="role:${roleTypes}" th:value="${role.Id}" th:text="${role.Id}" ></option> -->
-										<option th:each="role:${roleTypes}" th:value="${role}" th:text="${role}"></option>
-									</select>
-								</div>
-							</div>
-							
-							<div id="emailBox" class="form-group hide">
-								<textarea id="email" class="element textarea small form-control"></textarea>
-							</div>
-							
-							<div id="pulse" class="col-md-12 hide">
-								<div class="pulsating-circle"></div>										
-							</div>
-														
-							<div class="row"></div>
-							
-							<!-- FORM BUTTONS -->
-							<div class="row">
-								<div class="pull-left">
-									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-								</div>								
-								<div class="pull-right">
-									<button id="sendSR" type="button" class="btn btn-circle btn-outline btn-primary" th:text="#{gen.submit}" th:onclick="'javascript:showCreateRequestDialog();'">Send</button>
-								</div>
-							</div>								
-							<!-- form end -->
-													
-						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
+                    <div class="row main">		
+    					<div id="changeTo" class="col-md-4 col-sm-4 col-xs-12 hide">
+    						<div class="form-group" style="margin-bottom:0;">
+    							<label class="control-label" th:text="#{support.changeRoleTo}">Role</label>
+    							<select id="roles" class="selectpicker form-control" th:title="#{support.role}">
+    								<!-- <option th:each="role:${roleTypes}" th:value="${role.Id}" th:text="${role.Id}" ></option> -->
+    								<option th:each="role:${roleTypes}" th:value="${role}" th:text="${role}"></option>
+    							</select>
+    						</div>
+    					</div>
+					</div>
+                    <div class="row main">
+                        <div class="col-md-6 col-sm-6 col-xs-12" style="margin-left: 15px;">
+        					<div id="emailBox" class="form-group hide">
+        						<textarea id="email" class="element textarea small form-control"></textarea>
+        					</div>
+    					</div>
+    					<div id="pulse" class="col-md-12 hide">
+    						<div class="pulsating-circle"></div>										
+    					</div>
+					</div>							
 				</div><!-- END MAIN ROW -->	
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		

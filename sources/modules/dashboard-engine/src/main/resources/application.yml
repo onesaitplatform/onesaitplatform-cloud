@@ -28,8 +28,8 @@ spring:
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: ${spring.boot.admin.password}
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
   datasource:
      hikari:
       jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
@@ -56,6 +56,8 @@ onesaitplatform: #Config Onesait Platform specific
       enabled: false
    secure.cookie: false
    authentication:
+      oauth:
+        osp-keycloak: false
       configdb:
         acl:
           enabled: false

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@
 	</head>	
 	
 	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
-	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+	<body class="page-header-fixed  page-content-white  page-sidebar-closed page-footer-fixed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
@@ -177,13 +177,13 @@
 				
 					<div class="col-md-12 col-sm-12">					
 						<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
-						<div id="dashboardInclude" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-10"></div>
+						<div id="dashboardInclude" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
 						<!-- END DASHBOARD INCLUDE -->
 					</div>
 				
 					<!-- BEGIN TREE INCLUDE -->
-					<div class="col-md-4 col-sm-12" id="treeInclude" style="display:none" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
-						<div class="row">
+					<div class="col-md-4 col-sm-12 padding-left-40" id="treeInclude" style="display:none" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
+						<div class="row main" style="margin-top: -20px;">
 							<div class="col-md-12 margin-bottom-10">
 								<div class="" th:include="fragments/categorizationTree::#categorizationTree" style="overflow:auto"></div>
 							</div>
@@ -193,7 +193,7 @@
 						
 					<!-- BEGIN GRAPH INCLUDE -->
 					<div class="col-md-12 col-sm-12" id="graphInclude" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
-						<div class="row">
+						<div class="row main">
 							<div class="col-md-12 col-sm-12">
 								<div class="col-md-12 margin-bottom-10" th:include="fragments/graph::#graphFragment" ></div>							
 							</div>
@@ -203,11 +203,11 @@
 					
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
+	<!-- FOOTER INCLUDE -->
+	
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-	
-	<!-- FOOTER INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"/> 
 	
 	<!-- CORE JS CONTROLLERS -->

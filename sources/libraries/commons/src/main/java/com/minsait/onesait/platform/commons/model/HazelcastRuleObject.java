@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ public class HazelcastRuleObject {
 	private String identification;
 	private String userId;
 	private String DRL;
+	private byte[] decisionTable;
+	private String extension;
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 

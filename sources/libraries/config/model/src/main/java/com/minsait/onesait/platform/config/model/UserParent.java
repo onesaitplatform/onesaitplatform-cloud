@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,11 @@ import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Configurable
 @MappedSuperclass
+@ToString(exclude= {"password"},callSuper=true)
 public class UserParent extends AuditableEntity {
 
 	private static final long serialVersionUID = 1L;
@@ -132,8 +134,8 @@ public class UserParent extends AuditableEntity {
 
 	@JsonIgnore
 	public boolean isAdmin() {
-		return getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || (getRole().getRoleParent() != null
-				&& getRole().getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()));
+		return getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()) || getRole().getRoleParent() != null
+				&& getRole().getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
 	}
 
 	@Override
@@ -141,9 +143,5 @@ public class UserParent extends AuditableEntity {
 		return java.util.Objects.hash(getUserId());
 	}
 
-	@Override
-	public String toString() {
-		return getUserId();
-	}
 
 }

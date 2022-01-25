@@ -4,28 +4,22 @@
 	"noSession": "/console/login",
 	"navigation": [
 
-		{
-			"title": {
-				"EN": "",
-				"ES": ""
-			},
-			"icon": "flaticon-more-v3",
-			"url": "",
-			"submenu": []
-		},
+		
 		
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
-				"ES": "DESARROLLO"
+				"ES": "DESARROLLO",
+				"FR": "DÉVELOPPEMENT"
 			},
-			"icon": "flaticon-network",
+			"icon": "icon-development",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "My Projects",
-						"ES": "Mis Proyectos"
+						"ES": "Mis Proyectos",
+						"FR": "Mes Projets"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -36,15 +30,17 @@
 		{
 			"title": {
 				"EN": "VISUALIZATION & GIS",
-				"ES": "VISUALIZATION & GIS"
+				"ES": "VISUALIZATION & GIS",
+				"FR": "VISUALISATION & SIG"
 			},
-			"icon": "flaticon-graph",
+			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "My Dashboards",
-						"ES": "Mis Dashboards"
+						"ES": "Mis Dashboards",
+						"FR": "Mes Tableaux de Bord"
 					},
 					"icon": "",
 					"url": "/controlpanel/dashboards/list"
@@ -55,15 +51,17 @@
 		{
 			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS"
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
 			},
-			"icon": "flaticon-refresh",
+			"icon": "icon-tools",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "My Market",
-						"ES": "Mi Market"
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
 					"url": "/controlpanel/marketasset/list"

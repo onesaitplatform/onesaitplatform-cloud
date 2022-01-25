@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
+import com.minsait.onesait.platform.config.services.dataflow.StreamsetsApiWrapper;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import io.swagger.annotations.Api;
@@ -137,6 +138,19 @@ public class DataFlowPipelineManagementController {
 		return dataflowService.resetOffsetPipeline(utils.getUserId(), identification);
 	}
 
+	@ApiOperation(value = "Get a pipeline committed offsets")
+	@GetMapping("/pipelines/{identification}/committedOffsets")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline committed offsets", response = String.class),
+			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unathorized"),
+			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse(code = 500, message = "Internal Server Error") })
+	public ResponseEntity<String> getPipelineCommittedOffsets(@ApiParam(value = "Dataflow pipeline identification", required = true)
+			@PathVariable("identification") String pipelineIdentification)
+			throws UnsupportedEncodingException {
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+		return dataflowService.getPipelineCommittedOffsets(utils.getUserId(), identification);
+	}
+	
 	/* EXCEPTION HANDLERS */
 
 	@ExceptionHandler(ResourceAccessException.class)

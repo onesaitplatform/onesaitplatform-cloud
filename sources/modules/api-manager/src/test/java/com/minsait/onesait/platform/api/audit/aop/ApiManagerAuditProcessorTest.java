@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
@@ -108,7 +109,9 @@ public class ApiManagerAuditProcessorTest {
 		data.put(Constants.METHOD, ApiOperation.Type.POST.name());
 		data.put(Constants.BODY, body.getBytes());
 		data.put(Constants.USER, getUserTest());
-		data.put(Constants.API, getApiTest());
+		Api api = getApiTest();
+		api.setApiType(Api.ApiType.INTERNAL_ONTOLOGY);
+		data.put(Constants.API, api);
 
 		final ApiManagerAuditEvent event = apiManagerAuditProcessor.getEvent(data);
 
@@ -206,6 +209,7 @@ public class ApiManagerAuditProcessorTest {
 	private Api getApiTest() {
 		final Api api = new Api();
 		api.setIdentification(API_IDENTIFICATION);
+		api.setApiType(ApiType.INTERNAL_ONTOLOGY);
 		return api;
 	}
 

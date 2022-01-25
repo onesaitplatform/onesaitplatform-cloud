@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,25 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public interface SQLHelper {
 
+	String getValidateQuery();
+
 	String getAllTablesStatement();
+	
+	boolean hasDatabase();
+	
+	boolean hasCrossDatabase();
+		
+	boolean hasSchema();
+	
+	String getDatabaseStatement();
+	
+	String getSchemaStatement();
+
+	String getDatabasesStatement();
+	
+	String getSchemasStatement(String database);
+	
+	String getAllTablesStatement(String database, String schema);
 
 	PlainSelect addLimit(final PlainSelect query, final long limit);
 
@@ -46,5 +64,4 @@ public interface SQLHelper {
 	CreateStatement getCreateStatementWithConstraints(CreateStatement createStatement);
 
 	String parseGeometryFields(String query, String ontology) throws JSQLParserException;
-
 }

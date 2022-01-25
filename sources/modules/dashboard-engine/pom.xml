@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.3.0-ce</version>
+		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
 
@@ -18,7 +18,6 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<plugin.interface.version>2.2.0</plugin.interface.version>
 	</properties>
 
 	<dependencies>
@@ -35,24 +34,24 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-security-ui-ri</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-services</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- OneLog -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -63,6 +62,10 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>				
 			</exclusions>
 		</dependency>
 
@@ -88,12 +91,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin.external.google</groupId>
-					<artifactId>android-json</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -145,7 +142,7 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-cache</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Force dependencies for hz zookeper SPI discovered mode -->
@@ -163,13 +160,9 @@
 		<!-- Force dependencies for hz zookeper SPI discovered mode -->
 
 		<!-- Dependency for security plugin -->
-		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-security-dashboard-engine</artifactId> 
-			<version>${onesaitplatform.version}</version> </dependency> -->
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-plugin-interfaces</artifactId>
-			<version>${plugin.interface.version}</version>
-		</dependency>
+		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-security-dashboard-engine</artifactId>
+			<version>${project.version}</version> </dependency> -->
+
 		<!-- Dependency for security plugin -->
 
 	</dependencies>

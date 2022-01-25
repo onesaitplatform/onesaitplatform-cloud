@@ -9,7 +9,8 @@ master:
 onesaitplatform:
    secure.cookie: true
    authentication:
-      authentication:
+      oauth:
+        osp-keycloak: ${USE_KEYCLOAK}
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
@@ -108,6 +109,8 @@ spring:
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://dashboardengineservice:${server.port}${server.servlet.contextPath}/
+      client.username: ${SBA_USERNAME}
+      client.password: ${SBA_SECRET}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:

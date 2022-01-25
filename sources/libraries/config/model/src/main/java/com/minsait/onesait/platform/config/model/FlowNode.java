@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
-		HTTP_NOTIFIER("onesaitplatform-notification-endpoint"), API_REST(
-				"onesaitplatform api rest"), API_REST_OPERATION("onesaitplatform api rest operation");
+		HTTP_NOTIFIER("onesaitplatform-notification-endpoint"), API_REST("onesaitplatform api rest"),
+		API_REST_OPERATION("onesaitplatform api rest operation");
 
 		private String exposedName;
 
@@ -97,7 +97,7 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	private MessageType messageType;
 
 	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = true)
 	@Getter
 	@Setter
@@ -110,7 +110,7 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 
 	@Getter
 	@Setter
-	@Column(name = "ALLOW_DISCARD_AFTER_ELAPSED_TIME", nullable = true, columnDefinition = "BIT" )
+	@Column(name = "ALLOW_DISCARD_AFTER_ELAPSED_TIME", nullable = true, columnDefinition = "BIT")
 	private Boolean discardAfterElapsedTime;
 
 	@Getter
@@ -138,19 +138,19 @@ public class FlowNode extends AuditableEntityWithUUID implements NotificationEnt
 	public String getNotificationDomainUser() {
 		return getFlow().getFlowDomain().getUser().getUserId();
 	}
-	
+
 	@Override
-	public Boolean isRetryOnFaialureEnabled(){
+	public Boolean isRetryOnFaialureEnabled() {
 		return this.retryOnFailure;
 	}
-	
+
 	@Override
-	public Boolean isDiscardAfterElapsedTimeEnabled(){
+	public Boolean isDiscardAfterElapsedTimeEnabled() {
 		return this.discardAfterElapsedTime;
 	}
-	
+
 	@Override
-	public Integer getMaxRetryElapsedTime(){
+	public Integer getMaxRetryElapsedTime() {
 		return this.maxRetryElapsedTime;
 	}
 

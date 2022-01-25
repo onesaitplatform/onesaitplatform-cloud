@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
@@ -56,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ElasticSearchManageDBRepository implements ManageDBRepository {
 
 	private static final String NOT_IMPLEMENTED_ALREADY = "Not Implemented Already";
+	private static final String ALLOWS_TEMPLATE_CONFIG = "allowsTemplateConfig";
 
 	@Autowired
 	private ESBaseApi connector;
@@ -64,9 +64,9 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 
 	@Autowired
 	private ESDeleteService eSDeleteService;
-	
+
 	@Autowired
-    private IntegrationResourcesService resourcesService;
+	private IntegrationResourcesService resourcesService;
 
 	@Getter
 	@Setter
@@ -82,23 +82,26 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 
 	@PostConstruct
 	public void init() {
-	    Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object>  elasticsearch = (Map<String, Object>) database.get("elasticsearch");
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object>  sql = (Map<String, Object>) elasticsearch.get("sql");
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object>  dump = (Map<String, Object>) elasticsearch.get("dump");
-        
-        elasticSearchEndpoint = (String) sql.get("endpoint");
-        
-        dumpPath = (String) dump.get("path");
-        elasticDumpPath = (String) dump.get("elasticDumpCmd");
+		final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
+
+		@SuppressWarnings("unchecked")
+		final
+		Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
+
+		@SuppressWarnings("unchecked")
+		final
+		Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
+
+		@SuppressWarnings("unchecked")
+		final
+		Map<String, Object> dump = (Map<String, Object>) elasticsearch.get("dump");
+
+		elasticSearchEndpoint = (String) sql.get("endpoint");
+
+		dumpPath = (String) dump.get("path");
+		elasticDumpPath = (String) dump.get("elasticDumpCmd");
 	}
-	
+
 	@Override
 	public Map<String, Boolean> getStatusDatabase() {
 		log.error("Error implementing");
@@ -110,20 +113,17 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 		try {
 			if (JSONPersistenceUtilsElasticSearch.isJSONSchema(schema)) {
 
-				String mapping = JSONPersistenceUtilsElasticSearch.getElasticSearchSchemaFromJSONSchema(schema);
+				final String mapping = JSONPersistenceUtilsElasticSearch.getElasticSearchSchemaFromJSONSchema(schema);
 				try {
-					final boolean res = connector.createIndex(ontology.toLowerCase());
-					log.info("Index result : {} ", res);
-
-					try {
-						if (!mapping.isEmpty() && (!connector.prepareIndex(ontology.toLowerCase(), mapping))) {
-							log.error("Error mapping");
-							throw new DBPersistenceException("Error mapping type.");
-						}
-					} catch (final Exception e) {
-						connector.deleteIndex(ontology.toLowerCase());
-						log.error("Error mapping type: " + e.getMessage(), e);
-						throw new DBPersistenceException("Error mapping type. Message: " + e.getMessage(), e);
+					if (config!= null && config.get(ALLOWS_TEMPLATE_CONFIG) != null && !config.get(ALLOWS_TEMPLATE_CONFIG).isEmpty()
+							&& Boolean.parseBoolean(config.get(ALLOWS_TEMPLATE_CONFIG))) {
+						log.info("Creating ElasticSearch template for ontology: {}", ontology);
+						final boolean res = connector.createTemplate(ontology.toLowerCase(), mapping, config);
+						log.info("Template result : {} ", res);
+					} else {
+						log.info("Creating ElasticSearch index for ontology: {}", ontology);
+						final boolean res = connector.createIndex(ontology.toLowerCase(), mapping, config);
+						log.info("Index result : {} ", res);
 					}
 
 				} catch (final Exception e) {
@@ -148,8 +148,9 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	public List<String> getListOfTables() {
 		final List<String> list = new ArrayList<>();
 		final String[] result = connector.getIndexes();
-		if (result != null)
+		if (result != null) {
 			list.addAll(Arrays.asList(result));
+		}
 		return list;
 
 	}
@@ -159,7 +160,7 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 		ontology = ontology.toLowerCase();
 		final List<String> list = new ArrayList<>();
 		final String[] result = connector.getIndexes();
-		List<String> ontologies = Arrays.asList(result);
+		final List<String> ontologies = Arrays.asList(result);
 		if (result != null && ontologies.indexOf(ontology) != .1) {
 			list.add(ontology);
 		}
@@ -169,7 +170,7 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public void removeTable4Ontology(String ontology) {
 		ontology = ontology.toLowerCase();
-		//eSDeleteService.deleteAll(ontology);
+		// eSDeleteService.deleteAll(ontology);
 		connector.deleteIndex(ontology);
 	}
 
@@ -230,10 +231,11 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 				+ " \r\n} \r\n} \r\n" + "  }\r\n" + "}";
 		final String path;
 
-		if (pathToFile.equals("default"))
+		if (pathToFile.equals("default")) {
 			path = dumpPath + ontology.toLowerCase() + format.format(new Date()) + ".json";
-		else
+		} else {
 			path = pathToFile;
+		}
 		if (eSCountService.getQueryCount(queryElastic, ontology.toLowerCase()) > 0) {
 			final ProcessBuilder pb;
 
@@ -250,7 +252,7 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 					builder.append(System.getProperty("line.separator"));
 				}
 				builder.toString();
-				log.info("Cmd elasticdump output: {}",builder.toString());
+				log.info("Cmd elasticdump output: {}", builder.toString());
 				log.info("Created export file for ontology {} at {}", ontology, path);
 			} catch (IOException | InterruptedException e) {
 				log.error("Could not execute command {}", e.getMessage());

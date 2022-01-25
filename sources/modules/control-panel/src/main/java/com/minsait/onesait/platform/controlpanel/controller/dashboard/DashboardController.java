@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -157,6 +157,7 @@ public class DashboardController {
 	private static final String ERROR_DASHBOARD_PDF = "Error generating Dashboard PDF";
 	private static final String DATE_PATTERN = "_yyyy_MM_dd_HH_mm_ss";
 	private static final String HEARTBEATTIMEOUT = "heartbeatMaxTimeout";
+	private static final String PROTOCOL = "protocol";
 	private static final String VIEW = "view";
 	private static final String VIEWIFRAME = "viewiframe";
 	private static final String EDITFULLIFRAME = "editfulliframe";
@@ -562,6 +563,7 @@ public class DashboardController {
 					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
 					model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
 					model.addAttribute(HEARTBEATTIMEOUT, dashboardService.getClientMaxHeartbeatTime());
+					model.addAttribute(PROTOCOL, dashboardService.getProtocol());
 					model.addAttribute(SYNOPT,
 							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
 					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
@@ -624,7 +626,7 @@ public class DashboardController {
 		return "{\"ok\":true}";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/saveheaderlibs/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.TEXT_HTML_VALUE)
 	public @ResponseBody String updateDashboardHeaderLibs(@PathVariable("id") String id,
 			@RequestBody String headerlibs) {

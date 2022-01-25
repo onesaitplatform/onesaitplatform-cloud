@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.3.0-ce</version>
+		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-rules-engine</artifactId>
@@ -43,6 +43,10 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>				
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -76,33 +80,33 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-client-rest</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-business-services</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-services</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-commons</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-security-ui-ri</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- OneLog -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- OAUTH -->
 		<dependency>
@@ -117,7 +121,7 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-cache</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

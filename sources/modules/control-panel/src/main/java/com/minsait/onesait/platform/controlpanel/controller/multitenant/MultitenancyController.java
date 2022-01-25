@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,6 +54,9 @@ public class MultitenancyController {
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private AppWebUtils utils;
+	
+	@Value("${onesaitplatform.password.pattern}")
+	private String passwordPattern;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")
 	@GetMapping("verticals")
@@ -130,6 +134,7 @@ public class MultitenancyController {
 	public String tenantCreate(Model model) {
 		model.addAttribute("tenant", new Tenant());
 		model.addAttribute("user", new User());
+		model.addAttribute("passwordPattern", passwordPattern);
 		if (utils.isPlatformAdmin()) {
 			model.addAttribute("verticals", multitenancyService.getAllVerticals());
 		}
@@ -160,9 +165,9 @@ public class MultitenancyController {
 	@GetMapping("verticals/update/{name}")
 	public String verticalUpdate(Model model, @PathVariable("name") String name) {
 		final Optional<Vertical> vertical = multitenancyService.getVertical(name);
-		if (!vertical.isPresent())
+		if (!vertical.isPresent()) {
 			return "error/404";
-		else {
+		} else {
 			model.addAttribute("tenants", tenants(vertical.get().getName()));
 			model.addAttribute(VERTICAL, vertical.get());
 			model.addAttribute("verticalsAvailable", multitenancyService.getAllTenants().stream()
@@ -177,7 +182,7 @@ public class MultitenancyController {
 	@PutMapping("verticals/update/{name}")
 	public String updateVertical(Model model, @ModelAttribute Vertical vertical, @PathVariable("name") String name) {
 
-		return "redirect:/multitenancy/verticals/list";
+		return "redirect:/multitenancy/verticals";
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")

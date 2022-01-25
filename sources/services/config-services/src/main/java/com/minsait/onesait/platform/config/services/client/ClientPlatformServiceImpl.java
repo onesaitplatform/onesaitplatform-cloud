@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -138,6 +139,17 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Override
 	public List<ClientPlatform> getclientPlatformsByUser(User user) {
 		return clientPlatformRepository.findByUser(user);
+	}
+
+	@Override
+	public List<String> getclientPlatformsIdentificationByUser(String userId) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return clientPlatformRepository.findAllIdentifications();
+		} else {
+			return clientPlatformRepository.findIdentificationsByUser(user);
+		}
+
 	}
 
 	private List<ClientPlatform> getClientPlatform(String userId, String identification) {
@@ -525,6 +537,16 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Override
 	public ClientPlatform update(ClientPlatform clientPlatform) {
 		return clientPlatformRepository.save(clientPlatform);
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return clientPlatformRepository.findAllDto(identification, description);
+		} else {
+			return clientPlatformRepository.findDtoByUserAndPermissions(user, identification, description);
+		}
 	}
 
 }

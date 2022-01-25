@@ -6,7 +6,7 @@ LABEL platform.image.name="cache-server"
 ADD *-exec.jar app.jar
 
 # Timezone 
-RUN apk add --no-cache tzdata
+# RUN apk add --no-cache tzdata
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \

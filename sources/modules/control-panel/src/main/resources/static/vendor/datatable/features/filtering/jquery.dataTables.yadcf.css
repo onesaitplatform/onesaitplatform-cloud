@@ -18,35 +18,38 @@
 .yadcf-filter {
 	padding-right: 4px;
 
-padding-left: 4px;
+/*padding-left: 4px;*/
 
 padding-bottom: 3px;
 
 padding-top: 3px;
 
-border-top: none;
+border: 1px solid #ffffff;
 
-border-left: none;
-
-border-right: none;
-
-border-bottom: 1px solid #a2acb3;
-
-background-color: #f0f4f7;
+background-color: #ffffff;
 
 border-radius: 0px;
 
-font-size: 11px;
+color: #1168A6;
+
+font-size: 12px;
 
 font-family: "Soho";
 
 font-weight: normal;
 
-text-transform: uppercase;
+/*text-transform: uppercase;*/
 }
 
 .yadcf-filter > option{
     background: white;
+}
+
+.yadcf-filter:focus {
+        background-color: #E7F0F6;
+	    color: #000000;
+	    outline: none;
+	    border-radius: 2px;
 }
 
 .ui-autocomplete .ui-menu-item { 

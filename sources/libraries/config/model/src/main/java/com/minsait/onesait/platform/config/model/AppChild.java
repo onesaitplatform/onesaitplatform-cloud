@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -34,13 +35,17 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "APP")
 @Configurable
+@EntityListeners(AuditEntityListener.class)
+@ToString
 public class AppChild extends AppParent {
 
 	/**
@@ -81,20 +86,20 @@ public class AppChild extends AppParent {
 
 	public AppChild(String id, String identification, String description, User user, String secret,
 			String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
-		this.setId(id);
-		this.setIdentification(identification);
-		this.setDescription(description);
-		this.setUser(user);
-		this.setCreatedAt(createAt);
-		this.setUpdatedAt(updateAt);
-		this.setSecret(secret);
-		this.setUserExtraFields(user_extra_fields);
-		this.setTokenValiditySeconds(tokenValiditySeconds);
-		Set<AppRole> appRoles = new HashSet<AppRole>();
+		setId(id);
+		setIdentification(identification);
+		setDescription(description);
+		setUser(user);
+		setCreatedAt(createAt);
+		setUpdatedAt(updateAt);
+		setSecret(secret);
+		setUserExtraFields(user_extra_fields);
+		setTokenValiditySeconds(tokenValiditySeconds);
+		final Set<AppRole> appRoles = new HashSet<AppRole>();
 		if (appRole != null) {
 			appRoles.add(appRole);
 		}
-		this.setAppRoles(appRoles);
+		setAppRoles(appRoles);
 
 		/*
 		 * Set<App> childapps = new HashSet<App>(); if(childApp != null) {
@@ -104,15 +109,18 @@ public class AppChild extends AppParent {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null)
+		if (obj == null) {
 			return false;
+		}
 
-		if (this.getClass() != obj.getClass())
+		if (this.getClass() != obj.getClass()) {
 			return false;
+		}
 
 		final AppChild that = (AppChild) obj;
-		if (getIdentification() != null)
+		if (getIdentification() != null) {
 			return getIdentification().equals(that.getIdentification());
+		}
 		return false;
 	}
 

@@ -109,6 +109,9 @@
         },
         "methodName": {
             "type": "string"
+        },
+        "cipherData": {
+            "type": "string"
         }
     }
 }

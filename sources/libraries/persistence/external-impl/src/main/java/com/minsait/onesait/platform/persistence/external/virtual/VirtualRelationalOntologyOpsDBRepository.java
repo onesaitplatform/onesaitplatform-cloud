@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaField
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceInfoDTO;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.external.exception.NotSupportedOperationException;
 import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
@@ -100,7 +101,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 
 			final String dataSourceName = virtualDatasourcesManager.getDatasourceForOntology(ontology)
-					.getDatasourceName();
+					.getIdentification();
 			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
 					.getDataSourceDescriptor(dataSourceName);
 			return new NamedParameterJdbcTemplate(dataSource.getDatasource());
@@ -149,7 +150,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 			final OntologyVirtualDatasource ontologyVirtualDatasource = virtualDatasourcesManager
 					.getDatasourceForOntology(ontology);
-			final String dataSourceName = ontologyVirtualDatasource.getDatasourceName();
+			final String dataSourceName = ontologyVirtualDatasource.getIdentification();
 			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
 					.getDataSourceDescriptor(dataSourceName);
 			final NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource.getDatasource());
@@ -159,20 +160,19 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			final PreparedStatement sql = sqlGenerator.buildInsert().setOntology(ontology)
 					.setValuesAndColumnsForInstances(instances).generate(true);
 
-			final String ontologyVirtualTable = ontologyVirtualRepository
-					.findOntologyVirtualByOntologyIdentification(ontology).getDatasourceTableName();
-			sql.setStatement(SQLTableReplacer.replaceTableNameInInsert(sql.getStatement(), ontologyVirtualTable));
+			sql.setStatement(SQLTableReplacer.replaceTableNameInInsert(sql.getStatement(),
+					ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
 
 			if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE)
 					|| ontologyVirtualDatasource.getSgdb()
-					.equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE11)) {
+							.equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE11)) {
 				// ORACLE ON JDBC DOES NOT SUPPORT INSERT BULK WITH RETURN ID, PRODUCES
 				// ORA-00933: SQL command not properly ended
 				affected = jdbcTemplate.update(sql.getStatement(), sql.getParams());
 				keyList = new ArrayList<>();
 			} else if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.HIVE)
 					|| ontologyVirtualDatasource.getSgdb()
-					.equals(OntologyVirtualDatasource.VirtualDatasourceType.IMPALA)) {
+							.equals(OntologyVirtualDatasource.VirtualDatasourceType.IMPALA)) {
 
 				jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()));
 				keyList = null;
@@ -194,13 +194,13 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 					// Only last inserted id recoverable
 					// https://github.com/microsoft/mssql-jdbc/issues/245
 					final List<DBResult> resultsDb = IntStream.range(0, affected - 1)
-					.mapToObj(index -> new DBResult().setOk(true)).collect(Collectors.toList());
+							.mapToObj(index -> new DBResult().setOk(true)).collect(Collectors.toList());
 					resultsDb.add(
 							new DBResult().setId(String.valueOf(keyList.get(0).get("GENERATED_KEYS"))).setOk(true));
 					return resultsDb;
 				case POSTGRESQL:
 					final String objId = ontologyVirtualRepository
-					.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+							.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
 					if (objId != null) {
 						return IntStream.range(0, affected)
 								.mapToObj(index -> String.valueOf(keyList.get(index).get(objId)))
@@ -237,9 +237,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(ps.getStatement(), "Statement can't be null or empty");
 
-			final String ontologyVirtualTable = ontologyVirtualRepository
-					.findOntologyVirtualByOntologyIdentification(ontology).getDatasourceTableName();
-			ps.setStatement(SQLTableReplacer.replaceTableNameInInsert(ps.getStatement(), ontologyVirtualTable));
+			ps.setStatement(SQLTableReplacer.replaceTableNameInInsert(ps.getStatement(),
+					ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
 
 			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(getJdbTemplate(ontology).update(ps.getStatement(), ps.getParams()));
@@ -263,10 +262,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(ps.getStatement(), "Statement can't be null or empty");
 
-			final String ontologyVirtualTable = ontologyVirtualRepository
-					.findOntologyVirtualByOntologyIdentification(ontology).getDatasourceTableName();
-			ps.setStatement(
-					SQLTableReplacer.replaceTableNameInUpdate(ps.getStatement(), ontology, ontologyVirtualTable));
+			ps.setStatement(SQLTableReplacer.replaceTableNameInUpdate(ps.getStatement(), ontology,
+					ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
 
 			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			result.setCount(getJdbTemplate(ontology).update(ps.getStatement(), ps.getParams()));
@@ -296,9 +293,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(ps.getStatement(), QUERY_NOTNULLEMPTY);
 
-			final String ontologyVirtualTable = ontologyVirtualRepository
-					.findOntologyVirtualByOntologyIdentification(ontology).getDatasourceTableName();
-			ps.setStatement(SQLTableReplacer.replaceTableNameInDelete(ps.getStatement(), ontologyVirtualTable));
+			ps.setStatement(SQLTableReplacer.replaceTableNameInDelete(ps.getStatement(),
+					ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
 
 			final NamedParameterJdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
 			final int deleted = jdbcTemplate.update(ps.getStatement(), ps.getParams());
@@ -529,12 +525,13 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public String getTableMetadata(final String datasource, final String ontology) {
+	public String getTableMetadata(final String datasource, final String database, final String schema,
+			final String ontology) {
 		try {
 			Assert.hasLength(datasource, "Datasource can't be null or empty");
 			Assert.hasLength(ontology, "Collection can't be null or empty");
 
-			final HashMap<String, Object> map = new HashMap<>(getTableTypes(datasource, ontology));
+			final HashMap<String, Object> map = new HashMap<>(getTableTypes(datasource, database, schema, ontology));
 			for (final Map.Entry<String, Object> entry : map.entrySet()) {
 				entry.setValue(getSQLTypeForTableType((Integer) entry.getValue()));
 			}
@@ -547,7 +544,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		}
 	}
 
-	private JsonArray getColumnsMetadata(final String datasource, final String ontology) {
+	private JsonArray getColumnsMetadata(final String datasource, final String database, final String schema,
+			final String ontology) {
 		final JsonArray columns = new JsonArray();
 		java.sql.Connection conn = null;
 
@@ -557,12 +555,8 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 			String ontologyName;
 
-			if (VirtualDatasourceType.POSTGRESQL.toString().equalsIgnoreCase(dbmeta.getDatabaseProductName())) {
-				ontologyName = ontology.toLowerCase();
-			} else {
-				ontologyName = ontology;
-			}
-			final ResultSet rs = dbmeta.getColumns(null, null, ontologyName, null);
+			ontologyName = ontology;
+			final ResultSet rs = dbmeta.getColumns(database, schema, ontologyName, null);
 			while (rs.next()) {
 				final JsonObject jsonObj = new JsonObject();
 				jsonObj.addProperty("ordinal_position", rs.getString("ORDINAL_POSITION"));
@@ -591,10 +585,11 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public Map<String, Integer> getTableTypes(final String datasource, final String ontology) {
+	public Map<String, Integer> getTableTypes(final String datasource, final String database, final String schema,
+			final String ontology) {
 		final Map<String, Integer> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		try {
-			final JsonArray columns = getColumnsMetadata(datasource, ontology);
+			final JsonArray columns = getColumnsMetadata(datasource, database, schema, ontology);
 			for (final JsonElement col : columns) {
 				final JsonObject colObject = col.getAsJsonObject();
 				map.put(colObject.get("column_name").getAsString(), colObject.get("data_type").getAsInt());
@@ -751,6 +746,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException("Operation not supported for Virtual Ontology");
 	}
+
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
 		return queryNativeAsJson(ontology, query, offset, limit);
@@ -760,6 +756,87 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException("Operation not supported for Virtual Ontology");
+	}
+
+	@Override
+	public VirtualDatasourceInfoDTO getInfo(String datasourceName) {
+		try {
+			Assert.hasLength(datasourceName, "Datasource name can't be null or empty");
+
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
+					.getDataSourceDescriptor(datasourceName);
+			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
+			VirtualDatasourceInfoDTO vDTO = new VirtualDatasourceInfoDTO();
+			vDTO.setHasSchema(helper.hasSchema());
+			vDTO.setHasDatabase(helper.hasDatabase());
+			vDTO.setHasCrossDatabase(helper.hasCrossDatabase());
+			if (helper.hasDatabase()) {
+				List<String> ldb = new JdbcTemplate(dataSource.getDatasource())
+						.queryForList(helper.getDatabaseStatement(), String.class);
+				if (!ldb.isEmpty()) {
+					vDTO.setCurrentDatabase(ldb.get(0));
+				}
+			}
+			if (helper.hasSchema()) {
+				List<String> lsc = new JdbcTemplate(dataSource.getDatasource())
+						.queryForList(helper.getSchemaStatement(), String.class);
+				if (!lsc.isEmpty()) {
+					vDTO.setCurrentSchema(lsc.get(0));
+				}
+			}
+			return vDTO;
+		} catch (final Exception e) {
+			log.error("Error getting info ", e);
+			throw new DBPersistenceException("Error listing tables from user in external database", e);
+		}
+	}
+
+	@Override
+	public List<String> getDatabases(String datasource) {
+		try {
+			Assert.hasLength(datasource, "Datasource name can't be null or empty");
+
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
+					.getDataSourceDescriptor(datasource);
+			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
+			return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getDatabasesStatement(),
+					String.class);
+		} catch (final Exception e) {
+			log.error("Error listing databases from user in external database", e);
+			throw new DBPersistenceException("Error listing databases from user in external database", e);
+		}
+	}
+
+	@Override
+	public List<String> getSchemasDB(String datasource, String database) {
+		try {
+			Assert.hasLength(datasource, "Datasource name can't be null or empty");
+
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
+					.getDataSourceDescriptor(datasource);
+			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
+			return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getSchemasStatement(database),
+					String.class);
+		} catch (final Exception e) {
+			log.error("Error listing databases from user in external database", e);
+			throw new DBPersistenceException("Error listing databases from user in external database", e);
+		}
+	}
+
+	@Override
+	public List<String> getTables(String datasource, String database, String schema) {
+		try {
+			Assert.hasLength(datasource, "Datasource name can't be null or empty");
+
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
+					.getDataSourceDescriptor(datasource);
+			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
+			return new JdbcTemplate(dataSource.getDatasource())
+					.queryForList(helper.getAllTablesStatement(database, schema), String.class);
+		} catch (final Exception e) {
+			log.error("Error listing databases from user in external database", e);
+			throw new DBPersistenceException("Error listing databases from user in external database", e);
+		}
 	}
 
 }

@@ -77,7 +77,7 @@ var ViewerCreateController = function() {
 		console.log('deleteViewerConfirmation() -> formId: '+ viewerId);
 
 		// no Id no fun!
-		if ( !viewerId ) {$.alert({title: 'ERROR!',  theme: 'light', content: ontologyCreateReg.validations.validform}); return false; }
+		if ( !viewerId ) {toastr(ontologyCreateReg.validations.validform,''); return false; }
 
 		logControl ? console.log('deleteViewerConfirmation() -> formAction: ' + $('.delete-viewer').attr('action') + ' ID: ' + $('#delete-viewerId').attr('viewerId')) : '';
 
@@ -127,9 +127,7 @@ var ViewerCreateController = function() {
             invalidHandler: function(event, validator) { // display error
 															// alert on form
 															// submit
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+                toastr.error(viewerCreateJson.messages.validationKO);
             },
             errorPlacement: function(error, element) {
             	if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -152,8 +150,7 @@ var ViewerCreateController = function() {
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
             	
-                error1.hide();
-    			var infoBox=[];
+                var infoBox=[];
     			
     			var js = htmlEditor.getValue();
     			src = base_tpl;
@@ -180,18 +177,18 @@ var ViewerCreateController = function() {
 	    			}
 	    			
 					form1.ajaxSubmit({type: 'post', success : function(data){
-						
+						toastr.success(viewerCreateJson.messages.validationOK);
 						navigateUrl(data.redirect);
 						
 						}, error: function(data){
-							HeaderController.showErrorDialog(data.responseJSON.cause)
+							toastr.error(data.responseJSON.cause);
+							//HeaderController.showErrorDialog(data.responseJSON.cause)
 						}
 					})
     			}
 				else
 				{
-					success1.hide();
-					error1.show();	
+					toastr.error(viewerCreateJson.messages.validationKO);
 				}
 
 			}
@@ -267,7 +264,8 @@ var ViewerCreateController = function() {
 					
 				},
 				error : function(data, status, er) {
-					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+					 
+					toastr.error(er,'');
 				}
 			});
 			
@@ -376,7 +374,8 @@ var ViewerCreateController = function() {
 								
 							},
 							error : function(data, status, er) {
-								$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+								 
+								toastr.error(er,'');
 							}
 						});
 						
@@ -384,7 +383,7 @@ var ViewerCreateController = function() {
 						
 					},
 					error : function(data, status, er) {
-						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+						toastr.error(er,''); 
 					}
 				});
 			}
@@ -392,6 +391,28 @@ var ViewerCreateController = function() {
 			$('#resetBtn').on('click', function() {
 				cleanFields('viewer_create_form');
 			});
+			
+			// Fields OnBlur validation
+			
+			$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+				$('.form').validate().element('#' + event.target.id);                // checks form for validity
+			});		
+			
+			$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
+				if (event.currentTarget.getElementsByTagName('select')[0]){
+					$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
+				}
+			})
+				
+			$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
+				if ($(event.target).parent().next().val() !== ''){
+					$(event.target).parent().next().nextAll('span:first').addClass('hide');
+					$(event.target).parent().removeClass('tagsinput-has-error');
+				} else {
+					$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+					$(event.target).parent().addClass('tagsinput-has-error');
+				}   
+			})
 		},
 		
 		// REDIRECT
@@ -418,7 +439,7 @@ var ViewerCreateController = function() {
 					navigateUrl(data);
 				},
 				error : function(data, status, er) {
-					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+					toastr.error(er,'');
 				}
 			});
 		},
@@ -473,8 +494,8 @@ var ViewerCreateController = function() {
 		},
 		changeTechology : function(){
 			
-			if($("#longitude").val() == "" && $("#latitude").val() == "" && $("#height").val() == "" ){
-				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: viewerCreateJson.validations.error}); 
+			if($("#longitude").val() == "" && $("#latitude").val() == "" && $("#height").val() == "" ){				 
+				toastr.error(viewerCreateJson.validations.error,'');
 				$("#technology").val("");
 				return;
 			}
@@ -503,7 +524,8 @@ var ViewerCreateController = function() {
 					
 				},
 				error : function(data, status, er) {
-					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+				 
+					toastr.error(er,'');
 				}
 			});
 		},
@@ -562,13 +584,14 @@ var ViewerCreateController = function() {
 									
 								},
 								error : function(data, status, er) {
-									$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+									 
+									toastr.error(er,'');
 								}
 							});
 						
 					},
 					error : function(data, status, er) {
-						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+						toastr.error(er,'');
 					}
 				});
 				
@@ -610,7 +633,7 @@ var ViewerCreateController = function() {
 												
 											},
 											error : function(data, status, er) {
-												$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+												toastr.error(er,'');
 											}
 										});
 											
@@ -633,7 +656,7 @@ var ViewerCreateController = function() {
 												
 											},
 											error : function(data, status, er) {
-												$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+												toastr.error(er,'');
 											}
 										});
 											
@@ -658,7 +681,7 @@ var ViewerCreateController = function() {
 												
 											},
 											error : function(data, status, er) {
-												$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+												toastr.error(er,'');
 											}
 										});
 									  
@@ -683,7 +706,7 @@ var ViewerCreateController = function() {
 												
 											},
 											error : function(data, status, er) {
-												$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+												toastr.error(er,'');
 											}
 										});
 									  
@@ -705,7 +728,7 @@ var ViewerCreateController = function() {
 						
 					},
 					error : function(data, status, er) {
-						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+						toastr.error(er,'');
 					}
 				});
 				
@@ -775,7 +798,7 @@ var ViewerCreateController = function() {
 										
 									},
 									error : function(data, status, er) {
-										$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+										toastr.error(er,'');
 									}
 								});
 							  
@@ -800,7 +823,7 @@ var ViewerCreateController = function() {
 										
 									},
 									error : function(data, status, er) {
-										$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+										toastr.error(er,'');
 									}
 								});
 							  
@@ -829,7 +852,7 @@ var ViewerCreateController = function() {
 										
 									},
 									error : function(data, status, er) {
-										$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+										toastr.error(er,'');
 									}
 								});
 							  
@@ -865,7 +888,7 @@ var ViewerCreateController = function() {
 									
 								},
 								error : function(data, status, er) {
-									$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+									toastr.error(er,'');
 								}
 							});
 					  		
@@ -900,7 +923,7 @@ var ViewerCreateController = function() {
 									
 								},
 								error : function(data, status, er) {
-									$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+									toastr.error(er,'');
 								}
 							});
 					  		
@@ -913,7 +936,7 @@ var ViewerCreateController = function() {
 					
 				},
 				error : function(data, status, er) {
-					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+					toastr.error(er,'');
 				}
 			});
 

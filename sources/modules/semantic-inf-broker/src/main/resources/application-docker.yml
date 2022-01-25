@@ -50,7 +50,11 @@ onesaitplatform: #Config onesaitplatform specific
         operationTimeout: ${KUDUCLIENTOPTIMEOUT}
         adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
         socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
-   database.timeseries.timezone: ${TIMESERIES_TIMEZONE}
+   database.timeseries:
+      timezone: ${TIMESERIES_TIMEZONE}
+      mongodb.insert.lock.wait:
+        check.millis: ${TIMESERIES_INSERT_LOCK_CHECK_MILLIS}
+        timeout.millis: ${TIMESERIES_INSERT_LOCK_TIMEOUT_MILLIS}
 
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
@@ -73,6 +77,8 @@ spring: ## General Config
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://routerservice:${server.port}${server.servlet.contextPath}/
+      client.username: ${SBA_USERNAME}
+      client.password: ${SBA_SECRET}
    datasource:
      hikari:
       jdbc-url: ${CONFIGDBURL}${DBADDPROPS}

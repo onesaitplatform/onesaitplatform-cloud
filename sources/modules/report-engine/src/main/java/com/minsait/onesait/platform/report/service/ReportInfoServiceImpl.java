@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
+import com.minsait.onesait.platform.report.custom.CustomRepositoryService;
 import com.minsait.onesait.platform.report.exception.GenerateReportException;
 import com.minsait.onesait.platform.report.exception.ReportInfoException;
 
@@ -314,22 +315,23 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
 			ctx = new SimpleJasperReportsContext();
 			final FileRepositoryService fileRepository = new FileRepositoryService(ctx, path, false);
-			ctx.setExtensions(RepositoryService.class, Collections.singletonList(fileRepository));
+			final CustomRepositoryService repositoryService = new CustomRepositoryService(ctx);
+			ctx.setExtensions(RepositoryService.class, Arrays.asList(fileRepository, repositoryService));
 			ctx.setExtensions(PersistenceServiceFactory.class,
 					Collections.singletonList(FileRepositoryPersistenceServiceFactory.getInstance()));
+		} else {
+			ctx = new SimpleJasperReportsContext();
+			final CustomRepositoryService repositoryService = new CustomRepositoryService(ctx);
+			ctx.setExtensions(RepositoryService.class, Arrays.asList(repositoryService));
+
 		}
 		if (hasDatasource(jasperReport)) {
-			if (ctx != null) {
-				jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params);
-			} else {
-				jasperPrint = JasperFillManager.fillReport(jasperReport, params);
-			}
+
+			jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params);
+
 		} else {
-			if (ctx != null) {
-				jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params, new JREmptyDataSource());
-			} else {
-				jasperPrint = JasperFillManager.fillReport(jasperReport, params, new JREmptyDataSource());
-			}
+			jasperPrint = JasperFillManager.getInstance(ctx).fill(jasperReport, params, new JREmptyDataSource());
+
 		}
 		return export(jasperPrint, type);
 
@@ -363,10 +365,11 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		case XLSX:
 			exporter = new JRXlsxExporter();
 			break;
-
+			
 		case DOCX:
 			exporter = new JRDocxExporter();
 			break;
+
 		case PDF:
 		default:
 			exporter = new JRPdfExporter();

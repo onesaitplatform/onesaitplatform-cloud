@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public class MoquetteBroker {
 
 	@Autowired
 	private SubscriptorRepository subscriptorRepository;
-	
+
 	@Autowired
 	SecurityPluginManager securityPluginManager;
 
@@ -207,8 +207,10 @@ public class MoquetteBroker {
 
 			List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
 			for (Subscriptor subscriptor : subscriptors) {
-				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
-				final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
+						.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId(), null);
+				final Optional<IoTSession> session = securityPluginManager
+						.getSession(unsubscribeMessage.getSessionKey());
 				unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 			}
 			final MqttPublishMessage message = MqttMessageBuilders.publish()
@@ -232,8 +234,10 @@ public class MoquetteBroker {
 
 			List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
 			for (Subscriptor subscriptor : subscriptors) {
-				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
-				final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+				SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
+						.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId(), null);
+				final Optional<IoTSession> session = securityPluginManager
+						.getSession(unsubscribeMessage.getSessionKey());
 				unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 			}
 
@@ -263,8 +267,11 @@ public class MoquetteBroker {
 								for (String client : clients) {
 									List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(client);
 									for (Subscriptor subscriptor : subscriptors) {
-										SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator.generateRequestUnsubscribeMessage(null, subscriptor.getSubscriptionId());
-										final Optional<IoTSession> session = securityPluginManager.getSession(unsubscribeMessage.getSessionKey());
+										SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = SSAPMessageGenerator
+												.generateRequestUnsubscribeMessage(null,
+														subscriptor.getSubscriptionId(), null);
+										final Optional<IoTSession> session = securityPluginManager
+												.getSession(unsubscribeMessage.getSessionKey());
 										unsubscribe.process(unsubscribeMessage, getGatewayInfo(), session);
 									}
 								}

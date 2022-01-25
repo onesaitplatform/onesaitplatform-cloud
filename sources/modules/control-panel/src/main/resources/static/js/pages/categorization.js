@@ -12,7 +12,7 @@ var setActiveTree = function (id) {
 	}).success(function(response){
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+		toastr.error(messagesForms.operations.genOpError,errorMsg);
 		console.log("Error: ", response);}		
 	) 
 
@@ -20,23 +20,23 @@ var setActiveTree = function (id) {
 
 var deleteTree = function (id) {
 	$.confirm({
-		title: deleteBtn,
+		title: deleteTitle,
 		theme: 'light',
 		columnClass: 'medium',
 		content: deleteDialog,
 		draggable: true,
 		dragWindowGap: 100,
 		backgroundDismiss: true,
-		closeIcon: true,
+		style: 'red',
 		buttons: {
 			close: {
 				text: closeBtn,
-				btnClass: 'btn btn-sm btn-outline btn-circle blue',
+				btnClass: 'btn btn-outline blue dialog',
 				action: function (){} //GENERIC CLOSE.		
 			},
 			Ok: {
-				text: "Ok",
-				btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+				text: deleteBtn,
+				btnClass: 'btn btn-primary',
 				action: function(){	
 					$.ajax({url : "/controlpanel/categorization/delete",
 						data : {"id" : id},
@@ -45,9 +45,10 @@ var deleteTree = function (id) {
 							[csrf_header]: csrf_value
 					    }
 					}).success(function(response){
+						toastr.success(messagesForms.operations.genOpSuccess,'');
 						navigateUrl("/controlpanel/categorization/list");}
 					).fail(function(response, data){
-						$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+						toastr.error(messagesForms.operations.genOpError,errorMsg);
 						console.log("Error: ", response);}		
 					)
 				}											
@@ -69,7 +70,7 @@ var deactivateTree = function (id) {
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+		toastr.error(messagesForms.operations.genOpError,errorMsg);
 		console.log("Error: ", response);}		
 	) 
 
@@ -87,7 +88,7 @@ var publicTree = function (id) {
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+		toastr.error(messagesForms.operations.genOpError,errorMsg);
 		console.log("Error: ", response);}		
 	) 
 
@@ -105,7 +106,7 @@ var privateTree = function (id) {
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+		toastr.error(messagesForms.operations.genOpError,errorMsg);
 		console.log("Error: ", response);}		
 	) 
 
@@ -124,14 +125,18 @@ var create = function() {
 				[csrf_header]: csrf_value
 		    }
 		}).success(function(response, data){
+			toastr.success(messagesForms.validation.genFormSuccess,'');
 			navigateUrl("/controlpanel/categorization/list/");
 			}
 		).fail(function(response, data){
-			$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: response.responseText});
+			toastr.error(messagesForms.validation.genFormError,response.responseText);
 			}		
 		)
 	} else {
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: noName});
+		$('#identification').closest('.form-group').addClass('has-error');
+		$('#identificationerror').removeClass('hide');
+		$('#identificationerror').addClass('help-block help-block-error');
+		toastr.error(messagesForms.validation.genFormError,noName);
 	}
 }
 
@@ -147,7 +152,7 @@ var edit = function(id) {
 		navigateUrl("/controlpanel/categorization/list/");
 		}
 	).fail(function(response, data){
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+		toastr.error(messagesForms.validation.genFormError,errorMsg);
 		console.log("Error: ", response);
 		}		
 	)
@@ -220,7 +225,7 @@ var insertData = function(url) {
 		$('#selectElements').selectpicker('refresh'); 
 		}
 	).fail(function(response, data){
-		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+		toastr.error(messagesForms.operations.genOpError,errorMsg);
 		console.log("Error: ", response);}		
 	)
 }

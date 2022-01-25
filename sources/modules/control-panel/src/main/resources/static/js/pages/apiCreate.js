@@ -24,7 +24,15 @@ var ApiCreateController = function() {
         $('#showedImg').attr('src', e.target.result);
     }
 	
-
+	
+	function showHideImageTableOntology(){
+		if(typeof $('#api_authorizations > tbody > tr').length =='undefined' || $('#api_authorizations > tbody > tr').length == 0 || $('#api_authorizations > tbody > tr > td > input')[0].value==''){
+			$('#imageNoElementsOnTable').show();
+		}else{
+			$('#imageNoElementsOnTable').hide();
+		}
+	}
+6
 	// CONTROLLER PRIVATE FUNCTIONS	
     var showGenericErrorDialog= function(dialogTitle, dialogContent){		
 		logControl ? console.log('showErrorDialog()...') : '';
@@ -32,18 +40,16 @@ var ApiCreateController = function() {
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-bug',
 			title: dialogTitle,
 			theme: 'light',
 			content: dialogContent,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {				
 				close: {
 					text: Close,
-					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				}
 			}
@@ -56,7 +62,7 @@ var ApiCreateController = function() {
 			console.log('deleteAPIConfirmation() -> formId: '+ id);
 			
 			// no Id no fun!
-			if ( !id ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
+			if ( !id ) {$.alert({title: 'Error',theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
 			
 			// call  Confirm 
 			showConfirmDeleteDialog(id);	
@@ -67,11 +73,10 @@ var ApiCreateController = function() {
 		//i18 labels
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
-		var Title = headerReg.titleConfirm + ':';
+		var Title = headerReg.apiDelete;
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-warning',
 			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -79,16 +84,15 @@ var ApiCreateController = function() {
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
 					text: Close,
-					btnClass: 'btn btn-sm btn-circle blue btn-outline',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-sm btn-circle btn-primary btn-outline',
+					btnClass: 'btn btn-primary',
 					action: function(){ 
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -173,14 +177,21 @@ var ApiCreateController = function() {
         if (apiType && apiType.startsWith('INTERNAL_ONTOLOGY')) {
             // api sobre ontologias
         	ontologySelector.prop('disabled', false);
+        	ontologySelector.selectpicker('refresh');
         	$('#row-json').addClass('hide');
         	$('#row-operations').removeClass('hide');
+        	$('#divCUSTOMSQL').removeClass('hide');
+        	$('#row-panel-info').removeClass('hide');
             createOperationsOntology();
         }
         if(apiType && apiType.startsWith('EXTERNAL_FROM_JSON')) {
+        	ontologySelector.val( '' );
         	ontologySelector.prop('disabled', true);
+        	ontologySelector.selectpicker('refresh');
         	$('#row-operations').addClass('hide');
+        	$('#divCUSTOMSQL').addClass('hide');
         	$('#row-json').removeClass('hide');
+        	$('#row-panel-info').removeClass('hide');
         	myCodeMirror.refresh();
         }
     }
@@ -215,7 +226,7 @@ var ApiCreateController = function() {
 	}
 	
     function createOperationsOntology () {
-    	$('#description_GET_All_label').text("/");
+    	$('#description_GETAll_label').text("/");
     	$('#description_GET_label').text("/{id}");
         $('#description_POST_label').text("/");
         $('#description_PUT_label').text("/{id}");
@@ -262,11 +273,13 @@ var ApiCreateController = function() {
     		$('#description_' + button.name).val("");
     		$('#descOperation' + button.name).show();
     		$('#div' + button.name).prop('className', 'op_div_selected');
+    		$('#buttonOperacion' + button.name).find("i").toggleClass("fa-angle-down fa-angle-up");
     	} else if (button.className=='op_button_selected'){
     		button.className='op_button';
     		$('#description_' + button.name).val("");
     		$('#descOperation' + button.name).hide();
     		$('#div' + button.name).prop('className', 'op_div');
+    		$('#buttonOperacion' + button.name).find("i").toggleClass("fa-angle-up fa-angle-down");
     		removeOp(button);
     	}
     } 
@@ -305,7 +318,7 @@ var ApiCreateController = function() {
 		
 		//CLEAR OUT THE VALIDATION ERRORS
 		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+		$('#'+formId).find('input:text, input:password, input:file,input:text, select, textarea').each(function(){
 			// CLEAN ALL EXCEPTS cssClass "no-remote" persistent fields
 			if(!$(this).hasClass("no-remove")){$(this).val('');}
 		});
@@ -316,8 +329,16 @@ var ApiCreateController = function() {
 			$(this).selectpicker('deselectAll').selectpicker('refresh');
 		});
 		
-		// CLEAN ALERT MSG
-		$('.alert-danger').hide();
+		// CLEANING NUMBER INPUTS
+		$(':input[type="number"]').val('');
+		
+		// CLEANING CHECKS
+		$('input:checkbox').not('.no-remove').removeAttr('checked');
+		
+		// CLEANING tagsinput
+		$('.tagsinput').tagsinput('removeAll');
+		$('.tagsinput').prev().removeClass('tagsinput-has-error');
+		$('.tagsinput').nextAll('span:first').addClass('hide');
 		
 		//CLEAN CODEMIRROR
 		if (myCodeMirror.getValue() != ""){
@@ -363,6 +384,18 @@ var ApiCreateController = function() {
 		return true;
 	}
 	
+	var validateMetaInf = function () {
+    	if ($('#id_metainf').val() === ''){
+    		$('#id_metainf').prev().addClass('tagsinput-has-error');
+    		$('#id_metainf').nextAll('span:first').removeClass('hide');
+    		return false;
+		} else {
+    		$('#id_metainf').prev().removeClass('tagsinput-has-error');
+    		$('#id_metainf').nextAll('span:first').addClass('hide');
+    		return true;
+		}
+	}
+	
 	// FORM VALIDATION
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
@@ -370,9 +403,7 @@ var ApiCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#api_create_form');
-        var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
-		
+	
 		// set current language
 		currentLanguage = apiCreateReg.language || LANGUAGE;
 		
@@ -398,9 +429,8 @@ var ApiCreateController = function() {
 				datecreated:		{ date: true, required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit              
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+            	toastr.error(messagesForms.validation.genFormError,'');
+                validateMetaInf();
             },
             errorPlacement: function(error, element) {
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -418,8 +448,6 @@ var ApiCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-                success1.show();
-                error1.hide();
 				// date conversion to DDBB format.
                 var error = "";
                 var apiType = $('#apiType').val() ;
@@ -427,6 +455,10 @@ var ApiCreateController = function() {
 				if (!formatDates('#datecreated')){
 					error = "";
 				} 
+				
+				if (error == "" && !validateMetaInf()){
+					error = apiCreateReg.apimanager_gen_error;
+				}
 				
 				if (error == "" && operations.length==0 && apiType=="INTERNAL_ONTOLOGY") {
 					error = apiCreateReg.apimanager_noops_error;
@@ -438,10 +470,11 @@ var ApiCreateController = function() {
 					$('#postProcessFx').val(myCodeMirrorJsExternal.getValue());
 				}
 				if (error == ""){
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					form.attr("action", "?" + csrfParameter + "=" + csrfValue)
 					form.submit();
-				} else { 
-					showGenericErrorDialog('Error', error);
+				} else {
+					toastr.error(messagesForms.validation.genFormError,error);
 				}				
             }
         });
@@ -478,6 +511,13 @@ var ApiCreateController = function() {
 		  }
 		});
 		
+		$(".nav-tabs a[href='#tab_3']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			$.alert({title: 'INFO!', theme: 'light', content: apiCreateJson.validations.graviteeswagger});
+			return false;
+		  }
+		});
 		
 		// set current language and formats
 		currentLanguage = apiCreateReg.language || LANGUAGE[0];
@@ -492,6 +532,28 @@ var ApiCreateController = function() {
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('api_create_form');
 		});
+		
+		// Fields OnBlur validation
+		
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});		
+		
+		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
+			if (event.currentTarget.getElementsByTagName('select')[0]){
+				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
+			}
+		})
+			
+		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
+			if ($(event.target).parent().next().val() !== ''){
+				$(event.target).parent().next().nextAll('span:first').addClass('hide');
+				$(event.target).parent().removeClass('tagsinput-has-error');
+			} else {
+				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+				$(event.target).parent().addClass('tagsinput-has-error');
+			}   
+		})
 		
 		// INSERT MODE ACTIONS  (apiCreateReg.actionMode = NULL ) 
 		if ( apiCreateReg.actionMode === null){
@@ -626,6 +688,9 @@ var ApiCreateController = function() {
         	$('#image').val("");
          } else if ($('#image').prop('files')) {
         	 reader.readAsDataURL($("#image").prop('files')[0]);
+        	 $('#imageName').removeClass('description');
+        	 $('#imageName').text($("#image").prop('files')[0].name);
+        	 
          }
     }
     
@@ -662,6 +727,7 @@ var ApiCreateController = function() {
 			$('#authorizations').removeClass('hide');
 			$('#authorizations').attr('data-loaded',true);
     	}
+    	showHideImageTableOntology();
     }
     
     
@@ -724,12 +790,12 @@ var ApiCreateController = function() {
 						$("#users").selectpicker('refresh');
 						$('#authorizations').removeClass('hide');
 						$('#authorizations').attr('data-loaded',true);
+						showHideImageTableOntology();
 						
+						toastr.success(messagesForms.operations.genOpSuccess,'');
 					}
 				});	
-				
 			}	
-			
 		}
 		if (action  === 'delete'){
 			console.log('    |---> Deleting... ' + user + ' with authId:' + authorization );
@@ -751,9 +817,12 @@ var ApiCreateController = function() {
 					// refresh interface. TO-DO: EL this este fallará					
 					if ( response  ){ 
 						$(btn).closest('tr').remove();
+						showHideImageTableOntology();
+						
+						toastr.success(messagesForms.operations.genOpSuccess,'');
 					}
 					else{ 
-						$.alert({title: 'ALERT!', theme: 'dark', type: 'orange', content: 'VACIO!!'}); 
+						toastr.error(messagesForms.operations.genOpError,'Empty Response!');
 					}
 				}
 			});			
@@ -777,11 +846,11 @@ var ApiCreateController = function() {
         	autoCloseBrackets: true,
             matchBrackets: true,
             styleActiveLine: true,
-            theme:"elegant",
+            theme:"material",
             lineWrapping: true
 
         });
-		myCodeMirror.setSize("100%", 500);
+		myCodeMirror.setSize("100%", 300);
 		if(apiCreateReg.actionMode != null && apiCreateReg.apiType == 'EXTERNAL_FROM_JSON'){
 			try{
 				JSON.parse(myCodeMirror.getValue());
@@ -793,7 +862,49 @@ var ApiCreateController = function() {
 			myCodeMirror.refresh();
 		}
     };
-
+    
+    // Init Code Mirror Gravitee
+    var handleCodeMirrorGraviteeSwaggerDoc = function() {
+    	if( $('#graviteeDocumentationAce').length ){
+	        swaggerEditor = ace.edit("graviteeDocumentationAce");
+	        swaggerEditor.setTheme("ace/theme/xcode");
+	       	swaggerEditor.session.setMode("ace/mode/yaml");
+	    	swaggerEditor.setOptions({showInvisibles:true});
+	        swaggerEditor.setValue($('#graviteeDocumentation').val());
+	        swaggerEditor.gotoLine(1);
+    	}
+    }
+    
+    // Save changes Gravitee Swagger Documentation
+	var saveGraviteeSwaggerDocumentation = function(apiId, content) {
+		var url =  apiCreateReg.authorizationsPath + '/updateGraviteeSwaggerDoc';
+		var response = {};
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		$.ajax({
+			url: url,
+            headers: {
+            	[csrf_header]: csrf_value
+		    },
+			type:"POST",
+			async: true,
+			data: {"apiId": apiId,"content": content},			 
+			dataType:"json",
+			success: function(response,status) {
+				toastr.info(messagesForms.operations.genOpSuccess,apiCreateJson.graviteeSwaggerDocSaved);
+			},
+            error: function(data, status, error) {
+            	var errorMessage = error;
+				 if(typeof data.responseText !== 'undefined' ){
+					 errorMessage = data.responseText;
+				 }
+				 toastr.error(messagesForms.operations.genOpError,errorMessage);
+            }
+		});	
+						
+	};
+ 
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 		// SHOW ERROR DIALOG
@@ -865,6 +976,7 @@ var ApiCreateController = function() {
 				})
 				
 			}
+			handleCodeMirrorGraviteeSwaggerDoc();
 		},
 		
 		// INSERT AUTHORIZATION
@@ -906,8 +1018,20 @@ var ApiCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
 			
 			freeResource(id,url);
-		}
+		},
 		
+		// UPDATE GRAVITEE SWAGGER DOCUMENTATION
+		updateGraviteeSwaggerDocumentation: function(){
+			logControl ? console.log(LIB_TITLE + ': updateGraviteeSwaggerDocumentation()') : '';
+			if ( apiCreateReg.actionMode !== null){	
+				// UPDATE MODE ONLY 
+				var content = swaggerEditor.getValue();
+				if (content !== '') {
+					saveGraviteeSwaggerDocumentation(apiCreateReg.apiId, content);
+				}	
+			}
+		},
+
 	};
 }();
 

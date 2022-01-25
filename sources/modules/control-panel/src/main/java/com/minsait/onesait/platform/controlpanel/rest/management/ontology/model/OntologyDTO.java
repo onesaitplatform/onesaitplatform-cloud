@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import lombok.Setter;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({ @JsonSubTypes.Type(OntologyRestDTO.class), @JsonSubTypes.Type(OntologyTimeSeriesDTO.class),
-	@JsonSubTypes.Type(OntologyVirtualDTO.class), @JsonSubTypes.Type(OntologyKpiDTO.class)})
+	@JsonSubTypes.Type(OntologyVirtualDTO.class), @JsonSubTypes.Type(OntologyKpiDTO.class), @JsonSubTypes.Type(OntologyElasticDTO.class)})
 @NoArgsConstructor
 @AllArgsConstructor
 public class OntologyDTO {
@@ -65,6 +65,10 @@ public class OntologyDTO {
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic = false;
+
+	@Getter
+	@Setter
+	private boolean allowsCreateNotificationTopic = false;
 	
 	@Getter
 	@Setter
@@ -145,6 +149,7 @@ public class OntologyDTO {
 		this.userId = ontology.getUser().getUserId();
 		this.active = ontology.isActive();
 		this.allowsCreateTopic = ontology.isAllowsCreateTopic();
+		this.allowsCreateNotificationTopic = ontology.isAllowsCreateNotificationTopic();
 		this.allowsCypherFields = ontology.isAllowsCypherFields();
 		this.dataModelVersion = ontology.getDataModelVersion();
 		this.description = ontology.getDescription();
@@ -157,7 +162,6 @@ public class OntologyDTO {
 		this.rtdbDatasource = ontology.getRtdbDatasource();
 		this.rtdbToHdb = ontology.isRtdbToHdb();
 		this.rtdbToHdbStorage = ontology.getRtdbToHdbStorage();
-		//this.topic = ontology.getTopic();
 		this.xmlDiagram = ontology.getXmlDiagram();
 		this.dataModel = DataModelDTO.fromDataModel(ontology.getDataModel());
 		this.authorizations = new ArrayList<>();

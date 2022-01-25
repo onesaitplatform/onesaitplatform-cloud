@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ public class XSSWhiteList {
 		mWhiteList.put("/configurations/update", new HashSet<>(Arrays.asList("ymlConfig")));
 		mWhiteList.put("/rule-domains", new HashSet<>(Arrays.asList("DRL")));
 		mWhiteList.put("/api/mail/mail", new HashSet<>(Arrays.asList("htmlMessage", "message", "attachment")));
+		mWhiteList.put("/themes/create", new HashSet<>(Arrays.asList("css", "js")));
+		mWhiteList.put("/themes/edit", new HashSet<>(Arrays.asList("css", "js")));
 
 	}
 

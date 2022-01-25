@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,8 @@ public class ThemesController {
 	private static final String LOGIN_TITLE_ES = editItems.LOGIN_TITLE_ES.toString();
 	private static final String FOOTER_TEXT = editItems.FOOTER_TEXT.toString();
 	private static final String FOOTER_TEXT_ES = editItems.FOOTER_TEXT_ES.toString();
+	private static final String CSS = editItems.CSS.toString();
+	private static final String JS = editItems.JS.toString();
 	private static final String THEME = "theme";
 	private static final String OK = "{\"status\" : \"ok\"}";
 	private static final String FAIL = "{\"status\" : \"fail\"}";
@@ -201,6 +203,9 @@ public class ThemesController {
 		return new ResponseEntity<>("{}", HttpStatus.OK);
 	}
 
+	
+	
+	
 	private void populateJsonTheme(ThemesDTO theme) {
 		final JSONObject json = new JSONObject();
 		theme.setJson(json);
@@ -226,6 +231,9 @@ public class ThemesController {
 			} else {
 				theme.getJson().put(HEADER_IMG, theme.getHeaderImage64());
 			}
+			theme.getJson().put(CSS,theme.getCss());
+			theme.getJson().put(JS,theme.getJs());
+			
 		} catch (final Exception e) {
 			log.error("Error creating Json Object: " + e.getMessage());
 		}
@@ -264,6 +272,12 @@ public class ThemesController {
 					break;
 				case FOOTER_TEXT_ES:
 					themeDTO.setFooterTextEs(json.get(FOOTER_TEXT_ES).toString());
+					break;
+				case CSS:
+					themeDTO.setCss(json.get(CSS).toString());
+					break;
+				case JS:
+					themeDTO.setJs(json.get(JS).toString());
 					break;
 				default:
 					break;

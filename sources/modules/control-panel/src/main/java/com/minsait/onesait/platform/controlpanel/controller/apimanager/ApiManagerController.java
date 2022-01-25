@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,6 +106,7 @@ public class ApiManagerController {
 		return "apimanager/show";
 	}
 
+
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	public String list(Model model, @RequestParam(required = false) String apiId,
@@ -142,6 +143,7 @@ public class ApiManagerController {
 					authenticationObject);
 			if (!StringUtils.isEmpty(postProcessFx))
 				apiManagerService.updateApiPostProcess(apiId, postProcessFx);
+
 
 			return "redirect:/apimanager/show/" + utils.encodeUrlPathSegment(apiId, request);
 		} catch (final Exception e) {
@@ -192,6 +194,7 @@ public class ApiManagerController {
 			final Api api = apiManagerService.getById(id);
 			if (null != api) {
 				apiManagerService.removeAPI(id);
+				
 			}
 
 		} catch (final RuntimeException e) {
@@ -309,11 +312,38 @@ public class ApiManagerController {
 		}
 	}
 
+
+
 	@GetMapping(value = "/freeResource/{id}")
 	public @ResponseBody void freeResource(@PathVariable("id") String id) {
 		resourcesInUseService.removeByUser(id, utils.getUserId());
 		log.info("free resource", id);
 	}
 
+	@PostMapping(value = "/clone")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public @ResponseBody ResponseEntity<String> cloneApi(Model model, @RequestParam String id,
+			@RequestParam String identification, RedirectAttributes redirect) {
+		try {
+						
+			final String apiId = apiManagerService.cloneApi(id, identification, utils.getUserId());
+
+			return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
+		} catch (final Exception e) {
+			log.error("Error clonning API : {}", e);
+			final Map<String, String> response = new HashMap<>();
+			response.put("status", "error");
+			response.put("cause", e.getMessage());
+			return new ResponseEntity<>(response.toString(), HttpStatus.BAD_REQUEST);
+		}
+	}	
+	
+	
+	
+	
+	@GetMapping(value = "/token/list")
+	public @ResponseBody List<String> getUserTokens() {
+		return (apiManagerHelper.getUserTokenList());
+	}
 
 }

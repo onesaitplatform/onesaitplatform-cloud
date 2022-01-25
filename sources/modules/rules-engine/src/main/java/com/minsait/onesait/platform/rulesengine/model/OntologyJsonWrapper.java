@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class OntologyJsonWrapper {
 
 	@SuppressWarnings("unchecked")
 	public OntologyJsonWrapper(String jsonString) {
+		log.debug("New OntologyJsonWrapper object created with json: {}", jsonString);
 		try {
 			json = mapper.readValue(jsonString, new TypeReference<Map<String, Object>>() {
 			});
@@ -51,15 +52,16 @@ public class OntologyJsonWrapper {
 			}
 		} catch (final Exception e) {
 			log.error("Error deserializing JSON String, returning original json");
-			// throw new GenericRuntimeOPException("Invalid JSON input");
 		}
 	}
 
 	public Object getProperty(String key) {
+		log.debug("OntologyJsonWrapper -- getProperty: {} -- value: {}", key, json.get(key));
 		return json.get(key);
 	}
 
 	public void setProperty(String key, Object value) {
+		log.debug("OntologyJsonWrapper -- setProperty: {} -- value: {}", value, key);
 		json.put(key, value);
 	}
 
@@ -74,6 +76,10 @@ public class OntologyJsonWrapper {
 
 	public void copyInputToOutput(OntologyJsonWrapper input) {
 		setJson(input.getJson());
+	}
+
+	public void printValues() {
+		log.info("OntologyJsonWrapper value: " + toJson());
 	}
 
 	public String toJson() {

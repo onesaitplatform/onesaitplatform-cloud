@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 	@Autowired
 	private DroolsRuleService droolsRuleService;
 
-	private static final String GLOBAL_IDENTIFIER_INPUT = "input";
 	private static final String GLOBAL_IDENTIFIER_OUTPUT = "output";
 	public static final String TEMP_JAR_PREFIX = "temp";
 
@@ -59,9 +58,10 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 	public String executeRules(String ontology, String jsonInput, String user) {
 		final OntologyJsonWrapper input = new OntologyJsonWrapper(jsonInput);
 		final KieSession session = kieServicesManager.getKieSession(user);
-		session.setGlobal(GLOBAL_IDENTIFIER_INPUT, input);
+		session.insert(input);
 		final OntologyJsonWrapper output = new OntologyJsonWrapper();
 		session.setGlobal(GLOBAL_IDENTIFIER_OUTPUT, output);
+		session.getGlobals();
 		try {
 			final int n = session.fireAllRules();
 			log.debug("Fired {} rules for ontology {} and user {}", n, ontology, user);
@@ -116,7 +116,7 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 		}
 
 		final OntologyJsonWrapper input = new OntologyJsonWrapper(jsonInput);
-		session.setGlobal(GLOBAL_IDENTIFIER_INPUT, input);
+		session.insert(input);
 		final OntologyJsonWrapper output = new OntologyJsonWrapper();
 		session.setGlobal(GLOBAL_IDENTIFIER_OUTPUT, output);
 		try {

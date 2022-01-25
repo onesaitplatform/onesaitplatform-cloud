@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.dto.PipelineForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.PipelineUserAccess;
@@ -466,6 +467,16 @@ public class DataflowServiceImpl implements DataflowService {
 		return getPipelines(user);
 	}
 
+	@Override
+	public List<String> getIdentificationByUser(String userId) {
+		final User user = getUserById(userId);
+		if (user.isAdmin()) {
+			return pipelineRepository.findIdentifications();
+		} else {
+			return pipelineRepository.findIdentificationsByUserAndAccess(user);
+		}
+	}
+
 	private List<Pipeline> getPipelines(final User user) {
 		if (user.isAdmin()) {
 			return pipelineRepository.findAll();
@@ -756,7 +767,12 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Override
 	public ResponseEntity<String> getPipelineConfiguration(String userId, String pipelineIdentification) {
-		final Pipeline pipeline = getPipelineByIdentification(pipelineIdentification);
+		Pipeline pipeline = null;
+		try {
+			pipeline = getPipelineByIdentification(pipelineIdentification);
+		} catch (NotFoundException e) {
+			throw new BadRequestException(e.getMessage() + ": " + pipelineIdentification);
+		}
 		final User user = getUserById(userId);
 		checkUserViewPipelineAccess(pipeline, user);
 		final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
@@ -1312,6 +1328,34 @@ public class DataflowServiceImpl implements DataflowService {
 		}
 		
 		return pipelineList;
+	}
+
+	@Override
+	public ResponseEntity<String> getPipelineCommittedOffsets(String userId, String pipelineIdentification) {
+		final Pipeline pipeline = getPipelineByIdentification(pipelineIdentification);
+		final User user = getUserById(userId);
+		checkUserViewPipelineAccess(pipeline, user);
+
+		final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
+		final String basePath = pipeline.getInstance().getUrl();
+		final ResponseEntity<String> response = StreamsetsApiWrapper.getCommittedOffsets(rt, headers, basePath, pipeline.getIdstreamsets());
+		
+		if (response.getStatusCode() == HttpStatus.OK) {
+			return response;
+		} else {
+			throw new BadRequestException("Error getting pipeline committed offsets from streamsets. Status: "
+					+ response.getStatusCode() + " Response: " + response.getBody());
+		}
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification) {
+		final User user = getUserById(userId);
+		if (user.isAdmin()) {
+			return pipelineRepository.findAllDto(identification);
+		} else {
+			return pipelineRepository.findDtoByUserAndPermissions(user, identification);
+		}
 	}
 
 }

@@ -14,6 +14,10 @@ var DashboardConfController = function() {
 	var myVSJS;
 	var myVSJS_isfullscreen;
 	var timerWrite;
+	
+	var globalStylesValue = "";
+	var initialStyleValue = '{"header":{"title":"My Dashboard","enable":true,"height":72,"logo":{"height":48},"backgroundColor":"#FFFFFF","textColor":"#060E14","iconColor":"#060E14","pageColor":"#2e6c99"},"navigation":{"showBreadcrumbIcon":true,"showBreadcrumb":true},"pages":[{"title":"New Page","icon":"apps","background":{"file":[]},"layers":[{"gridboard":[{}],"title":"baseLayer","$$hashKey":"object:23"}],"selectedlayer":0,"combinelayers":false,"$$hashKey":"object:4"}],"gridOptions":{"gridType":"fit","compactType":"none","margin":3,"outerMargin":true,"mobileBreakpoint":640,"minCols":20,"maxCols":100,"minRows":20,"maxRows":100,"maxItemCols":5000,"minItemCols":1,"maxItemRows":5000,"minItemRows":1,"maxItemArea":25000,"minItemArea":1,"defaultItemCols":4,"defaultItemRows":4,"fixedColWidth":250,"fixedRowHeight":250,"enableEmptyCellClick":false,"enableEmptyCellContextMenu":false,"enableEmptyCellDrop":true,"enableEmptyCellDrag":false,"emptyCellDragMaxCols":5000,"emptyCellDragMaxRows":5000,"draggable":{"delayStart":100,"enabled":true,"ignoreContent":true,"dragHandleClass":"drag-handler"},"resizable":{"delayStart":0,"enabled":true},"swap":false,"pushItems":true,"disablePushOnDrag":false,"disablePushOnResize":false,"pushDirections":{"north":true,"east":true,"south":true,"west":true},"pushResizeItems":false,"displayGrid":"none","disableWindowResize":false,"disableWarnings":false,"scrollToNewItems":true,"api":{}},"interactionHash":{"1":[]}}';       
+
 	// CONTROLLER PRIVATE FUNCTIONS	
 	
 	
@@ -24,7 +28,7 @@ var DashboardConfController = function() {
 		console.log('deleteDashboardConfConfirmation() -> formId: '+ dashboardconfId);
 		
 		// no Id no fun!
-		if ( !dashboardconfId ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO INITIAL DASHBOARD CONF SELECTED!'}); return false; }
+		if ( !dashboardconfId ) {toastr('NO INITIAL DASHBOARD CONF SELECTED!',''); return false; }
 		
 		logControl ? console.log('deleteDashboardConfConfirmation() -> formAction: ' + $('.delete-gadget').attr('action') + ' ID: ' + $('.delete-gadget').attr('userId')) : '';
 		
@@ -60,8 +64,8 @@ var DashboardConfController = function() {
         
         if(!$("#id").val() && ($('#templateCode').text().trim().length == 0 && $('#templateCodeJS').text().trim().length == 0)){
         	
-        	myTextArea.value = "";
-        	myTextAreaJS.value = '{"header":{"title":"My Dashboard","enable":true,"height":72,"logo":{"height":48},"backgroundColor":"#FFFFFF","textColor":"#060E14","iconColor":"#060E14","pageColor":"#2e6c99"},"navigation":{"showBreadcrumbIcon":true,"showBreadcrumb":true},"pages":[{"title":"New Page","icon":"apps","background":{"file":[]},"layers":[{"gridboard":[{}],"title":"baseLayer","$$hashKey":"object:23"}],"selectedlayer":0,"combinelayers":false,"$$hashKey":"object:4"}],"gridOptions":{"gridType":"fit","compactType":"none","margin":3,"outerMargin":true,"mobileBreakpoint":640,"minCols":20,"maxCols":100,"minRows":20,"maxRows":100,"maxItemCols":5000,"minItemCols":1,"maxItemRows":5000,"minItemRows":1,"maxItemArea":25000,"minItemArea":1,"defaultItemCols":4,"defaultItemRows":4,"fixedColWidth":250,"fixedRowHeight":250,"enableEmptyCellClick":false,"enableEmptyCellContextMenu":false,"enableEmptyCellDrop":true,"enableEmptyCellDrag":false,"emptyCellDragMaxCols":5000,"emptyCellDragMaxRows":5000,"draggable":{"delayStart":100,"enabled":true,"ignoreContent":true,"dragHandleClass":"drag-handler"},"resizable":{"delayStart":0,"enabled":true},"swap":false,"pushItems":true,"disablePushOnDrag":false,"disablePushOnResize":false,"pushDirections":{"north":true,"east":true,"south":true,"west":true},"pushResizeItems":false,"displayGrid":"none","disableWindowResize":false,"disableWarnings":false,"scrollToNewItems":true,"api":{}},"interactionHash":{"1":[]}}';       
+        	myTextArea.value = globalStylesValue;
+        	myTextAreaJS.value = initialStyleValue;       
         }
         
         myVSHTML = monaco.editor.create(htmlelement, {
@@ -208,9 +212,7 @@ var DashboardConfController = function() {
 		// http://docs.jquery.com/Plugins/Validation
 
 		var form1 = $('#dashboardconf_form');
-		var error1 = $('.alert-danger');
-		var success1 = $('.alert-success');
-
+		
 		// set current language
 		currentLanguage = templateCreateReg.language || LANGUAGE;
 
@@ -249,8 +251,7 @@ var DashboardConfController = function() {
 																	// alert on
 																	// form
 																	// submit
-						success1.hide();
-						error1.show();						
+					toastr.error(messagesForms.validation.genFormError,'');				
 					},
 					errorPlacement : function(error, element) {
 						if (element.is(':checkbox')) {
@@ -278,24 +279,48 @@ var DashboardConfController = function() {
 					},
 					// ALL OK, THEN SUBMIT.
 					submitHandler : function(form) {
-						 success1.show();
-			                error1.hide();
+							toastr.success(messagesForms.validation.genFormSuccess,'');
 							form.submit();
 					}
 				});
 	}
 	
-	
-	
-	
-	
-	
 
+	// CLEAN FIELDS FORM
+	var cleanFields = function (formId) {
+		
+		//CLEAR OUT THE VALIDATION ERRORS
+		$('#'+formId).validate().resetForm(); 
+		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
+			if(!$(this).hasClass("no-remove")){$(this).val('');}
+		});
+        
+        myVSHTML.getModel().setValue(globalStylesValue);
+        myVSHTML.trigger(globalStylesValue, 'editor.action.formatDocument')
+        myVSJS.getModel().setValue(initialStyleValue);
+        myVSJS.trigger(initialStyleValue, 'editor.action.formatDocument')
+        
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+	}
 	
+	// INIT TEMPLATE ELEMENTS
+	var initTemplateElements = function(){
+		logControl ? console.log('initTemplateElements() -> resetForm') : '';		
+		// Reset form
+		$('#resetBtn').on('click',function(){ 
+			cleanFields('dashboardconf_form');
+		});	
+		
+		// Fields OnBlur validation
+		
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});		
 	
-	
-	
-	
+		
+	}
 	
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
@@ -311,6 +336,7 @@ var DashboardConfController = function() {
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			handleVS();
 			handleValidation();
+			initTemplateElements();
 		},
 		
 		// REDIRECT

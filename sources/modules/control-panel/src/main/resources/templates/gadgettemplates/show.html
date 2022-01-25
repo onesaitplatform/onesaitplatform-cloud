@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -97,38 +97,43 @@
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{gadgettemplates.show}">Show Gadget Template</span></h1>
 				<!-- END PAGE TITLE-->			
-				
-				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
-					
-						<div class="portlet light container">
-							<div class="portlet-title">
-								<div class="caption">
-									
-									<span  class="caption-subject" th:text="#{gadgettemplates.show}" > Show Gadget Template </span>
-									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>									
-								<div class="tools hide">
-									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
-									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>
-								<div class="actions hide">
-									<!-- ACTION INDICATORs -->
-									<span th:if="${gadgetTemplate.id} == null"
-										class="label label-success label-sm uppercase"><i
-										class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
-									<span th:if="${gadgetTemplate.id} != null"
-										class="label label-warning label-sm uppercase bold "><i
-										class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
-								</div>
-								
-								
+				<div id="header">
+					<div class="row pageCreateHeader">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="margin-top-4">
+								<span th:if="${gadgetTemplate.id} == null" th:text="#{gadgettemplates.create}">Create Gadget Template</span>
+					   			<span th:if="${gadgetTemplate.id} != null" th:text="#{gadgettemplates.update}">Update Gadget Template</span>
 							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
+						</div>
+						
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="pull-right">
 								
-								<div class="row">	
-									<div class="col-md-12 margin-bottom-20">									
+								<!-- CANCEL -->											
+								<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+								<span class="sep no-border"  ></span>
+									
+								<!-- UPDATE -->
+								<button   id="goEdit" type="button" class="btn btn-primary btn-primary-save" name="edit"  th:value="#{gen.editBtn}" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgettemplates/update/} + ${gadgetTemplate.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit</span></button>								
+							</div>
+							
+						</div>
+					</div>
+				</div>
+					
+				<!-- MAIN ROW -->
+				<div class="mainPanel">
+						<div class="row main">
+										<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+											<span th:text="#{gen.generalInformation}">General Information</span>
+									</div>
+										<div class="col-md-3 col-sm-3 col-xs-3">
+											<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+										</div>
+									</div>
+								<div class="row main">	
+																		
 										<form role="form" id="gadget_create_form" th:object="${gadgetTemplate}" method="post" class="form">
 									  		<!-- FORM ACTIONS FOR INSERT-->
 											<input th:if="${gadgetTemplate.id} == null" type="hidden" name="action" th:value="@{/gadgettemplates/create}"/>
@@ -141,11 +146,10 @@
 									 			<div class="row">											
 													<div class="col-md-3 col-sm-12">
 														<div class="form-group">
-															 <label class="control-label"  th:text="#{gadgettemplates.identification} + ':'">Identification</label><span class="required"> (*)</span>
-															<div class="input-icon ">
-																<i class="fa fa-credit-card"></i>
+															 <label class="control-label"  th:text="#{gadgettemplates.identification} ">Identification</label><span class="required"> *</span>
+														
 																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gadgettemplates.identification}" />
-															</div>
+															
 														</div>
 													</div>
 													<div class="col-md-2 col-sm-12">
@@ -156,7 +160,7 @@
 													</div>
 													<div class="col-md-5 col-sm-12">
 														<div class="form-group">
-															<label class="control-label"  th:text="#{gadgettemplates.description} + ':'">Description</label><span class="required"> (*)</span>
+															<label class="control-label"  th:text="#{gadgettemplates.description} ">Description</label><span class="required"> *</span>
 																														
 																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{description}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
 															
@@ -229,27 +233,14 @@
 											<!-- VIEWER -->
 											<div style="height:400px;width:100%;border:none" id="icontent"></div>
 											
-											<div class="clearfix"></div>
-											<div style="margin-top:20px" class="form-actions">
-												<div class="pull-left">
-													<!-- CANCEL  -->
-													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-												</div>
-												<div class="pull-right">
-													<!-- UPDATE -->
-													<button id="goEdit" type="button" class="btn btn-circle btn-outline btn-primary " name="edit" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgettemplates/update/} + ${gadgetTemplate.id} + '\');'"><span th:text="#{gen.editBtn}" > Edit</span></button>
-
-												</div>
-											</div>
+										
 											
 											
 										</div>
 									</form>																					
-								</div>
+								 
 							</div>
-						</div>
-					</div>  <!-- END PORTLET BASIC LIGHT -->							
-				</div><!-- END COL-12 -->						
+									
 			</div><!-- END MAIN ROW -->				
 		</div><!-- END CONTENT BODY -->
 	</div><!-- END CONTENT page-content-wrapper -->		

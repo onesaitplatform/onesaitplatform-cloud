@@ -19,8 +19,12 @@ onesaitplatform:
       mongodb-quasar-compile: true
       mongodb-quasar-allow-mapreduce: true
       elasticsearch:
+        username: admin
+        password: admin        
         sql:
           endpoint: http://elasticdb:9200
+          queryPath: /_nlpcn/sql
+          baseQueryObject: sql 
         dump:
           path: /tmp/export/
           elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
@@ -30,6 +34,9 @@ onesaitplatform:
             host: elasticdb
             port: 9200
             protocol: http
+        defaults:
+          replicas: 0
+          shards: 5
     files:
       allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000
@@ -37,3 +44,9 @@ onesaitplatform:
       session-expiration: !!java.lang.Long 600000
     audit:
       ignore: false
+      hash: false
+      signed: false
+      keystorePath: /usr/local/add_keystore.p12
+      keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
+    controlpanel:
+      maxSessionsPerUser: 10

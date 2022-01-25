@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyLeaveMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.audit.aop.MessageAuditProcessor;
@@ -39,13 +40,13 @@ public class LeaveAuditProcessor implements MessageAuditProcessor {
 			GatewayInfo info) {
 		log.debug("Processing leave message");
 		String messageText = "Leave message by sessionKey  " + message.getSessionKey();
-
+		final SSAPBodyLeaveMessage leaveMessage = (SSAPBodyLeaveMessage) message.getBody();
 		if (session != null) {
 			messageText += " and user " + session.getUserID();
 		}
 		return IotBrokerAuditEventFactory.builder().build().createIotBrokerAuditEvent(
-				com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType.LEAVE, messageText, session,
-				info);
+				com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType.LEAVE, messageText, session, info,
+				leaveMessage.getTags());
 	}
 
 	@Override

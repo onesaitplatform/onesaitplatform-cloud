@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,6 @@ public class OntologyBusinessServiceImplTest {
 		ontology.setIdentification("test");
 		final OntologyConfiguration config = new OntologyConfiguration();
 		config.setAllowsCreateTable(true);
-		config.setDatasource(RtdbDatasource.VIRTUAL.name());
 		final String userId = "me";
 
 		when(ontologyService.isIdValid(any())).thenReturn(true);
@@ -111,13 +110,12 @@ public class OntologyBusinessServiceImplTest {
 	}
 
 	@Test()
-	public void given_OntologyDataAndUser_When_OntologyWithExternalTableFailsCreatingTheOntologyAndThenItFailsCleaningTheExternalTable_Then_TheAnExceptionIsThrown() {
+	public void given_OntologyDataAndUser_When_OntologyWithExternalTableFailsCreatingTheOntology_Then_TheAnExceptionIsThrown() {
 		final Ontology ontology = new Ontology();
 		ontology.setRtdbDatasource(RtdbDatasource.VIRTUAL);
 		ontology.setIdentification("test");
 		final OntologyConfiguration config = new OntologyConfiguration();
 		config.setAllowsCreateTable(true);
-		config.setDatasource(RtdbDatasource.VIRTUAL.name());
 		final String userId = "me";
 
 		when(ontologyService.isIdValid(any())).thenReturn(true);
@@ -128,7 +126,7 @@ public class OntologyBusinessServiceImplTest {
 			service.createOntology(ontology, userId, config);
 		} catch (final OntologyBusinessServiceException e) {
 			assertTrue("An exception should be thrown when it is not possible to undo the external table creation",
-					e.getError().equals(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR_UNCLEAN));
+					e.getError().equals(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR));
 		}
 	}
 

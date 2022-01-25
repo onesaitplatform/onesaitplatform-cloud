@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DataToDB {
 
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.ProjectExport";
-	private static final String PIPELINE = "com.minsait.onesait.platform.config.model.Pipeline";
-	private static final String NOTEBOOK = "com.minsait.onesait.platform.config.model.Notebook";
 	private static final String PROJECT_RESOURCE_ACCESS = "com.minsait.onesait.platform.config.model.ProjectResourceAccessExport";
 	private static final String WARN_MSG = "The entity is already in the database, nothing was done";
 
@@ -177,6 +175,7 @@ public class DataToDB {
 									instanceData.put("projects", projects);
 								}
 							}
+
 							final MigrationErrors entityErrors = new MigrationErrors();
 							final EntityCache visited = new EntityCache();
 							final Object instance = getEntityFromData(clazz, id, data, em, entityErrors, visited,

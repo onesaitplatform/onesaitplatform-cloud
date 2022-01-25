@@ -28,6 +28,7 @@ onesaitplatform:
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    authentication:
+      provider: ${AUTH_PROVIDER}
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
@@ -76,6 +77,8 @@ spring:
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://oauthservice:${server.port}${server.servlet.contextPath}/
+      client.username: ${SBA_USERNAME}
+      client.password: ${SBA_SECRET}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:

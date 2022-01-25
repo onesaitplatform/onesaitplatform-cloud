@@ -21,6 +21,12 @@ onesaitplatform:
       elasticsearch:
         sql:
           endpoint: http://localhost:9200
+          #elasticSearch with nlpcn
+          queryPath: /_nlpcn/sql
+          baseQueryObject: sql 
+          #Opendistro SQL
+          #queryPath: /_opendistro/_sql?format=json
+          #baseQueryObject: query
         dump:
           path: /tmp/export/
           elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
@@ -30,6 +36,9 @@ onesaitplatform:
             host: localhost
             port: 9200
             protocol: http
+        defaults:
+          replicas: 0
+          shards: 5
     files:
       allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000
@@ -37,3 +46,9 @@ onesaitplatform:
       session-expiration: !!java.lang.Long 600000
     audit:
       ignore: false
+      hash: false
+      signed: false
+      keystorePath: /usr/local/add_keystore.p12
+      keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
+    controlpanel:
+      maxSessionsPerUser: 10

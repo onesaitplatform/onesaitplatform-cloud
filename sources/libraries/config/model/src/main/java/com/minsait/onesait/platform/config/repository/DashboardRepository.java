@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.dto.DashboardForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -86,21 +87,28 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 	List<Dashboard> findByUserAndDescriptionContaining(User user, String description);
 
 	List<Dashboard> findAllByOrderByIdentificationAsc();
-	
+
+	@Query("SELECT o.identification FROM Dashboard AS o ORDER BY o.identification ASC")
+	List<String> findAllIdentificationsByOrderByIdentificationAsc();
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DASHBOARD', 0) FROM Dashboard AS o WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findAllDto(@Param("identification") String identification,
+			@Param("description") String description);
+
 	List<Dashboard> findAllByOrderByIdentificationDesc();
-	
+
 	List<Dashboard> findAllByOrderByCreatedAtAsc();
-	
+
 	List<Dashboard> findAllByOrderByCreatedAtDesc();
-	
+
 	List<Dashboard> findAllByOrderByUpdatedAtAsc();
-	
+
 	List<Dashboard> findAllByOrderByUpdatedAtDesc();
 
 	List<Dashboard> findByIdentificationAndDescriptionAndUser(String identification, String description, User user);
 
 	List<Dashboard> findByIdentificationAndDescription(String identification, String description);
-	
+
 	Dashboard findByIdentificationOrId(String identification, String id);
 
 	@Query("SELECT new  com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
@@ -110,6 +118,18 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 	List<DashboardForList> findByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(
 			@Param("user") User user, @Param("identification") String identification,
 			@Param("description") String description);
+
+	@Query("SELECT o.identification FROM Dashboard AS o " + "WHERE (o.user=:user OR "
+			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo "
+			+ "WHERE uo.user=:user)) ORDER BY o.identification ASC")
+	List<String> findIdentificationsByUserAndPermissions(@Param("user") User user);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DASHBOARD', 0)"
+			+ "FROM Dashboard AS o " + "WHERE (o.user=:user OR " + "o.id IN (SELECT uo.dashboard.id "
+			+ "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "(o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
+			@Param("identification") String identification, @Param("description") String description);
 
 	@Query("SELECT new  com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
 			+ "FROM Dashboard AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
@@ -138,6 +158,11 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 			+ "o.id IN (SELECT uo.dashboard.id  FROM DashboardUserAccess AS uo  WHERE uo.user=:user)) "
 			+ " ORDER BY o.identification ASC")
 	List<Dashboard> findByUserPermissionOrderByIdentificationAsc(@Param("user") User user);
+
+	@Query("SELECT o FROM Dashboard AS o  WHERE (o.user=:user OR "
+			+ "o.id IN (SELECT uo.dashboard.id  FROM DashboardUserAccess AS uo  WHERE uo.user=:user)) "
+			+ " ORDER BY o.identification ASC")
+	List<Dashboard> findByUserPermission(@Param("user") User user);
 
 	@Query("SELECT o FROM Dashboard AS o  WHERE (o.isPublic=TRUE OR o.user=:user OR "
 			+ "o.id IN (SELECT uo.dashboard.id  FROM DashboardUserAccess AS uo  WHERE uo.user=:user)) "
@@ -173,8 +198,7 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 	@Transactional
 	@Query("UPDATE Dashboard d SET d.headerlibs = :headerlibs WHERE d.id = :id")
 	void saveHeaderLibs(@Param("headerlibs") String headerlibs, @Param("id") String id);
-	
-	Dashboard findByUserAndIdentification(User user, String identification);
 
+	Dashboard findByUserAndIdentification(User user, String identification);
 
 }

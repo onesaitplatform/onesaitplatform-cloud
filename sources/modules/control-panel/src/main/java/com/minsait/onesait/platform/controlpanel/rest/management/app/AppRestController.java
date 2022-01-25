@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppRoleListOauth;
+import com.minsait.onesait.platform.config.model.AppUserListOauth;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.AppUserRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
@@ -97,9 +98,9 @@ public class AppRestController {
 	private UserService userService;
 	@Autowired
 	private ObjectMapper mapper;
-
 	@Autowired
 	private AppUserRepository appUserRepository;
+	@Autowired(required = false)
 
 	@ApiOperation(value = "Get single realm info")
 	@GetMapping("/{identification}")
@@ -273,7 +274,7 @@ public class AppRestController {
 		}
 		try {
 			realm.getRoles().stream().map(r -> realmRole2AppRole(r, app)).forEach(r -> app.getAppRoles().add(r));
-		} catch (AppServiceException e) {
+		} catch (final AppServiceException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		appService.createApp(app);
@@ -331,7 +332,6 @@ public class AppRestController {
 			if (null != realm.getTokenValiditySeconds()) {
 				appDb.setTokenValiditySeconds(realm.getTokenValiditySeconds());
 			}
-
 			appService.updateApp(appDb);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (final RuntimeException e) {
@@ -406,7 +406,7 @@ public class AppRestController {
 		final User user = userService.getUserByIdentification(authorization.getUserId());
 		// user not administrator and not owner is not allowed to authorize
 		if (!utils.isAdministrator()
-				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(user.getUserId()))) {
+				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
 			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
@@ -420,12 +420,17 @@ public class AppRestController {
 				return new ResponseEntity<>("Role \"" + authorization.getRoleName() + "\" does not exist in Realm "
 						+ authorization.getRealmId(), HttpStatus.BAD_REQUEST);
 			}
+			final List<AppUserListOauth> authList = appService.getAppUsersByUserIdAndRoleAndApp(authorization.getUserId(),
+					role.getName(), appDb.getIdentification());
+			if (!authList.isEmpty()) {
+				return new ResponseEntity<>("This association already exists.", HttpStatus.BAD_REQUEST);
+			}
 			appService.createUserAccess(appDb.getId(), authorization.getUserId(), role.getId());
 			log.debug("End realm authorization successfully");
 			return new ResponseEntity<>(HttpStatus.CREATED);
 		} catch (final AppServiceException e) {
 			log.warn("End realm authorization with exception: {}", e.getMessage());
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
@@ -615,6 +620,7 @@ public class AppRestController {
 					HttpStatus.BAD_REQUEST);
 		}
 		appService.deleteRole(role);
+
 		appService.updateApp(appDb);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

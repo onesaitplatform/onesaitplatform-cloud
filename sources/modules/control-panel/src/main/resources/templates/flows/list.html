@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -96,6 +96,13 @@
 			}
 		
 		</script>	
+		
+		<style>
+		.page-sidebar-closed .page-content-wrapper .page-content {
+    		background-color: #ffffff;
+		}
+		
+		</style>
 	</head>	
 	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
@@ -120,51 +127,83 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_domains" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
+								<input id="domain-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_domain" name="reset_domain" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_domain" name="search_domain" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/flows/list}"> <span th:text="#{flow.breadcrumb.list}">Flows</span></a></li>						
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/flows/list}"> 
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{flow.template.list}">Manage Flows</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{flow.breadcrumb.list}">My Flows</span>
+						</a></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{flow.template.list}">My Flows </span></h1>
+				
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="col-md-12">
+					
 					
 						<div class="portlet light ">
 							<div class="portlet-title">
-								<div class="caption">
-									
-									<span class="caption-subject " th:text="#{flow.template.list}"> My Flows </span>
-									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>									
+								<div class="caption " >										
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{flow.template.list}"> Manage Flows </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{flow.breadcrumb.list}"> My Flows </span>
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>	
+
+                                <div id="search-on-title" class="hide input-icon search-icon">
+
+                                    <a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+                                </div>								
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
-								<div class="actions margin-right-20">
-									<div class="btn-group">												
-										<button  th:if="${domains==null or domains.empty}" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../flows/create'" ><span th:text="#{gen.create}">New </span></button>									
+								<!--<div class="actions ">-->
+									<div class="btn-group pull-right btn-title-group" id="divcreate" >	
+										<a type="button" id="btn-domains-reload" name="btn-domains-reload" value="Reload" class="btn btn-primary button-dropdown-table-columns" style="border: none;" ><i class="icon-reload"></i></a>													
+										<button th:if="${#strings.arrayJoin(#authentication.authorities,'') != 'ROLE_ADMINISTRATOR' AND (domains==null or domains.empty)}" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../flows/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>									
+										<!-- Reload button  -->
+																					
 									</div>										
-								</div>
+								<!--</div>-->
 							</div>
 							<div th:fragment="domain" id="domain" class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row">
-									<div class="col-md-12 alert-zone">
+								<div class="row" style="margin-top: 0px;">
+									<div class="col-md-12 alert-zone" style="padding-top: 0px; padding-bottom: 0px">
 										<!-- ALERT ZONE -->	
 										<div th:if="${messageAlertType == 'SUCCESS' and message != null}" id="messages" class="alert alert-success alert-dismissable">
 											<button class="close" data-close="alert"></button> 
-											<span th:text="${message}">message</span>
+											<span  th:text="${message}">message</span>
 										</div>
 										
 										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable">
@@ -188,15 +227,9 @@
 										
 										<!-- Microservice LIST -->
 																				
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
-												<!-- Reload button -->
-												<div class="row">
-													<div class="pull-right margin-right-20">
-														<button type="button" id="btn-domains-reload" name="btn-domains-reload" value="Reload" 
-															class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh"></i>&nbsp;</button>	
-													</div>
-												</div><!-- // Reload button -->
+											
 																							
 												<!-- DATATABLE initCompleteCallback (DT function) -->
 												<div dt:conf="domains">
@@ -215,7 +248,7 @@
 															<th dt:property="cpu" dt:renderFunction="dtRenderNonNullCpu" class="titulo-columnas" th:text="#{domain.cpu.use}">Cpu</th>
 															<th dt:property="memory" dt:renderFunction="dtRenderNonNullMem" class="titulo-columnas" th:text="#{domain.memory}">memory</th>
 															<th dt:property="memory" dt:renderFunction="dtRenderNonNullReboot" class="titulo-columnas" th:text="#{domain.reboot.on.failure}">Reboot on failure</th>
-															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
+															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center" style="width:85px"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -224,27 +257,41 @@
 															<td class="text-left " th:text="${domain.user}"></td>
 															
 															<td th:if="${domain.state == 'START'}" class="text-left " >		
-																 <span  th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i>
+																 <span  th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="#{domain.started}" style="color: #2E6B33; padding-left: 5px;"></span>
 															</td>
 															<td th:if="${domain.state == null OR domain.state == 'STOP'}" class="text-left " >		
-																 <span  th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i>
+																 <span  th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="#{domain.stopped}" style="color: #A73535; padding-left: 5px;"></span>
 															</td>
 															
 															<td th:if="${domain.cpu != null}" class="text-left " th:text="${domain.cpu}"></td>
 															<td th:if="${domain.cpu == null}" class="text-left ">--</td>	
 															<td th:if="${domain.memory != null}" class="text-left " th:text="${domain.memory}"></td>
 															<td th:if="${domain.memory == null}" class="text-left ">--</td>
-															<td th:if="${(domain.autorecover == null) OR (domain.autorecover == false)}" class="text-center" ><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>
-															<td th:if="${(domain.autorecover != null) AND (domain.autorecover == true)}" class="text-center" ><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i></td>
+															<td th:if="${(domain.autorecover == null) OR (domain.autorecover == false)}" class="text-left" ><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="#{gen.inactive}" style="color: #A73535; padding-left: 5px;"></span></td>
+															<td th:if="${(domain.autorecover != null) AND (domain.autorecover == true)}" class="text-left" ><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="#{gen.active}" style="color: #2E6B33; padding-left: 5px;"></span></td>
 															 
 															<td>
 																<div class="grupo-iconos text-center">
-																	<span th:if="${domain.state == 'START'}" th:title="#{gen.stop}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.stop}" th:onclick="'javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="la la-stop font-hg"></i></span>
-																	<span th:if="${domain.state == null OR domain.state == 'STOP' }" th:title="#{domain.start}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{domain.start}" th:onclick="'javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="la la-play-circle font-hg"></i></span>
-																	<a  th:if="${domain.state == 'START' AND flowEngineActive==true}" th:href="@{'/flows/show/'+${domain.domain}}"><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span></a>
-																	<a  th:if="${domain.state == 'START' AND flowEngineActive==true}" th:href="@{'/flows/monitor/'+${domain.domain}}"><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{domain.monitor}"><i class="la la la-line-chart font-hg"></i></span></a>
-																	<a  th:href="@{'/flows/update/'+${domain.domain}}"><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="la la-edit font-hg"></i></span></a>
-																	<span th:attr="data-id=${domain.domain}" th:onclick="'javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');'" class="icon-microservice-trash btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.deleteBtn}"><i class="la la-trash font-hg"></i></span>
+																	<span th:if="${domain.state == 'START'}" th:title="#{gen.stop}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.stop}" th:onclick="'javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-stop"></i></span>
+																	<span th:if="${domain.state == null OR domain.state == 'STOP' }" th:title="#{domain.start}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{domain.start}" th:onclick="'javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-play"></i></span>
+																	<span th:if="${domain.state == 'START' AND flowEngineActive == true}"  th:onclick="'javascript:navigateUrl(\'' + @{|/flows/show/${domain.domain}|} + '\');'"   th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
+																	<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive==false}"  disabled="true"  th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
+																	
+																	<span class="dropdown" > 																
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" style="margin-right: 0px" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																		<ul class="dropdown-menu dropdown-menu-table download-menu">																			
+																			<li>
+																				<span th:onclick="'javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>																	
+																			</li>
+																			<li>
+																			    <span th:if="${domain.state == 'START' AND flowEngineActive == true}" th:onclick="'javascript:navigateUrl(\'' + @{|/flows/monitor/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
+																				<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive == false}"    ><span disabled="true" th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
+																			</li>
+																			<li>
+																				<span  th:attr="data-id=${domain.domain}" th:onclick="'javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
+																			</li>
+																		</ul>
+																	</span>
 																</div>
 															
 															</td>
@@ -253,18 +300,34 @@
 													</tbody>
 												</table><!-- // DATATABLE DANDELION CONF. -->
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														 <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name </label>
-														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}"> Owner </label>
-														<label class="toggle-vis" data-column="2" th:text="#{domain.state}"> State</label>
-														<label class="toggle-vis" data-column="3" th:text="#{domain.cpu.use}"> Cpu</label>
-														<label class="toggle-vis" data-column="4" th:text="#{domain.memory}"> Memory</label>
-														<label class="toggle-vis" data-column="5" th:text="#{domain.reboot.on.failure}"> Reboot on failure</label>
-														<label class="toggle-vis" data-column="6" th:text="#{gen.options}" > Options</label>															
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 ">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label  th:text="#{gen.owner}"> Owner </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{domain.state}"> State</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{domain.cpu.use}"> Cpu</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label  th:text="#{domain.memory}"> Memory</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label  th:text="#{domain.reboot.on.failure}"> Reboot on failure</label>
+														</span>
+																												
 													</div>
 												</div>	
 												
@@ -277,11 +340,12 @@
 									<form id="delete_flow_domain_form" class="delete_flow_domain_form hide" method="post">
 										<input type="hidden" name="_method" value="DELETE"/>
 										<input type="hidden" id="delete-id" name="id"/>
-									<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>	
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+									</form>	
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
+											
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -302,7 +366,7 @@
 	
 	
 	<script th:inline="javascript">	
-	
+	//<![CDATA[
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
@@ -316,16 +380,21 @@
 			genDelete: [[#{gen.deleteBtn}]],
 			genUpdate:  [[#{gen.edit}]],
 			genView:  [[#{gen.view}]],
-			monitoring: [[#{domain.monitor}]]
+			monitoring: [[#{domain.monitor}]],
+			stopped:[[#{domain.stopped}]],
+			inactive:[[#{gen.inactive}]],
+			active:[[#{gen.active}]],
+			started:[[#{domain.started}]]
+		
 		};
  
 	</script>
-	
+	<i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span><
 	<script type="text/javascript" th:inline="javascript">	
 	var optionName = 'FLOWS';
 	
-	//<![CDATA[
-	function navigateUrl(url){  window.location.href = url;	}
+
+	function navigateUrl(url){ debugger; window.location.href = url;	}
 	
 	var  deleteFlowDomainConfirmation = function (id){
 		
@@ -350,16 +419,26 @@
 		
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#domains').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
+			//$(this).toggleClass('text-muted line-through');			
+		});
+
+		// SEARCH FORM RESET
+		$('#reset_domain').on('click',function(){
+			$('#domain-name').val('');
+			$('#domains').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_domain').on('click',function(){
+			$('#domains').DataTable().column(0).search( $('#domain-name').val()).draw();
 		});	
-		
 		
 	});
 	 
@@ -371,29 +450,63 @@
 			initCompleteCallback();
 		} );
 		
-		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
-		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		/*$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });*/
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		//$('#dataTable-vis-toggle').removeClass('hide');
+		//TABLE STYLES
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#domains_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#domains_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+		$('#domains_wrapper > div:nth-child(1)').hide();
+		$('.dataTables_filter > label > input').removeClass('input-xsmall');
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		activateDropDownPopup();
 		
-		
+		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
+	
+	
+	function activateDropDownPopup(){
+		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
+			 var $menu = $("ul", this);	        
+	         offset = $menu.offset();
+	         position = $menu.position();
+	         $('body').append($menu);
+	         $menu.show();
+	         $menu.css('position', 'absolute');
+	         $menu.css('top', (offset.top) +'px');
+	         $menu.css('left',(offset.left) +'px');
+	         $menu.css('min-width', '100px');
+	        $(this).data("myDropdownMenu", $menu);
+	     });
+	     $('.download-menu').parent().on('hide.bs.dropdown', function () {
+	         $(this).append($(this).data("myDropdownMenu"));
+	         $(this).data("myDropdownMenu").removeAttr('style');
+	     });
+	}
+	
 	
 	var initCompleteCallback = function(){
 		//initTableEvents();
 	}
 	
 	var dtRenderState = function(data, type, row){
+		
 		var html='';
 		if(row.state == 'START'){
-			html+='<span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i>';
+			html+=' <span  text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span  style="color: #2E6B33; padding-left: 5px;">'+constants.started+'</span>';
 		}else{
-			html+='<span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i>';
+			html+='<span  text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span style="color: #A73535; padding-left: 5px;">'+constants.stopped+'</span>';
 		}
 		return html;
-		
+		 
 	}
 	var dtRenderNonNullCpu = function(data, type, row){
 		if(row.cpu == null)
@@ -410,9 +523,9 @@
 	
 	var dtRenderNonNullReboot = function(data, type, row){	
 		if(row.autorecover == null || row.autorecover == false ){
-			return '<td class="text-center" ><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>';                                
+			return '<span text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span  style="color: #A73535; padding-left: 5px;">'+constants.inactive+'</span>';                                
 	    } else {
-	    	return '<td class="text-center" ><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i></td>';
+	    	return '<span text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span   style="color: #2E6B33; padding-left: 5px;">'+constants.active+'</span>';
 	    }
 	}       
 
@@ -420,9 +533,9 @@
 	var dtRenderOptions = function (data, type, row) {
 		var html= '<div class="grupo-iconos text-center">';
 		if(row.state == 'START') {
-			html +='<span th:title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.stop+'" onclick="getDomainStopFragment(\'' + row.domain + '\')"><i class="la la-stop font-hg"></i></span>';
+			html +='<span th:title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.stop+'" onclick="getDomainStopFragment(\'' + row.domain + '\')"><i class="icon-stop"></i></span>';
 		}else
-			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="getDomainStartFragment(\'' + row.domain + '\')"><i class="la la-play-circle font-hg"></i></span>';
+			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="getDomainStartFragment(\'' + row.domain + '\')"><i class="icon-play"></i></span>';
 		if(row.state == 'START' && active == true) {
 			html+= '<a  href="/controlpanel/flows/show/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>'
 			html+= '<a  href="/controlpanel/flows/monitor/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la la-area-chart font-hg"></i></span></a>'
@@ -435,9 +548,6 @@
 	function reloadDomainsTable(id,cell) {
 		
 		reloadTable(id,cell);
-		
-		
-		
 		//reloadDataTable(oTable);
 	}
 	
@@ -458,6 +568,7 @@
         	if(trContent != null){
         		tr.empty();			
 				tr.append(trContent);
+				activateDropDownPopup();
         	}
         	$('.tooltip').tooltip('destroy');
     		$('.tooltips').tooltip();
@@ -473,26 +584,19 @@
 				}
 			}
 		}
+		
 		return null;
 	}
-	var constants ={
-			deleteContent: [[#{microservice.delete.confirm}]],
-			go: [[#{microservice.link.go}]],
-			stop: [[#{gen.stop}]],
-			start: [[#{domain.start}]],
-			genDelete: [[#{gen.deleteBtn}]],
-			genUpdate:  [[#{gen.edit}]],
-			genView:  [[#{gen.view}]]
-		};
+	
 	
 	function createTrContent(data){		
 
 		var html = '<td class="text-left ">'+data.domain+'</td>';
 			html+='<td class="text-left " >'+data.user+'</td>';
 		if(data.state == 'START'){
-			html += '<td class="text-left " ><span text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i></td>';
+			html += '<td class="text-left " ><span  text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span  style="color: #2E6B33; padding-left: 5px;">'+constants.started+'</span></td>';
 		}else{
-			html +='<td class="text-left " ><span text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i></td>';
+			html +='<td class="text-left " ><span  text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span style="color: #A73535; padding-left: 5px;">'+constants.stopped+'</span></td>';
 		}
 		if(data.cpu != null){
 			html +='<td class="text-left "> '+data.cpu+'</td>';
@@ -505,25 +609,52 @@
 			html +='<td class="text-left ">--</td>';
 		}
 		if(data.autorecover == null || data.autorecover == false){
-			html +='<td class="text-center" ><span text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>'
+			html +='<td class="text-left" ><span text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span  style="color: #A73535; padding-left: 5px;">'+constants.inactive+'</span></td>'
 		}else{
-			html +='<td class="text-center" ><span text="1" style="display:none" ></span><i class="la la-check-circle-o text-primary  font-hg"></i></td>'
+			html +='<td class="text-left" ><span text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span   style="color: #2E6B33; padding-left: 5px;">'+constants.active+'</span></td>'
 		}
+		/*options buttons*/
 		html +='<td><div class="grupo-iconos text-center">';
+		
+		/*start stop*/
 		if(data.state == 'START'){
-			html +='<span title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.stop+'" onclick="javascript:getDomainStopFragment(\''+data.domain+ '\',event,this);"><i class="la la-stop font-hg"></i></span>';
+			html +='<span title="'+constants.stop+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body"  data-placement="bottom" data-original-title="'+constants.stop+'" onclick="javascript:getDomainStopFragment(\''+data.domain+ '\',event,this);"><i class="icon-stop"></i></span>';
+			
 		}else{
-			html +='<span title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.start+'" onclick="javascript:getDomainStopFragment(\''+data.domain+ '\',event,this);"><i class="la la-play-circle font-hg"></i></span>';
+			html +='<span title="'+constants.start+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body"  data-placement="bottom" data-original-title="'+constants.start+'" onclick="javascript:getDomainStopFragment(\''+data.domain+ '\',event,this);"><i class="icon-play"></i></span>';
+					
 		}
-		if(data.state == 'START' && active==true){
-			html +='<a href="/controlpanel/flows/show/'+data.domain+'"><span data-id="'+data.domain+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>';
-			html+= '<a  href="/controlpanel/flows/monitor/'+data.domain+'"><span data-id="' + data.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la la-area-chart font-hg"></i></span></a>'
+		/*show */  
+		if(data.state != 'START' && active!=true){	
+			html +='<span title="'+constants.genView+'" disabled="true" data-id="'+data.domain+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="    margin-right: 2px; margin-left: 2px;" data-container="body" data-placement="bottom" ><i class="la la-eye font-hg"></i></span>';
+		}else{
+			html +='<span title="'+constants.genView+'" onclick="navigateUrl(\'/controlpanel/flows/show/'+data.domain+'\' );" data-id="'+data.domain+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="    margin-right: 2px; margin-left: 2px;" data-container="body" data-placement="bottom" ><i class="la la-eye font-hg"></i></span>';
 		}
-		html+='<a  href="/controlpanel/flows/update/'+data.domain+'"><span data-id="'+domain.domain+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>';	
-
-		html +='<span data-id="'+data.domain+'" th:onclick="javascript:deleteFlowDomainConfirmation(\''+data.domain+ '\');" class="icon-microservice-trash btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>';
+		/*show monitor delete*/
+		
+			html +='<span class="dropdown">';
+			html +='<span   class="btn btn-xs btn-no-border color-blue icon-on-table" style="margin-right: 0px" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>';
+			html +='	<ul class="dropdown-menu dropdown-menu-table download-menu">';																		
+			html +='		<li>';
+			html +='<span  onclick="navigateUrl(\'/controlpanel/flows/update/'+data.domain+'\' );"><span data-id="'+domain.domain+'" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" data-container="body"  data-placement="bottom"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >'+constants.genUpdate+'</span></span></span>';
+			html +='		</li>';
+			html +='		<li>';
+			if(data.state != 'START' && active!=true){
+				html+= '<span   ><span disabled="true"  data-id="' + data.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" data-container="body" data-placement="bottom" ><i class="la la la-area-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >'+constants.monitoring+'</span></span></span>'
+			}else{
+				html+= '<span  onclick="navigateUrl(\'/controlpanel/flows/monitor/'+data.domain+'\' );"><span data-id="' + data.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" data-container="body" data-placement="bottom" ><i class="la la la-area-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >'+constants.monitoring+'</span></span></span>'
+			}
+			html +='		</li>';
+			html +='		<li>';
+			html +='			<span data-id="'+data.domain+'" onclick="deleteFlowDomainConfirmation(\''+data.domain+ '\');" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons"  >'+constants.genDelete+'</span></span>';																	
+			html +='		</li>';
+			html +='</ul>';
+			html +='</span>';
+		
+		
 
 		html +='</div></td>';
+		/*end options buttons*/
 		return html;
 	}
 	function reloadDataTable(oTable) {		

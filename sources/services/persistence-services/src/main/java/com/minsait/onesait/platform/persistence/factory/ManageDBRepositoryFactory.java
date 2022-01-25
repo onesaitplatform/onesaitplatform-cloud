@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.persistence.control.NoPersistenceManageDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchManageDBRepository;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyManageDBRepository;
@@ -41,6 +42,9 @@ public class ManageDBRepositoryFactory {
 	private CosmosDBManageDBRepository cosmosDB;
 
 	@Autowired
+	private NoPersistenceManageDBRepository noPersistenceManageDBRepository;
+
+	@Autowired
 	private VirtualRelationalOntologyManageDBRepository relationalManager;
 
 	@Autowired(required = false)
@@ -57,18 +61,21 @@ public class ManageDBRepositoryFactory {
 	}
 
 	public ManageDBRepository getInstance(RtdbDatasource dataSource) {
-		if (dataSource.equals(RtdbDatasource.MONGO))
+		if (dataSource.equals(RtdbDatasource.MONGO)) {
 			return mongoManage;
-		else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH))
+		} else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH)) {
 			return elasticManage;
-		else if (dataSource.equals(RtdbDatasource.KUDU)) {
+		} else if (dataSource.equals(RtdbDatasource.KUDU)) {
 			return kuduManageDBRepository;
 		} else if (dataSource.equals(RtdbDatasource.VIRTUAL)) {
 			return relationalManager;
 		} else if (RtdbDatasource.COSMOS_DB.equals(dataSource)) {
 			return cosmosDB;
-		} else
+		} else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
+			return noPersistenceManageDBRepository;
+		} else {
 			return mongoManage;
+		}
 	}
 
 }

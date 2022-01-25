@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ public interface KieServicesManager {
 
 	void removeServices(String user);
 
-	Results addRule(String user, String ruleDRL, String ruleName);
-
-	void removeRule(String user, String ruleName);
+	Results addRule(String user, String ruleDRL, String ruleName, byte[] decisionTable, String extension);
 
 	KieSession getKieSession(String user);
 
 	boolean isRuleEngineDomainActive(String user);
 
-	Results updateRule(String user, String ruleName, String drl);
+	Results updateRule(String user, String ruleName, String drl, byte[] decisionTable, String extension);
+
+	void removeRule(String user, String ruleName, String extension);
 }

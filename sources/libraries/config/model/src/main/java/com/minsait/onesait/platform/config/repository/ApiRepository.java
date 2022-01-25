@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
@@ -85,6 +86,10 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 
 	List<Api> findByUserAndIsPublicTrue(User userId);
 
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'API', o.numversion) FROM Api AS o WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findAllDto(@Param("identification") String identification,
+			@Param("description") String description);
+
 	@Query("SELECT a FROM Api AS a WHERE (a.user.userId = :userId OR a.identification LIKE %:apiId%)")
 	List<Api> findApisByIdentificationOrUser(@Param("apiId") String apiId, @Param("userId") String userId);
 
@@ -114,6 +119,13 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 	List<Api> findApisByIdentificationOrStateOrUserForAdminOrOwnerOrPublicOrPermission(
 			@Param("userloggedId") String userloggedId, @Param("userloggedRole") String userloggedRole,
 			@Param("apiId") String apiId, @Param("state") ApiStates state, @Param("userId") String userId);
+
+	@Query("SELECT a FROM Api as a WHERE ((a.user.userId = :userId) OR (a.id IN (SELECT ua.api.id FROM UserApi AS ua WHERE ua.api.id = a.id and ua.user.userId = :userId))) ORDER BY a.identification asc")
+	List<Api> findApisByUserOrPermission(@Param("userId") String userId);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'API', o.numversion) FROM Api AS o WHERE (o.user=:user OR o.id IN (SELECT ua.api.id FROM UserApi AS ua WHERE ua.api.id = o.id and ua.user = :user)) AND (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
+			@Param("identification") String identification, @Param("description") String description);
 
 	List<Api> findByOntology(Ontology ontology);
 

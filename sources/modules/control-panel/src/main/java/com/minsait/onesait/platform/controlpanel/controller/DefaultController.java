@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -243,6 +243,12 @@ public class DefaultController {
 				case LOGIN_BACKGROUND_COLOR:
 					model.addAttribute("backgroundColor",
 							json.getString(Themes.editItems.LOGIN_BACKGROUND_COLOR.toString()));
+					break;
+				case CSS:
+					model.addAttribute("css", json.getString(Themes.editItems.CSS.toString()));
+					break;
+				case JS:
+					model.addAttribute("js", json.getString(Themes.editItems.JS.toString()));
 					break;
 				default:
 					break;

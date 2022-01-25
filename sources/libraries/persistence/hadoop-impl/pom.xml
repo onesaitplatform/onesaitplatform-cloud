@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-        <version>2.3.0-ce</version>
+        <version>${revision}</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-persistence-hadoop</artifactId>
@@ -13,20 +13,20 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		
+
 	</properties>
 
 	<dependencies>
         <dependency>
             <groupId>com.minsait.onesait.platform</groupId>
             <artifactId>onesaitplatform-persistence-interfaces</artifactId>
-            <version>${onesaitplatform.version}</version>
+            <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-resources</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
         <dependency>
@@ -40,12 +40,12 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
@@ -59,7 +59,7 @@
                    <artifactId>slf4j-log4j12</artifactId>
                    <groupId>org.slf4j</groupId>
                </exclusion>
-            
+
                 <exclusion>
                     <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-util</artifactId>
@@ -112,7 +112,7 @@
             <artifactId>jsqlparser</artifactId>
             <version>${jsqlparser.version}</version>
         </dependency>
-        <!--        
+        <!--
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
@@ -129,11 +129,11 @@
                 <exclusion>
                 <groupId>io.netty</groupId>
                     <artifactId>netty</artifactId>
-                
+
                 </exclusion>
             </exclusions>
         </dependency>
-         
+
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
@@ -144,14 +144,14 @@
     <repositories>
         <repository>
            <id>cloudera</id>
-           <url>http://repository.cloudera.com/artifactory/cloudera-repos/</url>
+           <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
         </repository>
     </repositories>
 
-	
+
 	<build>
 		<plugins>
-		  <!-- skip deployment -->	
+		  <!-- skip deployment -->
 		  <plugin>
 		    <groupId>org.apache.maven.plugins</groupId>
 		    <artifactId>maven-deploy-plugin</artifactId>
@@ -159,7 +159,7 @@
 		    <configuration>
 		        <skip>true</skip>
 		    </configuration>
-		  </plugin>	
-		</plugins>	
+		  </plugin>
+		</plugins>
 	</build>
 </project>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class OPResource extends AuditableEntity {
 
 	public enum Resources {
 		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, NOTEBOOK, ONTOLOGY,
-		DATAFLOW, REPORT, BINARYFILE
+		DATAFLOW, ONTOLOGYVIRTUALDATASOURCE,REPORT, BINARYFILE
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -58,7 +58,7 @@ public abstract class OPResource extends AuditableEntity {
 	@Setter
 	private String id;
 
-	@Column(name = "IDENTIFICATION", length = 50, nullable = false)
+	@Column(name = "IDENTIFICATION", length = 255, nullable = false)
 	@NotNull
 	@Getter
 	@Setter

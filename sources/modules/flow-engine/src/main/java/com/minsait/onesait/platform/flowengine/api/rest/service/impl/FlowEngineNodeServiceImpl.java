@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.flowengine.api.rest.service.impl;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,6 +34,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.minsait.onesait.platform.audit.bean.OPAuthAuditEvent;
+import com.minsait.onesait.platform.audit.notify.EventRouter;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
+import com.minsait.onesait.platform.commons.audit.producer.EventProducer;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -120,6 +127,8 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 	private FlowEngineDeploymentProcessorService flowengineDeploymentProcessorService;
 	@Autowired
 	private FlowEngineControlPanelApiService flowengineControlPanelApiService;
+	@Autowired
+	private EventRouter eventRouter;
 
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
@@ -466,6 +475,30 @@ public class FlowEngineNodeServiceImpl implements FlowEngineNodeService {
 	public ResponseEntity<String> invokeManagementRestApiOperation(
 			FlowEngineInvokeRestApiOperationRequest invokeRequest) {
 		return flowengineControlPanelApiService.invokeManagementRestApiOperation(invokeRequest);
+	}
+
+	@Override
+	public void submitAudit(String data, String domainName) throws JsonProcessingException, NotFoundException {
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainName);
+
+		if (domain != null) {
+
+			OPAuthAuditEvent event = new OPAuthAuditEvent();
+
+			Date now = new Date();
+
+			event.setMessage(data);
+			event.setModule(Module.FLOWENGINE);
+			event.setType(EventType.DATA);
+			event.setOperationType(OPAuditEvent.OperationType.LOG.name());
+			event.setUser(domain.getUser().getUserId());
+			event.setTimeStamp(now.getTime());
+			eventRouter.notify(event.toJson());
+		} else {
+			log.error("Domain not found: {}", domainName);
+			throw new NotFoundException("Domain not found " + domainName);
+		}
+
 	}
 
 }

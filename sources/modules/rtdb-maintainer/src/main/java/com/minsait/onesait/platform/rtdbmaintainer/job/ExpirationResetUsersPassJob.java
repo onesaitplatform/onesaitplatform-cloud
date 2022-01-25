@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,8 @@ public class ExpirationResetUsersPassJob {
 		final String defaultMessage = "Your password has expired contact your administrator to update it";
 		final String emailTitle = getMessage("user.expiration.pass.notice.title", defaultTitle);
 		String emailBody = getMessage("user.expiration.pass.expired.body", defaultMessage);
-		log.info("Send email to {} in order to report password has expired ", masterUser.getEmail());
+		log.info("Send email to {} in order to report password has expired due to the maximum time allowed for reset",
+				masterUser.getEmail());
 		mailService.sendMail(masterUser.getEmail(), emailTitle, emailBody);
 	}
 

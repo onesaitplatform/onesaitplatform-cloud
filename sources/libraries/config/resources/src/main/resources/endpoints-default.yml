@@ -13,6 +13,7 @@ onesaitplatform:
       advice:
     controlpanel:
       base: http://localhost:18000/controlpanel
+      maxSessionsPerUser: 10
     flowEngine:
       base: http://localhost:20100/flowengine/admin
       advice: http://localhost:5050/
@@ -34,7 +35,7 @@ onesaitplatform:
       url: http://localhost:8080/
     monitoringUI:
       base: http://localhost:18100/monitoring
-      embedded: http://localhost:18100/monitoring
+      embedded: http://localhost:18100/monitoring/indexNoHeader.html
     rulesEngine:
       advice: http://localhost:20200/rules-engine/advice
       base: http://localhost:20200/rules-engine
@@ -42,4 +43,5 @@ onesaitplatform:
       edit: http://localhost:8087/controlpanel/dashboards/editfulliframe/
       view: http://localhost:8087/controlpanel/dashboards/viewiframe/
       onlyview: http://localhost:8087/controlpanel/dashboards/view/
-
+    reportEngine:
+      base: http://localhost:18400/report-engine

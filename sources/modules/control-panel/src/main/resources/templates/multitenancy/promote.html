@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -71,15 +71,11 @@
 				<option th:each="vertical:${verticals}" th:value="${vertical.name}" th:text="${vertical.name}" ></option>
 			</select>
       </div>
-
-      
-	  
       <div class="login-form__action pull-right">
         
         <button class="ods-button ods-button--primary is-round" type="submit" id="loginBut" th:value="#{login.login}">Login</button>
       </div>
-
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+    </form>
 
   </div> <!-- cd-login -->	
 	

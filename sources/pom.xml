@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.minsait.onesait.platform</groupId>
 	<artifactId>onesaitplatform-parent</artifactId>
-	<version>2.3.0-ce</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<name>onesaitplatform-parent</name>
 	<description>onesait Platform is the Digital Platform of Minsait, aka Open Platform</description>
 
 	<properties>
-		<onesaitplatform.version>2.3.0-ce</onesaitplatform.version>
+		<revision>3.0.1-jailbreak</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -41,12 +41,12 @@
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
 		<jsqlparser.version>3.1</jsqlparser.version>
-		<sql-to-mongo.version>3.0.2</sql-to-mongo.version>
+		<sql-to-mongo.version>3.0.7</sql-to-mongo.version>
 		<mongo-driver.version>3.12.0</mongo-driver.version>
 		<mockito.version>2.22.0</mockito.version>
 		<tika.version>1.20</tika.version>
 		<onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false&amp;autoReconnect=true</onesaitplatform.quartzURL>
-		<onesaitplatform.client.version>1.4.1-RELEASE</onesaitplatform.client.version>
+		<onesaitplatform.client.version>3.3.0-RELEASE</onesaitplatform.client.version>
 		<hazelcast.zookeeper.version>3.6.3</hazelcast.zookeeper.version>
 		<hazelcast.version>3.12</hazelcast.version>
 		<curator.version>2.13.0</curator.version>
@@ -55,7 +55,7 @@
 		<aspectj.version>1.8.9</aspectj.version>
 		<gson.version>2.8.5</gson.version>
 
-		<jaspersoft.ws.version>1.0.1-SNAPSHOT</jaspersoft.ws.version>
+		<jaspersoft.ws.version>1.0.1</jaspersoft.ws.version>
 		<postgresql.version>42.2.8</postgresql.version>
 		<mariadb.version>2.4.3</mariadb.version>
 		<sqlserver.version>7.4.1.jre8</sqlserver.version>
@@ -65,6 +65,8 @@
 		<log4j-api.version>2.8</log4j-api.version>
 		<spring.security.oauth.version>2.3.0.RELEASE</spring.security.oauth.version>
 		<spring.security.oauth-autoconfigure.version>2.1.0.RELEASE</spring.security.oauth-autoconfigure.version>
+		<com.fasterxml.jackson.core.databind.version>2.9.10.7</com.fasterxml.jackson.core.databind.version>
+		<com.fasterxml.jackson.core.annotations.version>2.9.10</com.fasterxml.jackson.core.annotations.version>
 	</properties>
 
 	<dependencyManagement>
@@ -72,7 +74,7 @@
 			<dependency>
 				<groupId>com.minsait.onesait.platform</groupId>
 				<artifactId>onesaitplatform-plugin-interfaces</artifactId>
-				<version>2.2.0</version>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mongodb</groupId>
@@ -259,6 +261,18 @@
 				<version>${oracle.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${com.fasterxml.jackson.core.databind.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>${com.fasterxml.jackson.core.annotations.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -283,6 +297,9 @@
 	</repositories>
 
 	<modules>
+		<!-- <module>sofia2-springboot-autoconfigure-starter</module> -->
+		<!-- PLUGIN LIBRARIES -->
+		<module>plugins/interfaces</module>
 
 		<!--LIBRARIES -->
 		<module>libraries/commons</module>
@@ -305,6 +322,7 @@
 		<module>libraries/persistence/hadoop-impl</module>
 		<module>libraries/persistence/external-impl</module>
 		<module>libraries/persistence/cosmosdb-impl</module>
+		<module>libraries/persistence/no-persistence-impl</module>
 
 		<!--DIGITAL TWIN -->
 		<module>libraries/digital-twin/digital-twin-library</module>
@@ -383,6 +401,31 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>2.2.7.RELEASE</version>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.1.0</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>resolveCiFriendliesOnly</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>com.mycila</groupId>
@@ -415,32 +458,36 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-			<!--as exists com.mycila:license-maven-plugin call this with mvn org.codehaus.mojo:license-maven-plugin:2.0.0:aggregate-add-third-party-->
+
+			<!--as exists com.mycila:license-maven-plugin call this with mvn org.codehaus.mojo:license-maven-plugin:2.0.0:aggregate-add-third-party -->
 			<plugin>
-			  <groupId>org.codehaus.mojo</groupId>
-			  <artifactId>license-maven-plugin</artifactId>
-			  <version>2.0.0</version>
-			  <executions>
-				<execution>
-				  <id>default-cli</id>
-				  <configuration>
-					<sortArtifactByName>true</sortArtifactByName>
-					<useMissingFile>false</useMissingFile>
-				    <outputDirectory>${project.basedir}</outputDirectory>
-					<thirdPartyFilename>THIRD-PARTY-LICENSES.txt</thirdPartyFilename>
-					<excludedLicenses>License A|licenseB</excludedLicenses>
-					<excludedGroups>com.minsait.onesait.platform</excludedGroups>
-					<licenseMerges>
-					  <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version 2.0</licenseMerge>
-					  <licenseMerge>Apache License, Version 2.0|Apache Public License 2|Apache Public License 2.|Apache License 2.0</licenseMerge>
-					  <licenseMerge>Apache License, Version 2.0|Apache Software License, version 2.0|Apache Software License - Version 2.0</licenseMerge>
-					  <licenseMerge>Apache License, Version 2.0|Apache 2|Apache 2.0|Apache Software License, Version 2.0</licenseMerge>	
-					  <licenseMerge>The BSD License|BSD</licenseMerge>	
-					</licenseMerges>
-				  </configuration>
-				</execution>
-			  </executions>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<sortArtifactByName>true</sortArtifactByName>
+							<useMissingFile>false</useMissingFile>
+							<outputDirectory>${project.basedir}</outputDirectory>
+							<thirdPartyFilename>THIRD-PARTY-LICENSES.txt</thirdPartyFilename>
+							<excludedLicenses>License A|licenseB</excludedLicenses>
+							<excludedGroups>com.minsait.onesait.platform</excludedGroups>
+							<licenseMerges>
+								<licenseMerge>Apache License, Version 2.0|The Apache Software
+									License, Version 2.0</licenseMerge>
+								<licenseMerge>Apache License, Version 2.0|Apache Public License
+									2|Apache Public License 2.|Apache License 2.0</licenseMerge>
+								<licenseMerge>Apache License, Version 2.0|Apache Software
+									License, version 2.0|Apache Software License - Version 2.0</licenseMerge>
+								<licenseMerge>Apache License, Version 2.0|Apache 2|Apache
+									2.0|Apache Software License, Version 2.0</licenseMerge>
+								<licenseMerge>The BSD License|BSD</licenseMerge>
+							</licenseMerges>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
@@ -448,7 +495,7 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>3.1.0-RC7</version>
 				<dependencies>
-					<!-- overwrite dependency on spotbugs if you want to specify the version 
+					<!-- overwrite dependency on spotbugs if you want to specify the version
 						of spotbugs -->
 					<dependency>
 						<groupId>com.github.spotbugs</groupId>
@@ -574,6 +621,24 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${script.prefix}copydash${script.extension}</executable>
+							<workingDirectory>../tools/Dashboard/</workingDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<resources>
@@ -586,39 +651,6 @@
 				</includes>
 			</resource>
 		</resources>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>com.mycila</groupId>
-										<artifactId>
-											license-maven-plugin
-										</artifactId>
-										<versionRange>
-											[3.0,)
-										</versionRange>
-										<goals>
-											<goal>format</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 
@@ -699,7 +731,33 @@
 			</distributionManagement>
 		</profile>
 		<!-- END artifacts deployment section -->
-
+		
+		<!-- Dashboard Compile Section-->
+		<profile>
+		    <id>Windows</id>
+		    <activation>
+		      <os>
+		        <family>Windows</family>
+		      </os>
+		    </activation>
+		    <properties>
+		      <script.extension>.bat</script.extension>
+		      <script.prefix></script.prefix>
+		    </properties>
+		  </profile>
+		  <profile>
+		    <id>unix</id>
+		    <activation>
+		      <os>
+		        <family>unix</family>
+		      </os>
+		    </activation>
+		    <properties>
+		      <script.extension>.sh</script.extension>
+		      <script.prefix>./</script.prefix>
+		    </properties>
+		</profile>
+		<!-- En Dashboard Compile Section -->
 	</profiles>
 
 	<reporting>
@@ -712,4 +770,3 @@
 		</plugins>
 	</reporting>
 </project>
-	

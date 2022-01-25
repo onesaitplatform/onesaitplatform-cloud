@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,6 +109,10 @@ public class OntologySimplified implements Comparable<OntologySimplified> {
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic;
+	@NotNull
+	@Getter
+	@Setter
+	private boolean allowsCreateNotificationTopic;
 
 	@NotNull
 	@Getter
@@ -144,6 +148,7 @@ public class OntologySimplified implements Comparable<OntologySimplified> {
 		this.rtdbDatasource = ontology.getRtdbDatasource();
 		this.allowsCypherFields = ontology.isAllowsCypherFields();
 		this.allowsCreateTopic = ontology.isAllowsCreateTopic();
+		this.allowsCreateNotificationTopic = ontology.isAllowsCreateNotificationTopic();
 		this.createdAt = ontology.getCreatedAt().toString();
 		this.updatedAt = ontology.getUpdatedAt().toString();
 		this.template = ontology.getDataModel().getIdentification();

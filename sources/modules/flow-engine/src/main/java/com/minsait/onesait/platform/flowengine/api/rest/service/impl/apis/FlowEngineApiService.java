@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@ public class FlowEngineApiService {
 		RestApiInvocationParams restInvocationParams;
 		ResponseEntity<String> result = null;
 		// Search api
+		log.debug("get domain by identification");
 		final FlowDomain domain = domainService.getFlowDomainByIdentification(invokeRequest.getDomainName());
 		User platformUser = null;
 		if (domain != null) {
@@ -109,17 +110,19 @@ public class FlowEngineApiService {
 					+ " not found for API invocation named '" + invokeRequest.getApiName() + "'.'}",
 					HttpStatus.BAD_REQUEST);
 		}
-
+		log.debug("find Api from swagger json");
 		final Optional<Api> selectedApi = findApiFromSwaggerJson(invokeRequest, platformUser);
 		// Search operation
 		if (selectedApi.isPresent()) {
 			try {
 				if (selectedApi.get().getApiType() == ApiType.INTERNAL_ONTOLOGY
 						|| selectedApi.get().getApiType() == ApiType.NODE_RED) {
+					log.debug("get invocation parameters");
 					restInvocationParams = getInvocaionParametersForInternalOrFlowEngineApi(invokeRequest,
 							selectedApi.get());
 				} else {
 					// API Swagger External
+					log.debug("get invocation parameters");
 					restInvocationParams = getInvocationParamsForSwaggerOperation(selectedApi.get(), invokeRequest);
 				}
 			} catch (NoValueForParamIvocationException | InvalidInvocationParamTypeException
@@ -128,9 +131,10 @@ public class FlowEngineApiService {
 			}
 
 			// Execute call
-
+			log.debug("add default headers");
 			addDefaultHeaders(restInvocationParams, platformUser);
-
+			
+			log.debug("call api operation");
 			result = apiInvokerUtils.callApiOperation(restInvocationParams);
 
 		} else {

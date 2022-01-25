@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,16 +48,29 @@ public class DroolsRule extends OPResource {
 		ONTOLOGY, REST
 	}
 
+	public enum TableExtension {
+		CSV, XLS, XLSX
+	}
+
 	@Lob
-	@NotNull
-	@Column(name = "DRL", nullable = false)
+	@Column(name = "DRL", nullable = true)
 	private String DRL;
+
+//	@Basic(fetch = FetchType.LAZY)
+	@Column(name = "DECISION_TABLE", columnDefinition = "LONGBLOB")
+	@Lob
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.BinaryType")
+	private byte[] decisionTable;
 
 	@Column(name = "TYPE", nullable = true)
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private Type type;
+
+	@Column(name = "EXTENSION")
+	@Enumerated(EnumType.STRING)
+	private TableExtension extension;
 
 	@ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
 	@JoinColumn(name = "TARGET_ONTOLOGY_ID", referencedColumnName = "ID")
