@@ -1,0 +1,94 @@
+
+<md-bottom-sheet class="md-grid addGadget-sheet" layout="column">
+  <div layout="row" style="margin-top: 4px;" layout-align="left" ng-cloak>
+    <span class="addGadget-title">      
+     Drag and drop your gadget</span>
+        <md-button class=" md-mini md-icon-button cross-close" aria-label="Open Menu" ng-click="closeBottomSheet()" >         
+            <img src="/controlpanel/static/images/dashboards/icon_button_cross_black.svg">
+        </md-button>
+
+    </div>
+  <div ng-cloak class="row-button-gad">
+
+      <div layout="row"  layout-align="center center" layout-wrap style="margin-bottom: 15px;  margin-top: -10px;">
+      
+        <div flex="9">
+          <div class="dragg-button-gad" id="line"  draggable="true" ng-click="checkGadgetType('line')">
+            <img src="/controlpanel/static/images/dashboards/icon_line_chart.svg">
+            <div class="gadget-text"> Line chart </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="bar"  draggable="true" ng-click="checkGadgetType('bar')">
+              <img src="/controlpanel/static/images/dashboards/icon_bar_chart.svg">
+            <div class="gadget-text"> Bar chart</div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="mixed"  draggable="true" ng-click="checkGadgetType('mixed')">
+              <img src="/controlpanel/static/images/dashboards/icon_mixed_chart.svg">
+            <div class="gadget-text"> Mixed chart </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="pie"  draggable="true" ng-click="checkGadgetType('pie')">
+              <img src="/controlpanel/static/images/dashboards/icon_piechart.svg">
+            <div class="gadget-text"> Pie chart </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="wordcloud"  draggable="true" ng-click="checkGadgetType('wordcloud')">
+              <img src="/controlpanel/static/images/dashboards/icon_wordcloud.svg">
+            <div class="gadget-text">Word cloud</div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="map"  draggable="true" ng-click="checkGadgetType('map')">
+              <img src="/controlpanel/static/images/dashboards/icon_map.svg">
+            <div class="gadget-text"> Map </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div class="dragg-button-gad" id="radar"  draggable="true" ng-click="checkGadgetType('radar')">
+              <img src="/controlpanel/static/images/dashboards/icon_radar.svg">
+            <div class="gadget-text"> Radar </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="table" draggable="true" ng-click="checkGadgetType('table')">
+            <img src="/controlpanel/static/images/dashboards/icon_table.svg">
+            <div class="gadget-text">Table </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="datadiscovery" draggable="true" ng-click="checkGadgetType('datadiscovery')">
+            <img src="/controlpanel/static/images/dashboards/widgets.svg">
+            <div class="gadget-text">Datadiscovery</div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="livehtml"  draggable="true" ng-click="checkGadgetType('livehtml')">
+              <img src="/controlpanel/static/images/dashboards/icon_template.svg">
+            <div class="gadget-text"> Template </div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="html5"  draggable="true" ng-click="checkGadgetType('html5')">
+              <img src="/controlpanel/static/images/dashboards/icon_live_html.svg">
+            <div class="gadget-text">HTML 5</div>
+          </div>
+        </div>
+        <div flex="9">
+          <div  class="dragg-button-gad" id="gadgetfilter"  draggable="true" ng-click="checkGadgetType('gadgetfilter')">
+              <img src="/controlpanel/static/images/dashboards/icon_filter_gadget.svg">
+            <div class="gadget-text"> Filter </div>
+          </div>
+        </div>
+        <div flex="9" ng-if="dashboard.showfavoritesg">
+          <div  class="dragg-button-gad" id="favoritegadget"  draggable="true" ng-click="checkGadgetType('favoritegadget')">
+              <img src="/controlpanel/static/images/dashboards/icon_star.svg">
+            <div class="gadget-text">Favorite</div>
+          </div>
+        </div>
+  </div>
+</md-bottom-sheet>

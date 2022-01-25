@@ -1,0 +1,8 @@
+  <ods-form v-model="dynamicValidateForm">     
+        <ods-form-item :label="dynamicValidateForm.inputName">
+            <ods-switch v-model="dynamicValidateForm.inputValue" 
+            active-value="start"
+            inactive-value="stop" @change="valueChange">
+              </ods-switch>
+        </ods-form-item>
+  </ods-form>

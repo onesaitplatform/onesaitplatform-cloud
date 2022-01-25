@@ -1,0 +1,7 @@
+<div style="height:100%" layout="row" flex>
+  <div flex layout="column">
+    <datadiscovery-field-selector flex ng-if="vm.ds && vm.config.config.editFields" columns="vm.config.config.discovery.columns" config="vm.config.config"></datadiscovery-field-selector>
+    <datadiscovery-data-draw flex ng-if="vm.ds" reload-data-link="vm.reloadDataLink(reloadchild)" get-data-and-style="vm.getDataAndStyle(getDataAndStyleChild)" columns="vm.config.config.discovery.columns" id="vm.id" datastatus="vm.datastatus" datasource="vm.ds" config="vm.config.config" filters="vm.filters"></datadiscovery-data-draw>
+  </div>
+  <datadiscovery-field-picker flex="30" ng-if="vm.ds && vm.config.config.editFields" datasource="vm.ds" id="vm.id" fields="vm.config.config.discovery.fields.list" metrics="vm.config.config.discovery.metrics.list"></datadiscovery-field-picker>
+</div>

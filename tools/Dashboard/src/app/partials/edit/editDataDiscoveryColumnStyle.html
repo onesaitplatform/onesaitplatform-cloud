@@ -1,0 +1,111 @@
+<md-dialog aria-label="Add Metrics">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Column Style</h2>
+      <span flex></span>
+      <md-button class="md-icon-button" ng-click="cancel()">
+        <b>X</b>
+      </md-button>
+    </div>
+  </md-toolbar>  
+  <form ng-cloak>
+    <md-dialog-content>
+      <md-subheader class="md-primary form-header">Column Alias:</md-subheader>
+      <md-input-container flex="50">
+        <label>Alias</label>
+        <input ng-model="alias" md-autofocus>
+      </md-input-container>
+      <md-subheader class="md-primary form-header">Conditional Style:</md-subheader>
+      <md-list>
+        <md-list-item ng-repeat="style in styles">
+          <md-input-container flex="10">
+            <label>Condition</label>
+            <md-select ng-model="style.cond" placeholder="Select a operation">
+              <md-option value="all">  all  </md-option>
+              <md-option value="data">  data  </md-option>
+              <md-option value="total">  total  </md-option>
+              <md-option value="subtotals">  subtotals  </md-option>
+              <md-option value="equal">  =  </md-option>
+              <md-option value="mayorequal"> >= </md-option>
+              <md-option value="minorequal"> &#60;= </md-option>
+              <md-option value="mayor">  >  </md-option>
+              <md-option value="minor">  &#60;  </md-option>
+              <md-option value="between"> between </md-option>
+              <md-option value="in"> in </md-option>
+            </md-select>
+          </md-input-container>
+          <md-input-container flex="30" style="height: 35px;">
+            <label>Value</label>
+            <input ng-model="style.val">
+          </md-input-container>
+          <md-input-container ng-if="style.cond == 'between'" flex="30" style="height: 35px;">
+            <label>Value</label>
+            <input type="text" class="flex" ng-model="val2"/>
+          </md-input-container>
+          <md-input-container flex="30" style="height: 35px;">
+            <label>CSS Style</label>
+            <input ng-model="style.style">
+          </md-input-container>
+          <md-input-container flex="30" style="height: 35px;">
+            <label>Transform value function</label>
+            <input type="text" class="flex" ng-model="style.vfunction"/>
+          </md-input-container>
+          <md-input-container flex="30">
+            <md-button class="md-icon-button md-warn" aria-label="Delete layer" ng-click="delete($index)">
+              <md-icon>clear</md-icon>
+            </md-button>
+          </md-input-container>
+        </md-list-item>
+      </md-list>
+
+      <md-subheader>Add New Conditional Style</md-subheader>
+      <md-list>
+        <md-list-item class="md-no-proxy">
+          <md-input-container flex="15">
+            <label>Condition</label>
+            <md-select ng-model="cond" aria-label="condition" placeholder="Condition" class="flex">
+              <md-option value="all">  all  </md-option>
+              <md-option value="data">  data  </md-option>
+              <md-option value="total">  total  </md-option>
+              <md-option value="subtotals">  subtotals  </md-option>
+              <md-option value="equal">  =  </md-option>
+              <md-option value="mayorequal"> >= </md-option>
+              <md-option value="minorequal"> &#60;= </md-option>
+              <md-option value="mayor">  >  </md-option>
+              <md-option value="minor">  &#60;  </md-option>
+              <md-option value="between"> between </md-option>
+              <md-option value="in"> in </md-option>
+            </md-select>
+          </md-input-container>
+          <md-input-container flex="30" style="height: 35px;">
+            <label>Value</label>
+            <input type="text" class="flex" ng-model="val"/>
+          </md-input-container>
+          <md-input-container ng-if="cond == 'between'" flex="30" style="height: 35px;">
+            <label>Value</label>
+            <input type="text" class="flex" ng-model="val2"/>
+          </md-input-container>
+          <md-input-container flex="30" style="height: 35px;">
+            <label>CSS Style</label>
+            <input type="text" class="flex" ng-model="style"/>
+          </md-input-container>
+          <md-input-container flex="30" style="height: 35px;">
+            <label>Transform value function</label>
+            <input type="text" class="flex" ng-model="vfunction"/>
+          </md-input-container>
+          <md-input-container flex="10">
+            <md-button class="md-icon-button md-primary" aria-label="Add layer" ng-click="create()">
+              <md-icon>add</md-icon>
+            </md-button>
+          </md-input-container>
+        </md-list-item>
+      </md-list>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="cancel()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

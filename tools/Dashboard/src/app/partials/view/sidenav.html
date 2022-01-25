@@ -1,0 +1,17 @@
+<md-sidenav class="md-sidenav-right md-whiteframe-4dp" md-component-id="right">
+  <header class="nav-header">
+    
+  </header>
+
+  <md-content flex="" role="navigation" class="_md flex">
+    <md-subheader class="md-no-sticky sidenav-subheader">Dashboard Pages</md-subheader>
+    <md-list class="md-hue-2">
+      <span ng-repeat="page in vm.dashboard.pages">
+        <md-list-item md-colors="{background: ($index===vm.selectedpage ? 'primary' : 'grey-A100')}" ng-click="vm.setIndex($index)" flex>
+            <md-icon ng-class="{{page.icon}} === '' ? 'ng-hide' : 'sidenav-page-icon'" md-colors="{color: ($index===vm.selectedpage ? 'grey-A100' : 'primary')}">{{page.icon}}</md-icon>
+            <p class="sidenav-page-title">{{page.title | translate}}</p>           
+        </md-list-item>
+      </span>
+    </md-list>
+  </md-content>
+</md-sidenav>

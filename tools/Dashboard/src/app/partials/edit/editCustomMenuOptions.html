@@ -1,0 +1,92 @@
+<md-dialog aria-label="Container">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Edit Custom Menu Options</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar> 
+  
+  <form ng-cloak>
+    <md-dialog-content layout-padding>     
+        <md-subheader class="md-primary form-header">Custom Options Menu:</md-subheader>
+        <div layout="row" layout-margin layout-align="left center">
+            <md-table-container style="margin-bottom: 12px;">
+                <table md-table ng-model="element.customMenuOptions" md-progress="promise">
+                  <thead md-head>
+                    <tr md-row>                     
+                      <th md-column ><span>Description</span></th>                 
+                      <th md-column ><span>ID</span></th>                      
+                      <th md-column> <span>Image Path</span></th>
+                      <th md-column> <span>Position</span></th>                    
+                      <th md-column> <span>Options</span></th>
+                    </tr>
+                  </thead>
+                  <tbody md-body>
+                    <tr md-row md-select="c" md-select-id="name" md-auto-select ng-repeat="c in element.customMenuOptions">
+                      <td md-cell>{{c.description}}</td> 
+                      <td md-cell>{{c.id}}</td> 
+                      <td md-cell>{{c.imagePath}}</td> 
+                      <td md-cell>{{c.position}}</td>
+                      <td md-cell>
+                        <md-button class="md-icon-button md-primary" aria-label="Edit Menu Option" ng-click="editMenuOption(c.id)">
+                            <md-icon>create</md-icon>
+                        </md-button>
+                        <md-button class="md-icon-button md-warn" aria-label="Delete Menu Option" ng-click="deleteMenuOption(c.id)">
+                            <md-icon>clear</md-icon>
+                        </md-button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </md-table-container>        
+        </div> 
+
+
+        <md-subheader class="md-primary form-header">Add New Custom Menu Option:</md-subheader>
+        <div layout="row" layout-margin layout-align="left center">
+      
+          <md-input-container class="md-block" flex="15" >
+            <label>Identifier</label>
+            <input class="flex" ng-model="tempMenuOp.id" required md-autofocus/>
+          </md-input-container>
+
+          <md-input-container class="md-block" flex="15" >
+            <label>Description</label>
+            <input class="flex" ng-model="tempMenuOp.description" required md-autofocus/>
+          </md-input-container>
+          
+          <md-input-container class="md-block" flex="40" >
+            <label>Image Path</label>
+            <input class="flex" ng-model="tempMenuOp.imagePath" md-autofocus/>
+          </md-input-container>
+
+          <md-input-container class="md-block" flex="15"  style="padding-bottom: 25px!important;">
+            <label>Position</label>
+            <md-select ng-model="tempMenuOp.position"  aria-label="position"
+                        placeholder="Position" class="flex" >
+              <md-option ng-repeat="positionElem in positionList" ng-value="positionElem.id">{{positionElem.description}}</md-option>
+            </md-select>
+          </md-input-container>
+
+      
+        </div>
+  
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+
+        <md-input-container class="md-block" >           
+            <md-button ng-click="addCustomMenuOpt()" class="md-raised md-primary">
+              CREATE
+            </md-button>
+          </md-input-container>
+          <md-input-container class="md-block" >           
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-input-container>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

@@ -1,0 +1,126 @@
+<md-dialog aria-label="Pages">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Datalink</h2>  
+      <span flex></span>
+      <md-button class="md-icon-button" ng-click="cancel()">
+        <b>X</b>
+      </md-button>
+    </div>
+  </md-toolbar>  
+  <form ng-cloak>
+    <md-dialog-content>
+        <md-subheader class="md-primary form-header">Add new connection:</md-subheader>
+        <md-list>
+          <md-list-item class="md-no-proxy">
+          <!-- <md-input-container flex="25"     style="padding-bottom: 25px!important;">
+              <label>Source </label>
+              <md-select ng-model="emitterGadget" aria-label="Source Gadget"
+                          placeholder="Source Gadget" class="flex" ng-change="refreshGadgetEmitterFields(emitterGadget)">
+                <md-option ng-repeat="gadget in gadgetsSources" ng-value="gadget.id">{{prettyGadgetInfo(gadget)}}</md-option>
+              </md-select>
+            </md-input-container>--> 
+
+            
+         <!-- <md-autocomplete md-no-cache="true" md-selected-item="emitterGadget" md-selected-item-change="refreshGadgetEmitterFields(emitterGadget.id)" md-items="gadget in gadgetsSources"   md-item-text="gadget.header.title.text">
+              <span>{{ gadget.header.title.text}}</span>
+            </md-autocomplete>-->
+            
+            
+            
+             <md-input-container flex="25">
+              <label>Source</label>
+              <input class="flex"  list=gadgetsSourceslist ng-model="emitterGadget" ng-change="refreshGadgetEmitterFields(emitterGadget)"/>
+              <datalist id=gadgetsSourceslist>
+              <option  ng-repeat="gadget in gadgetsSources" ng-value="gadget.prettyTitle" ></option>          
+              </datalist>
+            </md-input-container>
+
+            <md-input-container flex="25">
+          <!--  <label>{{emitterDatasource?'Source Field' + '(' + emitterDatasource + ')':'Source Field'}}</label>-->
+          <label>Source Field</label>
+            <input class="flex"  list=emitterGadgetFieldlist ng-model="emitterGadgetField" />
+            <datalist id=emitterGadgetFieldlist>
+            <option  ng-repeat="field in gadgetEmitterFields" ng-value="field.field">{{field.field}}</option>          
+            </datalist>
+          </md-input-container>
+
+
+
+
+
+            <md-input-container flex="25" style="padding-bottom: 25px!important;">
+              <label>Target Gadget</label>
+              <md-select ng-model="targetGadget" aria-label="Target Gadget"
+                          placeholder="Target Gadget" class="flex" ng-change="refreshGadgetTargetFields(targetGadget)">
+                <md-option ng-repeat="gadget in gadgetsTargets" ng-value="gadget.id">{{prettyGadgetInfo(gadget)}}</md-option>
+              </md-select>
+            </md-input-container>
+
+         <md-input-container flex="25">
+            <label>{{targetDatasource?'Target Field' + '(' + targetDatasource + ')':'Target Field'}}</label>
+            <input class="flex"  list=targetGadgetFieldlist ng-model="targetGadgetField" />
+            <datalist id=targetGadgetFieldlist>
+            <option  ng-repeat="field in gadgetTargetFields" ng-value="field.field">{{field.field}}</option>          
+            </datalist>
+          </md-input-container>
+
+
+
+            <md-input-container class="hide" flex="25">
+           
+            <md-checkbox  ng-model="filterChaining" class="flex">Unchained filter</md-checkbox>
+           </md-input-container>
+            <md-input-container flex="5">
+              <md-button class="md-icon-button md-primary" aria-label="Add Connection" ng-click="create(findEmitterGadgetID(emitterGadget),emitterGadgetField,targetGadget,targetGadgetField,filterChaining)">
+                <md-icon>add</md-icon>
+              </md-button>
+            </md-input-container>
+          </md-list-item>
+        </md-list>
+
+
+
+      <md-subheader class="md-primary form-header">Connections:</md-subheader> 
+      <md-table-container style="margin-bottom: 12px;">
+        <table md-table ng-model="connections" md-progress="promise">
+          <thead md-head>
+            <tr md-row>
+              <th md-column ><span>Source Gadget</span></th>
+              <th md-column ><span>Source Field</span></th>
+              <th md-column ><span>Target Gadget</span></th>
+              <th md-column ><span>Target Field</span></th>
+             <!--<th md-column ><span>Unchained filter</span></th>--> 
+              <th md-column> <span>Options</span></th>
+            </tr>
+          </thead>
+          <tbody md-body>
+            <tr md-row md-select="c" md-select-id="name" md-auto-select ng-repeat="c in connections">
+              <td md-cell>{{ generateGadgetInfo(c.source) }}</td>
+              <td md-cell>{{c.sourceField}}</td>
+              <td md-cell>{{ generateGadgetInfo(c.target) }}</td>
+              <td md-cell>{{c.targetField}}</td>
+              <!--<td md-cell> <md-checkbox  ng-disabled="true" ng-model="c.filterChaining" class="flex"></md-checkbox></td>-->
+              <td md-cell>
+                <md-button class="md-icon-button md-primary" aria-label="Edit Connection" ng-click="edit(c.source,c.sourceField,c.target,c.targetField,c.filterChaining)">
+                    <md-icon>create</md-icon>
+                </md-button>
+                <md-button class="md-icon-button md-warn" aria-label="Delete connection" ng-click="delete(c.source,c.sourceField,c.target,c.targetField,c.filterChaining)">
+                    <md-icon>clear</md-icon>
+                </md-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </md-table-container>
+
+      
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

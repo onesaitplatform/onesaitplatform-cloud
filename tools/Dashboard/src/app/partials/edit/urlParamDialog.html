@@ -1,0 +1,119 @@
+<md-dialog aria-label="Pages">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>URL Parameters</h2> 
+      <span flex></span>
+      <md-button class="md-icon-button" ng-click="cancel()">
+        <b>X</b>
+      </md-button>
+    </div>
+  </md-toolbar>  
+  <form ng-cloak>
+    <md-dialog-content>
+        <md-subheader class="md-primary form-header">Add new parameter:</md-subheader>
+        <md-list>
+          <md-list-item class="md-no-proxy">
+            <md-input-container flex="25" >
+              <label>Parameter Name</label>
+              <input type="text" class="flex"  ng-model="paramName"/>           
+            </md-input-container>
+
+            <md-input-container flex="25"  style="padding-bottom: 25px!important;">
+              <label>Parameter Type</label>
+              
+             <md-select ng-model="type"  aria-label="Source Field"
+                          placeholder="Parameter Type" class="flex">
+                <md-option ng-repeat="type in types" ng-value="type">{{type}}</md-option>
+              </md-select>
+            </md-input-container>
+
+            <md-input-container flex="25"  style="padding-bottom: 25px!important;">
+              <label>Target Gadget</label>
+              <md-select ng-model="targetGadget" aria-label="Target Gadget"
+                          placeholder="Target Gadget" class="flex"  ng-change="refreshGadgetTargetFields(targetGadget)">
+                <md-option ng-repeat="gadget in gadgetsTargets" ng-value="gadget.id">{{prettyGadgetInfo(gadget)}}</md-option>
+              </md-select>
+            </md-input-container>
+
+          <!-- <md-input-container flex="25">
+              <label>{{targetDatasource?'Target Field' + '(' + targetDatasource + ')':'Target Field'}}</label>
+              <md-select ng-model="targetGadgetField"  aria-label="Target Field"
+              placeholder="{{targetDatasource?'Target Field' + '(' + targetDatasource + ')':'Target Field'}}" class="flex">
+                <md-option ng-repeat="field in gadgetTargetFields" ng-value="field.field">{{field.field}}</md-option>
+              </md-select>
+            </md-input-container>--> 
+
+            <md-input-container flex="25">
+              <label>{{targetDatasource?'Target Field' + '(' + targetDatasource + ')':'Target Field'}}</label>
+              <input class="flex"  list=targetGadgetFieldlist ng-model="targetGadgetField" />
+              <datalist id=targetGadgetFieldlist>
+              <option  ng-repeat="field in gadgetTargetFields" ng-value="field.field">{{field.field}}</option>          
+              </datalist>
+            </md-input-container>
+  
+
+            
+
+            <md-input-container flex="25">              
+            <md-checkbox ng-model="mandatory" class="flex">
+              Mandatory
+            </md-checkbox>
+          </md-input-container>
+            <md-input-container flex="5">
+              <md-button class="md-icon-button md-primary" aria-label="Add Connection" ng-click="create(paramName,type,targetGadget,targetGadgetField,mandatory)">
+                <md-icon>add</md-icon>
+              </md-button>            
+            </md-input-container>
+          </md-list-item>
+        </md-list>
+
+
+
+      <md-subheader class="md-primary form-header">Parameters:</md-subheader>
+      <md-table-container style="margin-bottom: 12px;">
+        <table md-table ng-model="parameters" md-progress="promise">
+          <thead md-head>
+            <tr md-row>
+              <th md-column ><span>Parameter Name</span></th>
+              <th md-column ><span>Parameter Type</span></th>
+              <th md-column ><span>Target Gadget</span></th>
+              <th md-column ><span>Target Field</span></th>
+              <th md-column ><span>Mandatory</span></th>
+              <th md-column> <span>Options</span></th>
+            </tr>
+          </thead>
+          <tbody md-body>
+            <tr md-row md-select="c" md-select-id="name" md-auto-select ng-repeat="c in parameters">
+              <td md-cell>{{c.paramName | translate}}</td>
+              <td md-cell>{{c.type}}</td>
+              <td md-cell>{{ generateGadgetInfo(c.target) }}</td>
+              <td md-cell>{{c.targetField}}</td>
+              <td md-cell>
+                <md-checkbox ng-model="c.mandatory" ng-disabled="true" class="flex"  >
+                
+                </md-checkbox>
+              </td>
+              <td md-cell>
+                <md-button class="md-icon-button md-primary" aria-label="Edit Connection" ng-click="edit(c.paramName,c.type,c.target,c.targetField,c.mandatory)">
+                    <md-icon>create</md-icon>
+                </md-button>
+                <md-button class="md-icon-button md-warn" aria-label="Delete connection" ng-click="delete(c.paramName,c.type,c.target,c.targetField,c.mandatory)">
+                  <md-icon>clear</md-icon>
+                </md-button>
+               
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </md-table-container>
+
+      
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

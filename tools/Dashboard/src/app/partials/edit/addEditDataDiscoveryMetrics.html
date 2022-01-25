@@ -1,0 +1,38 @@
+<md-dialog aria-label="Add Metrics">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Metric</h2>
+      <span flex></span>
+      <md-button class="md-icon-button" ng-click="cancel()">
+        <b>X</b>
+      </md-button>
+    </div>
+  </md-toolbar>  
+  <form ng-cloak>
+    <md-dialog-content>
+      <md-subheader ng-if="index === undefined" class="md-primary form-header">Add new metric:</md-subheader>
+      <md-subheader ng-if="index !== undefined" class="md-primary form-header">Edit metric:</md-subheader>
+      <md-input-container flex="25">
+        <label>Metric Name</label>
+        <input type="text" class="flex" ng-model="name"/>        
+      </md-input-container>
+
+      <md-input-container flex="75">
+        <label>Metric Formula</label>
+        <input type="text" class="flex" ng-model="formula">        
+      </md-input-container>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-if="index === undefined" ng-click="createMetric()" class="md-raised md-primary">
+        Create
+      </md-button>
+      <md-button ng-if="index !== undefined" ng-click="editMetric()" class="md-raised md-primary">
+        Edit
+      </md-button>
+      <md-button ng-click="cancel()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

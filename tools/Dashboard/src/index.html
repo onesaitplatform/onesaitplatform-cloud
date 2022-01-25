@@ -1,0 +1,194 @@
+<!doctype html>
+<html ng-app="dashboardFramework">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard Framework</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+  <style>
+    [ng-cloak] {
+      display: none !important;
+    }
+  </style>
+  <script src="../env/env.js"></script>
+  <script>
+    window.__env = window.__env || {};
+    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+    window.__env.socketEndpointSend = '/dsengine/solver';
+    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+    window.__env.endpointControlPanel = '/controlpanel';
+    window.__env.endpointDashboardEngine = '/dashboardengine';
+    window.__env.dashboardEngineUsername = '';
+    window.__env.dashboardEnginePassword = '';
+    window.__env.dashboardEngineOauthtoken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcmluY2lwYWwiOiJhZG1pbmlzdHJhdG9yIiwiY2xpZW50SWQiOiJvbmVzYWl0cGxhdGZvcm0iLCJ1c2VyX25hbWUiOiJhZG1pbmlzdHJhdG9yIiwic2NvcGUiOlsib3BlbmlkIl0sIm5hbWUiOiJhZG1pbmlzdHJhdG9yIiwiZXhwIjoxNTc0NzI4NTgwLCJncmFudFR5cGUiOiJwYXNzd29yZCIsInBhcmFtZXRlcnMiOnsiZ3JhbnRfdHlwZSI6InBhc3N3b3JkIiwidXNlcm5hbWUiOiJhZG1pbmlzdHJhdG9yIn0sImF1dGhvcml0aWVzIjpbIlJPTEVfQURNSU5JU1RSQVRPUiJdLCJqdGkiOiJiZDQ4MWViNi1lNDJhLTQxNzYtYWY1NC1kY2I2NTgyNjQyNDUiLCJjbGllbnRfaWQiOiJvbmVzYWl0cGxhdGZvcm0ifQ.fyopsIphB_xay3DmY1WpYNtRIILgFmKnmO7nmNq325I';
+    window.__env.dashboardEngineLoginRest = '/loginRest';
+    window.__env.dashboardEngineLoginRestTimeout = 5000;
+    window.__env.enableDebug = false;
+    window.__env.dashboardEngineProtocol = 'websocket';
+    window.__env.urlParameters = "";
+    // <![CDATA[    
+    var eventMethod = window.addEventListener
+          ? "addEventListener"
+          : "attachEvent";
+          var eventer = window[eventMethod];
+          var messageEvent = eventMethod === "attachEvent"
+          ? "onmessage"
+          : "message";
+          eventer(messageEvent, function (e) {
+
+    
+      var message;
+      //IF only close
+      if (typeof e.data != "undefined" && e.data.indexOf('closeGadgetFromIframe') >= 0 ){
+          console.log(angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope());    
+          angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().closeDialog();        
+          return ;
+      } else if (typeof e.message != "undefined" && e.message.indexOf('closeGadgetFromIframe') >=0 ) {
+          angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().closeDialog();        
+          return ;
+      }
+      
+      if (typeof e.data != "undefined" && e.data.indexOf('createGadgetFromIframe') >= 0 ){
+              message=JSON.parse(e.data)    ;
+          } else if (typeof e.message != "undefined" && e.message.indexOf('createGadgetFromIframe') >=0 ) {
+              message=JSON.parse(e.message)    ;
+          }
+          if(message!=null){
+              console.log(message);            
+              angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().addGadgetFromIframe(message.createGadgetFromIframe.data.type,message.createGadgetFromIframe.data.id,message.createGadgetFromIframe.data.identification);          
+          }    
+      }); 
+          // ]]>  
+  </script>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- build:css({.tmp/serve,src}) styles/vendor.css -->
+  <link rel="stylesheet" href="../node_modules/angular/angular-csp.css">  
+  <link rel="stylesheet" href="../node_modules/angular-material/angular-material.min.css">
+  <link rel="stylesheet" href="../node_modules/angularjs-color-picker/dist/angularjs-color-picker.min.css">
+  <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
+  <link rel="stylesheet" href="../node_modules/angular-material-data-table/dist/md-data-table.min.css">
+  <link rel="stylesheet" href="../node_modules/angular-tooltips/dist/angular-tooltips.min.css">
+  <link rel="stylesheet" href="../node_modules/Leaflet.vector-markers/dist/leaflet-vector-markers.css">
+  <link rel="stylesheet" href="../node_modules/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../node_modules/angular-moment-picker/dist/angular-moment-picker.min.css"> 
+  <link rel="stylesheet" href="../node_modules/nvd3/build/nv.d3.min.css">
+  <link rel="stylesheet" href="../node_modules/ng-sortable/dist/ng-sortable.min.css">
+  <link rel="stylesheet" href="../node_modules/ng-sortable/dist/ng-sortable.style.min.css">
+  <link rel="stylesheet" href="../node_modules/jsuites/dist/jsuites.css"></link>
+  <link rel="stylesheet" href="../node_modules/jexcel/dist/jexcel.css"></link>
+  
+  <!-- endbuild -->
+
+  <!-- build:css(src) gridster.css -->
+  <!-- inject:directive:css -->
+  <!-- css files will be automatically insert here -->
+  <!-- endinject -->
+  <!-- endbuild -->
+
+  <!-- build:css({.tmp/serve,src}) styles/app.css -->
+  <!-- inject:css -->
+  <!-- css files will be automatically insert here -->
+  <!-- endinject -->
+  <!-- endbuild -->
+</head>
+<body class="layout-column" ng-cloak>
+
+<dashboard editmode="true" iframe="false" selectedpage="0" id="1089e42d-34d0-43a9-911d-304a9e74ba01" public="false" class="flex layout-column"></dashboard>
+
+
+<!-- build:js(src) scripts/vendor.js -->
+<script src="../node_modules/angular/angular.min.js"></script>
+<script src="../node_modules/angular-animate/angular-animate.min.js"></script>
+<script src="../node_modules/angular-aria/angular-aria.min.js"></script>
+<script src="../node_modules/angular-material/angular-material.min.js"></script>
+<script src="../node_modules/tinycolor2/dist/tinycolor-min.js"></script>
+<script src="../node_modules/angularjs-color-picker/dist/angularjs-color-picker.min.js"></script>
+<script src="../node_modules/angular-sanitize/angular-sanitize.min.js"></script>
+<script src="../node_modules/ng-stomp/dist/ng-stomp.standalone.min.js"></script>
+<script src="../node_modules/angular-simple-logger/dist/angular-simple-logger.min.js"></script>
+<script src="../node_modules/chart.js/dist/Chart.min.js"></script>
+<script src="../node_modules/angular-chart.js/dist/angular-chart.min.js"></script>
+<script src="../node_modules/leaflet/dist/leaflet.js"></script>
+<script src="../node_modules/ui-leaflet/dist/ui-leaflet.min.js"></script>
+<script src="../node_modules/angular-material-data-table/dist/md-data-table.min.js"></script>
+<script src="../node_modules/angular-tooltips/dist/angular-tooltips.min.js"></script>
+<script src="../node_modules/Leaflet.vector-markers/dist/leaflet-vector-markers.min.js"></script>
+<script src="../node_modules/ng-sortable/dist/ng-sortable.min.js"></script>
+<script src="../node_modules/jsuites/dist/jsuites.js"></script>
+<script src="../node_modules/jexcel/dist/jexcel.js"></script>
+<script src="../node_modules/angular-translate/dist/angular-translate.min.js"></script>
+
+<!-- add to package when its needed:  "html2canvas": "^1.0.0-alpha.12", "html2pdf.js": "^0.9.1", "jspdf": "^1.4.1", -->
+
+<script src="../node_modules/d3/d3.min.js"></script>
+<script src="../node_modules/nvd3/build/nv.d3.min.js"></script> <!-- or use another assembly -->
+<script src="../node_modules/angular-nvd3/dist/angular-nvd3.min.js"></script>
+<script src="../node_modules/d3-cloud/build/d3.layout.cloud.js"></script>
+<script src="../node_modules/angular-d3-word-cloud/dist/angular-word-cloud.min.js"></script>
+<script src="../node_modules/moment/min/moment-with-locales.min.js"></script>
+<script src="../node_modules/angular-moment-picker/dist/angular-moment-picker.min.js"></script>
+
+
+<!-- endbuild -->
+<!-- angular material css override -->
+<link rel="stylesheet" href="./controlpanel/resources/dashboard/app/resources/angular-override.css"> 
+<!-- Angular Material Fileinput -->
+<link rel="stylesheet" href="./app/resources/lf-ng-md-file-input.min.css">
+<script src="./app/resources/lf-ng-md-file-input.min.js"></script>
+
+<!-- build:js({.tmp/partials,src}) gridster.js -->
+<!-- inject:directive:js -->
+<!-- js files will be automatically insert here -->
+<!-- endinject -->
+<!-- inject:partials-directive -->
+<!-- angular templates will be automatically converted in js and inserted here -->
+<!-- endinject -->
+<!-- endbuild -->
+
+<!-- build:js({.tmp/serve,.tmp/partials,src}) scripts/app.js -->
+<!-- inject:js -->
+<!-- js files will be automatically insert here -->
+<!-- endinject -->
+
+<!-- inject:partials -->
+<!-- angular templates will be automatically converted in js and inserted here -->
+<!-- endinject -->
+<!-- endbuild -->
+
+<!-- Mocano only in edit -->
+<script >	
+  var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
+</script>
+
+<script src="/controlpanel/static/vendor/vs/loader.js"></script>
+
+<script src="/controlpanel/static/vendor/vs/editor/editor.main.nls.js"></script>
+
+<script src="/controlpanel/static/vendor/vs/editor/editor.main.js"></script>
+<!-- End Monaco Require -->
+
+<script>
+  
+  function getURLParameters()
+ 	{	    	 
+ 	    var sPageURL = window.location.search.substring(1);	
+ 	    var sURLVariables = sPageURL.split('&');	
+ 	    var urlParametersMap={};
+ 	    for (var i = 0; i < sURLVariables.length; i++)	
+ 	    {
+ 	    	if(sURLVariables[i].length>0){
+ 	       		var sParameterName = sURLVariables[i].split('=');
+ 	       		urlParametersMap[sParameterName[0]] = sParameterName[1];
+ 	    	}
+ 	    } 	   
+ 	    return urlParametersMap;
+ 	    }
+
+     
+</script>
+</body>
+</html>

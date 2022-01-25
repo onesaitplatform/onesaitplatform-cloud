@@ -1,0 +1,46 @@
+<md-dialog class="modal-lg" aria-label="GadgetEditor">
+  <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Edit Gadget</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <b>X</b>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <form ng-cloak>   
+      <md-subheader class="md-primary form-header">Edit Content:</md-subheader>
+      <div  style="margin-top:25px;">
+          <md-input-container layout="horizontal" layout-padding class="md-dialog-content" style="margin-top: -32px;margin-bottom: -28px;">
+              <md-toolbar ng-if="contenteditor.html === element.content" flex class="small-toolbar green-toolbar">
+                <h5 class="no-margin">
+                  <span>HTML 5 Compiled & Synchronized</span>
+                </h5>
+              </md-toolbar>
+              <md-toolbar ng-if="contenteditor.html !== element.content" flex class="small-toolbar md-accent">
+                <h5 class="no-margin">
+                  <span>HTML 5 NO compiled & NO Synchronized</span>
+                </h5>
+              </md-toolbar>
+          </md-input-container>
+      </div>
+      <md-input-container class="md-dialog-content">
+        <div flex>
+          <div id="htmleditor" style="height:350px"></div >
+        </div>
+      </md-input-container>
+
+  <md-dialog-actions layout="row">
+    <span flex></span>
+    <md-button ng-click="compile()" ng-show="!livecompilation" class="md-raised md-secondary">
+      Compile & Synchronize
+    </md-button>
+    <md-button ng-click="livecompilation = !livecompilation" class="md-raised md-secondary">
+      {{livecompilation?'Disable Live Compilation':'Enable Live Compilation'}}
+    </md-button>
+    <md-button ng-click="hide()" class="md-raised md-primary">
+      Close
+    </md-button>
+  </md-dialog-actions>
+</form>
+</md-dialog>

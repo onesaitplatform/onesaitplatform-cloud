@@ -1,0 +1,9 @@
+<md-toolbar ng-if="vm.dashboard.header.enable" layout="row" class="md-hue-2" layout-align="space-between center" ng-style="{'height': + vm.dashboard.header.height + 'px', 'background': vm.dashboard.header.backgroundColor}">
+  <!--The left side-->
+  <md-headline layout="row" layout-align="start center" class="left-margin-10">
+    <img ng-if="vm.dashboard.header.logo.filedata" ng-src={{vm.dashboard.header.logo.filedata}} ng-style="{'height': + vm.dashboard.header.logo.height + 'px'}" style="padding-left: 12px; padding-right: 12px"></img>
+    <span class="header-title" ng-style="{'color': vm.dashboard.header.textColor}">{{'&nbsp;' + vm.dashboard.header.title | translate}} </span>
+    <span class="header-title" ng-style="{'color': vm.dashboard.header.iconColor}" ng-if="vm.dashboard.navigation.showBreadcrumbIcon">></span>
+    <span class="header-page-title" ng-style="{'color': vm.dashboard.header.pageColor}" ng-if="vm.dashboard.navigation.showBreadcrumb">{{vm.dashboard.pages[vm.selectedpage].title | translate}}</span>
+  </md-headline>
+</md-toolbar>

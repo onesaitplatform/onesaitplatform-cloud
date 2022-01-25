@@ -1,0 +1,71 @@
+<md-dialog aria-label="Pages">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Historical</h2> 
+      <span flex></span>
+      <md-button class="md-icon-button" ng-click="cancel()">
+        <b>X</b>
+      </md-button>
+    </div>
+  </md-toolbar>  
+  <form ng-cloak>
+    <md-dialog-content>     
+      <md-subheader class="md-primary form-header">Select the element of the history to load</md-subheader>
+    <md-subheader class="md-primary form-header">Saved by the user</md-subheader>
+      <md-table-container style="margin-bottom: 12px;">
+        <table md-table ng-model="dates.savedByUser" md-progress="promise">
+          <thead md-head>
+            <tr md-row>
+              <th md-column ><span>Date</span></th>         
+              <th md-column> <span>Select</span></th>
+            </tr>
+          </thead>
+          <tbody md-body>
+            <tr md-row md-select="c" md-select-id="name" md-auto-select ng-repeat="c in dates.savedByUser">
+              <td md-cell>{{c.date}}</td>              
+              <td md-cell>
+                <md-button class="md-icon-button md-primary" aria-label="Select" ng-click="selectDate(c.milis)">
+                  <md-icon>play_arrow</md-icon>
+              </md-button>
+              </td>             
+            </tr>
+          </tbody>
+        </table>
+      </md-table-container>
+      <md-subheader class="md-primary form-header">Auto saved</md-subheader>
+      <md-table-container style="margin-bottom: 12px;">
+        <table md-table ng-model="dates.autoSave" md-progress="promise">
+          <thead md-head>
+            <tr md-row>
+              <th md-column ><span>Date</span></th>         
+              <th md-column> <span>Select</span></th>
+            </tr>
+          </thead>
+          <tbody md-body>
+            <tr md-row md-select="c" md-select-id="name" md-auto-select ng-repeat="c in dates.autoSave">
+              <td md-cell>{{c.date}}</td>              
+              <td md-cell>
+                <md-button class="md-icon-button md-primary" aria-label="Select" ng-click="selectDate(c.milis)">
+                  <md-icon>play_arrow</md-icon>
+              </md-button>
+              </td>             
+            </tr>
+          </tbody>
+        </table>
+      </md-table-container>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="pushsaveLocalByUser()" class="md-raised md-primary">
+        Save only locally
+      </md-button>
+      <md-button ng-click="refreshServerVersion()" class="md-raised md-primary">
+        Refresh to server version
+      </md-button>
+     
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

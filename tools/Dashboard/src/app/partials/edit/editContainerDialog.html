@@ -1,0 +1,103 @@
+<md-dialog aria-label="Container">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Edit Gadget ({{element.id}})</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar>
+  
+  <form ng-cloak>
+    <md-dialog-content>
+        <md-subheader class="md-primary form-header">Gadget Header:</md-subheader>
+        <div layout="row" layout-margin layout-align="left center">
+            <md-checkbox flex="5" ng-model="element.header.enable" class="checkbox-adjust" placeholder="Enable Header">
+                <md-tooltip md-direction="top">Enable/Disable Header</md-tooltip>
+            </md-checkbox>
+          <md-input-container flex="45">
+            <input ng-model="element.header.height" type="number" ng-disabled="element.header.enable==false" placeholder="Header Height">
+          </md-input-container>          
+          <md-input-container flex="50">
+            <label>Background Color</label>
+            <color-picker ng-model="element.header.backgroundColor"></color-picker>
+          </md-input-container>
+                
+          <md-input-container flex="25">
+            <label>Gadget Title</label>
+            <input ng-model="element.header.title.text" required md-autofocus>
+          </md-input-container>
+          <md-input-container flex="75">
+            <label>Text Color</label>
+            <color-picker flex="50" ng-model="element.header.title.textColor"></color-picker>
+          </md-input-container>
+        </div>
+       
+        <div layout="row" layout-margin layout-align="left center">
+          <md-autocomplete
+            flex="25"
+            ng-disabled="false"
+            md-no-cache="false"
+            md-selected-item="ctrl.icons[$index]"
+            md-search-text-change="ctrl.searchTextChange(ctrl.searchText)"
+            md-search-text="element.header.title.icon"
+            md-selected-item-change="ctrl.selectedItemChange(item)"
+            md-items="icon in queryIcon(element.header.title.icon)"
+            md-item-text="icon"
+            md-min-length="0"
+            md-menu-class="autocomplete-custom-template"
+            md-floating-label="Select icon of gadget">
+            <md-item-template style="background-color: red">
+              <span class="item-title">
+                <md-icon>{{icon}}</md-icon>
+                <span> {{icon}} </span>
+              </span>
+            </md-item-template>
+          </md-autocomplete>
+
+          <md-input-container flex="75">
+            <label>Icon Color</label>
+            <color-picker flex="50" ng-model="element.header.title.iconColor"></color-picker>
+          </md-input-container>
+        </div>
+        <md-subheader class="md-primary form-header">Gadget Content:</md-subheader>
+        <div layout="row" layout-margin layout-align="left center">
+          <md-input-container flex="25">
+            <input ng-model="element.padding" type="number" placeholder="Content Padding">
+          </md-input-container>
+          <md-input-container flex="75">
+            <label>Body Background</label>
+            <color-picker flex="100" ng-model="element.backgroundColor"></color-picker>
+          </md-input-container>         
+        </div>
+        <div layout="row" layout-margin layout-align="left center">
+          <md-input-container flex="33">
+            <input ng-model="element.border.width" type="number" placeholder="Border width">
+          </md-input-container>
+          <md-input-container flex="33">
+            <input ng-model="element.border.radius" type="number" placeholder="Corner Radius">
+          </md-input-container>
+          <md-input-container flex="30">
+            <label>Border Color</label>
+            <color-picker flex="33" ng-model="element.border.color"></color-picker>
+          </md-input-container>
+        </div>
+        <md-subheader class="md-primary form-header">Gadget Config:</md-subheader>
+        <div layout="row" layout-margin layout-align="left center">
+            <md-checkbox flex="50" ng-model="element.showOnlyFiltered" class="checkbox-adjust" placeholder="Show widget only filtered">
+              Show Gadget only when it is filtered
+            </md-checkbox>  
+            <md-checkbox flex="50" ng-model="element.notshowDotsMenu" class="checkbox-adjust" placeholder="Do not show menu">
+              Do not show menu
+            </md-checkbox>            
+        </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>
