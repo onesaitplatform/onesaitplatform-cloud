@@ -26,7 +26,7 @@ onesaitplatform: #Config Sofia2 specific
    init:
       configdb: true
       mongodb: true
-      samples: false
+      samples: true
       elasticdb: false
       mailconfig: true
       multitenant.update-mode: true

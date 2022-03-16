@@ -333,12 +333,6 @@ var HeaderController = function() {
 							Content += "<br>" + data.clients[i];
 						}
 					}
-					if(data.resources.length > 0) {
-						Content += "<br><b> Open Data Resources: </b>";
-						for(var i=0; i<data.resources.length; i++){
-							Content += "<br>" + data.resources[i];
-						}
-					}
 					$.confirm({
 						title: Title,
 						theme: 'light',			
