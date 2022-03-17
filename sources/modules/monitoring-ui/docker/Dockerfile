@@ -57,7 +57,9 @@ ENV SERVER_NAME=localhost \
     ENCRYPTION_ITERATIONS=5 \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    USE_KEYCLOAK=false 
+
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh

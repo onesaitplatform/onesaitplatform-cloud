@@ -7,6 +7,7 @@ onesaitplatform:
       base: http://digitaltwinbrokerservice:19300/digitaltwinbroker
     controlpanel:
       base: https://${SERVER_NAME}/controlpanel
+      maxSessionsPerUser: 10
     iotbroker:
       base: http://iotbrokerservice:19000/iot-broker
       advice: http://iotbrokerservice:19000/iot-broker/advice
@@ -18,7 +19,7 @@ onesaitplatform:
       advice: http://flowengineservice:5050/
       proxyurl: https://${SERVER_NAME}/nodered/
     routerStandAlone:
-      base: https://routerservice:20000/router
+      base: http://routerservice:20000/router
       advice: http://routerservice:20000/router/router/advice/
       management: http://routerservice:20000/router/management/
       router: http://routerservice:20000/router/router/
@@ -44,5 +45,3 @@ onesaitplatform:
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
     reportEngine:
       base: http://reportengine:18400/report-engine
-    edge:
-      base: https://iothub02.onesaitplatform.com

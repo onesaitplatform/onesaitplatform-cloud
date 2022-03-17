@@ -32,6 +32,8 @@ onesaitplatform: #Config onesait Platform specific
       iteration-count: 5
    environment.name: local
    authentication:
+      oauth:
+        osp-keycloak: false
       provider: configdb
       configdb:
         acl:

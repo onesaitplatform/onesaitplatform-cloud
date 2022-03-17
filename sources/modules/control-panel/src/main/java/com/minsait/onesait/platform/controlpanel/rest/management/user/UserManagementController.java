@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.controlpanel.rest.management.user;
 
 import static com.minsait.onesait.platform.controlpanel.rest.management.user.UserManagementUrl.OP_USER;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +28,12 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,10 +48,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jayway.jsonpath.JsonPath;
+import com.minsait.onesait.platform.business.services.user.UserOperationsService;
 import com.minsait.onesait.platform.config.model.Configuration;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
+import com.minsait.onesait.platform.config.services.user.MasterUserAmplified;
 import com.minsait.onesait.platform.config.services.user.UserAmplified;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
@@ -55,6 +63,7 @@ import com.minsait.onesait.platform.controlpanel.rest.management.user.model.User
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.mail.MailService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import io.swagger.annotations.Api;
@@ -85,6 +94,8 @@ public class UserManagementController {
 	private ConfigurationService configurationService;
 	@Autowired
 	private MailService mailService;
+	@Autowired
+	private UserOperationsService operations;
 
 	@ApiOperation(value = "Get user by id")
 	@GetMapping("/{id}")
@@ -105,6 +116,44 @@ public class UserManagementController {
 		}
 	}
 
+	@ApiOperation(value = "Get additional info user by id")
+    @GetMapping("/additionalInfo/{id}")
+    @ApiResponses(@ApiResponse(response = MasterUserAmplified.class, code = 200, message = "OK"))
+    @PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+    public ResponseEntity<?> getAdditionalInfo(
+            @ApiParam(value = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
+        log.debug("New GET request for user {}", userId);
+        if (utils.isAdministrator()) {
+            User user = userService.getUser(userId);
+            if (user == null) {
+                log.warn("User {} does not exist", userId);
+                return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+            }
+
+            MasterUser mUser = multitenancyService.getUser(userId);
+            MasterUserAmplified response = new MasterUserAmplified(mUser);
+
+            final DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY");
+            if (user.getDateDeleted() != null && user.getDateDeleted().toString().length() > 0)
+                response.setDeleted(dateFormat.format(user.getDateDeleted()));
+            if (user.getAvatar() != null && user.getAvatar().length > 0)
+                response.setAvatar(user.getAvatar());
+            if (user.getUpdatedAt() != null && user.getUpdatedAt().toString().length() > 0)
+                response.setUpdated(dateFormat.format(user.getUpdatedAt()));
+            if (user.getExtraFields() != null)
+                response.setExtraFields(user.getExtraFields());
+            response.setRole(user.getRole().getId());
+            response.setCreated(dateFormat.format(user.getCreatedAt()));
+            response.setActive(user.isActive());
+
+            log.debug("Found user {}", userId);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            log.warn("Forbidden access", userId);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
+	
 	@ApiOperation(value = "Get user by id")
 	@GetMapping("/username/like/{filter}")
 	@ApiResponses(@ApiResponse(response = UserAmplified.class, code = 200, message = "OK"))
@@ -204,7 +253,7 @@ public class UserManagementController {
 			if (userService.getUser(user.getUsername()) != null) {
 				return new ResponseEntity<>("User already exists", HttpStatus.CONFLICT);
 			}
-			if (!user.getUsername().matches("[a-zA-Z0-9@._]*")) {
+			if (!user.getUsername().matches("[a-zA-Z0-9@._-]*")) {
 				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '@', '.', '_'",
 						HttpStatus.BAD_REQUEST);
 			}
@@ -220,17 +269,31 @@ public class UserManagementController {
 			if (user.getAvatar() != null) {
 				userDb.setAvatar(user.getAvatar());
 			}
-			if (!StringUtils.isEmpty(user.getExtraFields())) {
-				userDb.setExtraFields(user.getExtraFields());
+			String extraFields = user.getExtraFields();
+			if (!StringUtils.isEmpty(extraFields)) {
+			    try {
+			        JSONObject json = new JSONObject(extraFields);
+	                userDb.setExtraFields(json.toString());
+			    } catch (JSONException e) {
+			        log.error("Extra Fields Error: ", e);
+	                return new ResponseEntity<>("Extra Fields Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+			    }
 			}
 			userDb.setEmail(user.getMail());
 			try {
-				userDb.setRole(userService.getUserRoleById(user.getRole()));
-				if (!StringUtils.isEmpty(user.getTenant())) {
+			    Role role = userService.getUserRoleById(user.getRole());
+			    if(role != null )
+			        userDb.setRole(role);
+			    else 
+			        return new ResponseEntity<>("User Role Error: " + user.getRole() + " is not a valid role", HttpStatus.BAD_REQUEST);
+				
+			    if (!StringUtils.isEmpty(user.getTenant())) {
 					multitenancyService.getTenant(user.getTenant())
 					.ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
 				}
 				userService.createUser(userDb);
+				operations.createPostOperationsUser(userDb);
+				operations.createPostOntologyUser(userDb);
 				return new ResponseEntity<>(HttpStatus.CREATED);
 			} catch (final UserServiceException e) {
 				log.error("Error creating user", e);
@@ -262,12 +325,23 @@ public class UserManagementController {
 			userDb.setFullName(user.getFullName());
 			userDb.setEmail(user.getMail());
 			userDb.setAvatar(user.getAvatar());
-			if (!StringUtils.isEmpty(user.getExtraFields())) {
-				userDb.setExtraFields(user.getExtraFields());
-			}
+			String extraFields = user.getExtraFields();
+            if (!StringUtils.isEmpty(extraFields)) {
+                try {
+                    JSONObject json = new JSONObject(extraFields);
+                    userDb.setExtraFields(json.toString());
+                } catch (JSONException e) {
+                    log.error("Extra Fields Error: ", e);
+                    return new ResponseEntity<>("Extra Fields Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+                }
+            }
 
-			userDb.setRole(userService.getUserRoleById(user.getRole()));
-
+            Role role = userService.getUserRoleById(user.getRole());
+            if(role != null )
+                userDb.setRole(role);
+            else 
+                return new ResponseEntity<>("User Role Error: " + user.getRole() + " is not a valid role", HttpStatus.BAD_REQUEST);
+           
 			try {
 				if (!StringUtils.isEmpty(user.getPassword()) && utils.paswordValidation(user.getPassword())) {
 					userDb.setPassword(user.getPassword());
@@ -400,12 +474,23 @@ public class UserManagementController {
 		if (!StringUtils.isEmpty(dto.getMail())) {
 			user.setAvatar(dto.getAvatar());
 		}
-		if (!StringUtils.isEmpty(dto.getExtraFields())) {
-			user.setExtraFields(dto.getExtraFields());
-		}
-		if (!StringUtils.isEmpty(dto.getRole())) {
-			user.setRole(userService.getUserRoleById(dto.getRole()));
-		}
+		
+		String extraFields = dto.getExtraFields();
+        if (!StringUtils.isEmpty(extraFields)) {
+            try {
+                JSONObject json = new JSONObject(extraFields);
+                user.setExtraFields(json.toString());
+            } catch (JSONException e) {
+                throw new UserServiceException("Extra Fields Error: " + e.getMessage());
+            }
+        }
+        
+		Role role = userService.getUserRoleById(dto.getRole());
+        if(role != null )
+            user.setRole(role);
+        else 
+            throw new UserServiceException("User Role Error: " + dto.getRole() + " is not a valid role");
+        
 		if (!StringUtils.isEmpty(dto.getPassword()) && utils.paswordValidation(dto.getPassword())) {
 			user.setPassword(dto.getPassword());
 			final Configuration configuration = configurationService

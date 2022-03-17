@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.3.0-ce</version>
+		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-business-services</artifactId>
@@ -20,14 +20,14 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		
 	
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-services</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 			<!-- Hive includes incompatible mockito and jersey dependency -->
 			<exclusions>
 				<exclusion>
@@ -43,7 +43,7 @@
 		</dependency>
 
 		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-planner</artifactId> 
-			<version>${onesaitplatform.version}</version> </dependency> -->
+			<version>${project.version}</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-binary-repository</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 	</dependencies>

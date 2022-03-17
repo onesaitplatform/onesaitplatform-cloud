@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
-import net.sf.jsqlparser.statement.select.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,27 +47,35 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.GroupByElement;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 
 @Component
 @Qualifier("SQLSolver")
 public class SolverSQLImpl implements SolverInterface {
 
 	private static final Logger log = LoggerFactory.getLogger(SolverSQLImpl.class);
-
 	@Autowired
 	QueryToolService qts;
 
+	private static String[] ESPECIAL_FUNCTIONS = new String[] { "date_histogram" };
 	private static final String PRE_COMPLEX_QUERY_TPL = "select * from (";
 	private static final String POST_COMPLEX_QUERY_TPL = ") as Solved";
 
 	@Override
 	public String buildQueryAndSolve(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
 			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
-			String executeAs, String ontology)
+			String executeAs, String ontology, boolean isSimpleMode)
 			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException {
 		try {
 			return qts.querySQLAsJson(executeAs, ontology, buildQuery(query, maxreg, where, project, group, sort,
-					offset, limit, param, debug, executeAs, ontology), 0);
+					offset, limit, param, debug, executeAs, ontology, isSimpleMode), 0);
 		} catch (DBPersistenceException e) {
 			throw new DashboardEngineException(DashboardEngineException.Error.GENERIC_EXCEPTION,
 					e.getDetailedMessage());
@@ -78,7 +85,7 @@ public class SolverSQLImpl implements SolverInterface {
 	@Override
 	public String buildQuery(String query, int maxreg, List<FilterStt> where, List<ProjectStt> project,
 			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
-			String executeAs, String ontology) {
+			String executeAs, String ontology, boolean isSimpleMode) {
 
 		String processedQuery;
 		String trimQuery = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
@@ -93,15 +100,20 @@ public class SolverSQLImpl implements SolverInterface {
 
 		HashMap<String, String> hashMapArrays = new HashMap<String, String>();
 		trimParamsQuery = parseArrays(trimParamsQuery, hashMapArrays);
+		trimParamsQuery = commentGroupByfunctions(trimParamsQuery);
+
 		try {
-			if (isSimpleDatasource(trimQuery)) {
+			if (isSimpleMode || isSimpleDatasource(trimQuery)) {
 				processedQuery = buildFromSimpleQuery(trimParamsQuery, maxreg, where, project, group, sort, offset,
 						limit, param);
 				processedQuery = unparseArrays(processedQuery, hashMapArrays);
+				processedQuery = unCommentGroupByfunctions(processedQuery);
+				log.debug("commentGroupByfunctions Query: {}", trimParamsQuery);
 			} else {
 				processedQuery = buildFromComplexQuery(trimParamsQuery, maxreg, where, project, group, sort, offset,
 						limit, param);
 				processedQuery = unparseArrays(processedQuery, hashMapArrays);
+				processedQuery = unCommentGroupByfunctions(processedQuery);
 			}
 		} catch (JSQLParserException e) {
 			throw new DashboardEngineException(DashboardEngineException.Error.PARSE_EXCEPTION, e.getCause());
@@ -111,6 +123,33 @@ public class SolverSQLImpl implements SolverInterface {
 
 		return processedQuery;
 
+	}
+
+	private String unCommentGroupByfunctions(String query) {
+		for (String espFunction : ESPECIAL_FUNCTIONS) {
+			int index = query.indexOf(espFunction);
+			if (index >= 0) {
+				int indexleft = query.indexOf("(", index);
+				query = query.substring(0, indexleft + 1) + query.substring(indexleft + 2, query.length());
+				int indexright = query.indexOf(")", indexleft);
+				query = query.substring(0, indexright - 1) + query.substring(indexright, query.length());
+			}
+		}
+		return query;
+
+	}
+
+	private String commentGroupByfunctions(String query) {
+		for (String espFunction : ESPECIAL_FUNCTIONS) {
+			int index = query.indexOf(espFunction);
+			if (index >= 0) {
+				int indexleft = query.indexOf("(", index);
+				query = query.substring(0, indexleft + 1) + "`" + query.substring(indexleft + 1, query.length());
+				int indexright = query.indexOf(")", indexleft);
+				query = query.substring(0, indexright) + "`" + query.substring(indexright, query.length());
+			}
+		}
+		return query;
 	}
 
 	private static String parseArrays(String query, HashMap<String, String> hasmap) {
@@ -153,6 +192,7 @@ public class SolverSQLImpl implements SolverInterface {
 			throws JSQLParserException {
 
 		Statement statement = CCJSqlParserUtil.parse(query);
+		log.debug("CCJSqlParserUtil.parse: {}", query);
 		PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
 		List<SelectItem> selectItems = select.getSelectItems();
 
@@ -167,7 +207,7 @@ public class SolverSQLImpl implements SolverInterface {
 
 		if (group != null && !group.isEmpty()) {
 			List<Expression> querygroup = null;
-			if (select.getGroupBy() != null){
+			if (select.getGroupBy() != null) {
 				querygroup = select.getGroupBy().getGroupByExpressions();
 			}
 			GroupByElement gbyelement = new GroupByElement();

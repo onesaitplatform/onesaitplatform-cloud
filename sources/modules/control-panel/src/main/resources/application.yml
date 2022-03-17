@@ -70,6 +70,7 @@ onesaitplatform: #Config onesait Platform specific
    authentication:
       oauth:
         enabled: false
+        osp-keycloak: false
       configdb:
         acl:
           enabled: false
@@ -177,7 +178,7 @@ onesaitplatform: #Config onesait Platform specific
       remove.file.timeout: 1800 #seconds
       tmp.file.path: /tmp/files/
       tmp.file.max.size: 10000 #MB
-   database.elasticsearch.enabled: false
+   database.elasticsearch.enabled: true
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -246,10 +247,11 @@ onesaitplatform: #Config onesait Platform specific
    webproject:
       rootfolder.path: /usr/local/webprojects/
       baseurl: http://localhost:8087/web/
+      template.zip: http://localhost:18000/controlpanel/static/wtop/wtop.zip
    iotbroker.plugable:
      gateway:
       kafka:
-        enable: false
+        enable: true
         brokers: none
         host: localhost
         port: 9095
@@ -270,7 +272,7 @@ onesaitplatform: #Config onesait Platform specific
           out:
             prefix: KSQLDESTYNY_
             topic.pattern: KSQLDESTYNY.*
-   kafka.ksql.enable: false
+   kafka.ksql.enable: true
    analytics.notebook:
       zeppelinGlobalTimeout: 120000
       zeppelinProtocol: http
@@ -298,7 +300,7 @@ onesaitplatform: #Config onesait Platform specific
       pass: user1
       guestUsername: guest
       guestPass: guest
-      version: 3.10.0 # Currently supported: 3.3.0, 3.10.0 and 3.13.0
+      version: 3.10.0 # Currently supported: 3.3.0, 3.10.0, 3.13.0 and 3.18.1
    router.avoidsslverification: true
    router.alternativeURL: http://localhost:20000/router/router/ 
    kafka.burrow.monitoring:
@@ -377,8 +379,8 @@ spring: ## General Config
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: ${spring.boot.admin.password}
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
    servlet:
       multipart:
          enabled: false
@@ -436,6 +438,7 @@ logging:
       com.minsait: DEBUG
       org.springframework: INFO
       org.springframework.security: INFO
+      org.springframework.boot.autoconfigure.security: INFO
       org.apache.kafka: ERROR
       org.eclipse.jetty: WARN
       com.hazelcast: INFO
@@ -447,6 +450,7 @@ cloud-gateway:
   user: operations
   password: operations
   url: https://development.onesaitplatform.com
+
     
 captcha:
   enable: false
@@ -461,9 +465,10 @@ dynamic-load-balancer:
   url: http://localhost:8000/nginx 
   
 csrf:
-  enable: false
+  enable: true
 
 jasypt.encryptor.password: onesait  
+
 
 proxy-mail:
   host: localhost

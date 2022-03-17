@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
 						<li><a th:href="@{/multitenancy/configuration/list}"> <span th:text="#{configurations.breadcrumb.prev}">configurations</span></a></li>						
 					</ul>						
 				</div>
@@ -76,45 +76,52 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
-					
+				<div class="row">					
 						<div class="portlet light">
 							<div class="portlet-title">
 								<div class="caption">
 									
-									<span class="caption-subject" th:text="#{configurations.template.list}"> Manage Config</span>
+									<span class="caption-subject" th:text="#{configurations.breadcrumb.prev}"> Manage Config</span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
-								<div class="actions margin-right-20">
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='/controlpanel/multitenancy/configuration/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>
+								<!--<div class="actions margin-right-20">
 									<div class="btn-group">
 									</div>
 										<button sec:authorize="@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='/controlpanel/multitenancy/configuration/create'" > <span th:text="#{gen.create}">New </span></button>
-								</div>																
+								</div>-->																
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								
 								<div class="row">
-									<div class="col-md-12 alert-zone">
-										<!-- ALERT ZONE -->																			
-									</div>
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE																			
+									</div>-->
 									<!-- USER LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene">																						
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="configurations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+												<table id="configurations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas text-left" > <span th:text="#{configurations.type}" >Configuration Type</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{configuration.description}">Description</span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{gen.updated}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"> <span th:text="#{gen.options}"> Options</span></th>
 												
 														</tr>
 													</thead>
@@ -125,17 +132,17 @@
 															<!-- DESCRIPTION -->
 															<td class="text-left no-wrap" th:text="${configuration.description}"></td>												
 															<!-- DATE --> 
-			 												<td class="text-center" th:if="${configuration.createdAt!=null}"><span th:text="${#dates.format(configuration.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(configuration.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${configuration.createdAt==null}" th:text="'---'"></td>
+			 												<td class="text-left" th:if="${configuration.createdAt!=null}"><span th:text="${#dates.format(configuration.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(configuration.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${configuration.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE --> 
-			 												<td class="text-center" th:if="${configuration.updatedAt!=null}"><span th:text="${#dates.format(configuration.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(configuration.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${configuration.updatedAt==null}" th:text="'---'"></td>
+			 												<td class="text-left" th:if="${configuration.updatedAt!=null}"><span th:text="${#dates.format(configuration.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(configuration.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${configuration.updatedAt==null}" th:text="'---'"></td>
 															
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/multitenancy/configuration/update/${configuration.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
+																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/multitenancy/configuration/update/${configuration.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -143,16 +150,25 @@
 												</table>
 												
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														<span th:text="#{gen.columns}"> Columns </span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{configurations.type}">Configuration Type</label>
-														<label class="toggle-vis" data-column="1" th:text="#{configuration.description}">Description</label>		
-														<label class="toggle-vis" data-column="2" th:text="#{gen.created}">Created At</label>
-														<label class="toggle-vis" data-column="3" th:text="#{gen.updated}">Updated At</label>	
-														<label class="toggle-vis" data-column="4" th:text="#{gen.options}"> Options</label>
+												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{configurations.type}"> Configuration Type </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{configuration.description}"> Description </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{gen.created}"> Created at</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.updated}"> Updated at</label>
+														</span>
 													</div>
 												</div>											
 											</div>
@@ -161,7 +177,6 @@
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -220,14 +235,14 @@
 	
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#configurations').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
+			//$(this).toggleClass('text-muted line-through');			
 		});	
 		
 		// SEARCH FORM RESET
@@ -243,10 +258,26 @@
 	 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  
-		
-		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		/*var oTable = $('#configurations').dataTable({
+	      "bAutoWidth": false
+	      });*/
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
+
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#configurations_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#configurations_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#configurations_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
 		
 	});
 	

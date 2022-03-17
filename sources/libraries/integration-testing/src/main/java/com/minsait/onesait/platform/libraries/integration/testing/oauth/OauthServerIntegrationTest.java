@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class OauthServerIntegrationTest extends AbstractTestNGSpringContextTests
 	@Value("${oauth-server}")
 	private String oauthServer;
 
-	@Test(alwaysRun = true, invocationCount = 250, threadPoolSize = 10, timeOut = 100000)
+	@Test(alwaysRun = true, invocationCount = 20, threadPoolSize = 10, timeOut = 100000)
 	public void whenRightCredentialsAreProvided_thenOauthTokenIsFetched() {
 		final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add(GRANT_TYPE, GRANT_TYPE_PASSWORD);

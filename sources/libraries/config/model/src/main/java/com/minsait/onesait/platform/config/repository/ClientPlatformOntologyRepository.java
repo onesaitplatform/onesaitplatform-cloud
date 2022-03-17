@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,14 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 			+ "o.clientPlatform.identification = :clientPlatformId")
 	List<ClientPlatformOntology> findByClientPlatformAndInsertAccess(
 			@Param("clientPlatformId") String clientPlatformId);
+
+	@Query("SELECT o " + "FROM ClientPlatformOntology AS o " + "WHERE o.access != 'QUERY' AND "
+			+ "o.ontology = :ontologyId")
+	List<ClientPlatformOntology> findByOntologyAndInsertAccess(@Param("ontologyId") Ontology ontologyId);
+
+	@Query("SELECT o " + "FROM ClientPlatformOntology AS o " + "WHERE o.access != 'INSERT' AND "
+			+ "o.ontology = :ontologyId")
+	List<ClientPlatformOntology> findByOntologyAndQueryAccess(@Param("ontologyId") Ontology ontologyId);
 
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepository", unless = "#result==null or #result.size()==0", key = "#p0.id")
 	List<ClientPlatformOntology> findAllById(String id);

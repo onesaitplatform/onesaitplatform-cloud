@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.persistence.elasticsearch;
+
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.List;
@@ -27,16 +29,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESInsertService;
 import com.minsait.onesait.platform.persistence.util.ElasticSearchFileUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
+//@RunWith(MockitoJUnitRunner.Silent.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -44,23 +50,30 @@ import lombok.extern.slf4j.Slf4j;
 @Category(IntegrationTest.class)
 public class ElasticSearchBasicApiTest {
 
-	public final static String TEST_INDEX = "test" + System.currentTimeMillis();
-	public final static String TEST_INDEX_GAME_OF_THRONES = TEST_INDEX + "_game_of_thrones";
-	public final static String TEST_INDEX_ONLINE = TEST_INDEX + "_online";
-	public String dataMapping = "{  \"" + TEST_INDEX_GAME_OF_THRONES + "\": { " + " \"properties\": {\n"
-			+ " \"nickname\": {\n" + "\"type\":\"text\", " + "\"fielddata\":true" + "},\n" + " \"name\": {\n"
-			+ "\"properties\": {\n" + "\"firstname\": {\n" + "\"type\": \"text\",\n" + "  \"fielddata\": true\n"
-			+ "},\n" + "\"lastname\": {\n" + "\"type\": \"text\",\n" + "  \"fielddata\": true\n" + "},\n"
-			+ "\"ofHerName\": {\n" + "\"type\": \"integer\"\n" + "},\n" + "\"ofHisName\": {\n"
-			+ "\"type\": \"integer\"\n" + "}\n" + "}\n" + "}" + "} } }";
+	private static final String ACCOUNTS_STR = "Accounts" + System.currentTimeMillis();
+	private static final String ACCOUNTS_ONTOLOGY = ACCOUNTS_STR + System.currentTimeMillis();
+	private static final String TYPE_TEXT = "            \"type\": \"text\",\n";
+	private static final String FIELDDATA_TRUE = "            \"fielddata\": true\n";
 	@Autowired
 	ESBaseApi connector;
-
 	@Autowired
 	ESInsertService sSInsertService;
 
-	private boolean createTestIndex(String index) {
-		final boolean res = connector.createIndex(index);
+	@MockBean
+	private OntologyElastic elasticOntol;
+
+	@MockBean
+	private Ontology ontology;
+
+	private boolean createTestIndex() {
+
+		deleteTestIndex();
+		final String dataMapping = "{  \"" + ACCOUNTS_STR + "\": {" + " \"properties\": {\n"
+				+ "          \"gender\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          },"
+				+ "          \"address\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          },"
+				+ "          \"state\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          }" + "       }" + "   }" + "}";
+
+		final boolean res = connector.createIndex(ACCOUNTS_ONTOLOGY.toLowerCase(), dataMapping, null);
 		log.info("createTestIndex :" + res);
 		return res;
 	}
@@ -70,28 +83,39 @@ public class ElasticSearchBasicApiTest {
 		log.info("teardown process...");
 
 		try {
-			deleteTestIndex(TEST_INDEX_ONLINE);
+			deleteTestIndex();
 		} catch (final Exception e) {
 			log.error("Something happens when deleting indexes :" + e.getMessage());
 		}
 
 	}
 
-	private void deleteTestIndex(String index) {
-		final boolean res = connector.deleteIndex(index);
-		log.info("deleteTestIndex :" + res);
+	private void deleteTestIndex() {
+		try {
+			final boolean res = connector.deleteIndex(ACCOUNTS_ONTOLOGY.toLowerCase());
+			log.info("deleteTestIndex :" + res);
+		} catch (final Exception e) {
+			log.error("Something happens when deleting indexes :" + e.getMessage());
+		}
 	}
 
 	@Test
 	public void testCreateTable() {
 		try {
-			createTestIndex(TEST_INDEX_ONLINE);
-			List<String> list = ElasticSearchFileUtil
-					.readLines(new File(this.getClass().getClassLoader().getResource("online.json").toURI()));
 
-			List<String> result = list.stream().filter(x -> x.startsWith("{\"0\"")).collect(Collectors.toList());
+			// Create index
+			createTestIndex();
+			// Insert Data
+			final List<String> list = ElasticSearchFileUtil
+					.readLines(new File(getClass().getClassLoader().getResource("Accounts-dataset.json").getFile()));
 
-			ComplexWriteResult r = sSInsertService.bulkInsert(TEST_INDEX_ONLINE, result, dataMapping);
+			final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
+					.collect(Collectors.toList());
+			when(elasticOntol.getOntologyId()).thenReturn(ontology);
+			when(elasticOntol.getOntologyId().getIdentification()).thenReturn(ACCOUNTS_ONTOLOGY);
+			when(elasticOntol.getCustomIdConfig()).thenReturn(false);
+			when(elasticOntol.getTemplateConfig()).thenReturn(false);
+			ComplexWriteResult r = sSInsertService.bulkInsert(elasticOntol, result);
 
 			log.info("Loaded Bulk :" + r.getData().size());
 
@@ -100,5 +124,4 @@ public class ElasticSearchBasicApiTest {
 			Assert.fail("No connection. " + e);
 		}
 	}
-
 }

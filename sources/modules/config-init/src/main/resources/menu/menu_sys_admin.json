@@ -6,27 +6,18 @@
 
 		{
 			"title": {
-				"EN": "",
-				"ES": ""
-			},
-			"icon": "flaticon-more-v3",
-			"url": "",
-			"submenu": []
-		},
-
-		
-		{
-			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS"
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
 			},
-			"icon": "flaticon-refresh",
+			"icon": "icon-tools",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "System Audit",
-						"ES": "Auditoría del Sistema"
+						"ES": "Auditoría del Sistema",
+						"FR": "Audit du système"
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
@@ -34,7 +25,8 @@
 				{
 					"title": {
 						"EN": "Monitoring UI",
-						"ES": "Consola Monitorización"
+						"ES": "Consola Monitorización",
+						"FR": "Interface Utilisateur de Surveillance"
 					},
 					"icon": "",
 					"url": "/controlpanel/monitoringui"
@@ -42,7 +34,8 @@
 				{
 					"title": {
 						"EN": "Kafka Monitoring",
-						"ES": "Monitorización de Kafka"
+						"ES": "Monitorización de Kafka",
+						"FR": "Surveillance Kafka"
 					},
 					"icon": "",
 					"url": "/controlpanel/kafka/monitoring/list"

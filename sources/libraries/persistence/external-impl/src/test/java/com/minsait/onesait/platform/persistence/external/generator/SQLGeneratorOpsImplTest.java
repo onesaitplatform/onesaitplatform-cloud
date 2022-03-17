@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class SQLGeneratorOpsImplTest {
 	private final static String EXPECTED_IMPALA_CREATE = "CREATE TABLE ontology (column1 INT )";
 	private final static String EXPECTED_ORACLE_CREATE = "CREATE TABLE ontology (column1 INTEGER )";
 	private final static String EXPECTED_SQLSERVER_CREATE = "CREATE TABLE ontology (column1 INT )";
-	private final static String EXPECTED_POSTGRESQL_CREATE = "CREATE TABLE ontology (column1 INTEGER )";
+	private final static String EXPECTED_POSTGRESQL_CREATE = "CREATE TABLE \"ontology\" (column1 INTEGER )";
 	
 	/** EXPECTED FIELD PARSED **/
 	private final static String EXPECTED_COMMON_FIELDS_PARSED = "[campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2']";

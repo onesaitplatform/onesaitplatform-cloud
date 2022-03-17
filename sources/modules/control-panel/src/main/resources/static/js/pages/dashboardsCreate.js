@@ -47,7 +47,9 @@ var DashboardsCreateController = function() {
 	var deleteDashboardConfirmation = function(dashboardId){
 		console.log('deleteDashoardConfirmation() -> formId: '+ dashboardId);		
 		// no Id no fun!
-		if ( !dashboardId ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO DASHBOARD-FORM SELECTED!'}); return false; }
+		if ( !dashboardId ) {
+			toastr.error('NO DASHBOARD-FORM SELECTED!','');
+			}
 		
 		logControl ? console.log('deleteDashboardConfirmation() -> formAction: ' + $('.delete-dashboard').attr('action') + ' ID: ' + $('.delete-dashboard').attr('userId')) : '';
 		
@@ -108,7 +110,9 @@ var DashboardsCreateController = function() {
 				$("#users").selectpicker('deselectAll');
 				$("#users").selectpicker('refresh');
 				if (authorizationsArr.length == 0){
-					$('#alert-authorizations').toggle(!$('#alert-authorizations').is(':visible'));					
+					if(!$('#alert-authorizations').is(':visible')){
+						$('#alert-authorizations').show();
+					}		
 					$('#authorizations').addClass('hide');
 					
 				}	
@@ -144,8 +148,7 @@ var DashboardsCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#dashboard_create_form');
-        var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
+       
 		
 					
 		// set current language
@@ -163,10 +166,8 @@ var DashboardsCreateController = function() {
 				description:	{ minlength: 5, required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit  
-            	
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+
+            	toastr.error(messagesForms.validation.genFormError,'');
             },
             errorPlacement: function(error, element) {				
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -186,9 +187,11 @@ var DashboardsCreateController = function() {
                 label.closest('.form-group').removeClass('has-error');
             },
 			// ALL OK, THEN SUBMIT.
-            submitHandler: function(form) {            	
+            submitHandler: function(form) {      
+	      	
             	if(($('#categories_select').val() != undefined && $('#categories_select').val()!="") &&($('#subcategories').val() == undefined && $('#subcategories').val()=="") ){
-            		$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: dashboardCreateReg.subcategory});
+            		
+					toastr.error(dashboardCreateReg.subcategory,'');
             		return;
             	}else if(($('#categories_select').val() == undefined || $('#categories_select').val()=="") &&($('#subcategories').val() == undefined || $('#subcategories').val()=="")){
             		
@@ -212,8 +215,8 @@ var DashboardsCreateController = function() {
 	            	  y.insertAfter("#checkboxPublic_aux");
             	    
 	            	formAux.attr("action", "?" + csrfParameter + "=" + csrfValue)
-            	    success1.show();
-					error1.hide();					
+            	    toastr.success(messagesForms.validation.genFormSuccess,'');	
+				
 					formAux.submit();		
             	}else{
             	    var formAux = $('#dashboard_aux_create_form');           
@@ -235,8 +238,8 @@ var DashboardsCreateController = function() {
 	            	  y.insertAfter("#checkboxPublic_aux");
             	    
 	            	formAux.attr("action", "?" + csrfParameter + "=" + csrfValue)
-            	    success1.show();
-					error1.hide();					
+            	    toastr.success(messagesForms.validation.genFormSuccess,'');	
+		
 					formAux.submit();	
             	}
 			}
@@ -273,6 +276,62 @@ var DashboardsCreateController = function() {
 	    return ret;
 	};
 	
+	
+	var initTemplateElements = function(){
+		
+	$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});			
+		
+	// Reset form
+		$('#resetBtn').on('click',function(){ 
+			cleanFields('dashboard_create_form');
+		});		
+		
+	}
+	
+	// CLEAN FIELDS FORM
+	var cleanFields = function (formId) {
+		
+		//CLEAR OUT THE VALIDATION ERRORS
+		$('#'+formId).validate().resetForm(); 
+		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
+			if(!$(this).hasClass("no-remove")){$(this).val('');}
+		});
+		
+		//CLEANING SELECTs
+		$(".selectpicker").each(function(){
+			$(this).val( '' );
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});
+		
+		// CLEANING tagsinput
+		$('.tagsinput').tagsinput('removeAll');
+		$('.tagsinput').prev().removeClass('tagsinput-has-error');
+		$('.tagsinput').nextAll('span:first').addClass('hide');
+
+		// CLEANING CODEMIRROR
+		if ($('.CodeMirror')[0].CodeMirror){
+			var editor = $('.CodeMirror')[0].CodeMirror;
+			editor.setValue('');
+			$('.CodeMirror').removeClass('editor-has-error');
+			$('.CodeMirror').nextAll('span:first').addClass('hide');
+		}
+		
+		
+		//CLEANING AUTHORIZATION
+		$('#dashboard_autthorizations > tbody > tr > td > button').map(function (obj){
+				var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();					
+				authorization('delete', selUser, '','', obj );
+		})
+		
+		//CLEANING IMAGE
+		$('#image').val('');
+		$('#showedImgPreview').attr('src', '/controlpanel/img/APPLICATION.png');
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+	}
 	
 	 function validateImgSize() {
 	        if ($('#image').prop('files') && $('#image').prop('files')[0].size>60*1024){
@@ -326,6 +385,7 @@ var DashboardsCreateController = function() {
 			
 		
 			initAccess();
+			initTemplateElements();
 		
 		},
 		
@@ -366,7 +426,10 @@ var DashboardsCreateController = function() {
 					// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns object with data.
 					authorization('insert',$('#users').val(),$('#users')[0].selectedOptions[0].text,$('#accesstypes').val(),'');
 								
-				} else {  $.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: dashboardCreateReg.validations.authuser}); }
+				} else { 
+					
+					toastr.error(dashboardCreateReg.validations.authuser,''); 
+				}
 			
 		},
 		

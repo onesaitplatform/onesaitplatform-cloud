@@ -30,6 +30,8 @@ spring:
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://rest-planner:${server.port}${server.servlet.contextPath}/
+      client.username: ${SBA_USERNAME}
+      client.password: ${SBA_SECRET}
 quartz:
     datasource:
       hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}

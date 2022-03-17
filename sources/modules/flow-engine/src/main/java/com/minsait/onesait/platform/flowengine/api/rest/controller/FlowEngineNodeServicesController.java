@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineAuditRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
@@ -120,6 +121,13 @@ public class FlowEngineNodeServicesController {
 			throws JsonProcessingException, NotFoundException {
 		return flowEngineNodeService.submitInsert(insertRequest.getOntology(), insertRequest.getData(),
 				insertRequest.getDomainName());
+	}
+	
+	@PostMapping(value = "/user/audit", produces = { "application/javascript", "application/json" })
+	public @ResponseBody String submitAudit(@RequestBody FlowEngineAuditRequest auditRequest)
+			throws JsonProcessingException, NotFoundException {
+            flowEngineNodeService.submitAudit( auditRequest.getData(),auditRequest.getDomainName());
+            return "{\"result\":\"OK\"}";
 	}
 
 	@GetMapping(value = "/user/digital_twin_ypes", produces = { "application/javascript", "application/json" })

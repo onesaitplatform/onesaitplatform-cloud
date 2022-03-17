@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,13 +58,16 @@ public class OauthServerAuditableAspect extends BaseAspect {
 
 	@Autowired
 	CustomTokenService customTokenService;
-
 	@Autowired
 	@Qualifier("revokedTokens")
 	private Map<String, Long> revokedTokens;
 
+	final boolean loadFromJWT = System.getenv("LOAD_FROM_JWT") == null ? false
+			: Boolean.valueOf(System.getenv("LOAD_FROM_JWT"));
+
 	@Autowired
 	private ThreadSafeJdbcTokenStore tokenStore;
+
 
 	@Autowired
 	private OautServerAuditProcessor auditProcessor;
@@ -79,6 +82,7 @@ public class OauthServerAuditableAspect extends BaseAspect {
 	private static final String OAUTHSERVER_ERROR = "OauthServer - ERROR: ";
 
 	private static final String USER_ANONYMOUS = "anonymous";
+	private static final String SYS_ADMIN = "sysadmin";
 
 	@AfterReturning(returning = "token", pointcut = "@annotation(auditable) && args(authentication,..) && execution (* createAccessToken(..))")
 	public void auditGenerateToken(JoinPoint joinPoint, OauthServerAuditable auditable,
@@ -91,9 +95,9 @@ public class OauthServerAuditableAspect extends BaseAspect {
 			eventProducer.publish(auditProcessor.genetateAuditEvent(user, GENERATE_MESSAGE_ID, message,
 					OperationType.OAUTH_TOKEN_GENERATION, ""));
 		} catch (final Exception e) {
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(USER_ANONYMOUS, OAUTHSERVER_ERROR + " " + GENERATE_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_GENERATION, e.getMessage()));
+			eventProducer
+			.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + GENERATE_MESSAGE_ID,
+					e.getMessage(), OperationType.OAUTH_TOKEN_GENERATION, e.getMessage()));
 		}
 	}
 
@@ -112,9 +116,9 @@ public class OauthServerAuditableAspect extends BaseAspect {
 			eventProducer.publish(auditProcessor.genetateAuditEvent(user, CHECK_MESSAGE_ID, message,
 					OperationType.OAUTH_TOKEN_CHECK, response.toString()));
 		} catch (final Exception e) {
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(USER_ANONYMOUS, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_CHECK, e.getMessage()));
+			eventProducer
+			.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
+					e.getMessage(), OperationType.OAUTH_TOKEN_CHECK, e.getMessage()));
 		}
 	}
 
@@ -129,9 +133,9 @@ public class OauthServerAuditableAspect extends BaseAspect {
 			eventProducer.publish(auditProcessor.genetateAuditEvent(user, REFRESH_MESSAGE_ID, message,
 					OperationType.OAUTH_TOKEN_REFRESH, "NEW ACCESS TOKEN: " + token.getValue()));
 		} catch (final Exception e) {
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(USER_ANONYMOUS, OAUTHSERVER_ERROR + " " + REFRESH_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_REFRESH, e.getMessage()));
+			eventProducer
+			.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + REFRESH_MESSAGE_ID,
+					e.getMessage(), OperationType.OAUTH_TOKEN_REFRESH, e.getMessage()));
 		}
 	}
 
@@ -152,15 +156,18 @@ public class OauthServerAuditableAspect extends BaseAspect {
 					OperationType.OAUTH_TOKEN_REVOCATION, "");
 			log.debug(message);
 		} catch (final Exception e) {
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(USER_ANONYMOUS, OAUTHSERVER_ERROR + " " + REVOKE_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_REVOCATION, e.getMessage()));
+			eventProducer
+			.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + REVOKE_MESSAGE_ID,
+					e.getMessage(), OperationType.OAUTH_TOKEN_REVOCATION, e.getMessage()));
 		}
 
 		response = (Map<String, Object>) joinPoint.proceed();
 
 		eventProducer.publish(oautServerEvent);
-		revokedTokens.putIfAbsent(token, System.currentTimeMillis());
+		if (loadFromJWT) {
+			log.debug("Storing token in map revokedTokens");
+			revokedTokens.putIfAbsent(token, System.currentTimeMillis());
+		}
 		return response;
 	}
 
@@ -180,7 +187,7 @@ public class OauthServerAuditableAspect extends BaseAspect {
 		if (parameters.get("grant_type") != null && parameters.get("grant_type").equals("refresh_token")) {
 			final OAuth2AccessToken previousToken = tokenStore
 					.getAccessTokenUsingRefreshToken(parameters.get("refresh_token"));
-			if (previousToken != null) {
+			if (previousToken != null && loadFromJWT) {
 				revokedTokens.putIfAbsent(previousToken.getValue(), System.currentTimeMillis());
 			}
 		}
@@ -190,6 +197,12 @@ public class OauthServerAuditableAspect extends BaseAspect {
 		log.info("End postAccessToken  time: {}, response status: {}", System.currentTimeMillis() - start,
 				response.getStatusCode());
 		log.trace("Token generated is {}", response.getBody().getValue());
+
+		eventProducer
+		.publish(auditProcessor.genetateAuditEvent(parameters.get("username"), GENERATE_MESSAGE_ID,
+				OAUTHSERVER_APP + clientId + " generating token for user: " + parameters.get("username")
+				+ " TOKEN: " + response.getBody().getValue(),
+				OperationType.OAUTH_TOKEN_GENERATION, ""));
 		return response;
 	}
 
@@ -197,6 +210,9 @@ public class OauthServerAuditableAspect extends BaseAspect {
 	public void auditTokenEndpointException(Throwable exception) {
 		log.error("Exception throwed in TokenEndpoint.postAccessToken: {}, class: {}", exception.getMessage(),
 				exception.getClass().getName());
+		eventProducer
+		.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + GENERATE_MESSAGE_ID,
+				exception.getMessage(), OperationType.OAUTH_TOKEN_GENERATION, exception.getMessage()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -215,8 +231,11 @@ public class OauthServerAuditableAspect extends BaseAspect {
 					response.get("username"));
 		} catch (final InvalidTokenException e) {
 			log.warn("Failed to check token, trying to decode from JWT, message: {}", e.getMessage());
-			response = loadMapFromJWT(token);
+			response = loadFromJWT ? loadMapFromJWT(token) : null;
 			if (response == null) {
+				eventProducer.publish(
+						auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
+								e.getMessage(), OperationType.OAUTH_TOKEN_CHECK, e.getMessage()));
 				throw e;
 			}
 		}
@@ -228,6 +247,8 @@ public class OauthServerAuditableAspect extends BaseAspect {
 		log.error("Exception throwed in CheckTokenEndpoint.checkToken: {}, class: {}", exception.getMessage(),
 				exception.getClass().getName());
 		log.debug("Token was {}", token);
+		eventProducer.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
+				exception.getMessage(), OperationType.OAUTH_TOKEN_CHECK, exception.getMessage()));
 	}
 
 	@AfterReturning(returning = "node", pointcut = "@annotation(auditable) && args(token,..) && execution (* userInfo(..))")
@@ -240,9 +261,9 @@ public class OauthServerAuditableAspect extends BaseAspect {
 			eventProducer.publish(auditProcessor.genetateAuditEvent(token.getName(), OIDC_MESSAGE_ID, message,
 					OperationType.OAUTH_TOKEN_OIDC, "USER DETAILS: " + node.toString()));
 		} catch (final Exception e) {
-			eventProducer.publish(
-					auditProcessor.genetateErrorEvent(USER_ANONYMOUS, OAUTHSERVER_ERROR + " " + OIDC_MESSAGE_ID,
-							e.getMessage(), OperationType.OAUTH_TOKEN_OIDC, e.getMessage()));
+			eventProducer
+			.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + OIDC_MESSAGE_ID,
+					e.getMessage(), OperationType.OAUTH_TOKEN_OIDC, e.getMessage()));
 		}
 	}
 
@@ -253,6 +274,7 @@ public class OauthServerAuditableAspect extends BaseAspect {
 				log.info("Token was revoked, not decoding JWT");
 				return null;
 			}
+
 			final String[] jwtSegments = token.split("\\.");
 			final String jwtBody = jwtSegments[1];
 			final String parsedBody = new String(Base64.getDecoder().decode(jwtBody));

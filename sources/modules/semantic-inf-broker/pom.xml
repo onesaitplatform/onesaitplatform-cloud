@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>2.3.0-ce</version>
+		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-semantic-inf-broker</artifactId>
@@ -23,7 +23,7 @@
 	</properties>
 	<dependencies>
 		<!-- To overwrite MySQL version -->
-		
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -34,31 +34,31 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-core</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-audit</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-metrics-aggregator</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- OneLog -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${onesaitplatform.version}</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -68,6 +68,10 @@
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -130,10 +134,10 @@
 
 
 
-		<!-- NOT USED <dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId> 
-			<version>${version.hawtio}</version> </dependency> metrics <dependency> <groupId>io.dropwizard.metrics</groupId> 
-			<artifactId>metrics-core</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
-			<artifactId>metrics-graphite</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
+		<!-- NOT USED <dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId>
+			<version>${version.hawtio}</version> </dependency> metrics <dependency> <groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-core</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-graphite</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-annotation</artifactId> </dependency> -->
 
 	</dependencies>

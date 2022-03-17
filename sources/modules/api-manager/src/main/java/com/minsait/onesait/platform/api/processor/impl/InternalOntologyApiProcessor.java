@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.api.processor.impl;
-
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,11 +76,11 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		final StopWatch watch = new StopWatch();
 		try {
 			final Api api = (Api) data.get(Constants.API);
-			if (api.getApicachetimeout() != null) {
+			if (api.getApicachetimeout() !=null) {
 				data = apiCacheService.getCache(data, api.getApicachetimeout());
 			}
 
-			if (data.get(Constants.OUTPUT) == null) {
+			if (data.get(Constants.OUTPUT)==null) {
 				watch.start();
 				data = processQuery(data);
 				watch.stop();
@@ -92,7 +91,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 				log.info("API PostProcess in {} ms", watch.getTotalTimeMillis());
 			}
 
-			if (api.getApicachetimeout() != null) {
+			if (api.getApicachetimeout() !=null) {
 				apiCacheService.putCache(data, api.getApicachetimeout());
 			}
 
@@ -155,6 +154,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 
 	}
 
+
 	private String getQueryMethod(String query) {
 		if (query.toLowerCase().indexOf("update") != -1) {
 			return "PUT";
@@ -167,9 +167,9 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 	private OperationType getOperationType(String method, String query) {
 		OperationType operationType = null;
 		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
-			if (query.trim().toLowerCase().startsWith("update")) {
+			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().indexOf(".update(") !=-1) {
 				operationType = OperationType.UPDATE;
-			} else if (query.trim().toLowerCase().startsWith("delete")) {
+			} else if (query.trim().toLowerCase().startsWith("delete") || query.trim().toLowerCase().indexOf(".remove(") != -1) {
 				operationType = OperationType.DELETE;
 			} else {
 				operationType = OperationType.QUERY;

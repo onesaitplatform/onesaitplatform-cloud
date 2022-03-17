@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public class ReportConverter {
 		log.debug("INI. Convert entity Report: {}  -->  ReportDto");
 
 		if (report.getFile().isEmpty()) {
-			log.error("Report template musbe not empty");
-			throw new OPResourceServiceException("Report template musbe not empty");
+			log.error("Report template must be non empty");
+			throw new OPResourceServiceException("Report template must be non empty");
 		}
 
 		final Report entity = new Report();

@@ -10,7 +10,7 @@ ADD *-exec.jar app.jar
 ADD examples /tmp/examples
 
 # Timezone
-RUN apk add --no-cache tzdata
+#RUN apk add --no-cache tzdata
 
 # web projects folder & logs folder
 RUN mkdir -p /usr/local/webprojects && \
@@ -65,6 +65,8 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
-    GRAYLOG_EXTERNAL_URI=http://log-centralizer:9000
+    GRAYLOG_EXTERNAL_URI=http://log-centralizer:9000 \
+    GRAYLOG_PLUGIN_AUTH_PATH_TOKEN=http://oauthservice:21000/oauth-server/oauth/token \
+    GRAYLOG_PLUGIN_AUTH_PATH_USERINFO=http://oauthservice:21000/oauth-server/oidc/userinfo
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

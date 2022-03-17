@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,6 @@ import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineService;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
 import com.minsait.onesait.platform.libraries.flow.engine.exception.FlowEngineServiceException;
 import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -429,8 +428,7 @@ public class FlowengineManagementController {
 							domainName, userId);
 					flowDomainService.deleteFlowdomain(domain.get().getIdentification());
 					// Create and start domain
-					final FlowDomain newDomain = flowDomainService.createFlowDomain(domainName,
-							user, domainData);
+					final FlowDomain newDomain = flowDomainService.createFlowDomain(domainName, user, domainData);
 
 					createDomain(newDomain);
 				}
@@ -439,7 +437,8 @@ public class FlowengineManagementController {
 		} else {
 			// Create and start domain
 			log.info("Domain {} does not exist for user {}. It will be creaded.", domainName, userId);
-			final FlowDomain newDomain = flowDomainService.createFlowDomain(domainName, user);
+			final FlowDomain newDomain = flowDomainService.createFlowDomain(domainName, userService.getUser(userId),
+					domainData);
 			startDomain(newDomain);
 		}
 
@@ -564,8 +563,7 @@ public class FlowengineManagementController {
 
 	private String generateNodeAuthToken(User user) {
 		final String password = user.getPassword();
-		final String auth = user.getUserId() + ":" + password + ":"
-				+ MultitenancyContextHolder.getVerticalSchema();
+		final String auth = user.getUserId() + ":" + password;
 		return Base64.getEncoder().encodeToString(auth.getBytes());
 	}
 

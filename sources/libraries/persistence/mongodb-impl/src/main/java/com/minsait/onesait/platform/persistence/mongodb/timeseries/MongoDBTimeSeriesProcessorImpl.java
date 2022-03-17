@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -37,6 +38,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
@@ -51,6 +54,8 @@ import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesProperty
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesWindowRepository;
 import com.minsait.onesait.platform.persistence.mongodb.template.MongoDbTemplate;
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.TimeSeriesFrecuencyNotSupportedException;
+import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.TimeSeriesInsertLockTimeoutException;
+import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.TimeSeriesUnableToUpdateException;
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.WindowNotSupportedException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
@@ -77,6 +82,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 	private static final String FORMAT_WINDOW_HOURS = "yyyy-MM-dd'T'HH";
 	private static final String FORMAT_WINDOW_DAYS = "yyyy-MM-dd";
 	private static final String FORMAT_WINDOW_MONTHS = "yyyy-MM";
+	private static final String FORMAT_WINDOW_YEARS = "yyyy";
 
 	private static final String VALUE_STR = "value";
 	private static final String WINDOW_TYPE_STR = "Window type ";
@@ -92,12 +98,20 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		private final String value;
 	}
 
+	@Autowired(required = false)
+	private HazelcastInstance hazelcastInstance;
+
 	@Getter
 	@Setter
 	private long queryExecutionTimeout;
 
 	@Value("${onesaitplatform.database.timeseries.timezone:UTC}")
 	private String timeZone;
+
+	@Value("${onesaitplatform.database.timeseries.mongodb.insert.lock.wait.check.millis:50}")
+	private long waitBetweenChecks;
+	@Value("${onesaitplatform.database.timeseries.mongodb.insert.lock.wait.timeout.millis:500}")
+	private long waitChecksTimeout;
 
 	@Autowired
 	private OntologyTimeSeriesPropertyRepository ontologyTimeSeriesPropertyRepository;
@@ -112,11 +126,17 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 	private OntologyRepository ontologyRepository;
 
 	protected ObjectMapper objectMapper;
+	private IMap<MongoDBTimeSeriesInstanceKey, String> timeseriesUpdateTransactionMap;
 
 	@PostConstruct
 	public void init() {
 		objectMapper = new ObjectMapper();
 		objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+		if (hazelcastInstance == null) {
+			timeseriesUpdateTransactionMap = null;
+		} else {
+			timeseriesUpdateTransactionMap = hazelcastInstance.getMap("timeseriesUpdateTransaction");
+		}
 	}
 
 	@Override
@@ -257,6 +277,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		final Date dInstance = sdfInstancePrecision.parse(formattedDate);
 
 		for (final Entry<OntologyTimeSeriesProperty, Object> field : mFields.entrySet()) {
+			MongoDBTimeSeriesInstanceKey timeserieInstanceKey = null;
 			try {
 				// Build the query object with all tags, the concrete field and the timestamp
 				// Append Tags to the query
@@ -322,8 +343,8 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 						window.getWindowType().name());
 
 				// try to update the document --> Consider it exists, if not, it will be created
-				final long nUpdated = mongoDbConnector
-						.update(database, ontology, objQuery.toString(), update, false, false).getCount();
+				long nUpdated = mongoDbConnector.update(database, ontology, objQuery.toString(), update, false, false)
+						.getCount();
 
 				if (nUpdated == 0) {// Check if exists and previously created. If not, Build the document
 					log.debug("Check if document exits for TimeSeries ontology {} for window {}", ontology,
@@ -332,11 +353,76 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 							.find(database, ontology, objQuery, null, null, 0, 1, 10000).iterator().hasNext();
 
 					if (!documentExists) {// Document not exists, create new one and insert it
-						log.debug("Create new document for TimeSeries ontology {} for window {}", ontology,
-								window.getWindowType().name());
-						final BasicDBObject timeIntance = buildDocument(rootElement, calendar, field, dInstance, mTags,
-								window, updateType == UPDATE_TYPE.SUM ? 0 : null);
-						mongoDbConnector.insert(database, ontology, timeIntance);
+						log.debug("CREATING DOC TimeSeries ontology {} for window {}");
+						timeserieInstanceKey = new MongoDBTimeSeriesInstanceKey();
+						timeserieInstanceKey.setOntology(ontology);
+						timeserieInstanceKey.setSignal(field.getKey().getPropertyName());
+						timeserieInstanceKey.setTimestamp(dInstance);
+						timeserieInstanceKey.setWindow(window.getId());
+						final List<String> tags = new ArrayList<>();
+						for (final Entry<OntologyTimeSeriesProperty, Object> tag : mTags.entrySet()) {
+							final StringBuffer tagRecord = new StringBuffer().append(tag.getKey().getPropertyName())
+									.append(";").append(tag.getValue().toString());
+							tags.add(tagRecord.toString());
+						}
+						java.util.Collections.sort(tags);
+						timeserieInstanceKey.setTags(tags);
+						Thread currentThread = Thread.currentThread();// +UUID
+
+						UUID uuid = UUID.randomUUID();
+						StringBuffer value = new StringBuffer().append(currentThread.toString())
+								.append(uuid.toString());
+						String retrievedValue = timeseriesUpdateTransactionMap.putIfAbsent(timeserieInstanceKey,
+								value.toString());
+						if (retrievedValue != null && !retrievedValue.equals(value.toString())) {
+							log.debug("COLISION, waiting TimeSeries ontology {} for window {}");
+							// wait for T ms to retry
+							Long startTime = new Date().getTime();
+
+							do {
+								Thread.sleep(waitBetweenChecks);
+								retrievedValue = timeseriesUpdateTransactionMap.get(timeserieInstanceKey);
+							} while (startTime + waitChecksTimeout > new Date().getTime() && retrievedValue != null);
+
+							if (retrievedValue != null) {
+								// if exists, then timeout has passed and we have to discard the record -> ERROR
+								// Throw timeout exception
+								final StringBuffer errorMessage = new StringBuffer();
+								errorMessage.append(
+										"Error while waiting blocking insert to resolve. Timeout elapsed. Ontology: ")
+										.append(ontology).append(" Field: ").append(timeserieInstanceKey.getSignal())
+										.append(" Timestamp: ").append(timeserieInstanceKey.getTimestamp());
+								log.error(errorMessage.toString());
+								throw new TimeSeriesInsertLockTimeoutException(errorMessage.toString());
+							} else {
+								// if not exists, then the other process has created the insert and we can
+								// update
+								nUpdated = mongoDbConnector
+										.update(database, ontology, objQuery.toString(), update, false, false)
+										.getCount();
+								if (nUpdated == 0) {
+									// if no record has been updated, then the previous insert did fail and the
+									// document has not been persisted -> ERROR
+									// Throw unable to update exception
+									final StringBuffer errorMessage = new StringBuffer();
+									errorMessage.append(
+											"Error while waiting blocking insert to resolve. Unable to update. Ontology: ")
+											.append(ontology).append(" Field: ")
+											.append(timeserieInstanceKey.getSignal()).append(" Timestamp: ")
+											.append(timeserieInstanceKey.getTimestamp());
+									log.error(errorMessage.toString());
+									throw new TimeSeriesUnableToUpdateException(errorMessage.toString());
+								}
+							}
+						} else {
+							final BasicDBObject timeIntance = buildDocument(rootElement, calendar, field, dInstance,
+									mTags, window, updateType == UPDATE_TYPE.SUM ? 0 : null);
+							mongoDbConnector.insert(database, ontology, timeIntance);
+							timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
+							log.debug("Created new document for TimeSeries ontology {} for window {}", ontology,
+									window.getWindowType().name());
+						}
+
 					}
 				}
 
@@ -350,7 +436,9 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			} catch (final Exception e) {
 				Log.error("Error processing window for ontology {} and property {}", ontology,
 						field.getKey().getPropertyName(), e);
-
+				if (timeserieInstanceKey != null) {
+					timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
+				}
 				final TimeSeriesResult partialResult = new TimeSeriesResult();
 				partialResult.setFieldName(field.getKey().getPropertyName());
 				partialResult.setOk(false);
@@ -386,7 +474,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			if (frecuencyUnit != FrecuencyUnit.SECONDS && frecuencyUnit != FrecuencyUnit.MINUTES
 					&& frecuencyUnit != FrecuencyUnit.HOURS) {
 				throw new TimeSeriesFrecuencyNotSupportedException(
-						"In hours Window only Seconds, Minutes and Hours frecuencies are supported");
+						"In days Window only Seconds, Minutes and Hours frecuencies are supported");
 			}
 			return new SimpleDateFormat(FORMAT_WINDOW_DAYS);
 
@@ -394,9 +482,17 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			if (frecuencyUnit != FrecuencyUnit.SECONDS && frecuencyUnit != FrecuencyUnit.MINUTES
 					&& frecuencyUnit != FrecuencyUnit.HOURS && frecuencyUnit != FrecuencyUnit.DAYS) {
 				throw new TimeSeriesFrecuencyNotSupportedException(
-						"In hours Window only Seconds, Minutes, Hours and Days frecuencies are supported");
+						"In months Window only Seconds, Minutes, Hours and Days frecuencies are supported");
 			}
 			return new SimpleDateFormat(FORMAT_WINDOW_MONTHS);
+		} else if (windowType == WindowType.YEARS) {
+			if (frecuencyUnit != FrecuencyUnit.SECONDS && frecuencyUnit != FrecuencyUnit.MINUTES
+					&& frecuencyUnit != FrecuencyUnit.HOURS && frecuencyUnit != FrecuencyUnit.DAYS
+					&& frecuencyUnit != FrecuencyUnit.MONTHS) {
+				throw new TimeSeriesFrecuencyNotSupportedException(
+						"In years Window only Seconds, Minutes, Hours, Days and Months frecuencies are supported");
+			}
+			return new SimpleDateFormat(FORMAT_WINDOW_YEARS);
 		} else {
 			throw new WindowNotSupportedException(WINDOW_TYPE_STR + windowType.name() + NOT_SUPPORTED);
 		}
@@ -482,6 +578,45 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 				break;
 			}
 
+		} else if (windowType == WindowType.YEARS) {
+			switch (window.getFrecuencyUnit()) {
+			case SECONDS:
+				update += (Integer.toString(calendar.get(Calendar.MONTH) + 1)) + "."
+						+ Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)) + "."
+						+ Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)) + "."
+						+ Integer.toString(calendar.get(Calendar.MINUTE)) + "."
+						+ Integer.toString(calendar.get(Calendar.SECOND) - calendar.get(Calendar.SECOND) % frecuency)
+						+ "\": ";
+				break;
+
+			case MINUTES:
+				update += (Integer.toString(calendar.get(Calendar.MONTH) + 1)) + "."
+						+ Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)) + "."
+						+ Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)) + "."
+						+ Integer.toString(calendar.get(Calendar.MINUTE) - calendar.get(Calendar.MINUTE) % frecuency)
+						+ "\": ";
+				break;
+			case HOURS:
+				update += (Integer.toString(calendar.get(Calendar.MONTH) + 1)) + "."
+						+ Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)) + "."
+						+ Integer.toString(
+								calendar.get(Calendar.HOUR_OF_DAY) - calendar.get(Calendar.HOUR_OF_DAY) % frecuency)
+						+ "\":";
+				break;
+			case DAYS:
+				update += (Integer.toString(calendar.get(Calendar.MONTH) + 1)) + "."
+						+ Integer.toString(
+								calendar.get(Calendar.DAY_OF_MONTH) - calendar.get(Calendar.DAY_OF_MONTH) % frecuency)
+						+ "\":";
+				break;
+			case MONTHS:
+				update += Integer.toString(calendar.get(Calendar.MONTH) + 1 - calendar.get(Calendar.MONTH) % frecuency)
+						+ "\":";
+				break;
+			default:
+				break;
+			}
+
 		} else {
 			throw new WindowNotSupportedException(WINDOW_TYPE_STR + windowType.name() + NOT_SUPPORTED);
 		}
@@ -526,6 +661,8 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			vMeasures = buildNewDayMap(window.getFrecuencyUnit(), window.getFrecuency(), initialValue);
 		} else if (windowType == WindowType.MONTHS) {
 			vMeasures = buildNewMonthMap(window.getFrecuencyUnit(), calendar, window.getFrecuency(), initialValue);
+		} else if (windowType == WindowType.YEARS) {
+			vMeasures = buildNewYearMap(window.getFrecuencyUnit(), calendar, window.getFrecuency(), initialValue);
 		} else {
 			throw new WindowNotSupportedException(WINDOW_TYPE_STR + windowType.name() + NOT_SUPPORTED);
 		}
@@ -653,6 +790,49 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 				break;
 			}
 
+		} else if (windowType == WindowType.YEARS) {
+			switch (window.getFrecuencyUnit()) {
+			case SECONDS:
+				((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) vMeasures
+						.get(Integer.toString(calendar.get(Calendar.MONTH) + 1)))
+								.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
+										.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
+												.get(Integer.toString(calendar.get(Calendar.MINUTE))))
+														.put(Integer.toString(calendar.get(Calendar.SECOND)
+																- calendar.get(Calendar.SECOND) % frecuency), value);
+
+				break;
+
+			case MINUTES:
+				((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) vMeasures
+						.get(Integer.toString(calendar.get(Calendar.MONTH) + 1)))
+								.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
+										.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
+												.put(Integer.toString(calendar.get(Calendar.MINUTE)
+														- calendar.get(Calendar.MINUTE) % frecuency), value);
+				break;
+			case HOURS:
+				((Map<String, Object>) ((Map<String, Object>) vMeasures
+						.get(Integer.toString(calendar.get(Calendar.MONTH) + 1)))
+								.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
+										.put(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)
+												- calendar.get(Calendar.HOUR_OF_DAY) % frecuency), value);
+				break;
+			case DAYS:
+				((Map<String, Object>) vMeasures.get(Integer.toString(calendar.get(Calendar.MONTH) + 1))).put(
+						Integer.toString(
+								calendar.get(Calendar.DAY_OF_MONTH) - calendar.get(Calendar.DAY_OF_MONTH) % frecuency),
+						value);
+				break;
+			case MONTHS:
+				vMeasures.put(
+						Integer.toString(calendar.get(Calendar.MONTH) + 1 - calendar.get(Calendar.MONTH) % frecuency),
+						value);
+				break;
+			default:
+				break;
+			}
+
 		} else {
 			throw new WindowNotSupportedException(WINDOW_TYPE_STR + windowType.name() + NOT_SUPPORTED);
 		}
@@ -714,6 +894,25 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		}
 
 		return vDays;
+	}
+
+	private Map<String, Object> buildNewYearMap(FrecuencyUnit frecuencyUnit, Calendar calendar, int frecuency,
+			Object value) {
+		final Map<String, Object> vMonths = new LinkedHashMap<>();
+		if (frecuencyUnit == FrecuencyUnit.MONTHS) {
+			for (int i = 1; i <= calendar.getActualMaximum(Calendar.MONTH) + 1; i = i + frecuency) {
+				vMonths.put(Integer.toString(i), value);
+			}
+		} else {// DAYS, Hours, Minutes or Seconds
+			for (int i = 1; i <= calendar.getActualMaximum(Calendar.MONTH) + 1; i++) {
+				// change the month
+				Calendar monthlyCal = calendar;
+				monthlyCal.set(Calendar.MONTH, i - 1);
+				vMonths.put(Integer.toString(i), buildNewMonthMap(frecuencyUnit, monthlyCal, frecuency, value));
+			}
+		}
+
+		return vMonths;
 	}
 
 	private String toJsonValue(OntologyTimeSeriesProperty property, Object value) {

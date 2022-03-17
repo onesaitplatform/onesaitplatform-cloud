@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@
 											<th class="titulo-columnas" th:text="#{ontology.ld.selfproperty}">Self property</th>
 											<th class="titulo-columnas"
 												th:text="#{ontology.ld.targetontology}">Ontology</th>
-											<th class="titulo-columnas text-center"
+											<th class="titulo-columnas text-left"
 												th:text="#{ontology.ld.targetproperty}">Target property</th>
 											<th class="titulo-columnas text-center"
 												th:text="#{gen.options}">Options</th>
@@ -107,9 +107,9 @@
 												readonly="readonly" class="form-control" /></td>
 											<td class="no-wrap text-center">
 												<button type="button"
-													class="btn btn-sm btn-default uppercase sbold red-sunglo btn-outline btn-mountable-authorization-remove"
+													class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;"
 													onclick="OntologyCreateController.deleteRelation(this)">
-													<i class="fa fa-trash"></i>
+													<i class="icon-delete"></i>
 												</button>
 											</td>
 										</tr>

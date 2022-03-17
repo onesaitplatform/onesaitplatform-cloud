@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import com.minsait.onesait.platform.config.model.AppUserChildExport;
 import com.minsait.onesait.platform.config.model.AppUserExport;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserExport;
@@ -397,6 +398,23 @@ public class DataFromDB {
 						addEntityProject(r, idAux, em, projectId);
 					}
 				}
+			}
+
+			if (clazz.equals(Ontology.class)) {
+				// Export ontology_virtual table
+				Ontology ont = (Ontology) o;
+				if (ont.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
+					List<Object> result = em
+							.createQuery("SELECT c FROM OntologyVirtual as c WHERE c.ontologyId.id = :id")
+							.setParameter("id", id).getResultList();
+					if (!result.isEmpty()) {
+						for (Object r : result) {
+							final Serializable idAux = MigrationUtils.getId(r);
+							addEntityProject(r, idAux, em, projectId);
+						}
+					}
+				}
+
 			}
 
 			if (clazz.equals(UserExport.class) || clazz.equals(User.class)) {

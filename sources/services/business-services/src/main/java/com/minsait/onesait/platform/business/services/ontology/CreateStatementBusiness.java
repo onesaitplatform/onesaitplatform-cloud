@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.minsait.onesait.platform.business.services.ontology;
 
 import java.util.ArrayList;
@@ -45,6 +44,14 @@ public class CreateStatementBusiness implements java.io.Serializable {
 	@Setter
 	@NotNull
 	private String ontology;
+	@Getter
+	@Setter
+	@NotNull
+	private String database;
+	@Getter
+	@Setter
+	@NotNull
+	private String schema;
 	@Getter
 	@Setter
 	private String type = null;
@@ -94,6 +101,8 @@ public class CreateStatementBusiness implements java.io.Serializable {
 	public CreateStatement toCreateStatement() {
 		CreateStatement statement = new CreateStatement();
 		statement.setOntology(this.ontology);
+		statement.setDatabase(this.database);
+		statement.setSchema(this.schema);
 		statement.setType(this.type);
 		statement.setColumnsRelational(columnsRelationals());
 		statement.setColumnConstraints(columnsConstraints());

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
@@ -122,6 +123,16 @@ public class GadgetServiceImpl implements GadgetService {
 
 		}
 		return names;
+	}
+
+	@Override
+	public List<String> getAllIdentificationsByUser(String userId) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return gadgetRepository.findAllIdentifications();
+		} else {
+			return gadgetRepository.findAllIdentificationsByUser(user);
+		}
 	}
 
 	@Override
@@ -377,6 +388,16 @@ public class GadgetServiceImpl implements GadgetService {
 	@Override
 	public List<String> getGadgetTypes() {
 		return gadgetRepository.findGadgetTypes();
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return gadgetRepository.findAllDto(identification, description);
+		} else {
+			return gadgetRepository.findDtoByUserAndPermissions(user, identification, description);
+		}
 	}
 
 }

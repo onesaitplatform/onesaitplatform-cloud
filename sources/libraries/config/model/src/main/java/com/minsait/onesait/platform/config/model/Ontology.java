@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 package com.minsait.onesait.platform.config.model;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -41,14 +41,18 @@ import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
-		"IDENTIFICATION" }))
+"IDENTIFICATION" }))
+@EntityListeners(AuditEntityListener.class)
+@ToString
 public class Ontology extends OPResource {
 
 	private static final long serialVersionUID = 1L;
@@ -59,7 +63,7 @@ public class Ontology extends OPResource {
 
 	public enum RtdbDatasource {
 
-		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB
+		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB, NO_PERSISTENCE
 	}
 
 	public enum RtdbToHdbStorage {
@@ -202,10 +206,10 @@ public class Ontology extends OPResource {
 	@Setter
 	private boolean allowsCreateTopic;
 
-//	@Column(name = "TOPIC", length = 256)
-//	@Getter
-//	@Setter
-//	private String topic;
+	//	@Column(name = "TOPIC", length = 256)
+	//	@Getter
+	//	@Setter
+	//	private String topic;
 
 	@Column(name = "ALLOW_CREATE_NOTIFICATION_TOPIC", nullable = false, columnDefinition = "BIT")
 	@NotNull
@@ -213,10 +217,10 @@ public class Ontology extends OPResource {
 	@Setter
 	private boolean allowsCreateNotificationTopic;
 
-//	@Column(name = "NOTIFICATION_TOPIC", length = 256)
-//	@Getter
-//	@Setter
-//	private String notificationTopic;
+	//	@Column(name = "NOTIFICATION_TOPIC", length = 256)
+	//	@Getter
+	//	@Setter
+	//	private String notificationTopic;
 
 	@Column(name = "PARTITION_KEY", length = 256, nullable = true)
 	@Getter
@@ -234,8 +238,7 @@ public class Ontology extends OPResource {
 	}
 
 	public boolean existOntologyUserAccessesWithUserActive() {
-		for (final Iterator<OntologyUserAccess> iterator = ontologyUserAccesses.iterator(); iterator.hasNext();) {
-			final OntologyUserAccess ontologyUserAccess = iterator.next();
+		for (final OntologyUserAccess ontologyUserAccess : ontologyUserAccesses) {
 			if (ontologyUserAccess.getUser().isActive()) {
 				return Boolean.TRUE;
 			}
@@ -252,10 +255,12 @@ public class Ontology extends OPResource {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof Ontology))
+		}
+		if (!(o instanceof Ontology)) {
 			return false;
+		}
 		return getIdentification() != null && getIdentification().equals(((Ontology) o).getIdentification());
 	}
 
@@ -264,9 +269,6 @@ public class Ontology extends OPResource {
 		return java.util.Objects.hash(getIdentification());
 	}
 
-	@Override
-	public String toString() {
-		return getIdentification();
-	}
+
 
 }

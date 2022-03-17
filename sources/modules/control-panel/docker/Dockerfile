@@ -68,6 +68,7 @@ RUN cd /tmp/ \
 
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
 
+
 USER onesait
 
 EXPOSE 18000 5701
@@ -95,7 +96,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
-    AUDITGLOBALNOTIFY=false \
+    AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     BURROWHOST=burrow \
@@ -165,6 +166,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
     DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS=10000 \
+    DS_MIN_EVICTABLE_IDLE_TIME_MILLIS=180000 \
     DS_MAX_WAIT_MILLIS=10000 \
     DS_MAX_WAIT=10000 \
     DS_INITIAL_SIZE=10 \
@@ -179,6 +181,8 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     DYNAMIC_LOADBALANCER_ENABLED=false \
     DYNAMIC_LOADBALANCER_ENDPOINT=http://localhost:8000/nginx \
     QUERY_TOOL_ALLOWED_OPERATIONS=false \
+    MAIL_PROXY_HOST=localhost \
+    MAIL_PROXY_PORT=8080 \
     MULTITENANCY_ENABLED=false \
     MAIL_PROXY_HOST=localhost \
     MAIL_PROXY_PORT=8080 \
@@ -200,12 +204,15 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     JWT_KEY=ENC(BXYVNNRDiawMsH4sY79FUPig6FWPGbcoMusSVrXXb6ZLtZ4qhIEUazqv6XrcRm39s8zEu2d1G8yTowyE/sEv7YF0vrLNdb1m) \
     JWT_CLIENT_SECRET=ENC(siZm4DUe6Y1FkxoUH7y0oUCiGDIq/vRX) \
     OAUTH_SSO_ENABLED=false \
+    USE_KEYCLOAK=false \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
     CORS_ALLOWED_URLS="*" \
 	INTERNAL_SSL=false \
-    CORS_ALLOWED_URLS="*"
+	EDGE_SERVER_NAME=iothub02.onesaitplatform.com \
+	SBA_USERNAME=operations \
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

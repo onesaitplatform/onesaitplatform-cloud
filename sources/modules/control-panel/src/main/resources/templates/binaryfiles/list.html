@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -61,14 +61,36 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_file" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
+								<input id="file-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_file" name="reset_file" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_file" name="search_file" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/files/list}"> <span th:text="#{binaryfiles.breadcrumb}">Files</span></a></li>						
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/files/list}"> 
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{binaryfiles.breadcrumb.manage}">Files</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{binaryfiles.breadcrumb}">Files</span>
+						</a></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -78,29 +100,37 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
-					
+				<div class="row">					
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">									
-									<span class="caption-subject" th:text="#{binaryfiles.template.list}"> List Files</span>
+									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="caption-subject" th:text="#{binaryfiles.breadcrumb.manage}"> Manage Files</span>
+									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="caption-subject" th:text="#{binaryfiles.breadcrumb}"> My Files</span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>								
-								<div class="actions margin-right-20">
-									<button type="button" class="btn btn-outline btn-circle blue" onclick="$('#newFile').modal('show')" ><span th:text="#{gen.create}">New </span></button>									
 								</div>
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button type="button" class="btn btn-primary button-plus-create" onclick="$('#newFile').modal('show')" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>								
+								<!--<div class="actions margin-right-20">
+									<button type="button" class="btn btn-outline btn-circle blue" onclick="$('#newFile').modal('show')" ><span th:text="#{gen.create}">New </span></button>									
+								</div>-->
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row">
-									<div class="col-md-12 alert-zone">
-										<!-- ALERT ZONE -->																			
-									</div>
+								<div class="row main">
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE 																			
+									</div>-->
 									
 									<!-- Modal INSERT-->
 									<div id="newFile" class="modal fade" role="dialog">
@@ -115,6 +145,8 @@
 									      <div class="modal-body">
 									      <div class="form-group">
 									      	<form id="form_new" method="post" th:action="@{/files}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
+										      <input class="form-group button_text hide" id="buttonLoadFile" type="file" accept="*" name="file"  />
+										  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 										      <div class="form-group">
 										      <input class="form-control no-remove" type="text" name="metadata" id="metadata" th:placeholder="#{binaryfiles.metadata}"/>
 										 	  <br/>    
@@ -123,14 +155,10 @@
 													<option th:each="repo : ${repos}" th:value="${repo}" th:text="${repo}"/>													
 												</select>-->
 												 <input class="form-control no-remove" type="text" readonly="true" name="repositories" id="repositories" value="MONGO_GRIDFS"/>
-
-										      
 										      </div>
 										      
 										      <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#buttonLoadFile').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
 										      <br/>
-										      <input class="form-group button_text hide" id="buttonLoadFile" type="file" accept="*" name="file"  />
-										  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 										  	</form>
 										  </div>
 									      </div>									      
@@ -155,14 +183,14 @@
 									      <div class="modal-body">
 									      <div class="form-group">
 									      	<form id="form_update" method="post" th:action="@{/files/update}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
-									      	  
+									      	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />  
 									      	  <input type="hidden" name="fileId" id="updateFileId"/>
 										      <input class="form-control no-remove" type="text" name="metadata" id="metadataUpdate" th:placeholder="#{binaryfiles.metadata}"/>
 										      <br/>
 										      <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#buttonLoadUpdateFile').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{binaryfiles.select}"></span></button>
 										      <br/>
 										      <input class="form-group button_text hide" id="buttonLoadUpdateFile" type="file" accept="*" name="file" onchange="$('#submitUpdate').removeClass('disabled')"/>
-										  	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+										  	</form>
 										  </div>
 									      </div>									      
 									      <div class="modal-footer">
@@ -231,8 +259,8 @@
 																			</select>
 																		</td>																
 																		<td width="150px" class="no-wrap text-center">																	
-																			<button type="button" class="btn btn-sm btn-default uppercase sbold yellow-casablanca btn-outline btn-mountable-authorization-update" onclick="BinaryFilesController.updateAuthorization(this)"><i class="fa fa-edit"></i> <span th:text="#{binaryfiles.updateauth}">Update</span></button>
-																			<button type="button" class="btn btn-sm btn-default uppercase sbold red-sunglo btn-outline btn-mountable-authorization-remove" onclick="BinaryFilesController.removeAuthorization(this)"><i class="fa fa-trash"></i> <span th:text="#{binaryfiles.removeauth}">Remove</span></button>
+																			<button type="button" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-mountable-authorization-update" style="background-color:transparent;" onclick="BinaryFilesController.updateAuthorization(this)"><i class="icon-edit"></i> <!--<span th:text="#{binaryfiles.updateauth}">Update</span>--></button>
+																			<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="BinaryFilesController.removeAuthorization(this)"><i class="icon-delete"></i> <!--<span th:text="#{binaryfiles.removeauth}">Remove</span>--></button>
 																		</td>			
 																	</tr>
 																</tbody>														
@@ -266,21 +294,21 @@
 									</div>	
 									<!-- LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene">																						
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="files" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none"  dt:paginationtype="full_numbers">
+												<table id="files" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none"  dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas text-center" dt:filterable="true" dt:filterCssClass="input-small" dt:selector="fileFilter"><span th:text="#{binaryfiles.filename}"> filename </span></th>
+															<th class="titulo-columnas text-left" dt:filterable="true" dt:filterCssClass="input-small" dt:selector="fileFilter"><span th:text="#{binaryfiles.filename}"> filename </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.fileid}">file id</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.metadata }">Metadata</span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{binaryfiles.owner}">Owner</span></th>
-															<th class="titulo-columnas text-center" > <span th:text="#{gen.created}">Created At</span></th>
-															<th class="titulo-columnas text-center" > <span th:text="#{gen.updated}">Updated At</span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{binaryfiles.accesstypes}" >Access types</span></th>
-															<th class="titulo-columnas text-center"><span th:text="#{gen.public}">Public</span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
+															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.accesstypes}" >Access types</span></th>
+															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -294,39 +322,55 @@
 															<!-- OWNER -->
 															<td class="text-left no-wrap " th:text="${file.user.userId}"></td>
 															<!-- DATE -->
-															<td class="text-center" th:if="${file.createdAt!=null}"><span th:text="${#dates.format(file.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.createdAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${file.createdAt==null}" th:text="'---'"></td>
+															<td class="text-left" th:if="${file.createdAt!=null}"><span th:text="${#dates.format(file.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${file.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-center" th:if="${file.updatedAt!=null}"><span th:text="${#dates.format(file.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.updatedAt,'dd/MM/YYYY')}" ></span></td>
-															<td class="text-center" th:if="${file.updatedAt==null}" th:text="'---'"></td>										
+															<td class="text-left" th:if="${file.updatedAt!=null}"><span th:text="${#dates.format(file.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${file.updatedAt==null}" th:text="'---'"></td>										
 															<!-- Access -->
-															<td class="text-center" th:if="${(file.user.userId eq #authentication.getName()) OR (accessMap.get(file.id) eq 'WRITE') OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}"><span th:text="1" style="display:none" ></span><i class="la la-pencil text-success font-hg"></i></td>
-															<td class="text-center" th:if="${!(file.user.userId eq #authentication.getName()) AND !(#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') AND !(accessMap.get(file.id) eq 'WRITE')}"><span th:text="0" style="display:none" ></span><i class="la la-book text-danger font-hg"></i></td>
+															<td class="text-left" th:if="${(file.user.userId eq #authentication.getName()) OR (accessMap.get(file.id) eq 'WRITE') OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}"><span th:text="1" style="display:none" ></span><i class="la la-pencil text-success font-hg"></i></td>
+															<td class="text-left" th:if="${!(file.user.userId eq #authentication.getName()) AND !(#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') AND !(accessMap.get(file.id) eq 'WRITE')}"><span th:text="0" style="display:none" ></span><i class="la la-book text-danger font-hg"></i></td>
 															<!-- PUBLIC -->
-															<td class="text-center" th:if="${file.public}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i></td>
-															<td class="text-center" th:if="${!file.public}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i></td>
+															<td class="text-left" th:if="${file.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!file.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
 															
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="text-align: center; white-space: nowrap">
-																<!-- DOWNLOAD -->	
-																<span class="btn btn-outline btn-circle btn-sm blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.download}" th:data-original-title="#{binaryfiles.download}" th:onclick="'BinaryFilesController.getBinaryFile(\''+${file.id}+'\')'"><span> <small th:text=" #{binaryfiles.download} "> DOWNLOAD</small></span></span>
-																<!-- Copy link, accesible always -->
-																<span class="btn btn-outline btn-circle btn-sm blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.copy}" th:text="#{binaryfiles.copy}" th:data-original-title="#{binaryfiles.copy}" th:onclick="'BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"></span>
-																
-																<!-- SHARE -->	
-																<span th:if="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE')) AND (not file.public) }" class="btn btn-outline btn-circle btn-sm blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.share}" th:data-original-title="#{binaryfiles.share}" th:onclick="'BinaryFilesController.openAuthModal(\''+${file.id}+'\')'"><small th:text=" #{binaryfiles.share} "> SHARE</small></span>
-																
-																<!-- ACTIONS -->
-																<!-- PUBLIC -->
-																<span th:if="${(file.user.userId eq #authentication.getName() AND file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND file.public )} " class="btn btn-xs  btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.makeprivate}" th:data-original-title="#{binaryfiles.makeprivate}" th:onclick="'BinaryFilesController.changePublic(\''+${file.id}+'\')'"><small th:text=" #{binaryfiles.private} "> Private</small></span>
-																<span th:if="${(file.user.userId eq #authentication.getName() AND not file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND not file.public )}" class="btn btn-xs  btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.makepublic}" th:data-original-title="#{binaryfiles.makepublic}" th:onclick="'BinaryFilesController.changePublic(\''+${file.id}+'\')'"><small th:text=" #{binaryfiles.public} "> Public</small></span>
-																<!-- UPDATE -->
-																<span th:if="${file.user.userId eq #authentication.getName() OR (accessMap.get(file.id) eq 'WRITE')OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" th:onclick="'BinaryFilesController.updateModal(\''+${file.id}+'\')'"><i class="la la-edit font-hg"></i></span>
-																<!-- DELETE -->
-																<span th:if="${(file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}" th:onclick="'BinaryFilesController.confirmDelete(\''+${file.id}+'\')'"><i class="la la-trash font-hg"></i><span> <small></small></span></span>
 
-																
-                              														
+																<!-- UPDATE -->
+																<span th:if="${file.user.userId eq #authentication.getName() OR (accessMap.get(file.id) eq 'WRITE')OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" th:onclick="'BinaryFilesController.updateModal(\''+${file.id}+'\')'"><i class="icon-edit"></i></span>
+
+																<!-- DOWNLOAD -->	
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.download}" th:data-original-title="#{binaryfiles.download}" th:onclick="'BinaryFilesController.getBinaryFile(\''+${file.id}+'\')'"><i class="icon-download"></i></span>
+
+																<th:block  th:if="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE'))}">
+																<span class="dropdown">
+																	<span class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																	<ul class="dropdown-menu dropdown-menu-table download-menu">
+																		<li>
+																			<!-- Copy link, accesible always -->
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
+																		</li>
+																		<li>
+																			<!-- SHARE -->	
+																			<span th:if="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE')) AND (not file.public) }" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.openAuthModal(\''+${file.id}+'\')'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.share}" >Share</span></span>
+																		</li>
+																		<li>
+																			<!-- PUBLIC -->
+																			<span th:if="${(file.user.userId eq #authentication.getName() AND file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND file.public )} " class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.changePublic(\''+${file.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.private}" >Private</span></span>
+																			<span th:if="${(file.user.userId eq #authentication.getName() AND not file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND not file.public )}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.changePublic(\''+${file.id}+'\')'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.public}" >Public</span></span>
+																		</li>
+																		<li>
+																			<!-- DELETE -->
+																			<span th:if="${(file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs btn-no-border btn-circle btn-outline tooltips color-red" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.confirmDelete(\''+${file.id}+'\')'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																		</li>
+																	</ul>
+																</span>
+																</th:block>
+																<th:block  th:unless="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE'))}">
+																	<!-- Copy link, accesible always -->
+																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"><i class="icon-url"></i></span>
+																</th:block>					
 															</td>
 														</tr>
 													</tbody>
@@ -352,24 +396,41 @@
 												
 												
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
 												
-													<!-- CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED -->
-													<button id="clearFilters" th:value="#{gen.resetBtn}" class="btn btn-default btn-sm"><i class="fa fa-times"></i></button>												
-													
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
-														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{binaryfiles.filename}"> File name </label>
-														<label class="toggle-vis" data-column="1" th:text="#{binaryfiles.fileid}"> Id </label>
-														<label class="toggle-vis" data-column="2" th:text="#{binaryfiles.metadata}"> Metadata </label>
-														<label class="toggle-vis" data-column="3" th:text="#{binaryfiles.owner}"> Owner</label>
-														<label class="toggle-vis" data-column="4" th:text="#{gen.created}"> Created At</label>
-														<label class="toggle-vis" data-column="5" th:text="#{gen.updated}"> Updated At</label>
-														<label class="toggle-vis" data-column="6" th:text="#{binaryfiles.accesstypes}"> Access types</label>	
-														<label class="toggle-vis" data-column="7" th:text="#{gen.public}"> Public</label>												
-														<label class="toggle-vis" data-column="8" th:text="#{gen.options}" > Options</label>															
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{binaryfiles.filename}"> File Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1"/>
+															<label th:text="#{binaryfiles.fileid}"> File Id </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{binaryfiles.owner}"> Owner</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{gen.created}"> Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label th:text="#{gen.updated}"> Updated At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label th:text="#{gen.public}"> Public</label>
+														</span>
 													</div>
 												</div>
 											</div>
@@ -378,7 +439,6 @@
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -423,7 +483,7 @@
 		//var currentMode = $('#repositories').text();
 		//$('#repositories').text(currentMode.split(/(?=[A-z])(?=[A-Z])/).join(" "));
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#files').DataTable().column( $(this).attr('data-column') ); 
@@ -434,11 +494,20 @@
 				$('#filtering th').eq($(this).attr('data-column')).toggle();
 			}
 			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
+			//$(this).toggleClass('text-muted line-through');			
 		});	
 		
 
-		
+		// SEARCH FORM RESET
+		$('#reset_file').on('click',function(){
+			$('#file-name').val('');
+			$('#files').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_file').on('click',function(){
+			$('#files').DataTable().column(0).search( $('#file-name').val()).draw();
+		});
 		
 		
 	});
@@ -447,11 +516,41 @@
 	$(window).load(function(){  
 	
 		//DATATABLE 
-		var oTable = $('#files').DataTable();
+		var oTable = $('#files').dataTable({
+	      "bAutoWidth": false
+	      });
 		
-		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
+
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#files_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#files_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#files_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
+			 var $menu = $("ul", this);	        
+	         offset = $menu.offset();
+	         position = $menu.position();
+	         $('body').append($menu);
+	         $menu.show();
+	         $menu.css('position', 'absolute');
+	         $menu.css('top', (offset.top) +'px');
+	         $menu.css('left',(offset.left) +'px');
+	         $menu.css('min-width', '100px');
+	        $(this).data("myDropdownMenu", $menu);
+	     });
+		$('.download-menu').parent().on('hide.bs.dropdown', function () {
+	         $(this).append($(this).data("myDropdownMenu"));
+	         $(this).data("myDropdownMenu").removeAttr('style');
+	     });
 		
 				
 		// FILTERING COLUMNS INIT
@@ -470,7 +569,7 @@
 		filtersResets.addClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([1,2],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		$('#yadcf-filter--files-0').attr("placeholder", [[#{binaryfiles.text.placeholder}]]);
 		
@@ -480,6 +579,8 @@
 	  			$("#submitNewFile").removeAttr('disabled');
 	 	}
 	  	});
+	 	
+		$("#contenedor-tabla-outside").removeClass("hidden");
 		
 	});
 	

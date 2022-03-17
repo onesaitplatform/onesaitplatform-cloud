@@ -49,7 +49,14 @@
               "type": "object",
               "properties": {
                 "date": {
-                  "type": "string"
+                  "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+
                 },
                 "grade": {
                   "type": "string"
@@ -68,7 +75,14 @@
               "type": "object",
               "properties": {
                 "date": {
-                  "type": "string"
+                  "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+
                 },
                 "grade": {
                   "type": "string"
@@ -87,7 +101,14 @@
               "type": "object",
               "properties": {
                 "date": {
-                  "type": "string"
+                  "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+
                 },
                 "grade": {
                   "type": "string"
@@ -106,7 +127,14 @@
               "type": "object",
               "properties": {
                 "date": {
-                  "type": "string"
+                  "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+
                 },
                 "grade": {
                   "type": "string"

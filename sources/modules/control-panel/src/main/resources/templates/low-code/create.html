@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -68,7 +68,6 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/low-code/}"> <span th:text="#{lowcode.tools}">Low Code Tools</span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:text="#{lowcode.breadcrumb.figma}">Create</span>
@@ -78,238 +77,183 @@
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
-
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
-
-				<!-- END PAGE TITLE-->			
+				<!-- END PAGE TITLE-->	
 				
-				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">						
-						<div class="portlet light container">
-							<div class="portlet-title">
-								<div class="caption">								
-									<span class="caption-subject " th:text="#{lowcode.breadcrumb.generate}"> New</span>
-								</div>									
-								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title=""> </a>																			
-									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+				<form role="form" id="simulation_create_form" th:object="${figmaSetup}"  method="post" class="form">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input type="hidden" name="action" th:value="@{/low-code/figma}"/>
+				
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:text="#{lowcode.breadcrumb.generate}">Generate new UI</span>
 								</div>
-								<div class="actions hide">
-									<!-- ACTION INDICATORs -->									
-									<span class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
-								</div>									
 							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
-								
-								<div class="row">
-									<div class="col-md-12 alert-zone" id="alerts"><!-- ALERTS ZONE -->
-										<div class="alert alert-danger display-hide">
-											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
-										</div>
-                                        <div class="alert alert-success display-hide">
-											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
-										</div>		
-										<div class="alert alert-generic display-hide">
-											<button class="close" data-close="alert"></button><span class="alert-exists-text"></span>
-										</div>								
+							
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">								
+									<!-- CANCEL -->
+									<button  id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:document.location=\'' + @{/low-code/} + '\';'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
+								</div>
+							</div>
+						</div>
+					</div>	
+
+					<!-- MAIN ROW -->
+					<div class="mainPanel">
+						<div class="row main">
+							<div class="col-md-2 col-sm-6 col-xs-12">
+								<label class="control-label" th:text="#{lowcode.figma.fileid}">File Id</label><label class=" popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.fileid.tooltip},data-title=#{lowcode.figma.fileid.tooltip.title}"><i style="margin-left:20;cursor:pointer" class="la la-info-circle font-md"></i> </label>
+								<input th:required="true" type="text" minlength="10" th:placeholder="#{lowcode.figma.fileid}" class="form-control" name="figma-fileid" id="figma-fileid"/>						
+							</div>
+							<div class="col-md-4 col-sm-6 col-xs-12">
+								<label class="control-label" th:text="#{lowcode.figma.token}">Figma Token</label>
+								<input th:required="true" type="text" minlength="10" th:placeholder="#{lowcode.figma.token}" class="form-control" name="figma-token" id="figma-token"/>	
+							</div>
+							<div class="col-md-2 col-sm-6 col-xs-12">
+								<div class="margin-top-25">
+									<button id="fetch-btn" type="button" class="btn btn-circle btn-outline btn-primary " name="create"  th:value="#{gen.createBtn}" onclick="_fetchFigma(this)"><i id="fetch-spinner" class="la la-spinner la-spin la-2x hide"></i><span id="fetch-span" th:text="#{lowcode.figma.fetch}"> Fetch</span></button>
+								</div>
+							</div>
+						</div>
+						<div id ="login-config" class="row main hide pre-hiding">
+							<hr/>
+							<div  class="col-md-4 col-sm-6 col-xs-12">
+								<div class="mt-checkbox-list"> 
+									<div class="inline font-xs">
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.uselogin.content},data-title=#{lowcode.figma.uselogin}"><div class="inline font-xs" th:text="#{lowcode.figma.uselogin}">Use login</div>
+										<input id="checkbox-use-login" class="form-control no-remove" type="checkbox" onchange="_changedCheckbox(this)" /><span></span></label>
 									</div>
-									<div class="col-md-12">										
-										<form role="form" id="simulation_create_form" th:object="${figmaSetup}"  method="post" class="form" style="margin-top:-30px">
-											<!-- FORM ACTIONS FOR INSERT-->
-											<input type="hidden" name="action" th:value="@{/low-code/figma}"/>																					
-											<div class="form-body">
-												
-												<div class="row">
-													<div class="col-md-6 col-sm-6 col-xs-12">
-														<div class="form-group">
-															<label class="control-label" th:text="#{lowcode.figma.fileid}">File Id</label><label class=" popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.fileid.tooltip},data-title=#{lowcode.figma.fileid.tooltip.title}"><i style="margin-left:20;cursor:pointer" class="la la-info-circle font-md"></i> </label>
-															<input th:required="true" type="text" minlength="10" th:placeholder="#{lowcode.figma.fileid}" class="form-control" name="figma-fileid" id="figma-fileid"/>	
-														</div>
-													</div>		
-													<div class="col-md-6 col-sm-6 col-xs-12">
-														<div class="form-group">
-															<label class="control-label" th:text="#{lowcode.figma.token}">Figma Token</label>
-															<input th:required="true" type="text" minlength="10" th:placeholder="#{lowcode.figma.token}" class="form-control" name="figma-token" id="figma-token"/>	
-														</div>
-													</div>	
-													<div class="col-md-12 col-sm-6 col-xs-12">
-														<div class="pull-right">
-															<button id="fetch-btn" type="button" class="btn btn-circle btn-outline btn-primary " name="create"  th:value="#{gen.createBtn}" onclick="_fetchFigma(this)"><i id="fetch-spinner" class="la la-spinner la-spin la-2x hide"></i><span id="fetch-span" th:text="#{lowcode.figma.fetch}"> Fetch</span></button>
-														</div>
-													</div>		
-												</div>
-												<div id ="login-config" class="hide pre-hiding">
-													<div class="row">
-														<hr/>
-														<div  class="col-md-4 col-sm-6 col-xs-12">
-															<div class="mt-checkbox-list"> 
-																<div class="inline font-xs">
-																	<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.uselogin.content},data-title=#{lowcode.figma.uselogin}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{lowcode.figma.uselogin}">Use login</div>
-																	<input id="checkbox-use-login" class="form-control no-remove" type="checkbox" onchange="_changedCheckbox(this)" /><span></span></label>
-																</div>
-															</div>
-														</div>
-													</div>
-													<div id="login-fields" class="row">
-														<div  id="login-username" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div  id="login-password" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div  id="login-callback" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-													</div>
-												
-												</div>
-												<div id ="dashboard-config" class="hide pre-hiding">
-													<div class="row">
-														<hr/>
-														<div  class="col-md-4 col-sm-6 col-xs-12">
-															<div class="mt-checkbox-list"> 
-																<div class="inline font-xs">
-																	<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.usedashboard.content},data-title=#{lowcode.figma.usedashboard}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{lowcode.figma.usedashboard}">User dashboard</div>
-																	<input id="checkbox-use-dashboard" class="form-control no-remove" type="checkbox" onchange="_changedCheckbox(this)" /><span></span></label>
-																</div>
-															</div>
-														</div>
-													</div>
-													<div id="dashboard-fields" class="row">
-														<div  id="dashboard-custom-component" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div  id="dashboards" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div id="dashboard-edit-mode" class="col-md-4 col-sm-6 col-xs-12 mt-checkbox-list hide"> 
-															<div class="inline font-xs">
-																<label th:text="#{lowcode.figma.dashboard.editmode}"></label>
-																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.dashboard.editmode.content},data-title=#{lowcode.figma.dashboard.editmode}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{lowcode.figma.dashboard.editmode}">Edit mode</div>
-																<input id="checkbox-edit-mode" class="form-control no-remove" type="checkbox" /><span></span></label>
-															</div>
-														</div>
-													</div>
-												</div>
-												<div id ="mappings-config" class="hide pre-hiding">
-													<hr/>
-													<label style="font-size:20">Mappings</label><label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.mappings.tooltip},data-title=#{lowcode.figma.mappings.tooltip.title}"><i style="margin-left:20;cursor:pointer" class="la la-info-circle font-md"></i> </label>
-													<div class="row">
-														<div id="methods" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div id="apis" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div id="api-operations" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-													</div>
-													
-													<div class="row">
-														<div id="inputs" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div id="outputs" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														<div id="callbacks" class="col-md-4 col-sm-6 col-xs-12">
-															
-														</div>
-														
-														
-													</div>
-													<div class="">
-														<label style="font-size:13" class="hide" id="param-mapping-title" th:text="#{lowcode.param.mapping.title}"></label><label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.mappingparams.tooltip}"><i id="param-mapping-icon" style="margin-left:20;cursor:pointer" class="la la-info-circle font-md"></i> </label>
-														<div id="param-mappings" class="row hide">
-															
-														</div>
-													</div>
-													<div class="row col-md-12 col-sm-6 col-xs-12">
-														<div class="pull-right">
-															<!-- CREATE -->
-															<button id="addBtn" type="button" class="btn btn-circle btn-outline btn-primary " name="create"  th:value="#{restplanner.add}" onclick="_addMappingAndRender(this)"><span th:text="#{restplanner.add}"> Add</span></button>
-														</div>
-													</div>
-													
-													<div class="form-group">
-														<div id="mappings" class="margin-bottom-20">
-															<table class="table" id="mappings-table" data-loaded="false">
-															<caption></caption>
-																<thead>
-																	<tr class="cabecera-tabla" role="row" >
-																		<th class="titulo-columnas" th:text="#{lowcode.figma.method}">Method</th>
-																		<th class="titulo-columnas" th:text="#{lowcode.figma.api}">API</th>
-																		<th class="titulo-columnas" th:text="#{lowcode.figma.apiops}">API ops</th>
-																		<th class="titulo-columnas" th:text="#{lowcode.figma.callback}">Callback Page</th>
-																		<th class="titulo-columnas" th:text="#{lowcode.figma.input}">Input Var</th>
-																		<th class="titulo-columnas" th:text="#{lowcode.figma.output}">Output Var</th>
-																		<th class="titulo-columnas" th:text="#{gen.options}">Options</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<tr class="mappings-model">
-																		<td><input type="text" name="methods[]" readonly="readonly"   class="form-control"/></td>
-																		<td><input type="text" name="apis[]" readonly="readonly"   class="form-control"/></td>
-																		<td><input type="text" name="apiOps[]" readonly="readonly"   class="form-control"/></td>
-																		<td><input type="text" name="callbacks[]" readonly="readonly"   class="form-control"/></td>
-																		<td><input type="text" name="inputs[]" readonly="readonly"   class="form-control"/></td>
-																		<td><input type="text" name="outputs[]" readonly="readonly"   class="form-control"/></td>														
-																		<td width="150px" class="no-wrap">											
-																			<span class="btn btn-xs no-border btn-circle btn-outline blue tooltips" onclick="_deleteMappingAndRender(this)"  data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}"><i class="la la-trash font-hg"></i><span> <small></small></span></span>
-																			<span class="btn btn-xs no-border btn-circle btn-outline blue tooltips" onclick="_infoMappings(this)"  data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}"><i class="la la-info-circle font-hg"></i><span> <small></small></span></span>
-																		</td>			
-																	</tr>
-																</tbody>														
-															</table>
-														</div>
-													</div>
-													<!-- MODAL -->
-													<div id="param-mappings-modal" class="modal fade" role="dialog">
-													  <div class="modal-dialog modal-sm">
-													    <!-- Modal content-->
-													    <div class="modal-content">
-													      <div class="modal-header">
-													        <button type="button" class="close" data-dismiss="modal"></button>
-													        <h4 class="modal-title" th:text="#{lowcode.param.mapping.title}">Param mappings</h4>
-													      </div>		
-													      <div class="modal-body">
-														      <div class="form-group text-center" id="modal-body">
-															  </div>
-													      </div>									      
-													      <div class="modal-footer">
-													        <button type="button" class="btn btn-outline btn-circle btn-primary" data-dismiss="modal" th:text="#{gen.closeBtn}" >Close</button>
-													      </div>
-													    </div>
-													  </div>
-													</div>
-													<!-- FIN MODAL -->
-												</div>
-											</div>
-											
-											<!-- FORM BUTTONS -->
-											<div class="form-actions">
-												<div class="pull-left">
-													<!-- CANCEL TO-DO: authentication and control -->
-													<button  id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:document.location=\'' + @{/low-code/} + '\';'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-												</div>
-												<div class="pull-right">
-													<!-- CREATE -->
-													<button id="generateBtn" type="button" class="btn btn-circle btn-outline btn-primary pre-hiding hide " name="generate"  th:value="#{reports.run}" onclick="generateTemplate(this)"><i id="generate-spinner" class="la la-spinner la-spin la-2x hide"></i><span id="generate-span" th:text="#{reports.run}"> Generate</span></button>	
-												</div>
-											</div>
-																				
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-									</form>
-										
-								
-									</div>									
 								</div>
 							</div>
-						</div><!-- END PORTLET BASIC  -->						
-					</div><!-- END COL-12 -->						
-				</div><!-- END MAIN ROW -->
+						</div>
+						<div id="login-fields" class="row main">
+							<div  id="login-username" class="col-md-2 col-sm-6 col-xs-12">
+							</div>
+							<div  id="login-password" class="col-md-2 col-sm-6 col-xs-12">
+							</div>
+							<div  id="login-callback" class="col-md-2 col-sm-6 col-xs-12">
+							</div>
+						</div>
+						<div id ="dashboard-config" class="row main hide pre-hiding">
+							<hr/>
+							<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="mt-checkbox-list"> 
+									<div class="inline font-xs">
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.usedashboard.content},data-title=#{lowcode.figma.usedashboard}"><div class="inline font-xs" th:text="#{lowcode.figma.usedashboard}">User dashboard</div>
+										<input id="checkbox-use-dashboard" class="form-control no-remove" type="checkbox" onchange="_changedCheckbox(this)" /><span></span></label>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div id="dashboard-fields" class="row">
+							<div  id="dashboard-custom-component" class="col-md-2 col-sm-6 col-xs-12">
+							</div>
+							<div  id="dashboards" class="col-md-2 col-sm-6 col-xs-12">
+							</div>
+							<div id="dashboard-edit-mode" class="col-md-2 col-sm-6 col-xs-12 mt-checkbox-list hide margin-top-25"> 
+								<div class="inline font-xs">
+									<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.dashboard.editmode.content},data-title=#{lowcode.figma.dashboard.editmode}"><div class="inline font-xs" th:text="#{lowcode.figma.dashboard.editmode}">Edit mode</div>
+									<input id="checkbox-edit-mode" class="form-control no-remove" type="checkbox" /><span></span></label>
+								</div>
+							</div>
+						</div>
+						
+						<div id ="mappings-config" class="hide pre-hiding">
+							<hr/>
+							<label style="font-size:20">Mappings</label><label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.mappings.tooltip},data-title=#{lowcode.figma.mappings.tooltip.title}"><i style="margin-left:20;cursor:pointer" class="la la-info-circle font-md"></i> </label>
+							<div class="row main">
+								<div id="methods" class="col-md-2 col-sm-6 col-xs-12">
+								</div>
+								<div id="apis" class="col-md-2 col-sm-6 col-xs-12">
+								</div>
+								<div id="api-operations" class="col-md-2 col-sm-6 col-xs-12">
+								</div>
+							</div>		
+							<div class="row main">
+								<div id="inputs" class="col-md-2 col-sm-6 col-xs-12">
+								</div>
+								<div id="outputs" class="col-md-2 col-sm-6 col-xs-12">
+								</div>
+								<div id="callbacks" class="col-md-2 col-sm-6 col-xs-12">
+								</div>
+							</div>
+							<div class="row">
+								<div id="inputs" class="col-md-12 col-sm-12 col-xs-12">
+									<label style="font-size:13" class="hide" id="param-mapping-title" th:text="#{lowcode.param.mapping.title}"></label><label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{lowcode.figma.mappingparams.tooltip}"><i id="param-mapping-icon" style="margin-left:20;cursor:pointer" class="la la-info-circle font-md"></i> </label>
+								</div>
+								<div id="param-mappings" class="col-md-6 col-sm-6 col-xs-12 hide no-padding-left no-padding-right">
+								</div>
+							</div>
+							<div class="row main">
+								<div class="col-md-2 col-sm-6 col-xs-12">
+									<button id="addBtn" type="button" class="btn btn-circle btn-outline btn-primary " name="create"  th:value="#{restplanner.add}" onclick="_addMappingAndRender(this)"><span th:text="#{restplanner.add}"> Add</span></button>
+								</div>
+							</div>
+							<div id="mappings" class="row main">
+								<div class="col-md-10 col-sm-12 col-xs-12">
+									<table class="table" id="mappings-table" data-loaded="false">
+									<caption></caption>
+										<thead>
+											<tr class="cabecera-tabla" role="row" >
+												<th class="titulo-columnas" th:text="#{lowcode.figma.method}">Method</th>
+												<th class="titulo-columnas" th:text="#{lowcode.figma.api}">API</th>
+												<th class="titulo-columnas" th:text="#{lowcode.figma.apiops}">API ops</th>
+												<th class="titulo-columnas" th:text="#{lowcode.figma.callback}">Callback Page</th>
+												<th class="titulo-columnas" th:text="#{lowcode.figma.input}">Input Var</th>
+												<th class="titulo-columnas" th:text="#{lowcode.figma.output}">Output Var</th>
+												<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr class="mappings-model">
+												<td><input type="text" name="methods[]" readonly="readonly"   class="form-control"/></td>
+												<td><input type="text" name="apis[]" readonly="readonly"   class="form-control"/></td>
+												<td><input type="text" name="apiOps[]" readonly="readonly"   class="form-control"/></td>
+												<td><input type="text" name="callbacks[]" readonly="readonly"   class="form-control"/></td>
+												<td><input type="text" name="inputs[]" readonly="readonly"   class="form-control"/></td>
+												<td><input type="text" name="outputs[]" readonly="readonly"   class="form-control"/></td>														
+												<td width="150px" class="no-wrap">											
+													<span class="btn btn-xs no-border btn-circle btn-outline blue tooltips" onclick="_deleteMappingAndRender(this)"  data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}"><i class="la la-trash font-hg"></i><span> <small></small></span></span>
+													<span class="btn btn-xs no-border btn-circle btn-outline blue tooltips" onclick="_infoMappings(this)"  data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}"><i class="la la-info-circle font-hg"></i><span> <small></small></span></span>
+												</td>			
+											</tr>
+										</tbody>														
+									</table>
+								</div>
+								<!-- MODAL -->
+								<div id="param-mappings-modal" class="modal fade" role="dialog">
+								  <div class="modal-dialog modal-sm">
+								    <!-- Modal content-->
+								    <div class="modal-content">
+								      <div class="modal-header">
+								        <button type="button" class="close" data-dismiss="modal"></button>
+								        <h4 class="modal-title" th:text="#{lowcode.param.mapping.title}">Param mappings</h4>
+								      </div>		
+								      <div class="modal-body">
+									      <div class="form-group text-center" id="modal-body">
+										  </div>
+								      </div>									      
+								      <div class="modal-footer">
+								        <button type="button" class="btn btn-outline btn-circle btn-primary" data-dismiss="modal" th:text="#{gen.closeBtn}" >Close</button>
+								      </div>
+								    </div>
+								  </div>
+								</div>
+								<!-- FIN MODAL -->
+							</div>
+							<div class="row main">
+								<div class="col-md-2 col-sm-6 col-xs-12">
+									<!-- CREATE -->
+									<button id="generateBtn" type="button" class="btn btn-circle btn-outline btn-primary pre-hiding hide " name="generate"  th:value="#{reports.run}" onclick="generateTemplate(this)"><i id="generate-spinner" class="la la-spinner la-spin la-2x hide"></i><span id="generate-span" th:text="#{reports.run}"> Generate</span></button>	
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
 				<!-- Modal -->
 				<div id="returnAction" class="modal fade" role="dialog" style="text-align:center">
 					<div class="modal-dialog modal-sm">

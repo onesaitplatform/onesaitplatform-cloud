@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,16 +56,67 @@ import net.sf.jsqlparser.util.SelectUtils;
 @Component("SQLHelperImpl")
 public class SQLHelperImpl implements SQLHelper {
 
+	private static final String LIST_VALIDATE_QUERY = "SELECT 1";
 	private static final String LIST_TABLES_QUERY = "SHOW TABLES";
+	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT DATABASE()";
+	private static final String LIST_DATABASES_QUERY = "SHOW DATABASES";
+	private static final String LIST_TABLES_IN_DATABASE_QUERY = "SHOW TABLES IN %s";
 	protected static final String SPEC_GEOM_SRID = "4326";
 	private static final String ST_AS_GEO_JSON = "ST_AsGeoJSON(";
 
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
-
+	
+	@Override
+	public String getValidateQuery() {
+		return LIST_VALIDATE_QUERY;
+	}
+	
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
+	}
+	
+	@Override
+	public boolean hasDatabase() {
+		return true;
+	}
+	
+	@Override
+	public boolean hasCrossDatabase() {
+		return true;
+	}
+
+	@Override
+	public boolean hasSchema() {
+		return false;
+	}
+
+	@Override
+	public String getDatabaseStatement() {
+		return GET_CURRENT_DATABASE_QUERY;
+	}
+
+	@Override
+	public String getSchemaStatement() {
+		//default no schema
+		return null;
+	}
+
+	@Override
+	public String getDatabasesStatement() {
+		return LIST_DATABASES_QUERY;
+	}
+
+	@Override
+	public String getSchemasStatement(String database) {
+		//default no schema
+		return null;
+	}
+
+	@Override
+	public String getAllTablesStatement(String database, String schema) {
+		return String.format(LIST_TABLES_IN_DATABASE_QUERY, database);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.persistence.control.NoPersistenceBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.external.api.rest.ExternalApiRestOpsDBRepository;
@@ -50,6 +51,9 @@ public class BasicOpsDBRepositoryFactory {
 	@Autowired
 	private CosmosDBBasicOpsDBRepository cosmosBasicOps;
 
+	@Autowired
+	private NoPersistenceBasicOpsDBRepository noPersistenceBasicOpsDBRepository;
+
 	@Autowired(required = false)
 	@Qualifier(NameBeanConst.KUDU_BASIC_OPS_BEAN_NAME)
 	private BasicOpsDBRepository kuduBasicOpsDBRepository;
@@ -73,6 +77,8 @@ public class BasicOpsDBRepositoryFactory {
 			return virtualRepository;
 		} else if (RtdbDatasource.COSMOS_DB.equals(dataSource)) {
 			return cosmosBasicOps;
+		}else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
+			return noPersistenceBasicOpsDBRepository;
 		} else {
 			return mongoBasicOps;
 		}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,10 +62,12 @@ public class OntologyUserAccess extends AuditableEntityWithUUID {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof OntologyUserAccess))
+		}
+		if (!(o instanceof OntologyUserAccess)) {
 			return false;
+		}
 		final OntologyUserAccess that = (OntologyUserAccess) o;
 		return getOntologyUserAccessType() != null
 				&& getOntologyUserAccessType().equals(that.getOntologyUserAccessType()) && getOntology() != null
@@ -81,9 +83,9 @@ public class OntologyUserAccess extends AuditableEntityWithUUID {
 	public String toString() {
 		final String space = "-";
 		final StringBuilder sb = new StringBuilder();
-		sb.append(getOntology());
+		sb.append(getOntology().getIdentification());
 		sb.append(space);
-		sb.append(getUser());
+		sb.append(getUser().getUserId());
 		sb.append(space);
 		sb.append(getOntologyUserAccessType());
 		return sb.toString();

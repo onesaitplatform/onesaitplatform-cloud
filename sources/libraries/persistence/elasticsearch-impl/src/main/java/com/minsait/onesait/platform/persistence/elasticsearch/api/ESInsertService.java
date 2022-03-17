@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.persistence.elasticsearch.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.DocWriteResponse.Result;
@@ -27,20 +28,21 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.joda.time.DateTime;
+import org.joda.time.chrono.ISOChronology;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.commons.model.BulkWriteResult;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResultType;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
-import com.minsait.onesait.platform.persistence.util.JSONPersistenceUtilsElasticSearch;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,11 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ESInsertService {
 
 	@Autowired
-	private OntologyDataService ontologyDataService;
-	@Autowired
-	private ObjectMapper mapper;
-    @Autowired
-    private RestHighLevelClient hlClient;
+	private RestHighLevelClient hlClient;
 
 	private static final String GEOMERY_STR = "geometry";
 	private static final String GEOMERYCOLLECTION_STR = "geometrycollection";
@@ -66,10 +64,10 @@ public class ESInsertService {
 	private static final String MULTILINE_STR = "multilinestring";
 	private static final String FEATURE_STR = "feature";
 	private static final String FEATURECOLLECTION_STR = "featurecollection";
-	private static final String DATE = "$date";
 	private static final String SOURCE = "source";
+	private static final String PATTERN_SEPARATOR = "-";
 
-	private String fixPosibleNonCapitalizedGeometryPoint(String s, String index) {
+	private String fixPosibleNonCapitalizedGeometryPoint(String s) {
 		try {
 			final JsonObject o = new JsonParser().parse(s).getAsJsonObject();
 			if (o.get(SOURCE) != null && o.get(SOURCE).getAsString().equals("AUDIT"))
@@ -93,110 +91,72 @@ public class ESInsertService {
 
 	}
 
-	private String fixPosibleDollarDates(String s, String schema, String index) {
-		final JsonObject instance = new JsonParser().parse(s).getAsJsonObject();
-		if (instance.get(SOURCE) != null && instance.get(SOURCE).getAsString().equals("AUDIT"))
-			return s;
-		if (s.contains(DATE)) {
-			try {
-				final String elasticSchema = JSONPersistenceUtilsElasticSearch
-						.getElasticSearchSchemaFromJSONSchema(schema);
-
-				final JsonObject elasticSchemaObject = new JsonParser().parse(elasticSchema).getAsJsonObject();
-				final JsonObject properties = elasticSchemaObject.get(index).getAsJsonObject().get("properties")
-						.getAsJsonObject();
-				final String refSchema = ontologyDataService.refJsonSchema(mapper.readTree(schema));
-
-				properties.entrySet().forEach(e -> {
-					try {
-						if (e.getValue().getAsJsonObject().get("type").getAsString().equals("date")) {
-							if (!StringUtils.isEmpty(refSchema)) {
-								final String parentNode = mapper.readTree(schema).get("properties").fieldNames().next();
-								final JsonObject date = instance.get(parentNode).getAsJsonObject().get(e.getKey())
-										.getAsJsonObject();
-								instance.get(parentNode).getAsJsonObject().remove(e.getKey());
-								instance.get(parentNode).getAsJsonObject().add(e.getKey(), date.get(DATE));
-							} else {
-								final JsonObject date = instance.get(e.getKey()).getAsJsonObject();
-								instance.remove(e.getKey());
-								instance.add(e.getKey(), date.get(DATE));
-							}
-						}
-					} catch (final Exception e1) {
-						log.warn("Error fixing Dollar Dates for audit message: " + s, e1);
-					}
-
-				});
-				return instance.toString();
-
-			} catch (final Exception e1) {
-				log.warn("Error fixing Dollar Dates for audit message: " + s, e1);
-			}
-
-		}
-		return s;
-
-	}
-	
-	private BulkResponse bulkInsert(String index, List<String> jsonDocs) {
-	    BulkRequest bulkRequest = new BulkRequest();
-	    for (String json : jsonDocs) {
-	        bulkRequest.add(new IndexRequest(index).source(json, XContentType.JSON));
-	    }
-	    return executeBulkInsert(bulkRequest);
-	}
-	
 	private BulkResponse executeBulkInsert(BulkRequest bulkRequest) {
-	    try {
-            return hlClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            log.error("Error inserting bulk documents ", e);
-            return null;
-        }
-    }
+		try {
+			return hlClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			log.error("Error inserting bulk documents ", e);
+			return null;
+		}
+	}
 
-    public ComplexWriteResult bulkInsert(String index, List<String> jsonDocs, String jsonSchema) {
-        	    	   
-		List<String> parsedJson = new ArrayList<>(jsonDocs.size());	
+	public ComplexWriteResult bulkInsert(OntologyElastic ontology, List<String> jsonDocs) {
+		BulkRequest bulkRequest = new BulkRequest();
 
 		for (String s : jsonDocs) {
+			// fix instance
+			s = s.replace("\\n", "");
+			s = s.replace("\\r", "");
+			s = fixPosibleNonCapitalizedGeometryPoint(s);
 
-			s = s.replaceAll("\\n", "");
-			s = s.replaceAll("\\r", "");
+			// Get index and ID if defined
+			String index = ontology.getOntologyId().getIdentification().toLowerCase();
+			String idValue;
 
-			s = fixPosibleNonCapitalizedGeometryPoint(s, index);
-			s = fixPosibleDollarDates(s, jsonSchema, index);
-			parsedJson.add(s);
+			// Default indexRequest. This can change for templates and/or custom IDs
+			IndexRequest indexRequest = new IndexRequest(index).source(s, XContentType.JSON);
+
+			if (Boolean.TRUE.equals(ontology.getCustomIdConfig())
+					|| Boolean.TRUE.equals(ontology.getTemplateConfig())) {
+				// We need to parse the instance to extract the index or the ID
+				JsonObject instanceObject = new JsonParser().parse(s).getAsJsonObject();
+				if (Boolean.TRUE.equals(ontology.getTemplateConfig())) {
+					index = getIndexFromInstance(ontology, instanceObject);
+					// IF template, then set the index according to the instance
+					indexRequest.index(index);
+				}
+
+				if (Boolean.TRUE.equals(ontology.getCustomIdConfig())) {
+					idValue = getValueFromInstanceField(instanceObject, ontology.getIdField());
+					// IF custom ID, set the ID Value and UPSERT
+
+					indexRequest.id(idValue)
+							.create(ontology.getAllowsUpsertById() == null ? true : !ontology.getAllowsUpsertById());
+				}
+			}
+
+			// Create Request
+			bulkRequest.add(indexRequest);
 		}
 
-		BulkResponse bulkResponse = bulkInsert(index, parsedJson);
-		
+		BulkResponse bulkResponse = executeBulkInsert(bulkRequest);
+
 		List<BulkWriteResult> listResult = new ArrayList<>();
-		
-		for (BulkItemResponse bulkItemResponse : bulkResponse) { 
-		    DocWriteResponse itemResponse = bulkItemResponse.getResponse(); 
-		    final BulkWriteResult bulkr = new BulkWriteResult();		    
-		    bulkr.setId(itemResponse.getId());
-		    bulkr.setErrorMessage(itemResponse.toString());
-		    bulkr.setOk(itemResponse.getResult().equals(Result.CREATED));
-		    
-//		    switch (bulkItemResponse.getOpType()) {
-//		    case INDEX:    
-//		    case CREATE:
-//		        IndexResponse indexResponse = (IndexResponse) itemResponse;		        
-//                bulkr.setId(indexResponse.getId());
-//                bulkr.setErrorMessage(indexResponse.toString());
-//                bulkr.setOk(indexResponse.getResult().equals(Result.CREATED));
-//                listResult.add(bulkr);
-//		        break;
-//		    case UPDATE:   
-//		        UpdateResponse updateResponse = (UpdateResponse) itemResponse;		        
-//		        break;
-//		    case DELETE:   
-//		        DeleteResponse deleteResponse = (DeleteResponse) itemResponse;
-//		    }
-		    
-		    listResult.add(bulkr);
+
+		for (BulkItemResponse bulkItemResponse : bulkResponse) {
+			final BulkWriteResult bulkr = new BulkWriteResult();
+			bulkr.setId(bulkItemResponse.getId());
+			
+			DocWriteResponse itemResponse = bulkItemResponse.getResponse();
+			if(itemResponse == null || bulkItemResponse.getFailure() != null) {
+				//there is an error
+				bulkr.setErrorMessage(bulkItemResponse.getFailureMessage());
+				bulkr.setOk(false);			
+			} else {
+				bulkr.setErrorMessage(itemResponse.toString());
+				bulkr.setOk(itemResponse.getResult().equals(Result.CREATED) || itemResponse.getResult().equals(Result.UPDATED));
+			}			
+			listResult.add(bulkr);
 		}
 
 		ComplexWriteResult complexWriteResult = new ComplexWriteResult();
@@ -204,6 +164,68 @@ public class ESInsertService {
 		complexWriteResult.setData(listResult);
 
 		return complexWriteResult;
+
+	}
+
+	private String getIndexFromInstance(OntologyElastic ontology, JsonObject instanceObject) {
+		String index = "";
+		DateTime dateTime = null;
+		DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ").withLocale(Locale.ROOT)
+				.withChronology(ISOChronology.getInstanceUTC());
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(ontology.getOntologyId().getIdentification()).append(PATTERN_SEPARATOR);
+
+		// get value from field
+		String fieldValue = getValueFromInstanceField(instanceObject, ontology.getPatternField());
+
+		switch (ontology.getPatternFunction()) {
+		case NONE:
+			index = stringBuilder.append(fieldValue).toString().toLowerCase();
+			break;
+		case SUBSTR:
+			if (fieldValue.length() <= ontology.getSubstringEnd()) {
+				// TODO: THrow exception out of bounds index
+			}
+			int endIndex = ontology.getSubstringEnd() == -1 ? fieldValue.length() : ontology.getSubstringEnd();
+			fieldValue = fieldValue.substring(ontology.getSubstringStart(), endIndex);
+			index = stringBuilder.append(fieldValue).toString().toLowerCase();
+			break;
+		case YEAR:
+			dateTime = DateTime.parse(fieldValue, formatter);
+			index = stringBuilder.append(dateTime.getYear()).toString().toLowerCase();
+			break;
+		case YEAR_MONTH:
+			dateTime = DateTime.parse(fieldValue, formatter);
+			index = stringBuilder.append(dateTime.getYear()).append(PATTERN_SEPARATOR)
+					.append(String.format("%02d", dateTime.getMonthOfYear())).toString().toLowerCase();
+			break;
+		case YEAR_MONTH_DAY:
+			dateTime = DateTime.parse(fieldValue, formatter);
+			index = stringBuilder.append(dateTime.getYear()).append(PATTERN_SEPARATOR)
+					.append(String.format("%02d", dateTime.getMonthOfYear())).append(PATTERN_SEPARATOR)
+					.append(String.format("%02d", dateTime.getDayOfMonth())).toString().toLowerCase();
+			break;
+		case MONTH:
+			dateTime = DateTime.parse(fieldValue, formatter);
+			index = stringBuilder.append(String.format("%02d", dateTime.getMonthOfYear())).toString().toLowerCase();
+			break;
+		case DAY:
+			dateTime = DateTime.parse(fieldValue, formatter);
+			index = stringBuilder.append(String.format("%03d", dateTime.getDayOfYear())).toString().toLowerCase();
+			break;
+		default:
+			// TODO: Throw exception
+		}
+		return index;
+	}
+
+	private String getValueFromInstanceField(JsonObject instanceObject, String field) {
+		String[] fields = field.split("\\.");
+		for (int i = 0; i < fields.length - 1; i++) {
+			instanceObject = instanceObject.getAsJsonObject(fields[i]);
+		}
+		return instanceObject.get(fields[fields.length - 1]).getAsString();
+
 	}
 
 }

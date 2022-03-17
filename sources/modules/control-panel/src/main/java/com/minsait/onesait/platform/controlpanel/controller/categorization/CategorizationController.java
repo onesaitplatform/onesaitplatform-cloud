@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,6 +176,7 @@ public class CategorizationController {
 				categorizationRepository.findById(id).orElse(new Categorization()));
 		model.addAttribute("catUsers", catUsers);
 		model.addAttribute("categorizationId", id);
+		model.addAttribute("categorizationIdentification", categorization.getIdentification());
 
 		return "categorization/share";
 	}

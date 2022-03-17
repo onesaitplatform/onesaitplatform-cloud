@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationServ
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceInfoDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
@@ -89,13 +91,13 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired
 	private CosmosDBBasicOpsDBRepository cosmosBasicOpsRepository;
-	
+
 	@Autowired
 	private OntologyTimeSeriesService ontologyTimeSeriesService;
 
 	@Autowired(required = false)
 	private KuduManageDBRepository kuduManageRepository;
-	
+
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
@@ -117,10 +119,11 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					"The provided json schema is not valid", e);
 		}
 
-		if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && config.getDatasource().equals(RtdbDatasource.KUDU.toString())) {
+		if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && config.getDatasource() != null
+				&& config.getDatasource().equals(RtdbDatasource.KUDU.toString())) {
 			ontology.setRtdbDatasource(RtdbDatasource.KUDU);
 		}
-			
+
 		if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && !hadoopEnable) {
 			metricsManagerLogControlPanelOntologyCreation(userId, "KO");
 
@@ -128,10 +131,14 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
 					"Hadoop installation not available");
 		}
-		
+
 		prepareOntologyRtdbToHdb(ontology);
-		invokeCreateOntology(ontology, config);
-		invokeCreateOntologyLogic(ontology, config);
+		if (ontologyService.existsOntology(ontology.getIdentification())) {
+            throw new OntologyServiceException(
+                "Ontology with identification: " + ontology.getIdentification() + " exists");
+        }
+        invokeCreateOntology(ontology, config);
+        invokeCreateOntologyLogic(ontology, config);
 	}
 
 	private void prepareOntologyRtdbToHdb(Ontology ontology) {
@@ -151,39 +158,17 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	private void invokeCreateOntologyLogic(Ontology ontology, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
+	    final String errorRollingBack = "Error creating the persistence infrastructure for ontology";
 		try {
 			ontologyLogicService.createOntology(ontology, config == null ? null : configToConfigMap(config));
 		} catch (final Exception e) {
-			rollBackInvokeCreateOntologyLogic(e, ontology, true);
+		    ontologyService.delete(ontology);
+		    throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+                errorRollingBack + ": " + e.getMessage(), e);
 		}
 
 	}
 
-	private void rollBackInvokeCreateOntologyLogic(Exception e, Ontology ontology, boolean externalTableCreated)
-			throws OntologyBusinessServiceException {
-		boolean raiseException = false;
-		final String errorRollingBack = "Error creating the persistence infrastructure for ontology";
-		final String errorRollingBackExternalTable = "it was not possible to undo the ontology configuration and/or the external table creation";
-		String errorMsg = errorRollingBack;
-
-		try {
-			if (externalTableCreated) {
-				ontologyLogicService.removeOntology(ontology);
-			}
-		} catch (final Exception e3) {
-			errorMsg = errorRollingBack + ", " + errorRollingBackExternalTable;
-			raiseException = true;
-		}
-
-		if (raiseException) {
-			throw new OntologyBusinessServiceException(
-					OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR_UNCLEAN,
-					errorMsg + ": " + e.getMessage());
-		}
-
-		throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
-				errorRollingBack + ": " + e.getMessage(), e);
-	}
 
 	@Override
 	public JsonNode completeSchema(String schema, String identification, String description) throws IOException {
@@ -197,17 +182,19 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		((ObjectNode) schemaSubTree).put("additionalProperties", true);
 		return schemaSubTree;
 	}
-	
+
 	@Override
-	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config) 
+	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
 		final Ontology ontology = ontologyService.getOntologyById(id, userId);
 		final User user = userService.getUser(userId);
-		
+
 		if (ontologyService.existsOntology(identification)) {
-			throw new OntologyServiceException("Ontology already exists", OntologyServiceException.Error.EXISTING_ONTOLOGY);
+			throw new OntologyServiceException("Ontology already exists",
+					OntologyServiceException.Error.EXISTING_ONTOLOGY);
 		} else if (!ontologyService.hasUserPermissionForQuery(user, ontology)) {
-			throw new OntologyServiceException("The user is not authorized", OntologyServiceException.Error.PERMISSION_DENIED);
+			throw new OntologyServiceException("The user is not authorized",
+					OntologyServiceException.Error.PERMISSION_DENIED);
 		}
 		if (!ontologyService.isIdValid(ontology.getIdentification())) {
 			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.ILLEGAL_ARGUMENT,
@@ -216,7 +203,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 		if (!ontology.getDataModel().getId().equals("MASTER-DataModel-30")) {
 			final Ontology clone = new Ontology();
-			
+
 			clone.setIdentification(identification);
 			clone.setUser(user);
 			clone.setDescription(ontology.getDescription());
@@ -231,12 +218,12 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
 			clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
 			clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
-			
+
 			ontologyService.createOntology(clone, config);
-		}else {
-			ontologyTimeSeriesService.cloneOntologyTimeSeries(identification, ontology, user, config);			
+		} else {
+			ontologyTimeSeriesService.cloneOntologyTimeSeries(identification, ontology, user, config);
 		}
-		
+
 	}
 
 	@Override
@@ -272,10 +259,30 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		}
 		return schemaSubTree;
 	}
+	
+	@Override
+	public VirtualDatasourceInfoDTO getInfoFromDatasource(String datasource) {
+		return virtualRepo.getInfo(datasource);
+	}
 
 	@Override
 	public List<String> getTablesFromDatasource(String datasource) {
 		return virtualRepo.getTables(datasource);
+	}
+	
+	@Override
+	public List<String> getDatabasesFromDatasource(String datasource) {
+		return virtualRepo.getDatabases(datasource);
+	}
+	
+	@Override
+	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database) {
+		return virtualRepo.getSchemasDB(datasource, database);
+	}
+	
+	@Override
+	public List<String> getTablesFromDatasource(String datasource, String database, String schema) {
+		return virtualRepo.getTables(datasource, database, schema);
 	}
 
 	@Override
@@ -299,8 +306,8 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public String getRelationalSchema(String datasource, String collection) {
-		return virtualRepo.getTableMetadata(datasource, collection);
+	public String getRelationalSchema(String datasource, String database, String schema, String collection) {
+		return virtualRepo.getTableMetadata(datasource, database, schema, collection);
 	}
 
 	@Override
@@ -342,6 +349,41 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		if (!StringUtils.isEmpty(config.getUniqueKeys())) {
 			cmap.put("uniqueKeys", config.getUniqueKeys());
 		}
+		//ElasticSearch
+		cmap.put("allowsCustomElasticConfig", String.valueOf(config.isAllowsCustomElasticConfig()));
+		cmap.put("allowsTemplateConfig", String.valueOf(config.isAllowsTemplateConfig()));
+
+		cmap.put("allowsCustomIdConfig", String.valueOf(config.isAllowsCustomIdConfig()));
+		cmap.put("allowsUpsertById", String.valueOf(config.isAllowsUpsertById()));
+		if (!StringUtils.isEmpty(config.getCustomIdField())) {
+			cmap.put("customIdField", config.getCustomIdField());
+		}
+		
+		if (!StringUtils.isEmpty(config.getReplicas())) {
+			cmap.put("replicas", config.getReplicas());
+		}
+		if (!StringUtils.isEmpty(config.getShards())) {
+			cmap.put("shards", config.getShards());
+		}
+		if (!StringUtils.isEmpty(config.getPatternField())) {
+			cmap.put("patternField", config.getPatternField());
+		}
+		if (!StringUtils.isEmpty(config.getPatternFunction())) {
+			cmap.put("patternFunction", config.getPatternFunction());
+		}
+		if (!StringUtils.isEmpty(config.getSubstringStart())) {
+			cmap.put("substringStart", config.getSubstringStart());
+		}
+		if (!StringUtils.isEmpty(config.getSubstringEnd())) {
+			cmap.put("substringEnd", config.getSubstringEnd());
+		}
+		if (!StringUtils.isEmpty(config.getDatasourceDatabase())) {
+			cmap.put("datasourceDatabase", config.getDatasourceDatabase());
+		}
+		if (!StringUtils.isEmpty(config.getDatasourceSchema())) {
+			cmap.put("datasourceSchema", config.getDatasourceSchema());
+		}
+		
 		return cmap;
 	}
 
@@ -368,16 +410,15 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 							OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
 							"Error updating the ontology configuration: " + e.getMessage(), e);
 				}
-				/*} else {
-				try {
-					ontologyLogicService.checkSameInternalDBConfig(ontology, configToConfigMap(config));
-				} catch (OntologyLogicServiceException | OntologyDataJsonProblemException e) {
-					throw new OntologyBusinessServiceException(
-							OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
-							"Error cannot update internal config with data in ontology, please remove data and update it again. The error is the following: "
-									+ e.getMessage(),
-							e);
-				}*/
+				/*
+				 * } else { try { ontologyLogicService.checkSameInternalDBConfig(ontology,
+				 * configToConfigMap(config)); } catch (OntologyLogicServiceException |
+				 * OntologyDataJsonProblemException e) { throw new
+				 * OntologyBusinessServiceException(
+				 * OntologyBusinessServiceException.Error.CONFIG_CREATION_ERROR,
+				 * "Error cannot update internal config with data in ontology, please remove data and update it again. The error is the following: "
+				 * + e.getMessage(), e); }
+				 */
 			}
 		}
 		kafkaAuthorizationService.checkOntologyAclAfterUpdate(ontology);

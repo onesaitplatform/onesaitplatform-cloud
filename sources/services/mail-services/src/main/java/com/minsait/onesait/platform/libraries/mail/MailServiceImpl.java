@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,10 @@ public class MailServiceImpl implements MailService {
 	@Autowired
 	public JavaMailSender emailSender;
 
+	@Autowired
+	@Qualifier("mailFrom")
+	public String mailFrom;
+
 	@Override
 	public void sendMail(String[] to, String subject, String text) {
 
@@ -45,6 +49,7 @@ public class MailServiceImpl implements MailService {
 			message.setTo(to);
 			message.setSubject(subject);
 			message.setText(text);
+			message.setFrom(mailFrom);
 			emailSender.send(message);
 		} catch (final MailException e) {
 			log.error("Error sending mail", e);
@@ -87,6 +92,7 @@ public class MailServiceImpl implements MailService {
 			helper.setTo(to);
 			helper.setSubject(subject);
 			helper.setText(htmlText, htmlenable);
+			helper.setFrom(mailFrom);
 
 			emailSender.send(message);
 		} catch (final MessagingException e) {

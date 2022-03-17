@@ -40,9 +40,8 @@ var InternationalizationCreateController = function() {
 		// no Id no fun!
 		if (!internationalizationId) {
 			$.alert({
-				title : 'ERROR!',
-				type : 'red',
-				theme : 'dark',
+				title : 'Error',
+				theme : 'light',
 				content : 'NO INTERNATIONALIZATION-FORM SELECTED!'
 			});
 			return false;
@@ -63,26 +62,19 @@ var InternationalizationCreateController = function() {
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
 
-		var form1 = $('#internationalization_create_form');
-		var error1 = $('.alert-danger');
-		var success1 = $('.alert-success');
+		var form1 = $('#internationalization_create_form');		
 
 		form1
 				.validate({
-					errorElement : 'span', // default input error message
-					// container
-					errorClass : 'help-block help-block-error', // default input
-					// error message class
-					focusInvalid : false, // do not focus the last invalid
-					// input
-					ignore : ":hidden:not('.selectpicker, .hidden-validation')", // validate
-					// all fields including form hidden input but not
-					// selectpicker
-					lang : currentLanguage,
+				  errorElement: 'span', //default input error message container
+	            errorClass: 'help-block help-block-error', // default input error message class
+	            focusInvalid: false, // do not focus the last invalid input
+	            ignore: ":hidden:not('.selectpicker, .hidden-validation')", // validate all fields including form hidden input but not selectpicker
+				lang: currentLanguage,
 					// validation rules
 					rules : {
 						identification : {
-							minlength : 5,
+							minlength : 5,							
 							required : true
 						},
 						description : {
@@ -92,26 +84,12 @@ var InternationalizationCreateController = function() {
 					},
 					invalidHandler : function(event, validator) { // display
 						// error alert on form submit
-						success1.hide();
-						error1.show();
-						App.scrollTo(error1, -200);
+						toastr.error(messagesForms.validation.genFormError,'');
 					},
 					errorPlacement : function(error, element) {
-						if (element.is(':checkbox')) {
-							error
-									.insertAfter(element
-											.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline"));
-						} else if (element.is(':radio')) {
-							error
-									.insertAfter(element
-											.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline"));
-						} else if (element.is(':hidden')) {
-							if ($('#datamodelid').val() === '') {
-								$('#datamodelError').removeClass('hide');
-							}
-						} else {
-							error.insertAfter(element);
-						}
+						if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
+						else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline")); }
+						else 								{ error.insertAfter(element); }
 					},
 					highlight : function(element) { // hightlight error inputs
 						$(element).closest('.form-group').addClass('has-error');
@@ -136,8 +114,7 @@ var InternationalizationCreateController = function() {
 						$('#jsoni18n_aux').val(JSON.stringify(myJson));							
 						
 						formAux.attr("action", "?" + csrfParameter + "=" + csrfValue) 
-						success1.show();
-						error1.hide();
+						toastr.success(messagesForms.validation.genFormSuccess,'');
 						formAux.submit();
 					}
 				});
@@ -309,24 +286,22 @@ var InternationalizationCreateController = function() {
     var showAddLangDialog = function(){
 		hideLanguageOptions();
 		$.confirm({
-			icon: 'fas fa-chart-pie',
-			title: 'Select new language to add',
+			title: addLanguageTitle,
 			theme: 'light',
 			columnClass: 'medium',
 			content: '<select id="popuplangselector" >' + $("#languageCode").html() + '</select>',
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
-					text: "Cancel",
-					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					text: cancelBtn,
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} // GENERIC CLOSE.
 				},
 				Ok: {
-					text: "Ok",
-					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+					text: confirmBtn,
+					btnClass: 'btn btn-primary',
 					action: function() {
 						if($("#popuplangselector").val()=="" || !$("#popuplangselector").val()){
 							console.log("language empty");
@@ -418,24 +393,22 @@ var InternationalizationCreateController = function() {
 	
 	var deleteTab = function() {
 		$.confirm({
-			icon: 'fas fa-chart-pie',
-			title: 'Select new language to add',
+			title: removeLanguageTitle,
 			theme: 'light',
 			columnClass: 'medium',
-			content: 'Are you sure you want to delete this language?',
+			content: removeLanguageConfirm,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
-					text: "Cancel",
-					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					text: cancelBtn,
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} // GENERIC CLOSE.
 				},
 				Ok: {
-					text: "Ok",
-					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+					text: deleteBtn,
+					btnClass: 'btn btn-primary',
 					action: function() {
 						var selectedTab = $("#langTabsUL li.active span").text();
 						if(selectedTab == ""){
@@ -463,6 +436,16 @@ var InternationalizationCreateController = function() {
 		myJsonLanguageEditor.updateOptions({ readOnly: false});
 	}
 
+
+	var initTemplateElements = function(){
+			
+		$('input').filter('[required]').bind('blur', function (ev) { // fires on every blur				
+				$('#internationalization_create_form').validate().element('#' + event.target.id);                // checks form for validity
+		});
+	}
+
+
+
 	// CONTROLLER PUBLIC FUNCTIONS
 	return {
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
@@ -488,6 +471,7 @@ var InternationalizationCreateController = function() {
 				$("#dimensionsPanel").hide();
 			}
 			handleValidation();
+			initTemplateElements();
 		},
 
 		// REDIRECT

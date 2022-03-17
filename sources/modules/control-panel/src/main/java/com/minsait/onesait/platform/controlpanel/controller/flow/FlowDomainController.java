@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,7 +313,7 @@ public class FlowDomainController {
 			try {
 
 				final String password = domain.getUser().getPassword();
-				final String auth = domain.getUser() + ":" + password + ":"
+				final String auth = domain.getUser().getUserId() + ":" + password + ":"
 						+ MultitenancyContextHolder.getVerticalSchema();
 				final String authBase64 = Base64.getEncoder().encodeToString(auth.getBytes());
 				final String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(),

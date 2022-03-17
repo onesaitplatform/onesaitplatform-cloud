@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 					if (!results.isEmpty()) {
 						results.stream().map(DBResult::getId).map(Optional::ofNullable).filter(Optional::isPresent)
-								.map(Optional::get).forEach(idList::add);
+						.map(Optional::get).forEach(idList::add);
 					}
 
 					insertResultData.setCount(results.size());
@@ -275,7 +275,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							query = getQueryForOid(ontologyName, objectId);
 							output = executeSQLQuery(query, ontologyName, user, clientPlatform);
 						} else if (rtdbDatasource.equals(RtdbDatasource.ELASTIC_SEARCH)) {// _id Search explicit return
-																							// _id
+							// _id
 							query = getQueryForId(ontologyName, objectId);
 							output = executeSQLQuery(query, ontologyName, user, clientPlatform);
 						} else {// generic _id search no explicit return of oid (inside data)
@@ -392,6 +392,8 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 		final String ontologyName = operationModel.getOntologyName();
 		final String OBJECT_ID = operationModel.getObjectId();
 		final boolean INCLUDEIDs = operationModel.isIncludeIds();
+		final String USER = operationModel.getUser();
+		final String CLIENTPLATFORM = operationModel.getDeviceTemplate();
 
 		String output = "";
 		result.setMessage("OK");
@@ -409,11 +411,20 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						output = String.valueOf(virtualRepo.deleteNative(ontologyName, BODY, INCLUDEIDs));
 					}
 				} else {
+
 					if (OBJECT_ID != null && OBJECT_ID.length() > 0) {
 						output = basicOpsService.deleteNativeById(ontologyName, OBJECT_ID).toString();
 					} else {
-						output = basicOpsService.deleteNative(ontologyName, BODY, INCLUDEIDs).toString();
+						if (operationModel.getQueryType().equals(QueryType.SQL)) {
+							output = !nullString(CLIENTPLATFORM)
+									? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
+											BODY, 0)
+											: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
+						} else {
+							output = basicOpsService.deleteNative(ontologyName, BODY, INCLUDEIDs).toString();
+						}
 					}
+
 				}
 			}
 		} catch (final Exception e) {
@@ -470,7 +481,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						OUTPUT = !nullString(CLIENTPLATFORM)
 								? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName, BODY,
 										0)
-								: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
+										: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
 					} else if (QUERY_TYPE.equalsIgnoreCase(QueryType.NATIVE.name())) {
 						if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
 							OUTPUT = virtualRepo.queryNativeAsJson(ontologyName, BODY);
@@ -479,8 +490,8 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							OUTPUT = !nullString(CLIENTPLATFORM)
 									? queryToolService.queryNativeAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
 											BODY, 0, getMaxRegisters())
-									: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0,
-											getMaxRegisters());
+											: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0,
+													getMaxRegisters());
 						}
 					} else {
 						OUTPUT = basicOpsService.findById(ontologyName, OBJECT_ID);

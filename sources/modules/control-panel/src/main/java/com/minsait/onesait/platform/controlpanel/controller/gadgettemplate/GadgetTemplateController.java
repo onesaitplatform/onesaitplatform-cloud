@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
-import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -113,8 +113,7 @@ public class GadgetTemplateController {
 			return "gadgettemplates/create";
 		}
 
-		return REDIRECT_SHOW + this.gadgetTemplateService
-				.getGadgetTemplateByIdentification(gadgetTemplate.getIdentification()).getId();
+		return REDIRECT_GADGET_TEMP_LIST;
 
 	}
 
@@ -179,10 +178,10 @@ public class GadgetTemplateController {
 		return REDIRECT_SHOW + id;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "getUserGadgetTemplate/{type}")
 	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplate(@PathVariable("type") String type) {
-		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId(), type);
+		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId(),type);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -191,7 +190,7 @@ public class GadgetTemplateController {
 		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId());
 	}
 
-	// Method can't be with user because public dashboard with templates
+	//Method can't be with user because public dashboard with templates
 	@GetMapping(value = "getGadgetTemplateByIdentification/{identification}")
 	public @ResponseBody GadgetTemplate getGadgetTemplateByIdentification(
 			@PathVariable("identification") String identification) {

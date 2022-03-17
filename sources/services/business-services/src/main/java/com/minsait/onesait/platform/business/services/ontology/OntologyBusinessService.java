@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceInfoDTO;
 
 public interface OntologyBusinessService {
 	public boolean existsOntology(String identificacion);
@@ -30,6 +32,12 @@ public interface OntologyBusinessService {
 			throws OntologyBusinessServiceException;
 
 	public List<String> getTablesFromDatasource(String datasource);
+	
+	public List<String> getDatabasesFromDatasource(String datasource);
+	
+	public List<String> getTablesFromDatasource(String datasource, String database, String schema);
+	
+	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database);
 
 	public String getInstance(String datasource, String collection);
 
@@ -37,7 +45,7 @@ public interface OntologyBusinessService {
 
 	JsonNode organizeRootNodeIfExist(String schema) throws IOException;
 
-	public String getRelationalSchema(String datasource, String collection);
+	public String getRelationalSchema(String datasource, String database, String schema, String collection);
 
 	public HashMap<String, String> getAditionalDBConfig(Ontology ontology);
 
@@ -55,5 +63,7 @@ public interface OntologyBusinessService {
 	public void deleteOntology(String id, String userId);
 	
 	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config) throws OntologyBusinessServiceException;
+
+	public VirtualDatasourceInfoDTO getInfoFromDatasource(String datasource);
 
 }

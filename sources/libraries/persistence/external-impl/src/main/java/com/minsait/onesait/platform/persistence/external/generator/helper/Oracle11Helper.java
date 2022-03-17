@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import net.sf.jsqlparser.schema.Column;
 @Slf4j
 public class Oracle11Helper extends SQLHelperImpl implements SQLHelper {
 
+	private static final String LIST_VALIDATE_QUERY = "SELECT 1 FROM DUAL";
 	// private static final String LIST_TABLES_QUERY = "SELECT table_name FROM
 	// (SELECT view_name AS table_name FROM user_views UNION SELECT table_name AS
 	// table_name FROM user_tables) ORDER BY table_name asc";
@@ -51,16 +52,60 @@ public class Oracle11Helper extends SQLHelperImpl implements SQLHelper {
 			+ "SELECT table_name AS table_name FROM user_tables UNION "
 			+ "SELECT table_name AS table_name FROM user_tab_privs WHERE grantee IN (SELECT user from dual)"
 			+ ") ORDER BY table_name asc";
+	private static final String GET_CURRENT_SCHEMA_QUERY = "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
+	private static final String LIST_SCHEMAS_QUERY = "SELECT USERNAME FROM ALL_USERS";
+	private static final String LIST_TABLES_IN_SCHEMA_QUERY = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER = '%s' AND OBJECT_TYPE in ('TABLE', 'VIEW') ORDER BY OBJECT_NAME";
 	private static final String ROWNUM_STR = "ROWNUM";
 	private static final String ROWNUM_ALIAS_STR = "ROWNUMALIAS";
 	private static final String ALIAS_SUBQUERY = "t";
 
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
+	
+	@Override
+	public String getValidateQuery() {
+		return LIST_VALIDATE_QUERY;
+	}
 
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
+	}
+	
+	@Override
+	public boolean hasDatabase() {
+		return false;
+	}
+
+	@Override
+	public boolean hasSchema() {
+		return true;
+	}
+
+	@Override
+	public String getDatabaseStatement() {
+		return null;
+	}
+
+	@Override
+	public String getSchemaStatement() {
+		// TODO Auto-generated method stub
+		return GET_CURRENT_SCHEMA_QUERY;
+	}
+
+	@Override
+	public String getDatabasesStatement() {
+		return null;
+	}
+
+	@Override
+	public String getSchemasStatement(String database) {
+		return LIST_SCHEMAS_QUERY;
+	}
+
+	@Override
+	public String getAllTablesStatement(String database, String schema) {
+		return String.format(LIST_TABLES_IN_SCHEMA_QUERY, schema);
 	}
 
 	@Override

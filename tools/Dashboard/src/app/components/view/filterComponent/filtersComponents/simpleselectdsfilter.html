@@ -1,0 +1,18 @@
+  <ods-form v-model="dynamicValidateForm" >
+      <form v-on:submit.prevent="noop">
+        <ods-form-item :label="dynamicValidateForm.inputName">           
+        <ods-select            
+            v-model="dynamicValidateForm.optionsSelected"            
+            collapse-tags  
+            clearable         
+            placeholder="Select" @change="valueChange">
+            <ods-option
+                v-for="item in dynamicValidateForm.options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+            </ods-option>
+  </ods-select>
+        </ods-form-item>
+      </form>
+  </ods-form>

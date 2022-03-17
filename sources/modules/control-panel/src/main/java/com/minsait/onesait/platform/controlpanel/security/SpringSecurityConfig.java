@@ -1,7 +1,6 @@
-
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +140,7 @@ import com.minsait.onesait.platform.controlpanel.interceptor.X509CertFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.XOpAPIKeyFilter;
 import com.minsait.onesait.platform.controlpanel.security.xss.XSSFilter;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -154,9 +154,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	public static final String LOGIN_STR = "/login";
 	public static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
-	public static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
 	public static final String INVALIDATE_SESSION_FORCED = "INVALIDATE_SESSION_FORCED";
 	public static final String ROLE_ANONYMOUS = "ROLE_ANONYMOUS";
+	public static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
 
 	private static final String SAML = "saml";
 	private static final String CAS = "cas";
@@ -199,11 +199,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private boolean csrfOn;
 
 	@Bean
-	public FilterRegistrationBean corsFilterOauth() {
+	public FilterRegistrationBean corsFilterOauth(@Value("${onesaitplatform.secure.cors:*}") String allowedURLs) {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.addAllowedOrigin("*");
+		config.setAllowedOrigins(Arrays.asList(allowedURLs.split(",")));
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);
@@ -214,6 +214,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired(required = false)
 	private SAMLUserDetailsService samlUserDetailsService;
+	@Autowired
+	private IntegrationResourcesService integrationResourcesService;
 
 	@Autowired
 	private AccessDeniedHandler accessDeniedHandler;
@@ -284,24 +286,31 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		};
 
+		final Integer maxSessionsPerUser = integrationResourcesService.getGlobalConfiguration().getEnv()
+				.getControlpanel() != null
+				&& integrationResourcesService.getGlobalConfiguration().getEnv().getControlpanel()
+						.get("maxSessionsPerUser") != null
+								? (Integer) integrationResourcesService.getGlobalConfiguration().getEnv()
+										.getControlpanel().get("maxSessionsPerUser")
+								: 10;
 		http.csrf().requireCsrfProtectionMatcher(csrfRequestMatcher);
 
 		http.headers().frameOptions().disable();
 		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-				.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+				.antMatchers("/api/applications", "/api/applications/").permitAll()
+				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
 				.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 				.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
-				.antMatchers("/actuator/**", "/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
+				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
 				.antMatchers("/nodered/auth/**/**").permitAll()
-				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
-						"/dashboards/viewiframe/**", "/viewers/view/**", "/viewers/viewiframe/**", "/gadgets/**",
-						"/viewers/**", "/datasources/**", "/v2/api-docs/", "/v2/api-docs/**", "/swagger-resources/",
-						"/swagger-resources/**", "/users/validateNewUser/**", "/users/validateResetPassword/**",
-						"/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403", "/gadgettemplates/getGadgetTemplateByIdentification/**")
-
-				.permitAll();
-
+				.antMatchers("/actuator/**", "/api/**", "/dashboards/view/**", "/dashboards/model/**",
+						"/dashboards/editfulliframe/**", "/dashboards/viewiframe/**", "/viewers/view/**",
+						"/viewers/viewiframe/**", "/gadgets/**", "/viewers/**", "/datasources/**", "/v2/api-docs/",
+						"/v2/api-docs/**", "/swagger-resources/", "/swagger-resources/**", "/users/validateNewUser/**",
+						"/users/validateResetPassword/**", "/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403",
+						"/gadgettemplates/getGadgetTemplateByIdentification/**")
+				.permitAll().antMatchers("/actuator/**").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
 
 		// This line deactivates login page when using SAML or other Auth Provider
 		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
@@ -313,13 +322,15 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/management", "/management/**").permitAll()
 				.antMatchers("/notebook-ops", "/notebook-ops/**").permitAll().antMatchers(HttpMethod.GET, "/files/list")
 				.authenticated().antMatchers(HttpMethod.GET, "/files/**").permitAll()
+				.antMatchers(HttpMethod.POST, "/binary-repository", "/binary-repository/**").authenticated()
 				.antMatchers("/binary-repository", "/binary-repository/**").permitAll().antMatchers("/admin")
 				.hasAnyRole("ROLE_ADMINISTRATOR").antMatchers("/admin/**").hasAnyRole("ROLE_ADMINISTRATOR").anyRequest()
 				.authenticated();
 		http.logout().logoutSuccessHandler(logoutSuccessHandler).permitAll().and().sessionManagement()
-				.invalidSessionUrl("/").maximumSessions(10).expiredUrl("/").maxSessionsPreventsLogin(false)
-				.sessionRegistry(sessionRegistry()).and().sessionFixation().none().and().exceptionHandling()
-				.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint);
+				.invalidSessionUrl("/").maximumSessions(maxSessionsPerUser).expiredUrl("/")
+				.maxSessionsPreventsLogin(false).sessionRegistry(sessionRegistry()).and().sessionFixation().none().and()
+				.exceptionHandling().accessDeniedHandler(accessDeniedHandler)
+				.authenticationEntryPoint(authenticationEntryPoint);
 
 		if (authProvider.equalsIgnoreCase(CAS)) {
 			http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
@@ -337,7 +348,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		if (oauthLogin) {
 			http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
 		}
+
 		http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
+		http.httpBasic();
 
 	}
 
@@ -383,8 +396,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	}
 
-	// This listener allows to spring-security components events from Sessions. For
-	// example, session invalidation from Jetty
 	// cannot be processed by SessionResgistryImpl without this bean
 	@Bean
 	public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {

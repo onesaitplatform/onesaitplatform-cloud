@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
@@ -101,6 +103,10 @@ public class GraphUtil {
 	private NotebookService notebookService;
 	@Autowired
 	private DataflowService dataflowService;
+	@Autowired
+	private ClientPlatformOntologyRepository clientPlatformOntologyRepo;
+	@Autowired
+	private ApiOperationRepository apiOperationRepository;
 
 	private static final String CREATE_STR = "create";
 	private static final String SHOW_STR = "show/";

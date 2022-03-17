@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,13 @@
  */
 package com.minsait.onesait.platform.config.services.dashboard;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.model.User;
@@ -39,8 +34,9 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserA
 
 public interface DashboardService {
 
-	List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,	String user);
-	
+	List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,
+			String user);
+
 	List<DashboardDTO> findDashboardWithIdentificationAndType(String identification, String type, String user);
 
 	List<String> getAllIdentifications();
@@ -114,14 +110,20 @@ public interface DashboardService {
 			boolean deleteAll);
 
 	JSONObject getAllInternationalizationJSON(Dashboard dashboard);
-	
+
 	long getClientMaxHeartbeatTime();
 
 	DashboardExportDTO exportDashboardDTO(String dashboardId, String userId);
 
 	DashboardExportDTO getBungleDashboardDTO(String dashboardId, String userId);
-	
+
 	JSONArray getGadgets(List<String> dashboardList, String userId);
+
+	List<String> getIdentificationsByUserId(String userId);
+
+	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
+	
+	String getProtocol();
 
 	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
 	// usersAccessType, boolean updated);

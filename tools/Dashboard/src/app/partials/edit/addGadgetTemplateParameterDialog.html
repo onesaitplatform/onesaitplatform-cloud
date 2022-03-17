@@ -1,0 +1,63 @@
+<md-dialog aria-label="Add Gadget">  
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Select a content for the parameters</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar>
+    <form ng-cloak>    
+    <md-input-container class="md-dialog-content">
+    <label>Datasource</label>
+    <md-select  md-autofocus placeholder="Select new template datasource" ng-model="config.datasource" ng-model-options="{trackBy: '$value.name'}" md-on-open="loadDatasources()" ng-change="loadDatasourcesFields()">
+      <md-option ng-value="{name:datasource.identification,refresh:datasource.refresh,type:datasource.mode,id:datasource.id}" ng-repeat="datasource in datasources">{{datasource.identification}}</md-option>
+    </md-select>
+  </md-input-container>
+    <div  flex="">
+      <md-content>        
+        <md-list class="md-dense" flex="">         
+          <md-list-item class="md-3-line" ng-repeat="item in parameters">
+              <div class="md-list-item-text" layout="column">
+              <span>{{ item.label }}</span>
+              <md-input-container ng-if="item.type=='labelsText'" class="md-dialog-content">
+               <p>string value : </p>
+              <input type="text"    ng-model="item.value"/>
+            </md-input-container>
+            <md-input-container ng-if="item.type=='labelsNumber'" class="md-dialog-content">
+                <p>number value : </p>
+              <input type="number"  ng-model="item.value"/>
+            </md-input-container>
+              <md-input-container ng-if="item.type=='labelsds'" class="md-dialog-content">
+                  <p>value : </p>
+              <md-select  required md-autofocus placeholder="Select parameter from datasource"  ng-model-options="{trackBy: '$value.field'}" ng-model="item.value" >
+                <md-option ng-value="{field:datasourceField.field,type:datasourceField.type}" ng-repeat="datasourceField in datasourceFields">{{datasourceField.field}}</md-option>
+              </md-select>
+            </md-input-container>
+            <md-input-container ng-if="item.type=='labelsdspropertie'" class="md-dialog-content">
+              <p>value : </p>
+            <md-select  required md-autofocus placeholder="Select parameter from datasource" ng-model-options="{trackBy: '$value.field'}" ng-model="item.value" >
+              <md-option ng-value="{field:datasourceField.field,type:datasourceField.type}" ng-repeat="datasourceField in datasourceFields">{{datasourceField.field}}</md-option>
+            </md-select>
+        </md-input-container>
+            <md-input-container ng-if="item.type=='selects'" class="md-dialog-content">
+                <p>value : </p>
+            <md-select  required md-autofocus placeholder="Select parameter value" ng-model="item.value" >
+              <md-option ng-value="optionsValue" ng-repeat="optionsValue in item.optionsValue">{{optionsValue}}</md-option>
+            </md-select>
+          </md-input-container>
+            </div>
+          </md-list-item>
+   
+        </md-list>
+      </md-content>
+    </div>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button class="md-raised md-primary" ng-click="save()">
+        Ok
+      </md-button>      
+    </md-dialog-actions>
+  </form>
+</md-dialog>

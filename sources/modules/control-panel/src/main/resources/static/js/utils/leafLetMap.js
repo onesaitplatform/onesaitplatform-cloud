@@ -2,14 +2,23 @@ var mymap;
 var markers = new Array();
 var filteredDevices = new Array();
 var setUpMap = function(id, legendJson) {
-	if(devices.length > 0){
+	if(devices.length >= 0){
 		mymap = L.map(id).setView(getInitialLocation(),6);
-		L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+		/*L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 		    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 		    maxZoom: 18,
 		    id: 'mapbox.streets',
 		    accessToken: 'pk.eyJ1IjoiZmpnY29ybmVqbyIsImEiOiJjamgxbm9nOW8wN2EwMnhsbm1nNnNvOXRsIn0.6RzVaJ2kUwaFNLJW4AzRQg'
+		}).addTo(mymap);*/
+		
+		
+		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		   // attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors'
 		}).addTo(mymap);
+		
+		
+		
+		
 		var legend = L.control({position: 'topleft'});
 		legend.onAdd = function (map) {
 	
@@ -25,7 +34,9 @@ var setUpMap = function(id, legendJson) {
 	
 		    return div;
 		};
-	
+	setTimeout(function () {
+		map.invalidateSize()
+	}, 100);
 		legend.addTo(mymap);
 		drawMarkers();
 	}

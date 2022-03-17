@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTime
 
 	List<OntologyTimeSeries> findByOntology(Ontology ontology);
 
-	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
+	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification",
+			"OntologyRepositoryByIdentification" }, allEntries = true, beforeInvocation = true)
 	void deleteByOntology(Ontology ontology);
 
 	@Override
@@ -52,7 +53,8 @@ public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTime
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification","OntologyTimeSeriesPropertyRepositoryByOntologyIdentification" }, allEntries = true)
+	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification",
+			"OntologyTimeSeriesPropertyRepositoryByOntologyIdentification" }, allEntries = true)
 	OntologyTimeSeries save(OntologyTimeSeries entity);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.persistence.external.generator.helper;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 
 import net.sf.jsqlparser.JSQLParserException;
@@ -45,9 +46,9 @@ public class SQLTableReplacer {
                         .findOntologyVirtualByOntologyIdentification(tableName.getName());
                 
             	if(ontologyVirtual != null ) {
-            		String ontologyVirtualTable =  ontologyVirtual.getDatasourceTableName();
-	                if ( null!=ontologyVirtualTable && !ontologyVirtualTable.equals("")) {
-	                    getBuffer().append(ontologyVirtualTable).append(' ');
+            		String ontologyPath = SQLTableReplacer.getOntologyPath(ontologyVirtual); 
+	                if ( null!=ontologyPath && !ontologyPath.equals("")) {
+	                    getBuffer().append(ontologyPath).append(' ');
 	                    if (tableName.getAlias() != null) {
 	                        getBuffer().append(tableName.getAlias().getName());
 	                    } else {
@@ -76,40 +77,64 @@ public class SQLTableReplacer {
         return (buffer.toString());
     }
 
-    public static String replaceTableNameInInsert(String insertSQL, String newTableName) throws JSQLParserException {
-
+    public static String replaceTableNameInInsert(String insertSQL, OntologyVirtual ontologyVirtual) throws JSQLParserException {
+    	String newTablePath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
+    	
         Insert insertSQLObj = (Insert) CCJSqlParserUtil.parse(insertSQL);
 
         Table newTable = new Table();
-        newTable.setName(newTableName);
+        newTable.setName(newTablePath);
 
         insertSQLObj.setTable(newTable);
 
         return insertSQLObj.toString();
     }
 
-    public static String replaceTableNameInDelete(String deleteSQL, String newTableName) throws JSQLParserException {
-
+    public static String replaceTableNameInDelete(String deleteSQL, OntologyVirtual ontologyVirtual) throws JSQLParserException {
+    	String newTablePath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
+    	
         Delete deleteSQLObj = (Delete) CCJSqlParserUtil.parse(deleteSQL);
 
         Table newTable = new Table();
-        newTable.setName(newTableName);
+        newTable.setName(newTablePath);
 
         deleteSQLObj.setTable(newTable);
 
         return deleteSQLObj.toString();
     }
 
-    public static String replaceTableNameInUpdate(String updateSQL, String oldTableName, String newTableName)
+    public static String replaceTableNameInUpdate(String updateSQL, String oldTableName, OntologyVirtual ontologyVirtual)
             throws JSQLParserException {
-
+    	String newTablePath = SQLTableReplacer.getOntologyPath(ontologyVirtual);
+    	
         Update updateSQLObj = (Update) CCJSqlParserUtil.parse(updateSQL);
 
         Table table = updateSQLObj.getTable();
         if (table.getName().equals(oldTableName)) {
-            table.setName(newTableName);
+            table.setName(newTablePath);
         }
         return updateSQLObj.toString();
+    }
+    
+    private static String getOntologyPath(OntologyVirtual ontologyVirtual) {
+    	String ontologyVirtualTable =  ontologyVirtual.getDatasourceTableName();
+		String ontologyVirtualDatabase =  ontologyVirtual.getDatasourceDatabase();
+		String ontologyVirtualSchema =  ontologyVirtual.getDatasourceSchema();
+		if (ontologyVirtualTable == null || "".equals(ontologyVirtualTable)) {
+			return null;
+		}
+		if(VirtualDatasourceType.POSTGRESQL.equals(ontologyVirtual.getDatasourceId().getSgdb())) {
+			ontologyVirtualTable = "\"" + ontologyVirtualTable + "\"";
+			if(ontologyVirtualDatabase!=null && !"".equals(ontologyVirtualDatabase)) {
+				ontologyVirtualDatabase = "\"" + ontologyVirtualDatabase + "\"";
+			}
+			if(ontologyVirtualSchema!=null && !"".equals(ontologyVirtualSchema)) {
+				ontologyVirtualSchema = "\"" + ontologyVirtualSchema + "\"";
+			}
+		}
+    	return (ontologyVirtualDatabase==null || "".equals(ontologyVirtualDatabase)?"":ontologyVirtualDatabase+".") + 
+    			(ontologyVirtualSchema==null || "".equals(ontologyVirtualSchema)?"":ontologyVirtualSchema+".") +
+    			ontologyVirtualTable;
     }
 
 }

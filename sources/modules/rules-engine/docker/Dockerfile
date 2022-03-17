@@ -29,6 +29,8 @@ RUN apk update && apk upgrade && \
 
 VOLUME ["/var/log/platform-logs"]
 
+USER onesait
+
 EXPOSE 20200
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
@@ -46,12 +48,11 @@ ENV SERVER_NAME=localhost \
     DBADDPROPS="" \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    USE_KEYCLOAK=false \
+    SBA_USERNAME=operations \
+	SBA_SECRET=changeIt2019!
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
-
-USER onesait
-
 ENTRYPOINT ["docker-entrypoint.sh"]
 

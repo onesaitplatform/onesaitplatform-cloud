@@ -22,18 +22,16 @@ var MarketAssetCreateController = function() {
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			icon: 'fa fa-bug',
 			title: dialogTitle,
-			theme: 'dark',
+			theme: 'light',
 			content: dialogContent,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {				
 				close: {
 					text: Close,
-					btnClass: 'btn btn-sm btn-default btn-outline',
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				}
 			}
@@ -141,7 +139,7 @@ var MarketAssetCreateController = function() {
             	navigateUrl(marketAssetCreateReg.url + '/show/' + marketAssetCreateReg.actionMode);
             },
             error: function(data,status,er) {
-            	showGenericErrorDialog('Error', marketAssetCreateReg.marketAssetmanager_identification_error);
+            	toastr.error(marketAssetCreateReg.marketAssetmanager_identification_error);
             }
         });
 	}
@@ -163,12 +161,12 @@ var MarketAssetCreateController = function() {
                 mimeType: 'text/plain',
                 success: function(data) {
                 	if (data!=null && data!=""){
-                		showGenericErrorDialog('Error', marketAssetCreateReg.marketAssetmanager_identification_error);
+                		toastr.error(marketAssetCreateReg.marketAssetmanager_identification_error);
                 		$('#identification').val("");
                 	}
                 },
                 error: function(data,status,er) {
-                	$('#dialog-error').val("ERROR");
+                	toastr.error(messagesForms.operations.genOpError,'');
                 }
             });
         }
@@ -181,8 +179,30 @@ var MarketAssetCreateController = function() {
 	var cleanFields = function (formId) {
 		logControl ? console.log('cleanFields() -> ') : '';
 		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
+		// CLEAR OUT THE VALIDATION ERRORS
+		$('#'+formId).validate().resetForm();
+		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
+			if(!$(this).hasClass("no-remove")){$(this).val('');}
+		});
+		
+		// CLEANING SELECTs
+		$(".selectpicker").each(function(){
+			$(this).val( '' );
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});		
+		
+		// CLEANING CHECKS
+		$('input:checkbox').not('.no-remove').removeAttr('checked');
+		
+		// CLEANING tagsinput
+		$('.tagsinput').tagsinput('removeAll');
+		
+		// CLEANING FRAGMENTS
+		$("#fragments").empty();
+		
+		// CLEANING IMAGE
+		 $('#showedImgPreview').attr('src', marketAssetCreateReg.urlimg + "DOCUMENT.png" );
 		
 		// CLEAN ALERT MSG
 		$('.alert-danger').hide();
@@ -228,8 +248,6 @@ var MarketAssetCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#marketasset_create_form');
-        var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
 		
 		// set current language
 		currentLanguage = marketAssetCreateReg.language || LANGUAGE;
@@ -254,9 +272,7 @@ var MarketAssetCreateController = function() {
 				datecreated:		{ date: true, required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit              
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+            	toastr.error(messagesForms.validation.genFormError,'');
             },
             errorPlacement: function(error, element) {
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -274,8 +290,6 @@ var MarketAssetCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-                success1.show();
-                error1.hide();
 				// date conversion to DDBB format.
                 var error = "";
                 prepareData();
@@ -283,9 +297,10 @@ var MarketAssetCreateController = function() {
 					error = "";
 				} 
 				if (error == ""){
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					form.submit();
 				} else { 
-					showGenericErrorDialog('Error', error);
+					toastr.error(messagesForms.validation.genFormError,'');
 				}				
             }
         });
@@ -316,6 +331,18 @@ var MarketAssetCreateController = function() {
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('marketasset_create_form');
 		});
+
+		// Fields OnBlur validation
+		
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});
+		
+		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
+			if (event.currentTarget.getElementsByTagName('select')[0]){
+				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
+			}
+		})
 		
 		// INSERT MODE ACTIONS  (apiCreateReg.actionMode = NULL ) 
 		if ( marketAssetCreateReg.actionMode === null){

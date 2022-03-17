@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@
 <div th:fragment="menuFragment" id="menuFragment">
 
 	<!-- MENU CONTROLLER JS -->
-	<script th:src="@{/static/js/pages/menu.js}"></script>
-	
+	<script th:src="@{/static/js/pages/menu.js}"></script>	
 	<!-- BEGIN SIDEBAR -->
 	<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
 	<!-- DOC: Change data-auto-speed="200" to adjust the sub menu slide up/down speed -->
-	<div class="page-sidebar navbar-collapse collapse">
+	<div class="page-sidebar navbar-collapse collapse" style="overflow-y:auto;overflow-x:hidden;padding:8px;position:fixed   ; background: white;   z-index: 1031;">
 		<!-- BEGIN SIDEBAR MENU -->
 		<!-- DOC: Apply "page-sidebar-menu-light" class right after "page-sidebar-menu" to enable light sidebar menu style(without borders) -->
 		<!-- DOC: Apply "page-sidebar-menu-hover-submenu" class right after "page-sidebar-menu" to enable hoverable(hover vs accordion) sub menu mode -->
@@ -31,14 +30,10 @@
 		<!-- DOC: Set data-auto-scroll="false" to disable the sidebar from auto scrolling/focusing -->
 		<!-- DOC: Set data-keep-expand="true" to keep the submenues expanded -->
 		<!-- DOC: Set data-auto-speed="200" to adjust the sub menu slide up/down speed -->
-		 <ul class="page-sidebar-menu page-header-fixed page-sidebar-menu-compact page-sidebar-menu-closed " data-keep-expanded="false" data-auto-scroll="false" data-slide-speed="200" >
+		 <ul class="page-sidebar-menu page-header-fixed page-sidebar-menu-compact page-sidebar-menu-closed " data-keep-expanded="true" data-auto-scroll="true" data-slide-speed="200" style="height:calc(100vh - 140px);max-height:calc(100vh - 140px); "  >
 			<!-- DOC: To remove the sidebar toggler from the sidebar you just need to completely remove the below "sidebar-toggler-wrapper" LI element -->
 			<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
-			<li class="sidebar-toggler-wrapper hide">
-				<div class="sidebar-toggler">
-					<span></span>
-				</div>
-			</li>
+			
 			<!-- END SIDEBAR TOGGLER BUTTON  DISABLED BY NOW -->
 			<!-- DOC: To remove the search box from the sidebar you just need to completely remove the below "sidebar-search-wrapper" LI element -->
 			<li class="sidebar-search-wrapper">
@@ -47,22 +42,17 @@
 				<!-- DOC: Apply "sidebar-search-bordered sidebar-search-solid" class the below search form to have bordered and solid search box -->
 				<!-- DOC: searchDocs()  header.js -->
 				<!--  action="javascript:HeaderController.search();"  -->
-				<form class="sidebar-search  sidebar-search-bordered " id="search-form" action="" method="get">
-					<a href="javascript:;" class="remove">
-						<i class="icon-close"></i>
-					</a>
-					<div class="input-group" > 						
-						<input id="search-query" type="text" class="form-control search"  th:placeholder="#{menu.search.placeholder}"/>
-						<span class="input-group-btn" style="height: 32px;">
-						<a href="#" class="btn submit"><i class="icon-equalizer" style="transform: rotateZ(90deg);"></i> </a> 														
-						</span>
+				<form class="sidebar-search  sidebar-search-bordered " id="search-form" action="" method="get" style="display: none;">
+					<div class="input-icon ">
+						<i class="icon-search"></i> <input id="search-query" type="text" class="form-control search"  th:placeholder="#{menu.search.placeholder}"/>	
 					</div>
-				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
 				<!-- END RESPONSIVE QUICK SEARCH FORM -->
 			</li>
 			<!-- HOME  margin-top 30 if search is hidden if not 5 -->
 			<li class="nav-item start active" >
-				<a th:href="@{/}" href="index.html" class="nav-link nav-toggle">
+				<a id="a-home-nav-item" th:href="@{/}" href="index.html" class="nav-link nav-toggle tooltips"  data-placement="right" th:attr="data-original-title=#{name.home}">
 					<i class="la la-home" style="margin-left: 1px;"></i>
 					<span class="title" th:text="#{name.home}">HOME</span>
 				</a>							
@@ -70,6 +60,11 @@
 			<!-- CARGA DINAMICA DE MENUS POR ROL -->
 			
 		</ul>
+		<div class="sidebar-toggler-wrapper">
+				<div id="div-button-sidebar-toggler" class="sidebar-toggler" style="position:relative;">
+					<i id="button-sidebar-toggler" class="icon-double-right" style=" width: 3rem; height: 3rem; font-size: 3rem; color: #000000; align-items: center; display: flex;"></i>
+				</div>
+			</div>
 		<!-- END SIDEBAR MENU -->
 		
 	</div>
@@ -86,7 +81,7 @@
 		// LOAD DATA TO USE IN MENUCONTROLLER
 		// MENU CONTROLLER LOAD AND INIT ITSELF
 		// LIST INIT FOR MENU SEARCH
-	   $('body').removeClass().addClass("page-header-fixed page-sidebar-fixed page-content-white page-sidebar-closed");		
+	   $('body').removeClass().addClass("page-header-fixed  page-content-white page-sidebar-closed");		
 	</script>
 </div>
 <!-- END SOFIA2 CONTROL PANEL MENU -->

@@ -15,6 +15,7 @@ onesaitplatform:
    authentication:
       oauth:
         enabled: ${OAUTH_SSO_ENABLED}
+        osp-keycloak: ${USE_KEYCLOAK}
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
@@ -115,6 +116,7 @@ onesaitplatform:
    webproject:
       rootfolder.path: /usr/local/webprojects/
       baseurl: https://${SERVER_NAME}/web/
+      template.zip: https://${SERVER_NAME}/controlpanel/static/wtop/wtop.zip
    iotbroker.plugable:
      gateway:
       kafka:
@@ -196,6 +198,8 @@ spring:
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://controlpanelservice:${server.port}${server.servlet.contextPath}/
+      client.username: ${SBA_USERNAME}
+      client.password: ${SBA_SECRET}
    http:
       multipart:
          max-file-size: ${HTTP_MAX_FILE_SIZE}
@@ -230,6 +234,7 @@ dynamic-load-balancer:
 csrf:
   enable: ${CSRF_ON}
 
+
 proxy-mail:
   host: ${MAIL_PROXY_HOST}
   port: ${MAIL_PROXY_PORT}
@@ -237,7 +242,3 @@ proxy-mail:
 security:
   signing-key: ${JWT_KEY}
   client-secret: ${JWT_CLIENT_SECRET}
-
-proxy-mail:
-  host: ${MAIL_PROXY_HOST}
-  port: ${MAIL_PROXY_PORT}

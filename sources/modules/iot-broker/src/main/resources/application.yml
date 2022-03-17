@@ -56,9 +56,9 @@ spring:
   boot.admin: #Spring Boot Admin Config   
       client.url: http://localhost:18100/monitoring
       client.username: operations
-      client.password: changeIt2019!
-      client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: ${spring.boot.admin.password}
+      client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
       
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always

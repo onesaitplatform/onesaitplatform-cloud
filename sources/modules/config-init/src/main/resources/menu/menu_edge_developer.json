@@ -6,15 +6,26 @@
         {
             "title": {
                 "EN": "EDGE DEVELOPMENT",
-                "ES": "EDGE DESARROLLO"
+                "ES": "EDGE DESARROLLO",
+				"FR": "EDGE DÉVELOPPEMENT"
             },
-            "icon": "flaticon-network",
+            "icon": "icon-development",
             "url": "",
             "submenu": [
+            {
+					"title": {
+						"EN": "View Lineages",
+						"ES": "Visualizar Linajes",
+						"FR": "Voir les Lignées"
+					},
+					"icon": "",
+					"url": "/controlpanel/lineage/show"
+				},
                 {
                     "title": {
                         "EN": "My Projects",
-                        "ES": "Mis Proyectos"
+                        "ES": "Mis Proyectos",
+						"FR": "Mes Projets"
                     },
                     "icon": "",
                     "url": "/controlpanel/projects/list"
@@ -22,7 +33,8 @@
                 {
                     "title": {
                         "EN": "My Ontologies",
-                        "ES": "Mis Ontologías"
+                        "ES": "Mis Ontologías",
+						"FR": "Mes Ontologies"
                     },
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
@@ -30,7 +42,8 @@
                 {
                     "title": {
                         "EN": "My APIs",
-                        "ES": "Mis APIs"
+                        "ES": "Mis APIs",
+						"FR": "Mes API"
                     },
                     "icon": "",
                     "url": "/controlpanel/apimanager/list"
@@ -38,7 +51,8 @@
                 {
                     "title": {
                         "EN": "My Flows",
-                        "ES": "Mis Flujos"
+                        "ES": "Mis Flujos",
+						"FR": "Mes Flux"
                     },
                     "icon": "",
                     "url": "/controlpanel/flows/list"
@@ -46,7 +60,8 @@
                 {
                     "title": {
                         "EN": "My Rules",
-                        "ES": "Mis Reglas"
+                        "ES": "Mis Reglas",
+						"FR": "Mes Règles"
                     },
                     "icon": "",
                     "url": "/controlpanel/rule-domains/list"
@@ -54,34 +69,29 @@
                 {
                     "title": {
                         "EN": "My Realms",
-                        "ES": "Mis Dominios de Seguridad"
+                        "ES": "Mis Dominios de Seguridad",
+						"FR": "Mes Domaines de Sécurité"
                     },
                     "icon": "",
                     "url": "/controlpanel/apps/list"
                 }
             ]
         },
-        {
-            "title": {
-                "EN": "",
-                "ES": ""
-            },
-            "icon": "flaticon-more-v3",
-            "url": "",
-            "submenu": []
-        },
+        
        {
             "title": {
                 "EN": "LANDSCAPE",
-                "ES": "LANDSCAPE"
+                "ES": "LANDSCAPE",
+				"FR": "LANDSCAPE"
             },
-            "icon": "flaticon-technology",
+            "icon": "icon-broadcast",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "Edge Devices",
-                        "ES": "Dispositivos Edge"
+                        "ES": "Dispositivos Edge",
+						"FR": "Gestion des périphériques Edge"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/landscape/devices"
@@ -89,7 +99,8 @@
                 {
                     "title": {
                         "EN": "Field Devices",
-                        "ES": "Gestión de campos"
+                        "ES": "Gestión de campos",
+						"FR": "Gestion des appareils de terrain"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/landscape/field"
@@ -97,7 +108,8 @@
                 {
                     "title": {
                         "EN": "Cloud to Cloud",
-                        "ES": "Cloud to Cloud"
+                        "ES": "Cloud to Cloud",
+						"FR": "Cloud à Cloud"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/landscape/cloud2cloud"
@@ -107,15 +119,17 @@
          {
             "title": {
                 "EN": "EDGE PROJECT",
-                "ES": "PROYECTOS EDGE"
+                "ES": "PROYECTOS EDGE",
+				"FR": "PROJET EDGE"
             },
-            "icon": "flaticon-folder",
+            "icon": "icon-open-data",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "Projects",
-                        "ES": "Proyectos"
+                        "ES": "Proyectos",
+						"FR": "Projets"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/projects"
@@ -124,15 +138,17 @@
         },{
             "title": {
                 "EN": "CONNECTORS",
-                "ES": "CONECTORES"
+                "ES": "CONECTORES",
+				"FR": "CONNECTEURS"
             },
-            "icon": "flaticon-more-v4",
+            "icon": "icon-connect",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "Connectors",
-                        "ES": "Conectores"
+                        "ES": "Conectores",
+						"FR": "Connecteurs"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/connectors"
@@ -140,16 +156,18 @@
             ]
         },{
             "title": {
-                "EN": "REGISTRY",
-                "ES": "REGISTRY"
+                "EN": "REPOSITORY",
+                "ES": "REPOSITORY",
+				"FR": "REPOSITORY"
             },
-            "icon": "flaticon-download",
+            "icon": "icon-download",
             "url": "",
             "submenu": [
                 {
                     "title": {
-                        "EN": "Registry",
-                        "ES": "Registry"
+                        "EN": "Repository",
+                        "ES": "Repository",
+						"FR": "Gestion du référentiel"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/registry"
@@ -159,15 +177,17 @@
         {
             "title": {
                 "EN": "VISUALIZATION & GIS",
-                "ES": "VISUALIZATION & GIS"
+                "ES": "VISUALIZATION & GIS",
+				"FR": "VISUALISATION & SIG"
             },
-            "icon": "flaticon-graph",
+            "icon": "icon-visualization",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "My Dashboards",
-                        "ES": "Mis Dashboards"
+                        "ES": "Mis Dashboards",
+						"FR": "Mes Tableaux de Bord"
                     },
                     "icon": "",
                     "url": "/controlpanel/dashboards/list"
@@ -175,7 +195,8 @@
                 {
                     "title": {
                         "EN": "My Gadgets",
-                        "ES": "Mis Gadgets"
+                        "ES": "Mis Gadgets",
+						"FR": "Mes Gadgets"
                     },
                     "icon": "",
                     "url": "/controlpanel/gadgets/list"
@@ -183,7 +204,8 @@
                 {
                     "title": {
                         "EN": "My DataSources",
-                        "ES": "Mis Fuentes de datos"
+                        "ES": "Mis Fuentes de datos",
+						"FR": "Mes Sources de Données"
                     },
                     "icon": "",
                     "url": "/controlpanel/datasources/list"
@@ -191,7 +213,8 @@
                 {
                     "title": {
                         "EN": "My Reports",
-                        "ES": "Mis Informes"
+                        "ES": "Mis Informes",
+						"FR": "Mes Rapports"
                     },
                     "icon": "",
                     "url": "/controlpanel/reports/list"
@@ -199,7 +222,8 @@
                 {
                     "title": {
                         "EN": "My GIS Viewers",
-                        "ES": "Mis Visores GIS"
+                        "ES": "Mis Visores GIS",
+						"FR": "Mes Visionneuses SIG"
                     },
                     "icon": "",
                     "url": "/controlpanel/viewers/list"
@@ -207,7 +231,8 @@
                 {
                     "title": {
                         "EN": "My GIS Layers",
-                        "ES": "Mis Capas GIS"
+                        "ES": "Mis Capas GIS",
+						"FR": "Mes couches SIG"
                     },
                     "icon": "",
                     "url": "/controlpanel/layers/list"
@@ -217,15 +242,17 @@
         {
             "title": {
                 "EN": "DEV TOOLS",
-                "ES": "HERR. DESARROLLO"
+                "ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
             },
-            "icon": "flaticon-open-box",
+            "icon": "icon-dev-tools",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "Data to Ontology Import Tools",
-                        "ES": "Herramientas de importación de datos a ontología"
+                        "ES": "Herramientas de importación de datos a ontología",
+						"FR": "Outils d'importation de Données vers une Ontologie"
                     },
                     "icon": "",
                     "url": "/controlpanel/jsontool/tools"
@@ -233,7 +260,8 @@
                 {
                     "title": {
                         "EN": "My Web Projects",
-                        "ES": "Mis Proyectos Web"
+                        "ES": "Mis Proyectos Web",
+						"FR": "Mes Projets Web"
                     },
                     "icon": "",
                     "url": "/controlpanel/webprojects/list"
@@ -241,7 +269,8 @@
                 {
                     "title": {
                         "EN": "My Files",
-                        "ES": "Mis Ficheros"
+                        "ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
                     },
                     "icon": "",
                     "url": "/controlpanel/files/list"
@@ -249,7 +278,8 @@
                 {
 					"title": {
 						"EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada"
+						"ES": "Configuración Centralizada",
+						"FR": "Configuration Centralisée"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
@@ -257,7 +287,8 @@
                 {
                     "title": {
                         "EN": "My REST Services Planner",
-                        "ES": "Mis planificador de servicios REST"
+                        "ES": "Mis planificador de servicios REST",
+						"FR": "Mon planificateur de services REST"
                     },
                     "icon": "",
                     "url": "/controlpanel/restplanner/list"
@@ -265,7 +296,8 @@
                 {
                     "title": {
                         "EN": "My Internationalizations",
-                        "ES": "Mis internacionalizaciones"
+                        "ES": "Mis internacionalizaciones",
+						"FR": "Mes Internationalisations"
                     },
                     "icon": "",
                     "url": "/controlpanel/internationalizations/list"
@@ -273,7 +305,8 @@
                 {
                     "title": {
                         "EN": "My Control Panel Trees",
-                        "ES": "Mis árboles del Panel de Control"
+                        "ES": "Mis árboles del Panel de Control",
+						"FR": "Mes arborescences du panneau de contrôle"
                     },
                     "icon": "",
                     "url": "/controlpanel/categorization/list"
@@ -281,7 +314,8 @@
                 {
 					"title": {
 						"EN": "My External Database Connections",
-						"ES": "Mis Conexiones Externas a Base de datos"
+						"ES": "Mis Conexiones Externas a Base de datos",
+						"FR": "Mes connexions à la base de données externe"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
@@ -291,15 +325,17 @@
         {
             "title": {
                 "EN": "CLIENTS & DIGITAL TWINS",
-                "ES": "CLIENTS & DIGITAL TWINS"
+                "ES": "CLIENTS & DIGITAL TWINS",
+				"FR": "CLIENTS & JUMEAUX NUMÉRIQUES"
             },
-            "icon": "flaticon-share",
+            "icon": "icon-clients",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "My Digital Clients",
-                        "ES": "Mis Clientes Digitales"
+                        "ES": "Mis Clientes Digitales",
+						"FR": "Mes Clients Numériques"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/list"
@@ -307,7 +343,8 @@
                 {
                     "title": {
                         "EN": "My Digital Clients Instances",
-                        "ES": "Instancias de Clientes Digitales"
+                        "ES": "Instancias de Clientes Digitales",
+						"FR": "Mes Instances de Clients Numériques"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/management/list"
@@ -315,7 +352,8 @@
                 {
                     "title": {
                         "EN": "My Digital Clients Simulations",
-                        "ES": "Mis Simulaciones de Clientes Digitales"
+                        "ES": "Mis Simulaciones de Clientes Digitales",
+						"FR": "Mes Simulations de Clients Numériques"
                     },
                     "icon": "",
                     "url": "/controlpanel/devicesimulation/list"
@@ -323,7 +361,8 @@
                 {
                     "title": {
                         "EN": "Digital Clients Visualization",
-                        "ES": "Visualización de Clientes Digitales"
+                        "ES": "Visualización de Clientes Digitales",
+						"FR": "Visualisation des Clients Numériques"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/management/show"
@@ -331,7 +370,8 @@
                 {
                     "title": {
                         "EN": "My Digital Twin Definitions",
-                        "ES": "Mis Definiciones de Digital Twin"
+                        "ES": "Mis Definiciones de Digital Twin",
+						"FR": "Mes définitions de Jumeaux Numériques"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwintypes/list"
@@ -339,7 +379,8 @@
                 {
                     "title": {
                         "EN": "My Digital Twins",
-                        "ES": "Mis Digital Twins"
+                        "ES": "Mis Digital Twins",
+						"FR": "Mes Jumeaux Numériques"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwindevices/list"
@@ -347,7 +388,8 @@
                 {
                     "title": {
                         "EN": "Digital Twin Status",
-                        "ES": "Estado de mis Digital Twins"
+                        "ES": "Estado de mis Digital Twins",
+						"FR": "État du Jumeau Numérique"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwindisplay/show"
@@ -355,17 +397,48 @@
             ]
         },
         {
+			"title": {
+				"EN": "DATA GOVERNANCE",
+				"ES": "GOBIERNO DEL DATO",
+				"FR": "GOUVERNANCE DES DONNÉES"
+			},
+			"icon": "icon-monitoring",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "My Lineage",
+						"ES": "Mi Linaje",
+						"FR": "Ma lignée"
+					},
+					"icon": "",
+					"url": "/controlpanel/lineage/show"
+				},
+				{
+                    "title": {
+                        "EN": "My DataRefiner Projects",
+                        "ES": "Mis Proyectos DataRefiner",
+						"FR": "Mes Projets DataRefiner"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/datacleanerui"
+                }
+			]
+		},
+        {
             "title": {
                 "EN": "TOOLS",
-                "ES": "HERRAMIENTAS"
+                "ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
             },
-            "icon": "flaticon-refresh",
+            "icon": "icon-tools",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "Query Tool",
-                        "ES": "Herramienta Consultas"
+                        "ES": "Herramienta Consultas",
+						"FR": "Éditeur de Requêtes"
                     },
                     "icon": "",
                     "url": "/controlpanel/querytool/show"
@@ -373,7 +446,8 @@
                 {
                     "title": {
                         "EN": "My Audit",
-                        "ES": "Mi Auditoría"
+                        "ES": "Mi Auditoría",
+						"FR": "Mon Audit"
                     },
                     "icon": "",
                     "url": "/controlpanel/audit/show"
@@ -381,7 +455,8 @@
                 {
                     "title": {
                         "EN": "My Market",
-                        "ES": "Mi Market"
+                        "ES": "Mi Market",
+						"FR": "Mon Marché"
                     },
                     "icon": "",
                     "url": "/controlpanel/marketasset/list"

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.dto.ClientPlatformSimplifiedDTO;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -49,28 +50,37 @@ public interface ClientPlatformRepository extends JpaRepository<ClientPlatform, 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@Caching( evict = {
-			@CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification"),
-			@CacheEvict(cacheNames = "ClientPlatformSimplified", key = "#p0.identification")
-	})
+	@Caching(evict = { @CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification"),
+			@CacheEvict(cacheNames = "ClientPlatformSimplified", key = "#p0.identification") })
 	ClientPlatform save(ClientPlatform clientPlatform);
 
 	@Override
-	@Caching( evict = {
-			@CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification"),
-			@CacheEvict(cacheNames = "ClientPlatformSimplified", key = "#p0.identification")
-	})
+	@Caching(evict = { @CacheEvict(cacheNames = "ClientPlatformRepository", key = "#p0.identification"),
+			@CacheEvict(cacheNames = "ClientPlatformSimplified", key = "#p0.identification") })
 	@Transactional
 	void delete(ClientPlatform clientPlatform);
 
 	List<ClientPlatform> findByIdentificationLike(String identification);
 
 	List<ClientPlatform> findByUser(User user);
-	
+
 	@Cacheable(cacheNames = "ClientPlatformSimplified", key = "#p0")
 	@Query("Select new com.minsait.onesait.platform.config.dto.ClientPlatformSimplifiedDTO(cp.id, cp.identification) "
-			+ "FROM ClientPlatform cp "
-			+ "WHERE cp.identification = :identification")
+			+ "FROM ClientPlatform cp " + "WHERE cp.identification = :identification")
 	ClientPlatformSimplifiedDTO findClientPlatformIdByIdentification(@Param("identification") String identification);
+
+	@Query("Select cp.identification FROM ClientPlatform cp WHERE cp.user = :user order by cp.identification")
+	List<String> findIdentificationsByUser(@Param("user") User user);
+
+	@Query("Select cp.identification FROM ClientPlatform cp order by cp.identification")
+	List<String> findAllIdentifications();
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DIGITALCLIENT', 0) FROM ClientPlatform AS o WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findAllDto(@Param("identification") String identification,
+			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DIGITALCLIENT', 0) FROM ClientPlatform AS o WHERE o.user=:user AND (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
+			@Param("identification") String identification, @Param("description") String description);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,15 +29,18 @@ import javax.persistence.Table;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 import com.minsait.onesait.platform.config.model.listener.EntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "USER")
 @Configurable
-@EntityListeners(EntityListener.class)
+@EntityListeners({EntityListener.class,AuditEntityListener.class})
+@ToString(exclude= {"projects"},callSuper=true)
 public class User extends UserParent {
 
 	private static final long serialVersionUID = 1L;

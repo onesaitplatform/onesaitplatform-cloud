@@ -1,0 +1,31 @@
+<md-dialog aria-label="Add Gadget">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Select Favorite Gadget to add</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar>
+    <form ng-cloak>
+   
+
+    <md-input-container>
+        <label>Select</label>
+        <md-select ng-model="gadget" md-on-open="loadGadgets()">
+          <md-option ng-value="gadget" ng-repeat="gadget in gadgets"><em>{{gadget}}</em></md-option>
+        </md-select>
+      </md-input-container>
+
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button class="md-warm" ng-click="cancel()">
+        Cancel
+      </md-button>
+      <md-button class="md-raised md-primary" ng-click="addGadget()">
+        Add
+      </md-button>      
+    </md-dialog-actions>
+  </form>
+</md-dialog>

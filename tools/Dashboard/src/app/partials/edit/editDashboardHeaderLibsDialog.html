@@ -1,0 +1,28 @@
+<md-dialog aria-label="Layers" style="width:80%">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>Dashboard Header Libs</h2>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="cancel()">
+                <b>X</b>
+            </md-button>
+        </div>
+    </md-toolbar>
+    <form ng-cloak>
+        <md-dialog-content>
+            <md-subheader class="md-primary form-header">Header Libs Content:</md-subheader>
+            <div flex>
+                <div id="headerlibseditor" style="height:500px"></div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button ng-click="saveAndReload()" class="md-primary md-raised">
+                Save And Reload Page
+            </md-button>
+            <md-button ng-click="hide()" class="md-primary md-raised">
+                Close
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

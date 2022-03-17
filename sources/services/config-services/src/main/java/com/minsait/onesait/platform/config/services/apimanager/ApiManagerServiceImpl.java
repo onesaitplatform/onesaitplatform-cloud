@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
@@ -161,6 +162,23 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			log.warn(e.getClass().getName() + ":" + e.getMessage());
 		}
 		return version;
+	}
+
+	@Override
+	public List<String> getIdentificationsByUserOrPermission(String userId) {
+		User user = userService.getUser(userId);
+		List<Api> apis = new ArrayList<>();
+		if (user.isAdmin()) {
+			apis = apiRepository.findAll();
+		} else {
+			apis = apiRepository.findApisByUserOrPermission(userId);
+		}
+
+		List<String> apisIdentification = new ArrayList<>();
+		for (Api api : apis) {
+			apisIdentification.add(api.getIdentification() + " - V" + api.getNumversion());
+		}
+		return apisIdentification;
 	}
 
 	@Override
@@ -1038,6 +1056,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		// endpoint swagger............KO
 		// description...................OK
 		// meta-inf......................OK
+		// publish to gravitee...........OK
 		// image.........................OK
 		// operations....................OK
 		// authorizations................OK
@@ -1172,6 +1191,16 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	}
 
 	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
+		User user = userService.getUser(userId);
+		if (user.isAdmin()) {
+			return apiRepository.findAllDto(identification, description);
+		} else {
+			return apiRepository.findDtoByUserAndPermissions(user, identification, description);
+		}
+	}
+
+	@Override
 	@Transactional
 	public String cloneApi(String id, String identification, String userId) {
 
@@ -1263,5 +1292,11 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			newOperationList.add(newOperation);
 		}
 		return newOperationList;
+	}
+
+	@Override
+	public Boolean isGraviteeApi(String apiId) {
+		final Api api = getById(apiId);
+		return !(api.getGraviteeId() == null || api.getGraviteeId().isEmpty());
 	}
 }

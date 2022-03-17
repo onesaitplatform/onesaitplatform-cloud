@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public interface MultitenancyService {
 	Optional<MasterUserToken> getMasterTokenByToken(String token);
 
 	Optional<Vertical> getVertical(String vertical);
-	
+
 	Optional<String> getVerticalSchema(String vertical);
 
 	void createVertical(Vertical vertical);
@@ -100,5 +100,11 @@ public interface MultitenancyService {
 	MasterDeviceToken getMasterDeviceToken(String token);
 
 	void changeUserTenant(String userId, String tenant);
+
+	List<MasterUserToken> getAdminTokensForVerticals();
+
+	MasterUser getUser(String userId);
+
+	Vertical getVerticalFromSchema(String schema);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ public class APIManagementController {
 	JWTService jwtService;
 	@Autowired
 	ApiDTOConverter apiDTOConverter;
+
 
 	private static final String ERROR_API_NOT_FOUND = "Api not found";
 	private static final String ERROR_USER_NOT_ALLOWED = "User is not authorized";
@@ -562,6 +563,7 @@ public class APIManagementController {
 
 			final String apiId = apiManagerService.updateApiRest(api, apimemory, operations, auths, false);
 			api.setId(apiId); // to print in result update (retrocomp)
+
 
 			return new ResponseEntity<>(new ApiSimplifiedResponseDTO(api), HttpStatus.OK);
 

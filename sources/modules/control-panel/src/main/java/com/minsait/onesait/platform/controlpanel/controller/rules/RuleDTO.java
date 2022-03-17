@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,13 @@ public class RuleDTO {
 	private String drl;
 	private String identification;
 	private boolean active;
+	private String extension;
+	private byte[] decisionTable;
 
 	public static RuleDTO convert(DroolsRule r) {
 		return RuleDTO.builder().id(r.getId()).drl(r.getDRL()).type(r.getType())
 				.inputOntology(r.getSourceOntology() != null ? r.getSourceOntology().getIdentification() : null)
 				.outputOntology(r.getTargetOntology() != null ? r.getTargetOntology().getIdentification() : null)
-				.identification(r.getIdentification()).active(r.isActive()).build();
+				.identification(r.getIdentification()).active(r.isActive()).decisionTable(r.getDecisionTable()).build();
 	}
 }

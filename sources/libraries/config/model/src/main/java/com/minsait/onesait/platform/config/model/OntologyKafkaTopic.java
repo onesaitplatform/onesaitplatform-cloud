@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,27 +37,25 @@ import lombok.Setter;
 @Table(name = "ONTOLOGY_KAFKA_TOPIC")
 public class OntologyKafkaTopic extends AuditableEntityWithUUID {
 
-
 	private static final long serialVersionUID = 1L;
 
 	public enum TopicType {
 		INPUT, OUTPUT, KSQL;
 	}
-	
+
 	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
 	private Ontology ontology;
-	
 
 	@Column(name = "TOPIC_TYPE", nullable = true)
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private TopicType topicType;
-	
+
 	@Column(name = "IDENTIFICATION", length = 130, nullable = false)
 	@NotNull
 	@Getter

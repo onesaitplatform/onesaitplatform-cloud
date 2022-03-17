@@ -4,28 +4,21 @@
 	"noSession": "/console/login",
 	"navigation": [
 
-		{
-			"title": {
-				"EN": "",
-				"ES": ""
-			},
-			"icon": "flaticon-more-v3",
-			"url": "",
-			"submenu": []
-		},
-		
+
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
-				"ES": "DESARROLLO"
+				"ES": "DESARROLLO",
+				"FR": "DÉVELOPPEMENT"
 			},
-			"icon": "flaticon-network",
+			"icon": "icon-development",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "My Projects",
-						"ES": "Mis Proyectos"
+						"ES": "Mis Proyectos",
+						"FR": "Mes Projets"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -33,7 +26,8 @@
 				{
 					"title": {
 						"EN": "My Ontologies",
-						"ES": "Mis Ontologías"
+						"ES": "Mis Ontologías",
+						"FR": "Mes Ontologies"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
@@ -41,7 +35,8 @@
 				{
 					"title": {
 						"EN": "My APIs",
-						"ES": "Mis APIs"
+						"ES": "Mis APIs",
+						"FR": "Mes API"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
@@ -49,7 +44,8 @@
 				{
 					"title": {
 						"EN": "My Microservices",
-						"ES": "Mis microservicios"
+						"ES": "Mis microservicios",
+						"FR": "Mes Microservices"
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
@@ -60,15 +56,17 @@
 		{
 			"title": {
 				"EN": "VISUALIZATION & GIS",
-				"ES": "VISUALIZATION & GIS"
+				"ES": "VISUALIZATION & GIS",
+				"FR": "VISUALISATION & SIG"
 			},
-			"icon": "flaticon-graph",
+			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "My Dashboards",
-						"ES": "Mis Dashboards"
+						"ES": "Mis Dashboards",
+						"FR": "Mes Tableaux de Bord"
 					},
 					"icon": "",
 					"url": "/controlpanel/dashboards/list"
@@ -79,15 +77,17 @@
 		{
 			"title": {
 				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO"
+				"ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
 			},
-			"icon": "flaticon-open-box",
+			"icon": "icon-dev-tools",
 			"url": "",
 			"submenu": [			
 				{
 					"title": {
 						"EN": "My Files",
-						"ES": "Mis Ficheros"
+						"ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
@@ -95,7 +95,8 @@
 				{
 					"title": {
 						"EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada"
+						"ES": "Configuración Centralizada",
+						"FR": "Configuration Centralisée"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
@@ -106,15 +107,17 @@
 		{
 			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS"
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
 			},
-			"icon": "flaticon-refresh",
+			"icon": "icon-tools",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta Consultas"
+						"ES": "Herramienta Consultas",
+						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
@@ -122,7 +125,8 @@
 				{
 					"title": {
 						"EN": "My Audit",
-						"ES": "Mi Auditoría"
+						"ES": "Mi Auditoría",
+						"FR": "Mon Audit"
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
@@ -130,7 +134,8 @@
 				{
 					"title": {
 						"EN": "My Market",
-						"ES": "Mi Market"
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
 					"url": "/controlpanel/marketasset/list"

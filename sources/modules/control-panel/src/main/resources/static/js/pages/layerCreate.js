@@ -145,7 +145,7 @@ var LayerCreateController = function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 		// no Id no fun!
-		if ( !layerId ) {$.alert({title: 'ERROR!',  theme: 'light', content: ontologyCreateReg.validations.validform}); return false; }
+		if ( !layerId ) {toastr.error(ontologyCreateReg.validations.validform,''); return false; }
 		
 		$.ajax({
 			url : "/controlpanel/layers/isLayerInUse/" + layerId,
@@ -165,12 +165,14 @@ var LayerCreateController = function() {
 					// call ontology Confirm at header.
 					HeaderController.showConfirmDialogLayer('delete_layer_form');
 				}else{
-					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.deleteError});
+					
+					toastr.error(layerCreateJson.deleteError,'');
 				}
 				
 			},
 			error : function(data, status, er) {
-				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+				 
+				toastr.error(er,'');
 			}
 		});
 
@@ -189,8 +191,7 @@ var LayerCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 
         var form1 = $('#layer_create_form');
-        var error1 = $('.alert-danger');
-        var success1 = $('.alert-success');
+         
 
 
         form1.validate({
@@ -221,13 +222,11 @@ var LayerCreateController = function() {
 				description:	{ minlength: 5, required: true },
 				fields:		{ required: true },
 				types:		{ required: true },
+				geometryType:	{ required: true },
+				geometryTypeVirtual: 	{ required: true }
             },
-            invalidHandler: function(event, validator) { // display error
-															// alert on form
-															// submit
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+            invalidHandler: function(event, validator) { // display error alert on form submit
+            	toastr.error(messagesForms.validation.genFormError,'');
             },
             errorPlacement: function(error, element) {
             	if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -249,13 +248,12 @@ var LayerCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	
-                error1.hide();
                 
                 var geometryField = $("#fields").val();
                 
                 if(geometryField == null || geometryField==undefined || geometryField=="select"){
-                	$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.geometry});
+                	
+					toastr.error(layerCreateJson.validations.geometry,'');
                 	return;
                 }
                 
@@ -314,15 +312,14 @@ var LayerCreateController = function() {
 	   			
 				// form.submit();
 				form1.ajaxSubmit({type: 'post', success : function(data){
-					
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					navigateUrl(data.redirect);
 					
 					}, error: function(data){
-						HeaderController.showErrorDialog(data.responseJSON.cause)
+						toastr.error(data.responseJSON.cause);
+						//HeaderController.showErrorDialog(data.responseJSON.cause)
 					}
 				})
-				
-
 			}
         });
     }
@@ -817,6 +814,29 @@ var LayerCreateController = function() {
 			$('#resetBtn').on('click', function() {
 				cleanFields('layer_create_form');
 			});
+			
+			// Fields OnBlur validation
+			
+			$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+				$('.form').validate().element('#' + event.target.id);                // checks form for validity
+			});		
+			
+			$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
+				if (event.currentTarget.getElementsByTagName('select')[0]){
+					$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
+				}
+			})
+			
+				
+			$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
+				if ($(event.target).parent().next().val() !== ''){
+					$(event.target).parent().next().nextAll('span:first').addClass('hide');
+					$(event.target).parent().removeClass('tagsinput-has-error');
+				} else {
+					$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+					$(event.target).parent().addClass('tagsinput-has-error');
+				}   
+			})
 		},
 		
 		// REDIRECT
@@ -1076,13 +1096,7 @@ var LayerCreateController = function() {
 			    	}else{
 			    		LayerCreateController.changeOntology();
 			    	}
-			    /*	if (response != 'false'){
-			    		LayerCreateController.changeOntology();
-			    	} else {
-			    		$("#fields").empty();
-			    		$("#geometryTypes").attr("style","visibility:hidden");
-			    		$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.root});
-			    	}*/
+			    
 				}
 			});
 			
@@ -1158,7 +1172,8 @@ var LayerCreateController = function() {
 				success: function(response,status){
 					
 					if(Object.entries(response).length === 0 && response.constructor === Object){
-						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.ontology});
+						
+						toastr.error(layerCreateJson.validations.ontology,'');
 	                	return;
 					}
 					$("#fields").empty();
@@ -1208,25 +1223,20 @@ var LayerCreateController = function() {
 		checkAttribute: function (attribute, field){
 			areUniqueAttribute = attributesArray.unique();
 			areUniqueField = fieldsArray.unique();
-			if (attributesArray.length !== areUniqueAttribute.length)  { 
-				var index = attributesArray.indexOf(attribute);
-	    		if (index > -1) {
-	    			attributesArray.splice(index, 1);
+			if (attributesArray.length !== areUniqueAttribute.length || fieldsArray.length !== areUniqueField.length)  { 
+				var indexAttribute = attributesArray.indexOf(attribute);
+	    		if (indexAttribute > -1) {
+	    			attributesArray.splice(indexAttribute, 1);
 	    		}
-				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.duplicates});
+	    		var indexField = fieldsArray.indexOf(field);
+	    		if (indexField > -1) {
+	    			fieldsArray.splice(indexField, 1);
+	    		}
 				
+				toastr.error(layerCreateJson.validations.duplicates,'');
 				return;
 			}
-			if (fieldsArray.length !== areUniqueField.length)  { 
-				var index = fieldsArray.indexOf(field);
-	    		if (index > -1) {
-	    			fieldsArray.splice(index, 1);
-	    		}
-				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.duplicates});
-				
-				return;
-			}
-			var add= "<tr id='"+attribute+"'><td class='text-left no-wrap field'>"+field+"</td><td class='text-left no-wrap attribute'>"+attribute+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.editAttribute(this)' data-container='body' data-placement='bottom' id='edit_"+ attribute +" th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td></tr>";
+			var add= "<tr id='"+attribute+"'><td class='text-left no-wrap field'>"+field+"</td><td class='text-left no-wrap attribute'>"+attribute+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='LayerCreateController.editAttribute(this)' data-container='body' data-placement='bottom' id='edit_"+ attribute +" th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='LayerCreateController.deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td></tr>";
 	    	$("#attributes tbody").append(add);
 			return true;
 		},
@@ -1238,14 +1248,15 @@ var LayerCreateController = function() {
 	    		if (index > -1) {
 	    			operationsArray.splice(index, 1);
 	    		}
-				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.duplicates});
+				
+				toastr.error(layerCreateJson.validations.duplicates,'');
 				
 				return;
 			}
 			var id= uuidv4();
         	mapOperations.push({id : operation});
         	
-			var add= "<tr id='"+id+"'><td class='text-left no-wrap operation'>"+operation+"</td><td class='text-left no-wrap color'>"+color+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.editFilter(this)' data-container='body' data-placement='bottom' id='edit_"+ id +" th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.deleteFilter(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td></tr>";
+			var add= "<tr id='"+id+"'><td class='text-left no-wrap operation'>"+operation+"</td><td class='text-left no-wrap color'>"+color+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='LayerCreateController.editFilter(this)' data-container='body' data-placement='bottom' id='edit_"+ id +" th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='LayerCreateController.deleteFilter(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td></tr>";
 	    	$("#filtersAttribute tbody").append(add);
 			return true;
 		},

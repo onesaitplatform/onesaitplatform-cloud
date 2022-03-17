@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,18 @@
 package com.minsait.onesait.platform.service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.audit.aop.DashboardEngineAuditable;
 import com.minsait.onesait.platform.bean.AccessType;
 import com.minsait.onesait.platform.bean.DashboardCache;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -63,6 +64,7 @@ public class SolverServiceImpl implements SolverService {
 	private static final String ELASTIC_DATASOURCE_TYPE = "ELASTIC_SEARCH";
 	private static final String VIRTUAL_DATASOURCE_TYPE = "VIRTUAL";
 	private static final String KUDU_DATASOURCE_TYPE = "KUDU";
+	private static final String SIMPLE_MODE = "simpleMode";
 
 	@Autowired
 	GadgetDatasourceRepository gdr;
@@ -120,7 +122,7 @@ public class SolverServiceImpl implements SolverService {
 			return sqlSolver;
 		case VIRTUAL_DATASOURCE_TYPE:
 			final OntologyVirtualDatasource ontologyDatasource = ontologyVirtualRepository
-					.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
+			.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
 			switch (ontologyDatasource.getSgdb()) {
 			case ORACLE:
 				return oracleSolver;
@@ -171,6 +173,7 @@ public class SolverServiceImpl implements SolverService {
 	}
 
 	@Override
+	@DashboardEngineAuditable
 	public String solveDatasource(InputMessage im)
 			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException {
 		String error;
@@ -178,22 +181,23 @@ public class SolverServiceImpl implements SolverService {
 		if (getDashboardUserSecurity(im.getDashboard())) {
 
 			final GadgetDatasource gd = getGadgetDatasourceFromIdentification(im.getDs());
-
+			boolean isSimpleMode = isDatasourceSimpleMode(gd);
 			if (externalValidation(im, gd)) {
 
 				// if dashboard is null (edit mode), we use authenticated user instead of
 				// datasource user
-				final String executeAs = ("".equals(im.getDashboard()) || im.getDashboard() == null) ? utils.getUserId()
+				final String executeAs = "".equals(im.getDashboard()) || im.getDashboard() == null ? utils.getUserId()
 						: gd.getUser().getUserId();
 
 				final Ontology ont = getOntologyFromDatasource(gd, executeAs);
 
 				return getSolverByDatasource(ont.getRtdbDatasource(), ont.getIdentification()).buildQueryAndSolve(
 						gd.getQuery(), gd.getMaxvalues(), im.getFilter(), im.getProject(), im.getGroup(), im.getSort(),
-						im.getOffset(), im.getLimit(), im.getParam(), im.isDebug(), executeAs, ont.getIdentification());
+						im.getOffset(), im.getLimit(), im.getParam(), im.isDebug(), executeAs, ont.getIdentification(),
+						isSimpleMode);
 			} else {
 				error = "User " + utils.getUserId()
-						+ " cannot access the information due to restrictions defined in the security plugin";
+				+ " cannot access the information due to restrictions defined in the security plugin";
 				log.info(error);
 				return "[]";
 			}
@@ -203,6 +207,25 @@ public class SolverServiceImpl implements SolverService {
 			throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED,
 					"User " + utils.getUserId() + " can't access to dashboard");
 		}
+	}
+	// get config and map for get if is simple mode or complex
+	// if return true then is simple mode
+	// if return false then work normaly
+
+	private boolean isDatasourceSimpleMode(GadgetDatasource gd) {
+		String config = gd.getConfig();
+		if (config != null && config.trim().length() > 0) {
+			try {
+				JSONObject configJson = new JSONObject(config);
+				boolean isSimpleMode = configJson.getBoolean(SIMPLE_MODE);
+				return isSimpleMode;
+			} catch (Exception e) {
+				return false;
+			}
+
+		}
+
+		return false;
 	}
 
 	private boolean externalValidation(InputMessage im, GadgetDatasource gd) {
@@ -227,8 +250,8 @@ public class SolverServiceImpl implements SolverService {
 				message.setOffset(im.getOffset());
 				if (im.getParam() != null && im.getParam().size() > 0) {
 					final List<com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt> param = new ArrayList<>();
-					for (final Iterator iterator = im.getParam().iterator(); iterator.hasNext();) {
-						final ParamStt pastt = (ParamStt) iterator.next();
+					for (final Object element : im.getParam()) {
+						final ParamStt pastt = (ParamStt) element;
 						param.add(new com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt(
 								pastt.getField(), pastt.getValue()));
 					}
@@ -236,8 +259,8 @@ public class SolverServiceImpl implements SolverService {
 				}
 				if (im.getProject() != null && im.getProject().size() > 0) {
 					final List<com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt> project = new ArrayList<>();
-					for (final Iterator iterator = im.getProject().iterator(); iterator.hasNext();) {
-						final ProjectStt projectStt = (ProjectStt) iterator.next();
+					for (final Object element : im.getProject()) {
+						final ProjectStt projectStt = (ProjectStt) element;
 						project.add(new com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt(
 								projectStt.getField(), projectStt.getOp(), projectStt.getAlias()));
 					}
@@ -246,8 +269,8 @@ public class SolverServiceImpl implements SolverService {
 				}
 				if (im.getSort() != null && im.getSort().size() > 0) {
 					final List<com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt> sort = new ArrayList<>();
-					for (final Iterator iterator = im.getSort().iterator(); iterator.hasNext();) {
-						final OrderByStt orderByStt = (OrderByStt) iterator.next();
+					for (final Object element : im.getSort()) {
+						final OrderByStt orderByStt = (OrderByStt) element;
 						sort.add(new com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt(
 								orderByStt.getField(), orderByStt.isAsc()));
 					}
@@ -285,9 +308,8 @@ public class SolverServiceImpl implements SolverService {
 
 				if (message.getParam() != null && message.getParam().size() > 0) {
 					final List<com.minsait.onesait.platform.dto.socket.querystt.ParamStt> param = new ArrayList<>();
-					for (final Iterator iterator = message.getParam().iterator(); iterator.hasNext();) {
-						final com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt pastt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt) iterator
-								.next();
+					for (final Object element : message.getParam()) {
+						final com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt pastt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt) element;
 						param.add(new com.minsait.onesait.platform.dto.socket.querystt.ParamStt(pastt.getField(),
 								pastt.getValue()));
 					}
@@ -296,9 +318,8 @@ public class SolverServiceImpl implements SolverService {
 
 				if (message.getProject() != null && message.getProject().size() > 0) {
 					final List<com.minsait.onesait.platform.dto.socket.querystt.ProjectStt> project = new ArrayList<>();
-					for (final Iterator iterator = message.getProject().iterator(); iterator.hasNext();) {
-						final com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt projectStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt) iterator
-								.next();
+					for (final Object element : message.getProject()) {
+						final com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt projectStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt) element;
 						project.add(new com.minsait.onesait.platform.dto.socket.querystt.ProjectStt(
 								projectStt.getField(), projectStt.getOp(), null, projectStt.getAlias()));
 					}
@@ -307,9 +328,8 @@ public class SolverServiceImpl implements SolverService {
 
 				if (message.getSort() != null && message.getSort().size() > 0) {
 					final List<com.minsait.onesait.platform.dto.socket.querystt.OrderByStt> sort = new ArrayList<>();
-					for (final Iterator iterator = message.getSort().iterator(); iterator.hasNext();) {
-						final com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt orderByStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt) iterator
-								.next();
+					for (final Object element : message.getSort()) {
+						final com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt orderByStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt) element;
 						sort.add(new com.minsait.onesait.platform.dto.socket.querystt.OrderByStt(orderByStt.getField(),
 								orderByStt.isAsc()));
 					}
@@ -318,12 +338,6 @@ public class SolverServiceImpl implements SolverService {
 				}
 
 				gd.setQuery(message.getQuery());
-
-				/*
-				 * if (message.getOntology() != null) { gd.setOntology(
-				 * ontologyService.getOntologyByIdentification(message.getOntology(),
-				 * user.getUserId())); } log.info("message.getOntology() ");
-				 */
 
 			} catch (final Exception e) {
 				externalValidation = false;
@@ -339,7 +353,7 @@ public class SolverServiceImpl implements SolverService {
 
 		if (getDashboardUserSecurity(im.getDashboard())) {
 			final GadgetDatasource gd = getGadgetDatasourceFromIdentification(im.getDs());
-
+			boolean isSimpleMode = isDatasourceSimpleMode(gd);
 			if (externalValidation(im, gd)) {
 				// explain only works with same user for ontology
 				final String executeAs = utils.getUserId();
@@ -348,10 +362,10 @@ public class SolverServiceImpl implements SolverService {
 
 				return getSolverByDatasource(ont.getRtdbDatasource(), ont.getIdentification()).buildQuery(gd.getQuery(),
 						gd.getMaxvalues(), im.getFilter(), im.getProject(), im.getGroup(), im.getSort(), im.getOffset(),
-						im.getLimit(), im.getParam(), im.isDebug(), executeAs, ont.getIdentification());
+						im.getLimit(), im.getParam(), im.isDebug(), executeAs, ont.getIdentification(), isSimpleMode);
 			} else {
 				error = "User " + utils.getUserId()
-						+ " cannot access the information due to restrictions defined in the security plugin";
+				+ " cannot access the information due to restrictions defined in the security plugin";
 				log.info(error);
 				return "[]";
 			}
@@ -368,7 +382,7 @@ public class SolverServiceImpl implements SolverService {
 	private boolean getDashboardUserSecurity(String dashboardId) {
 
 		if ("".equals(dashboardId) || dashboardId == null || utils.isAdministrator()) {// Gadget edit mode dashboard is
-																						// null
+			// null
 			return true;
 		}
 
@@ -376,8 +390,9 @@ public class SolverServiceImpl implements SolverService {
 
 		if (access == AccessType.NOCHECKED) {
 			final Optional<Dashboard> opt = dashboardRepository.findById(dashboardId);
-			if (!opt.isPresent())
+			if (!opt.isPresent()) {
 				return false;
+			}
 			final Dashboard d = opt.get();
 			if (d.isPublic() || d.getUser().getUserId().equals(utils.getUserId())) {
 				dashboardCache.setAccess(AccessType.ALLOW);
@@ -417,7 +432,7 @@ public class SolverServiceImpl implements SolverService {
 				if (!list[i].startsWith("(")) {
 					int indexOf = list[i].toLowerCase().indexOf(" ", 0);
 					final int indexOfCloseBracket = list[i].toLowerCase().indexOf(')', 0);
-					indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf) ? indexOfCloseBracket
+					indexOf = indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf ? indexOfCloseBracket
 							: indexOf;
 					if (indexOf == -1) {
 						indexOf = list[i].length();

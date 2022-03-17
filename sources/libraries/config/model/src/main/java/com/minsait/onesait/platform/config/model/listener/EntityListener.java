@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class EntityListener {
 				masterUserRepositoryLazy.save(master);
 				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder()
 						.masterUser(MasterUser.builder().userId(user.getUserId()).build())
-						.password(master.getPassword()).build();
+						.password(user.getPassword()).build();
 				masterUserHistoricRepository.save(masterUserHistoric);
 			}
 		}
@@ -138,7 +138,7 @@ public class EntityListener {
 			master = masterUserRepositoryLazy.save(master);
 			if (changePass) {
 				final MasterUserHistoric masterUserHistoric = MasterUserHistoric.builder().masterUser(converter.convert(user))
-						.password(master.getPassword()).build();
+						.password(user.getPassword()).build();
 				masterUserHistoricRepository.save(masterUserHistoric);
 			}
 

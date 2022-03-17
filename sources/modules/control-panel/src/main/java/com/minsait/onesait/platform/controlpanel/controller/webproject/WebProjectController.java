@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,10 +188,12 @@ public class WebProjectController {
 		final String uploadedFile = itr.next();
 		final MultipartFile file = request.getFile(uploadedFile);
 		if (file != null) {
-			if (utils.isFileExtensionForbidden(file))
+			if (utils.isFileExtensionForbidden(file)) {
 				return new ResponseEntity<>("File type not allowed", HttpStatus.BAD_REQUEST);
-			if (file.getSize() > utils.getMaxFileSizeAllowed())
+			}
+			if (file.getSize() > utils.getMaxFileSizeAllowed()) {
 				return new ResponseEntity<>("File size too large", HttpStatus.PAYLOAD_TOO_LARGE);
+			}
 		}
 		try {
 			webProjectService.uploadZip(file, utils.getUserId());
@@ -200,6 +202,18 @@ public class WebProjectController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
+
+	@PostMapping(value = "/uploadWebTemplate")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	public ResponseEntity<String> useTemplate() {
+		try {
+			webProjectService.uploadWebTemplate( utils.getUserId());
+			return new ResponseEntity<>("{\"status\" : \"ok\"}", HttpStatus.OK);
+		} catch (final WebProjectServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
 
 	@GetMapping(value = "/downloadZip/{id}", produces = "application/zip")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")

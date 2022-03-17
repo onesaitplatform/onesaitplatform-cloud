@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,9 @@ public class BearerTokenFilter implements Filter {
 	private final ConfigDBDetailsService configDBDetailsService;
 	private Map<String, Long> revokedTokens;
 
+	final boolean loadFromJWT = System.getenv("LOAD_FROM_JWT") == null ? false
+			: Boolean.valueOf(System.getenv("LOAD_FROM_JWT"));
+
 
 	@SuppressWarnings("unchecked")
 	public BearerTokenFilter() {
@@ -103,7 +106,7 @@ public class BearerTokenFilter implements Filter {
 				log.trace("Principal token JWT {}", auth.getPrincipal());
 				log.debug("Detected Bearer token in request, loading autenthication");
 				Authentication oauth = loadAuthentication(auth);
-				if (oauth == null) {
+				if (oauth == null && loadFromJWT) {
 					log.debug("Failed to load Auth from DB, trying to decode JWT");
 					oauth = loadAuthenticationFromJWT(auth.getPrincipal());
 				}
@@ -117,7 +120,7 @@ public class BearerTokenFilter implements Filter {
 				} else {
 					InterceptorCommon.setContexts(oauth);
 					log.debug("Loaded authentication for user {}", oauth.getName());
-					publish(new AuthenticationSuccessEvent(auth));
+					publish(new AuthenticationSuccessEvent(oauth));
 					chain.doFilter(request, response);
 				}
 
@@ -139,7 +142,6 @@ public class BearerTokenFilter implements Filter {
 						req.getSession(false).invalidate();
 					}
 				}
-
 			}
 
 		} else {

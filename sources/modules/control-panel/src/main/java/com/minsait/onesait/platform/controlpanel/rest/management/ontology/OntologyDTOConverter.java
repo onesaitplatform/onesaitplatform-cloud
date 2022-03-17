@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@ public class OntologyDTOConverter {
 		} else {
 			ontology.setRtdbToHdbStorage(ontologyCreate.getRtdbToHdbStorage());
 		}
-		ontology.setAllowsCreateTopic(ontologyCreate.isAllowsCreateTopic());
+		ontology.setAllowsCreateNotificationTopic(ontologyCreate.isAllowsCreateNotificationTopic());
 
 		return ontology;
 	}
@@ -181,6 +181,7 @@ public class OntologyDTOConverter {
 			ontology.setRtdbToHdbStorage(ontologyDTO.getRtdbToHdbStorage());
 		}
 		ontology.setDataModel(datamodelDTOToDataModel(ontologyDTO.getDataModel()));
+		ontology.setAllowsCreateNotificationTopic(ontologyDTO.isAllowsCreateNotificationTopic());
 		ontology.setAllowsCreateTopic(ontologyDTO.isAllowsCreateTopic());
 
 		return ontology;
@@ -398,11 +399,11 @@ public class OntologyDTOConverter {
 	public OntologyVirtualDatasource ontologyVirtualDatasourceDTOToOntologyVirtualDataSource(
 			OntologyVirtualDataSourceDTO datasourceDTO, User user) {
 		OntologyVirtualDatasource datasource = new OntologyVirtualDatasource();
-		datasource.setUserId(user);
-		datasource.setUser(datasourceDTO.getUser());
+		datasource.setUser(user);
+		datasource.setUserId(datasourceDTO.getUser());
 		datasource.setConnectionString(datasourceDTO.getConnectionString());
 		datasource.setCredentials(datasourceDTO.getCredentials());
-		datasource.setDatasourceName(datasourceDTO.getName());
+		datasource.setIdentification(datasourceDTO.getName());
 		datasource.setDatasourceDomain(datasourceDTO.getDomain());
 		datasource.setPublic(datasourceDTO.isPublic());
 		datasource.setPoolSize(datasourceDTO.getPoolSize());

@@ -88,7 +88,7 @@ body[class*=jconfirm-no-scroll-] {
   border-radius: 4px;
   position: relative;
   outline: none;
-  padding: 15px 15px 0;
+  padding: 24px 24px 0px 24px;
   overflow: hidden;
   margin-left: auto;
   margin-right: auto;
@@ -299,8 +299,9 @@ body[class*=jconfirm-no-scroll-] {
 }
 .jconfirm .jconfirm-box div.jconfirm-title-c {
   display: block;
-  font-size: 22px;
-  line-height: 20px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 24px;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
@@ -360,6 +361,10 @@ body[class*=jconfirm-no-scroll-] {
   border-radius: 3px;
 }
 .jconfirm .jconfirm-box div.jconfirm-content-pane .jconfirm-content {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #505D66;
   overflow: auto;
 }
 .jconfirm .jconfirm-box div.jconfirm-content-pane .jconfirm-content img {
@@ -380,9 +385,9 @@ body[class*=jconfirm-no-scroll-] {
 .jconfirm .jconfirm-box .jconfirm-buttons button {
   display: inline-block;
   padding: 6px 12px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
-  line-height: 1.42857143;
+  line-height: 16px;
   text-align: center;
   white-space: nowrap;
   vertical-align: middle;
@@ -393,8 +398,8 @@ body[class*=jconfirm-no-scroll-] {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  border-radius: 4px;
-  min-height: 1em;
+  border-radius: 2px;
+  min-height: 32px;
   -webkit-transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease, background 0.1s ease, -webkit-box-shadow 0.1s ease;
   transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease, background 0.1s ease, -webkit-box-shadow 0.1s ease;
   transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
@@ -530,9 +535,7 @@ body[class*=jconfirm-no-scroll-] {
 }
 .jconfirm.jconfirm-white .jconfirm-box .jconfirm-buttons button,
 .jconfirm.jconfirm-light .jconfirm-box .jconfirm-buttons button {
-  text-transform: uppercase;
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 12px;
   text-shadow: none;
 }
 .jconfirm.jconfirm-white .jconfirm-box .jconfirm-buttons button.btn-default,

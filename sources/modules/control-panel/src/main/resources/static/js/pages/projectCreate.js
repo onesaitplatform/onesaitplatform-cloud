@@ -1,6 +1,10 @@
 var ProjectCreateController = function() {
 	var authorizationEndpoint = '/controlpanel/projects/authorizations';
 	var parentAuthorization = {};
+	var LIB_TITLE = 'Menu Controller';
+	var logControl = 1;
+	var form1 = $('#project_create_form');
+	
 	var initTemplateElements = function() {
 		var csrf_header = headerReg.csrfHeaderName;
 		var csrf_value = headerReg.csrfToken;
@@ -8,11 +12,10 @@ var ProjectCreateController = function() {
 		       [csrf_header]: csrf_value
 		}});
 		
-		
 		$(".disabled").on("click", function(e) {
 			e.preventDefault();
 			$.alert({
-				title : 'INFO!',
+				title : 'Info',
 				theme : 'light',
 				content : projectCreateJson.validations.createfirst
 			});
@@ -44,9 +47,138 @@ var ProjectCreateController = function() {
 		
 		// INPUT MASK FOR project identification allow only letters, numbers and -_
 		$("#project-name").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-
+		
+		// Reset form
+		$('#resetBtn').on('click', function() {
+			cleanFields('project_create_form');
+		});
+		
+		// authorization tab control 
+		$(".option a[href='#tab_1']").on("click", function(e) {
+			$('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		});
+		
+		$(".option a[href='#tab_2']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+		  } else {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		  }
+		});
+		
+		$(".option a[href='#tab_3']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+		  } else {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		  }
+		});
+		
+		$(".option a[href='#tab_4']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+		  } else {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		  }
+		});
+		
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});
+		
+		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
+			if (event.currentTarget.getElementsByTagName('select')[0]){
+				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
+			}
+		})
 	}
+	
+	var handleValidation = function() {
+		
+		logControl ? console.log('handleValidation() -> ') : '';
+        // for more info visit the official plugin documentation: 
+        // http://docs.jquery.com/Plugins/Validation
+		
+		// set current language
+		currentLanguage = currentLanguage || LANGUAGE;
+		
+        form1.validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block help-block-error', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+            ignore: ":hidden:not('.selectpicker, .hidden-validation')", // validate all fields including form hidden input but not selectpicker
+			lang: currentLanguage,
+			// validation rules
+            rules: {
+            	identification:	{required: true, minlength: 5},
+            	description: {required: true, minlength: 5}
+            },
+            messages: {
+            },
+            invalidHandler: function(event, validator) { //display error alert on form submit
+            	toastr.error(messagesForms.validation.genFormError,'');
+            },
+            errorPlacement: function(error, element) {
+                if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
+				else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list, .radio-inline")); }
+				else { error.insertAfter(element); }
+            },
+            highlight: function(element) { // hightlight error inputs
+                $(element).closest('.form-group').addClass('has-error'); 
+            },
+            unhighlight: function(element) { // revert the change done by hightlight
+                $(element).closest('.form-group').removeClass('has-error');
+            },
+            success: function(label) {
+                label.closest('.form-group').removeClass('has-error');
+            },
+			// ALL OK, THEN SUBMIT.
+            submitHandler: function(form) {
+            	toastr.success(messagesForms.validation.genFormSuccess,'');
+            	form.submit();
+            }
+        });
+    }
 
+	// CLEAN FIELDS FORM
+	var cleanFields = function(formId) {
+		logControl ? console.log('cleanFields() -> ') : '';
+
+		// CLEAR OUT THE VALIDATION ERRORS
+		$('#' + formId).validate().resetForm();
+		$('#' + formId).find(
+				'input:text, input:password, input:file, select, textarea')
+				.each(function() {
+					// CLEAN ALL EXCEPTS cssClass "no-remote" persistent fields
+					if (!$(this).hasClass("no-remove")) {
+						$(this).val('');
+					}
+				});
+
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+
+		// CLEAN ROLES
+		$("#datamodel_properties tbody tr").each(
+				function(tr) {
+					$("#roleName").append(this.dataset.rolename);
+					$("#roleDescription").append(this.dataset.roledescription);
+					this.remove();
+
+				});
+
+		$("#parameter_roles").val('');
+		$('#parameter_users').val('');
+		$('#parameter_associations').val('');
+	}
+	
 	var addWebProject = function() {
 		var webProject = $('#webprojects').val();
 
@@ -57,7 +189,10 @@ var ProjectCreateController = function() {
 						'project' : projectCreateJson.projectId
 					}, function() {
 						refreshSelectpickers();
+						toastr.success(messagesForms.operations.genOpSuccess,'');
 					});
+		} else {
+			toastr.error(messagesForms.operations.genOpError,'');
 		}
 
 	}
@@ -69,6 +204,7 @@ var ProjectCreateController = function() {
 					'project' : projectCreateJson.projectId
 				}, function() {
 					refreshSelectpickers();
+					toastr.success(messagesForms.operations.genOpSuccess,'');
 				});
 
 	}
@@ -81,13 +217,10 @@ var ProjectCreateController = function() {
 				'project' : projectCreateJson.projectId
 			}, function() {
 				refreshSelectpickers();
+				toastr.success(messagesForms.operations.genOpSuccess,'');
 			});
 		} else {
-			$.alert({
-				title : 'INFO!',
-				theme : 'light',
-				content : projectCreateJson.validations.selectUser
-			});
+			toastr.info(projectCreateJson.validations.selectUser,'');
 		}
 	}
 
@@ -99,13 +232,10 @@ var ProjectCreateController = function() {
 						'project' : projectCreateJson.projectId
 					}, function() {
 						refreshSelectpickers();
+						toastr.success(messagesForms.operations.genOpSuccess,'');
 					});
 		} else {
-			$.alert({
-				title : 'INFO!',
-				theme : 'light',
-				content : projectCreateJson.validations.selectUser
-			});
+			toastr.info(projectCreateJson.validations.selectUser,'');
 		}
 	}
 
@@ -113,26 +243,23 @@ var ProjectCreateController = function() {
 		var realm = realmLinked;
 		if (realm != null && realm != '') {
 			$.confirm({
-				icon : 'fa fa-warning',
-				title : headerReg.titleConfirm + ':',
+				title : projectCreateJson.confirm.unlinkRealmTitle,
 				theme : 'light',
-				type : 'red',
 				columnClass : 'medium',
 				content : projectCreateJson.confirm.unlinkRealm,
 				draggable : true,
 				dragWindowGap : 100,
 				backgroundDismiss : true,
-				closeIcon : true,
 				buttons : {
 					close : {
 						text : headerReg.btnCancelar,
-						btnClass : 'btn btn-circle btn-outline blue',
+						btnClass : 'btn btn-outline blue dialog',
 						action : function() {
 						} // GENERIC CLOSE.
 					},
 					remove : {
 						text : headerReg.btnEliminar,
-						btnClass : 'btn btn-circle btn-outline btn-primary',
+						btnClass : 'btn btn-primary',
 						action : function() {
 							$("#users-tab-fragment").load(
 									'/controlpanel/projects/unsetrealm', {
@@ -141,6 +268,7 @@ var ProjectCreateController = function() {
 									}, function() {
 										refreshSelectpickers();
 										refreshResourcesFragment();
+										toastr.success(messagesForms.operations.genOpSuccess,'');
 									});
 						}
 					}
@@ -158,14 +286,11 @@ var ProjectCreateController = function() {
 				'project' : projectCreateJson.projectId
 			},function(){
 				refreshResourcesFragment();
+				toastr.success(messagesForms.operations.genOpSuccess,'');
 			});
 
 		} else {
-			$.alert({
-				title : 'INFO!',
-				theme : 'light',
-				content : projectCreateJson.validations.selectRealm
-			});
+			toastr.info(projectCreateJson.validations.selectRealm,'');
 		}
 	}
 
@@ -213,11 +338,7 @@ var ProjectCreateController = function() {
 		var authorizing = $(obj).closest('tr').find(
 				'select.authorizing :selected').val();
 		if (accesstype == '' || authorizing == '') {
-			$.alert({
-				title : 'INFO!',
-				theme : 'light',
-				content : projectCreateJson.validations.selectAccessAndUser
-			});
+			toastr.info(projectCreateJson.validations.selectAccessAndUser,'');
 		} else {
 			var authorization = {
 				'project' : projectCreateJson.projectId,
@@ -228,7 +349,7 @@ var ProjectCreateController = function() {
 			}
 			parentAuthorization = authorization;
 			if (type == 'GADGET' || type == 'DASHBOARD'||
-					type == 'GADGETDATASOURCE') {
+					type == 'GADGETDATASOURCE' || type == 'ONTOLOGY') {
 				$('#associated-modal-fragment').load(
 						'/controlpanel/projects/associated?resourceId='
 								+ resource + '&project='
@@ -236,23 +357,22 @@ var ProjectCreateController = function() {
 						function(response) {
 							if (associatedElements.length > 0){
 								$.confirm({
-									title: "INFO!",
+									title: "Info",
 									theme: 'light',
 									columnClass: 'medium',
 									content: projectCreateJson.otologiesAssociated,
 									draggable: true,
 									dragWindowGap: 100,
 									backgroundDismiss: true,
-									closeIcon: true,
 									buttons: {
 										close: {
 											text: projectCreateJson.close,
-											btnClass: 'btn btn-sm btn-outline btn-circle blue',
+											btnClass: 'btn btn-outline blue dialog',
 											action: function (){} //GENERIC CLOSE.		
 										},
 										Ok: {
-											text: "Ok",
-											btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
+											text: headerReg.btnConfirmar,
+											btnClass: 'btn btn-primary',
 											action: function(){
 												$('#associated-modal').modal('show');
 											}										
@@ -263,14 +383,18 @@ var ProjectCreateController = function() {
 							}
 							else {
 								handleAuth(authorization, 'POST').done(updateResourcesFragment)
-								.fail();
+								.fail(showGenericError);
 							}
 						});
 			} else {
 				handleAuth(authorization, 'POST').done(updateResourcesFragment)
-				.fail();
+				.fail(showGenericError);
 			}
 		}
+	}
+	
+	var showGenericError = function(){
+		toastr.error(messagesForms.operations.genOpError,'');
 	}
 	
 	var insertElementsAssociated = function (){
@@ -342,9 +466,9 @@ var ProjectCreateController = function() {
 				dataType : "html",
 			});
 		}
-
 	}
 	var refreshResourcesFragment = function() {
+		toastr.success(messagesForms.operations.genOpSuccess,'');
 		$('#resources-tab-fragment').load(
 				authorizationEndpoint + '?project='
 						+ projectCreateJson.projectId, function() {
@@ -352,6 +476,7 @@ var ProjectCreateController = function() {
 				});
 	}
 	var updateResourcesFragment = function(response) {
+		toastr.success(messagesForms.operations.genOpSuccess,'');
 		$('#resources-tab-fragment').html(response);
 		refreshSelectpickers();
 	}
@@ -430,9 +555,13 @@ var ProjectCreateController = function() {
 
 		init : function() {
 			initTemplateElements();
-
+			handleValidation();
+		},
+		// REDIRECT
+		go : function(url) {
+			logControl ? console.log(LIB_TITLE + ': go()') : '';
+			navigateUrl(url);
 		}
-
 	}
 
 }();

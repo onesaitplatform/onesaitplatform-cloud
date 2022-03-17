@@ -48,11 +48,14 @@ spring: ## General Config
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: changeIt2019!
-      client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: ${spring.boot.admin.password}
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
 
 
 onesaitplatform:
+  authentication:
+      oauth:
+        osp-keycloak: false
   rules-engine:
     threading.core-pool-size: 5
     threading.max-pool-size: 10

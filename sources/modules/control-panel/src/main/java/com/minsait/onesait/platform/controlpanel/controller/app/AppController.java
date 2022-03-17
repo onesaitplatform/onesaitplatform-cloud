@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,6 +123,7 @@ public class AppController {
 			RedirectAttributes redirect) {
 
 		try {
+
 			appService.createApp(appHelper.dto2app(app));
 
 		} catch (final AppServiceException | IOException e) {
@@ -141,8 +142,9 @@ public class AppController {
 		if (app != null) {
 
 			final User sessionUser = userService.getUser(utils.getUserId());
-			if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
+			if (null != app.getUser() && app.getUser().getUserId().equals(sessionUser.getUserId())
 					|| sessionUser.isAdmin()) {
+
 
 				appHelper.populateAppUpdate(model, app, sessionUser, ldapBaseDn, ldapActive());
 
@@ -175,8 +177,10 @@ public class AppController {
 			final AppList app = appService.getAppListById(id);
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
-				if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
+				if (null != app.getUser() && app.getUser().getUserId().equals(sessionUser.getUserId())
 						|| sessionUser.isAdmin()) {
+
+					appDTO.setAppId(id);
 					appService.updateApp(appDTO);
 				} else {
 					resourcesInUseService.removeByUser(id, utils.getUserId());
@@ -204,9 +208,8 @@ public class AppController {
 		if (app != null) {
 
 			final User sessionUser = userService.getUser(utils.getUserId());
-			if (((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
+			if (null != app.getUser() && app.getUser().getUserId().equals(sessionUser.getUserId())
 					|| sessionUser.isAdmin()) {
-
 				appHelper.populateAppShow(model, app);
 
 				return "apps/show";
@@ -226,8 +229,9 @@ public class AppController {
 			final App app = appService.getById(id);
 			if (app != null) {
 				final User sessionUser = userService.getUser(utils.getUserId());
-				if ((((null != app.getUser()) && app.getUser().getUserId().equals(sessionUser.getUserId()))
-						|| sessionUser.isAdmin()) && (app.getProject() == null)) {
+				if ((null != app.getUser() && app.getUser().getUserId().equals(sessionUser.getUserId())
+						|| sessionUser.isAdmin()) && app.getProject() == null) {
+
 					appService.deleteApp(app);
 				} else {
 					return URL_APP_LIST;
@@ -266,7 +270,7 @@ public class AppController {
 	@PostMapping(value = "/authorization/ldap", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<UserAppCreateDTO> createAuthorizationLdap(@RequestParam String roleId,
 			@RequestParam String appId, @RequestParam String userId, @RequestParam String dn)
-			throws GenericOPException {
+					throws GenericOPException {
 		try {
 			if (userService.getUser(userId) == null) {
 				ldapUserService.createUser(userId, dn);
@@ -386,7 +390,6 @@ public class AppController {
 				projectDB.setApp(realm);
 				projectService.updateProject(projectDB);
 			}
-
 			appService.updateApp(realm);
 			return REDIRECT_APPS_UPDATE + appId;
 		}

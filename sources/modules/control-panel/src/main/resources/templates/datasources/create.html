@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,28 +27,29 @@
 	    <meta name="description" content="Dashboard list template"/>
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
-		
-	
+
+
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-		
+
 		<!-- PLUGINS STYLE SHEETS AND BOOSTRAP-TIMEPICKER -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
-		
-	</head>	
-	
+
+	</head>
+
 	<style>
-	pre {padding: 32px; margin: 0px; background-color: #f0f4f7; } 
+	pre {padding: 32px; margin: 0px; background-color: #f0f4f7; }
 	.string { color: green; } .number { color: darkorange; } .boolean { color: blue; } 	.null { color: magenta; } .key { color: darkslateblue; }
 	</style>
-	
+
 	<!-- Funciones AJAX -->
 	<script th:inline="javascript">
 			/* <![CDATA[ */
@@ -70,35 +71,36 @@
 				return '<span class="' + cls + '">' + match + '</span>';
 			});
 		};
-	
+
 		var timeStart;
 		var queryResponse = {};
 		function getQueryExecutedFragment() {
-			
+
 			var query = getMonacoValue();
-			
+
 			if (isNative(query)){
-				$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: [[#{datasources.queryError}]]});
+				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: [[#{datasources.queryError}]]});
 			}
 			if(typeof query !=='undefined'){
 				var testOntology = getOntologyFromQuery(query);
 				console.log('ontologia: ' + testOntology);
-				
+
+
 				var csrf_value = $("meta[name='_csrf']").attr("content");
 				var csrf_header = $("meta[name='_csrf_header']").attr("content");
-				
+
 				$.ajaxSetup({'headers': {
 					[csrf_header]: csrf_value
-			    }});
-				timeStart = Date.now();	
+				}});
+				timeStart = Date.now();
 				$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': getMonacoValue(), 'queryType': 'SQL', 'ontologyIdentification': testOntology},function(response){
 					callbackQuery(response);
 				});	
-			
+
 				$("#dimensionsPanel").show();
 			}
 		}
-	
+
 		function isNative(query){
 			if ((query.indexOf('.') == -1 || query.toLowerCase().indexOf(".find(") == -1
 					|| (query.indexOf('.') > query.toLowerCase().indexOf(".find(")))
@@ -118,40 +120,40 @@
 			}
 			return true;
 		}
-		
-		function callbackQuery(response){			
-			var time = Date.now() - timeStart;		
+
+		function callbackQuery(response){
+			var time = Date.now() - timeStart;
 			$('#timeResult').text('(Querytime: ' + time + ' ms)');
 			if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
-			
-		
-			queryResponse = $(response);	
-			
+
+
+			queryResponse = $(response);
+
 			// check for valid json, or server string error like java.lang.Exception...
 			var IS_JSON = true;
 			try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
-			
-			
-			if (!IS_JSON){					
+
+
+			if (!IS_JSON){
 			    $('#toggleTableView').addClass("hide");
 				var text=""+queryResponse.text();
 				// Our own JSON string to mark non JSON ERRORs
-				queryErrorResponse = text;										
+				queryErrorResponse = text;
 			}
-			
-			if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
-			if (IS_JSON) { 
+
+			if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}
+			if (IS_JSON) {
 			    $('#toggleTableView').removeClass("hide");
-				dataJSON = queryResponse.text(); 
-				editor.setText(queryResponse.text()); 
+				dataJSON = queryResponse.text();
+				editor.setText(queryResponse.text());
 				editor.setMode('view');
-				if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
-							
+				if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); }
+
 		}
-		
-		
+
+
 		function getOntologyFromQuery(query){
-			
+
 			query = query.replace(/(\r\n\t|\n|\r\t|\r|\t)/gm," ");
 			query = query.replace(/  +/g, ' ');
 			query = query.replace(/\,/g,' ');
@@ -168,38 +170,38 @@
 						return  list[i].substring(0, indexOf).trim();
 					}
 				}
-			}else{ 
+			}else{
 				return $("#ontologyIdentification").val();
 			}
 		}
-		
-		
+
+
 		function getOntologyFields() {
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
-			
+
 			$.ajaxSetup({'headers': {
 				[csrf_header]: csrf_value
 		    }});
-			
+
 			$("#fields").load('/controlpanel/querytool/ontologyfields', { 'ontologyIdentification': $("#selector_ontologias").val()})
 		}
-		
+
 		var rtdb;
 		function getRtdbFromOntology(){
 			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			
-			$.ajax({ url: "/controlpanel/querytool/rtdb/" +  $("#selector_ontologias").val(), 
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+			$.ajax({ url: "/controlpanel/querytool/rtdb/" +  $("#selector_ontologias").val(),
 				headers: {
 					[csrf_header]: csrf_value
 			    },
-				type: 'GET', 
+				type: 'GET',
 				contentType: 'text/html',
 				async : false,
-				success: function (result) {	
+				success: function (result) {
 					rtdb=result;
-					//ERROR 
+					//ERROR
 						$("#typeQuery").removeAttr("disabled");
 					/*
 					if(rtdb!="Mongo"){
@@ -207,7 +209,7 @@
 						$("#typeQuery").attr("disabled", "disabled");
 					}else{
 						$("#typeQuery").removeAttr("disabled");
-					}	
+					}
 					*/
 				},
 				error: function(error){
@@ -217,276 +219,249 @@
 		}
 		/* ]]> */
 	</script>
-	
+
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-	
+
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-		
+
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>		
-			
+		<div class="clearfix"> </div>
+
 		<!-- BEGIN SIDEBAR -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-		
+
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-			
+
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				
+
 				<!-- BEGIN PAGE HEADER-->
-				
+
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
 						<li><a th:href="@{/datasources/list}"> <span th:text="#{datasources.my}">My Datasources</span></a><i class="fa fa-angle-right"></i> </li>
-						<li><span th:text="#{datasources.create}">Create Datasource</span></li>
-					</ul>						
+						<li th:if="${datasource.id} == null"><span th:text="#{datasources.template.create}">Create Template</span></li>
+						<li th:if="${datasource.id} != null"><span th:text="#{datasources.template.update}">Update Template</span></li>
+					</ul>
 				</div>
 				<!-- END PAGE BAR -->
-				
+
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{datasources.new}">New Datasource</span></h1>
-				<!-- END PAGE TITLE-->			
-				
-				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">						
-						<div class="portlet light container">
-							<div class="portlet-title">
-								<div class="caption">
-									<span th:if="${datasource.id} == null" class="caption-subject" th:text="#{datasources.template.create} + ':'"> New Datasource</span>
-									<span th:if="${datasource.id} != null" class="caption-subject" th:text="#{datasources.template.update} + ' '"> Update Datasource</span><span th:if="${datasource.id} != null" th:text="${datasource.identification} + ':'"></span>
-								</div>									
-								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title=""> </a>																			
-									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
-								</div>
-								<div class="actions hide">
-									<!-- ACTION INDICATORs -->									
-									<span th:if="${datasource.id} == null" class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
-									<span th:if="${datasource.id} != null" class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
-								</div>
-								
-							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
-								
-								<div class="row">
-									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
-										<div class="alert alert-danger display-hide">
-											<button class="close" data-close="alert"></button> 
-											<span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
-										</div>										
-                                        <div class="alert alert-success display-hide">
-											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
-										</div>								
-									</div>
-									<div class="col-md-12">										
-										<form role="form" id="datasource_create_form" th:object="${datasource}" method="post" class="form">
-											<!-- FORM ACTIONS FOR INSERT-->
-											<input th:if="${datasource.id} == null" type="hidden" name="action" th:value="@{/datasources/create}"/>
-											
-											<!-- FORM ACTIONS FOR UPDATE -->											
-											<input th:if="${datasource.id} != null" type="hidden" name="action" th:value="@{/datasources/update}"/>
-											<input th:if="${datasource.id} != null" type="hidden" name="_method" value="PUT"/>											
-											
-											<div class="form-body">
-												<!-- user, name and email -->
-												<div class="row">
-													<div class="col-md-3 col-sm-6 col-xs-12">
-														<div class="form-group">
-															<label class="control-label"><span th:text="#{gadgets.identification} + ':'">Identification</span> </label><span class="required"> (*)</span>
-															<input id="identification" type="text" name="identification" th:required="true"  maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gadgets.identification}"  th:readonly="*{identification}" th:classappend="${datasource.id} ? no-remove : ''"  />
-														</div>
-													</div>
-													<div class="col-md-3 margin-bottom-20" id="div-datasource">								
-														<div class="form-group">	
-															<label class="control-label" th:text="#{gadgets.select.ontology}"> Select Ontology</label><span class="required"> (*)</span>								
-															<select class="selectpicker  select show-tick form-control" th:field="*{ontologyIdentification}" th:required="true" id="ontologyIdentification" data-live-search="true" data-width="100%" onchange="selectOntology(this)" th:title="#{database.ontologies} +'...'"  >
-																<option id="ontology" data-description="ontology" data-type="ontology" value="" text="ontology"  ></option>														
-																<option th:each="ontology : ${ontologies}" th:id="${ontology.user}" th:data-description="${ontology.description}" data-type="ontology" th:value="${ontology}" th:text="${ontology.identification}"   th:selected="${ontology.identification == datasourceOntologySelected}"></option>
-															</select>
-														</div>
-													</div>				
-													<div class="col-md-3 col-sm-6 col-xs-12 hide">
-														<div class="form-group">
-															<label class="control-label"><span th:text="#{datasources.mode} + ':'">Access Mode</span> </label>
-															<select id="mode" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{datasources.mode}" th:field="*{mode}" th:required="true">
-																<option selected="selected" value="query">Query</option>
-															</select>
-														</div>
-													</div>
-													<div class="col-md-3 col-sm-6 col-xs-12 hide">
-														<div class="form-group">
-															<label class="control-label"><span th:text="#{datasources.db} + ':'">source DB</span> </label>
-															<select id="dbtype" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{datasources.db}" th:field="*{dbtype}" th:required="true">
-																<option selected="selected" value="RTDB">RTDB</option>
-															</select>
-														</div>
-													</div>
-													<div class="col-md-2 col-sm-1 col-xs-12">
-														<div class="form-group">
-															<label class="control-label"><span th:text="#{datasources.maxvalue} + ':'">Max register</span></label><span class="required"> (*)</span>
-															<input th:if="${datasource.id} == null" id="maxvalues" type="number" min="1" max="3000" name="maxvalues" th:required="true"  value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
-															<input th:if="${datasource.id} != null" id="maxvalues" type="number" min="1" max="3000" name="maxvalues" th:required="true"  value="100" th:field="*{maxvalues}" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
-														</div>
-													</div>	
-														<div class="col-md-2 col-sm-1 col-xs-12">
-														<div class="form-group">
-															<label class="control-label"><span th:text="#{datasources.refresh} + ':'">Refresh time</span></label>
-															<input th:if="${datasource.id} != null" id="refresh" type="number" min="0" max="99999" name="refresh" value="240" th:field="*{refresh}" class="form-control" th:placeholder="#{datasources.refresh}"  />
-															<input th:if="${datasource.id} == null" id="refresh" type="number" min="0" max="99999" name="refresh" value="240" th:value="0" class="form-control" th:placeholder="#{datasources.refresh}"  />
-														</div>
-													</div>
-																
-													<div class="col-md-2 col-sm-3 col-xs-12">
-														<div class="form-group">
-															<label th:text="#{gen.description}">Comments </label><span class="required"> (*)</span>
-															<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description"  style="height: 33px; " maxlength="512" th:field="*{description}" th:required="true" cols="" rows=""></textarea>
-														</div>
-													</div>												
-												</div>
-												
-												
-												<div class="row"> 
-													<div class="pull-left col-md-10 col-sm-8 col-xs-12">
-														<label th:text="#{datasources.query}">Datasource Query </label>
-														
-														 <div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>	
-														 <input  id="query" type="hidden" th:value="${datasource.query}">
-														<!--  <textarea th:if="${datasource.id} == null" id="query" name="query" class="element textarea extra-small form-control">select * from ontology</textarea>
-														<textarea th:if="${datasource.id} != null" id="query" th:field="*{query}" class="element textarea extra-small form-control"></textarea>-->
-													</div>											
-													<div class="pull-right col-md-2 col-sm-4 col-xs-12">
-														<div class="btn-group">
-															<button type="button" style="margin-top: 48px;" class="btn btn-sm btn-circle btn-outline btn-block blue" onclick="javascript:getQueryExecutedFragment()" id="executeQuery"><span th:text="#{database.execQuery}"> </span></button>
-														</div>											
-													</div>
-													<div class="clearfix"></div>
-												</div>
-												<!-- PANEL DE RESULTADOS -->
-												<div class="panel panel-white margin-top-10">
-													<div class="panel-heading">
-														<h3 class="panel-title uppercase font-grey-mint" th:text="#{datasource.queryresults}">Datasource Query Results</h3>
-														 <div id="timeResult">Time</div>											
-													</div>
-													<div class="panel-body no-space">
-														<div class="col-md-12 margin-top-10 margin-bottom-20">
-															 <div  class="hide" id="Canvasrespuesta" style="max-height: 600px; overflow-y:auto;" > 
-                                                            </div> 
-                                                            <div id="jsoneditor" data-loaded="false" style="height: 600px;"></div>       										
-														</div>
-													</div>
-												</div>
-												
-												<div id="dimensionsPanel" class="row hide" >  
-													<div class="col-md-12 margin-top-10 margin-bottom-20">
-														<div class="form-group">
-															<label class=""><i class="fa fa-sitemap"></i> <span th:text="#{datasources.dimension} + ':'">Dimensions</span></label>
-															<textarea th:if="${datasource.id} != null" th:tabindex="3" class="element textarea small form-control" id="config" name="config" maxlength="512" th:field="*{config}" cols="" rows=""></textarea>
-															<textarea th:if="${datasource.id} == null" th:tabindex="3" class="element textarea small form-control" id="config" name="config" maxlength="512" cols="" rows="">[['mainField_cat1','secondaryField_cat1'],['mainField_cat2,'secondaryField_cat2','tertiaryField_cat2']]</textarea>															
-														</div>
-													</div>
-												</div>
-											</div>
-											<!-- FORM BUTTONS -->
-											<div class="form-actions">
-												<div class="pull-left">
-												<!-- CANCEL -->														
-													<button	id="cancelBtn" type="button"	class="btn btn-circle btn-outline blue no-border" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DatasourcesCreateController.cancel(\'' + ${datasource.id} + '\',\'' + @{/datasources/list} + '\');'">	<i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>	
-												</div>
-												<div class="pull-right">
-													
-													<!-- REMOVE -->
-													<button th:if="${datasource.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'DatasourcesCreateController.deleteGadgetDatasource(\'' + ${datasource.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
-													
-													<span class="sep"></span>
-													
-													<!-- CREATE -->
-													<button th:if="${datasource.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
-													
-													<!-- UPDATE -->
-													<button th:if="${datasource.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
-												</div>
-											</div>											
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
-										
-										<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
-										<form id="delete_datasource_form" class="delete-gadgetDatasource hide"  th:action="@{'/datasources/'+${datasource.id}}"  method="post">
-											<input type="hidden" name="_method" value="DELETE"/>
-											<input type="hidden" name="id" th:value="${datasource.id}"/>
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>										
-									</div>									
+				<h1 th:if="${datasource.id} == null" class="page-title hide "><span th:text="#{datasources.template.create}">New Template</span></h1>
+				<h1 th:if="${datasource.id} != null" class="page-title hide "><span th:text="#{datasources.template.update}">Update Template</span></h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+				<form id="delete_datasource_form" class="delete-gadgetDatasource hide"  th:action="@{'/datasources/'+${datasource.id}}"  method="post">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input type="hidden" name="id" th:value="${datasource.id}"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
+
+				<form role="form" id="datasource_create_form" th:object="${datasource}" method="post" class="form">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input th:if="${datasource.id} == null" type="hidden" name="action" th:value="@{/datasources/create}"/>
+
+					<!-- FORM ACTIONS FOR UPDATE -->
+					<input th:if="${datasource.id} != null" type="hidden" name="action" th:value="@{/datasources/update}"/>
+					<input th:if="${datasource.id} != null" type="hidden" name="_method" value="PUT"/>
+
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:if="${datasource.id} == null" th:text="#{datasources.template.create}"> New Template</span>
+									<span th:if="${datasource.id} != null" th:text="${datasource.identification}"> Update Template</span>
 								</div>
 							</div>
-						</div><!-- END PORTLET BASIC  -->						
-					</div><!-- END COL-12 -->												
-				</div><!-- END MAIN ROW -->				
+
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE -->
+									<button th:if="${datasource.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'DatasourcesCreateController.deleteGadgetDatasource(\'' + ${datasource.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+
+									<span class="sep" th:if="(${datasource.id} != null)"></span>
+
+									<!-- CANCEL -->
+									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DatasourcesCreateController.cancel(\'' + ${datasource.id} + '\',\'' + @{/datasources/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+                                    <!-- RESET -->
+                                    <button th:if="${datasource.id} == null" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+                                    <button th:if="${datasource.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+
+									<span class="sep no-border" th:if="(${datasource.id} != null)"></span>
+
+									<!-- CREATE -->
+									<button th:if="${datasource.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+									<!-- UPDATE -->
+									<button th:if="${datasource.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- MAIN ROW -->
+					<div class="mainPanel">
+						<div class="row main">
+							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+								<span th:text="#{gen.generalInformation}">General Information</span>
+							</div>
+							<div class="col-md-3 col-sm-3 col-xs-3">
+								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+							</div>
+						</div>
+
+						<div class="row main">
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{gadgets.identification}">Identification</span> </label><span class="required"> *</span>
+									<input id="identification" type="text" name="identification" th:required="true"  maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gadgets.identification}"  th:readonly="*{identification}" th:classappend="${datasource.id} ? no-remove : ''"  />
+								</div>
+							</div>
+							<div class="col-md-3 col-sm-6 col-xs-12" id="div-datasource">
+								<div class="form-group">
+									<label class="control-label" th:text="#{gadgets.select.ontology}"> Select Ontology</label><span class="required"> *</span>
+									<select id="ontologyIdentification" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{database.ontologies} +'...'" th:field="*{ontologyIdentification}" th:required="true" onchange="selectOntology(this)" >
+										<option th:each="ontology : ${ontologies}" th:id="${ontology.user}" th:value="${ontology}" th:text="${ontology.identification}" th:selected="${ontology.identification == datasourceOntologySelected}"></option>
+									</select>
+								</div>
+							</div>
+							<input type="hidden" id="mode" name="mode" value="query"/>
+							<input type="hidden" id="dbtype" name="dbtype" value="RTDB"/>
+							<input type="hidden" id="config" name="config" />
+
+							<div class="col-md-1 col-sm-1 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{datasources.maxvalue}">Max register</span></label><span class="required"> *</span>
+									<input th:if="${datasource.id} == null" id="maxvalues" type="number" min="1" max="3000" name="maxvalues" th:required="true"  value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+									<input th:if="${datasource.id} != null" id="maxvalues" type="number" min="1" max="3000" name="maxvalues" th:required="true"  value="100" th:field="*{maxvalues}" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+								</div>
+							</div>
+								<div class="col-md-1 col-sm-1 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{datasources.refresh}">Refresh time</span></label>
+									<input th:if="${datasource.id} != null" id="refresh" type="number" min="0" max="99999" name="refresh" value="240" th:field="*{refresh}" class="form-control" th:placeholder="#{datasources.refresh}"  />
+									<input th:if="${datasource.id} == null" id="refresh" type="number" min="0" max="99999" name="refresh" value="240" th:value="0" class="form-control" th:placeholder="#{datasources.refresh}"  />
+								</div>
+							</div>
+							<div class="col-md-2 col-sm-2 col-xs-12">
+								<div class="form-group">							
+									<label style="margin-top: 30px;">
+										<input id="simpleMode" class="margin-right-10" name="active" type="checkbox" onclick="javascript:changeConfig()" />
+										<label class="control-label margin-right-5" th:text="#{datasources.simple.mode}">Simple mode</label>
+										<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{datasources.simple.mode.info},data-title=#{datasources.simple.mode}"></i>
+									</label>
+								</div>								
+							</div>
+							<div class="col-md-2 col-sm-2 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{gen.description}">Comments </label><span class="required"> *</span>
+									<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description"  style="height: 33px; " maxlength="512" th:field="*{description}" th:required="true" cols="" rows=""></textarea>
+								</div>
+							</div>
+						</div>
+
+						<div class="row main">
+							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+								<span th:text="#{datasources.query}">Datasource Query</span>
+							</div>
+							<div class="col-md-10 col-sm-8 col-xs-12">
+								<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
+								<input  id="query" type="hidden" th:value="${datasource.query}">
+							</div>
+							<div class="pull-right col-md-2 col-sm-4 col-xs-12">
+								<div class="btn-group">
+									<button type="button" class="btn btn-primary btn-primary-save" onclick="javascript:getQueryExecutedFragment()" id="executeQuery"><span th:text="#{database.execQuery}"> </span></button>
+								</div>
+							</div>
+						</div>
+
+						<div class="row main">
+							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader no-margin-bottom">
+								<span th:text="#{datasource.queryresults}">Datasource Query Results</span>
+								<span id="timeResult" style="font-size: 12px">(Time)</span>
+							</div>
+
+							<div class="col-md-12 margin-top-10 margin-bottom-20">
+								<div  class="hide" id="Canvasrespuesta" style="max-height: 600px; overflow-y:auto;" ></div>
+								<div id="jsoneditor" data-loaded="false" style="height: 600px;"></div>
+							</div>
+						</div>
+
+						
+					</div>
+				</form>
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->		
+		</div><!-- END CONTENT page-content-wrapper -->
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-	
+
 	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
-	
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-	
+
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
-	
-	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
+    <script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+
+	<!-- JSON EDITOR -->
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>	
-	
-	
-	
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+
+
+
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-	
-	<!-- TEMPLATE CONTROLLER  -->	
+
+	<!-- TEMPLATE CONTROLLER  -->
 	<script th:src="@{/static/js/pages/datasourcesCreate.js}"></script>
 	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
 	<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
 	<!-- MONACO EDITOR -->
-	<script>	 
-	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
+	<script>
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
 	</script>
-	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
-	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/loader.js}"></script>
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 	<script th:inline="javascript">
 		/* <![CDATA[ */
-		function selectOntology(e){			
+		
+		var datasourceConfig = [[${datasource.config}]]
+		
+		
+		function selectOntology(e){
 			if(e!=null && e.options.selectedIndex!=null && e[e.options.selectedIndex].dataset!=null){
-				
-				setMonacoValue('select * from '+e[e.options.selectedIndex].value); 
-			
+
+				setMonacoValue('select * from '+e[e.options.selectedIndex].value);
+
 			}
 		}
-		
-		var datasourceJson = {		
+
+		var datasourceJson = {
 		"actionMode" : [[${datasource?.id}]]
 		};
-		
+
 		//Functions to manage Monaco Editor
-		var codeEditor;		
+		var codeEditor;
 		var setMonacoValue = function (value){
 			if (codeEditor){
 				codeEditor.setValue(value);
@@ -511,53 +486,70 @@
 				}
 			}
 		}
-		// CREATE EDITOR FOR JSON SCHEMA 
-		var createEditor = function(){		
-			
-			var container = document.getElementById('jsoneditor');	
+		// CREATE EDITOR FOR JSON SCHEMA
+		var createEditor = function(){
+
+			var container = document.getElementById('jsoneditor');
 			var options = {
 				mode: 'text',
 				theme: 'bootstrap3',
 				required_by_default: true,
 				modes: ['text', 'tree', 'view'], // allowed modes
 				error: function (err) {
-					$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
+					$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
 					return false;
 				},
 				onChange: function(){
-					
+
 					//showLog ? console.log('se modifica el editor en modo:' + editor.mode + ' contenido: ' + editor.getText()) : '';
 				}
 			};
+
+			editor = new jsoneditor.JSONEditor(container, options, "");
+
+		}
+		
+		function changeConfig(){
 			
-			editor = new jsoneditor.JSONEditor(container, options, "");		
+			var simpleModActualVal = $('#simpleMode').is(":checked");
+			var configVal = JSON.stringify({"simpleMode":simpleModActualVal}); 
+			$('#config').val(configVal);
 			
 		}
 		
+		function loadConfig(){
+		
+			if(typeof datasourceConfig!='undefined' && datasourceConfig!=null){
+				var dconfig = JSON.parse(datasourceConfig);
+				if(typeof dconfig.simpleMode !='undefined' && dconfig.simpleMode !=null) {
+					$('#simpleMode').prop('checked', dconfig.simpleMode);	
+					$('#config').val(datasourceConfig);				
+				}
+				
+			}
+		}
 		$(window).load(function(){
 			var htmlelement = document.getElementById('querySql');
 			codeEditor = monaco.editor.create(htmlelement, {
-			       language: 'sql', 
-			       scrollBeyondLastLine: false,	 
-			       theme: "vs-dark",	 
-			       automaticLayout: true	 
+			       language: 'sql',
+			       scrollBeyondLastLine: false,
+			       theme: "vs-dark",
+			       automaticLayout: true
 			});
-			
-			
+
+
 			 const form = document.getElementById("datasource_create_form");
 		        form.addEventListener("formdata", e =>
-		        {
-		            e.formData.append('query', getMonacoValue());
+		        {		        
+		            e.formData.append('query', getMonacoValue());		           
 		        });
-			
-		        setMonacoValue($('#query').val());
-		        
+
+		    setMonacoValue($('#query').val());
+			loadConfig();
 		});
-		
+
 		/* ]]> */
 	</script>
-	
-</body>
-</html> 
 
-  
+</body>
+</html>

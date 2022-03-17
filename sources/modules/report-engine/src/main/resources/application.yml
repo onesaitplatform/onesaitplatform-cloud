@@ -21,10 +21,10 @@ master:
 spring: ## General Config  
    boot.admin: #Spring Boot Admin Config   
       url: http://localhost:18100/monitoring
-      username: operations
-      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: ${spring.boot.admin.password}
+      client.username: operations
+      client.password: changeIt2019!
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
    main.allow-bean-definition-overriding: true
    application.name: onesaitplatform-report-engine
    datasource:
@@ -47,6 +47,9 @@ spring: ## General Config
           show_sql: false
      
 onesaitplatform:
+   authentication:
+      oauth:
+        osp-keycloak: false
    graylog:
       enabled: false
       host: 127.0.0.1

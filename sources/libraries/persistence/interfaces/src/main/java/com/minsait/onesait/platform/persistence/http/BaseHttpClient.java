@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class BaseHttpClient {
 	@Qualifier("dataHubRest")
 	private RestTemplate restTemplate;
 
-	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method, String accept, String contentType) {
+	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method, String accept, String contentType, String authHeader) {
 
 		String output = null;
 		final ObjectMapper mapper = new ObjectMapper();
@@ -55,11 +55,12 @@ public class BaseHttpClient {
 
 		    HttpEntity<?> entity;
 		    if (body != null) {
-		        entity = new HttpEntity<>(body, getHeaders(accept, contentType));
+		        entity = new HttpEntity<>(body, getHeaders(accept, contentType, authHeader));
 		    } else {
-		        entity = new HttpEntity<>(getHeaders(accept, contentType));
+		        entity = new HttpEntity<>(getHeaders(accept, contentType, authHeader));
 		    }
 			
+		    log.info("Entity to send: {}", entity.getBody());
 			final ResponseEntity<JsonNode> response = restTemplate.exchange(new URI(endpoint), method, entity,
 					JsonNode.class);
 			log.info("Send message: to {}.", endpoint);
@@ -89,10 +90,10 @@ public class BaseHttpClient {
 	}
 
 	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method) {
-		return invokeSQLPlugin(endpoint, body, method, ACCEPT_TEXT_CSV, null);
+		return invokeSQLPlugin(endpoint, body, method, ACCEPT_TEXT_CSV, null, null);
 	}
 
-	private HttpHeaders getHeaders(String accept, String contentType) {
+	private HttpHeaders getHeaders(String accept, String contentType, String authHeader) {
 
 		final HttpHeaders headers = new HttpHeaders();
 		if (null != accept && accept.trim().length() > 0) {
@@ -102,6 +103,10 @@ public class BaseHttpClient {
 			headers.add(HttpHeaders.CONTENT_TYPE, contentType);
 		} else {
 			headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+		} 
+		if (null != authHeader && authHeader.trim().length() > 0) {
+			log.info("Setting AUTHORIZATION headers {}", authHeader);
+			headers.add(HttpHeaders.AUTHORIZATION, authHeader);
 		}
 		return headers;
 	}

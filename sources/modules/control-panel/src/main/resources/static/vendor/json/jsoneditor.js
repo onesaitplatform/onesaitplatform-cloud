@@ -740,7 +740,7 @@ TreeEditor.prototype._createFrame = function () {
 
         // prevent default submit action of buttons when TreeEditor is located
         // inside a form
-        if (target.nodeName == 'BUTTON') {
+        if (target.nodeName == 'BUTTON' || $(target).closest("div").attr('class')) {
             util.preventDefault(event);
         }
     };
@@ -767,20 +767,36 @@ TreeEditor.prototype._createFrame = function () {
     this.menu.className = 'menu';
     this.frame.appendChild(this.menu);
 
-    // create expand all button
+    // create search box
+    if (this.options.search) {
+        this.searchBox = new SearchBox(this, this.menu);
+    }
+
+
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
+        this.menu.appendChild(modeBox);
+        this.dom.modeBox = modeBox;
+    }
+
+   
+ // create expand all button
     var expandAll = document.createElement('button');
     expandAll.className = 'expand-all';
-    expandAll.title = 'Expand all fields';
-    expandAll.onclick = function () {
+    //expandAll.title = 'Expand all fields';	
+	expandAll.innerHTML = ' <span class ="json-editor-text-button" style=""><i class="icon-expandir" style="margin-right: 4px;"></i>  Expand</span>';
+    expandAll.onclick = function (event) {
         editor.expandAll();
     };
     this.menu.appendChild(expandAll);
 
     // create expand all button
     var collapseAll = document.createElement('button');
-    collapseAll.title = 'Collapse all fields';
+    //collapseAll.title = 'Collapse all fields';
+	collapseAll.innerHTML = '<span class ="json-editor-text-button" style="" ><i class="icon-contraer" style="margin-right: 4px;"></i>  Contract</span>';	
     collapseAll.className = 'collapse-all';
-    collapseAll.onclick = function () {
+    collapseAll.onclick = function (event) {
         editor.collapseAll();
     };
     this.menu.appendChild(collapseAll);
@@ -790,7 +806,8 @@ TreeEditor.prototype._createFrame = function () {
         // create undo button
         var undo = document.createElement('button');
         undo.className = 'undo separator';
-        undo.title = 'Undo last action (Ctrl+Z)';
+        //undo.title = 'Undo last action (Ctrl+Z)';
+		undo.innerHTML = '<span class ="json-editor-text-button" style="" ><i class="icon-double-left" style="margin-right: 4px;"></i>  Undo</span>';
         undo.onclick = function () {
             editor._onUndo();
         };
@@ -800,7 +817,8 @@ TreeEditor.prototype._createFrame = function () {
         // create redo button
         var redo = document.createElement('button');
         redo.className = 'redo';
-        redo.title = 'Redo (Ctrl+Shift+Z)';
+        //redo.title = 'Redo (Ctrl+Shift+Z)';
+		redo.innerHTML = '<span class ="json-editor-text-button" style="" ><i class="icon-double-right" style="margin-right: 4px;"></i>  Redo</span>';
         redo.onclick = function () {
             editor._onRedo();
         };
@@ -815,17 +833,6 @@ TreeEditor.prototype._createFrame = function () {
         this.history.onChange();
     }
 
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
-        this.menu.appendChild(modeBox);
-        this.dom.modeBox = modeBox;
-    }
-
-    // create search box
-    if (this.options.search) {
-        this.searchBox = new SearchBox(this, this.menu);
-    }
 };
 
 /**
@@ -1095,10 +1102,19 @@ TextEditor.prototype._create = function (container, options, json) {
     this.menu.className = 'menu';
     this.frame.appendChild(this.menu);
 
-    // create format button
+   
+    // create mode box
+    if (this.options && this.options.modes && this.options.modes.length) {
+        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
+        this.menu.appendChild(modeBox);
+        this.dom.modeBox = modeBox;
+    }
+
+ // create format button
     var buttonFormat = document.createElement('button');
     buttonFormat.className = 'format';
-    buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
+   // buttonFormat.title = 'Format JSON data, with proper indentation and line feeds';
+	buttonFormat.innerHTML = ' <span class ="json-editor-text-button" style=""><i class="icon-expandir" style="margin-right: 4px;"></i>  Expand</span>';
     this.menu.appendChild(buttonFormat);
     buttonFormat.onclick = function () {
         try {
@@ -1111,8 +1127,8 @@ TextEditor.prototype._create = function (container, options, json) {
 
     // create compact button
     var buttonCompact = document.createElement('button');
-    buttonCompact.className = 'compact';
-    buttonCompact.title = 'Compact JSON data, remove all whitespaces';
+   	buttonCompact.className = 'compact';
+   	buttonCompact.innerHTML = '<span class ="json-editor-text-button" style="" ><i class="icon-contraer" style="margin-right: 4px;"></i>  Contract</span>';;
     this.menu.appendChild(buttonCompact);
     buttonCompact.onclick = function () {
         try {
@@ -1123,12 +1139,7 @@ TextEditor.prototype._create = function (container, options, json) {
         }
     };
 
-    // create mode box
-    if (this.options && this.options.modes && this.options.modes.length) {
-        var modeBox = createModeBox(this, this.options.modes, this.options.mode);
-        this.menu.appendChild(modeBox);
-        this.dom.modeBox = modeBox;
-    }
+
 
     this.content = document.createElement('div');
     this.content.className = 'outer';
@@ -2310,13 +2321,13 @@ Node.prototype._updateDomValue = function () {
             color = '';
         }
         else if (t == 'string') {
-            color = 'green';
+            color = '#59C068';
         }
         else if (t == 'number') {
-            color = 'red';
+            color = '#A73535';
         }
         else if (t == 'boolean') {
-            color = 'darkorange';
+            color = '#E79E38';
         }
         else if (this._hasChilds()) {
             color = '';
@@ -5153,10 +5164,18 @@ function createModeBox(editor, modes, current) {
     // create the html element
     var box = document.createElement('button');
     box.className = 'modes separator';
-    box.innerHTML = currentTitle + ' &#x25BE;';
+    box.innerHTML = currentTitle +'<span class="carett pull-right"></span>';
     box.title = 'Switch editor mode';
     box.onclick = function () {
+	
+	$( ".carett" ).css( { transition: "transform 0.5s",
+                  transform:  "rotate(-180deg)" } );
+	
         var menu = new ContextMenu(items);
+		menu.onClose = function (){
+			$( ".carett" ).css( { transition: "transform 0.5s",
+                  transform:  "rotate(0deg)" } );	
+		};
         menu.show(box);
     };
 
@@ -5216,6 +5235,10 @@ function SearchBox (editor, container) {
 
     var refreshSearch = document.createElement('button');
     refreshSearch.className = 'refresh';
+	var iconsearch = document.createElement('i');
+	 iconsearch.className = 'icon-search';
+	iconsearch.style="margin-top: -3;";
+	refreshSearch.appendChild(iconsearch)
     td = document.createElement('td');
     td.appendChild(refreshSearch);
     tr.appendChild(td);

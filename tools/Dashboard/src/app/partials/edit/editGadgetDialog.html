@@ -1,0 +1,70 @@
+<md-dialog class="modal-lg" aria-label="GadgetEditor">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Edit Gadget</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar>
+      <form ng-cloak style="min-width:800px">    
+        <md-subheader class="md-primary form-header">Edit Content:</md-subheader>      
+        <md-input-container >
+          <label>Datasource</label>
+          <md-select required md-autofocus placeholder="Select new template datasource" ng-model="element.datasource" ng-model-options="{trackBy: '$value.name'}" md-on-open="loadDatasources()">
+            <md-option value=""></md-option>
+            <md-option ng-value="{name:datasource.identification,id:datasource.id,refresh:datasource.refresh,type:datasource.mode}" ng-repeat="datasource in datasources">{{datasource.identification}}</md-option>
+          </md-select>
+        </md-input-container>
+        <div  style="margin-top:25px;">
+        <md-input-container layout="horizontal" layout-padding class="md-dialog-content" style="margin-top: -32px;margin-bottom: -28px;">
+            <md-toolbar flex ng-if="contenteditor.html === element.content" class="small-toolbar green-toolbar">
+              <h5 class="no-margin">
+                <span>HTML Compiled & Synchronized</span>
+              </h5>
+            </md-toolbar>
+            <md-toolbar flex ng-if="contenteditor.html !== element.content" class="small-toolbar md-accent">
+              <h5 class="no-margin">
+                <span>HTML NO compiled & NO Synchronized</span>
+              </h5>
+            </md-toolbar>
+            <div flex="0"></div>  
+            <md-toolbar flex ng-if="contenteditor.js === element.contentcode" class="small-toolbar green-toolbar">
+              <h5 class="no-margin">
+                <span>JS Compiled & Synchronized</span>
+              </h5>
+            </md-toolbar>
+            <md-toolbar flex ng-if="contenteditor.js !== element.contentcode" class="small-toolbar md-accent">
+              <h5 class="no-margin">
+                <span>JS NO compiled & NO Synchronized</span>
+              </h5>
+            </md-toolbar>
+        </md-input-container>
+        <md-input-container layout="horizontal" layout-padding>
+          <div flex>
+            <div id="htmleditor" style="height:350px"></div >
+          </div>
+          <div flex>
+            <div id="jseditor" style="height:350px"></div>
+          </div>
+        </md-input-container>
+        </div>
+        <div layout="row"  layout-align="end center" style="margin-top:25px;">
+          <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button ng-click="compile()" ng-show="!livecompilation" class="md-raised md-secondary">
+              Compile & Synchronize
+            </md-button>
+            <md-button ng-click="livecompilation = !livecompilation" class="md-raised md-secondary">
+                {{livecompilation?'Disable Live Compilation':'Enable Live Compilation'}}
+            </md-button>
+            <md-button ng-click="hide()" class="md-raised md-primary">
+              Close
+            </md-button>
+          </md-dialog-actions>
+        </div>
+
+   
+  </form>
+</md-dialog>

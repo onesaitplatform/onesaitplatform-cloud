@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,6 +264,7 @@ public class GadgetDatasourceController {
 			gd.setRefresh(gadgetDatasourceDTO.getRefresh());
 			gd.setQuery(gadgetDatasourceDTO.getQuery());
 			gd.setDescription(gadgetDatasourceDTO.getDescription());
+			gd.setConfig(gadgetDatasourceDTO.getConfig());
 			// If ontology not selected get from query
 			if (gadgetDatasourceDTO.getOntologyIdentification() == null) {
 				String ontology = gadgetDatasourceService.getOntologyFromDatasource(gadgetDatasourceDTO.getQuery());

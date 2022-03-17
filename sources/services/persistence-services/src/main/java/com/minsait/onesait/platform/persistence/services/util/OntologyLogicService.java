@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,8 +48,24 @@ public class OntologyLogicService {
 			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.API_REST)) {
 
 				log.debug("create ontology in db " + ontology.getRtdbDatasource());
+				
+				String jsonschema = ontology.getJsonSchema();
+                JSONObject json = new JSONObject(jsonschema);
+                
+                if (jsonschema.contains("hasrecords") && !jsonschema.contains("keeprecords")) { 
+                    removeOntology(ontology);
+                    json.remove("hasrecords");
+                    ontology.setJsonSchema(json.toString());
+                }
+
 				this.getInstance(ontology.getRtdbDatasource()).createTable4Ontology(ontology.getIdentification(),
 						ontology.getJsonSchema(), config);
+				
+				if(jsonschema.contains("keeprecords")) {
+                    json.remove("keeprecords");
+                    json.remove("hasrecords");
+                    ontology.setJsonSchema(json.toString());
+                }
 			}
 
 		} catch (final Exception e) {

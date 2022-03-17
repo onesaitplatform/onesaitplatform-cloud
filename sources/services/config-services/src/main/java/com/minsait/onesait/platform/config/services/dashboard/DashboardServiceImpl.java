@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.dto.DashboardForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Dashboard;
@@ -165,6 +166,9 @@ public class DashboardServiceImpl implements DashboardService {
 	@Value("${onesaitplatform.dashboardengine.client.maxheartbeattime:5000}")
 	private long clientMaxHeartbeatTime;
 
+	@Value("${onesaitplatform.dashboardengine.client.protocol:all}")
+	private String protocol;
+	
 	@PostConstruct
 	public void init() {
 		objectMapper = new ObjectMapper();
@@ -435,12 +439,12 @@ public class DashboardServiceImpl implements DashboardService {
 			if (userAuthorization != null) {
 				switch (DashboardUserAccessType.Type
 						.valueOf(userAuthorization.getDashboardUserAccessType().getName())) {
-				case EDIT:
-					return true;
-				case VIEW:
-					return true;
-				default:
-					return false;
+						case EDIT:
+							return true;
+						case VIEW:
+							return true;
+						default:
+							return false;
 				}
 			} else {
 				return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
@@ -705,9 +709,9 @@ public class DashboardServiceImpl implements DashboardService {
 							.findByName(dashboardAccessDTO.getAccesstypes());
 					final DashboardUserAccessType managedType = managedTypes != null
 							&& !CollectionUtils.isEmpty(managedTypes) ? managedTypes.get(0) : null;
-					dua.setDashboardUserAccessType(managedType);
-					dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
-					dashboardUserAccessRepository.save(dua);
+							dua.setDashboardUserAccessType(managedType);
+							dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
+							dashboardUserAccessRepository.save(dua);
 				}
 
 			}
@@ -829,9 +833,9 @@ public class DashboardServiceImpl implements DashboardService {
 								.findByName(dashboardAccessDTO.getAccesstypes());
 						final DashboardUserAccessType managedType = managedTypes != null
 								&& !CollectionUtils.isEmpty(managedTypes) ? managedTypes.get(0) : null;
-						dua.setDashboardUserAccessType(managedType);
-						dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
-						dashboardUserAccessRepository.save(dua);
+								dua.setDashboardUserAccessType(managedType);
+								dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
+								dashboardUserAccessRepository.save(dua);
 					}
 				}
 				return dashboard.getId();
@@ -877,7 +881,7 @@ public class DashboardServiceImpl implements DashboardService {
 				}
 
 				categoryRelation
-						.setCategory(categoryRepository.findByIdentification(dashboard.getCategory()).get(0).getId());
+				.setCategory(categoryRepository.findByIdentification(dashboard.getCategory()).get(0).getId());
 				categoryRelation.setSubcategory(
 						subcategoryRepository.findByIdentification(dashboard.getSubcategory()).get(0).getId());
 				categoryRelation.setType(CategoryRelation.Type.DASHBOARD);
@@ -904,6 +908,16 @@ public class DashboardServiceImpl implements DashboardService {
 			return dashboardRepository.findAllByOrderByIdentificationAsc();
 		} else {
 			return dashboardRepository.findByUserOrderByIdentificationAsc(sessionUser);
+		}
+	}
+
+	@Override
+	public List<String> getIdentificationsByUserId(String userId) {
+		final User sessionUser = userRepository.findByUserId(userId);
+		if (sessionUser.isAdmin()) {
+			return dashboardRepository.findAllIdentificationsByOrderByIdentificationAsc();
+		} else {
+			return dashboardRepository.findIdentificationsByUserAndPermissions(sessionUser);
 		}
 	}
 
@@ -1007,7 +1021,7 @@ public class DashboardServiceImpl implements DashboardService {
 		try {
 			final Map<String, Object> obj = objectMapper.readValue(dashboard.getModel(),
 					new TypeReference<Map<String, Object>>() {
-					});
+			});
 			if (obj.containsKey(PAGES)) {
 
 				((ArrayList<Object>) obj.get(PAGES)).forEach(o -> {
@@ -1072,7 +1086,7 @@ public class DashboardServiceImpl implements DashboardService {
 		try {
 			final Map<String, Object> obj = objectMapper.readValue(dashboard.getModel(),
 					new TypeReference<Map<String, Object>>() {
-					});
+			});
 			if (obj.containsKey(PAGES)) {
 
 				((ArrayList<Object>) obj.get(PAGES)).forEach(o -> {
@@ -1088,7 +1102,7 @@ public class DashboardServiceImpl implements DashboardService {
 		dashboard.setGadgets(listGadgets.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 		dashboard.setGadgetMeasures(listGadgetMeasures.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 		dashboard
-				.setGadgetTemplates(listGadgetTemplates.stream().filter(Objects::nonNull).collect(Collectors.toList()));
+		.setGadgetTemplates(listGadgetTemplates.stream().filter(Objects::nonNull).collect(Collectors.toList()));
 
 		return dashboard;
 	}
@@ -1248,11 +1262,11 @@ public class DashboardServiceImpl implements DashboardService {
 					.findByName(dashboardUADTO.getAccessType());
 			final DashboardUserAccessType managedType = managedTypes != null && !CollectionUtils.isEmpty(managedTypes)
 					? managedTypes.get(0)
-					: null;
-			dashboardUA.setDashboardUserAccessType(managedType);
-			dashboardUA.setUser(userRepository.findByUserId(dashboardUADTO.getUserId()));
+							: null;
+					dashboardUA.setDashboardUserAccessType(managedType);
+					dashboardUA.setUser(userRepository.findByUserId(dashboardUADTO.getUserId()));
 
-			dashboardUserAccessRepository.save(dashboardUA);
+					dashboardUserAccessRepository.save(dashboardUA);
 		}
 	}
 
@@ -1349,7 +1363,7 @@ public class DashboardServiceImpl implements DashboardService {
 		try {
 			final Map<String, Object> obj = objectMapper.readValue(dashboard.getModel(),
 					new TypeReference<Map<String, Object>>() {
-					});
+			});
 			if (obj.containsKey(PAGES)) {
 				((ArrayList<Object>) obj.get(PAGES)).forEach(o -> {
 					final Map<String, Object> page = (Map<String, Object>) o;
@@ -1382,7 +1396,7 @@ public class DashboardServiceImpl implements DashboardService {
 			try {
 				final Map<String, Object> obj = objectMapper.readValue(dashboard.getModel(),
 						new TypeReference<Map<String, Object>>() {
-						});
+				});
 				if (obj.containsKey(PAGES)) {
 					((ArrayList<Object>) obj.get(PAGES)).forEach(o -> {
 						final Map<String, Object> page = (Map<String, Object>) o;
@@ -1418,7 +1432,7 @@ public class DashboardServiceImpl implements DashboardService {
 			Dashboard dashboard) {
 
 		if (gadget.containsKey("id")) {
-			JSONObject e = new JSONObject();
+			final JSONObject e = new JSONObject();
 			final Map<String, Object> header = (Map<String, Object>) gadget.get("header");
 			final Map<String, Object> gadgetTitle = (Map<String, Object>) header.get("title");
 			e.put("dashboardId", dashboard.getId());
@@ -1444,7 +1458,7 @@ public class DashboardServiceImpl implements DashboardService {
 	@SuppressWarnings("unchecked")
 	private void processGridboardForElements(Map<String, Object> gadget, JSONArray elements, List<String> added) {
 
-		if (gadget.containsKey(DATASOURCE)) {
+		if (gadget.containsKey(DATASOURCE) && !org.springframework.util.StringUtils.isEmpty(gadget.get(DATASOURCE))) {
 			final Map<String, Object> datasource = (Map<String, Object>) gadget.get(DATASOURCE);
 			final String datasourceId = (String) datasource.get("id");
 			final GadgetDatasource datasourceObj = gadgetDatasourceRepository.findById(datasourceId).orElse(null);
@@ -1776,6 +1790,11 @@ public class DashboardServiceImpl implements DashboardService {
 	public long getClientMaxHeartbeatTime() {
 		return clientMaxHeartbeatTime;
 	}
+	
+	@Override
+	public String getProtocol() {
+		return protocol;
+	}
 
 	private ArrayList<String> getSameKeys(Iterator<?> it1, Iterator<?> it2) {
 		final ArrayList<String> sameKeys = new ArrayList<>();
@@ -1800,6 +1819,16 @@ public class DashboardServiceImpl implements DashboardService {
 			}
 		}
 		return differentKeys;
+	}
+
+	@Override
+	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
+		final User sessionUser = userRepository.findByUserId(userId);
+		if (sessionUser.isAdmin()) {
+			return dashboardRepository.findAllDto(identification, description);
+		} else {
+			return dashboardRepository.findDtoByUserAndPermissions(sessionUser, identification, description);
+		}
 	}
 
 }

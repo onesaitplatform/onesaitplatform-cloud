@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
+import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.UserApiRepository;
@@ -78,6 +79,7 @@ public class ApiManagerHelper {
 	private static final String OPERATIONS_STR = "operations";
 	private static final String CLIENTS_STR = "clients";
 
+
 	// To populate the List Api Form
 	public void populateApiManagerListForm(Model uiModel) {
 		final List<User> users = userRepository.findAll();
@@ -120,6 +122,7 @@ public class ApiManagerHelper {
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
+
 		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
@@ -159,6 +162,7 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(OPERATIONS_STR, operations);
+
 		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 
 		uiModel.addAttribute("api", api);
@@ -302,6 +306,16 @@ public class ApiManagerHelper {
 		model.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		model.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		model.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
+	}
+	
+	public List<String> getUserTokenList() {
+		final User user = userService.getUser(utils.getUserId());
+		final List<UserToken> userTokenList = userTokenRepository.findByUser(user);
+		final List<String> list = new ArrayList<>();
+		for (UserToken u: userTokenList) {
+			list.add(u.getToken());
+		}
+		return list;
 	}
 	
 }

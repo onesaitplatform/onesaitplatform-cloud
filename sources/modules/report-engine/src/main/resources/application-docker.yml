@@ -1,6 +1,9 @@
 server: ## Config Web Server
    port: 18400
 onesaitplatform:
+   authentication:
+      oauth:
+        osp-keycloak: ${USE_KEYCLOAK}
    database.mongodb:
       authenticationDatabase: ${REALTIMEDBAUTHDB}
       useAuth: ${REALTIMEDBUSEAUTH}
@@ -24,6 +27,8 @@ spring: ## General Config
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://reportengine:${server.port}${server.servlet.contextPath}/
+      client.username: ${SBA_USERNAME}
+      client.password: ${SBA_SECRET}
    datasource:
      hikari:
       jdbc-url: ${CONFIGDBURL}${DBADDPROPS}

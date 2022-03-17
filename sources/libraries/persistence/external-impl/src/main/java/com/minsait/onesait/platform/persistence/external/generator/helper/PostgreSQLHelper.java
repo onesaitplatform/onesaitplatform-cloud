@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,25 @@ package com.minsait.onesait.platform.persistence.external.generator.helper;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Alias;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectItem;
 
 @Slf4j
 @Primary
@@ -32,11 +43,59 @@ import lombok.extern.slf4j.Slf4j;
 public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	private static final String LIST_TABLES_QUERY = "SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema')";
+	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT current_database();";
+	private static final String LIST_DATABASES_QUERY = "SELECT datname FROM pg_database";
+	private static final String GET_CURRENT_SCHEMA_QUERY = "SELECT current_schema();";
+	private static final String LIST_SCHEMAS_QUERY = "SELECT schema_name FROM information_schema.schemata where schema_name not like 'pg_%'";
+	private static final String LIST_TABLES_IN_SCHEMA_QUERY = "SELECT table_name FROM information_schema.tables WHERE table_schema = '%s'";
 	private static final String SERIAL_TYPE = "serial";
 
+	@Autowired
+	private OntologyVirtualRepository ontologyVirtualRepository;
+	
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
+	}
+	
+	@Override
+	public boolean hasDatabase() {
+		return true;
+	}
+
+	@Override
+	public boolean hasSchema() {
+		return true;
+	}
+	
+	@Override
+	public boolean hasCrossDatabase() {
+		return false;
+	}
+
+	@Override
+	public String getDatabaseStatement() {
+		return GET_CURRENT_DATABASE_QUERY;
+	}
+
+	@Override
+	public String getSchemaStatement() {
+		return GET_CURRENT_SCHEMA_QUERY;
+	}
+
+	@Override
+	public String getDatabasesStatement() {
+		return LIST_DATABASES_QUERY;
+	}
+
+	@Override
+	public String getSchemasStatement(String database) {
+		return LIST_SCHEMAS_QUERY;
+	}
+
+	@Override
+	public String getAllTablesStatement(String database, String schema) {
+		return String.format(LIST_TABLES_IN_SCHEMA_QUERY, schema);
 	}
 
 	@Override
@@ -120,6 +179,35 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 			col.getColDataType().setDataType(getFieldTypeString(col.getColDataType().getDataType()));
 		}
 		return col;
+	}
+	
+	@Override
+	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
+		Ontology o = ontologyVirtualRepository.findOntology(ontology);
+		OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
+		String jsonSchema = o.getJsonSchema();
+		JSONObject obj = new JSONObject(jsonSchema);
+		JSONObject columns = obj.getJSONObject("properties");
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
+
+		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
+			Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
+			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
+			Alias alias = plainSelect.getFromItem().getAlias();
+			List<SelectItem> selectItems = plainSelect.getSelectItems();
+			for (SelectItem item : selectItems) {
+				if (item.toString().equals("*") || (alias != null && item.toString().equals(alias.getName()))) {
+					return refactorQueryAll(columns, virtual, selectStatement, alias, item.toString());
+				} else {
+					query = refactorQuery(virtual, query, alias, item);
+				}
+			}
+
+		}
+
+		return query;
 	}
 
 }

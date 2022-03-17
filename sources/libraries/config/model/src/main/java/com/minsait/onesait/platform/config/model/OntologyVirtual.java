@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,17 @@ public class OntologyVirtual extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String datasourceTableName;
+	
+	@Column(name = "DATASOURCE_DATABASE", length = 128, nullable = true)
+	@Getter
+	@Setter
+	private String datasourceDatabase;
 
+	@Column(name = "DATASOURCE_SCHEMA", length = 128, nullable = true)
+	@Getter
+	@Setter
+	private String datasourceSchema;
+	
 	@Column(name = "OBJECT_ID", length = 50, nullable = true)
 	@Getter
 	@Setter

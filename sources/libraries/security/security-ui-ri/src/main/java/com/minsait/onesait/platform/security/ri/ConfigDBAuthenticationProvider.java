@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 	@Override
 	public Authentication authenticate(Authentication authentication) {
 		final long start = System.currentTimeMillis();
-		log.info("Starting configDB authentication");
+		log.debug("Starting configDB authentication");
 		final String name = authentication.getName();
 		final Object credentials = authentication.getCredentials();
 		log.trace("credentials class: " + credentials.getClass());
@@ -110,17 +110,13 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 			throw new BadCredentialsException("Authentication failed. User deactivated: " + name);
 		}
 		String hashPassword = null;
-		//DELETE-ME
-		String doubleHashPassWord = null;
 		try {
 			hashPassword = PasswordEncoder.getInstance().encodeSHA256(password);
-			//DELETE-ME
-			doubleHashPassWord  = PasswordEncoder.getInstance().encodeSHA256(hashPassword);
 		} catch (final Exception e) {
 			log.error("Authenticate: Error encoding: ", e.getMessage());
 			throw new BadCredentialsException("Authentication failed. Error authenticating.");
 		}
-		if (!hashPassword.equals(user.getPassword()) && !doubleHashPassWord.equals(user.getPassword())) {
+		if (!hashPassword.equals(user.getPassword())) {
 			log.info("authenticate: Password incorrect: {} ", name);
 			log.warn("Plain user password incoming: {}, hashed {}. DB-Cache hashed password {}", password, hashPassword, user.getPassword());
 			publishFailureCredentials(user, authentication);
@@ -140,7 +136,7 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 				grantedAuthorities);
 		resetFailedAttemp(user);
 		publishSuccess(auth);
-		log.info("End configDB authentication, time: {}", System.currentTimeMillis() - start);
+		log.debug("End configDB authentication, time: {}", System.currentTimeMillis() - start);
 		return auth;
 	}
 
@@ -170,7 +166,9 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 				new BadCredentialsException("Authentication failed. Password incorrect for " + user.getUserId())));
 	}
 
+
 	private MasterUserParent resetFailedAttemp(MasterUserLazy masterUser) {
+
 		if (masterUser != null && masterUser.getFailedAtemps() != null && masterUser.getFailedAtemps() > 0) {
 			masterUser.setFailedAtemps(0);
 			masterUser.setLastLogin(new Date());

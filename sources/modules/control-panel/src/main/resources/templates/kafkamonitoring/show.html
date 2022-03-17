@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -68,15 +68,34 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_topic" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
+								<input id="topic-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_topic" name="reset_topic" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_topic" name="search_topic" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><i class="la la-home"></i> <a th:href="@{/}">Home</a><i class="fa fa-circle"></i></li>
-						<li><a th:href="@{/kafka/monitoring/list}"> <span th:text="#{kafka.monitoring.breadcrumb}">Kafka monitoring</span></a><i class="fa fa-circle"></i></li>						
-						<li> <span th:text="#{kafka.monitoring.consumer.detail.breadcrumb}">Client Group Detail</span></li>
+						<!--<li><i class="la la-home"></i> <a th:href="@{/}">Home</a><i class="fa fa-circle"></i></li>-->
+						<li><a th:href="@{/kafka/monitoring/list}"> <span th:text="#{kafka.monitoring.breadcrumb}">Kafka monitoring</span></a><i class="fa fa-angle-right"></i></li>						
+						<li><a th:href="@{/kafka/monitoring/show/{id}(id=${consumer})}"> <span th:text="#{kafka.monitoring.consumer.detail.breadcrumb}">Client Group Detail</span></a></li>
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -87,24 +106,31 @@
 				
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="col-md-12">
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
 									
 									<span class="caption-subject " th:text="#{kafka.monitoring.template.show} + ': ' + ${consumer}"> Kafka Monitoring - Client Group Detail </span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+								</div>
 							</div>
 							<div th:fragment="kafkamonitoring" id="kafkamonitoring" class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row">
-									<div class="col-md-12 alert-zone">
-										<!-- ALERT ZONE -->	
+								<div class="row main">
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE
 										
 										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable">
 											<button class="close" data-close="alert"></button> 
@@ -115,22 +141,22 @@
 											<strong>KAFKA MONITOR STATE: </strong> <span class="session">GOOD</span>
 										</div>
 										
-									</div>
+									</div>-->
 									<!-- KAFKA GROUPS MONITORING LIST -->
 									<div class="col-md-12">											
-										<div id="kafka-groups-container" class="contiene margin-bottom-30">																						
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="client-groups" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+												<table id="client-groups" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{kafka.monitoring.detail.topic}">Topic</th>
-															<th class="titulo-columnas text-center" th:text="#{kafka.monitoring.detail.partition}">Partition</th>
-															<th class="titulo-columnas text-center" th:text="#{kafka.monitoring.client.group.state}">State</th>
-															<th class="titulo-columnas text-center" th:text="#{kafka.monitoring.detail.timestamp}">Timestamp</th>
-															<th class="titulo-columnas text-center" th:text="#{kafka.monitoring.detail.offset}">Offset</th>
-															<th class="titulo-columnas text-center" th:text="#{kafka.monitoring.detail.lag}">Lag</th>
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas text-left" th:text="#{kafka.monitoring.detail.partition}">Partition</th>
+															<th class="titulo-columnas text-left" th:text="#{kafka.monitoring.client.group.state}">State</th>
+															<th class="titulo-columnas text-left" th:text="#{kafka.monitoring.detail.timestamp}">Timestamp</th>
+															<th class="titulo-columnas text-left" th:text="#{kafka.monitoring.detail.offset}">Offset</th>
+															<th class="titulo-columnas text-left" th:text="#{kafka.monitoring.detail.lag}">Lag</th>
+															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -138,30 +164,60 @@
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap bold" th:text="${partition.topic}"></td>
 															<!-- PARTITION COUNT -->
-															<td class="text-center" th:text="${partition.partition}"></td>
+															<td class="text-left" th:text="${partition.partition}"></td>
 															<!-- STATE -->
-															<td class="text-center" th:if="${partition.status==null}"  th:text="--"></td>
-															<td class="text-center" th:if="${partition.status=='OK'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la la-check-circle-o font-hg text-success"></i></span></td>
-															<td class="text-center" th:if="${partition.status=='WARN'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la la-warning font-hg text-warning"></i></span></td>
-															<td class="text-center" th:if="${partition.status=='STOP'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la la-stop font-hg text-danger"></i></span></td>
-															<td class="text-center" th:if="${partition.status=='STALL'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la  la-pause font-hg text-danger"></i></span></td>
-															<td class="text-center" th:if="${partition.status=='REWIND'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la  la-backward font-hg text-warning"></i></span></td>
+															<td class="text-left" th:if="${partition.status==null}"  th:text="--"></td>
+															<td class="text-left" th:if="${partition.status=='OK'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la la-check-circle-o font-hg text-success"></i></span></td>
+															<td class="text-left" th:if="${partition.status=='WARN'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la la-warning font-hg text-warning"></i></span></td>
+															<td class="text-left" th:if="${partition.status=='STOP'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la la-stop font-hg text-danger"></i></span></td>
+															<td class="text-left" th:if="${partition.status=='STALL'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la  la-pause font-hg text-danger"></i></span></td>
+															<td class="text-left" th:if="${partition.status=='REWIND'}"><span th:title="${partition.status}" class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="${partition.status}"><i class="la  la-backward font-hg text-warning"></i></span></td>
 															<!-- TIMESTAMP -->
-															<td class="text-center" th:text="${partition.timestamp}"></td>		
+															<td class="text-left" th:text="${partition.timestamp}"></td>		
 															<!-- OFFSET -->
-															<td class="text-center" th:text="${partition.offset}"></td>
+															<td class="text-left" th:text="${partition.offset}"></td>
 															<!-- LAG -->
-															<td class="text-center" th:text="${partition.lag}"></td>												
+															<td class="text-left" th:text="${partition.lag}"></td>												
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'location.href=\''+@{/kafka/monitoring/detail/{consumer}/{topic}/{partition}(consumer=${consumer},topic=${partition.topic},partition=${partition.partition})}+'\''"><i class="la la-th-list font-hg"></i></span>
+																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'location.href=\''+@{/kafka/monitoring/detail/{consumer}/{topic}/{partition}(consumer=${consumer},topic=${partition.topic},partition=${partition.partition})}+'\''"><i class="icon-table"></i></span>
 																</div>
 															</td>
 														</tr>
 													</tbody>
-												</table>																							
+												</table>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{kafka.monitoring.detail.topic}"> Topic </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{kafka.monitoring.detail.partition}"> Partition </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{kafka.monitoring.client.group.state}"> State </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{kafka.monitoring.detail.timestamp}"> Timestamp</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{kafka.monitoring.detail.offset}"> Offset </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label th:text="#{kafka.monitoring.detail.lag}"> Lag</label>
+														</span>
+													</div>
+												</div>				
 											</div>
 										</div>
 									</div>
@@ -170,7 +226,6 @@
 						</div><!-- PORTLET -->
 				
 				
-					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->	
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -220,27 +275,57 @@
 	$( document ).ready(function() {
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis').on( 'click', function (e) {
+		$('input.toggle-vis').on( 'change', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#kafkamonitoring_groups').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
+			//$(this).toggleClass('text-muted line-through');			
 		});	
+
+		// SEARCH FORM RESET
+		$('#reset_topic').on('click',function(){
+			$('#topic-name').val('');
+			$('#kafkamonitoring_groups').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_topic').on('click',function(){
+			$('#kafkamonitoring_groups').DataTable().column(0).search( $('#topic-name').val()).draw();
+		});
 		
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).load(function(){ 
+
+		var oTable = $('#kafkamonitoring_groups').dataTable({
+	      "bAutoWidth": false
+	      });  
 		
-		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-		
+
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#kafkamonitoring_groups_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#kafkamonitoring_groups_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#kafkamonitoring_groups_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([ 2 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
 		
 	});
 	

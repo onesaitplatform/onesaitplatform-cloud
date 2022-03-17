@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,18 @@
  */
 package com.minsait.onesait.platform.business.services.audit;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+
 public interface AuditService {
 
-	public String getUserAuditData(String resultType, String modulesname, String operation, String offset, String user) throws Exception;
+	public String getUserAuditData(String resultType, String modulesname, String operation, String offset, String user)
+			throws Exception;
+
+	public String getCustomQueryData(String query, String user)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
+
+	Boolean verifyCipherData(String jsonData, String cipherData);
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
@@ -87,6 +88,7 @@ import com.minsait.onesait.platform.controlpanel.controller.jsontool.JsonToolUti
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.KpiDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyCreateDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyDTO;
+import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyElasticDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyKpiDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyResponseErrorDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyRestDTO;
@@ -294,7 +296,17 @@ public class OntologyManagementController {
 
 		final Ontology ontology = ontologyDTOConverter.ontologyCreateDTOToOntology(ontologyCreate, user);
 		final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
-
+		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
+			ontologyConfig.setAllowsCustomElasticConfig(true);
+			ontologyConfig.setShards(String.valueOf(ontologyCreate.getShards()));
+			ontologyConfig.setReplicas(String.valueOf(ontologyCreate.getReplicas()));
+			ontologyConfig.setAllowsTemplateConfig(
+					ontologyCreate.getPatternField() != null && !ontologyCreate.getPatternField().isEmpty());
+			ontologyConfig.setPatternField(ontologyCreate.getPatternField());
+			ontologyConfig.setPatternFunction(ontologyCreate.getPatternFunction());
+			ontologyConfig.setSubstringStart(String.valueOf(ontologyCreate.getSubstringStart()));
+			ontologyConfig.setSubstringEnd(String.valueOf(ontologyCreate.getSubstringEnd()));
+		}
 		try {
 			ontologyBusinessService.createOntology(ontology, utils.getUserId(), ontologyConfig);
 		} catch (final OntologyDataJsonProblemException jsonException) {
@@ -546,7 +558,7 @@ public class OntologyManagementController {
 			ontologyBusinessService.cloneOntology(ontology.getId(), newIdentification, user.getUserId(), null);
 
 			if (ontology.getOntologyKPI() != null) {
-				Ontology cloneOntology = ontologyConfigService.getOntologyByIdentification(newIdentification);
+				final Ontology cloneOntology = ontologyConfigService.getOntologyByIdentification(newIdentification);
 				ontologyKPIService.cloneOntologyKpi(ontology, cloneOntology, user);
 			}
 
@@ -920,6 +932,27 @@ public class OntologyManagementController {
 		return importingAuthJsonErrors;
 	}
 
+	private Ontology importFromOntologyElasticDTO(OntologyElasticDTO ontologyDTO, DataModel datamodel)
+			throws OntologyBusinessServiceException {
+		final User user = getImportingUser(ontologyDTO);
+		final Ontology ontology = ontologyDTOConverter.ontologyDTOToOntology(ontologyDTO, user);
+		ontology.setDataModel(datamodel);
+		final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
+		ontologyConfig.setShards(String.valueOf(ontologyDTO.getShards()));
+		ontologyConfig.setReplicas(String.valueOf(ontologyDTO.getReplicas()));
+		ontologyConfig.setAllowsCustomElasticConfig(ontologyDTO.isCustomConfig());
+
+		ontologyConfig.setAllowsTemplateConfig(
+				ontologyDTO.getPatternField() != null && !ontologyDTO.getPatternField().isEmpty());
+		ontologyConfig.setPatternField(ontologyDTO.getPatternField());
+		ontologyConfig.setPatternFunction(ontologyDTO.getPatternFunction());
+		ontologyConfig.setSubstringStart(String.valueOf(ontologyDTO.getSubstringStart()));
+		ontologyConfig.setSubstringEnd(String.valueOf(ontologyDTO.getSubstringEnd()));
+		ontologyBusinessService.createOntology(ontology, user.getUserId(), ontologyConfig);
+
+		return ontology;
+	}
+
 	private Ontology importFromOntologyDTO(OntologyDTO ontologyDTO, DataModel datamodel)
 			throws OntologyBusinessServiceException {
 		final User user = getImportingUser(ontologyDTO);
@@ -1066,7 +1099,7 @@ public class OntologyManagementController {
 							throw new OntologyServiceException(USER_IS_NOT_AUTH,
 									OntologyServiceException.Error.PERMISSION_DENIED);
 						} else {
-							ontologyService.delete(ontology); // auths deleted on cascade
+							ontologyBusinessService.deleteOntology(ontology.getId(), utils.getUserId());
 						}
 					} else {
 						throw new OntologyServiceException(USER_IS_NOT_AUTH,
@@ -1095,6 +1128,10 @@ public class OntologyManagementController {
 			} else if (ontologyDTOConverter.canConvert(ontologyMasterDTO, OntologyVirtualDTO.class)) {
 				ontology = importFromOntologyVirtualDTO(
 						ontologyDTOConverter.getMapper().convertValue(ontologyMasterDTO, OntologyVirtualDTO.class),
+						datamodel);
+			} else if (ontologyDTOConverter.canConvert(ontologyMasterDTO, OntologyElasticDTO.class)) {
+				ontology = importFromOntologyElasticDTO(
+						ontologyDTOConverter.getMapper().convertValue(ontologyMasterDTO, OntologyElasticDTO.class),
 						datamodel);
 			} else {
 				ontology = importFromOntologyDTO(ontologyMasterDTO, datamodel);
@@ -1215,7 +1252,7 @@ public class OntologyManagementController {
 				.getOntologyRestByIdentification(ontology.getIdentification());
 		final OntologyTimeSeries ontologyTimeSeries = ontologyTimeSeriesService.getOntologyByOntology(ontology);
 		final OntologyVirtual ontologyVirtual = ontologyService.getOntologyVirtualByOntologyId(ontology);
-
+		final OntologyElastic ontologyElastic = ontologyService.getOntologyElasticByOntologyId(ontology);
 		if (!ontologyKpis.isEmpty()) {
 			final OntologyKPI ontologyKPI = ontologyKpis.get(0); // TODO: Bug, ontology_id not UK constraint in db, so
 																	// list.get(0)
@@ -1227,6 +1264,8 @@ public class OntologyManagementController {
 			ontologyDTO = new OntologyTimeSeriesDTO(ontologyTimeSeries);
 		} else if (ontologyVirtual != null) {
 			ontologyDTO = new OntologyVirtualDTO(ontologyVirtual);
+		} else if (ontologyElastic != null) {
+			ontologyDTO = new OntologyElasticDTO(ontologyElastic);
 		} else {
 			ontologyDTO = new OntologyDTO(ontology);
 		}
@@ -1269,6 +1308,7 @@ public class OntologyManagementController {
 		try {
 			final OntologyDTO ontologyDTO = exportOntology(ontologyIdentification);
 			final HttpHeaders headers = exportHeaders(ontologyIdentification.trim());
+
 			final byte[] payload = new ObjectMapper().writeValueAsBytes(ontologyDTO);
 			final ByteArrayResource resource = new ByteArrayResource(payload);
 			headers.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(payload.length));

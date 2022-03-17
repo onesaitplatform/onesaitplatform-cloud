@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -127,20 +127,20 @@
 										<div id="contenedor-tabla-outside" class="contiene">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->										
-							                    <table id="tokens" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+							                    <table id="tokens" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 							                      <thead>
 							                        <tr class="cabecera-tabla">	      
 											              <th class="titulo-columnas" th:text="#{apimanager.token.dateCreated}"></th>
-								                          <th class="titulo-columnas text-center" th:text="#{apimanager.token}"></th>
-								                          <th class="titulo-columnas" th:text="#{gen.options}"></th>    	                
+								                          <th class="titulo-columnas text-left" th:text="#{apimanager.token}"></th>
+								                          <th class="titulo-columnas text-center" th:text="#{gen.options}" style="width:85px;"></th>    	                
 										                  </tr>
 										          </thead>
 										          <tbody th:remove="all-but-first">
 									                <tr th:each="token : ${tokens}" pages:paginate="10" class="odd">
 							                            <td th:text="${token.createdAt}"></td>
-							                            <td class="text-center no-wrap"><span class="label bg-blue-sharp font-grey-carrara"><span th:text="${token.token}">tokenId</span></span></td>
-							                            <td class="icon" style="white-space: nowrap">
-					                                        <span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:calculateVersion(\'' + ${token.token} + '\');'"><i class="la la-trash font-hg"></i></span>                                                                                                                                                                         
+							                            <td class="text-left no-wrap"><span class="label bg-blue-sharp font-grey-carrara"><span th:text="${token.token}">tokenId</span></span></td>
+							                            <td class="icon text-center" style="white-space: nowrap">
+					                                        <span class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:calculateVersion(\'' + ${token.token} + '\');'"><i class="icon-delete"></i></span>                                                                                                                                                                         
 							                           </td>
 							                        </tr>
 							                      </tbody>
@@ -200,18 +200,16 @@
 
 			// jquery-confirm DIALOG SYSTEM.
 			$.confirm({
-				icon: 'fa fa-bug',
 				title: dialogTitle,
-				theme: 'dark',
+				theme: 'light',
 				content: dialogContent,
 				draggable: true,
 				dragWindowGap: 100,
 				backgroundDismiss: true,
-				closeIcon: true,
 				buttons: {				
 					close: {
 						text: Close,
-						btnClass: 'btn btn-sm btn-default btn-outline',
+						btnClass: 'btn btn-outline blue dialog',
 						action: function (){} //GENERIC CLOSE.		
 					}
 				}

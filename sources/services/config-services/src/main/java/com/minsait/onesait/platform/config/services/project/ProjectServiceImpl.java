@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
@@ -472,8 +471,7 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new ProjectServiceException("Project not found");
 		}
 		final Project project = opt.get();
-		final String role_user = user.getRole().getId();
-		if (user.equals(project.getUser()) || role_user.equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		if (user.equals(project.getUser()) || user.isAdmin()) {
 			return project.getProjectResourceAccesses().stream().map(ProjectResourceAccess::getResource)
 					.collect(Collectors.toSet());
 		} else {

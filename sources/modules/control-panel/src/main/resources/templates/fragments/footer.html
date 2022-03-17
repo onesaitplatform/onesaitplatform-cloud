@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
     limitations under the License.
 
 -->
-
 <!-- BEGIN FOOTER -->
 <div th:fragment="footerFragment" id="footerFragment">
 <!-- HEADER CONTROLLER JS -->
 	<script th:src="@{/static/js/pages/footer.js}"></script>
 	<div class="container-fluid"
 		style="border-top: 1px solid #CCC; line-height: 25px; padding: 8px;">
-		<div class="row">
+		<div class="row" style="margin:0px;">
 			<div class="col-md-9 col-sm-12 col-xs-12 ">
 				<div id="footerText">
 				</div>
-				<div id="footerText_original">
+				<div id="footerText_original" style=" padding-left: 60px;">
 					<span class="m-link m-link--metal" th:text="#{footer.app}">onesait Platform
-						 © Minsait 2020</span> <span class="sep"></span> <span
+						 © Minsait 2021</span> <span class="sep"></span> <span
 						class="m-link m-link--metal" th:text="'('+#{build.version}+')'">5.2.0</span>
 					<span class="sep"></span> <a href="https://github.com/onesaitplatform" target="_blank" class="m-link m-link--metal"><i
 						class="fa fa-github"></i> <span th:text="#{footer.github}">Project
@@ -36,7 +35,7 @@
 
 				</div>
 			</div>
-			<div class="col-md-3 col-sm-12 col-xs-12">
+			<div class="col-md-3 col-sm-12 col-xs-12" style="padding-bottom: 0px;"	>
 				<ul class="social-icons social-icons-circle pull-right">
 					<li><a href="https://www.youtube.com/channel/UC0pdRMPBw0RIsWCymt_DVNg" target="_blank" data-original-title="youtube"
 						class="youtube"> </a></li>
@@ -114,38 +113,44 @@
 					<h4 class="modal-title" th:text="#{menu.modal.api}">Modal
 						Header</h4>
 				</div>
-				<div class="modal-body">
+				<div class="modal-body" style="margin-top: -20px;">
 					<div id="contenido"
 						class="wrappercontenido container-fluid quitapadding">
-						<h3 th:text="#{menu.modal.oauthtoken}">Oauth Token</h3>
-						<a id="oauthTokenCopy"><p id="oauthToken"
+						<h4 th:text="#{menu.modal.oauthtoken}">Oauth Token</h4>
+						<a id="oauthTokenCopy"><p id="oauthToken" 
+								th:data-original-title="#{menu.modal.click.copy}"	
 								th:text="#{menu.modal.bearer}+' '+${session.oauthToken}"
-								class="dont-break-out"></p></a>
-						<h3 th:text="#{menu.apis}">Apis</h3>
-						<h4>
+								class="dont-break-out tooltips"></p></a>
+						<h4 id="userTokenTitle" 
+							th:text="#{menu.modal.usertoken}" hidden>
+							X-OP-APIKey
+						</h4>
+						<p id="userTokenList"></p>
+						<h4 th:text="#{menu.apis}">Apis</h4>
+						<h5>
 							<a target="_blank" th:text="#{menu.modal.controlpanel}"
 								th:href="${session.apis?.controlpanel}">Control panel:
 								oauth, management, notebooks</a>
-						</h4>
-						<h4>
+						</h5>
+						<h5>
 							<a target="_blank" th:text="#{menu.modal.iotbroker}"
 								th:href="${session.apis?.iotbroker}">IoTBroker</a>
-						</h4>
-						<h4>
+						</h5>
+						<h5>
 							<a target="_blank" th:text="#{menu.modal.apimanager}"
 								th:href="${session.apis?.apiManager}">Api Manager</a>
-						</h4>
+						</h5>
 						<!--Not accesible out 
 						<h4>
 							<a target="_blank" th:text="#{menu.modal.router}"
 								th:href="${session.apis?.routerStandAlone}">Semantic Information Broker</a>
 						</h4>
 						-->
-						<h4>
+						<h5>
 							<a target="_blank" th:text="#{menu.modal.digitaltwinbroker}"
 								th:href="${session.apis?.digitalTwinBroker}">Digital Twin
 								broker</a>
-						</h4>
+						</h5>
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -198,7 +203,7 @@
 	<!-- End confluence search -->
 		
 	<script type="text/javascript" th:inline="javascript"> 
-	
+		
 	//AUTO INIT CONTROLLER WHEN READY
 	jQuery(document).ready(function() {
 		var currentLanguage = [[${lang}]];
@@ -240,6 +245,33 @@
 		$temp.remove();
 	});
 
+	$("#modalApis").on('shown.bs.modal', function(){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url : "/controlpanel/apimanager/token/list",
+			type : "GET",
+			async : true,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			success : function(response){
+				if (response != "") {
+					$('#userToken').text(response);	
+				}
+			}
+		    
+		})	
+	});
+	
+	var copyText = function(element) {
+		var $temp = $("<input/>");
+		$("body").append($temp);
+		$temp.val($(element).text()).select();
+		document.execCommand("copy");
+		$temp.remove();
+	};
+	
 	</script>
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery-cookie/cookie.js}" ></script>

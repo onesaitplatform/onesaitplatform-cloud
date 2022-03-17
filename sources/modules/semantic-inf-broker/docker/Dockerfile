@@ -23,13 +23,20 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
 
+ENV ASPECTJ_VERSION 1.8.9
+
+RUN cd /usr/local \
+    && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
+
 VOLUME ["/tmp", "/var/log/platform-logs"]
+
 
 EXPOSE 20000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV SERVER_NAME=localhost \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+    SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKABROKERS=none \    
     KAFKAHOST=kafka \
@@ -48,7 +55,7 @@ ENV SERVER_NAME=localhost \
     CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
-    AUDITGLOBALNOTIFY=false \
+    AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     ENABLEHADOOP=false \
@@ -75,7 +82,11 @@ ENV SERVER_NAME=localhost \
     ELASTICSEARCH_ENABLED=false \
     GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    GRAYLOG_PORT=12201 \
+    SBA_USERNAME=operations \
+    SBA_SECRET=changeIt2019! \
+    TIMESERIES_INSERT_LOCK_CHECK_MILLIS=50 \
+    TIMESERIES_INSERT_LOCK_TIMEOUT_MILLIS=500
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh

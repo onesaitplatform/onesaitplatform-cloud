@@ -7,15 +7,17 @@
 		{
 			"title": {
 				"EN": "ADMINISTRATION",
-				"ES": "ADMINISTRACIÓN"
+				"ES": "ADMINISTRACIÓN",
+				"FR": "ADMINISTRATION"
 			},
-			"icon": "flaticon-cogwheel-2",
+			"icon": "icon-configuration",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Tenant Management",
-						"ES": "Gestión de tenants"
+						"ES": "Gestión de tenants",
+						"FR": "Utilisateurs locataires"
 					},
 					"icon": "",
 					"url": "/controlpanel/multitenancy/tenants"
@@ -23,23 +25,17 @@
 				{
 					"title": {
 						"EN": "Users Management",
-						"ES": "Gestión de Usuarios"
+						"ES": "Gestión de Usuarios",
+						"FR": "Gérer les utilisateurs"
 					},
 					"icon": "",
 					"url": "/controlpanel/users/list"
 				},
 				{
 					"title": {
-						"EN": "External Database Connection Management",
-						"ES": "Gestión de Conexiones Externas a Base de datos"
-					},
-					"icon": "",
-					"url": "/controlpanel/virtualdatasources/list"
-				},
-				{
-					"title": {
 						"EN": "Data Models Management",
-						"ES": "Gestión DataModels"
+						"ES": "Gestión DataModels",
+						"FR": "Gestion des modèles de données"
 					},
 					"icon": "",
 					"url": "/controlpanel/datamodels/list"
@@ -47,7 +43,8 @@
 				{
 					"title": {
 						"EN": "Market Assets Management",
-						"ES": "Gestión de Activos del Market"
+						"ES": "Gestión de Activos del Market",
+						"FR": "Gestion des actifs du marché"
 					},
 					"icon": "",
 					"url": "/controlpanel/marketasset/list"
@@ -56,7 +53,8 @@
 				{
 					"title": {
 						"EN": "Control Panel Menu Management",
-						"ES": "Gestión de Menú del Panel de Control"
+						"ES": "Gestión de Menú del Panel de Control",
+						"FR": "Gestion des menus du panneau de commande"
 					},
 					"icon": "",
 					"url": "/controlpanel/consolemenu/list"
@@ -64,7 +62,8 @@
 				{
 					"title": {
 						"EN": "Control Panel Themes Management",
-						"ES": "Gestión de temas del Panel de Control"
+						"ES": "Gestión de temas del Panel de Control",
+						"FR": "Gestion des thèmes du panneau de commande"
 					},
 					"icon": "",
 					"url": "/controlpanel/themes/list"
@@ -72,7 +71,8 @@
 				{
 					"title": {
 						"EN": "Control Panel Trees Management",
-						"ES": "Gestión de árboles del Panel de Control"
+						"ES": "Gestión de árboles del Panel de Control",
+						"FR": "Gestion des arborescences du panneau de commande"
 					},
 					"icon": "",
 					"url": "/controlpanel/categorization/list"
@@ -80,7 +80,8 @@
 				{
 					"title": {
 						"EN": "Categories Management",
-						"ES": "Gestión de Categorías"
+						"ES": "Gestión de Categorías",
+						"FR": "Gestion des catégories"
 					},
 					"icon": "",
 					"url": "/controlpanel/categories/list"
@@ -88,28 +89,21 @@
 			]
 		},
 
-		{
-			"title": {
-				"EN": "",
-				"ES": ""
-			},
-			"icon": "flaticon-more-v3",
-			"url": "",
-			"submenu": []
-		},
 		
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
-				"ES": "DESARROLLO"
+				"ES": "DESARROLLO",
+				"FR": "DÉVELOPPEMENT"
 			},
-			"icon": "flaticon-network",
+			"icon": "icon-development",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Projects Management",
-						"ES": "Gestión de Proyectos"
+						"ES": "Gestión de Proyectos",
+						"FR": "Gestion de projets"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -117,7 +111,8 @@
 				{
 					"title": {
 						"EN": "Ontologies Management",
-						"ES": "Gestión de Ontologías"
+						"ES": "Gestión de Ontologías",
+						"FR": "Gestion des ontologies"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
@@ -125,7 +120,8 @@
 				{
 					"title": {
 						"EN": "APIs Management",
-						"ES": "Gestión de APIs"
+						"ES": "Gestión de APIs",
+						"FR": "Gestion des API"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
@@ -133,7 +129,8 @@
 				{
 					"title": {
 						"EN": "FlowEngine Management",
-						"ES": "Gestión de Motor de Flujos"
+						"ES": "Gestión de Motor de Flujos",
+						"FR": "Gestion du Moteur de Flux"
 					},
 					"icon": "",
 					"url": "/controlpanel/flows/list"
@@ -141,7 +138,8 @@
 				{
 					"title": {
 						"EN": "Rules Engine Management",
-						"ES": "Gestión de Motor de Reglas"
+						"ES": "Gestión de Motor de Reglas",
+						"FR": "Gestion du Moteur de Règles"
 					},
 					"icon": "",
 					"url": "/controlpanel/rule-domains/list"
@@ -149,7 +147,8 @@
 				{
 					"title": {
 						"EN": "Realms Management",
-						"ES": "Gestión de Dominios de Seguridad"
+						"ES": "Gestión de Dominios de Seguridad",
+						"FR": "Gestion de Domaine de Sécurité"
 					},
 					"icon": "",
 					"url": "/controlpanel/apps/list"
@@ -160,15 +159,17 @@
 		{
 			"title": {
 				"EN": "VISUALIZATION & GIS",
-				"ES": "VISUALIZACIÓN & GIS"
+				"ES": "VISUALIZACIÓN & GIS",
+				"FR": "VISUALISATION & SIG"
 			},
-			"icon": "flaticon-graph",
+			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Dashboards Management",
-						"ES": "Gestión de Dashboards"
+						"ES": "Gestión de Dashboards",
+						"FR": "Gestion des Tableaux de Bord"
 					},
 					"icon": "",
 					"url": "/controlpanel/dashboards/list"
@@ -176,7 +177,8 @@
 				{
 					"title": {
 						"EN": "Dashboard Styles Management",
-						"ES": "Gestión Estilos Dashboards"
+						"ES": "Gestión Estilos Dashboards",
+						"FR": "Gestion des Styles de Tableau de Bord"
 					},
 					"icon": "",
 					"url": "/controlpanel/dashboardconf/list"
@@ -184,7 +186,8 @@
 				{
 					"title": {
 						"EN": "Gadgets Management",
-						"ES": "Gestión de Gadgets"
+						"ES": "Gestión de Gadgets",
+						"FR": "Gestion des Gadgets"
 					},
 					"icon": "",
 					"url": "/controlpanel/gadgets/list"
@@ -192,7 +195,8 @@
 				{
 					"title": {
 						"EN": "DataSources Management",
-						"ES": "Gestión de DataSources"
+						"ES": "Gestión de DataSources",
+						"FR": "Gestion des Sources de Données"
 					},
 					"icon": "",
 					"url": "/controlpanel/datasources/list"
@@ -200,26 +204,11 @@
 				{
 					"title": {
 						"EN": "Report Management",
-						"ES": "Gestión de Informes"
+						"ES": "Gestión de Informes",
+						"FR": "Gestion des Rapports"
 					},
 					"icon": "",
 					"url": "/controlpanel/reports/list"
-				},
-				{
-					"title": {
-						"EN": "GIS Viewers Management",
-						"ES": "Gestión de Visores GIS"
-					},
-					"icon": "",
-					"url": "/controlpanel/viewers/list"
-				},
-				{
-					"title": {
-						"EN": "GIS Layers Management",
-						"ES": "Gestión de Capas GIS"
-					},
-					"icon": "",
-					"url": "/controlpanel/layers/list"
 				}
 			]
 		},
@@ -227,15 +216,17 @@
 		{
 			"title": {
 				"EN": "ANALYTICS TOOLS",
-				"ES": "HERR. ANALÍTICA"
+				"ES": "HERR. ANALÍTICA",
+				"FR": "OUTILS D'ANALYSE"
 			},
-			"icon": "flaticon-analytics",
+			"icon": "icon-kpi",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "DataFlow Management",
-						"ES": "Gestión de DataFlows"
+						"ES": "Gestión de DataFlows",
+						"FR": "Gestion des Flux de Données"
 					},
 					"icon": "",
 					"url": "/controlpanel/dataflow/list"
@@ -243,7 +234,8 @@
 				{
 					"title": {
 						"EN": "Notebooks Management",
-						"ES": "Gestión de Notebooks"
+						"ES": "Gestión de Notebooks",
+						"FR": "Gestion des Notebooks"
 					},
 					"icon": "",
 					"url": "/controlpanel/notebooks/list"
@@ -251,36 +243,29 @@
 				{
 					"title": {
 						"EN": "Models Management",
-						"ES": "Gestión de Modelos"
+						"ES": "Gestión de Modelos",
+						"FR": "Gestion des Modèles"
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
-				},
-				 {
-                    "title": {
-                        "EN": "DataRefiner Management",
-                        "ES": "Gestion de DataRefiner"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/datacleanerui"
-                }
-				
-				
+				}
 			]
 		},
 
 		{
 			"title": {
 				"EN": "CLIENTS & DIGITAL TWINS",
-				"ES": "CLIENTES & DIGITAL TWINS"
+				"ES": "CLIENTES & DIGITAL TWINS",
+				"FR": "CLIENTS & JUMEAUX NUMÉRIQUES"
 			},
-			"icon": "flaticon-share",
+			"icon": "icon-clients",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Digital Clients Definition",
-						"ES": "Definición de Clientes Digitales"
+						"ES": "Definición de Clientes Digitales",
+						"FR": "Définition des Clients Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/list"
@@ -288,7 +273,8 @@
 				{
 					"title": {
 						"EN": "Digital Clients Management",
-						"ES": "Gestión de Clientes Digitales"
+						"ES": "Gestión de Clientes Digitales",
+						"FR": "Gestion des Clients Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/list"
@@ -296,7 +282,8 @@
 				{
 					"title": {
 						"EN": "Digital Clients Simulations",
-						"ES": "Simulaciones de Clientes Digitales"
+						"ES": "Simulaciones de Clientes Digitales",
+						"FR": "Simulations de Clients Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/devicesimulation/list"
@@ -304,7 +291,8 @@
 				{
 					"title": {
 						"EN": "Digital Clients Status",
-						"ES": "Estado de Clientes Digitales"
+						"ES": "Estado de Clientes Digitales",
+						"FR": "Statut des Clients Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/show"
@@ -312,7 +300,8 @@
 				{
 					"title": {
 						"EN": "Subscriptions Definitions",
-						"ES": "Definiciones de Suscripciones"
+						"ES": "Definiciones de Suscripciones",
+						"FR": "Définitions des Abonnements"
 					},
 					"icon": "",
 					"url": "/controlpanel/subscriptions/list"
@@ -320,7 +309,8 @@
 				{
 					"title": {
 						"EN": "Digital Twin Definitions",
-						"ES": "Definiciones de Digital Twin"
+						"ES": "Definiciones de Digital Twin",
+						"FR": "Définitions de Jumeaux Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwintypes/list"
@@ -328,7 +318,8 @@
 				{
 					"title": {
 						"EN": "Digital Twin Management",
-						"ES": "Gestión Digital Twins"
+						"ES": "Gestión Digital Twins",
+						"FR": "Gestion des Jumeaux Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindevices/list"
@@ -336,26 +327,48 @@
 				{
 					"title": {
 						"EN": "Digital Twin Status",
-						"ES": "Estado Digital Twins"
+						"ES": "Estado Digital Twins",
+						"FR": "État du Jumeau Numérique"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindisplay/show"
 				}
 			]
 		},
-
+		{
+			"title": {
+				"EN": "DATA GOVERNANCE",
+				"ES": "GOBIERNO DEL DATO",
+				"FR": "GOUVERNANCE DES DONNÉES"
+			},
+			"icon": "icon-monitoring",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "View Lineages",
+						"ES": "Visualizar Linajes",
+						"FR": "Voir les Lignées"
+					},
+					"icon": "",
+					"url": "/controlpanel/lineage/show"
+				}
+			]
+		},
 		{
 			"title": {
 				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO"
+				"ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
 			},
-			"icon": "flaticon-open-box",
+			"icon": "icon-dev-tools",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Export & Import Environment Tool",
-						"ES": "Exportación & Importación de Datos"
+						"ES": "Exportación & Importación de Datos",
+						"FR": "Outil d'environnement d'exportation et d'importation"
 					},
 					"icon": "",
 					"url": "/controlpanel/migration/show"
@@ -363,7 +376,8 @@
 				{
 					"title": {
 						"EN": "Data to Ontology Import Tools",
-						"ES": "Herramientas de importación de datos a ontología"
+						"ES": "Herramientas de importación de datos a ontología",
+						"FR": "Outils d'importation de Données vers une Ontologie"
 					},
 					"icon": "",
 					"url": "/controlpanel/jsontool/tools"
@@ -371,7 +385,8 @@
 				{
 					"title": {
 						"EN": "Web Projects Management",
-						"ES": "Gestión Proyectos Web"
+						"ES": "Gestión Proyectos Web",
+						"FR": "Gestion de Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -379,7 +394,8 @@
 				{
 					"title": {
 						"EN": "Files Management",
-						"ES": "Gestión de ficheros"
+						"ES": "Gestión de ficheros",
+						"FR": "Gestion des fichiers"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
@@ -387,7 +403,8 @@
 				{
 					"title": {
 						"EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada"
+						"ES": "Configuración Centralizada",
+						"FR": "Configuration Centralisée"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
@@ -395,7 +412,8 @@
 				{
 					"title": {
 						"EN": "REST Services Planner Management",
-						"ES": "Gestión Planificación de Servicios REST"
+						"ES": "Gestión Planificación de Servicios REST",
+						"FR": "Gestion du Planificateur de Services REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/restplanner/list"
@@ -403,7 +421,8 @@
 				{
 					"title": {
 						"EN": "Cache Management",
-						"ES": "Gestión de caché"
+						"ES": "Gestión de caché",
+						"FR": "Gestion des caches"
 					},
 					"icon": "",
 					"url": "/controlpanel/caches/list"
@@ -411,7 +430,8 @@
 				{
 					"title": {
 						"EN": "Internationalizations Management",
-						"ES": "Gestión de internacionalizaciones"
+						"ES": "Gestión de internacionalizaciones",
+						"FR": "Gestion des internationalisations"
 					},
 					"icon": "",
 					"url": "/controlpanel/internationalizations/list"
@@ -419,10 +439,20 @@
 				{
 					"title": {
 						"EN": "Query Templates Management",
-						"ES": "Gestión de Plantillas de Consulta"
+						"ES": "Gestión de Plantillas de Consulta",
+						"FR": "Gestion des Modèles de Requête"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytemplates/list"
+				},
+				{
+					"title": {
+						"EN": "External Database Connection Management",
+						"ES": "Gestión de Conexiones Externas a Base de datos",
+						"FR": "Gestion des Connexions à la Base de Données Externe"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
 				}
 			]
 		},
@@ -430,15 +460,17 @@
 		{
 			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS"
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
 			},
-			"icon": "flaticon-refresh",
+			"icon": "icon-tools",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta Consultas"
+						"ES": "Herramienta Consultas",
+						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
@@ -446,7 +478,8 @@
 				{
                     "title": {
                         "EN": "UI Generation Tools",
-                        "ES": "Herramientas de generación de UI"
+                        "ES": "Herramientas de generación de UI",
+						"FR": "Outils de Génération d'interface Utilisateur"
                     },
                     "icon": "",
                     "url": "/controlpanel/low-code/"
@@ -454,7 +487,8 @@
 				{
 					"title": {
 						"EN": "System Audit",
-						"ES": "Auditoría del Sistema"
+						"ES": "Auditoría del Sistema",
+						"FR": "Audit du système"
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
@@ -462,7 +496,8 @@
 				{
 					"title": {
 						"EN": "Monitoring UI",
-						"ES": "Consola Monitorización"
+						"ES": "Consola Monitorización",
+						"FR": "Interface Utilisateur de Surveillance"
 					},
 					"icon": "",
 					"url": "/controlpanel/monitoringui"
@@ -470,7 +505,8 @@
 				{
 					"title": {
 						"EN": "Stress Tool",
-						"ES": "Herramienta de Carga"
+						"ES": "Herramienta de Carga",
+						"FR": "Outil d'effort"
 					},
 					"icon": "",
 					"url": "/controlpanel/scalability/index.html"
@@ -478,12 +514,12 @@
 				{
 					"title": {
 						"EN": "Kafka Monitoring",
-						"ES": "Monitorización de Kafka"
+						"ES": "Monitorización de Kafka",
+						"FR": "Surveillance Kafka"
 					},
 					"icon": "",
 					"url": "/controlpanel/kafka/monitoring/list"
-				}
-				
+				}		
 				
 			]
 		}

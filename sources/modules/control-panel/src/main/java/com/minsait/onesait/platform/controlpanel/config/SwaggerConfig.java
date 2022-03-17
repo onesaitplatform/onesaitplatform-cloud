@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -835,6 +835,27 @@ public class SwaggerConfig {
 	private Predicate<String> buildPathSelectorOpenDataPortalManagement() {
 		return or(regex("/api/opendata.*"));
 	}
+	
+	@Bean
+    public Docket internationalizationAPI() {
+
+        // Adding Header
+        final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+        final List<Parameter> aParameters = new ArrayList<>();
+
+        aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+                .build();
+        aParameters.add(aParameterBuilder.build());
+
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Internationalization").select()
+                .apis(RequestHandlerSelectors.any()).paths(buildPathSelectorInternationalizationManagement()).build()
+                .globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Predicate<String> buildPathSelectorInternationalizationManagement() {
+        return or(regex("/api/internationalization.*"));
+    }
 
 	@Bean
 	public Docket dataRefinerAPI() {
@@ -881,8 +902,6 @@ public class SwaggerConfig {
 
 	@Bean
 	public Docket favoriteGadgetAPI() {
-
-		// Adding Header
 		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
 		final List<Parameter> aParameters = new ArrayList<>();
 
@@ -895,8 +914,30 @@ public class SwaggerConfig {
 				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
 	}
 
+	@Bean
+	public Docket multitenantAPI() {
+
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Multitenant Management").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorMultitenant()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
 	@SuppressWarnings("unchecked")
 	private Predicate<String> buildPathSelectorFavoriteGadgetManagement() {
 		return or(regex("/api/favoritegadget.*"));
 	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorMultitenant() {
+		return or(regex("/api/multitenant.*"));
+	}
+
 }

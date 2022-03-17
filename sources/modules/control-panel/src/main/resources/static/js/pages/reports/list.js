@@ -117,7 +117,7 @@ Report.List = (function() {
 	
 	function initTableEvents() {
 		
-		$('.icon-report-play').each(function() {
+		$('.report-play').each(function() {
 			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
@@ -134,7 +134,7 @@ Report.List = (function() {
 				
 		});
 		
-		$('.icon-report-trash').each(function() {
+		$('.report-trash').each(function() {
 			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id'); 
@@ -142,7 +142,7 @@ Report.List = (function() {
 			});
 		});
 
-		$('.icon-report-download').each(function() {
+		$('.report-download').each(function() {
 			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
@@ -163,7 +163,7 @@ Report.List = (function() {
 			});
 		});
 		
-		$('.icon-report-edit').each(function() {
+		$('.report-edit').each(function() {
 			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
 				var id = $(this).data('id');
@@ -174,24 +174,22 @@ Report.List = (function() {
 	
 	var deleteReportDialog = function(id) {
 		$.confirm({
-			icon: 'fa fa-warning',
-			title: "Confirmation",
+			title: headerReg.reportDelete,
 			theme: 'light',
 			columnClass: 'medium',
-			content: "You are going to delete a report, are you sure?",
+			content: headerReg.reportConfirm,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			closeIcon: true,
 			buttons: {
 				close: {
-					text: 'Close',
-					btnClass: 'btn btn-sm btn-circle btn-outline blue',
+					text: headerReg.btnCancelar,
+					btnClass: 'btn btn-outline blue dialog',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: "Delete",
-					btnClass: 'btn btn-sm btn-circle btn-outline btn-blue',
+					text: headerReg.btnEliminar,
+					btnClass: 'btn btn-primary',
 					action: function() { 
 						$.ajax({ 
 							headers: csrf,

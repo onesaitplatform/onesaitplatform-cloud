@@ -14,7 +14,7 @@ Tenant.List = (function() {
 	
 	var dtRenderOptions = function (data, type, row) {
 		return '<div class="grupo-iconos text-center">'
-		+ '<a href="'+showUrl+ row.name+'/show"><span data-id="' + row.name + '" class="icon-edit btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>'
+		+ '<a href="'+showUrl+ row.name+'/show"><span data-id="' + row.name + '" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="icon-edit"></i></span></a>'
 		+ '</div>';
 	};
 	

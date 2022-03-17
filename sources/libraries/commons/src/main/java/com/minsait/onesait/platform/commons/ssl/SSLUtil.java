@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,12 +71,51 @@ public final class SSLUtil {
 
 		SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
 
-		CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf)
-				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		CloseableHttpClient httpClient = closeableHttpClientWithProxySettings(csf);
 
 		HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
 		httpRequestFactory.setHttpClient(httpClient);
 		return httpRequestFactory;
+	}
+	
+	private static CloseableHttpClient closeableHttpClientWithProxySettings(SSLConnectionSocketFactory csf) {
+		CloseableHttpClient httpClient;
+		
+		boolean configureSystemProperties=false;
+		
+		String httpProxyHost=System.getenv("http.proxyHost");
+		String httpProxyPort=System.getenv("http.proxyPort");
+		String httpNonProxyHosts=System.getenv("http.nonProxyHosts");
+		
+		if(httpProxyHost!=null && httpProxyHost.trim().length()>0 && httpProxyPort!=null && httpProxyPort.trim().length()>0) {
+			System.setProperty("http.proxyHost", httpProxyHost);
+			System.setProperty("http.proxyPort", httpProxyPort);
+			if(httpNonProxyHosts!=null && httpNonProxyHosts.trim().length()>0) {
+				System.setProperty("http.nonProxyHosts", httpNonProxyHosts);
+			}
+			configureSystemProperties=true;
+		}
+		
+		String httpsProxyHost=System.getenv("https.proxyHost");
+		String httpsProxyPort=System.getenv("https.proxyPort");
+		if(httpsProxyHost!=null && httpsProxyHost.trim().length()>0 && httpsProxyPort!=null && httpsProxyPort.trim().length()>0) {
+			System.setProperty("https.proxyHost", httpsProxyHost);
+			System.setProperty("https.proxyPort", httpsProxyPort);
+			if(httpNonProxyHosts!=null && httpNonProxyHosts.trim().length()>0) { //No existe https.nonProxyHosts
+				System.setProperty("http.nonProxyHosts", httpNonProxyHosts);
+			}
+			configureSystemProperties=true;
+		}
+		
+		if(configureSystemProperties) {
+			httpClient = HttpClients.custom().useSystemProperties().setMaxConnPerRoute(200).setMaxConnTotal(200).setSSLSocketFactory(csf)
+					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build(); 
+		}else {
+			httpClient = HttpClients.custom().setMaxConnPerRoute(200).setMaxConnTotal(200).setSSLSocketFactory(csf)
+					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		}
+		
+		return httpClient;
 	}
 
 	private SSLUtil() {

@@ -22,7 +22,7 @@ var MenuController = function() {
 		,page_LANG 		= ''
 		,menu_LANG 		= ''
 		,heading		= ''
-		.icon			= 'flaticon-more-v3'
+		.icon			= 'icomoon'
 		,submenus 		= false;
 		
 		// NO-DATA NO-FUN!
@@ -48,12 +48,18 @@ var MenuController = function() {
 			if ( hasSubmenus(item) ){
 				submenus = true;
 				menu_HTML  +='<li class="nav-item">'
-							+'	<a href="'+ item.url +'" class="nav-link nav-toggle">'
+							+'	<a  class="nav-link dropdown-toggle tooltips" data-toggle="dropdown" data-placement="right"  data-original-title="'+item.title[ menu_LANG ]+'">'
 							+'		<i class="'+ item.icon +'"></i>'
 							+'		<span class="title">'+ item.title[ menu_LANG ] +'</span>'
 							+'		<span class="arrow"></span>'
 							+'	</a>'
-							+'	<ul class="sub-menu">';
+							+'	<ul class="dropdown-menu dropdown-submenu-position">';
+				
+				//Add a info on title on submenu
+				
+					menu_HTML   +='<li class="info-parent-submenu">'+ item.title[ menu_LANG ]+'</li>';										
+									
+				
 				
 				// SUB-NAV-ITEM LOOP			 
 				item.submenu.map(function(subitem, subindex){					
@@ -88,7 +94,7 @@ var MenuController = function() {
 				}
 				else{
 					menu_HTML  +='<li class="nav-item">'
-								+'	<a href="'+ item.url +'" class="nav-link nav-toggle">'
+								+'	<a class="nav-link dropdown-toggle tooltips" data-toggle="dropdown" data-placement="right" data-original-title="'+item.title[ menu_LANG ]+'">'
 								+'		<i class="'+ item.icon +'"></i>'
 								+'		<span class="title">'+ item.title[ menu_LANG ] +'</span>'
 								+'	</a>'
@@ -120,7 +126,9 @@ var MenuController = function() {
 		if ( currentPath === '/controlpanel/main' ){ firstMenu.closest('li.nav-item').addClass('open active'); return false;} else { firstMenu.closest('li.nav-item').removeClass('open active');}
 		
 		// GET ALL NAVS, THEN CHECK URL vs. CURRENT PATH --> ACTIVE.
-		var allMenus = $('.page-sidebar-menu > li.nav-item > ul.sub-menu  > li.nav-item > a.nav-link.nav-toggle');
+		var allMenus = $('.page-sidebar-menu > li.nav-item > ul > li.nav-item > a.nav-link.nav-toggle');
+		
+		
 		allMenus.each(function(ilink,navlink){
 				
 			logControl ? console.log('|---> nav-link-' + ilink + ' URL: ' + navlink + ' PATH: ' + $(this)[0].pathname) : '';

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		}
 		if (compileQueries())
 			((QuasarMongoDBbHttpConnector) AopContext.currentProxy()).compileQueryAsJson(collection, query, offset);
-		final String result = quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null);
+		final String result = quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null, null);
 		return formatResult(result);
 	}
 
@@ -114,7 +114,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-		return quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, BaseHttpClient.ACCEPT_TEXT_CSV, null);
+		return quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, BaseHttpClient.ACCEPT_TEXT_CSV, null, null);
 
 	}
 
@@ -214,7 +214,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	private String handleCompileQuery(String url, String query, String collection) {
 		try {
 			final String compileResult = quasarHttpClient.invokeSQLPlugin(url.replace("/query/", "/compile/"),
-					null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null);
+					null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null, null);
 			final JsonNode compile = mapper.readTree(compileResult);
 			String nativeQuery = compile.path(PATH_TO_COMPILED_QUERY).asText();
 			if (!StringUtils.isEmpty(nativeQuery)) {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,6 +201,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		config.setBasePath(getApiBasePath(api, numVersion));
 		final RestSwaggerReader reader = new RestSwaggerReader();
 		final Swagger swagger = reader.read(apiDto, config);
+
 		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
@@ -208,7 +209,6 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	private String getApiBasePath(Api api, String numVersion) {
 		return BASE_PATH + "/v" + numVersion + "/" + api.getIdentification();
 	}
-
 
 	/**
 	 * Add Authentication Header to Swagger instance.

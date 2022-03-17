@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
 import com.minsait.onesait.platform.config.converters.MasterUserConverter;
+import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.MigrationData;
 import com.minsait.onesait.platform.config.model.MigrationData.DataType;
 import com.minsait.onesait.platform.config.model.MigrationData.Status;
@@ -194,6 +195,11 @@ public class MigrationServiceImpl implements MigrationService {
 		} catch (IllegalAccessException e1) {
 		}
 		try {
+			if (clazz.equals(Gadget.class)) {
+				Integer r = entityManager.createNativeQuery("DELETE FROM gadget_measure WHERE gadget_id = :id")
+						.setParameter("id", id).executeUpdate();
+				log.debug("Remove {} GadgetMeasures instances for Gadget ID: {}", r, id);
+			}
 			storedObj = entityManager.merge(entity);
 		} catch (Exception e) {
 			Instance instance;

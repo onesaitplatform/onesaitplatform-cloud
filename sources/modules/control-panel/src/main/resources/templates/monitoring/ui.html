@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -65,43 +65,30 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						
-						
+						<li>
+							<span th:text="#{monitoring.breadcrumb}">Monitoring UI</span>
+						</li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{apimanager.template.invoke}">Invoke Apis</span></h1>
+				<h1 class="page-title hide "><span th:text="#{monitoring.title}">Monitoring</span></h1>
 				<!-- END PAGE TITLE-->			
 				
+				<div id="header">
+					<div class="row pageCreateHeader">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="margin-top-4">
+								<span th:text="#{monitoring.title}">Monitoring</span>
+							</div>
+						</div>
+					</div>
+				</div>
 				<!-- MAIN ROW -->
-				<div class="row">
-					<div class="col-md-12">
-					
-						<div class="portlet light">
-							<div class="portlet-title hide">
-								<div class="caption">
-									
-									<!--<span class="caption-subject" th:text="#{apimanager.template.invoke}">Invoke Apis</span> -->
-									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>									
-								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title=""> </a>
-									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>
-							</div>
-							<div class="portlet-body" style="display: block; margin-top: -20px;">
-								<div class="row">
-									<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-20">
-										<iframe th:src="${url}" width="100%" frameborder="0" height="100%"></iframe>
-									</div>
-								</div>
-							</div>
-						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
-				</div><!-- END MAIN ROW -->				
+				<div class="row main">
+					<iframe th:src="${url}" width="100%" frameborder="0" height="100%"></iframe>	
+				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>

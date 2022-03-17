@@ -31,22 +31,13 @@ var OntologyCreateController = function() {
 
 
 	
-
-
-
-
-	
-	
-
-	
-	
 	var getTargetOntologyProperties = function(){
 		$('#target-property option').each(function(i, option){
 			if(option.value != "")
 				option.remove();
 		});
 		var dstOnt = $('#target-ontology').val();
-		var srcAtt = $('#self-property :selected').text()
+		var srcAtt = $('#self-property :selected').text();
 		jQuery.get('/controlpanel/ontologies/' + dstOnt + '/properties/type/' + mapPropType[srcAtt], function(data){
 			var properties = data;
 			Object.keys(properties).forEach(function(key){
@@ -57,11 +48,6 @@ var OntologyCreateController = function() {
 		
 	}
 		
-
-	
-	
-
-
 
 
 	// REDIRECT URL
@@ -74,13 +60,14 @@ var OntologyCreateController = function() {
 	var validateIdName = function(){
 		var error1 = $('.alert-danger');
 		var name = $('#name').val();
-		
 		if (name.match(/^[0-9]/)!=null || name.trim().length === 0) {
 			error1.show();
-			$('#nameerror').removeClass('hide').addClass(' font-red'); App.scrollTo(error1, -200);
+			$('#nameerror').removeClass('hide').addClass(' font-red');
+			$('#name').closest('.form-group').addClass('has-error')
 			return false; 
 		} else { 
-			 $('#nameerror').addClass('hide');
+			$('#nameerror').addClass('hide');
+			$('#name').closest('.form-group').removeClass('has-error')
 			return true;
 		}
 	}
@@ -88,29 +75,68 @@ var OntologyCreateController = function() {
 	
 	var validateMetaInfo = function(){
 		var metainf = $('#metainf').val();
-		var error1 = $('.alert-danger');
 		if(typeof metainf === 'undefined' || metainf.trim().length === 0 ){
-			 error1.show();
-			 $('#metainferror').removeClass('hide').addClass(' font-red'); App.scrollTo(error1, -200);
+			$('#metainferror').removeClass('hide');
+			$('#metainf').prev().addClass('tagsinput-has-error');
 			return false;
 		}else{
 			 $('#metainferror').addClass('hide');
+			 $('#metainf').prev().removeClass('tagsinput-has-error');
 			return true;
 		}
-	}
-	
+	}	
 	
 	var validateDescription = function(){		
 		var description = $('#description').val();
 		var error1 = $('.alert-danger');
 		if(typeof description === 'undefined' || description.trim().length < 3 ){
 			error1.show();
-			 $('#descriptionError').removeClass('hide').addClass(' font-red'); App.scrollTo(error1, -200);
+			$('#descriptionerror').removeClass('hide').addClass(' font-red');
+			$('#description').closest('.form-group').addClass('has-error')
 			return false;
 		}else{
-			 $('#descriptionError').addClass('hide');
+			$('#descriptionerror').addClass('hide');
+			$('#description').closest('.form-group').removeClass('has-error')
 			return true;
 		}
+	}
+	
+	var validateCron = function(){		
+		if ($('#cron').val()!==''){
+			$('#cron').closest('.input-group').removeClass('has-error');
+			$('#cronerror').addClass('hide');
+			return true;
+		} else {
+			$('#cron').closest('.input-group').addClass('has-error');
+			$('#cronerror').removeClass('hide').addClass(' font-red');
+			return false;
+		}	
+	}
+	
+	var validateQuery = function(){		
+		var query = $('#query').val();
+		if(typeof query === 'undefined' || query.trim().length < 3 ){
+			$('#queryerror').removeClass('hide').addClass(' font-red');
+			$('#query').closest('.form-group').addClass('has-error');
+			return false;
+		}else{
+			$('#queryerror').addClass('hide');
+			$('#query').closest('.form-group').removeClass('has-error');
+			return true;
+		}
+	}
+	
+	var validateOntology = function(){	
+		if ($('#ontology').val()!==''){
+			$('#ontology').closest('.form-group').removeClass('has-error');
+			$('#ontologyerror').addClass('hide');
+			return true;
+		} else {
+			$('#ontology').closest('.form-group').addClass('has-error');
+			$('#ontologyerror').removeClass('hide');
+			return false;
+		}
+		
 	}
 	
 	
@@ -146,29 +172,14 @@ var OntologyCreateController = function() {
 			lang: currentLanguage,
 			// custom messages
             messages: {
-				jsonschema: { required:"El esquema no se ha guardado correctamente"},
-				datamodelid: { required: "Por favor seleccione una plantilla de ontología, aunque sea la vacia."}
 			},
 			// validation rules
             rules: {
-            	query:{minlength: 5, required: true },
-            	cron:{minlength: 5, required: true} ,
-            	name:{minlength: 5, required: false}
-            	/*,
-            	dateTo:{ greaterThan: "#dateFrom" },
-            	dateFrom:{ lessThan: "#dateTo" }*/
-				/*ontologyId:		{ minlength: 5, required: true },
-                identification:	{ minlength: 5, required: true },
-				datamodelid:	{ required: true},
-				jsonschema:		{ required: true},
-				description:	{ minlength: 5, required: true }*/
             },
             invalidHandler: function(event, validator) { // display error
 															// alert on form
 															// submit
-                success1.hide();
-                error1.show();
-                App.scrollTo(error1, -200);
+            	validateFormPrevieusly(form1);
             },
             errorPlacement: function(error, element) {
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -191,13 +202,12 @@ var OntologyCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-                error1.hide();
-                validateFormPrevieusly(form1,error1,success1);			
+                validateFormPrevieusly(form1);			
 			}
         });
     }
 
-	var validateFormPrevieusly = function (form1,error1,success1){
+	var validateFormPrevieusly = function (form1){
 		//Validate form 
 		var isNewOntology = $('#check-new-ontology').is(':checked');
 		
@@ -207,38 +217,48 @@ var OntologyCreateController = function() {
 			var validIdName = validateIdName();
 			var validMetaInfo = validateMetaInfo();
 			var validDescription = validateDescription();
+			var validCron = validateCron();
+			var validQuery = validateQuery();
 			
-			if (validIdName && validMetaInfo && validDescription){
+			if (validIdName && validMetaInfo && validDescription && validCron && validQuery){
 				console.log("create kpi data for new ontology");
-				createOntologyFromQuery(form1,error1,success1);
+				createOntologyFromQuery(form1);
 			}
 			else {
-				success1.hide();
-				error1.show();
+				toastr.error(messagesForms.validation.genFormError,'');
 			}
-			
-			
 		}else{
 			//else create data for kpi ontology
-			console.log("create kpi data for exist ontology");			
-			form1.ajaxSubmit(
-					{type: 'post', success : function(data){				
-						if(ontologyCreateReg.actionMode != null){
-							navigateUrl(data.redirect);
-						}else{
-							$('#modal-created').modal('show');
-						}
-					}, error: function(data){						
-						HeaderController.showErrorDialog(data.responseJSON.cause);
+			console.log("create kpi data for exist ontology");
+			
+			var validOntology = validateOntology();
+			var validCron = validateCron();
+			var validQuery = validateQuery();
+			
+			if (validOntology && validCron && validQuery){
+				form1.ajaxSubmit(
+					{ type: 'post', success : function(data){				
+								if(ontologyCreateReg.actionMode != null){
+									toastr.success(messagesForms.operations.genOpSuccess,'');
+									navigateUrl(data.redirect);
+								}else{
+									$('#modal-created').modal('show');
+								}
+							}, error: function(data){
+								toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
+							}
 					}
-					});
+				);
+			} else {
+				toastr.error(messagesForms.validation.genFormError,'');
 			}
+		}
 	}
-	var createOntologyFromQuery = function(form1,error1,success1){
+	var createOntologyFromQuery = function(form1){
 		
 		//Check  the query has been executed
 		if (!$('#result-panel').is(":visible")){
-			HeaderController.showErrorDialog(ontologyCreateJson.executeQuery);
+			toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.executeQuery);
 		} else {
 		
 			var testOntology = GenericFunctions.getOntologyFromQuery($("#query").val());
@@ -249,7 +269,7 @@ var OntologyCreateController = function() {
 				
 				//Case bad query 
 				if(data === "querytool/show :: query"){
-					HeaderController.showErrorDialog(ontologyCreateJson.validations.invalidQuery);				
+					toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.validations.invalidQuery);
 				}else{
 					try {
 						var parseData = JSON.parse(data);									
@@ -257,22 +277,23 @@ var OntologyCreateController = function() {
 							$('#schema').val(processJSON(JSON.stringify(parseData[0])));				
 							//send form to controller 
 							form1.ajaxSubmit({type: 'post', success : function(data){						
-								if(ontologyCreateReg.actionMode != null){
-									navigateUrl(data.redirect);
-								}else{
-									$('#modal-created').modal('show');
+									if(ontologyCreateReg.actionMode != null){
+										toastr.success(messagesForms.operations.genOpSuccess,'');
+										navigateUrl(data.redirect);
+									} else {
+										$('#modal-created').modal('show');
 									}
-								}, error: function(data){						
-									HeaderController.showErrorDialog(data.responseJSON.cause);
+								}, error: function(data){
+									toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
 								}
 							})
 			
-						}else {
-							HeaderController.showErrorDialog(ontologyCreateJson.validations.noinstances);
+						} else {
+							toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.validations.noinstances);
 						} 
 					} catch (error){
 						console.log(error);
-						HeaderController.showErrorDialog(ontologyCreateJson.validations.invalidSchema);
+						toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.validations.invalidSchema);
 					}
 				}
 			});
@@ -280,7 +301,46 @@ var OntologyCreateController = function() {
 		
 	}
 	
-	
+	// CLEAN FIELDS FORM
+	var cleanFields = function (formId) {
+		logControl ? console.log('cleanFields() -> ') : '';
+		
+		//CLEAR OUT THE VALIDATION ERRORS
+		$('#'+formId).validate().resetForm(); 
+		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
+			if(!$(this).hasClass("no-remove")){$(this).val('');}
+		});
+		
+		//CUSTOM ERRORS
+		$('#nameerror').addClass('hide');
+		$('#descriptionerror').addClass('hide');
+		$('#cron').closest('.input-group').removeClass('has-error');
+		$('#cronerror').addClass('hide');
+		$('#query').closest('.form-group').removeClass('has-error');		
+		$('#queryerror').addClass('hide');
+		$('#ontology').closest('.form-group').removeClass('has-error');
+		$('#ontologyerror').addClass('hide');
+		
+		//CLEANING CHECKS
+		$('input:checkbox').not('.no-remove').removeAttr('checked');
+		loadCodeMirror();
+		
+		//CLEANING SELECTs
+		$(".selectpicker").each(function(){
+			$(this).val( '' );
+			$(this).selectpicker('deselectAll').selectpicker('refresh');
+		});
+		
+		// CLEANING tagsinput
+		$('.tagsinput').tagsinput('removeAll');
+		$('.tagsinput').prev().removeClass('tagsinput-has-error');
+		$('.tagsinput').nextAll('span:first').addClass('hide');
+				
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+		
+	}	
 	
 
 	// INIT TEMPLATE ELEMENTS
@@ -309,10 +369,57 @@ var OntologyCreateController = function() {
 
 		// Reset form
 		$('#resetBtn').on('click',function(){
-		//	cleanFields('ontology_create_form');
+			cleanFields('ontology_create_form');
 		});
+		
+		$('#name').bind('blur', function (ev) { // fires on every blur
+			if ($('#check-new-ontology').is(':checked')){
+				validateIdName();             // checks form for validity
+			}
+		});		
 
-	
+		$('#metainf').parent().on('blur', 'input', function(event) {
+			if ($('#check-new-ontology').is(':checked')){
+				if ($(event.target).parent().next().val() !== ''){
+					$(event.target).parent().next().nextAll('span:first').addClass('hide');
+					$(event.target).parent().removeClass('tagsinput-has-error');
+				} else {
+					$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+					$(event.target).parent().addClass('tagsinput-has-error');
+				}
+			}
+		})		
+		
+		$('#description').bind('blur', function (ev) { // fires on every blur
+			if ($('#check-new-ontology').is(':checked')){
+				validateDescription();             // checks form for validity
+			}
+		});
+		
+		$('#ontology').parent().on('blur', 'div', function(event) {
+			if (!$('#check-new-ontology').is(':checked')){
+				if (event.currentTarget.getElementsByTagName('select')[0]){
+					if ($('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id')).val()!==''){
+						$(event.target).closest('.form-group').removeClass('has-error');
+						$('#ontologyerror').addClass('hide');
+					} else {
+						$(event.target).closest('.form-group').addClass('has-error');
+						$('#ontologyerror').removeClass('hide');
+					}
+				}
+			}
+		})
+		
+		$('#cron').bind('blur', function (ev) { //cron validation
+			validateCron();
+		}).change(function () { // fires on every change
+			validateCron();	
+		});
+		
+		$('#query').bind('blur', function (ev) { // fires on every blur
+			validateQuery();
+		});
+		
 		// INSERT MODE ACTIONS (ontologyCreateReg.actionMode = NULL )
 		if ( ontologyCreateReg.actionMode === null){
 			logControl ? console.log('|---> Action-mode: INSERT') : '';
@@ -465,7 +572,8 @@ var OntologyCreateController = function() {
 					$("#users").selectpicker('refresh');
 					$('#authorizations').removeClass('hide');
 					$('#authorizations').attr('data-loaded',true);
-
+					
+					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
 
@@ -489,6 +597,8 @@ var OntologyCreateController = function() {
 					// UPDATING STATUS...
 					$(btn).find("i").removeClass('fa fa-spin fa-refresh').addClass('fa fa-edit');
 					$(btn).find("span").text('Update');
+					
+					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
 
@@ -523,16 +633,14 @@ var OntologyCreateController = function() {
 							$('#authorizations').addClass('hide');
 
 						}
-
-					}
-					else{
-						$.alert({title: 'ALERT!', theme: 'dark', type: 'orange', content: 'NO RESPONSE!'});
+						toastr.success(messagesForms.operations.genOpSuccess,'');
+					} else {
+						toastr.error(messagesForms.operations.genOpError,'NO RESPONSE!');
 					}
 				}
 			});
 		}
 	};
-
 
 	// return position to find authId.
 	var foundIndex = function(what,item,arr){
@@ -543,7 +651,6 @@ var OntologyCreateController = function() {
 		});
 		return found;
 	}
-
 
 	// CONTROLLER PUBLIC FUNCTIONS
 	return{
@@ -561,7 +668,6 @@ var OntologyCreateController = function() {
 			
 			initTemplateElements();
 			dataModeltemplateCounters();
-			
 			
 			//SET DEFAULT DATAMODEL TO EMPTYBASE
 			$('#datamodelid').val($('#EmptyBase li').attr('data-model'));
@@ -587,7 +693,6 @@ var OntologyCreateController = function() {
 				return this;
 			};
 
-
 		},
 
 		// REDIRECT
@@ -601,10 +706,6 @@ var OntologyCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': deleteOntology()') : '';
 			deleteOntologyConfirmation(ontologyId);
 		},
-
-		
-
-		
 
 		// INSERT AUTHORIZATION
 		insertAuthorization: function(){
@@ -639,6 +740,7 @@ var OntologyCreateController = function() {
 				authorization('delete',ontologyCreateReg.ontologyId, selUser, selAccessType, selAuthorizationId, obj );
 			}
 		},
+		
 		// UPDATE authorization
 		updateAuthorization: function(obj){
 			logControl ? console.log(LIB_TITLE + ': updateAuthorization()') : '';

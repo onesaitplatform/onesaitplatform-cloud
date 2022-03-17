@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.persistence.control.NoPersistenceQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.external.api.rest.QueryAsTextRestDBImpl;
@@ -59,6 +60,9 @@ public class QueryAsTextDBRepositoryFactory {
 	private QueryAsTextRestDBImpl queryApiRest;
 
 	@Autowired
+	private NoPersistenceQueryAsTextDBRepository noPersistenceQueryAsTextDBRepository;
+
+	@Autowired
 	private CosmosDBQueryAsTextDBRepository comosDBQuery;
 
 	public QueryAsTextDBRepository getInstance(String ontologyId, String sessionUserId) {
@@ -78,24 +82,28 @@ public class QueryAsTextDBRepositoryFactory {
 		if (result1 != null) {
 			final RtdbDatasource dataSource = result1.getRtdbDatasource();
 			return getInstance(dataSource);
-		} else
+		} else {
 			return queryMongo;
+		}
 	}
 
 	public QueryAsTextDBRepository getInstance(RtdbDatasource dataSource) {
-		if (dataSource.equals(RtdbDatasource.MONGO))
+		if (dataSource.equals(RtdbDatasource.MONGO)) {
 			return queryMongo;
-		else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH))
+		} else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH)) {
 			return queryElasticSearch;
-		else if (dataSource.equals(RtdbDatasource.KUDU))
+		} else if (dataSource.equals(RtdbDatasource.KUDU)) {
 			return kuduQueryAsTextDBRepository;
-		else if (dataSource.equals(RtdbDatasource.VIRTUAL))
+		} else if (dataSource.equals(RtdbDatasource.VIRTUAL)) {
 			return queryVirtual;
-		else if (dataSource.equals(RtdbDatasource.API_REST))
+		} else if (dataSource.equals(RtdbDatasource.API_REST)) {
 			return queryApiRest;
-		else if (dataSource.equals(RtdbDatasource.COSMOS_DB))
+		} else if (dataSource.equals(RtdbDatasource.COSMOS_DB)) {
 			return comosDBQuery;
-		else
+		} else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
+			return noPersistenceQueryAsTextDBRepository;
+		} else {
 			return queryMongo;
+		}
 	}
 }

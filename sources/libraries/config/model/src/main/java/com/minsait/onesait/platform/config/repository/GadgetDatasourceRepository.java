@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
+import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
@@ -34,6 +35,8 @@ public interface GadgetDatasourceRepository extends JpaRepository<GadgetDatasour
 	List<GadgetDatasource> findByIdentificationLike(String identification);
 
 	List<GadgetDatasource> findByOntology(Ontology ontology);
+
+	List<GadgetDatasource> findByUserAndOntology(User user, Ontology ontology);
 
 	List<GadgetDatasource> findByMode(String mode);
 
@@ -80,5 +83,19 @@ public interface GadgetDatasourceRepository extends JpaRepository<GadgetDatasour
 
 	@Query("SELECT o.identification FROM GadgetDatasource AS o where o.ontology.identification=:ontology ORDER BY o.identification ASC")
 	List<String> findIdentificationByOntology(@Param("ontology") String ontology);
+
+	@Query("SELECT o.identification FROM GadgetDatasource AS o ORDER BY o.identification ASC")
+	List<String> findAllIdentifications();
+
+	@Query("SELECT o.identification FROM GadgetDatasource AS o where o.user=:user ORDER BY o.identification ASC")
+	List<String> findIdentificationByUser(@Param("user") User user);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DATASOURCE', 0) FROM GadgetDatasource AS o WHERE (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findAllDto(@Param("identification") String identification,
+			@Param("description") String description);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DATASOURCE', 0) FROM GadgetDatasource AS o WHERE o.user=:user AND (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
+	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
+			@Param("identification") String identification, @Param("description") String description);
 
 }

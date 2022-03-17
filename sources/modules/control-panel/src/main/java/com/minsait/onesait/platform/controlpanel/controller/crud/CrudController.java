@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@ public class CrudController {
 		ontologyDTO.setDatasource(ontology.getRtdbDatasource().name());
 		model.addAttribute("ontology", ontologyDTO);
 		model.addAttribute("uniqueId", getUniqueColumn(ontology.getIdentification(), false));
+		model.addAttribute("quasar", useQuasar());
 		return "crud/admin";
 	}
 
@@ -201,7 +202,13 @@ public class CrudController {
 						}
 						else{
 							selectStatement.getWhere().stream().forEach(where -> {
-								where.setColumn("c" + "." + where.getColumn());
+								if(where.getColumn().contains("elemAt(")) {
+									String col = where.getColumn().replace("elemAt(", "elemAt(c.");
+									where.setColumn(col);
+								}else {
+									where.setColumn("c" + "." + where.getColumn());	
+								}
+
 							});
 						}
 					}
@@ -213,7 +220,13 @@ public class CrudController {
 						}
 						else {
 							selectStatement.getOrderBy().stream().forEach(order -> {
-								order.setColumn("c" + "." + order.getColumn());
+								if(order.getColumn().contains("elemAt(")) {
+									String col = order.getColumn().replace("elemAt(", "elemAt(c.");
+									order.setColumn(col);
+								}else {
+									order.setColumn("c" + "." + order.getColumn());
+								}
+
 							});
 						}
 					}
@@ -224,7 +237,7 @@ public class CrudController {
 						selectStatement.setColumns(new ArrayList<>());
 						selectStatement.getColumns().add("o.*");
 					}
-					selectStatement.getColumns().add("o._id");
+					selectStatement.getColumns().add("_id");
 					selectStatement.setAlias("o");
 				}
 

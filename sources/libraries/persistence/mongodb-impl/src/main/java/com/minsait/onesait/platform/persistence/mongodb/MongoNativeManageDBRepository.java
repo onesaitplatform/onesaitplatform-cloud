@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				}
 
 			/**
-			 * Sino existe la collection la crea
+			 * Si no existe la collection la crea
 			 */
 			if (!mongoDbConnector.collectionExists(Tenant2SchemaMapper.getRtdbSchema(), collection)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), collection);
@@ -109,7 +109,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				 * registros
 				 */
 				final long countCollection = mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), collection, "{}");
-				if (countCollection > 0) {
+				if (countCollection > 0 && !schema.contains("keeprecords")) {
 					log.error("The collection {} already exists and has records", collection);
 					throw new DBPersistenceException("The collection already exists and has records");
 				}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 @EnableKafka
 @Configuration
 public class KafkaProducerConfig {
+	
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
+	private String kafkaBrokers;	
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
@@ -62,9 +65,12 @@ public class KafkaProducerConfig {
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.password:admin-secret}")
 	private String kafkaPassword;
+	
+	private static final String EMPTY_BROKERS = "none";
+	private static final String KAFKA_DEFAULTPORT = "9092";	
 
 	private void applySecurity(Map<String, Object> config) {
-		if (!kafkaPort.contains("9092")) {
+		if (!kafkaPort.contains(KAFKA_DEFAULTPORT) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
 
@@ -77,7 +83,11 @@ public class KafkaProducerConfig {
 	@Bean
 	public ProducerFactory<String, String> producerFactory() {
 		Map<String, Object> configProps = new HashMap<>();
-		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}	
 		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
@@ -94,7 +104,11 @@ public class KafkaProducerConfig {
 	@Bean
 	public ProducerFactory<String, NotificationModel> operationFactory() {
 		Map<String, Object> configProps = new HashMap<>();
-		configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+		} else {	
+			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		}	
 		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 

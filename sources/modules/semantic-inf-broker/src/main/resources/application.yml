@@ -26,7 +26,7 @@ master:
         connection-timeout: 10000
       
 onesaitplatform: #Config onesaitplatform specific
-   audit.global.notify: false
+   audit.global.notify: true
    apimanager:
       cacheable: false
    iotbroker.plugable:
@@ -47,7 +47,7 @@ onesaitplatform: #Config onesaitplatform specific
             consumer.seekTo : beginning 
             consumer.group : kafkaGroup
             consumer.maxPollRecords : 5000
-   database.elasticsearch.enabled: false
+   database.elasticsearch.enabled: true
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -96,8 +96,11 @@ onesaitplatform: #Config onesaitplatform specific
         operationTimeout: 30000
         adminOperationTimeout: 30000
         socketReadTimeout: 10000
-   database.timeseries.timezone: UTC
-
+   database.timeseries:
+      timezone: UTC
+      mongodb.insert.lock.wait:
+        check.millis: 50
+        timeout.millis: 500
    router.avoidsslverification: true
    router.audit:
       enabled: true
@@ -127,8 +130,8 @@ spring: ## General Config
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: changeIt2019!
-      client.metadata.user.name: ${spring.boot.admin.username}
-      client.metadata.user.password: ${spring.boot.admin.password}
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
 
    datasource:
      hikari:

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@ package com.minsait.onesait.platform.persistence.elasticsearch.sql.connector;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -41,9 +44,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnector {
 
 	private static final String BUILDING_ERROR = "Error building URL";
-	private static final String PARSING_ERROR = "Error Parsing Result from query:";
-
+	
 	private String endpoint;
+	private String baseQueryObject;
+	private String queryPath;
+	private String authHeader;
 
 	@Autowired
 	private BaseHttpClient httpClient;
@@ -60,8 +65,22 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
+		
+        String username = elasticsearch.get("username") != null ? (String) elasticsearch.get("username") : "";
+        String password = elasticsearch.get("password") != null ? (String) elasticsearch.get("password") : "";  		
 
+        authHeader = null;
+        if (!"".equals(username) && !"".equals(password)) {        	    
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+            authHeader = "Basic " + new String(encodedAuth);
+            
+            log.info("Setting OpenDistro basic authentication parameters {}", authHeader);
+        }
+        
 		endpoint = (String) sql.get("endpoint");
+		baseQueryObject = (String) sql.get("baseQueryObject");
+		queryPath = (String) sql.get("queryPath");
 	}
 
 	@Override
@@ -89,11 +108,12 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
 		final StringBuilder bodyBuilder = new StringBuilder();
-		bodyBuilder.append("{\"sql\": \"");
+		bodyBuilder.append("{\""+baseQueryObject+"\": \"");
 		bodyBuilder.append(body);
 		bodyBuilder.append("\"}");
+		log.info("Query to execute: {}", bodyBuilder.toString());
 		final String result = httpClient.invokeSQLPlugin(url, bodyBuilder.toString(), HttpMethod.POST,
-				BaseHttpClient.ACCEPT_TEXT_CSV, null);
+				BaseHttpClient.ACCEPT_TEXT_CSV, null, authHeader);
 
 		res = ElasticSearchUtil.parseElastiSearchResult("" + result, queryHasSelectId(query));
 		return res;
@@ -112,8 +132,13 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-		final String result = httpClient.invokeSQLPlugin(url, body, HttpMethod.POST, BaseHttpClient.ACCEPT_TEXT_CSV,
-				null);
+		
+		final StringBuilder bodyBuilder = new StringBuilder();
+		bodyBuilder.append("{\""+baseQueryObject+"\": \"");
+		bodyBuilder.append(body);
+		bodyBuilder.append("\"}");
+		final String result = httpClient.invokeSQLPlugin(url, bodyBuilder.toString(), HttpMethod.POST, BaseHttpClient.ACCEPT_TEXT_CSV,
+				null, authHeader);
 
 		res = ElasticSearchUtil.parseElastiSearchResult(result, queryHasSelectId(query));
 		return res;
@@ -132,12 +157,13 @@ public class ElasticSearchSQLDbHttpImpl implements ElasticSearchSQLDbHttpConnect
 		if (encode) {
 			params = URLEncoder.encode(params, "UTF-8");
 		}
-		// return (endpoint + "/_nlpcn/sql?sql=" + params);
+
+
 		return params;
 	}
 
 	private String buildUrl() {
-		return endpoint + "/_nlpcn/sql";
+		return endpoint + queryPath;
 	}
 
 	private boolean queryHasSelectId(String query) {

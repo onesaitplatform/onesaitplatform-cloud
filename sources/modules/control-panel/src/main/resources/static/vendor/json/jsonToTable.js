@@ -13,8 +13,8 @@
             selector = '#' + element[0].id + ' ';
         }
 
-        var table = '<div class="table-scrollable table-scrollable-borderless"><table class="json-to-table table table-hover table-striped">';
-
+        //var table = '<div class="table-scrollable table-scrollable-borderless"><table class="json-to-table table table-hover table-striped">';
+		var table = '<div class="table-scrollable table-scrollable-borderless"><table class="json-to-table table table-hover table-striped" dt:table="true">';
         table += '<thead><th class="jsl"></th>';
         table += $.fn.createTable.parseTableData(data, true);
         table += '</thead>';
@@ -24,7 +24,15 @@
         table += '</table></div>';
 
         element.html(table);
-
+		/*setTimeout(function(){
+			$('.json-to-table').DataTable();
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#DataTables_Table_0_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#DataTables_Table_0_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		},2000);*/
+		
         return function () {
 
             $(selector + '.json-to-table').css({

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
@@ -29,14 +30,18 @@ import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "CLIENT_PLATFORM_INSTANCE", uniqueConstraints = {
 		@UniqueConstraint(columnNames = { "CLIENT_PLATFORM_ID", "IDENTIFICATION" }) })
 @Configurable
+@EntityListeners(AuditEntityListener.class)
+@ToString
 public class ClientPlatformInstance extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
@@ -105,10 +110,12 @@ public class ClientPlatformInstance extends AuditableEntityWithUUID {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof ClientPlatformInstance))
+		}
+		if (!(o instanceof ClientPlatformInstance)) {
 			return false;
+		}
 		final ClientPlatformInstance that = (ClientPlatformInstance) o;
 		return getIdentification() != null && getIdentification().equals(that.getIdentification())
 				&& getClientPlatform() != null && getClientPlatform().equals(that.getClientPlatform());

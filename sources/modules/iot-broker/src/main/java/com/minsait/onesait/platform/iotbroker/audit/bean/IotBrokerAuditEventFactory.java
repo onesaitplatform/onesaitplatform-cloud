@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
+ * 2013-2021 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  */
 package com.minsait.onesait.platform.iotbroker.audit.bean;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.audit.bean.CalendarUtil;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
@@ -41,74 +43,77 @@ import lombok.Builder;
 @Builder
 public class IotBrokerAuditEventFactory {
 
+	private static final String SOURCE = "source";
+
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyInsertMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), null, message.getData(), OperationType.INSERT,
-				messageText, info, session);
+				messageText, info, session, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyQueryMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), message.getQuery(), null, OperationType.QUERY,
-				messageText, info, session);
+				messageText, info, session, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodySubscribeMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), null, null, OperationType.SUBSCRIBE, messageText, info,
-				session);
+				session, null);
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyUnsubscribeMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
-		return createIotBrokerAuditEvent(OperationType.UNSUBSCRIBE, messageText, session, info);
+		return createIotBrokerAuditEvent(OperationType.UNSUBSCRIBE, messageText, session, info, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyLogMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
-		return createIotBrokerAuditEvent(OperationType.LOG, messageText, session, info);
+		return createIotBrokerAuditEvent(OperationType.LOG, messageText, session, info, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyUpdateByIdMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), null, message.getData(), OperationType.UPDATE,
-				messageText, info, session);
+				messageText, info, session, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyUpdateMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), message.getQuery(), null, OperationType.UPDATE,
-				messageText, info, session);
+				messageText, info, session, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyDeleteByIdMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), null, null, OperationType.DELETE, messageText, info,
-				session);
+				session, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyDeleteMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
 		return createIotBrokerAuditEvent(message.getOntology(), message.getQuery(), null, OperationType.DELETE,
-				messageText, info, session);
+				messageText, info, session, message.getTags());
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(SSAPBodyJoinMessage message, String messageText,
 			IoTSession session, GatewayInfo info) {
-		return createIotBrokerAuditEvent(OperationType.JOIN, messageText, session, info);
+		return createIotBrokerAuditEvent(OperationType.JOIN, messageText, session, info, message.getTags());
 	}
 
 	// -------------------------------------------------------------------------------------------------//
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(OperationType operationType, String messageText,
-			IoTSession session, GatewayInfo info) {
-		return createIotBrokerAuditEvent(null, null, null, operationType, messageText, info, session);
+			IoTSession session, GatewayInfo info, String tags) {
+		return createIotBrokerAuditEvent(null, null, null, operationType, messageText, info, session, tags);
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(String ontology, String query, JsonNode data,
-			OperationType operationType, String messageText, GatewayInfo info, IoTSession session) {
+			OperationType operationType, String messageText, GatewayInfo info, IoTSession session, String tags) {
 
-		IotBrokerAuditEvent event = createIotBrokerAuditEvent(ontology, query, data, operationType, messageText, info);
+		IotBrokerAuditEvent event = createIotBrokerAuditEvent(ontology, query, data, operationType, messageText, info,
+				tags);
 
 		if (session != null) {
 			event.setUser(session.getUserID());
@@ -121,18 +126,18 @@ public class IotBrokerAuditEventFactory {
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(String ontology, String query, JsonNode data,
-			OperationType operationType, String messageText, GatewayInfo info) {
+			OperationType operationType, String messageText, GatewayInfo info, String tags) {
 
-		IotBrokerAuditEvent event = createIotBrokerAuditEvent(ontology, query, operationType, messageText, info);
+		IotBrokerAuditEvent event = createIotBrokerAuditEvent(ontology, query, operationType, messageText, info, tags);
 
 		event.setData((data != null) ? data.toString() : null);
 		return event;
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(String ontology, String query, OperationType operationType,
-			String messageText, GatewayInfo info) {
+			String messageText, GatewayInfo info, String tags) {
 
-		IotBrokerAuditEvent event = createIotBrokerAuditEvent(operationType, messageText, info);
+		IotBrokerAuditEvent event = createIotBrokerAuditEvent(operationType, messageText, info, tags);
 
 		event.setOntology(ontology);
 		event.setQuery(query);
@@ -140,10 +145,23 @@ public class IotBrokerAuditEventFactory {
 	}
 
 	public IotBrokerAuditEvent createIotBrokerAuditEvent(OperationType operationType, String messageText,
-			GatewayInfo info) {
+			GatewayInfo info, String tags) {
+		Module module = null;
+		if (tags != null) {
+			try {
+				JsonNode json = new ObjectMapper().readTree(tags);
+				if (!json.has(SOURCE)) {
+					module = Module.IOTBROKER;
+				} else {
+					module = Module.valueOf(json.get(SOURCE).asText().toUpperCase());
+				}
+			} catch (IOException e) {
+				module = Module.IOTBROKER;
+			}
+		}
 		IotBrokerAuditEvent event = new IotBrokerAuditEvent();
 		event.setId(UUID.randomUUID().toString());
-		event.setModule(Module.IOTBROKER);
+		event.setModule(module != null ? module : Module.IOTBROKER);
 		event.setType(EventType.IOTBROKER);
 		event.setOperationType(operationType.name());
 		event.setResultOperation(ResultOperationType.SUCCESS);

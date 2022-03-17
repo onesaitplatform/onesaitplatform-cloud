@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,103 +14,110 @@
     limitations under the License.
 
 -->
-<div class="col-md-12 col-sm-6 col-xs-12">
-	<div class="form-group">
-		<label th:if="${projectObj.app == null}" class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{project.realm.users.tooltip},data-title=#{project.realm.users.title}">
-			<i class="fa fa-info" ></i>
-			<div th:text="#{project.use.realm}" class="inline font-l"></div>
-			<input id="check-realm" name="useRealm" type="checkbox" class="form-control no-remove" th:checked="${#lists.isEmpty(members)}" /> 
-			<span></span> 
-		</label>
-		<div class="row" style="margin-bottom: 0px; margin-top: 0px;">
-		<div class="col-md-9 col-sm-6 col-xs-12">
-		<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="alert alert-info" id="alert-realm">	
-			<i class="fa fa-info-circle"></i>
-			<span th:text="#{project.norealm}">There are not realms to this user yet</span>
-		</div>
-		</div></div>
-		<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="" id="create-realm">
-			<button id="createRealm" type="button" class="btn btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\''+@{|/apps/create|}+'\')'">
-				<span th:text="#{app.create}"> Create</span>
-			</button>
-		</div>
-		<div th:if="${projectObj.app != null}" class="">
-			<a th:href="@{|/apps/update/${projectObj.app.identification}|}" target="_blank"><h2 class="" th:text="${projectObj.app.identification}"></h2></a>
-			<button id="unsetRealm" type="button" class="btn btn-circle btn-primary pull-right" onclick="ProjectCreateController.unsetRealm()" >
-				<span th:text="#{project.unlink.realm}"> Unlink</span>
-			</button>
-		</div>
-	</div>
+<div class="row main">
+    <div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
+        <span th:text="#{project.resource.auths}">Authorizations</span>
+    </div>
 </div>
-<div th:if="${!#lists.isEmpty(realms) AND projectObj.app ==null AND #lists.isEmpty(members)}"  class="col-md-3 col-sm-6 col-xs-12" id="realms-select">
-	<div class="form-group">
-		<label class="control-label" th:text="#{app.list} + ':'">Realms:</label>
-		<select id="realms" name="realm" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
-			<option value="" th:text="#{project.realmselect}"> Select Realm...</option>									
-			<option th:each="realm :${realms}" th:value="${realm.identification}" th:text="${realm.identification}" ></option>
-		</select>
-	</div>
-	<div class="form-group pull-right">
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.setRealm()" th:text="#{project.link.realm}"></button>																		
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/apps/create|}+'\')'" th:text="#{app.create}"></button>
-	</div>
-</div>
-<div th:if="${projectObj.app ==null}" th:classappend="${!#lists.isEmpty(members) AND projectObj.app ==null ? '' : 'hide'}" class="col-md-3 col-sm-6 col-xs-12" id="platform-users">
-	<div class="form-group">
-		<label class="control-label" th:text="#{project.users.platform} + ':'">Users:</label>
-		<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
-			<option value="" th:text="#{app.userselect}"> Select User...</option>									
-			<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName}  +' ('+ ${user.userId} +')'" ></option>
-		</select>
-	</div>
-	<div class="form-group pull-right">
-		<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.addPlatformUser()" th:text="#{project.add.member}"></button>																		
-	</div>
-</div>
-											
-<!-- AUTHORIZATION ROLE-USER-TYPE -->
-<div th:classappend="${projectObj.app != null ? 'col-md-12 col-sm-6 col-xs-12' : 'col-md-9 col-sm-6 col-xs-12'}">
-	<div class="form-group">
-		<label class="control-label" th:text="#{project.users.members} + ':'">Project members</label>
-		<div id="alert-authorizations" class="alert alert-info" th:classappend="${#lists.isEmpty(members) ? '' : 'hide'}" >
-			<i class="fa fa-info-circle"></i> <span th:text="#{project.nomembers}">
-				Select a user, choose the role you want to assign him and add it to
-				the User-Role Assignment. Repeat as many times as users want to
-				assign.</span>
+<div class="row main">
+	<div class="col-md-12 col-sm-6 col-xs-12">
+		<div class="form-group">
+			<label th:if="${projectObj.app == null}" class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{project.realm.users.tooltip},data-title=#{project.realm.users.title}">
+				<div th:text="#{project.use.realm}" class="inline"></div>
+				<input id="check-realm" name="useRealm" type="checkbox" class="form-control no-remove" th:checked="${#lists.isEmpty(members)}" /> 
+				<span></span> 
+			</label>
+			<div class="row" style="margin-bottom: 0px; margin-top: 0px;">
+				<div class="col-md-9 col-sm-6 col-xs-12">
+					<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="alert alert-info" id="alert-realm">	
+						<i class="fa fa-info-circle"></i>
+						<span th:text="#{project.norealm}">There are not realms to this user yet</span>
+					</div>
+				</div>
+			</div>
+			<div th:if="${#lists.isEmpty(realms) AND projectObj.app == null}" class="" id="create-realm">
+				<button id="createRealm" type="button" class="btn btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\''+@{|/apps/create|}+'\')'">
+					<span th:text="#{app.create}"> Create</span>
+				</button>
+			</div>
+			<div th:if="${projectObj.app != null}" class="">
+				<a th:href="@{|/apps/update/${projectObj.app.identification}|}" target="_blank"><h4 class="" style="display: inline-block;" th:text="${projectObj.app.identification}"></h4></a>
+				<button id="unsetRealm" type="button" class="btn btn-circle btn-primary pull-right" onclick="ProjectCreateController.unsetRealm()" >
+					<span th:text="#{project.unlink.realm}"> Unlink</span>
+				</button>
+			</div>
 		</div>
-		<div id="members" th:classappend="${#lists.isEmpty(members) ? 'hide' :''}" class="margin-bottom-20">
-			<table class="table" id="project_members" data-loaded="false">
-				<thead>
-					<tr class="cabecera-tabla" role="row">
-						<th class="titulo-columnas" th:text="#{app.user}">User</th>
-						<th class="titulo-columnas" th:text="#{app.user.fullName}">FullName</th>
-						<th class="titulo-columnas" th:text="#{app.auth.role}">Role</th>
-						<th th:if="${projectObj.app != null}" class="titulo-columnas" th:text="#{app.realm}">Realm</th>
-						<th th:if="${projectObj.app == null}" class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="member : ${members}" class="authorization-model">
-						<td ><input  type="text" name="users[]" readonly="readonly"
-							class="form-control" th:value="${member.userId}"/></td>
-						<td th:width="${projectObj.app != null ? '350px' : ''}" ><input type="text" name="usersFullName[]" readonly="readonly"
-							class="form-control" th:value="${member.fullName}"/></td>
-						<td ><input type="text" name="rolesName[]" readonly="readonly"
-							th:value="${member.roleName}"
-							class="form-control" /></td>
-						<td th:if="${projectObj.app != null}" >
-							<input type="text" readonly="readonly"
-							th:value="${member.realm}"
-							class="form-control" />
-						</td>
-						<td th:if="${projectObj.app == null}" width="150px" class="no-wrap text-center">
-							<button type="button"
-								class="btn btn-sm btn-circle blue btn-outline btn-mountable-authorization-remove"
-								th:onclick="'javascript:ProjectCreateController.removePlatformUser(\''+${member.userId}+'\')'">Remove</button>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+	</div>
+	<div th:if="${!#lists.isEmpty(realms) AND projectObj.app ==null AND #lists.isEmpty(members)}"  class="col-md-3 col-sm-6 col-xs-12" id="realms-select">
+		<div class="form-group">
+			<label class="control-label" th:text="#{app.list}">Realms</label>
+			<select id="realms" name="realm" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
+				<option value="" th:text="#{project.realmselect}"> Select Realm...</option>									
+				<option th:each="realm :${realms}" th:value="${realm.identification}" th:text="${realm.identification}" ></option>
+			</select>
+		</div>
+		<div class="form-group pull-right">
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.setRealm()" th:text="#{project.link.realm}"></button>																		
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/apps/create|}+'\')'" th:text="#{app.create}"></button>
+		</div>
+	</div>
+	<div th:if="${projectObj.app ==null}" th:classappend="${!#lists.isEmpty(members) AND projectObj.app ==null ? '' : 'hide'}" class="col-md-3 col-sm-6 col-xs-12" id="platform-users">
+		<div class="form-group">
+			<label class="control-label" th:text="#{project.users.platform}">Users</label>
+			<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
+				<option value="" th:text="#{app.userselect}"> Select User...</option>									
+				<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName}  +' ('+ ${user.userId} +')'" ></option>
+			</select>
+		</div>
+		<div class="form-group pull-right">
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.addPlatformUser()" th:text="#{project.add.member}"></button>																		
+		</div>
+	</div>
+												
+	<!-- AUTHORIZATION ROLE-USER-TYPE -->
+	<div th:classappend="${projectObj.app != null ? 'col-md-12 col-sm-6 col-xs-12' : 'col-md-9 col-sm-6 col-xs-12'}">
+		<div class="form-group">
+			<label class="control-label" th:text="#{project.users.members}">Project members</label>
+			<div id="alert-authorizations" class="alert alert-info" th:classappend="${#lists.isEmpty(members) ? '' : 'hide'}" >
+				<i class="fa fa-info-circle"></i> <span th:text="#{project.nomembers}">
+					Select a user, choose the role you want to assign him and add it to
+					the User-Role Assignment. Repeat as many times as users want to
+					assign.</span>
+			</div>
+			<div id="members" th:classappend="${#lists.isEmpty(members) ? 'hide' :''}" class="margin-bottom-20">
+				<table class="table" id="project_members" data-loaded="false">
+					<thead>
+						<tr class="cabecera-tabla" role="row">
+							<th class="titulo-columnas" th:text="#{app.user}">User</th>
+							<th class="titulo-columnas" th:text="#{app.user.fullName}">FullName</th>
+							<th class="titulo-columnas" th:text="#{app.auth.role}">Role</th>
+							<th th:if="${projectObj.app != null}" class="titulo-columnas" th:text="#{app.realm}">Realm</th>
+							<th th:if="${projectObj.app == null}" class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="member : ${members}" class="authorization-model">
+							<td ><input  type="text" name="users[]" readonly="readonly"
+								class="form-control" th:value="${member.userId}"/></td>
+							<td th:width="${projectObj.app != null ? '350px' : ''}" ><input type="text" name="usersFullName[]" readonly="readonly"
+								class="form-control" th:value="${member.fullName}"/></td>
+							<td ><input type="text" name="rolesName[]" readonly="readonly"
+								th:value="${member.roleName}"
+								class="form-control" /></td>
+							<td th:if="${projectObj.app != null}" >
+								<input type="text" readonly="readonly"
+								th:value="${member.realm}"
+								class="form-control" />
+							</td>
+							<td th:if="${projectObj.app == null}" width="150px" class="no-wrap text-center">
+								<button type="button"
+									class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;"
+									th:onclick="'javascript:ProjectCreateController.removePlatformUser(\''+${member.userId}+'\')'"><i class="icon-delete"></i></button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>

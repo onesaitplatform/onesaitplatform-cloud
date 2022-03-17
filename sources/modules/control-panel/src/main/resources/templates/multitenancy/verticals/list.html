@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2019 SPAIN
+    2013-2021 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -61,14 +61,33 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_vertical" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
+								<input id="vertical-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_vertical" name="reset_vertical" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_vertical" name="search_vertical" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
-						<li><span th:text="#{multitenancy.verticals}">My verticals</span></li>
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/multitenancy/verticals}"><span th:text="#{multitenancy.verticals}">My verticals</span></a></li>
 					</ul>						
 				</div><!-- END PAGE BAR -->
 				
@@ -78,41 +97,50 @@
 				
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div class="col-md-12">					
 						<div class="portlet light">
 							
 							<!-- TITTLE CONTENT -->
 							<div class="portlet-title">
 								<div class="caption">									
 									<span class="caption-subject" th:text="#{multitenancy.verticals}"> My verticals </span>									
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
-								<div class="actions margin-right-20">
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button type="button" id="btn-tenants-reload" name="btn-tenants-reload" value="Reload" class="btn btn-primary button-dropdown-table-columns margin-right-10" style="border: none;" title="Reload"><i class="icon-reload"></i></button>
+									<button type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../multitenancy/verticals/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>
+								<!--<div class="actions margin-right-20">
 									<div class="btn-group">										
 										<a th:href="@{/multitenancy/verticals/create}"><button type="button" class="btn btn-circle btn-outline btn-primary" id="btn-vertical-create"><span th:text="#{gen.create}">New </span></button></a>
 									</div>										
-								</div>															
+								</div>-->															
 							</div><!-- // TITTLE CONTENT -->
 							
 							<!-- BODY CONTENT -->
 							<div class="portlet-body" style="display: block; height: auto;">
-								<div class="row">
+								<div class="row main">
 									<!-- SEARCH -->																	
 																											
 									<!-- TENANTS LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
 											<div>
 												<!-- Reload button -->
-												<div class="row">
+												<!--<div class="row">
 													<div class="pull-right margin-right-20">
 														<button type="button" id="btn-tenants-reload" name="btn-tenants-reload" value="Reload" 
 															class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh"></i>&nbsp;</button>	
 													</div>
-												</div><!-- // Reload button -->
+												</div> // Reload button -->
 																							
 												<!-- DATATABLE initCompleteCallback (DT function) -->
 												<div dt:conf="verticals">
@@ -120,14 +148,14 @@
 												</div><!-- // DATATABLE initCompleteCallback (DT function) -->
 																									
 												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="verticals" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/multitenancy/verticals/data}"
-													dt:reloadSelector="#btn-verticals-reload" dt:reloadFunction="Vertical.List.reloadTable"
+												<table id="verticals" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full" dt:url="@{/multitenancy/verticals/data}"
+													dt:reloadSelector="#btn-tenants-reload" dt:reloadFunction="Vertical.List.reloadTable"
 													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
 													<thead>
 														<tr class="cabecera-tabla">
 															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 															<th dt:property="configDBSchema" class="titulo-columnas" th:text="#{multitenancy.schema}">Schema</th>															
-															<th dt:sortable="false" dt:renderFunction="Vertical.List.dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
+															<th dt:sortable="false" dt:renderFunction="Vertical.List.dtRenderOptions" class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -136,20 +164,34 @@
 															<td class="text-left " th:text="${vertical.configDBSchema}"></td>
 															<td class="text-left " >		
 															 <div class="grupo-iconos text-center">
-																<a th:href="@{'/multitenancy/verticals/update/'+${vertical.name}}"><span th:attr="data-id=${vertical.name}" class="icon-edit btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="la la-edit font-hg"></i></span></a>'
+																<a th:href="@{'/multitenancy/verticals/update/'+${vertical.name}}"><span th:attr="data-id=${vertical.name}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span></a>
 															</div>
 															</td>
 														</tr>
 													
 													</tbody>
-												</table><!-- // DATATABLE DANDELION CONF. -->
+												</table>
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle"
+													class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{multitenancy.schema}"> Schema </label>
+														</span>
+													</div>
+												</div>
 											</div>
 										</div>											
 									</div>
 								</div><!-- // TENANTS LIST -->
 							</div><!-- // BODY CONTENT -->
 						</div><!-- // PORTLET BASIC LIGHT -->							
-					</div><!-- // COL-12 -->						
 				</div><!-- // MAIN ROW -->				
 			</div><!-- // CONTENT BODY -->
 		</div><!-- // CONTENT page-content-wrapper -->		
@@ -202,13 +244,13 @@
 	datatable_lang = [[#{datatables_lang}]];	
 	
 	// PROVISIONAL => ELIMINARRRRRRRRRRR
-	datatable_lang = '{\"decimal\": \"\", \"emptyTable\": \"No Entries\", \"info\": \"Showing _START_ to _END_ of _TOTAL_ Entries\", \"infoEmpty\": \"0 Entries \", \"infoFiltered\": \"(Filtered from _MAX_ total Entries)\",\"infoPostFix\":\"\",\"thousands\":\",\",\"lengthMenu\":\" _MENU_ \",\"loadingRecords\": \" \",\"processing\": \" \",\"search\":\"Search:\",\"zeroRecords\":\"No matching records found\",\"paginate\": {\"first\":\"First\",\"last\":\"Last\",\"next\":\"&gt;\",\"previous\": \"&lt;\"}}';	
+	/*datatable_lang = '{\"decimal\": \"\", \"emptyTable\": \"No Entries\", \"info\": \"Showing _START_ to _END_ of _TOTAL_ Entries\", \"infoEmpty\": \"0 Entries \", \"infoFiltered\": \"(Filtered from _MAX_ total Entries)\",\"infoPostFix\":\"\",\"thousands\":\",\",\"lengthMenu\":\" _MENU_ \",\"loadingRecords\": \" \",\"processing\": \" \",\"search\":\"Search:\",\"zeroRecords\":\"No matching records found\",\"paginate\": {\"first\":\"First\",\"last\":\"Last\",\"next\":\"&gt;\",\"previous\": \"&lt;\"}}';	*/
 	////////////////////////////////////////////////
 	
-	/*var languageJson = JSON.parse(datatable_lang);
+	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ) { 
 		$.extend( true, $.fn.dataTable.defaults, { language: languageJson }); 
-	}*/
+	}
 	
 	// Datatable ajax loading
 	var ajaxLoading = "@{/img/ajax-loading-flat.gif}";
@@ -233,7 +275,7 @@
 		$(document).ready(function() {
 			
 			//SHOW/HIDE DATATABLE COLUMNS HANDLER
-			$('label.toggle-vis').on( 'click', function (e) {
+			$('input.toggle-vis').on( 'change', function (e) {
 				e.preventDefault(); 
 				// Get the column API object
 				var column = $('#verticals').DataTable().column( $(this).attr('data-column') ); 
@@ -244,23 +286,48 @@
 					$('#filtering th').eq($(this).attr('data-column')).toggle();
 				}
 				// toggle Text
-				$(this).toggleClass('text-muted line-through');			
+				//$(this).toggleClass('text-muted line-through');			
+			});
+
+			// SEARCH FORM RESET
+			$('#reset_vertical').on('click',function(){
+				$('#vertical-name').val('');
+				$('#verticals').DataTable().column(0).search('').draw();
+			});
+
+			// SEARCH FORM
+			$('#search_vertical').on('click',function(){
+				$('#verticals').DataTable().column(0).search( $('#vertical-name').val()).draw();
 			});	
 		});
 		$(window).load(function(){  
 			
 			//DATATABLE 
-			var oTable = $('#verticals').DataTable();
+			var oTable = $('#verticals').dataTable({
+		      "bAutoWidth": false
+		      });
 			
-			oTable.page.len(10);
+			//oTable.page.len(10);
 			
 			$('#verticals').on('draw.dt', function () {
 				Vertical.List.initCompleteCallback();
 			} );
 			
-			// SHOW/HIDE DATATABLES COLUMN INIT 		
-			$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+			// SHOW/HIDE DATATABLES COLUMN INIT
+			$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
+			//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 			$('#dataTable-vis-toggle').removeClass('hide');
+
+			$('.dataTables_info').addClass('col-md-6 col-sm-6');
+			$('.dataTables_length').addClass('col-md-6 col-sm-6');
+			$('#verticals_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+			$('#verticals_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+			$('#search-on-title').append($('.dataTables_filter > label > input'));
+			$('#search-on-title > input').removeClass('input-xsmall')
+			$('#verticals_wrapper > div:nth-child(1)').hide();
+
+			$('.dataTables_paginate').attr('style', 'float:right !important');
 			
 			// FILTERING COLUMNS INIT
 			$('#filtering').appendTo($('#verticals > thead'));
@@ -278,7 +345,7 @@
 			filters.addClass('input-small font-sm');
 			filtersResets.addClass('hide');				
 			
-					
+			$("#contenedor-tabla-outside").removeClass("hidden");
 			
 		});
 		
