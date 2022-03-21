@@ -1,17 +1,19 @@
-# Onesait Platform Community Edition
+# Onesait Platform Community Edition 
 
-## What is?
-Onesait Platform is a platform open source and integrator of services, which facilitates the accelerated development, deployment and operation of solutions built on it.  It offers components that support the development of microservices, integrations, appification, analytics, data mining, creation of ML and AI algorithms, IoT developments, ...
-<p align="center">
-    <img src='resources/images/onesaitPlatform-Modules.png'/>
-</p>
-The platform is multi-client and supports multi-cloud deployment (any private or public cloud, or on the customer's premises) in an independent way and avoiding vendor-locking, in addition it allows consuming services from providers... 
+## Control Panel Videos
+Onesait Platform is managed from a unified Web Console (Control Panel), here you can see some of its capabilities:
 
-## A View on Platform
-The entire Platform is managed from a unified Web Console (Control Panel), here you can see some of its capabilities:
+**My Universe**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/1.grafo.gif)
 
 **Menus**
 ![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/2.menus.gif)
+
+**My Entities**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/3.entities.gif)
+
+**Query Tool**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/4.querytool.gif)
 
 **REST APIs**
 ![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/5.apis.gif)
@@ -22,10 +24,25 @@ The entire Platform is managed from a unified Web Console (Control Panel), here 
 **DataFlow**
 ![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/7.dataflows.gif)
 
-**Dashboard Example **
+**Notebooks**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/8.notebooks.gif)
+
+**Open Data Portal**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/9.opendata.gif)
+
+**Lineage**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/10.lineage.gif)
+
+**Dashboard Example 1**
 ![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/11.dashboard1.gif)
 
-You can see more videos about Platform functionalities <a href="CONTROLPANEL_VIDEOS.md" target="_blank">here</a>.
+**Dashboard Example 2**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/11.dashboard2.gif)
+
+## Some examples
+In this section you can find examples of applications built on Platform.
+**City Landscape Manager**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/13.example_on_platform.gif)
 
 ## Documentation
 You can find all the Platform documentation in the <a href="https://onesaitplatform.refined.site/" target="_blank">Developer Portal</a>.
