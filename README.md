@@ -25,6 +25,9 @@ The entire Platform is managed from a unified Web Console (Control Panel), here 
 **Dashboard Example **
 ![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/11.dashboard1.gif)
 
+**Helsinki Dashboard for Select4Cities**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/Dashboard%20Helsinki%20Select4Cities.gif)
+
 You can see more videos about Platform functionalities <a href="CONTROLPANEL_VIDEOS.md" target="_blank">here</a>.
 
 ## Documentation
