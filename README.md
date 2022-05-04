@@ -49,6 +49,13 @@ At the link you can find our [Roadmap](https://onesaitplatform.refined.site/spac
 
 To contribute to Onesait Platform, please visit [How to contribute](https://onesaitplatform.refined.site/space/DOCT/2220814633/How+to+contribute%3F) information.
 
+## Current Contributors
+
+<a href="https://github.com/onesaitplatform/onesaitplatform-cloud/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=onesaitplatform/onesaitplatform-cloud" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## License
 
