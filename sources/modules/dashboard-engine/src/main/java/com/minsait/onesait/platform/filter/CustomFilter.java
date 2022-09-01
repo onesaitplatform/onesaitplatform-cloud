@@ -102,25 +102,25 @@ public class CustomFilter extends GenericFilterBean {
 				if (!org.springframework.util.StringUtils.isEmpty(userId)) {
 					generateSecurityContextAuthentication(userId, jwt);
 					log.info("Logged in using JWT");
-					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")) {
+					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")
+							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/api")) {
 						filterChain.doFilter(servletRequest, servletResponse);
 					} else {
 						return;
 					}
 				}
 				return;
-			}
-			else {
-					if (isAnonymous(httpRequest)) {
-						setMultitenantContext(httpRequest);
-						generateSecurityContextAuthenticationAnonymous();
-						if(((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")){
-							filterChain.doFilter(servletRequest, servletResponse);
-						}
-					} else {
-						log.info("No JWT provided, continue chain or user-pass");
+			} else {
+				if (isAnonymous(httpRequest)) {
+					setMultitenantContext(httpRequest);
+					generateSecurityContextAuthenticationAnonymous();
+					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")) {
 						filterChain.doFilter(servletRequest, servletResponse);
 					}
+				} else {
+					log.info("No JWT provided, continue chain or user-pass");
+					filterChain.doFilter(servletRequest, servletResponse);
+				}
 			}
 		} catch (final Exception e) {
 			log.error("Failed logging in", e);

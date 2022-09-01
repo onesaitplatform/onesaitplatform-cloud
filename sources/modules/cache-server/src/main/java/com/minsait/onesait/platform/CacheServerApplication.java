@@ -16,16 +16,12 @@ package com.minsait.onesait.platform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-
-import de.codecentric.boot.admin.client.config.SpringBootAdminClientAutoConfiguration;
 
 @SpringBootApplication
 @Configuration
-@Import({ AopAutoConfiguration.class, SpringBootAdminClientAutoConfiguration.class })
+//@Import({ AopAutoConfiguration.class, SpringBootAdminClientAutoConfiguration.class })
 @ComponentScan(basePackages = "com.minsait.onesait.platform")
 public class CacheServerApplication {
 

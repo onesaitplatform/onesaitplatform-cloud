@@ -20,6 +20,8 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -33,47 +35,50 @@ import lombok.Setter;
 @Table(name = "INTERNATIONALIZATION")
 public class Internationalization extends OPResource {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    @Column(name = "JSON18N", nullable = false)
-    @NotNull
-    @Lob
-    @JsonRawValue
-    @Getter
-    @Setter
-    private String jsoni18n;
+	@Column(name = "JSON18N", nullable = false)
+	@Type(type = "org.hibernate.type.TextType")
+	@NotNull
+	@Lob
+	@JsonRawValue
+	@Getter
+	@Setter
+	private String jsoni18n;
 
-    @Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT")
-    @NotNull
-    @Getter
-    @Setter
-    private boolean isPublic;
-    
-    @Column(name = "DESCRIPTION", length = 512)
-    @Getter
-    @NotNull
-    @Setter
-    private String description;
-    
-    @Getter
-    @Setter
-    private String language;
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Internationalization)) {
-            return false;
-        }
-        Internationalization that = (Internationalization) o;
-        return getIdentification() != null && getIdentification().equals(that.getIdentification());
-    }
+	@Column(name = "PUBLIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
+	@NotNull
+	@Getter
+	@Setter
+	private boolean isPublic;
 
-    @Override
-    public int hashCode() {
-        return java.util.Objects.hash(getIdentification());
-    }
-    
+	@Column(name = "DESCRIPTION", length = 512)
+	@Getter
+	@NotNull
+	@Setter
+	private String description;
+
+	@Getter
+	@Setter
+	private String language;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Internationalization)) {
+			return false;
+		}
+		Internationalization that = (Internationalization) o;
+		return getIdentification() != null && getIdentification().equals(that.getIdentification());
+	}
+
+	@Override
+	public int hashCode() {
+		return java.util.Objects.hash(getIdentification());
+	}
+
 }

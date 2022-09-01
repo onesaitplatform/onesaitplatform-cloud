@@ -121,14 +121,14 @@
 																	th:text="${notification.status}"></td>
 																	<!-- DATE -->
 																	<td class="text-left" th:if="${notification.createdAt!=null}">
-																	<span th:text="${#dates.format(notification.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
-																	<span th:text="${#dates.format(notification.createdAt,'dd/MM/YYYY')}" ></span></td>
+																	<span th:text="${#dates.format(notification.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
+																	<span th:text="${#dates.format(notification.createdAt,'dd/MM/yyyy')}" ></span></td>
 																	<td class="text-left" th:if="${notification.createdAt==null}"
 																		th:text="'---'"></td>
 																	<!-- UPDATE AT -->
 																	<td class="text-left" th:if="${notification.updatedAt!=null}">
-																	<span th:text="${#dates.format(notification.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
-																	<span th:text="${#dates.format(notification.updatedAt,'dd/MM/YYYY')}" ></span></td>
+																	<span th:text="${#dates.format(notification.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
+																	<span th:text="${#dates.format(notification.updatedAt,'dd/MM/yyyy')}" ></span></td>
 																	<td class="text-left" th:if="${notification.updatedAt==null}"
 																		th:text="'---'"></td>
 																	<!-- OPTIONS -->
@@ -140,7 +140,7 @@
 																				class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
 																				data-container="body" data-placement="bottom"
 																				th:data-original-title="#{gen.view}"
-																				th:onclick="'javascript:ShowMessage(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +${notification.status}+'\')'"><i class="la la-eye font-hg"></i></span>
+																				th:attr="onclick='javascript:ShowMessage(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +${notification.status}+'\')'"><i class="la la-eye font-hg"></i></span>
 																			<!-- APPROVE -->
 																			<span
 																				th:if="(${notification.type} == 'ROLE_CHANGE' and ${notification.status} == 'READ')" 
@@ -148,7 +148,7 @@
 																				data-container="body" data-placement="bottom"
 																				th:title="#{support.approve}"
 																				th:data-original-title="#{support.approve}"
-																				th:onclick="'javascript:UpdateRole(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +'Your request has been accepted.'+'\')'"><i class="icon-check"></i></span>
+																				th:attr="onclick='javascript:UpdateRole(this,\''+${notification.json}+ '\',\'' +${notification.id}+ '\',\'' +'Your request has been accepted.'+'\')'"><i class="icon-check"></i></span>
 																			<!-- REFUSE -->
 																			<span
 																				th:if="(${notification.type} == 'ROLE_CHANGE' and ${notification.status} == 'READ')" 
@@ -156,7 +156,7 @@
 																				data-container="body" data-placement="bottom"
 																				th:title="#{support.refuse}"
 																				th:data-original-title="#{support.refuse}"
-																				th:onclick="'javascript:Refuse(this,\'' +${notification.id}+'\')'"><i class="icon-close"></i></span>
+																				th:attr="onclick='javascript:Refuse(this,\'' +${notification.id}+'\')'"><i class="icon-close"></i></span>
 																			<!-- PROCESS -->
 																			<span
 																				th:if="(${notification.type} == 'NOTIFICATION' and ${notification.status} == 'READ')" 
@@ -164,14 +164,14 @@
 																				data-container="body" data-placement="bottom"
 																				th:title="#{support.process}"
 																				th:data-original-title="#{support.process}"
-																				th:onclick="'javascript:processNotification(this,\''+${notification.id}+'\')'"><i class="la la-wrench font-hg"></i></span>
+																				th:attr="onclick='javascript:processNotification(this,\''+${notification.id}+'\')'"><i class="la la-wrench font-hg"></i></span>
 																			<!-- DELETE -->
 																			<span
 																				class="btn btn-xs btn-no-border icon-on-table color-red tooltips"
 																				data-container="body" data-placement="bottom"
 																				th:title="#{gen.deleteBtn}"
 																				th:data-original-title="#{gen.deleteBtn}"
-																				th:onclick="'javascript:DeleteDialog(this,\''+${notification.id}+'\')'"><i class="icon-delete"></i></span>
+																				th:attr="onclick='javascript:DeleteDialog(this,\''+${notification.id}+'\')'"><i class="icon-delete"></i></span>
 																		</div>
 																	</td>
 																</tr>
@@ -233,7 +233,7 @@
 							<!-- FORM BUTTONS -->
 							<!--<div class="row">
 								<div class="pull-left">
-									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 								</div>
 							</div>-->								
 							<!-- form end -->

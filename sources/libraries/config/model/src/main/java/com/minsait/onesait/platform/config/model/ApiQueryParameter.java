@@ -26,8 +26,12 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -53,6 +57,7 @@ public class ApiQueryParameter extends AuditableEntityWithUUID {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private ApiOperation apiOperation;
 
 	@Column(name = "NAME", length = 50, nullable = false)
@@ -76,6 +81,7 @@ public class ApiQueryParameter extends AuditableEntityWithUUID {
 
 	@Column(name = "QUERY_VALUE")
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String value;
@@ -90,5 +96,15 @@ public class ApiQueryParameter extends AuditableEntityWithUUID {
 	@Setter
 	@Enumerated(EnumType.STRING)
 	private HeaderType headerType;
+
+
+	@JsonSetter("apiOperation")
+	public void setApiOperationJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final ApiOperation o = new ApiOperation();
+			o.setId(id);
+			apiOperation = o;
+		}
+	}
 
 }

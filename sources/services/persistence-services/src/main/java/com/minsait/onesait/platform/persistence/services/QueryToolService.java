@@ -22,6 +22,8 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
+import net.sf.jsqlparser.JSQLParserException;
+
 public interface QueryToolService {
 
 	String queryNativeAsJson(String user, String ontology, String query, int offset, int limit);
@@ -46,7 +48,7 @@ public interface QueryToolService {
 
 	Map<String, String> getTableColumns(String tableName);
 
-	List<String> querySQLtoConfigDB(String query);
+	List<String> querySQLtoConfigDB(String query) throws JSQLParserException ;
 
-	List<String> updateSQLtoConfigDB(String query);
+	List<String> updateSQLtoConfigDB(String query) throws JSQLParserException ;
 }

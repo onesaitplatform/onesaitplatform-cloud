@@ -24,6 +24,8 @@ public class SchedulerNames {
 	public static final String REST_PLANNER_SCHEDULER_NAME = "restPlannerScheduler";
 	public static final String EXPIRATION_USERS_NAME = "expirationUsersScheduler";
 	public static final String EXPIRATION_RESET_USERS_NAME = "expirationResetUsersScheduler";
+	public static final String PROCESS_EXECUTION_NAME = "processExecutionScheduler";
+	public static final String BACKUP_MINIO_NAME = "backupMinioScheduler";
 
 	private SchedulerNames() {
 	}

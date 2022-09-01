@@ -66,18 +66,20 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Reports", tags = { "Reports REST API" })
+@Tag(name = "Reports")
 @RestController
 @RequestMapping("api/reports")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode= "400", description= "Bad request"),
+	@ApiResponse(responseCode= "500", description= "Internal server error"), @ApiResponse(responseCode= "403", description= "Forbidden") })
 @PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 @Slf4j
 public class ReportRestController {
@@ -98,8 +100,14 @@ public class ReportRestController {
 	void setup() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 		restTemplate.getInterceptors().add((request, body, execution) -> {
-
-			request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
+			if (utils.getCurrentXOpAPIKey() != null) {
+				request.getHeaders().add("X-OP-APIKey", utils.getCurrentXOpAPIKey());
+			}
+			try {
+				request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
+			} catch (final Exception e) {
+				log.error("No authentication found, Bearer token");
+			}
 			try {
 				request.getHeaders().add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER,
 						MultitenancyContextHolder.getVerticalSchema());
@@ -113,15 +121,15 @@ public class ReportRestController {
 		});
 	}
 
-	@ApiOperation(value = "Download report")
+	@Operation(summary= "Download report")
 	@PostMapping("{id}/{extension}")
 	@Transactional
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode= "200", description= "OK"))
 	public ResponseEntity<?> downloadReport(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
-			@ApiParam(value = "Parameters") @RequestBody(required = false) ReportParameter[] params,
-			@ApiParam(value = "Output file format", required = true) @PathVariable("extension") ReportType extension)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Parameters") @RequestBody(required = false) ReportParameter[] params,
+			@Parameter(description= "Output file format", required = true) @PathVariable("extension") ReportType extension)
+					throws UnsupportedEncodingException {
 		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
@@ -145,12 +153,12 @@ public class ReportRestController {
 		}
 	}
 
-	@ApiOperation(value = "Retrieve declared parameters in Jasper Template when their default values")
-	@ApiResponses(@ApiResponse(response = ReportParameter[].class, code = 200, message = "OK"))
+	@Operation(summary= "Retrieve declared parameters in Jasper Template when their default values")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)), responseCode= "200", description= "OK"))
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> parameters(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id)
+					throws UnsupportedEncodingException {
 
 		final Report report = reportService.findByIdentificationOrId(id);
 		if (report == null) {
@@ -165,7 +173,7 @@ public class ReportRestController {
 		try {
 			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
 					null, new ParameterizedTypeReference<List<ReportParameter>>() {
-					});
+			});
 
 			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
@@ -174,8 +182,8 @@ public class ReportRestController {
 		}
 	}
 
-	@ApiOperation(value = "Get all reports")
-	@ApiResponse(response = ReportDTO[].class, code = 200, message = "OK")
+	@Operation(summary= "Get all reports")
+	@ApiResponse(content=@Content(schema=@Schema(implementation=ReportDTO[].class)), responseCode= "200", description= "OK")
 	@GetMapping()
 	public ResponseEntity<List<ReportDTO>> getReports() {
 
@@ -194,12 +202,12 @@ public class ReportRestController {
 		return new ResponseEntity<>(listDTO, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Get report by name or ID")
-	@ApiResponses(value = { @ApiResponse(response = ReportDTO.class, code = 200, message = "OK"),
-			@ApiResponse(code = 404, message = "Not found") })
+	@Operation(summary= "Get report by name or ID")
+	@ApiResponses(value = { @ApiResponse(content=@Content(schema=@Schema(implementation=ReportDTO.class)), responseCode= "200", description= "OK"),
+			@ApiResponse(responseCode= "404", description= "Not found") })
 	@GetMapping("/{id}")
 	public ResponseEntity<ReportDTO> getReportById(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 
@@ -219,8 +227,8 @@ public class ReportRestController {
 
 	}
 
-	@ApiOperation(value = "Create new report")
-	@ApiResponse(code = 201, message = "CREATED")
+	@Operation(summary= "Create new report")
+	@ApiResponse(responseCode= "201", description= "CREATED")
 	@PostMapping(consumes = { "multipart/form-data" })
 	@Transactional
 	public ResponseEntity<Object> createNewReport(
@@ -261,15 +269,16 @@ public class ReportRestController {
 
 		reportService.saveOrUpdate(report);
 
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@ApiOperation(value = "Update report by ID")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "OK"), @ApiResponse(code = 404, message = "Not found") })
+	@Deprecated
+	@Operation(summary= "Update report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK"), @ApiResponse(responseCode= "404", description= "Not found") })
 	@PutMapping("/{id}")
 	@Transactional
 	public ResponseEntity<Object> updateReport(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
 			@RequestParam(required = false, value = "description") String description,
 			@RequestParam(required = false, value = "identification") String identification,
 			@RequestParam(required = false, value = "file") MultipartFile file) {
@@ -304,12 +313,52 @@ public class ReportRestController {
 
 	}
 
-	@ApiOperation(value = "Delete report by ID")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "DELETED"),
-			@ApiResponse(code = 404, message = "Not found") })
+	@Operation(summary= "Update report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK"), @ApiResponse(responseCode= "404", description= "Not found") })
+	@PostMapping(value = "/{id}", consumes = { "multipart/form-data" })
+	@Transactional
+	public ResponseEntity<Object> updateWithPostReport(
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
+			@RequestParam(required = false, value = "description") String description,
+			@RequestParam(required = false, value = "identification") String identification,
+			@RequestParam(required = false, value = "file") MultipartFile file) {
+
+		final Report entity = reportService.findByIdentificationOrId(id);
+
+		if (entity == null || entity.getFile() == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE)) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+
+		if (description != null) {
+			entity.setDescription(description);
+		}
+		if (identification != null) {
+			entity.setIdentification(identification);
+		}
+
+		if (file != null) {
+			try {
+				entity.setFile(file.getBytes());
+			} catch (final IOException e) {
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+
+		reportService.saveOrUpdate(entity);
+
+		return new ResponseEntity<>(HttpStatus.OK);
+
+	}
+
+	@Operation(summary= "Delete report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "DELETED"),
+			@ApiResponse(responseCode= "404", description= "Not found") })
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> deleteReport(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
@@ -324,12 +373,12 @@ public class ReportRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Get file of report")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "OK", response = String.class),
-			@ApiResponse(code = 404, message = "Not found") })
+	@Operation(summary= "Get file of report")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode= "404", description= "Not found") })
 	@GetMapping("/{id}/file")
 	public ResponseEntity<Object> getFileOfReport(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 

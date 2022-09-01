@@ -132,7 +132,7 @@ var GadgetsCreateController = function() {
 				$('#datasources').val(gadgetCreateReg.ontologyId).change();
 				
 				
-			
+
 			$( "body" ).removeClass( "wait-interval" )
 		},
 		

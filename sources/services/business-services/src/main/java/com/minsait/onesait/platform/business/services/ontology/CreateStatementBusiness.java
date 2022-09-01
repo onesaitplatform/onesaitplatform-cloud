@@ -24,6 +24,9 @@ import com.minsait.onesait.platform.persistence.external.generator.model.common.
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.hadoop.kudu.table.CreateStatementKudu;
 import com.minsait.onesait.platform.persistence.hadoop.kudu.table.KuduColumn;
+import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
+import com.minsait.onesait.platform.persistence.presto.generator.model.common.HistoricalOptions;
+import com.minsait.onesait.platform.persistence.presto.generator.model.statements.PrestoCreateStatement;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -72,8 +75,10 @@ public class CreateStatementBusiness implements java.io.Serializable {
 	private String npartitions;
 	@Getter
 	@Setter
-	private Boolean enablePartitionIndexes;
-	
+	private Boolean enablePartitionIndexes;	
+	@Getter
+	@Setter
+	private HistoricalOptionsBusiness historicalOptions;
 	
 	public CreateStatementBusiness(CreateStatement statement) {
 		this.ontology = statement.getOntology();
@@ -97,6 +102,7 @@ public class CreateStatementBusiness implements java.io.Serializable {
 		}
 		return constraintsDTO;
 	}
+
 	
 	public CreateStatement toCreateStatement() {
 		CreateStatement statement = new CreateStatement();
@@ -163,7 +169,38 @@ public class CreateStatementBusiness implements java.io.Serializable {
 			relationals.add(relationaltDTO.toKuduColumn());
 		}
 		return relationals;
+	}	
+	
+	public PrestoCreateStatement toCreateStatementPresto() {
+		PrestoCreateStatement statement = new PrestoCreateStatement();
+		statement.setOntology(this.ontology);
+		statement.setDatabase(this.database);
+		statement.setSchema(this.schema);
+		statement.setType(this.type);
+		statement.setColumns(columnsPresto());
+		if (this.historicalOptions != null) {
+			statement.setHistoricalOptions(historicalOptionsPresto());		
+		}
+		return statement;
 	}
 	
+	private List<ColumnPresto> columnsPresto() {
+		List<ColumnPresto> columns = new ArrayList<>();
+		for (ColumnDefinitionBusiness column: this.columnsRelational) {
+			columns.add(column.toColumnPresto());
+		}
+		return columns;
+	}
+	
+	private HistoricalOptions historicalOptionsPresto() {
+		HistoricalOptions ho = new HistoricalOptions();
+		ho.setExternalLocation(this.historicalOptions.getExternalLocation());
+		ho.setPartitions(this.historicalOptions.getPartitions());
+		ho.setFileFormat(this.historicalOptions.getFileFormat());
+		ho.setEscapeCharacter(this.historicalOptions.getEscapeCharacter());
+		ho.setQuoteCharacter(this.historicalOptions.getQuoteCharacter());
+		ho.setSeparatorCharacter(this.historicalOptions.getSeparatorCharacter());
+		return ho;
+	}
 	
 }

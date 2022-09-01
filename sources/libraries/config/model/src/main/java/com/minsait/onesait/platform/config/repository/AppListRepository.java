@@ -14,10 +14,18 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.AppList;
+import com.minsait.onesait.platform.config.model.AppRoleList;
 
-public interface AppListRepository  extends CrudRepository<AppList, String>{
+public interface AppListRepository extends CrudRepository<AppList, String> {
+
+	@Query("SELECT al.appRoles FROM AppList al WHERE al.identification= :appIdentification")
+	public List<AppRoleList> findRolesListByAppIdentification(@Param("appIdentification") String appIdentification);
 
 }

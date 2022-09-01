@@ -21,19 +21,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(path = "/config")
 @CrossOrigin(origins = "*")
-@Api(value = "config", description = "Onesaitplatform config for digital twins")
+@Tag(name = "config", description = "Onesaitplatform config for digital twins")
 public interface ConfigGateway {
 
-	@ApiOperation(value = "Get WoT of the Digital Twin")
+	@Operation(summary = "Get WoT of the Digital Twin")
 	@RequestMapping(value = "/getWot", method = RequestMethod.POST)
 	public ResponseEntity<?> getWot(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
 
 }

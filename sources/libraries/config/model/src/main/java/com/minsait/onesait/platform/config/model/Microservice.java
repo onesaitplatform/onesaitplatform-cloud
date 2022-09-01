@@ -24,15 +24,17 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import com.minsait.onesait.platform.config.components.CaasOpenshiftConfiguration;
-import com.minsait.onesait.platform.config.components.GitlabConfiguration;
+import org.hibernate.annotations.Type;
+
+import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.RancherConfiguration;
+import com.minsait.onesait.platform.config.converters.CaasConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.GitlabConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.JenkinsConfigurationConverter;
-import com.minsait.onesait.platform.config.converters.OpenshiftConfigurationConverter;
 import com.minsait.onesait.platform.config.converters.RancherConfigurationConverter;
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -47,11 +49,11 @@ public class Microservice extends OPResource {
 
 	public enum TemplateType {
 		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, ARCHITECTURE_ARCHETYPE,
-		IMPORT_FROM_GIT, IMPORT_FROM_ZIP
+		IMPORT_FROM_GIT, IMPORT_FROM_ZIP, MLFLOW_MODEL
 	}
 
 	public enum CaaS {
-		RANCHER, OPENSHIFT
+		RANCHER, OPENSHIFT, RANCHER_2, KUBERNETES
 	}
 
 	@Getter
@@ -70,6 +72,7 @@ public class Microservice extends OPResource {
 
 	@Column(name = "JENKINS_XML")
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	private String jenkinsXML;
 
 	@Column(name = "JENKINS_JOB_NAME")
@@ -94,8 +97,8 @@ public class Microservice extends OPResource {
 	private RancherConfiguration rancherConfiguration;
 
 	@Column(name = "OPENSHIFT_CONFIGURATION")
-	@Convert(converter = OpenshiftConfigurationConverter.class)
-	private CaasOpenshiftConfiguration openshiftConfiguration;
+	@Convert(converter = CaasConfigurationConverter.class)
+	private CaasConfiguration caasConfiguration;
 
 	@Column(name = "RANCHER_ENVIRONMENT")
 	private String rancherEnv;
@@ -119,7 +122,40 @@ public class Microservice extends OPResource {
 	@Enumerated(EnumType.STRING)
 	private TemplateType templateType;
 
-	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
+	@Column(name = "ACTIVE", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	private boolean active;
+
+	public Object getCaaSConfiguration() {
+		switch (caas) {
+		case RANCHER:
+			return rancherConfiguration;
+		case OPENSHIFT:
+		case RANCHER_2:
+		case KUBERNETES:
+		default:
+			return caasConfiguration;
+		}
+	}
+
+
+	public CaasConfiguration getOpenshiftConfiguration() {
+		return caasConfiguration;
+	}
+
+	public void setOpenshiftConfiguration(CaasConfiguration caasConfiguration) {
+		this.caasConfiguration = caasConfiguration;
+	}
+	public String getStackOrNamespace() {
+		switch (caas) {
+		case RANCHER:
+			return rancherStack;
+		case OPENSHIFT:
+		case RANCHER_2:
+		case KUBERNETES:
+		default:
+			return openshiftNamespace;
+		}
+	}
 }

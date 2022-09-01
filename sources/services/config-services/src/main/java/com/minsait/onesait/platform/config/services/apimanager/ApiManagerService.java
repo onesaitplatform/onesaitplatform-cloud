@@ -138,5 +138,7 @@ public interface ApiManagerService {
 	public String cloneApi(String id, String identification, String userId);
 
 	public Boolean isGraviteeApi(String apiId);
+	
+	public void obfuscateUsersData(Api api);
 
 }

@@ -150,10 +150,10 @@
 														<td class="text-left" th:if="${!simulator.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
 														<td class="text-left "  style="width:107px;">		
 														 <div class="grupo-iconos text-center">
-															<span th:if="${!simulator.active}"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"  th:data-original-title="#{domain.start}" th:onclick="'javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="icon-play"></i></span>
-															<span th:if="${simulator.active}"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"   th:data-original-title="#{gen.stop}" th:onclick="'javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="icon-stop"></i></span>
+															<span th:if="${!simulator.active}"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"  th:data-original-title="#{domain.start}" th:attr="onclick='javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="icon-play"></i></span>
+															<span th:if="${simulator.active}"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"   th:data-original-title="#{gen.stop}" th:attr="onclick='javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="icon-stop"></i></span>
 															<a th:if="${!simulator.active}"  th:href="'/controlpanel/devicesimulation/update/'+${simulator.id}"><span   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span></a>
-															<span th:if="${!simulator.active}"  th:onclick="'javascript:deleteSimulation(\''+${simulator.id}+ '\');'" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>																											
+															<span th:if="${!simulator.active}"  th:attr="onclick='javascript:deleteSimulation(\''+${simulator.id}+ '\');'" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>																											
 														</div> 
 														</td>
 													</tr>

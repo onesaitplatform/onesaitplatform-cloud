@@ -34,11 +34,11 @@ import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 public interface MasterUserRepository extends JpaRepository<MasterUser, String> {
 	public static final String MASTER_USER_REPOSITORY = "MasterUserRepository";
 
-	@Cacheable(cacheNames = MASTER_USER_REPOSITORY, unless = "#result == null")
+	@Cacheable(cacheNames = MASTER_USER_REPOSITORY, unless = "#result == null", key="{#p0.toLowerCase()}")
 	public MasterUser findByUserId(String userId);
 
 	@Override
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY})
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="{#p0.toLowerCase()}")
 	@Transactional
 	void deleteById(String id);
 
@@ -47,17 +47,17 @@ public interface MasterUserRepository extends JpaRepository<MasterUser, String> 
 	void flush();
 
 	@Override
-	@CachePut(cacheNames = MASTER_USER_REPOSITORY, key = "#p0.userId", unless = "#result == null")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY}, key = "#p0.userId")
+	@CachePut(cacheNames = MASTER_USER_REPOSITORY, key = "{#p0.userId.toLowerCase()}", unless = "#result == null")
+	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY}, key = "{#p0.userId.toLowerCase()}")
 	<S extends MasterUser> S saveAndFlush(S entity);
 
 	@Override
-	@CachePut(cacheNames = MASTER_USER_REPOSITORY, key = "#p0.userId", unless = "#result == null")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY}, key = "#p0.userId")
+	@CachePut(cacheNames = MASTER_USER_REPOSITORY, key = "{#p0.userId.toLowerCase()}", unless = "#result == null")
+	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY}, key = "{#p0.userId.toLowerCase()}")
 	<S extends MasterUser> S save(S entity);
 
 	@Override
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key = "#p0.userId")
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
 	void delete(MasterUser entity);
 
 	@Query("SELECT u FROM MasterUser u WHERE u.tenant.id IN (SELECT t.id FROM Tenant t JOIN t.verticals v WHERE v.schema = :vertical OR v.name = :vertical)")
@@ -70,7 +70,7 @@ public interface MasterUserRepository extends JpaRepository<MasterUser, String> 
 	@Transactional
 	@Modifying
 	@Query("UPDATE MasterUser u SET u.password= :newPass WHERE u.password= :oldPass AND u.userId= :userId")
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="#p0")
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="{#p0.toLowerCase()}")
 	int updateMasterUserPassword(@Param("userId") String userId, @Param("oldPass") String oldPass,
 			@Param("newPass") String newPass);
 

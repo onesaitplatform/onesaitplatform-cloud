@@ -54,7 +54,10 @@
 			       theme: "vs-dark",	 
 			       automaticLayout: true	 
 			});
-			setMonacoValue('select * from Audit_'+ $("#user").val() +' as c limit 3;');      
+			
+			var user_ontology = $("#user").val().replace(/\./g, "_")
+			
+			setMonacoValue('select * from Audit_'+ user_ontology +' as c limit 3');      
 			$(window).scroll(function() {
 	      		queryOnTop();
 	  		});

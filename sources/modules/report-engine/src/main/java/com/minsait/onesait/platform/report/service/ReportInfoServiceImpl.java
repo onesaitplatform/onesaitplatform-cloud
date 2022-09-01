@@ -166,7 +166,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 					.map(p -> ReportParameter.builder().name(p.getName()).description(p.getDescription())
 							.type(ReportParameterType.fromJavaType(p.getValueClass().getName()))
 							.value(p.getDefaultValueExpression() != null
-							? p.getDefaultValueExpression().getText().replaceAll("\"", "")
+									? p.getDefaultValueExpression().getText().replaceAll("\"", "")
 									: null)
 							.build())
 					.collect(Collectors.toList());
@@ -175,7 +175,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 					.map(parameter -> {
 						return parameter.getDefaultValueExpression() != null
 								? parameter.getDefaultValueExpression().getText()
-										: "";
+								: "";
 					}).findFirst().orElse("");
 		}
 

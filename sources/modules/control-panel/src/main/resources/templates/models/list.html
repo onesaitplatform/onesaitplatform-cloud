@@ -198,30 +198,30 @@
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-xxs" th:title="${modelo.notebook.identification}" th:text="${modelo.notebook.identification}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${modelo.createdAt!=null}"><span th:text="${#dates.format(modelo.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(modelo.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${modelo.createdAt!=null}"><span th:text="${#dates.format(modelo.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(modelo.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${modelo.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${modelo.updatedAt!=null}"><span th:text="${#dates.format(modelo.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(modelo.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${modelo.updatedAt!=null}"><span th:text="${#dates.format(modelo.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(modelo.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${modelo.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/models/show/${modelo.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/models/show/${modelo.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/models/update/${modelo.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/models/update/${modelo.id}/|} + '\');'"><i class="icon-edit"></i></span>
 
 																	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- RUN -->
-																			<span th:title="#{model.execute}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/models/run/${modelo.id}/|} + '\');'"><i class="icon-play"></i><span class="span-title-three-dots-icons" th:text="#{model.execute}" >Execute</span></span>
+																			<span th:title="#{model.execute}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/models/run/${modelo.id}/|} + '\');'"><i class="icon-play"></i><span class="span-title-three-dots-icons" th:text="#{model.execute}" >Execute</span></span>
 																		</li>
 																		<li>
 																			<!-- EXECUTIONS LIST -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/executionmodels/list/${modelo.id}/|} + '\');'"><i class="icon-file"></i><span class="span-title-three-dots-icons" th:text="#{model.executions.list}" >Execution list</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/executionmodels/list/${modelo.id}/|} + '\');'"><i class="icon-file"></i><span class="span-title-three-dots-icons" th:text="#{model.executions.list}" >Execution list</span></span>
 																		</li>
 																	</ul>
 																	</span>

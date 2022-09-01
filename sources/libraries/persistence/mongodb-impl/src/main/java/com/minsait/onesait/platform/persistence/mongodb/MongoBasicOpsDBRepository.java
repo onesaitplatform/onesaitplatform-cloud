@@ -54,7 +54,6 @@ import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.UpdateManyModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
-import com.mongodb.util.JSON;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -124,8 +123,8 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	private long getExecutionTimeout() {
 		try {
-			final Long executionTiemout =  ((Long) resourcesServices.getGlobalConfiguration().getEnv().getDatabase().get("execution-timeout"))
-					.longValue();
+			final Long executionTiemout = ((Long) resourcesServices.getGlobalConfiguration().getEnv().getDatabase()
+					.get("execution-timeout")).longValue();
 			log.info("Execution timeout is {}", executionTiemout);
 			return executionTiemout;
 		} catch (final Exception e) {
@@ -139,7 +138,8 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		log.debug("insertInstance", ontology, instance);
 		try {
 			if (ontologyTimeSeriesRepository.isTimeSeries(ontology)) {
-				final List<TimeSeriesResult> result = timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), ontology, instance);
+				final List<TimeSeriesResult> result = timeSeriesProcessor
+						.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), ontology, instance);
 				return objectMapper.writeValueAsString(result);
 			} else {
 				final ObjectId objectId = mongoDbConnector.insert(Tenant2SchemaMapper.getRtdbSchema(), ontology,
@@ -166,7 +166,8 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 				// new
 				final List<TimeSeriesResult> data = new ArrayList<>();
 				for (final String instance : instances) {
-					data.addAll(timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), ontology, instance));
+					data.addAll(timeSeriesProcessor.processTimeSerie(Tenant2SchemaMapper.getRtdbSchema(), ontology,
+							instance));
 				}
 				// final List<TimeSeriesResult> data =
 				// timeSeriesProcessor.processTimeSerie(ontology, instances.get(0));
@@ -179,6 +180,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 				result.setType(ComplexWriteResultType.BULK);
 				result.setData(data);
+				result.setTotalWritten(data.size());
 			}
 		} catch (final javax.persistence.PersistenceException e) {
 			log.error("insertBulk", e);
@@ -318,6 +320,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 			UpdateManyModel upsert = new UpdateManyModel(Document.parse(query),
 					new Document("$set", Document.parse(dataToUpdate)), options);
+			if (dataToUpdate.contains("$set:")) {
+				upsert = new UpdateManyModel(Document.parse(query), Document.parse(dataToUpdate), options);
+			}
 			instances.add(dataToUpdate);
 			bulkWrites.add(upsert);
 
@@ -355,7 +360,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			log.debug("queryNativeAsJson", query, ontology);
 
 			try {
-				return JSON.serialize(queryNativeMongo(ontology, query, offset, limit));
+				return this.serializeMongoIterableOfBasicDBObject(queryNativeMongo(ontology, query, offset, limit));
 			} catch (final javax.persistence.PersistenceException e) {
 				log.error("find", e, query, ontology);
 				throw new DBPersistenceException(e);
@@ -431,12 +436,53 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String findAllAsJson(String ontology) {
-		return JSON.serialize(findAll(ontology));
+		return this.serializeListOfString(findAll(ontology));
 	}
 
 	@Override
 	public String findAllAsJson(String ontology, int limit) {
-		return JSON.serialize(findAll(ontology, limit));
+		return this.serializeListOfString(findAll(ontology, limit));
+
+	}
+
+	private String serializeMongoIterableOfBasicDBObject(MongoIterable<BasicDBObject> lObjs) {
+		StringBuilder buf = new StringBuilder();
+
+		boolean first = true;
+		buf.append("[ ");
+
+		for (final BasicDBObject o : lObjs) {
+			if (first) {
+				first = false;
+			} else {
+				buf.append(" , ");
+			}
+
+			buf.append(o.toJson());
+		}
+		buf.append("]");
+
+		return buf.toString();
+	}
+
+	private String serializeListOfString(List<String> lObjs) {
+		StringBuilder buf = new StringBuilder();
+
+		boolean first = true;
+		buf.append("[ ");
+
+		for (final String o : lObjs) {
+			if (first) {
+				first = false;
+			} else {
+				buf.append(" , ");
+			}
+
+			buf.append(o.toString());
+		}
+		buf.append("]");
+
+		return buf.toString();
 	}
 
 	@Override

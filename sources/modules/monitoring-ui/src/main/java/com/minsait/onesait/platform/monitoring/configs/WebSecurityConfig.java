@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.monitoring.configs;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletException;
@@ -31,6 +30,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceS
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -56,10 +56,6 @@ import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.session.MapSessionRepository;
-import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
-import org.springframework.session.web.http.CookieSerializer;
-import org.springframework.session.web.http.DefaultCookieSerializer;
 
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.monitoring.filter.OperationsLoginFilter;
@@ -69,7 +65,7 @@ import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 // @EnableOAuth2Sso
 @EnableOAuth2Client
 // @Order(5)
-@EnableSpringHttpSession
+//@EnableSpringHttpSession
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -82,14 +78,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.formLogin().loginPage("/login.html").loginProcessingUrl("/login").successHandler(new SecurityHandler())
-				.permitAll();
+		.permitAll();
 		http.csrf().disable();
 		http.logout();
 		http.authorizeRequests()
-				.antMatchers("/login**", "/**/*.js", "/**/*.css", "/img/**", "/third-party/**", "/assets/**")
-				.permitAll();
+		.antMatchers("/login**", "/**/*.js", "/**/*.css", "/img/**", "/third-party/**", "/assets/**")
+		.permitAll();
 
 		http.authorizeRequests().antMatchers("/**").authenticated();
+		//		http.authorizeHttpRequests().anyRequest().permitAll();
 		http.httpBasic();
 		http.headers().frameOptions().disable();
 
@@ -149,7 +146,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public ResourceServerProperties getResource() {
 		return new ResourceServerProperties();
 	}
-	
+
 	@ConditionalOnMissingBean(UserInfoTokenServices.class)
 	@Bean
 	public UserInfoTokenServices userInfoTokenServices() {
@@ -166,30 +163,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 	}
 
-	// @Bean
-	// public ServletContextInitializer servletContextInitializer(
-	// @Value("${onesaitplatform.secure.cookie}") boolean secure) {
-	// return servletContext -> {
-	// servletContext.getSessionCookieConfig().setSecure(secure);
-	// servletContext.getSessionCookieConfig().setHttpOnly(true);
-	// };
-	// }
-
 	@Bean
-	public MapSessionRepository sessionRepository() {
-		return new MapSessionRepository(new ConcurrentHashMap<>());
+	public ServletContextInitializer servletContextInitializer(
+			@Value("${onesaitplatform.secure.cookie}") boolean secure) {
+		return servletContext -> {
+			servletContext.getSessionCookieConfig().setSecure(secure);
+			servletContext.getSessionCookieConfig().setHttpOnly(true);
+		};
 	}
 
-	@Bean
-	public CookieSerializer cookieSerializer(@Value("${onesaitplatform.secure.cookie}") boolean secure) {
-		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
-		if (secure) {
-			serializer.setSameSite("None");
-		}
-		serializer.setUseHttpOnlyCookie(true);
-		serializer.setUseSecureCookie(secure);
-		return serializer;
-	}
+	//	@Bean
+	//	public MapSessionRepository sessionRepository() {
+	//		return new MapSessionRepository(new ConcurrentHashMap<>());
+	//	}
+	//
+	//	@Bean
+	//	public CookieSerializer cookieSerializer(@Value("${onesaitplatform.secure.cookie}") boolean secure) {
+	//		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+	//		if (secure) {
+	//			serializer.setSameSite("None");
+	//		}
+	//		serializer.setUseHttpOnlyCookie(true);
+	//		serializer.setUseSecureCookie(secure);
+	//		return serializer;
+	//	}
 
 	@Value("${security.oauth2.resource.checkTokenEndpoint}")
 	String checkTokenEndpoint;

@@ -52,3 +52,4 @@ onesaitplatform:
       keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
     controlpanel:
       maxSessionsPerUser: 10
+      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$

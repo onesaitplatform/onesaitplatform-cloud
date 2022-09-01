@@ -49,4 +49,8 @@ public class GadgetFavoriteCreateDTO {
 	@ApiModelProperty(required = true)
 	private String type;
 
+	@Getter
+	@Setter
+	private String metainf;
+
 }

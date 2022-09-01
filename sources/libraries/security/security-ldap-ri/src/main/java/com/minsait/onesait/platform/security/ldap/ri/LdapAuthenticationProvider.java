@@ -14,9 +14,14 @@
  */
 package com.minsait.onesait.platform.security.ldap.ri;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,19 +31,30 @@ import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.Filter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.commons.security.PasswordEncoder;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.model.Tenant;
+import com.minsait.onesait.platform.multitenant.config.model.Vertical;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.security.ldap.ri.component.LdapUserMapper;
 import com.minsait.onesait.platform.security.ldap.ri.config.LdapConfig;
 import com.minsait.onesait.platform.security.ldap.ri.service.LdapUserService;
@@ -57,6 +73,8 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 	@Autowired
 	private LdapUserService ldapUserService;
 	@Autowired
+	private MasterUserRepository masterUserRepository;
+	@Autowired
 	private UserRepository userRepository;
 	@Value("${ldap.attributesMap.userId}")
 	private String userIdAtt;
@@ -68,8 +86,12 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 	private String memberAtt;
 	@Autowired
 	private UserDetailsService userDetails;
+	@Value("${onesaitplatform.multitenancy.enabled:false}")
+	boolean multitenantEnabled;
+	@Value("${ldap.authentication.regex:(.*)}")
+	private String authenticationRegex;
 
-	// TO-DO logica de creado de usuarios multitenant
+
 
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -82,7 +104,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 		final String password = credentials.toString();
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
-		filter.and(new EqualsFilter(userIdAtt, userId));
+		filter.and(new EqualsFilter(userIdAtt, processAuthenticationName(userId)));
 		boolean authenticated = false;
 		try {
 			authenticated = ldapTemplateBase.authenticate(LdapUtils.emptyLdapName(), filter.toString(), password);
@@ -91,10 +113,16 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			throw e;
 		}
 		final List<User> matches;
+		User matched = null;
 
 		try {
 			matches = ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(),
 					new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
+			if (!matches.isEmpty()) {
+				matched = matches.get(0);
+				matched.setUserId(userId);
+			}
+
 		} catch (final Exception e) {
 			log.error("Could not map user from LDAP", e);
 			throw e;
@@ -102,24 +130,32 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 
 		if (authenticated) {
 			log.info("User {} authenticated successfully against ldap", userId);
-			List<String> groups = null;
-			try {
-				groups = ldapTemplateBase.search(LdapUtils.emptyLdapName(), filter.encode(),
-						(AttributesMapper<List<String>>) attributes -> {
-							@SuppressWarnings("unchecked")
-							final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt)
-							.getAll();
-							return Collections.list(enMember);
-						}).get(0);
-			} catch (final Exception e) {
-				log.error("Error while retrieving ldap groups for user {}", userId, e);
-			}
 
-			User user = userRepository.findByUserId(userId);
+			final MasterUser user = masterUserRepository.findByUserId(userId);
 			if (user == null) {
-				user = ldapUserService.createUser(matches.get(0), password, groups);
+				if (multitenantEnabled && authentication.getDetails() instanceof WebAuthenticationDetails) {
+					final Collection<? extends GrantedAuthority> grantedAuthorities = Arrays
+							.asList(new SimpleGrantedAuthority(Role.Type.ROLE_COMPLETE_IMPORT.name()));
+					ldapUserService.createUser(matched, password, getGroups(filter, userId));
+					return new UsernamePasswordAuthenticationToken(userDetails.loadUserByUsername(userId), "",
+							grantedAuthorities);
+				} else {
+					ldapUserService.createUser(matched, password, getGroups(filter, userId));
+				}
+
 			} else {
-				ldapUserService.updateUserRole(user, groups);
+				final Tenant tenant = user.getTenant();
+				final Set<Vertical> verticals = tenant.getVerticals();
+				verticals.forEach(v -> {
+					MultitenancyContextHolder.setTenantName(tenant.getName());
+					MultitenancyContextHolder.setVerticalSchema(v.getSchema());
+					final User userLocal = userRepository.findByUserId(userId);
+					if (userLocal != null) {
+						ldapUserService.updateUserRole(userLocal, getGroups(filter, userId));
+					}
+					MultitenancyContextHolder.clear();
+				});
+
 			}
 
 			final UserDetails details = userDetails.loadUserByUsername(userId);
@@ -129,7 +165,7 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 			if (!matches.isEmpty()) {
 				throw new BadCredentialsException("Wrong password for user " + userId);
 			} else {
-				final User user = userRepository.findByUserId(userId);
+				final MasterUser user = masterUserRepository.findByUserId(userId);
 				if (user != null && user.isActive()) {
 					log.info("User {} does not exist in LDAP, but exists in the ConfigDB, validating password...",
 							userId);
@@ -155,9 +191,44 @@ public class LdapAuthenticationProvider implements AuthenticationProvider {
 
 	}
 
+	private List<String> getGroups(Filter filter, String userId) {
+		try {
+			return ldapTemplateBase
+					.search(LdapUtils.emptyLdapName(), filter.encode(), (AttributesMapper<List<String>>) attributes -> {
+						@SuppressWarnings("unchecked")
+						final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+						return Collections.list(enMember);
+					}).get(0);
+		} catch (final Exception e) {
+			log.error("Error while retrieving ldap groups for user {}", userId, e);
+		}
+		return null;
+	}
+
+
 	@Override
 	public boolean supports(Class<?> authentication) {
 		return authentication.equals(UsernamePasswordAuthenticationToken.class);
 	}
+
+	private String processAuthenticationName(String input) {
+		try {
+			final Pattern pattern = Pattern.compile(authenticationRegex);
+			final Matcher matcher = pattern.matcher(input);
+			String match = null;
+			if (matcher.find()) {
+				match = matcher.group(1);
+			}
+			if (!StringUtils.isEmpty(match)) {
+				return match;
+			}
+		} catch (final Exception e) {
+			log.error("Exception while checking authentication regex {} for input {}. Returning original input.",
+					authenticationRegex, input);
+		}
+		return input;
+
+	}
+
 
 }

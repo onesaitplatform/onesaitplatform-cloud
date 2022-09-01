@@ -56,5 +56,7 @@ public interface InternationalizationService {
     boolean hasUserViewPermission(String id, String userId);
 
 	void deleteInternationalizationByIdentification(String internationalizationId, String userId);
+	
+	List<Internationalization> getInternationalizationsByResourceId(String resourceId);
 
 }

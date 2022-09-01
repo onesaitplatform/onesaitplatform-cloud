@@ -35,9 +35,4 @@ public class HazelcastCacheConfig {
 		return hazelcastInstance.getMap("ApiManagerCache");
 	}
 
-	@Bean(name = "revokedTokens")
-	public Map<String, Long> revokedTokens() {
-		return hazelcastInstance.getMap("revokedTokens");
-	}
-
 }

@@ -86,33 +86,33 @@ public class SocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
 		config.configureBrokerChannel().taskExecutor().queueCapacity(brokerChannelQueueSize)
-				.corePoolSize(brokerChannelCorePool).maxPoolSize(brokerChannelMaxPool);
+		.corePoolSize(brokerChannelCorePool).maxPoolSize(brokerChannelMaxPool);
 		config.setCacheLimit(cacheLimit);
 		config.enableSimpleBroker("/dsengine/broker");
 	}
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/dsengine/solver").setAllowedOrigins("*").withSockJS()
-				.setHeartbeatTime(serverHeartbeatTime);
+		registry.addEndpoint("/dsengine/solver").setAllowedOriginPatterns("*").withSockJS()
+		.setHeartbeatTime(serverHeartbeatTime);
 	}
 
 	@Override
 	public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
 		registration.setSendTimeLimit(60 * 1000).setSendBufferSizeLimit(200 * 1024 * 1024)
-				.setMessageSizeLimit(200 * 1024 * 1024);
+		.setMessageSizeLimit(200 * 1024 * 1024);
 	}
 
 	@Override
 	public void configureClientOutboundChannel(ChannelRegistration registration) {
 		registration.taskExecutor().queueCapacity(outboundChannelQueueSize).corePoolSize(outboundChannelCorePool)
-				.maxPoolSize(outboundChannelMaxPool);
+		.maxPoolSize(outboundChannelMaxPool);
 	}
 
 	@Override
 	public void configureClientInboundChannel(ChannelRegistration registration) {
 		registration.taskExecutor().queueCapacity(inboundChannelQueueSize).corePoolSize(inboundChannelCorePool)
-				.maxPoolSize(inboundChannelMaxPool);
+		.maxPoolSize(inboundChannelMaxPool);
 	}
 
 }

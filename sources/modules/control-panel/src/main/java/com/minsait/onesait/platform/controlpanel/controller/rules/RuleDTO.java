@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +35,7 @@ public class RuleDTO {
 	private String inputOntology;
 	private String outputOntology;
 	private DroolsRule.Type type;
-	@ApiParam(format = "URL UTF-8 ENCODED DRL CODE")
+	@Parameter
 	private String drl;
 	private String identification;
 	private boolean active;

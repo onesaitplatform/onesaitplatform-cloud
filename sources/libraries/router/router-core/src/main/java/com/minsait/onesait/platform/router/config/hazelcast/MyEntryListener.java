@@ -15,7 +15,7 @@
 package com.minsait.onesait.platform.router.config.hazelcast;
 
 import com.hazelcast.core.EntryEvent;
-import com.hazelcast.core.MapEvent;
+import com.hazelcast.map.MapEvent;
 import com.hazelcast.map.listener.EntryAddedListener;
 import com.hazelcast.map.listener.EntryEvictedListener;
 import com.hazelcast.map.listener.EntryRemovedListener;

@@ -17,11 +17,17 @@ package com.minsait.onesait.platform.config.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface DashboardUserAccessTypeRepository extends JpaRepository<DashboardUserAccessType, Integer> {
 
 	List<DashboardUserAccessType> findByName(String name);
+
+	@Query("SELECT d FROM DashboardUserAccessType d JOIN d.dashboardUserAccess dua WHERE dua.user= :user ")
+	List<DashboardUserAccessType> findByUser(@Param("user") User user);
 
 }

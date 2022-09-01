@@ -20,9 +20,9 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
@@ -32,29 +32,31 @@ import lombok.Setter;
 @Entity
 @Table(name = "CATEGORIZATION")
 public class Categorization extends OPResource {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	@Column(name = "JSON", nullable = false)
 	@NotNull
 	@Lob
-	@JsonRawValue
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String json;
-	
+
 	@Override
 	public boolean equals(Object obj) {
 
-		if (this == obj)
+		if (this == obj) {
 			return true;
+		}
 
-		if (!(obj instanceof Categorization))
+		if (!(obj instanceof Categorization)) {
 			return false;
+		}
 
 		return getIdentification().equals(((Categorization) obj).getIdentification());
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return java.util.Objects.hash(getIdentification());

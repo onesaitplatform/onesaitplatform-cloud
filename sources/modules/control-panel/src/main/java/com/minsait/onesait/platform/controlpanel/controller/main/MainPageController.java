@@ -17,10 +17,16 @@ package com.minsait.onesait.platform.controlpanel.controller.main;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.minsait.onesait.platform.business.services.prometheus.PrometheusService;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
@@ -39,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainPageController {
 
+	private static final String MESSAGE = "message";
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
@@ -61,34 +68,44 @@ public class MainPageController {
 	private ApiRepository apiRepository;
 	@Autowired
 	private MainService mainService;
+	@Autowired
+	private PrometheusService prometheusService;
+
 
 	@GetMapping("/main")
 	public String main(Model model, HttpServletRequest request) {
+		if(model.asMap().containsKey(MESSAGE)) {
+			model.addAttribute(MESSAGE, model.asMap().get(MESSAGE));
+		}
 		// Load menu by role in session
 		final String jsonMenu = menuService.loadMenuByRole(userService.getUser(utils.getUserId()));
 		// Remove PrettyPrinted
 		final String menu = utils.validateAndReturnJson(jsonMenu);
 		utils.setSessionAttribute(request, "menu", menu);
-		if (request.getSession().getAttribute("apis") == null)
-			utils.setSessionAttribute(request, "apis", integrationResourcesService.getSwaggerUrls());
-		if (utils.isAdministrator()) {
-			model.addAttribute("kpis", mainService.createKPIs());
 
+		if (request.getSession().getAttribute("apis") == null) {
+			utils.setSessionAttribute(request, "apis", integrationResourcesService.getSwaggerUrls());
+		}
+
+		final Boolean prometheusEnabled = prometheusEnabled();
+
+		if (utils.isAdministrator()) {
+			if (prometheusEnabled) {
+				model.addAttribute("kpis", mainService.createKPIsNew());
+			} else {
+				model.addAttribute("kpis", mainService.createKPIs());
+			}
+			model.addAttribute("groupModules", mainService.getGroupModules());
+			model.addAttribute("groupServices", mainService.getGroupServices());
+			model.addAttribute("prometheusEnabled", prometheusEnabled);
 			return "main";
 		} else if (utils.isDeveloper()) {
 			// FLOW
-			model.addAttribute("hasOntology",
-					ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
-			model.addAttribute("hasDevice",
-					clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false
-							: true);
-			model.addAttribute("hasDashboard",
-					dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-			model.addAttribute("hasSimulation",
-					deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
-			model.addAttribute("hasApi",
-					apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-
+			model.addAttribute("hasOntology", ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
+			model.addAttribute("hasDevice",	clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
+			model.addAttribute("hasDashboard", dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
+			model.addAttribute("hasSimulation", deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
+			model.addAttribute("hasApi", apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 			return "main";
 		} else if (utils.getRole().equals(Role.Type.ROLE_USER.name())) {
 			return "redirect:/marketasset/list";
@@ -99,18 +116,44 @@ public class MainPageController {
 		}
 
 		// FLOW
-		model.addAttribute("hasOntology",
-				ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
-		model.addAttribute("hasDevice",
-				clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-		model.addAttribute("hasDashboard",
-				dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-		model.addAttribute("hasSimulation",
-				deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
-		model.addAttribute("hasApi",
-				apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-
+		model.addAttribute("hasOntology", ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
+		model.addAttribute("hasDevice",	clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
+		model.addAttribute("hasDashboard", dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
+		model.addAttribute("hasSimulation",	deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
+		model.addAttribute("hasApi", apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 		return "main";
 	}
 
+	private Boolean prometheusEnabled() {
+		try {
+			prometheusService.getMemStats("onesait-platform");
+			prometheusService.getCpuStats("onesait-platform");
+			return true;
+		} catch (final RuntimeException e) {
+			log.debug("Error getting prometheus metrics: " + e);
+			return false;
+		}
+	}
+
+	@GetMapping(value = "/main/memstats", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	public @ResponseBody ResponseEntity<String> getMemStats() {
+		try {
+			final String memStats = prometheusService.getMemStats("onesait-platform");
+			return new ResponseEntity<>(memStats, HttpStatus.OK);
+		} catch (final RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(value = "/main/cpustats", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	public @ResponseBody ResponseEntity<String> getCpuStats(Model model) {
+		try {
+			final String cpuStats = prometheusService.getCpuStats("onesait-platform");
+			return new ResponseEntity<>(cpuStats, HttpStatus.OK);
+		} catch (final RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
 }

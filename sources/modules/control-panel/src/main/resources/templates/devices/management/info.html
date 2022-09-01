@@ -103,7 +103,7 @@
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="pull-right">										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/devices/management/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/management/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									<span class="sep no-border"></span>
 										
 									<!-- UPDATE -->
@@ -136,8 +136,6 @@
 						</div>						
 					
 						<div class="tab-content flex-content-right">
-							<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->																
-							</div>
 							<div class="tab-pane fade in active" id="tab_1"><!--Begin tab1 -->		
 							<!-- VIEW -->
 								<div class="row main">	
@@ -152,27 +150,35 @@
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{device.id}">Identification</label>
-											<p class="form-control-static-block bold" th:text="*{identification}"> Device Name </p>
+											<p class="form-control-static-block" th:text="*{identification}"> Device Name </p>
 										</div>
 									</div>
+								</div>
+								<div class="row main">
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{device.clientplatform}">Platform client</label>
-											<p class="form-control-static-block bold" th:text="*{clientPlatform.identification}"></p>
+											<p class="form-control-static-block" th:text="*{clientPlatform.identification}"></p>
 										</div>
 									</div>
+								</div>
+								<div class="row main">
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{device.protocol}">Protocol</label>
-											<p class="form-control-static-block bold" th:text="*{protocol}"></p>
+											<p class="form-control-static-block" th:text="*{protocol}"></p>
 										</div>
 									</div>
+								</div>
+								<div class="row main">
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{device.lasstatus}">Last Status</label>
-											<p class="form-control-static-block bold" th:text="*{status}"></p>
+											<p class="form-control-static-block" th:text="*{status}"></p>
 										</div>
 									</div>
+								</div>
+								<div class="row main">
 									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<div class="mt-checkbox-list margin-top-20">
@@ -188,10 +194,8 @@
 								<div class="row main">	
 									<div class="col-md-3 col-sm-12 col-xs-12">
 										<div class="form-group">
-											<div class="bootstrap-tagsinput">
-												<label class="control-label"><i class="la la-tags"></i> <span th:text="#{device.tags}">Tags</span></label>
+												<label class="control-label"><span th:text="#{device.tags}">Tags</span></label>
 												<input  data-msg="Tags for the device" th:tabindex="2" id="tags" name="tags" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{tags}" data-minlength="2" pattern=".{2,}"></input>
-											</div>			
 										</div>
 									</div>
 								</div>	
@@ -255,19 +259,19 @@
 										<span th:text="#{device.management.template.commands}">Commands</span>
 									</div>
 								</div>
-								<div class="row main">
+								<div class="row main" style="min-height: 80px">
 									<div class="col-md-12 col-sm-12 col-xs-12">
 										<div th:each="command : ${commands}" class="row">													
 											<div class="col-md-3 col-sm-6 col-xs-12">
 												<div class="form-group">
 													<label class="control-label bold" th:text="${command}"></label>
-													<select th:id="'combo'+${command}" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%"  th:onclick="'updateCodeMirror(\''+ ${command}+'\',this);'">
+													<select th:id="'combo'+${command}" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%"  th:attr="onclick='updateCodeMirror(\''+ ${command}+'\',this);'">
 																														
 													</select>		
 													<br/>
 													<textarea th:id="${command}" th:required="true"  class="form-control" rows="5" data-min-rows='5'></textarea>
 													<div class="pull-right">
-														<button th:onclick="'executeCommand(\''+ ${command}+'\');'"   type="button" class="btn btn-square btn-primary" th:value="#{device.management.execute}" ><span th:text="#{device.management.execute}"> Execute</span></button>
+														<button th:attr="onclick='executeCommand(\''+ ${command}+'\');'"   type="button" class="btn btn-square btn-primary" th:value="#{device.management.execute}" ><span th:text="#{device.management.execute}"> Execute</span></button>
 													</div>														
 												</div>
 											</div>

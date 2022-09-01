@@ -46,7 +46,7 @@ public class RestPlannerAuditEvent extends OPAuditRemoteEvent {
 			String otherType, String remoteAddress, ResultOperationType resultOperation, String response,
 			String infoMessage) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, 1);
 		this.infoMessage = infoMessage;
 		this.user = user;
 		this.response = response;

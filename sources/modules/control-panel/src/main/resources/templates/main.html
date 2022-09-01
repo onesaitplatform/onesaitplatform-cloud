@@ -24,7 +24,7 @@
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
 
-		
+
 		<!-- WEB FONTs -->
 		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
 		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
@@ -44,119 +44,119 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
-		
-	</head>	
-	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+	</head>
+
 	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
 	<body class="page-header-fixed  page-content-white  page-sidebar-closed page-footer-fixed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-	
+
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-		
+
 		<!-- HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"> </div>
-			
+
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-			
+
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-			
+
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				
+
 				<!-- BEGIN PAGE -->
 				<a id="1" sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-default btn-sm button_text" data-toggle="collapse" data-target="#main-block">
 				<i class="la la-angle-down"></i>
 				</a>
 				<div sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" class="main-block mt-element-step collapse" id="main-block">
-				
-					<div class="row step-line">					
+
+					<div class="row step-line">
 						<div class="col-md-2 col-sm-3 col-xs-6 mt-step-col first ">
-								<span th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasOntology} ? bg-green : bg-red">
+								<span th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasOntology} ? bg-green : bg-red">
 								  	<img class="" th:src="@{/static/images/model_data.svg}" alt="Image"/>
 								</span>
 							<div class="mt-step-title uppercase bold font-grey-steel" th:text="#{flow.ontology}">Modela el dato</div>
 							<div class="mt-step-content font-grey-steel flow-description" th:text="#{flow.ontology.description}">...</div>
 							<div class="mt-step-cta" th:style="${not hasOntology} ? 'background: #FFF; box-shadow:none;' : ''">
-								
-								<button th:if="${not hasOntology}" class="btn btn-circle btn-outline blue btn-setup" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
+
+								<button th:if="${not hasOntology}" class="btn btn-circle btn-outline blue btn-setup" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
 								<div class="mt-step-done" th:if="${hasOntology}">
 									<p style="margin-left: auto;position: absolute;right: 12px;bottom: -12px;"><i class="la la-check-circle-o" style="font-size: 24px;color: #0e668c;"></i> </p>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-2 col-sm-3 col-xs-6 mt-step-col ">
-								<span th:onclick="'javascript:navigateUrl(\'' + @{/devices/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasDevice} ? bg-green : bg-red">
+								<span th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasDevice} ? bg-green : bg-red">
 								 <img class="" th:src="@{/static/images/devices.svg}" alt="Image"/>
 								</span>
 							<div class="mt-step-title uppercase bold font-grey-steel" th:text="#{flow.device}">Crea tu device</div>
 							<div class="mt-step-content font-grey-steel flow-description" th:text="#{flow.device.description}">...</div>
 							<div class="mt-step-cta" th:style="${not hasDevice} ? 'background: #FFF; box-shadow:none;' : ''">
-								
-								<button th:if="${not hasDevice}" class="btn btn-circle btn-outline blue btn-setup" th:onclick="'javascript:navigateUrl(\'' + @{/devices/list} + '\');'" th:text="#{flow.button}">GO</button>
+
+								<button th:if="${not hasDevice}" class="btn btn-circle btn-outline blue btn-setup" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
 								<div class="mt-step-done" th:if="${hasDevice}">
 									<p style="margin-left: auto;position: absolute;right: 12px;bottom: -12px;"><i class="la la-check-circle-o" style="font-size: 24px;color: #0e668c;"></i> </p>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-2 col-sm-3 col-xs-6 mt-step-col ">
-								<span th:onclick="'javascript:navigateUrl(\'' + @{/devicesimulation/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasSimulation} ? bg-green : bg-red">
+								<span th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasSimulation} ? bg-green : bg-red">
 								  <img class="" th:src="@{/static/images/simulate.svg}" alt="Image"/>
 								</span>
 							<div class="mt-step-title uppercase bold font-grey-steel" th:text="#{flow.simulate}">Simula y prueba</div>
 							<div class="mt-step-content font-grey-steel flow-description" th:text="#{flow.simulate.description}">...</div>
 							<div class="mt-step-cta" th:style="${not hasSimulation} ? 'background: #FFF; box-shadow:none;' : ''">
-								
-								<button th:if="${not hasSimulation}" class="btn btn-circle btn-outline blue btn-setup" th:onclick="'javascript:navigateUrl(\'' + @{/devicesimulation/list} + '\');'" th:text="#{flow.button}">GO</button>
+
+								<button th:if="${not hasSimulation}" class="btn btn-circle btn-outline blue btn-setup" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
 								<div class="mt-step-done" th:if="${hasSimulation}">
 									<p style="margin-left: auto;position: absolute;right: 12px;bottom: -12px;"><i class="la la-check-circle-o" style="font-size: 24px;color: #0e668c;"></i> </p>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-2 col-sm-3 col-xs-6 mt-step-col ">
-							<span th:onclick="'javascript:navigateUrl(\'' + @{/dashboards/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasDashboard} ? bg-green : bg-red">
-								  <img class="" th:src="@{/static/images/visualize.svg}" alt="Image"/> 
+							<span th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number font-grey" th:classappend="${hasDashboard} ? bg-green : bg-red">
+								  <img class="" th:src="@{/static/images/visualize.svg}" alt="Image"/>
 								</span>
 							<div class="mt-step-title uppercase bold font-grey-steel" th:text="#{flow.visualize}">Visualiza</div>
 							<div class="mt-step-content font-grey-steel flow-description" th:text="#{flow.visualize.description}">...</div>
 							<div class="mt-step-cta" th:style="${not hasDashboard} ? 'background: #FFF; box-shadow:none;' : ''">
-								
-								<button th:if="${not hasDashboard}" class="btn btn-circle btn-outline blue btn-setup" th:onclick="'javascript:navigateUrl(\'' + @{/dashboards/list} + '\');'" th:text="#{flow.button}">GO</button>
+
+								<button th:if="${not hasDashboard}" class="btn btn-circle btn-outline blue btn-setup" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
 								<div class="mt-step-done" th:if="${hasDashboard}">
 									<p style="margin-left: auto;position: absolute;right: 12px;bottom: -12px;"><i class="la la-check-circle-o" style="font-size: 24px;color: #0e668c;"></i> </p>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-2 col-sm-3 col-xs-6 mt-step-col ">
-								<span th:onclick="'javascript:navigateUrl(\'' + @{/devices/list} + '\');'" class="btn mt-step-number bg-blue font-grey">
+								<span th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number bg-blue font-grey">
 								 <img class="" th:src="@{/static/images/connect_device.svg}" alt="Image"/>
 								</span>
 							<div class="mt-step-title uppercase bold font-grey-steel" th:text="#{flow.connect}">Conecta tu Dispositivo</div>
 							<div class="mt-step-content font-grey-steel flow-description" th:text="#{flow.connect.description}">...</div>
 							<div class="mt-step-cta" th:style="${not hasDevice} ? 'background: #FFF; box-shadow:none;' : ''">
-								
-								<button th:if="${not hasDevice}" class="btn btn-circle btn-outline blue btn-setup" th:onclick="'javascript:navigateUrl(\'' + @{/devices/list} + '\');'" th:text="#{flow.button}">GO</button>
+
+								<button th:if="${not hasDevice}" class="btn btn-circle btn-outline blue btn-setup" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
 								<div class="mt-step-done" th:if="${hasDevice}">
 									<p style="margin-left: auto;position: absolute;right: 12px;bottom: -12px;"><i class="la la-check-circle-o" style="font-size: 24px;color: #0e668c;"></i> </p>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-2 col-sm-3 col-xs-6 mt-step-col last">
-								<span th:onclick="'javascript:navigateUrl(\'' + @{/apimanager/list} + '\');'" class="btn mt-step-number font-grey-steel" th:classappend="${hasApi} ? bg-green : bg-red">
+								<span th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" class="btn mt-step-number font-grey-steel" th:classappend="${hasApi} ? bg-green : bg-red">
 								 <img class="" th:src="@{/static/images/apis.svg}" alt="Image"/>
 								</span>
 							<div class="mt-step-title uppercase font-grey-steel" th:text="#{flow.api}">Crea tu API</div>
 							<div class="mt-step-content font-grey-steel flow-description" th:text="#{flow.api.description}">...</div>
 							<div class="mt-step-cta" th:style="${not hasApi} ? 'background: #FFF; box-shadow:none;' : ''" >
-								
-								<button th:if="${not hasApi}" type="button" class="btn btn-circle btn-outline blue btn-setup" th:onclick="'javascript:navigateUrl(\'' + @{/apimanager/list} + '\');'" th:text="#{flow.button}">GO</button>
+
+								<button th:if="${not hasApi}" type="button" class="btn btn-circle btn-outline blue btn-setup" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" th:text="#{flow.button}">GO</button>
 								<div class="mt-step-done" th:if="${hasApi}">
 									<p style="margin-left: auto;position: absolute;right: 12px;bottom: -12px;"><i class="la la-check-circle-o" style="font-size: 24px;color: #0e668c;"></i> </p>
 								</div>
@@ -167,20 +167,25 @@
 				</div>
 				<div class="main-block-toggle hide"><span class="btn btn-icon-only blue-chambray"><i class="fa fa-eye"></i></span></div>
 				<!-- END PAGE BAR -->
-				
+
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{name.app}">Onesait Control Panel</span></h1>
-				<!-- END PAGE TITLE-->			
-				
+				<h1 class="page-title hide "><span th:text="#{name.app}">Onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->
+
 				<!-- MAIN ROW -->
 				<div class="row">
-				
-					<div class="col-md-12 col-sm-12">					
+					<div th:if="!${prometheusEnabled}" class="col-md-12 col-sm-12">
 						<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
-						<div id="dashboardInclude" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
+						<div id="dashboardInclude" sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
 						<!-- END DASHBOARD INCLUDE -->
 					</div>
-				
+
+					<div th:if="${prometheusEnabled}" class="col-md-12 col-sm-12">
+						<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
+						<div id="dashboardInclude" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:include="fragments/adminHome::#adminHomeFragment" class="margin-top-20 margin-left-10"></div>
+						<!-- END DASHBOARD INCLUDE -->
+					</div>
+
 					<!-- BEGIN TREE INCLUDE -->
 					<div class="col-md-4 col-sm-12 padding-left-40" id="treeInclude" style="display:none" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
 						<div class="row main" style="margin-top: -20px;">
@@ -190,68 +195,68 @@
 						</div>
 					</div>
 					<!-- END TREE -->
-						
+
 					<!-- BEGIN GRAPH INCLUDE -->
 					<div class="col-md-12 col-sm-12" id="graphInclude" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">
 						<div class="row main">
 							<div class="col-md-12 col-sm-12">
-								<div class="col-md-12 margin-bottom-10" th:include="fragments/graph::#graphFragment" ></div>							
+								<div class="col-md-12 margin-bottom-10" th:include="fragments/graph::#graphFragment" ></div>
 							</div>
 						</div>
 					</div>
 					<!-- END GRAPH -->
-					
+
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 	<!-- FOOTER INCLUDE -->
-	
-		</div><!-- END CONTENT page-content-wrapper -->		
+
+		</div><!-- END CONTENT page-content-wrapper -->
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"/> 
-	
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"/>
+
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
 
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery-matchHeight/jquery.matchHeight-min.js}"></script>
-		
+
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
 	function navigateUrl(url){  window.location.href = url;	}
-	var showLog = 0; // console.log toggle	
-    //<![CDATA[ 	
-	var lastOne = '';	
+	var showLog = 0; // console.log toggle
+    //<![CDATA[
+	var lastOne = '';
 	function showStepDesc(obj,link,icon,descId){
-		
+
 		var stepDesc = $('.step-desc');
-		
-		
+
+
 		// FILL DESC AND SHOW
-		$('#stepdescicon').attr('class',icon);		
-		$('#stepdesclink').attr('href',link); 
-		$('#stepdesclink span').text($(obj).next().find('span').text());		
+		$('#stepdescicon').attr('class',icon);
+		$('#stepdesclink').attr('href',link);
+		$('#stepdesclink span').text($(obj).next().find('span').text());
 		$('#stepdescbtn').attr('class',icon);
-		$('#stepdesctext').text($('#'+descId).text());		
-		
+		$('#stepdesctext').text($('#'+descId).text());
+
 		// if its open closeIt
-		if ((lastOne != descId)&&(lastOne != '')&&(stepDesc.hasClass('hide') !== true )){ 			
+		if ((lastOne != descId)&&(lastOne != '')&&(stepDesc.hasClass('hide') !== true )){
 			//get the selected quit animation and anime this one.
 			$('.step-selected').next().removeClass('font-grey-mint').addClass('font-grey-steel').find('i').addClass('hide');
-			$('.step-selected').removeClass('step-selected');	
+			$('.step-selected').removeClass('step-selected');
 			$(obj).addClass('step-selected');
 			$(obj).next().removeClass('font-grey-steel').addClass('font-grey-mint').find('i').removeClass('hide');
-			lastOne = descId; return; 
+			lastOne = descId; return;
 		}
 
 		if (stepDesc.hasClass('hide') === true ){
-			// FADEIN DESC			
+			// FADEIN DESC
 			$(obj).addClass('step-selected');
 			$(obj).next().removeClass('font-grey-steel').addClass('font-grey-mint').find('i').removeClass('hide');
 			$('.main-block').animate({ "padding-bottom": "60px"});
-			stepDesc.removeClass('hide').fadeIn();			
-		} 
+			stepDesc.removeClass('hide').fadeIn();
+		}
 		else {
 			// FADEOUT DESC
 			$(obj).removeClass('step-selected');
@@ -261,13 +266,13 @@
 			stepDesc.addClass('hide');
 		}
 		lastOne = descId;
-	}		
-		
+	}
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		// init when Document is ready
 		showLog ? console.log('INDEX ready()...') : '';
-		
+
 		var mainGuide = $('div.thumbnail');
 		mainGuide.matchHeight({
 			byRow: true,
@@ -275,27 +280,27 @@
 			target: null,
 			remove: false
 		});
-		
-		
+
+
 		// toogle info zone
-		$('.hide-main-block').on('click', function(){			
-			$('.main-block').slideUp('slow',function(){ $('.main-block-toggle').removeClass('hide'); }); 
-			$('.hide-main-block').addClass('hide');		
+		$('.hide-main-block').on('click', function(){
+			$('.main-block').slideUp('slow',function(){ $('.main-block-toggle').removeClass('hide'); });
+			$('.hide-main-block').addClass('hide');
 		});
-		
+
 		$('.main-block-toggle').on('click', function(){
 			$('.main-block-toggle').addClass('hide');
-			$('.main-block').slideDown('slow', function(){ $('.hide-main-block').removeClass('hide'); }); 
+			$('.main-block').slideDown('slow', function(){ $('.hide-main-block').removeClass('hide'); });
 		});
-		
-		$('#step-desc-close').on('click',function(){ 
+
+		$('#step-desc-close').on('click',function(){
 			$('.step-desc').fadeOut(); $('.step-desc').addClass('hide');
 			$('.step-selected').next().removeClass('font-grey-mint').addClass('font-grey-steel').find('i').addClass('hide');
 			$('.step-selected').removeClass('step-selected');
 			// animate zone
 			$('.main-block').animate({ "padding-bottom": "0px"});
-		});	
-		
+		});
+
 		$('.collapse').on('shown.bs.collapse', function () {
 			 $(this).prev().find(".la").removeClass("la-angle-down").addClass("la-angle-up");
 		});
@@ -305,17 +310,17 @@
 		$('.collapse').on('hidden.bs.collapse', function () {
 			$(this).prev().find(".la").removeClass("la-angle-up").addClass("la-angle-down");
 		});
-		
+
 	});
-	 
+
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
-		// init on load.		
+	$(window).load(function(){
+		// init on load.
 		showLog ? console.log('INDEX load()...') : '';
-		
+
 	});
-	
+
 	//]]>
-	</script>	
+	</script>
 </body>
 </html>

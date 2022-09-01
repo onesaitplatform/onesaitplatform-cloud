@@ -19,13 +19,14 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,16 +34,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LoginController {
 
-	@Value("${onesaitplatform.password.pattern}")
-	private String passwordPattern;
+	@Autowired
+	private IntegrationResourcesService resourcesService;
+	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@GetMapping("login")
 	public String login(Model model) {
 		model.addAttribute("users", new User());
-		model.addAttribute("passwordPattern", passwordPattern);
+		model.addAttribute("passwordPattern", getPasswordPattern());
 		return "login";
 	}
-
 
 	@GetMapping("/logout")
 	public void exit(HttpServletRequest request, HttpServletResponse response) {
@@ -52,7 +53,11 @@ public class LoginController {
 			// sending back to client app
 			response.sendRedirect(request.getHeader("referer"));
 		} catch (final IOException e) {
-			log.error("exit",e);
+			log.error("exit", e);
 		}
+	}
+
+	private String getPasswordPattern() {
+		return ((String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN));
 	}
 }

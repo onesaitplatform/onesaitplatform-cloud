@@ -69,6 +69,7 @@ public class OntologyLogicService {
 			}
 
 		} catch (final Exception e) {
+			log.error("Error creaing ontology", e);
 			if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && ontologyService.existsOntology(ontology.getIdentification())) {
 				ontologyService.delete(ontology);
 			}

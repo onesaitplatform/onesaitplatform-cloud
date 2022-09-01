@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -22,6 +23,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -82,5 +84,11 @@ public interface ClientPlatformRepository extends JpaRepository<ClientPlatform, 
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'DIGITALCLIENT', 0) FROM ClientPlatform AS o WHERE o.user=:user AND (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
 	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
 			@Param("identification") String identification, @Param("description") String description);
+
+	@Modifying
+	@Transactional
+	@CacheEvict(cacheNames = { "ClientPlatformRepository",
+	"ClientPlatformSimplified"}, allEntries = true)
+	void deleteByIdNotIn(Collection<String> ids);
 
 }

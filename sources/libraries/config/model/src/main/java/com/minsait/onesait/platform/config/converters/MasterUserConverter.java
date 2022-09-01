@@ -44,7 +44,7 @@ public class MasterUserConverter implements Converter<User, MasterUser> {
 
 
 	public MasterUserLazy convertToLazyNoRaw(User user) {
-		return MasterUserLazy.builder().email(user.getEmail()).userId(user.getUserId()).password(STORED_FLAG+shaConverter.convertToDatabaseColumn(user.getPassword()))
+		return MasterUserLazy.builder().email(user.getEmail()).userId(user.getUserId()).password(STORED_FLAG+shaConverter.convertToDatabaseColumn(user.getRawPassword()))
 				.extraFields(user.getExtraFields()).fullName(user.getFullName()).active(user.isActive()).build();
 	}
 

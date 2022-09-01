@@ -31,7 +31,12 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +44,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "APP_ROLE_TYPE")
 @Configurable
-public class AppRole extends AppRoleParent {
+public class AppRole extends AppRoleParent{
 
 	/**
 	 *
@@ -50,6 +55,7 @@ public class AppRole extends AppRoleParent {
 	@JoinColumn(name = "app", nullable = false)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private App app;
 
 	@JoinTable(name = "app_associated_roles", joinColumns = {
@@ -58,13 +64,48 @@ public class AppRole extends AppRoleParent {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<AppRoleChild> childRoles = new HashSet<>();
+	private Set<AppRole> childRoles = new HashSet<>();
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private Set<AppUser> appUsers = new HashSet<>();
+
+	@JsonSetter("appUsers")
+	public void setAppUsersJson(Set<ObjectNode> appUsers) {
+		appUsers.forEach(au -> {
+			final AppUser appUser = new AppUser();
+			appUser.setId(au.get("id").asText());
+			final User u = new User();
+			u.setUserId(au.get("user").asText());
+			appUser.setUser(u);
+			appUser.setRole(this);
+			this.appUsers.add(appUser);
+		});
+	}
+
+
+	@JsonGetter("childRoles")
+	public Object getChidlRolesJson() {
+		final ObjectMapper mapper = new ObjectMapper();
+		final ArrayNode n = mapper.createArrayNode();
+		childRoles.forEach(a -> {
+			n.add(a.getId());
+		});
+		return n;
+	}
+
+	//TO-DO version childRole??
+	@JsonSetter("childRoles")
+	public void setChildRolesJson(Set<String> ids) {
+		ids.forEach(i ->{
+			final AppRole ar = new AppRole();
+			ar.setId(i);
+			childRoles.add(ar);
+		});
+	}
+
+
 
 }

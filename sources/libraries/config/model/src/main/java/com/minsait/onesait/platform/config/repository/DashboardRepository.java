@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -66,7 +67,7 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT') "
 			+ "FROM Dashboard AS o " + "WHERE "
-			+ "o.identification like %:identification% AND o.type = null ORDER BY o.identification ASC")
+			+ "o.identification like %:identification% AND o.type = null OR o.type = 'DASHBOARD' ORDER BY o.identification ASC")
 	List<DashboardForList> findDashboardByIdentificationContainingAndType(
 			@Param("identification") String identification);
 
@@ -200,5 +201,22 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 	void saveHeaderLibs(@Param("headerlibs") String headerlibs, @Param("id") String id);
 
 	Dashboard findByUserAndIdentification(User user, String identification);
+
+	@Modifying
+	@Transactional
+	@Query(value = "DELETE FROM DASHBOARD_USER_ACCESS", nativeQuery = true)
+	void deleteUserAccesess();
+
+	@Modifying
+	@Transactional
+	@Query("DELETE FROM Dashboard AS p WHERE p.id NOT IN :ids")
+	void deleteByIdNotInCustom(@Param("ids") Collection<String> ids);
+
+	@Modifying
+	@Transactional
+	default void deleteByIdNotIn(Collection<String> ids) {
+		deleteUserAccesess();
+		deleteByIdNotInCustom(ids);
+	}
 
 }

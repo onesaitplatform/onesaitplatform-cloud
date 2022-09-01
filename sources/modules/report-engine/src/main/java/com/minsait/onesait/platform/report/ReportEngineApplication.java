@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.report;
 
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,12 +25,31 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
+import lombok.extern.slf4j.Slf4j;
+
 @SpringBootApplication
 @ComponentScan("com.minsait.onesait")
+@Slf4j
 public class ReportEngineApplication extends WebMvcConfigurerAdapter {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ReportEngineApplication.class, args);
+	public static void main(String[] args) throws Exception {
+		try {
+			SpringApplication.run(ReportEngineApplication.class, args);
+		} catch (final BeanCreationException ex) {
+			final Throwable realCause = unwrap(ex);
+			log.error("Error on startup", realCause);
+		} catch (final Exception e) {
+			log.error("Error on startup", e);
+
+		}
+	}
+
+	public static Throwable unwrap(Throwable ex) {
+		if (ex != null && BeanCreationException.class.isAssignableFrom(ex.getClass())) {
+			return unwrap(ex.getCause());
+		} else {
+			return ex;
+		}
 	}
 
 	@Autowired

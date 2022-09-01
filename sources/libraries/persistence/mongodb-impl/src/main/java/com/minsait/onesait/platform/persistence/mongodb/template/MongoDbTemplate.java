@@ -30,7 +30,7 @@ import com.minsait.onesait.platform.persistence.mongodb.MongoQueryAndParams;
 import com.minsait.onesait.platform.persistence.mongodb.config.MongoDbCredentials;
 import com.minsait.onesait.platform.persistence.mongodb.index.MongoDbIndex;
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.gridfs.GridFSBucket;

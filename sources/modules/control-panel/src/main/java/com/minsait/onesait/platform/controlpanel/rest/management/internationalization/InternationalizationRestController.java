@@ -42,17 +42,23 @@ import com.minsait.onesait.platform.config.services.internationalization.Interna
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+
+
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Internationalization Management", tags = { "Internationalization management service" })
+@Tag(name = "Internationalization Management")
 @RestController
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api/internationalizations")
 @Slf4j
 public class InternationalizationRestController {
@@ -69,8 +75,8 @@ public class InternationalizationRestController {
 	private static final String STATUS_OK = "{\"status\": \"ok\"}";
 	private static final String ERROR_USER_NOT_ALLOWED = "User is not authorized";
 
-	@ApiOperation(value = "Create a new internationalization")
-	@PostMapping("/{identification}/")
+	@Operation(summary = "Create a new internationalization")
+	@PostMapping("/")
 	public ResponseEntity<String> create(@RequestBody(required = true) InternationalizationDTO internationalizationDTO)
 			throws JsonProcessingException {
 
@@ -80,9 +86,10 @@ public class InternationalizationRestController {
 		User user = userService.getUserByIdentification(utils.getUserId());
 
 		if (!internationalizationDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-		    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
+					HttpStatus.BAD_REQUEST);
 		}
-		
+
 		Internationalization internationalization = new Internationalization();
 
 		internationalization.setUser(user);
@@ -101,10 +108,10 @@ public class InternationalizationRestController {
 		}
 	}
 
-	@ApiOperation(value = "Delete internationalization by identification")
+	@Operation(summary = "Delete internationalization by identification")
 	@DeleteMapping("/{identification}/")
 	public ResponseEntity<?> deleteInternationalization(
-			@ApiParam(value = "Internationalization identification", required = true) @PathVariable("identification") String internationalizationIdentification) {
+			@Parameter(description= "Internationalization identification", required = true) @PathVariable("identification") String internationalizationIdentification) {
 		try {
 			final User user = userService.getUser(utils.getUserId());
 			if (!internationalizationS.hasUserPermission(internationalizationIdentification, user.getUserId())) {
@@ -118,7 +125,7 @@ public class InternationalizationRestController {
 		return new ResponseEntity<>("Identification deleted successfully", HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Get all internationalizations")
+	@Operation(summary = "Get all internationalizations")
 	@GetMapping("/")
 	public ResponseEntity<List<String>> getAllInternationalizations() {
 		log.debug("Get all identifications of internationalizations");
@@ -130,10 +137,10 @@ public class InternationalizationRestController {
 		}
 	}
 
-	@ApiOperation(value = "Get jsoni18n from a internationalization")
+	@Operation(summary = "Get jsoni18n from a internationalization")
 	@GetMapping("{identification}/")
 	public ResponseEntity<String> getJsoni18n(
-			@ApiParam(value = "Identification of the internationalization", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification) {
 		log.debug("Get jsoni18n from the internationalization {}", identification);
 
 		User user = userService.getUser(utils.getUserId());
@@ -147,10 +154,10 @@ public class InternationalizationRestController {
 		}
 	}
 
-	@ApiOperation(value = "Put new value to jsoni18n")
+	@Operation(summary = "Put new value to jsoni18n")
 	@PutMapping("/{identification}/")
 	public ResponseEntity<String> editJsoni18n(
-			@ApiParam(value = "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
 			@RequestBody(required = true) String jsoni18n) {
 
 		log.debug("Recieved request to change jsoni18n value of {} internationalization", identification);
@@ -179,10 +186,10 @@ public class InternationalizationRestController {
 		}
 	}
 
-	@ApiOperation(value = "Get translate of diferents keys values")
+	@Operation(summary = "Get translate of diferents keys values")
 	@GetMapping("{identification}/{keys}")
 	public ResponseEntity<String> getTranslationsByKeys(
-			@ApiParam(value = "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
 			@RequestParam(required = true) List<String> keys) {
 		log.debug("Get translations of the internationalization {}", identification);
 

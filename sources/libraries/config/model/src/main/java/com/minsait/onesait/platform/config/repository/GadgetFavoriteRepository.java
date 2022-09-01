@@ -14,9 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -67,5 +71,9 @@ public interface GadgetFavoriteRepository extends JpaRepository<GadgetFavorite, 
 
 	@Query("SELECT distinct(g.type) FROM GadgetFavorite AS g ORDER BY g.type")
 	List<String> findGadgetFavoriteTypes();
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 
 }

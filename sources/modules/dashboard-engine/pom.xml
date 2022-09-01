@@ -36,11 +36,11 @@
 			<artifactId>onesaitplatform-security-ui-ri</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-services</artifactId>
 			<version>${project.version}</version>
-		</dependency>
+		</dependency> -->
 
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -62,10 +62,6 @@
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>				
 			</exclusions>
 		</dependency>
 
@@ -157,14 +153,42 @@
 			<artifactId>curator-framework</artifactId>
 			<version>${curator.version}</version>
 		</dependency>
+		
 		<!-- Force dependencies for hz zookeper SPI discovered mode -->
 
 		<!-- Dependency for security plugin -->
-		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-security-dashboard-engine</artifactId>
+		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-security-dashboard-engine</artifactId> 
 			<version>${project.version}</version> </dependency> -->
-
+	
 		<!-- Dependency for security plugin -->
-
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-router-client-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-config-model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-business-services</artifactId>
+			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>javax.mail-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+	        <groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+		
 	</dependencies>
 
 	<build>

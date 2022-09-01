@@ -106,4 +106,20 @@ public class InformationDTO {
 	@Setter
 	private SynopticElementDTO synopticElement;
 
+	@Getter
+	@Setter
+	private Boolean dashboardGenerateImage;
+
+	@Getter
+	@Setter
+	private ArrayList<String> i18n;
+	
+	@Getter
+	@Setter
+	private String category;
+	
+	@Getter
+	@Setter 
+	private String subcategory;
+	
 }

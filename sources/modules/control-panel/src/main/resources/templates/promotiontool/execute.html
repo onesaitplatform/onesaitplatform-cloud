@@ -101,7 +101,7 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- EXECUTE -->
 									<button id="executeBtn" type="submit" class="btn btn-primary btn-primary-save" name="create" th:value="#{promotiontool.execute}" disabled="disabled" ><span th:text="#{promotiontool.execute}"> Launch</span></button>

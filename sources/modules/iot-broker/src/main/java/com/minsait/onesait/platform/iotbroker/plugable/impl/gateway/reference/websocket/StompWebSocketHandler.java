@@ -43,8 +43,8 @@ import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.ITopic;
+import com.hazelcast.map.IMap;
+import com.hazelcast.topic.ITopic;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;

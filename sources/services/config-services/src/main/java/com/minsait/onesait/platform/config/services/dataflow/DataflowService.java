@@ -49,6 +49,8 @@ public interface DataflowService {
 
 	ResponseEntity<byte[]> getyHttpBinary(HttpServletRequest requestServlet, String body, String user);
 
+	byte[] getyHttpBinary( String lib, String id, HttpServletRequest requestServlet, String body, String user);
+
 	Pipeline getPipelineById(String id);
 
 	Pipeline getPipelineByIdentification(String identification);

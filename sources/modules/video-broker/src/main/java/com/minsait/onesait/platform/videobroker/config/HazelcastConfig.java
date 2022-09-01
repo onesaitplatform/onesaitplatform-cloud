@@ -45,7 +45,7 @@ public class HazelcastConfig {
 		final String configFile = "hazelcast-client.xml";
 		final ClientConfig config = new XmlClientConfigBuilder(configFile).build();
 		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 		return HazelcastClient.newHazelcastClient(config);
 	}
 
@@ -66,7 +66,7 @@ public class HazelcastConfig {
 		final ClientConfig config = xmlClientConfigBuilder.build();
 
 		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 
 		return HazelcastClient.newHazelcastClient(config);
 	}

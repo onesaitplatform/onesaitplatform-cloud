@@ -52,12 +52,12 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
-	
+
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
-	
+
 	@Override
 	public boolean hasDatabase() {
 		return true;
@@ -67,7 +67,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 	public boolean hasSchema() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean hasCrossDatabase() {
 		return false;
@@ -121,9 +121,6 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 		case INTEGER:
 			type = "INTEGER";
 			break;
-		case GEOMERTY:
-			type = "GEOMETRY";
-			break;
 		case FILE:
 			type = "BYTEA";
 			break;
@@ -135,6 +132,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 			type = "TIMESTAMP WITHOUT TIME ZONE";
 			break;
 		case ARRAY:
+		case GEOMERTY:
 			type = "TEXT";
 			break;
 		case BOOLEAN:
@@ -180,7 +178,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 		}
 		return col;
 	}
-	
+
 	@Override
 	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
 		Ontology o = ontologyVirtualRepository.findOntology(ontology);

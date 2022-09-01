@@ -172,7 +172,7 @@ public class NodeRedLauncher {
 					this.stop();
 				}
 			}
-
+			nodeRedMonitor.startMonitor();
 			lockAvailable = false;
 			while (!lockAvailable && !stop) {
 				try {

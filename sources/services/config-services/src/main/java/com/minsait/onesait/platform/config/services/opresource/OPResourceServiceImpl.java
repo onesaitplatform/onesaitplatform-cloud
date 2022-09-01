@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
+import java.util.stream.Stream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -44,10 +45,12 @@ import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessVersioning;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.AppRoleRepository;
 import com.minsait.onesait.platform.config.repository.AppUserRepository;
@@ -79,12 +82,14 @@ public class OPResourceServiceImpl implements OPResourceService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
+	@Lazy
 	private ProjectService projectService;
 	@Autowired
 	private AppUserRepository appUserRepository;
 	@Autowired
 	private ApiRepository apiRepository;
 	@Autowired
+	@Lazy
 	private AppService appService;
 	@Autowired
 	private ProjectRepository projectRepository;
@@ -152,6 +157,25 @@ public class OPResourceServiceImpl implements OPResourceService {
 	}
 
 	@Override
+	public Collection<Versionable<?>> getResourcesVersionablesByType(User user, Class<?> type) {
+		List<OPResource> res;
+		if (userService.isUserAdministrator(user)) {
+			res = resourceRepository.findAll();
+		} else {
+			res = resourceRepository.findByUser(user);
+		}
+
+		return res.stream().filter(r -> r.getClass().getSimpleName().equalsIgnoreCase(type.getSimpleName()))
+				.map(opr -> (Versionable<?>) opr).collect(Collectors.toList());
+
+	}
+
+	@Override
+	public Collection<OPResource> getAllResourcesVersionablesVOs() {
+		return resourceRepository.findAll().stream().filter(o -> o instanceof Versionable<?>).collect(Collectors.toList());
+	}
+
+	@Override
 	public void createUpdateAuthorization(ProjectResourceAccess pRA) {
 		ProjectResourceAccess pRADB;
 		log.debug("createUpdateAuthorization() arguments are: {}", pRA.toString());
@@ -201,6 +225,20 @@ public class OPResourceServiceImpl implements OPResourceService {
 						.collect(Collectors.toList());
 			}
 
+			if (resList.size() == 1) {
+				return resList.get(0);
+			} else {
+				return null;
+			}
+		}
+	}
+
+	@Override
+	public OPResource getResourceByIdentification(String identification) {
+		final List<OPResource> resList = resourceRepository.findByIdentification(identification);
+		if (resList.isEmpty()) {
+			return null;
+		} else {
 			if (resList.size() == 1) {
 				return resList.get(0);
 			} else {
@@ -428,6 +466,30 @@ public class OPResourceServiceImpl implements OPResourceService {
 		resources.addAll(resourceAccessRepository.findByUser(user).stream().map(ProjectResourceAccess::getResource)
 				.filter(r -> r.getClass().getSimpleName().equals(type)).collect(Collectors.toSet()));
 		return resources;
+	}
+
+	private Collection<OPResource> getResourcesForUserAndType(User user, String type, ResourceAccessType accessType) {
+		final Set<OPResource> resources = new HashSet<>();
+		resources.addAll(resourceAccessRepository.findByUserIdVersioning(user.getUserId()).stream()
+				.filter(pra -> accessType.equals(pra.getAccess())).map(ProjectResourceAccessVersioning::getResource)
+				.filter(r -> r.getClass().getSimpleName().equals(type)).collect(Collectors.toSet()));
+		return resources;
+	}
+
+
+	@Override
+	@Transactional
+	public Collection<Versionable<?>> getResourcesVersionablesForUserAndType(User user, Class<?> type) {
+		final long start = System.currentTimeMillis();
+		final List<OPResource> res = resourceRepository.findByUser(user).stream().filter(r -> r.getClass().equals(type))
+				.collect(Collectors.toList());
+		log.debug("First collect took time: {} ms", System.currentTimeMillis()-start);
+		final Collection<OPResource> projectResources = getResourcesForUserAndType(user, type.getSimpleName(),
+				ResourceAccessType.MANAGE);
+		log.debug("After second collect took total time: {} ms", System.currentTimeMillis()-start);
+		return Stream.of(res, projectResources).flatMap(Collection::stream).map(opr -> (Versionable<?>) opr)
+				.collect(Collectors.toList());
+
 	}
 
 	@Override
@@ -707,7 +769,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	private void deleteResourceAccessRealm(String projectName, String realmId, String roleId, String resourceId,
 			String version, String resourceType, String resourceAccessType, String currentUserId)
-			throws GenericOPException {
+					throws GenericOPException {
 
 		if (!projectName.equals("") && !realmId.equals("") && !resourceId.equals("") && !resourceType.equals("")
 				&& !roleId.equals("")) {

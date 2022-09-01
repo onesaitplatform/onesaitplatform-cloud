@@ -16,10 +16,14 @@ package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDTO;
 
 public interface GadgetService {
 
@@ -31,7 +35,7 @@ public interface GadgetService {
 
 	public Gadget getGadgetById(String userID, String gadgetId);
 
-	public void createGadget(Gadget gadget);
+	public void createGadget(GadgetDTO gadget);
 
 	public List<Gadget> getUserGadgetsByType(String userID, String type);
 
@@ -39,19 +43,21 @@ public interface GadgetService {
 
 	public boolean hasUserPermission(String id, String userId);
 
-	public void updateGadget(Gadget gadget, String gadgetDatasourceIds, String jsonMeasures);
+	public void updateGadget(GadgetDTO gadget, String gadgetDatasourceIds, String jsonMeasures, User user);
 
-	public Gadget createGadget(Gadget gadget, String gadgetDatasourceIds, String jsonMeasures);
+	public void updateInstance(String id, String config);
+
+	public Gadget createGadget(GadgetDTO gadget, String gadgetDatasourceIds, String jsonMeasures, User user);
 
 	public void deleteGadget(String gadgetId, String userId);
 
 	public Boolean existGadgetWithIdentification(String identification);
 
-	public Gadget createGadget(Gadget g, GadgetDatasource datasource, List<GadgetMeasure> gadgetMeasures);
+	public Gadget createGadget(Gadget g, GadgetDatasource datasource, List<GadgetMeasure> gadgetMeasures, String category, String subcategory);
 
-	public void updateGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures);
+	public void updateGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures, String category, String subcategory);
 
-	public void addMeasuresGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures);
+	public void addMeasuresGadget(Gadget gadget, String datasourceId, List<GadgetMeasure> measures, String category, String subcategory);
 
 	public String getElementsAssociated(String gadgetId);
 
@@ -59,10 +65,18 @@ public interface GadgetService {
 
 	public Gadget getGadgetByIdentification(String userID, String gadgetIdentification);
 
-	public List<String> getGadgetTypes();
-
-	List<String> getAllIdentificationsByUser(String userId);
+	public List<String> getAllIdentificationsByUser(String userId);
 
 	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
+
+	public List<String> getGadgetTypes(String userId);
+
+	ResponseEntity<byte[]> generateImg(String id, int waittime, int height, int width, boolean fullpage, String params,
+			String oauthtoken);
+
+	ResponseEntity<byte[]> generatePDF(String id, int waittime, int height, int width, String params,
+			String oauthtoken);
+
+    public String cloneGadget(Gadget gadget, String identification, User user);
 
 }

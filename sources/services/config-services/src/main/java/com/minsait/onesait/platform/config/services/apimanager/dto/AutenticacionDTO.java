@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,12 +25,12 @@ public class AutenticacionDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "Authentication Type for API")
+	@Schema(description= "Authentication Type for API")
 	@Getter
 	@Setter
 	private String type;
 
-	@ApiModelProperty(value = "Description")
+	@Schema(description= "Description")
 	@Getter
 	@Setter
 	private String description;

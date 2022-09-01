@@ -41,9 +41,10 @@ var OntologyCreateController = function() {
 	var mapPropType = {};
 	
 	var schemaUrl = 'ontologies/schema/';
+	var myCodeMirror;
+	var schemaOrgJson;
 	// CONTROLLER PRIVATE FUNCTIONS
 	// --------------------------------------------------------------------------------
-
 
 	// AUX. DATAMODEL PROPERTIES OBJECT JSON
 	var createJsonProperties = function (jsonData){
@@ -68,7 +69,6 @@ var OntologyCreateController = function() {
 		var objectType		= '';
 		var isTimestamp = false;
 	
-
 		// Required
 		if ( jsonData.hasOwnProperty('datos') ){ required = jsonData.datos.required; } else { required = jsonData.required;  }
 
@@ -137,7 +137,14 @@ var OntologyCreateController = function() {
 						if (isFile) { objectType = 'file';  } else if (isGeometryPoint) { objectType = 'geometry-point'; } else if (isGeometryLineString) { objectType = 'geometry-linestring'; } else if (isGeometryPolygon) { objectType = 'geometry-polygon'; }
 						else if (isGeometryMultiPoint) { objectType = 'geometry-multipoint'; } else if (isGeometryMultiLineString) { objectType = 'geometry-multilinestring'; } else if (isGeometryMultiPolygon) { objectType = 'geometry-multipolygon'; }
 						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else if (isDate) { objectType = 'date'; }
-						else { objectType = propValue; }
+						else {
+							 
+								if(Array.isArray(propValue) ){
+									objectType = propValue[0];
+								}else{
+									objectType = propValue;
+								}
+							 }
 
 						// adding properties
 						propObj = {"property": key, "type": objectType, "required": propRequired, "encrypted": propEncrypted , "descriptions": propDescription};
@@ -511,38 +518,57 @@ var OntologyCreateController = function() {
 		
 
 		// SCHEMA MODEL ( PROPERTIES / DATOS)
-		if ( schemaObj.hasOwnProperty('datos') ){ properties = schemaObj.datos.properties; requires = schemaObj.datos.required; } else { properties = schemaObj.properties;  requires = schemaObj.required }
+		if ( schemaObj.hasOwnProperty('datos') ){ properties = schemaObj.datos.properties; requires = schemaObj.datos.required; } 
+		else { properties = schemaObj.properties;  requires = schemaObj.required }
 
 		if(requires == null){
 			requires = [];
 			schemaObj.required = requires;
 		}
-
+		var typereq ='"type": "object"';
+			if(req == 'required'){
+				typereq ='"type": "object"';
+			}else{
+				typereq ='"type": ["object","null"]';
+			}
 		// ADD PROPERTY+TYPE
-		if (type == 'timestamp-mongo'){
-			propString = '{"type": "object", '+ updDesc +' '+ updEncryp +' "required": ["$date"],"properties": {"$date": {"type": "string","format": "date-time"}}}';
-			properties[prop] = JSON.parse(propString);
-		} else if(type == 'file') {
-			properties[prop] = JSON.parse('{"type": "object", '+ updDesc +' '+ updEncryp +' "required": ["data","media"],"properties": {"data": {"type": "string"},"media": {"type": "object", "required": ["name","storageArea","binaryEncoding","mime"],"properties": {"name":{"type": "string"},"storageArea": {"type": "string","enum": ["SERIALIZED","DATABASE","URL"]},"binaryEncoding": {"type": "string","enum": ["Base64"]},"mime": {"type": "string","enum": ["application/pdf","image/jpeg", "image/png"]}}}},"additionalProperties": false}');
+		if (type == 'timestamp-mongo'){		
+				propString = '{'+typereq+', '+ updDesc +' '+ updEncryp +' "required": ["$date"],"properties": {"$date": {"type": "string","format": "date-time"}}}';			
+				properties[prop] = JSON.parse(propString);
+		} else if(type == 'file') {			
+				properties[prop] = JSON.parse('{'+typereq+', '+ updDesc +' '+ updEncryp +' "required": ["data","media"],"properties": {"data": {"type": "string"},"media": {"type": "object", "required": ["name","storageArea","binaryEncoding","mime"],"properties": {"name":{"type": "string"},"storageArea": {"type": "string","enum": ["SERIALIZED","DATABASE","URL"]},"binaryEncoding": {"type": "string","enum": ["Base64"]},"mime": {"type": "string","enum": ["application/pdf","image/jpeg", "image/png"]}}}},"additionalProperties": false}');				
 		}else if(type == 'geometry-point' || type == 'geometry'){
-			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}],"minItems": 2,"maxItems": 2},"type": {"type": "string","enum": ["Point"]}},"additionalProperties": false}');
+			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}],"minItems": 2,"maxItems": 2},"type": {"type": "string","enum": ["Point"]}},"additionalProperties": false}');
 		}else if(type == 'geometry-linestring'){
-			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array", "minItems": 2, "items": [{"type": "array","minItems": 2, "maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type": "array","minItems": 2, "maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]}]},"type": {"type": "string","enum": ["LineString"]}},"additionalProperties": false}');
+			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array", "minItems": 2, "items": [{"type": "array","minItems": 2, "maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type": "array","minItems": 2, "maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]}]},"type": {"type": "string","enum": ["LineString"]}},"additionalProperties": false}');
 		}else if(type == 'geometry-polygon'){
-			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array","minItems": 4, "items": [{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]} ]}]},"type": {"type": "string","enum": ["Polygon"]}},"additionalProperties": false}');
+			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array","minItems": 4, "items": [{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]} ]}]},"type": {"type": "string","enum": ["Polygon"]}},"additionalProperties": false}');
 		}else if(type == 'geometry-multipoint'){
-			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "minItems": 2, "maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]}]},"type": {"type": "string","enum": ["MultiPoint"]}},"additionalProperties": false}');
+			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "minItems": 2, "maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]}]},"type": {"type": "string","enum": ["MultiPoint"]}},"additionalProperties": false}');
 		}else if(type == 'geometry-multilinestring'){
-			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "minItems": 2, "items": [{"type":"array", "minItems": 2,"maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2,"maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]}]}] },"type": {"type": "string","enum": ["MultiLineString"]}},"additionalProperties": false}');
+			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "minItems": 2, "items": [{"type":"array", "minItems": 2,"maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2,"maxItems": 2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]}]}] },"type": {"type": "string","enum": ["MultiLineString"]}},"additionalProperties": false}');
 		}else if(type == 'geometry-multipolygon'){
-			properties[prop] = JSON.parse('{"type":"object",  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "items": [{"type": "array","minItems": 4, "items": [{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]} ]}]}]},"type": {"type": "string","enum": ["MultiPolygon"]}},"additionalProperties": false}');
+			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "items": [{"type": "array","minItems": 4, "items": [{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]} ]}]}]},"type": {"type": "string","enum": ["MultiPolygon"]}},"additionalProperties": false}');
 		}else if(type == 'timestamp'){
-			properties[prop] = JSON.parse('{"type": "string","format": "date-time"}');
-		}else if(type == 'date'){
-			properties[prop] = JSON.parse('{"type": "string","format": "date"}');
+			if(req == 'required'){
+				properties[prop] = JSON.parse('{"type": "string","format": "date-time"}');
+			}else {
+				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date-time"}');
+			}
+			
+		}else if(type == 'date'){			
+			if(req == 'required'){
+				properties[prop] = JSON.parse('{"type": "string","format": "date"}');
+			}else {
+				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date"}');
+			}
 		}else {
-			propString = '{' + updDesc +' '+ updEncryp +' "type": "' + type + '"}';
-			properties[prop] = JSON.parse(propString);
+			if(req == 'required'){
+				propString = '{' + updDesc +' '+ updEncryp +' "type": "' + type + '"}';
+			}else {
+				propString = '{' + updDesc +' '+ updEncryp +' "type": ["' + type + '","null"]}';
+			}
+				properties[prop] = JSON.parse(propString);
 
 		}
 
@@ -558,43 +584,21 @@ var OntologyCreateController = function() {
 				requires.splice(index, 1);
 			}
 		}
-
-
-		
-		
-		// remove required if empty
-// if(schemaObj.required.length == 0)
-// delete schemaObj.required;
-//		
-		
-		// ADD INFO TO SCHEMA EDITOR
-// editor.setMode("text");
-// editor.setText('');
-// editor.setText(JSON.stringify(data));
-// editor.setMode("tree");
-
-		// UDATING SCHEMA STRING
-// schema = JSON.stringify(data);
-			
-		
-		// UPDATING FORM FIELDS
-// $('#jsonschema').val(schema);
-
 	}
 
 
 	// CHECK IF A WRITTEN PROPERTY IS OR NOT FROM THE BASE
 	var	noBaseProperty =  function(property){
-			logControl ? console.log(LIB_TITLE + ': noBaseProperty()') : '';
+		logControl ? console.log(LIB_TITLE + ': noBaseProperty()') : '';
 
-			var isNoBaseProperty = false;
-			var noBaseJson = createJsonProperties(JSON.parse(staticSchema)); // to
-																				// JSON
-			var noBaseProperties = getProperties(noBaseJson); // only
-																// Properties
-																// Arr
-			isNoBaseProperty = $.inArray( property, noBaseProperties ) > -1 ? false : true;
-			return isNoBaseProperty;
+		var isNoBaseProperty = false;
+		var noBaseJson = createJsonProperties(JSON.parse(staticSchema)); // to
+																			// JSON
+		var noBaseProperties = getProperties(noBaseJson); // only
+															// Properties
+															// Arr
+		isNoBaseProperty = $.inArray( property, noBaseProperties ) > -1 ? false : true;
+		return isNoBaseProperty;
 	}
 
 	// REDIRECT URL
@@ -688,12 +692,255 @@ var OntologyCreateController = function() {
 		}
 	}
 	
+	
+	var updateFieldsFromJSONLDTree = function(){
+		var clickedTree = document.getElementsByClassName("jstree-clicked");
+				if(clickedTree.length == 0){
+					toastr.error(messagesForms.operations.genOpError, ontologyCreateReg.validations.jsonldformat);
+				} else {
+					var entitySchema = getEntitySchemaByOrg(clickedTree);
+					$('#tab-data-schema a').removeClass('disabled');
+					$('#tab-data-schema a').click();
+					$('#continueBtn').prop('disabled', true);
+					
+					
+					// ADD additionalProperties, because we are adding properties.
+					if (!entitySchema.hasOwnProperty('additionalProperties')){
+						entitySchema["additionalProperties"] = true;
+					}				
+					if (entitySchema.hasOwnProperty('datos') && entitySchema.datos.required.length == 0){
+						delete entitySchema.datos.required;
+					}
+					
+					schema = JSON.stringify(entitySchema);
+					
+					var properties;
+					if ( data.hasOwnProperty('datos') ){ properties = data.datos; } else { properties = data;  }
+					// CREATING TABLE FROM DATA.
+					var jsonProperties = createJsonProperties(properties);
+					// TO-HTML
+					if ( $('#datamodel_properties').attr('data-loaded') == 'true' ){
+
+						$.confirm({ title: ontologyCreateReg.confirmBtn, theme: 'light', content: ontologyCreateReg.validations.datamodelchange,
+							buttons: {
+								cancel: {							
+									btnClass: 'btn-circle btn-outline blue',
+									action:function () { return true; }
+								},
+								confirm: {							
+									btnClass: 'btn-circle btn-outline btn-primary',							
+									action: function () {
+
+										$('#datamodel_properties > tbody').html("");
+										$('#datamodel_properties > tbody').append(mountableModel);
+										editor.setMode("text");
+										editor.setText('{}');
+										editor.setMode("tree");
+			
+										// TO-HTML
+										$('#'+"datamodel_properties").mounTable(jsonProperties,{
+											model: '.mountable-model',
+											noDebug: false,
+											addLine:{
+												button: "#button2",
+												onClick: function (element){
+													console.log('Property added!');
+													return true;
+												}
+											}
+										});
+			
+										// UPDATING JSON EDITOR
+										$('#schema_title').text(data.title + ':');
+										editor.setMode("text");
+										editor.setText(schema);
+										editor.setMode("tree");
+			
+										// UPDATING FORM FIELDS
+										$('#jsonschema').val(schema);
+			
+										return true;
+									}
+								}
+							}
+						});
+					} else {
+						$('#'+"datamodel_properties").mounTable(jsonProperties,{
+							model: '.mountable-model',
+							noDebug: false,
+							addLine:{
+								button: "#button2",
+								onClick: function (element){
+									console.log('Property added!');
+									return true;
+								}
+							}
+						});
+					}
+
+					// HIGHLIGHT CURRENT DATAMODEL AND SHOW TABLE
+					$('li.mt-list-item.datamodel-template').removeClass('bg-success done');
+
+					$('#imageNoTemplate').addClass('hide');
+					$('#template_schema').removeClass('hide');
+					$('#template_schema_buttons').removeClass('hide');
+					$('#datamodel_properties').attr('data-loaded', true);
+
+					// INIT UPDATE SCHEMA
+					$('#btn-updateSchema').on('click',function(){ updateSchemaProperties(); });
+
+					// INIT BTN LINKED DATA
+					$('#btn-ld').on('click',function(){ mountLDModal(); });
+					
+					// UPDATING JSON EDITOR
+					$('#schema_title').text(data.title);
+					editor.setMode("text");
+					editor.setText(schema);
+					editor.setMode("tree");
+					if(!$('#supportsJsonLd').is(':checked')){
+						// UPDATING DATAMODEL ID for ONTOLOGY
+						$('#datamodelid').val(clickedTree+"MODEL");
+					}
+					// UPDATING FORM FIELDS
+					$('#jsonschema').val(schema);
+					// HIDE ERROR FOR DATAMODEL NOT SELECTED IF IT WAS VISIBLE
+					$('#datamodelError').addClass('hide');					
+				
+					//ACTIVATE BUTTON UPDATE SCHEMA
+					$('#btn-updateSchema-jsonld').prop('disabled', false);
+				}
+			} 
+	
+	
+	
 	var wizardStepContinue = function(){
+		
 		if (wizardStep == 1){
-			$('#tab-data-schema a').removeClass('disabled');
-			$('#tab-data-schema a').click();
-			$('#continueBtn').prop('disabled', true);
-			wizardStep = 2;
+			if(!document.getElementById("supportsJsonLd").checked) {
+				$('#tab-data-schema a').removeClass('disabled');
+				$('#tab-data-schema a').click();
+				$('#continueBtn').prop('disabled', true);
+				wizardStep = 2;
+			} else {
+				var clickedTree = document.getElementsByClassName("jstree-clicked");
+				if(clickedTree.length == 0){
+					toastr.error(messagesForms.operations.genOpError, ontologyCreateReg.validations.jsonldformat);
+				} else {
+					var entitySchema = getEntitySchemaByOrg(clickedTree);
+					$('#tab-data-schema a').removeClass('disabled');
+					$('#tab-data-schema a').click();
+					$('#continueBtn').prop('disabled', true);
+					wizardStep = 2;
+					
+					// ADD additionalProperties, because we are adding properties.
+					if (!entitySchema.hasOwnProperty('additionalProperties')){
+						entitySchema["additionalProperties"] = true;
+					}				
+					if (entitySchema.hasOwnProperty('datos') && entitySchema.datos.required.length == 0){
+						delete entitySchema.datos.required;
+					}
+					
+					schema = JSON.stringify(entitySchema);
+					
+					var properties;
+					if ( data.hasOwnProperty('datos') ){ properties = data.datos; } else { properties = data;  }
+					// CREATING TABLE FROM DATA.
+					var jsonProperties = createJsonProperties(properties);
+					// TO-HTML
+					if ( $('#datamodel_properties').attr('data-loaded') == 'true' ){
+
+						$.confirm({ title: ontologyCreateReg.confirmBtn, theme: 'light', content: ontologyCreateReg.validations.datamodelchange,
+							buttons: {
+								cancel: {							
+									btnClass: 'btn-circle btn-outline blue',
+									action:function () { return true; }
+								},
+								confirm: {							
+									btnClass: 'btn-circle btn-outline btn-primary',							
+									action: function () {
+
+										$('#datamodel_properties > tbody').html("");
+										$('#datamodel_properties > tbody').append(mountableModel);
+										editor.setMode("text");
+										editor.setText('{}');
+										editor.setMode("tree");
+			
+										// TO-HTML
+										$('#'+"datamodel_properties").mounTable(jsonProperties,{
+											model: '.mountable-model',
+											noDebug: false,
+											addLine:{
+												button: "#button2",
+												onClick: function (element){
+													console.log('Property added!');
+													return true;
+												}
+											}
+										});
+			
+										// UPDATING JSON EDITOR
+										$('#schema_title').text(data.title + ':');
+										editor.setMode("text");
+										editor.setText(schema);
+										editor.setMode("tree");
+			
+										// UPDATING FORM FIELDS
+										$('#jsonschema').val(schema);
+			
+										return true;
+									}
+								}
+							}
+						});
+					} else {
+						$('#'+"datamodel_properties").mounTable(jsonProperties,{
+							model: '.mountable-model',
+							noDebug: false,
+							addLine:{
+								button: "#button2",
+								onClick: function (element){
+									console.log('Property added!');
+									return true;
+								}
+							}
+						});
+					}
+
+					// HIGHLIGHT CURRENT DATAMODEL AND SHOW TABLE
+					$('li.mt-list-item.datamodel-template').removeClass('bg-success done');
+
+					$('#imageNoTemplate').addClass('hide');
+					$('#template_schema').removeClass('hide');
+					$('#template_schema_buttons').removeClass('hide');
+					$('#datamodel_properties').attr('data-loaded', true);
+
+					// INIT UPDATE SCHEMA
+					$('#btn-updateSchema').on('click',function(){ updateSchemaProperties(); });
+
+					// INIT BTN LINKED DATA
+					$('#btn-ld').on('click',function(){ mountLDModal(); });
+					
+					// UPDATING JSON EDITOR
+					$('#schema_title').text(data.title);
+					editor.setMode("text");
+					editor.setText(schema);
+					editor.setMode("tree");
+					if(!$('#supportsJsonLd').is(':checked')){
+						// UPDATING DATAMODEL ID for ONTOLOGY
+						$('#datamodelid').val(clickedTree+"MODEL");
+					}
+					// UPDATING FORM FIELDS
+					$('#jsonschema').val(schema);
+					// HIDE ERROR FOR DATAMODEL NOT SELECTED IF IT WAS VISIBLE
+					$('#datamodelError').addClass('hide');					
+					// UPDATE WIZARD IF ENABLED
+					if (ontologyCreateJson.actionMode==null){
+						manageWizardStep();
+					}
+					//ACTIVATE BUTTON UPDATE SCHEMA
+					$('#btn-updateSchema-jsonld').prop('disabled', false);
+				}
+			} 
 		} else if (wizardStep == 2){
 			$('#tab-advanced-options a').removeClass('disabled');
 			$('#continueBtn').addClass('hide');
@@ -706,8 +953,102 @@ var OntologyCreateController = function() {
 			$('#stepThreeCheckbox').nextAll('span:first').addClass('wizard-success-step');
 		}
 	}
+	
+	var getEntitySchemaByOrg = function(clickedTree){		
+		var emptySchema = $('#EmptyBase li').attr('data-schema');
+		staticSchema = emptySchema;
+		emptySchema = emptySchema.replace(/EmptyBase/g,$('#identification').val());
+		if(typeof emptySchema == 'string'){ data = JSON.parse(emptySchema); }
+			else if (typeof emptySchema == 'object'){ data = emptySchema; }
+		data["title"] = $('#identification').val();
+		if (!data.hasOwnProperty('description')){ data["description"] = $('#description').val(); }		
+		var schemaOrgProperties = {};
+		var types = [];
+		var typesquotes = [];
+		for(var i = 0; i < clickedTree.length; i++){
+			var schema = clickedTree[i].id;
+			schema = schema.replace(/_anchor$/, "");
+			schemaOrgProperties = Object.assign(schemaOrgProperties, getSchemaOrgProperties(schema));
+			//types.push("\"" + schema.replace(/^(schema:)/, "") + "\"");
+			types.push( schema.replace(/^(schema:)/, "") );
+			typesquotes.push("\""+ schema.replace(/^(schema:)/, "") +"\"");
+		}
+		//document.getElementById('jsonLdContext').innerHTML = "{\"@context\": \"http://schema.org\", \"@type\":[" + types + "]}";
+		var urlSchema = modeljsonldurl+$('#datamodelid').val()+"/";
+		var type = urlSchema+types[0];
+		var identification = $('#identification').val();
+		
+		//example context
+		// {  "@context":{ "@vocab":"http://localhost:8087/controlpanel/datamodelsjsonld/b9444dc6-588d-4e19-a306-a56554b11790/",
+		//"aaaaa20202":{"@id":"http://localhost:8087/controlpanel/datamodelsjsonld/b9444dc6-588d-4e19-a306-a56554b11790/Thing"}}}
+		
+		
+		document.getElementById('jsonLdContext').innerHTML = "{  \"@context\":{ \"@vocab\":\""+urlSchema+"\",\""+identification+"\":{\"@id\":\""+type+"\"}}, \"@type\":[" + typesquotes + "]}";
+		data.datos.properties = schemaOrgProperties;
+		return data;
+	}
 
+	var getSchemaOrgProperties = function(schema){
+		var graph = schemaOrgJson['@graph'];
+		var properties = {};
+		
+		for(let i = 0; i < graph.length; i++) {
+			var property = '';
+			 
+			if(graph[i]["@type"] == "rdf:Property"){
+				if(graph[i]["schema:domainIncludes"] != undefined){
+					var domainincludes = graph[i]["schema:domainIncludes"]['@id'];					
+					if(domainincludes == schema){
+						properties[graph[i]["rdfs:label"]] = JSON.parse(getRangeIncludes(graph[i]));
+						
+					} else if(domainincludes == undefined){
+						var dincludes = [];
+						for(let j = 0; j < graph[i]['schema:domainIncludes'].length; j++){
+							dincludes.push(graph[i]['schema:domainIncludes'][j]['@id']);
+						}
+						if(dincludes.includes(schema)){
+							properties[graph[i]["rdfs:label"]] = JSON.parse(getRangeIncludes(graph[i]));
+						}
+					}
+				}
+			}
+		}
+		return properties;
+	}
 
+	var getRangeIncludes = function(graph){
+		var type = '';
+		var types = [];
+		if(graph["schema:rangeIncludes"]['@id'] != undefined){
+			type = graph["schema:rangeIncludes"]['@id'];
+			type = type.replace(/^(schema:)/, "");
+			type = getOrgType(type);
+		} else {
+			type = "\"type\":\"string\"";
+		}
+		
+		var description = graph["rdfs:comment"];
+		description = description.replace(/\r?\n|\r/g, " ");
+		description = description.replace(/['"]/g, '');
+		return "{\"description\":\"" + description + "\"," + type + "}";
+	}
+	
+	var getOrgType = function(orgType){
+		if(orgType == "Number"){
+			return "\"type\":\"number\"";
+		} else if(orgType == "Integer"){
+			return "\"type\":\"integer\"";
+		} else if(orgType == "Boolean"){
+			return "\"type\":\"boolean\"";
+		} else if(orgType == "Date"){
+			return "\"type\":\"string\", \"format\":\"date\"";
+		} else if(orgType == "DateTime") {
+			return "\"type\":\"string\", \"format\":\"date-time\"";
+		} else{
+			return "\"type\":\"string\"";
+		}
+	}
+	
 	// FORM VALIDATION
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
@@ -784,7 +1125,7 @@ var OntologyCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-
+            			
                 // VALIDATE JSON SCHEMA
 				validIdName = validateIdName();
 				if (validIdName){
@@ -796,6 +1137,13 @@ var OntologyCreateController = function() {
 						// VALIDATE TAGSINPUT
 						validMetaInf = validateTagsInput();
 						if (validMetaInf) {
+							
+							if(myCodeMirrorQueryJs!=null){
+								$('#query').val(myCodeMirrorQueryJs.getValue());
+							}
+							if(myCodeMirrorJs!=null){
+								$('#postProcess').val(myCodeMirrorJs.getValue());
+							}
 							// form.submit();
 							form1.ajaxSubmit({type: 'post',
 								success : function(data){
@@ -1057,6 +1405,7 @@ var OntologyCreateController = function() {
 
 			// Set active
 			$('#active').trigger('click');
+			$('#contextDataEnabled').trigger('click');
 			
 
 		}
@@ -1179,17 +1528,66 @@ var OntologyCreateController = function() {
 
 			// take schema from ontology and load it
 			schema = ontologyCreateReg.schemaEditMode;
-
-			// overwrite datamodel schema with loaded ontology schema generated
-			// with this datamodel template.
-			var theSelectedModel = $("li[data-model='"+ ontologyCreateReg.dataModelEditMode +"']");
-			var theSelectedModelType = theSelectedModel.closest('div .panel-collapse').parent().find("a").trigger('click');
-			if(schema==null || schema!='{}')
-				theSelectedModel.attr('data-schema',schema).trigger('click');
-			else
-				theSelectedModel.trigger('click');
 			
-					
+			
+			var data = JSON.parse(schema);
+			//ACTIVATE BUTTON UPDATE SCHEMA jsonld
+			$('#btn-updateSchema-jsonld').prop('disabled', false);
+			
+			if($('#supportsJsonLd').is(':checked')){
+			
+				if ( data.hasOwnProperty('datos') ){ properties = data.datos; } else { properties = data;  }
+						// CREATING TABLE FROM DATA.
+				var jsonProperties = createJsonProperties(properties);
+				$('#'+"datamodel_properties").mounTable(jsonProperties,{
+								model: '.mountable-model',
+								noDebug: false,
+								addLine:{
+									button: "#button2",
+									onClick: function (element){
+										console.log('Property added!');
+										return true;
+									}
+								}
+							});
+				
+			$('#jsonLdSelectDataModel').removeClass('hide');			
+			$('#jsonLdCtxt').removeClass('hide');
+				// INIT UPDATE SCHEMA
+			$('#btn-updateSchema').on('click',function(){ updateSchemaProperties(); });
+
+			// INIT BTN LINKED DATA
+			$('#btn-ld').on('click',function(){ mountLDModal(); });
+			
+			// UPDATING JSON EDITOR
+			$('#schema_title').text(data.title);
+			
+			var theSelectedModel = $("li[data-model='"+ ontologyCreateReg.dataModelEditMode +"']");
+			editor.setMode("text");
+			editor.setText(schema);
+			editor.setMode("tree");
+
+			theSelectedModel.trigger('click');
+			$('#imageNoTemplate').addClass('hide');
+			$('#template_schema').removeClass('hide');
+			$('#template_schema_buttons').removeClass('hide');
+			//ACTIVATE BUTTON UPDATE SCHEMA
+			$('#btn-updateSchema-jsonld').prop('disabled', false);
+		
+			
+			}else{
+			
+				// overwrite datamodel schema with loaded ontology schema generated
+				// with this datamodel template.
+				
+				var theSelectedModel = $("li[data-model='"+ ontologyCreateReg.dataModelEditMode +"']");
+				var theSelectedModelType = theSelectedModel.closest('div .panel-collapse').parent().find("a").trigger('click');
+				if(schema==null || schema!='{}')
+					theSelectedModel.attr('data-schema',schema).trigger('click');
+				else
+					theSelectedModel.trigger('click');
+										
+			}		
 			$('#realmdata').change(function(){
 				var csrf_value = $("meta[name='_csrf']").attr("content");
 				var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -1498,20 +1896,21 @@ var OntologyCreateController = function() {
             var tipo = property.type; // adding type
             if (tipo.includes("geometry")){ instance = instance + generateBasicType(tipo, "", "");
             // adding object type
-            } else if (tipo.toLowerCase() == "object"){ console.log('INSTANCE (obj): ' + instance); instance = instance + generateObject(property, "", propertyName);
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "object") || (Array.isArray(tipo) && tipo[0].toLowerCase() == "object")){ console.log('INSTANCE (obj): ' + instance); instance = instance + generateObject(property, "", propertyName);
 			// adding array type
-            } else if (tipo.toLowerCase() == "array" ){ console.log('INSTANCE (arr): ' + instance); instance = instance + generateArray(property, "", propertyName);
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "array" ) ||(Array.isArray(tipo) && tipo[0].toLowerCase() == "array" )){ console.log('INSTANCE (arr): ' + instance); instance = instance + generateArray(property, "", propertyName);
             // date
-            } else if (tipo.toLowerCase() == "string" && property.format == "date"){
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "string" && property.format == "date")||(Array.isArray(tipo) && tipo[0].toLowerCase() == "string" && property.format == "date")){
             	instance = instance +"\"2014-01-30\""; 
             // timestamp
-            } else if (tipo.toLowerCase() == "string" && property.format != null){
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "string" && property.format != null)||(Array.isArray(tipo) && tipo[0].toLowerCase() == "string" && property.format != null)){
             	instance = instance +"\"2014-01-30T17:14:00Z\""; 
             // else basic type
             } else {
                 thevalue = "";
                 // if enum type, get first value of enum.
                 if ( property.enum != null ){ thevalue = property.enum[0]; }
+				if(Array.isArray(tipo)){tipo = tipo[0];}
                 instance = instance + generateBasicType(tipo, "", "", thevalue);
             }
             instance = instance + ",";
@@ -1942,6 +2341,24 @@ var OntologyCreateController = function() {
 		}
 	};
 
+	var checkJsonLdContext = function(){
+		
+		if($('#supportsJsonLd').is(':checked')){
+			$('#jsonLdSelectDataModel').removeClass('hide');
+			if(schemaOrgJson != undefined) {
+				$('#jsonLdCtxt').removeClass('hide');
+				OntologyCreateController.getSchemaOrgClasses();
+			} else {
+				$('#jsonLdCtxtEdit').removeClass('hide');
+			}
+		}else{
+			$('#jsonLdCtxt').addClass('hide');
+			$('#jsonLdSelectDataModel').addClass('hide');
+			$('#jsonLdCtxtEdit').addClass('hide');
+			document.getElementById('jsonLdContext').innerHTML= "";
+			
+		}
+	}
 	var checkRtdbClean = function(){
 		if($('#rtdbclean').is(':checked')){
 			$('#rtdb2h').removeClass('hide');
@@ -2021,11 +2438,16 @@ var OntologyCreateController = function() {
 			});
 			// IF RTDB2H is selected, click on rtdbclean + disable and viceversa
 			$('#rtdbToHdb').on('click', function(){
-				checkRtdb2H();
-				
+				checkRtdb2H();				
 			});
 			checkRtdbClean();
 			checkRtdb2H();
+			
+			$('#supportsJsonLd').on('click', function(){
+				checkJsonLdContext();				
+			});
+			checkJsonLdContext();
+			
 			// PROTOTYPEs
 			// ARRAY PROTOTYPE FOR CHECK UNIQUE PROPERTIES.
 			Array.prototype.unique = function() {
@@ -2138,7 +2560,6 @@ var OntologyCreateController = function() {
 		// DATAMODEL PROPERTIES JSON TO HTML
 		schemaToTable: function(objschema,tableId){
 			logControl ? console.log(LIB_TITLE + ': schemaToTable()') : '';
-
 			var data, properties, jsonProperties = '';
 
 			// JSON-STRING SCHEMA TO JSON
@@ -2180,14 +2601,11 @@ var OntologyCreateController = function() {
 
 				$.confirm({ title: ontologyCreateReg.confirmBtn, theme: 'light', content: ontologyCreateReg.validations.datamodelchange,
 					buttons: {
-						
-							cancel: {
-							
+						cancel: {							
 							btnClass: 'btn-circle btn-outline blue',
 							action:function () { return true; }
 						},
-						confirm: {
-							
+						confirm: {							
 							btnClass: 'btn-circle btn-outline btn-primary',							
 							action: function () {
 
@@ -2223,7 +2641,6 @@ var OntologyCreateController = function() {
 							}
 						}
 					}
-						
 				});
 			} else {
 
@@ -2239,7 +2656,6 @@ var OntologyCreateController = function() {
 						}
 					}
 				});
-
 			}
 
 
@@ -2520,6 +2936,75 @@ var OntologyCreateController = function() {
 			}
 			$('#target-ontology').selectpicker('refresh');
 
+		},	// JSON-LD charge schema
+		jsonLDSchemaToTree: function(objschema){			
+			logControl ? console.log(LIB_TITLE + ': jsonLDSchemaToTree()') : '';
+			var data;
+				
+			// JSON-STRING SCHEMA TO JSON
+			var tempSchema = $(objschema).attr('data-schema');
+			
+		
+			// base schema with no modifications (used on base properties
+			// validation )
+			staticSchema = $(objschema).attr('data-schema');
+			if 		(typeof tempSchema == 'string'){ data = JSON.parse(tempSchema); }
+			else if (typeof tempSchema == 'object'){ data = tempSchema; } else { $.alert({title: 'ERROR!', theme: 'light',  content: ontologyCreateReg.validations.noschemaontologyCreateReg.validations.noschema}); return false; }
+
+			
+			 
+				schemaOrgJson =  data;
+			
+
+			// UPDATING DATAMODEL ID for ONTOLOGY
+			$('#datamodelid').val($(objschema).attr('data-model'));
+
+			OntologyCreateController.getSchemaOrgClasses();
+			$('#jsonLdCtxt').addClass('hide');
+			$('#jsonLdCtxtEdit').addClass('hide');
+			$('#jsonLdCtxt').removeClass('hide');
+		},
+		updateFieldsFromJSONLDTree: function (){updateFieldsFromJSONLDTree()},
+		setSchemaOrgJson : function(json){ schemaOrgJson = json;},
+		getSchemaOrgClasses : function() {
+			
+			var graph = schemaOrgJson['@graph'];			 
+			var jsonTree = [];
+			
+			for(let i = 0; i < graph.length; i++) {
+				var subclass = '';
+				 
+				if(graph[i]["@type"] == "rdfs:Class"){
+					subclass = graph[i]['rdfs:subClassOf'];
+					if(subclass == undefined){
+						jsonTree.push(JSON.parse("{\"id\":\"" + graph[i]['@id'] + "\"," +
+									"\"parent\":\"#\",\"text\":\"" + graph[i]['rdfs:label'] + "\"}"));
+					
+					} else {						
+						subclass = graph[i]['rdfs:subClassOf']['@id'];
+						if(subclass == undefined){
+							for(let j = 0; j < graph[i]['rdfs:subClassOf'].length; j++){
+								jsonTree.push(JSON.parse("{\"id\":\"" + graph[i]['@id'] + "\"," +
+										 "\"parent\":\"" + graph[i]['rdfs:subClassOf'][j]['@id'] + "\",\"text\":\"" + graph[i]['rdfs:label'] + "\"}"));
+							}							
+						} else {
+							jsonTree.push(JSON.parse("{\"id\":\"" + graph[i]['@id'] + "\"," +
+									 "\"parent\":\"" + subclass + "\",\"text\":\"" + graph[i]['rdfs:label'] + "\"}"));
+						}
+					}
+				}
+			}
+			if(typeof $('#treeField').jstree()._id == 'undefined'){
+				$('#treeField').jstree({ 'core' : { 
+					"multiple" : true,
+				    'data' : jsonTree 
+				}});
+				$('#treeField').jstree(true).settings.core.data = jsonTree;
+				$('#treeField').jstree(true).refresh();
+			}else{
+				$('#treeField').jstree(true).settings.core.data = jsonTree;
+				$('#treeField').jstree(true).refresh();
+			}
 		}
 	};
 }();
@@ -2534,6 +3019,12 @@ jQuery(document).ready(function() {
 	var staticSchema = ''; // current schema json string but static just for
 							// original fields validation.
 
+	/*if(ontologyCreateJson.ontologyId == null){
+		$.getJSON("../../controlpanel/static/schemaorg-all.jsonld", function(json) {
+			OntologyCreateController.setSchemaOrgJson(json);
+		});
+	}*/
+	
 	// if redirect from error, change editmode for loading the schema
 	if(ontologyCreateJson.actionMode == null && headerReg.errores != null && ontologyCreateJson.schemaEditMode != null ){
 		ontologyCreateJson.actionMode = 1;

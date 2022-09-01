@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,4 +79,9 @@ public interface DataModelRepository extends JpaRepository<DataModel, String> {
 			"DataModelRepositoryByIdentification", "DataModelRepositoryByType" }, allEntries = true)
 	void flush();
 
+	@Modifying
+	@Transactional
+	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById",
+			"DataModelRepositoryByIdentification", "DataModelRepositoryByType" }, allEntries = true)
+	void deleteByIdNotIn(Collection<String> ids);
 }

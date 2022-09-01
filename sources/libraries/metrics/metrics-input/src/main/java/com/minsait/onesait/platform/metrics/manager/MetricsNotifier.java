@@ -36,7 +36,7 @@ public class MetricsNotifier {
 	@Value("${onesaitplatform.metrics.collector.endpoint:http://routerservice:20000/router/metrics-collector/refresh}")
 	private String metricsCollectorEndpoint;
 
-	@Value("${onesaitplatform.metrics.enabled:true}")
+	@Value("${onesaitplatform.metrics.enabled:false}")
 	private boolean metricsEnabled;
 
 	@Autowired

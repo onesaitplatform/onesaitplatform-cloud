@@ -15,7 +15,13 @@ master:
         maximum-pool-size: 2
         connection-timeout: 10000
 management.security.enabled: false
+management.endpoints.web.exposure.include: "*"
+management.endpoint.health.show-details: always
+management.health.elasticsearch.enabled: false
 spring:
+  main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
   application.name: onesaitplatform-video-broker
   boot.admin: #Spring Boot Admin Config    
       client.url: http://localhost:18100/monitoring
@@ -81,8 +87,8 @@ onesaitplatform:
 ## LOGGING CONF
 logging:
    config: classpath:logback-spring.xml
-   path: ./target/ 
-   file: ${spring.application.name}
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework.boot: INFO

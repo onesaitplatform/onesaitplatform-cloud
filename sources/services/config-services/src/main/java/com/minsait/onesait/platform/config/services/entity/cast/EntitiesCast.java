@@ -19,17 +19,14 @@ import java.util.Set;
 
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppChild;
-import com.minsait.onesait.platform.config.model.AppChildExport;
 import com.minsait.onesait.platform.config.model.AppExport;
 import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.model.AppRoleChild;
-import com.minsait.onesait.platform.config.model.AppRoleChildExport;
 import com.minsait.onesait.platform.config.model.AppRoleExport;
 import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.AppUserChild;
-import com.minsait.onesait.platform.config.model.AppUserChildExport;
 import com.minsait.onesait.platform.config.model.AppUserExport;
 import com.minsait.onesait.platform.config.model.AppUserList;
 import com.minsait.onesait.platform.config.model.Project;
@@ -62,7 +59,7 @@ public final class EntitiesCast {
 		return au;
 	}
 
-	public static AppUserExport castAppUserExport(AppUserChildExport aul, AppRoleExport ar) {
+	public static AppUserExport castAppUserExport(AppUserExport aul, AppRoleExport ar) {
 		final AppUserExport au = new AppUserExport();
 		au.setId(aul.getId());
 		au.setUser(aul.getUser());
@@ -155,7 +152,7 @@ public final class EntitiesCast {
 		}
 	}
 
-	public static AppRoleExport castAppRoleExport(AppRoleChildExport arl) {
+	public static AppRoleExport castAppRoleExport(AppRoleExport arl) {
 		if (arl != null) {
 			final AppRoleExport ar = new AppRoleExport();
 			ar.setApp(null);
@@ -166,7 +163,7 @@ public final class EntitiesCast {
 			ar.setCreatedAt(arl.getUpdatedAt());
 			ar.setName(arl.getName());
 			ar.setId(arl.getId());
-			for (final AppUserChildExport aul : arl.getAppUsers()) {
+			for (final AppUserExport aul : arl.getAppUsers()) {
 				sau.add(castAppUserExport(aul, ar));
 			}
 			return ar;
@@ -202,9 +199,9 @@ public final class EntitiesCast {
 				app.setAppRoles(sar);
 				final Set<AppList> sal = al.getChildApps();
 
-				final Set<AppChild> sa = new HashSet<AppChild>();
+				final Set<App> sa = new HashSet<App>();
 				for (final AppList ali : sal) {
-					sa.add(castAppChildList(ali, onlyApp));
+					sa.add(castAppList(ali, onlyApp));
 				}
 				app.setChildApps(sa);
 			}
@@ -247,9 +244,9 @@ public final class EntitiesCast {
 		}
 	}
 
-	public static AppChild castAppChild(App al) {
+	public static App castAppChild(App al) {
 		if (al != null) {
-			final AppChild app = new AppChild();
+			final App app = new App();
 			app.setId(al.getId());
 			app.setIdentification(al.getIdentification());
 			app.setDescription(al.getDescription());
@@ -267,7 +264,7 @@ public final class EntitiesCast {
 		}
 	}
 
-	public static AppExport castAppExport(AppChildExport al) {
+	public static AppExport castAppExport(AppExport al) {
 		if (al != null) {
 			final AppExport app = new AppExport();
 			app.setId(al.getId());
@@ -281,21 +278,21 @@ public final class EntitiesCast {
 			app.setUser(al.getUser());
 
 			final Set<AppRoleExport> sar = new HashSet<>();
-			for (final AppRoleChildExport arl : al.getAppRoles()) {
+			for (final AppRoleExport arl : al.getAppRoles()) {
 				sar.add(castAppRoleExport(arl));
 
 			}
 			app.setAppRoles(sar);
-			final Set<AppChildExport> sal = al.getChildApps();
+			final Set<AppExport> sal = al.getChildApps();
 
-			final Set<AppChildExport> sa = new HashSet<>();
-			for (final AppChildExport ali : sal) {
+			final Set<AppExport> sa = new HashSet<>();
+			for (final AppExport ali : sal) {
 				sa.add(ali);
 			}
 			app.setChildApps(sa);
 
 			final Set<AppRoleExport> are = new HashSet<>();
-			for (final AppRoleChildExport aprce : al.getAppRoles()) {
+			for (final AppRoleExport aprce : al.getAppRoles()) {
 				are.add(castAppRoleExport(aprce));
 			}
 			app.setAppRoles(are);

@@ -19,7 +19,7 @@ import java.io.Serializable;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter.DataType;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter.HeaderType;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,32 +27,32 @@ public class ApiQueryParameterDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "Nombre del Header")
+	@Schema(description= "Nombre del Header")
 	@Getter
 	@Setter
 	private String name;
 
-	@ApiModelProperty(value = "Tipo de Header")
+	@Schema(description= "Tipo de Header")
 	@Getter
 	@Setter
 	private DataType dataType;
 
-	@ApiModelProperty(value = "Descripción del Header")
+	@Schema(description= "Descripción del Header")
 	@Getter
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Valor del Header")
+	@Schema(description= "Valor del Header")
 	@Getter
 	@Setter
 	private String value;
 
-	@ApiModelProperty(value = "Condición del Header")
+	@Schema(description= "Condición del Header")
 	@Getter
 	@Setter
 	private HeaderType headerType;
 
-	@ApiModelProperty(value = "Tipo de Parametro")
+	@Schema(description= "Tipo de Parametro")
 	@Getter
 	@Setter
 	private String condition;

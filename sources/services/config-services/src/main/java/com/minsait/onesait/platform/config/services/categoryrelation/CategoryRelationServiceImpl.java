@@ -17,8 +17,10 @@ package com.minsait.onesait.platform.config.services.categoryrelation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
-import com.minsait.onesait.platform.config.model.CategoryRelation.Type;
+import com.minsait.onesait.platform.config.model.Subcategory;
+import com.minsait.onesait.platform.config.model.Category.Type;
 import com.minsait.onesait.platform.config.repository.CategoryRelationRepository;
 
 @Service
@@ -37,4 +39,32 @@ public class CategoryRelationServiceImpl implements CategoryRelationService {
 	    return categoryRelationRepository.findByTypeId(typeId);
 	}
 
+	@Override
+	public void createCategoryRelation(String resourceId, Category category, Subcategory subcategory, Type type) {
+		final CategoryRelation categoryRelation = new CategoryRelation();
+		categoryRelation.setCategory(category.getId());
+		categoryRelation.setSubcategory(subcategory.getId());
+		categoryRelation.setType(type);
+		categoryRelation.setTypeId(resourceId);
+
+		categoryRelationRepository.save(categoryRelation);
+	}
+
+	@Override
+	public void updateCategoryRelation(CategoryRelation categoryRelation, String resourceId, Category category, Subcategory subcategory) {
+		categoryRelation.setCategory(category.getId());
+		categoryRelation.setSubcategory(subcategory.getId());
+		categoryRelation.setTypeId(resourceId);
+
+		categoryRelationRepository.save(categoryRelation);
+	}
+	
+	@Override
+	public void deleteCategoryRelation(String resourceId) {
+		final CategoryRelation categoryRelation = categoryRelationRepository.findByTypeId(resourceId);
+		if (categoryRelation != null) {
+			categoryRelationRepository.delete(categoryRelation);
+		}
+	}
+	
 }

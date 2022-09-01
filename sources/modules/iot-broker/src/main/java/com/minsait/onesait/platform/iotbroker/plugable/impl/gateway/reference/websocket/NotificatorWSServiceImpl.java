@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyIndicationMessage;
 import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;

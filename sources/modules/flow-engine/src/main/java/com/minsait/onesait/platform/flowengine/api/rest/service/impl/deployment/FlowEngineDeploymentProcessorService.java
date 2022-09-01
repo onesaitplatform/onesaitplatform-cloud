@@ -115,7 +115,7 @@ public class FlowEngineDeploymentProcessorService {
 			return new ResponseEntity<>(
 					"{\"error\":\"Unable to save deployment info from NodeRed into CDB.\",\"message\":\""
 							+ e.getMessage() + "\"}",
-					HttpStatus.INTERNAL_SERVER_ERROR);
+							HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return new ResponseEntity<>("OK", HttpStatus.OK);
 	}
@@ -356,7 +356,7 @@ public class FlowEngineDeploymentProcessorService {
 		node.setOntology(null);
 		node.setPartialUrl(record.getUrl() != null ? record.getUrl() : "");
 		try {
-			nodeService.createFlowNode(node);
+			nodeService.createFlowNode(node, flow);
 		} catch (final Exception e) {
 			final String msg = "API " + record.getName() + " cound not be created. Cause: " + e.getCause() + ", Error: "
 					+ e.getMessage() + ".";
@@ -366,12 +366,13 @@ public class FlowEngineDeploymentProcessorService {
 	}
 
 	private void createFlowEntityFromNode(DeployRequestRecord record, FlowDomain domain) {
+		domain = domainService.getFlowDomainByIdentification(domain.getIdentification());
 		final Flow newFlow = new Flow();
 		newFlow.setIdentification(record.getLabel());
 		newFlow.setNodeRedFlowId(record.getId());
 		newFlow.setActive(true);
 		newFlow.setFlowDomain(domain);
-		flowService.createFlow(newFlow);
+		flowService.createFlow(newFlow, domain);
 	}
 
 	private void createHttpNotifierFromNode(DeployRequestRecord record, FlowDomain domain) {
@@ -389,10 +390,10 @@ public class FlowEngineDeploymentProcessorService {
 		node.setRetryOnFailure(record.getRetryAfterError());
 		node.setMaxRetryElapsedTime(record.getNotificationRetryTimeout());
 		try {
-			nodeService.createFlowNode(node);
+			nodeService.createFlowNode(node, flow);
 		} catch (final Exception e) {
 			final String msg = "Notification node '" + node.getIdentification()
-					+ "' has an invalid Ontology selected: '" + node.getOntology() + "'.";
+			+ "' has an invalid Ontology selected: '" + node.getOntology() + "'.";
 			log.error(msg);
 			throw new FlowEngineDeployException(msg);
 		}

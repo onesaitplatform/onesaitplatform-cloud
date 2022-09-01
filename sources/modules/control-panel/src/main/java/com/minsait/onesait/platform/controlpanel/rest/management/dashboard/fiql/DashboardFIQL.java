@@ -26,11 +26,14 @@ import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
 import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
+import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.CommandDTO;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.UpdateCommandDTO;
+import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
+import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.controlpanel.rest.management.dashboard.DashboardDTO;
 
 @Service
@@ -38,8 +41,11 @@ public class DashboardFIQL {
 
 	@Autowired
 	private DashboardConfRepository dashboardConfRepository;
-
-	public DashboardCreateDTO fromCommandToDashboardCreate(CommandDTO commandDTO, String id) {
+	
+	@Autowired
+	private InternationalizationService internationalizationService;
+	
+	public DashboardCreateDTO fromCommandToDashboardCreate(CommandDTO commandDTO, String id, String userId) {
 		DashboardCreateDTO dashboard = new DashboardCreateDTO();
 		if (id != null)
 			dashboard.setId(id);
@@ -75,7 +81,26 @@ public class DashboardFIQL {
 			dashboard.setType(commandDTO.getInformation().getDashboardType());
 		}
 		dashboard.setDashboardConfId(initialStyleId);
-
+		if (commandDTO.getInformation() != null && commandDTO.getInformation().getDashboardGenerateImage() != null) {
+			dashboard.setGenerateImage(commandDTO.getInformation().getDashboardGenerateImage());
+		} else {
+			dashboard.setGenerateImage(false);
+		}
+		dashboard.setHasImage(true);
+		if(commandDTO.getInformation() != null && commandDTO.getInformation().getI18n() != null) {
+			StringBuilder i18n = new StringBuilder();
+			for (String s: commandDTO.getInformation().getI18n()) {
+				final Internationalization internationalization = internationalizationService.getInternationalizationByIdentification(s, userId);
+				if (internationalization == null) {
+					throw new DashboardServiceException("Internationalization " + s + " does not exist.");
+				}
+				i18n.append(internationalization.getId()).append(",");
+			}
+			dashboard.setI18n(i18n.toString());
+		}
+		dashboard.setCategory(commandDTO.getInformation().getCategory());
+		dashboard.setSubcategory(commandDTO.getInformation().getSubcategory());
+		
 		return dashboard;
 	}
 
@@ -112,12 +137,23 @@ public class DashboardFIQL {
 			dst = dashboard.getType();
 		}
 		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		return DashboardDTO.builder().identification(dashboard.getIdentification()).id(dashboard.getId())
+		List<String> i18n = new ArrayList<String>();
+		internationalizationService.getInternationalizationsByResourceId(dashboard.getId()).stream().forEach(e -> i18n.add(e.getIdentification()));;
+		
+		DashboardDTO dashboardDTO =
+				DashboardDTO.builder().identification(dashboard.getIdentification()).id(dashboard.getId())
 				.description(dashboard.getDescription()).user(dashboard.getUser().getUserId())
 				.url(url + dashboard.getId()).isPublic(dashboard.isPublic()).category(categoryId)
 				.subcategory(subCategoryId).nGadgets(nGadgets).headerlibs(dashboard.getHeaderlibs())
 				.createdAt(ft.format(dashboard.getCreatedAt())).modifiedAt(ft.format(dashboard.getUpdatedAt()))
-				.viewUrl(viewUrl + dashboard.getId()).dashboardAuths(dashAuthsDTO).type(dst).build();
+				.viewUrl(viewUrl + dashboard.getId()).dashboardAuths(dashAuthsDTO).type(dst)
+				.image(dashboard.getImage()).generateImage(dashboard.isGenerateImage()).i18n(i18n).build();
+		if (dashboardDTO.getImage() == null) {
+			byte[] byteArray = "".getBytes();
+			dashboardDTO.setImage(byteArray);
+		}
+		
+		return dashboardDTO;
 	}
 
 }

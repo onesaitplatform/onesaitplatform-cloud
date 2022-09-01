@@ -178,26 +178,26 @@
 														<td class="text-left no-wrap " th:text="${device.user}"></td>
 														<!-- DATE CREATED -->
 														<td class="text-left" th:if="${device.dateCreated!=null}">
-															<span th:text="${#dates.format(device.dateCreated,'YYYY/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(device.dateCreated,'dd/MM/YYYY')}" ></span></td>
+															<span th:text="${#dates.format(device.dateCreated,'yyyy/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(device.dateCreated,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-left" th:if="${device.dateCreated==null}" th:text="'---'"></td>
 														<!-- UPDATED -->
 														<td class="text-left" th:if="${device.dateUpdated!=null}">
-															<span th:text="${#dates.format(device.dateUpdated,'YYYY/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(device.dateUpdated,'dd/MM/YYYY')}" ></span></td>
+															<span th:text="${#dates.format(device.dateUpdated,'yyyy/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(device.dateUpdated,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${device.dateUpdated==null}" th:text="'---'"></td>
 
 														<!-- OPTIONS -->
 														<td class="icon" style="white-space: nowrap">
 															<div class="grupo-iconos">
 																<!-- VIEW -->
-																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"	data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/devices/show/${device.id}/|} + '\');'"><i	class="la la-eye font-hg"></i></span>
+																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"	data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/devices/show/${device.id}/|} + '\');'"><i	class="la la-eye font-hg"></i></span>
 
 																<!-- EDIT -->
-																<span class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<span class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><i class="icon-edit"></i></span>
 												
 																<!-- DELETE -->
-															    <span th:if="${#authentication.name} == ${device.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDeviceConfirmation(\'' + ${device.id} + '\');'"><i class="icon-delete"></i></span>
+															    <span th:if="${#authentication.name} == ${device.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteDeviceConfirmation(\'' + ${device.id} + '\');'"><i class="icon-delete"></i></span>
 															</div>
 														</td>
 													</tr>

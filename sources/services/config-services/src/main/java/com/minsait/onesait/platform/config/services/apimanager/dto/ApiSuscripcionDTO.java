@@ -16,7 +16,7 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 
 import java.io.Serializable;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,22 +24,22 @@ public class ApiSuscripcionDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "APISubscription apiIdentification")
+	@Schema(description= "APISubscription apiIdentification")
 	@Getter
 	@Setter
 	private String apiIdentification;
 
-	@ApiModelProperty(value = "APISubscription userId")
+	@Schema(description= "APISubscription userId")
 	@Getter
 	@Setter
 	private String userId;
 
-	@ApiModelProperty(value = "APISubscription createdAt")
+	@Schema(description= "APISubscription createdAt")
 	@Getter
 	@Setter
 	private String createdAt;
 
-	@ApiModelProperty(value = "APISubscription updatedAt")
+	@Schema(description= "APISubscription updatedAt")
 	@Getter
 	@Setter
 	private String updatedAt;

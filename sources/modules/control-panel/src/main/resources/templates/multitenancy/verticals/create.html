@@ -93,7 +93,7 @@
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">
 								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/multitenancy/verticals} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/multitenancy/verticals} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 								<!-- RESET -->			
 								<button th:if="${vertical.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>

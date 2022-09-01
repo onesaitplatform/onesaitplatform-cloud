@@ -124,13 +124,13 @@
 															<!-- NOTEBOOK -->
 															<td class="text-left text-truncate-xxs" th:title="${execution.description}" th:text="${execution.description}"></td>
 															<!-- DATE -->
-															<td class="text-center" th:if="${execution.createdAt!=null}"><span th:text="${#dates.format(execution.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(execution.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${execution.createdAt!=null}"><span th:text="${#dates.format(execution.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(execution.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-center" th:if="${execution.createdAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/executionmodels/show/${execution.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/executionmodels/show/${execution.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																		
 																</div>
 															</td>

@@ -95,7 +95,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			if (collection == null || schema == null) {
 				throw new DBPersistenceException(
 						"DAOMongoDBImpl needs a collection and a schema to create a collection into the database");
-				}
+			}
 
 			/**
 			 * Si no existe la collection la crea
@@ -182,7 +182,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			}
 			final List<String> keyElements = getElements(pquery);
 			try {
-				indexKeys = objectMapper.readValue(keyElements.get(0), new TypeReference<Map<String, ?>>() {
+				indexKeys = objectMapper.readValue(keyElements.get(0), new TypeReference<Map<String, Integer>>() {
 				});
 				if (keyElements.size() == 2) {
 					indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
@@ -399,11 +399,12 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			path = pathToFile;
 		}
 
+
 		if (mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), ontology, "count(" + query + ")") > 0) {
 			ProcessBuilder pb = null;
 			if (mongoDbConnector.getCredentials().isEnableMongoDbAuthentication()) {
 				pb = new ProcessBuilder("mongoexport", "--host",
-						mongoDbConnector.getConnection().getServerAddressList().get(0).getHost(), "--db", Tenant2SchemaMapper.getRtdbSchema(),
+						mongoDbConnector.getReplicaSetMaster().getHost(), "--db", Tenant2SchemaMapper.getRtdbSchema(),
 						"--username", mongoDbConnector.getCredentials().getUsername(), "--password",
 						mongoDbConnector.getCredentials().getPassword(), "--collection", ontology, "--query", query,
 						"--out", path, "--authenticationDatabase",

@@ -32,6 +32,7 @@
 		<!-- CODEMIRROR -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
 		
 	</head>	
 	
@@ -83,26 +84,26 @@
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span class="caption-subject" th:text="*{suffix}"></span>
+									<span class="caption-subject" th:text="*{identification}"></span>
 								</div>
 							</div>
 							
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'deleteConfigurationConfirmation(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteConfigurationConfirmation(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 									<span class="sep no-border">&nbsp;</span>
 										
 									<!-- CANCEL -->											
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/configurations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/configurations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<span class="sep">&nbsp;</span>
 										
 									<!-- UPDATE -->
 									<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} != ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} != ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 									
 								</div>
 							</div>
@@ -121,23 +122,17 @@
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{gen.identification} "> Identification </label>
-									<p class="form-control-static-block " th:text="*{suffix}"> Suffix </p>
-								</div>
-							</div>	
-							<div class="col-md-8 col-sm-8 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{configuration.description} ">Configuration Description</label>
-									<p class="form-control-static-block " th:text="*{description}"> Description </p>
+									<p class="form-control-static-block " th:text="*{identification}"> Identification </p>
 								</div>
 							</div>
-						</div>
-						<div class="row main">
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label"> <span th:text="#{configurations.type} ">Configuration Type</span></label>
 									<p class="form-control-static-block " th:text="*{type}"> Configuration Type </p>
 								</div>
 							</div>
+						</div>
+						<div class="row main">
 							<div class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{configuration.userid} ">User Id</label>
@@ -150,6 +145,14 @@
 									<p class="form-control-static-block " th:text="*{environment}"> Environment </p>
 								</div>
 							</div>											
+						</div>
+						<div class="row main">
+							<div class="col-md-8 col-sm-8 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{configuration.description} ">Configuration Description</label>
+									<p class="form-control-static-block " th:text="*{description}"> Description </p>
+								</div>
+							</div>
 						</div>
 						<div class="row main">
 							<div class="col-md-12 col-sm-12 col-xs-12">
@@ -211,7 +214,7 @@
 	            lineNumbers: false,
 	            matchBrackets: true,
 	            styleActiveLine: true,
-	            theme:"elegant"          
+	            theme:"material"          
 	        });
 			myCodeMirror.setSize("100%", 350);
 		}else{
@@ -220,7 +223,7 @@
 	            lineNumbers: false,
 	            matchBrackets: true,
 	            styleActiveLine: true,
-	            theme:"elegant"          
+	            theme:"material"          
 	        });
 			myCodeMirror.setSize("100%", 350);
 		}

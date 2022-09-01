@@ -73,14 +73,14 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 
-@Api(value = "APIs management", tags = { "APIs management service" })
+@Tag(name = "APIs management")
 @RestController
 @RequestMapping("api/apis")
 public class APIManagementController {
@@ -104,7 +104,6 @@ public class APIManagementController {
 	@Autowired
 	ApiDTOConverter apiDTOConverter;
 
-
 	private static final String ERROR_API_NOT_FOUND = "Api not found";
 	private static final String ERROR_USER_NOT_ALLOWED = "User is not authorized";
 	private static final String ERROR_USER_ACCESS_NOT_FOUND = "User access not found";
@@ -115,11 +114,11 @@ public class APIManagementController {
 	private static final String ERROR_API_INVALID_STATE = "Api state not valid";
 	private static final String EMPTY_RESPONSE_APIS = "{\"apis\" : \"\"}";
 
-	@ApiOperation(value = "Get users access to api by identification or id")
+	@Operation(summary= "Get users access to api by identification or id")
 	@GetMapping(value = "/{apiId}/authorizations")
 	public ResponseEntity<?> getAuthorizations(
-			@ApiParam(value = "Api identification or id") @PathVariable(value = "apiId") String apiId,
-			@ApiParam(value = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id") @PathVariable(value = "apiId") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 
 		ResponseEntity<?> response;
 		try {
@@ -140,11 +139,11 @@ public class APIManagementController {
 		return response;
 	}
 
-	@ApiOperation(value = "Create users access to api by identification or id")
+	@Operation(summary= "Create users access to api by identification or id")
 	@PostMapping(value = "/{apiId}/authorizations")
 	public ResponseEntity<?> createAuthorizations(
-			@ApiParam(value = "Api identification or id") @PathVariable(value = "apiId") String apiId,
-			@ApiParam(value = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@Parameter(description= "Api identification or id") @PathVariable(value = "apiId") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
 			@Valid @RequestBody List<UserApiSimplifiedInputDTO> userApiAccesses) {
 
 		ResponseEntity<?> response;
@@ -172,11 +171,11 @@ public class APIManagementController {
 		return response;
 	}
 
-	@ApiOperation(value = "Remove users access to api by identification or id")
+	@Operation(summary= "Remove users access to api by identification or id")
 	@DeleteMapping(value = "/{apiId}/authorizations")
 	public ResponseEntity<?> removeAuthorizations(
-			@ApiParam(value = "Api identification or id") @PathVariable(value = "apiId") String apiId,
-			@ApiParam(value = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@Parameter(description= "Api identification or id") @PathVariable(value = "apiId") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
 			@Valid @RequestBody List<UserApiSimplifiedInputDTO> userApiAccesses) {
 
 		ResponseEntity<?> response;
@@ -204,12 +203,12 @@ public class APIManagementController {
 		return response;
 	}
 
-	@ApiOperation(value = "Authorize user for api by identification or id")
+	@Operation(summary= "Authorize user for api by identification or id")
 	@PostMapping(value = "/authorize/api/{apiId}/user/{userId}")
 	public ResponseEntity<?> authorize(
-			@ApiParam(value = "Api identification or id", required = true) @PathVariable("apiId") String apiId,
-			@ApiParam(value = "User", required = true) @PathVariable(name = "userId") String userId,
-			@ApiParam(value = "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("apiId") String apiId,
+			@Parameter(description= "User", required = true) @PathVariable(name = "userId") String userId,
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
 			@RequestHeader("Authorization") String authorization) {
 
 		ResponseEntity<?> response;
@@ -265,12 +264,12 @@ public class APIManagementController {
 
 	}
 
-	@ApiOperation(value = "Deauthorize user for api by identification or id")
+	@Operation(summary= "Deauthorize user for api by identification or id")
 	@PostMapping(value = "/deauthorize/api/{apiId}/user/{userId}")
 	public ResponseEntity<?> deauthorize(
-			@ApiParam(value = "Api identification or id", required = true) @PathVariable("apiId") String apiId,
-			@ApiParam(value = "User", required = true) @PathVariable(name = "userId") String userId,
-			@ApiParam(value = "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("apiId") String apiId,
+			@Parameter(description= "User", required = true) @PathVariable(name = "userId") String userId,
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
 			@RequestHeader("Authorization") String authorization) {
 
 		ResponseEntity<?> response;
@@ -314,7 +313,7 @@ public class APIManagementController {
 		return response;
 	}
 
-	@ApiOperation(value = "Get user token for api")
+	@Operation(summary= "Get user token for api")
 	@GetMapping(value = "/api/token")
 	public ResponseEntity<String> getApiToken() {
 		final List<UserToken> tokens = userService.getUserToken(userService.getUser(utils.getUserId()));
@@ -326,10 +325,10 @@ public class APIManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Get username for api by user token")
+	@Operation(summary= "Get username for api by user token")
 	@GetMapping(value = "/api/username/{token}")
 	public ResponseEntity<String> getApiUsernameByToken(
-			@ApiParam(value = "Token Id ", required = true) @PathVariable("token") String token) {
+			@Parameter(description= "Token Id ", required = true) @PathVariable("token") String token) {
 		String username = null;
 		try {
 			username = userService.getUserByToken(token).getUserId();
@@ -340,7 +339,7 @@ public class APIManagementController {
 		return new ResponseEntity<>("{\"username\" : \"" + username + "\"}", HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Get user tokens for api")
+	@Operation(summary= "Get user tokens for api")
 	@GetMapping(value = "/api/tokens")
 	public ResponseEntity<?> getApiTokens() {
 
@@ -360,7 +359,7 @@ public class APIManagementController {
 
 	}
 
-	@ApiOperation(value = "Generate new user token for api")
+	@Operation(summary= "Generate new user token for api")
 	@PostMapping(value = "/api/token")
 	public ResponseEntity<String> generateApiToken() {
 		try {
@@ -372,10 +371,10 @@ public class APIManagementController {
 
 	}
 
-	@ApiOperation(value = "Delete user token for api")
+	@Operation(summary= "Delete user token for api")
 	@DeleteMapping(value = "/api/token/{token}")
 	public ResponseEntity<String> deleteApiToken(
-			@ApiParam(value = "Token Id ", required = true) @PathVariable("token") String token) {
+			@Parameter(description= "Token Id ", required = true) @PathVariable("token") String token) {
 		final UserToken tokenOj = userTokenService.getTokenByUserAndToken(userService.getUser(utils.getUserId()),
 				token);
 
@@ -391,7 +390,7 @@ public class APIManagementController {
 
 	}
 
-	@ApiOperation(value = "Get list of user apis and public apis")
+	@Operation(summary= "Get list of user apis and public apis")
 	@GetMapping
 	public ResponseEntity<?> getApiList() {
 		final User user = userService.getUser(utils.getUserId());
@@ -410,11 +409,11 @@ public class APIManagementController {
 
 	}
 
-	@ApiOperation(value = "Get api by identification or id")
+	@Operation(summary= "Get api by identification or id")
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<?> getApiByIdentification(
-			@ApiParam(value = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@ApiParam(value = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 		final com.minsait.onesait.platform.config.model.Api api = apiManagerService
 				.getApiByIdentificationVersionOrId(apiId, apiVersion);
 		if (api != null) {
@@ -430,11 +429,11 @@ public class APIManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Delete api by identification or id")
+	@Operation(summary= "Delete api by identification or id")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteApi(
-			@ApiParam(value = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@ApiParam(value = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 		try {
 			final com.minsait.onesait.platform.config.model.Api api = apiManagerService
 					.getApiByIdentificationVersionOrId(apiId, apiVersion);
@@ -452,10 +451,10 @@ public class APIManagementController {
 		return new ResponseEntity<>("Api deleted successfully", HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Create new API")
+	@Operation(summary= "Create new API")
 	@PostMapping
 	public ResponseEntity<?> createApi(
-			@ApiParam(value = "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
+			@Parameter(description= "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
 		com.minsait.onesait.platform.config.model.Api createdApi = null;
 		List<com.minsait.onesait.platform.config.model.Api> existingApisWithIdentificationAndUser;
 
@@ -516,10 +515,10 @@ public class APIManagementController {
 		return new ResponseEntity<>(new ApiSimplifiedResponseDTO(createdApi), HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Update API")
+	@Operation(summary= "Update API")
 	@PutMapping
 	public ResponseEntity<?> updateApi(
-			@ApiParam(value = "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
+			@Parameter(description= "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
 		final User user = userService.getUser(utils.getUserId());
 
 		if (!userService.isUserAdministrator(user) && !userService.isUserDeveloper(user)) {
@@ -572,12 +571,12 @@ public class APIManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Change api state by identification or id")
+	@Operation(summary= "Change api state by identification or id")
 	@PostMapping(value = "/changestate/{id}/{state}")
 	public ResponseEntity<?> changeStateByIdentification(
-			@ApiParam(value = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@ApiParam(value = "Api state", required = true) @PathVariable("state") String state,
-			@ApiParam(value = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Api state", required = true) @PathVariable("state") String state,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 		final com.minsait.onesait.platform.config.model.Api api = apiManagerService
 				.getApiByIdentificationVersionOrId(apiId, apiVersion);
 		if (api != null) {
@@ -619,11 +618,11 @@ public class APIManagementController {
 		return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 	}
 
-	@ApiOperation(value = "Export api by identification or id")
+	@Operation(summary= "Export api by identification or id")
 	@GetMapping(value = "export/{id}")
 	public ResponseEntity<?> exportApiByIdentification(
-			@ApiParam(value = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@ApiParam(value = "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 
 		final User user = userService.getUser(utils.getUserId());
 		final com.minsait.onesait.platform.config.model.Api api = apiManagerService
@@ -663,7 +662,7 @@ public class APIManagementController {
 
 	}
 
-	@ApiOperation(value = "Export all apis")
+	@Operation(summary= "Export all apis")
 	@GetMapping(value = "export/")
 	public ResponseEntity<?> exportAllApis() {
 		final List<ApiRestDTO> apisDTO = new ArrayList<>();
@@ -698,12 +697,12 @@ public class APIManagementController {
 		return importingUser;
 	}
 
-	@ApiOperation(value = "Import API")
+	@Operation(summary= "Import API")
 	@PostMapping(value = "import")
 	public ResponseEntity<?> importApi(
-			@ApiParam(value = "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
-			@ApiParam(value = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
-			@ApiParam(value = "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
+			@Parameter(description= "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
+			@Parameter(description= "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
 
 		// ------ Importing rules --------
 		// version ---------------------OK (import any version allowed to not change
@@ -738,12 +737,12 @@ public class APIManagementController {
 		return new ResponseEntity<>(new ApiSimplifiedResponseDTO(createdApi), HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Import several APIs")
+	@Operation(summary= "Import several APIs")
 	@PostMapping(value = "import/apis/")
 	public ResponseEntity<?> importSeveralApis(
-			@ApiParam(value = "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
-			@ApiParam(value = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
-			@ApiParam(value = "APIBodies", required = true) @Valid @RequestBody List<ApiRestDTO> apiBodies) {
+			@Parameter(description= "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
+			@Parameter(description= "APIBodies", required = true) @Valid @RequestBody List<ApiRestDTO> apiBodies) {
 
 		// ------ Importing rules --------
 		// version ---------------------OK (import any version allowed to not change
@@ -788,11 +787,11 @@ public class APIManagementController {
 	@Autowired
 	private APIBusinessService apiBusinessService;
 
-	@ApiOperation(value = "Client")
+	@Operation(summary= "Client")
 	@PostMapping("client-js")
 	public ResponseEntity<ByteArrayResource> generateClientJS(
-			@ApiParam(value = "Target JS framework") @RequestParam("framework") ClientJS framework,
-			@ApiParam(value = "List of API ids") @RequestBody List<String> ids) throws IOException {
+			@Parameter(description= "Target JS framework") @RequestParam("framework") ClientJS framework,
+			@Parameter(description= "List of API ids") @RequestBody List<String> ids) throws IOException {
 		try {
 			final File file = apiBusinessService.generateJSClient(framework, ids, utils.getUserId());
 			final Path path = Paths.get(file.getAbsolutePath());
@@ -810,5 +809,4 @@ public class APIManagementController {
 		}
 
 	}
-
 }

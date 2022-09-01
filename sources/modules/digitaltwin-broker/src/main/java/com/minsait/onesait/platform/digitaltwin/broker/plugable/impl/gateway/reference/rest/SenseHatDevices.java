@@ -19,15 +19,15 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RequestMapping(path = "/sensehat")
 @CrossOrigin(origins = "*")
-@Api(value = "sensehat", description = "Onesaitplatform SenseHat Digital Twins")
+@Tag(name= "sensehat", description = "Onesaitplatform SenseHat Digital Twins")
 public interface SenseHatDevices {
 
-	@ApiOperation(value = "Get SenseHat Digital Twins")
+	@Operation(summary = "Get SenseHat Digital Twins")
 	@RequestMapping(value = "/getSensehatDevices", method = RequestMethod.GET)
 	public ResponseEntity<?> getSensehatDevices();
 

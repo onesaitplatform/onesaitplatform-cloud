@@ -84,7 +84,9 @@ public class BaseHttpClient {
 			throw new QueryNativeFormatException(NOTIFING_ERROR + endpoint, e);
 		} catch (final Exception e) {
 			log.error("Error Invocating: {}, {}", endpoint, e);
-			throw new DBPersistenceException(e);
+			DBPersistenceException ex=new DBPersistenceException(e);
+			ex.setDetailedMessage("Error Procesing query, check SQL syntax");
+			throw ex;
 		}
 
 	}

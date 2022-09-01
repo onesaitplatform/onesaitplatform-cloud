@@ -51,6 +51,7 @@ public class MasterConfiguration extends AuditableEntityWithUUID {
 	@Column(name = "YML_CONFIG", nullable = false)
 	@NotNull
 	@Lob
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	private String ymlConfig;
 
 	@Column(name = "TYPE", length = 50, unique = true)

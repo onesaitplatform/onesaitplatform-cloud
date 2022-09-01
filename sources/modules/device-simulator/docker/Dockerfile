@@ -35,9 +35,15 @@ ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
 	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
 	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
-	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \	
+	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
+    CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+    CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
+    SCHEDULERDBBUSER=root \
+    SCHEDULERDBBPASS=changeIt! \
+    SCHEDULERDBBDRIVER=com.mysql.cj.jdbc.Driver \
+    SCHEDULERDBBDIALECT=org.hibernate.dialect.MySQL5Dialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     AUDITGLOBALNOTIFY=true \
@@ -48,6 +54,7 @@ ENV SERVER_NAME=localhost \
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
     SBA_USERNAME=operations \
-	SBA_SECRET=changeIt2019!
+	QUARTZ_DRIVER=org.quartz.impl.jdbcjobstore.StdJDBCDelegate \
+    SBA_SECRET=changeIt2019!
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

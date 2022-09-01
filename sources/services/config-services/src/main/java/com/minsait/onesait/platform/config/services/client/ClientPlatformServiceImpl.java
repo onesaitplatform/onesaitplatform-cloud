@@ -30,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,12 +83,14 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Autowired
 	private TokenRepository tokenRepository;
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
 	@Autowired
 	private KafkaAuthorizationService kafkaAuthorizationService;
 	@Autowired
+	@Lazy
 	private MultitenancyService multitenancyService;
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean isMultitenancyEnabled;

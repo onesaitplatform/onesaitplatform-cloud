@@ -111,6 +111,8 @@
 				
 				<!-- BEGIN PAGE HEADER-->
 				
+			
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
@@ -118,6 +120,10 @@
 						<li><a th:href="@{/users/list}"><span th:text="#{user.template.list}"> Manage Users</span></a></li>
 					</ul>						
 				</div>
+				
+				
+				
+				
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
@@ -128,6 +134,13 @@
 				<div class="row">					
 						<div class="portlet light">
 							<div class="portlet-title">
+								<div class="col-md-12 col-sm-6 col-xs-16" >
+									<div class="alert alert-info alert-dismissable">
+										<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+										<i class="fa fa-info-circle"></i>
+										<span th:text="#{user.limit.excedeed}"></span>
+									</div>	
+								</div>
 								<div class="caption">									
 									<span class="caption-subject" th:text="#{user.template.list}"> Manage Users</span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
@@ -138,6 +151,8 @@
 								<div id="search-on-title" class="hide input-icon search-icon">
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>
+								
+						
 								<div class="pull-right btn-title-group">
 									<span class="btn color-blue" data-container="body" data-placement="bottom" onclick="$('#rolefilter').toggleClass('hide');turnFirstOptionToGrey();" style="margin-top:10px;padding:0"><i class="icon-filter"></i></span>
 									<span id="rolefilter" class="hide" style="display:inline-block" > </span>
@@ -226,25 +241,25 @@
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/show/${user.username}/|} + '\');'" ><i class="la la-eye font-hg"></i></span>
+																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/users/show/${user.username}/|} + '\');'" ><i class="la la-eye font-hg"></i></span>
 																	
 																	<!-- EDIT -->
-																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.username}|} + '/false\');'"><i class="icon-edit"></i></span>
+																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/users/update/${user.username}|} + '/false\');'"><i class="icon-edit"></i></span>
 
 																	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																		<!-- RESET PASS -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:resetPass(\'' + ${user.username}+ '\');'"><i class="icon-key"></i><span class="span-title-three-dots-icons" th:text="#{user.reset.password}" >Reset password</span></span>
+																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:resetPass(\'' + ${user.username}+ '\');'"><i class="icon-key"></i><span class="span-title-three-dots-icons" th:text="#{user.reset.password}" >Reset password</span></span>
 																		</li>
 																		<li>
 																		<!-- DEACTIVATE -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND ${user.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:deactivateUser(\'' + ${user.username}+ '\');'"><i class="icon-close" th:onclick="''"></i><span class="span-title-three-dots-icons" th:text="#{user.deactivateBtn}" >Deactivate user</span></span>
+																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND ${user.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deactivateUser(\'' + ${user.username}+ '\');'"><i class="icon-close" th:attr="onclick=''"></i><span class="span-title-three-dots-icons" th:text="#{user.deactivateBtn}" >Deactivate user</span></span>
 																		</li>
 																		<li>
 																		<!-- DELETE -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'javascript:deleteUser(\'' + ${user.username}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete user</span></span>
+																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deleteUser(\'' + ${user.username}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete user</span></span>
 																		</li>
 																	</ul>
 																	</span>
@@ -355,6 +370,8 @@
 	var deleteTitle = [[#{user.delete.title}]] || 'Delete User';
 	var deleteText = [[#{user.hardDelete}]] || '';
 	var deleteError = [[#{user.deleteError}]] || 'Error!';
+	var deleteResourceError = [[#{user.delete.resource.error}]] || 'Error!';
+	
 	var deactivateTitle = [[#{user.deactivate.title}]] || 'Deactivate User';
 	var deactivateText = [[#{user.deactivateText}]] || '';
 	var languageJson = JSON.parse(datatable_lang);
@@ -454,13 +471,28 @@
 							success : function(response){
 								location.reload();
 							},
-						    error :  function () {
-						    	$.alert({
+						    error :  function (dataError) {						    
+						    
+						    if(dataError!=null && dataError.responseText!=null 
+						    	&& typeof dataError.responseText!='undefined' 
+						    	&& dataError.responseText.indexOf(', there are resources owned')>-1){
+						    	
+						    
+						    $.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  deleteResourceError
+								});
+						    }else{
+						    $.alert({
 									title : 'ERROR!',
 									type : 'red',
 									theme : 'light',
 									content :  deleteError
 								});
+						    }
+						    	
 						    }
 						})
 					}

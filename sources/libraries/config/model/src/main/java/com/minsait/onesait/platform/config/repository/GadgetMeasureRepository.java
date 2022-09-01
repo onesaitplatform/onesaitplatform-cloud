@@ -14,14 +14,20 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.versioning.VersionableVO;
 
 public interface GadgetMeasureRepository extends JpaRepository<GadgetMeasure, String> {
 
@@ -31,4 +37,14 @@ public interface GadgetMeasureRepository extends JpaRepository<GadgetMeasure, St
 
 	@Query("SELECT g " + "FROM GadgetMeasure AS g " + "WHERE g.datasource.id=:datasource")
 	List<GadgetMeasure> findByDatasource(@Param("datasource") String datasource);
+
+	@Query("SELECT g FROM GadgetMeasure AS g WHERE g.gadget.user= :user")
+	List<GadgetMeasure> findByUser(@Param("user") User user);
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.gadget.id, o.id, 'GadgetMeasure') FROM GadgetMeasure AS o")
+	public List<VersionableVO> findVersionableViews();
 }

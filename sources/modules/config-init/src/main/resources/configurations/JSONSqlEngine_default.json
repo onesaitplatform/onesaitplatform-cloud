@@ -127,5 +127,42 @@
     "codeFn": "tsExp",
     "argsLength": 2,
     "unique": true
+  },
+  "ifNull": {
+    "expression": "$ifNull",
+    "argsType": "array",
+    "argsLength": 2
+  },
+  "pow": {
+    "expression": "$pow",
+    "argsType": "array",
+    "argsLength": 2
+  },
+  "mod": {
+    "expression": "$mod",
+    "argsType": "array",
+    "argsLength": 2
+  },
+  "floor": {
+    "expression": "$floor"
+  },
+  "ceil": {
+    "expression": "$ceil"
+  },
+  "dateFromParts": {
+    "type": "customexp",
+    "expression": {
+      "$dateFromParts": {
+        "year":"${0}|allowNested",
+        "month":"${1}|allowNested",
+        "day":"${2}|allowNested"
+      }
+    },
+    "argsLength": 3
+  },
+  "round": {
+    "expression": "$round",
+    "argsType": "array",
+    "argsLength": 2
   }
 }

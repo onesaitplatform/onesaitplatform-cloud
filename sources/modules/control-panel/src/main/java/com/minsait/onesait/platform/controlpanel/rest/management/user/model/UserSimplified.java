@@ -48,6 +48,9 @@ public class UserSimplified implements Comparable<UserSimplified> {
 	@ApiModelProperty(required = false)
 	private String tenant;
 
+	@ApiModelProperty(required = false)
+	private Boolean active;
+
 	private String extraFields;
 	private byte[] avatar;
 

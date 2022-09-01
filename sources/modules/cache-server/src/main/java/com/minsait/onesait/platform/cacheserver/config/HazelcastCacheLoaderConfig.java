@@ -19,7 +19,6 @@ import java.util.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
@@ -30,7 +29,8 @@ import com.hazelcast.core.HazelcastInstance;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Configuration
+//@Configuration
+//LOADING CONFIG FROM PROJECT onesaitplatform-cache
 @Slf4j
 public class HazelcastCacheLoaderConfig {
 
@@ -46,9 +46,9 @@ public class HazelcastCacheLoaderConfig {
 	@Bean
 	@Profile("default")
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() {
-		Config config = new ClasspathXmlConfig("hazelcast.xml");
+		final Config config = new ClasspathXmlConfig("hazelcast.xml");
 		log.info("Configured Cache with data: Name : {} Instance Name: {} Group Name: {} ",
-				config.getConfigurationFile(), config.getInstanceName(), config.getGroupConfig().getName());
+				config.getConfigurationFile(), config.getInstanceName(), config.getClusterName());
 		config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 		config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
 		return Hazelcast.newHazelcastInstance(config);
@@ -57,15 +57,15 @@ public class HazelcastCacheLoaderConfig {
 	@Bean
 	@Profile("docker")
 	public HazelcastInstance dockerHazelcastInstanceEmbedded() {
-		Properties props = new Properties();
+		final Properties props = new Properties();
 		if (hazelcastServiceDiscoveryStrategy.equals("zookeeper")) {
 			props.put("onesaitplatform.hazelcast.service.discovery.zookeeper.url",
 					environment.getProperty("onesaitplatform.hazelcast.service.discovery.zookeeper.url"));
 		}
-		Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml", props);
+		final Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml", props);
 
 		log.info("Configured Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 		config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 		config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
 		return Hazelcast.newHazelcastInstance(config);

@@ -1,0 +1,23 @@
+.item {
+  border-bottom: 1px solid;
+  border-color: rgb(221, 218, 218);
+  padding: 7px;
+  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  font-size: 14px Base
+
+}
+.bottom-light-border {
+  padding-top: 15px;
+  border-bottom: 1px solid rgb(221, 218, 218);
+  padding-left: 10px
+}
+.el-checkbox {
+  margin-top: 8px
+}
+#gform .el-form-item {
+  margin-bottom: 0px;
+  margin-top: 2px
+}
+b.el-form-item__label {
+  line-height: 28px;
+}

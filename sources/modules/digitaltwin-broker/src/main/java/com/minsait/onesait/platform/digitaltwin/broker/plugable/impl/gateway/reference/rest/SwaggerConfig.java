@@ -14,35 +14,33 @@
  */
 package com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.rest;
 
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 
 @ConditionalOnProperty(prefix = "onesaitplatform.digitaltwin.broker.rest", name = "enable", havingValue = "true")
 @Configuration
-@EnableSwagger2
 public class SwaggerConfig {
 
+
 	@Bean
-	public Docket api() {
-		return new Docket(DocumentationType.SWAGGER_2).select()
-				.apis(RequestHandlerSelectors.basePackage(
-						"com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.rest"))
-				.paths(PathSelectors.any()).build().apiInfo(apiInfo());
+	public GroupedOpenApi api() {
+		return GroupedOpenApi.builder().group("Digital Twin Broker")
+				.packagesToScan("com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.rest")
+				.build();
 	}
 
-	private ApiInfo apiInfo() {
-		final ApiInfo apiInfo = new ApiInfo("onesait Platform IoT Digital Twin Rest Gateway",
-				"onesait Platform IoT Digital Twin Rest Gateway", "v1.0.0", "", "", "Apache License 2.0",
-				"http://www.apache.org/licenses/LICENSE-2.0.html");
-
-		return apiInfo;
+	@Bean
+	public OpenAPI springShopOpenAPI() {
+		return new OpenAPI()
+				.info(new Info().contact(new Contact().email("support@onesaitplatform.com"))
+						.title("onesait Platform Digital Twin Rest Gateway").description("onesait Platform Digital Twin Rest Gateway").version("v1.0.0")
+						.license(new License().name("Apache License 2.0").url("https://github.com/onesaitplatform")));
 	}
 }

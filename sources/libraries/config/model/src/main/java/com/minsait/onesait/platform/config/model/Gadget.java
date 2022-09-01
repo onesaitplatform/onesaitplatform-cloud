@@ -14,46 +14,71 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.Map;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Configurable
 @Entity
-@Table(name = "GADGET", uniqueConstraints= @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames={"IDENTIFICATION"}))
+@Table(name = "GADGET", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
 @EntityListeners(AuditEntityListener.class)
 @ToString
-public class Gadget extends OPResource {
+@Slf4j
+public class Gadget extends OPResource implements Versionable<Gadget> {
 
 	private static final long serialVersionUID = 1L;
-
-	@Column(name = "TYPE", length = 45, nullable = false)
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	@JoinColumn(name = "TYPE", referencedColumnName = "ID", nullable = true)
 	@Getter
 	@Setter
-	private String type;
+	private GadgetTemplate type;
 
 	@Column(name = "DESCRIPTION", length = 512)
 	@Getter
 	@Setter
 	private String description;
 
-	@Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT")
+	@Column(name = "PUBLIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@Getter
 	@Setter
 	private boolean isPublic;
+
+	@Column(name = "INSTANCE")
+	@Type(type = "org.hibernate.type.BooleanType")
+	@Getter
+	@Setter
+	private boolean instance;
 
 	@Column(name = "CONFIG")
 	@Lob
@@ -76,5 +101,58 @@ public class Gadget extends OPResource {
 	@Override
 	public int hashCode() {
 		return java.util.Objects.hash(getIdentification());
+	}
+
+	@JsonSetter("config")
+	public void setConfigJson(Object node) {
+		try {
+			config = new ObjectMapper().writeValueAsString(node);
+		} catch (final JsonProcessingException e) {
+			config = null;
+		}
+	}
+
+	@JsonSetter("type")
+	public void setTypeJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final GadgetTemplate t = new GadgetTemplate();
+			t.setId(id);
+			type = t;
+		}
+	}
+
+	@Override
+	public String serialize() {
+		final YAMLMapper mapper = new YAMLMapper();
+		final ObjectNode node = new YAMLMapper().valueToTree(this);
+		node.put("type", type == null ? null : type.getId());
+		try {
+			node.set("config", mapper.readTree(config));
+		} catch (final Exception e) {
+			// NO-OP
+		}
+		try {
+			return mapper.writeValueAsString(node);
+		} catch (final JsonProcessingException e) {
+			log.error("Could not serialize versionable of class {} with id {}", this.getClass(), getId());
+			return null;
+		}
+	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() + ".yaml";
+	}
+
+	@Override
+	public Versionable<Gadget> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+		Versionable<Gadget> gadget = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if (gadget != null && type != null && !CollectionUtils.isEmpty(excludedIds)
+				&& !CollectionUtils.isEmpty(excludedIds.get(GadgetTemplate.class.getSimpleName()))
+				&& excludedIds.get(GadgetTemplate.class.getSimpleName()).contains(type.getId())) {
+			addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
+			gadget = null;
+		}
+		return gadget;
 	}
 }

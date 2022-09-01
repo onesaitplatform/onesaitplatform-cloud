@@ -14,17 +14,26 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -42,6 +51,7 @@ public class Flow extends AuditableEntityWithUUID {
 	@JoinColumn(name = "FLOW_DOMAIN_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private FlowDomain flowDomain;
 
 	@NotNull
@@ -59,7 +69,21 @@ public class Flow extends AuditableEntityWithUUID {
 	@NotNull
 	@Getter
 	@Setter
-	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
+	@Column(name = "ACTIVE", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	private Boolean active;
+
+	@OneToMany(mappedBy = "flow", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@Getter
+	@Setter
+	private Set<FlowNode> nodes = new HashSet<>();
+
+	@JsonSetter("nodes")
+	public void setNodesJson(Set<FlowNode> nodes) {
+		nodes.forEach(n ->{
+			n.setFlow(this);
+			this.nodes.add(n);
+		});
+	}
 
 }

@@ -64,6 +64,7 @@ public class LayerServiceImpl implements LayerService {
 	private static final String USER_NOT_AUTHORIZED = "The user is not authorized";
 	private static final String PROPERTIES = "properties";
 	private static final String URL_CONCAT = "{\"url\":\"";
+	private static final String ID_CONCAT = "\" ,\"id\":\"";
 
 	@Override
 	public List<Layer> findAllLayers(String userId) {
@@ -255,12 +256,8 @@ public class LayerServiceImpl implements LayerService {
 				map.put(layer.getIdentification(), "iot");
 			} else if (layer.getOntology() != null && layer.isHeatMap()) {
 				map.put(layer.getIdentification(), "heat");
-			} else if (layer.getExternalType().equalsIgnoreCase("wms")) {
-				map.put(layer.getIdentification(), "wms");
-			} else if (layer.getExternalType().equalsIgnoreCase("kml")) {
-				map.put(layer.getIdentification(), "kml");
-			} else if (layer.getExternalType().equalsIgnoreCase("svg_image")) {
-				map.put(layer.getIdentification(), "svg_image");
+			} else if (layer.getExternalType()!=null) {
+				map.put(layer.getIdentification(), layer.getExternalType());
 			}
 		}
 
@@ -270,20 +267,32 @@ public class LayerServiceImpl implements LayerService {
 	@Override
 	public String getLayerWms(String layerIdentification) {
 		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
-		return URL_CONCAT + layer.getUrl() + "\",\"layerWms\":\"" + layer.getLayerTypeWms() + "\"}";
+		return URL_CONCAT + layer.getUrl() + "\",\"layerWms\":\"" + layer.getLayerTypeWms() + ID_CONCAT + layerIdentification + "\"}";
 	}
 
 	@Override
 	public String getLayerKml(String layerIdentification) {
 		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
-		return URL_CONCAT + layer.getUrl() + "\"}";
+		return URL_CONCAT + layer.getUrl() + ID_CONCAT + layerIdentification + "\"}";
 	}
 
 	@Override
 	public String getLayerSvgImage(String layerIdentification) {
 		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
 		return URL_CONCAT + layer.getUrl() + "\",\"west\":\"" + layer.getWest() + "\" ,\"east\":\"" + layer.getEast()
-				+ "\",\"north\":\"" + layer.getNorth() + "\",\"south\":\"" + layer.getSouth() + "\"}";
+				+ "\",\"north\":\"" + layer.getNorth() + "\",\"south\":\"" + layer.getSouth() + ID_CONCAT + layerIdentification + "\"}";
+	}
+	
+	@Override
+	public String getLayerArcGIS(String layerIdentification) {
+		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		return URL_CONCAT + layer.getUrl() + "\",\"layersArcGIS\":\"" + layer.getLayerTypeWms() + ID_CONCAT + layerIdentification + "\"}";
+	}
+
+	@Override
+	public String getLayerCesiumAsset(String layerIdentification) {
+		final Layer layer = layerRepository.findByIdentification(layerIdentification).get(0);
+		return "{\"assetid\":\"" + layer.getLayerTypeWms() + ID_CONCAT + layerIdentification + "\"}";
 	}
 
 	@Override

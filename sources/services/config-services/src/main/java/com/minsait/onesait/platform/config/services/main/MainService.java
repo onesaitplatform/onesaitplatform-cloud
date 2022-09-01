@@ -16,10 +16,18 @@ package com.minsait.onesait.platform.config.services.main;
 
 import java.util.ArrayList;
 
+import com.minsait.onesait.platform.config.services.main.dto.GroupModulesDTO;
+import com.minsait.onesait.platform.config.services.main.dto.GroupServicesDTO;
 import com.minsait.onesait.platform.config.services.main.dto.KpisDTO;
 
 public interface MainService {
 
 	public ArrayList<KpisDTO> createKPIs();
+
+    public ArrayList<KpisDTO> createKPIsNew();
+
+	public ArrayList<GroupModulesDTO> getGroupModules();
+
+    public ArrayList<GroupServicesDTO> getGroupServices();
 
 }

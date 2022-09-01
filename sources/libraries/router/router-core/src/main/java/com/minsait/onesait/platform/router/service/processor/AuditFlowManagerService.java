@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.hazelcast.core.IQueue;
+import com.hazelcast.collection.IQueue;
 import com.minsait.onesait.platform.audit.bean.AuditConst;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
 import com.minsait.onesait.platform.business.services.user.UserOperationsService;
@@ -194,7 +194,10 @@ public class AuditFlowManagerService {
 	public void audit(String item) throws JSONException, RouterCrudServiceException {
 		log.info("executeAuditOperations: begin");
 		try {
-			final JSONObject jsonObj = new JSONObject(item);
+			JSONObject jsonObj = new JSONObject(item);
+			String extraData = jsonObj.has("extraData") ? jsonObj.getJSONObject("extraData").toString() : "";
+			jsonObj.put("extraData", extraData);
+			item = jsonObj.toString();
 			final AuditParameters commonParams = getAuditParameters(jsonObj);
 			if (commonParams.getUser() != null) {
 				if (!AuditConst.ANONYMOUS_USER.equals(commonParams.getUser())) {

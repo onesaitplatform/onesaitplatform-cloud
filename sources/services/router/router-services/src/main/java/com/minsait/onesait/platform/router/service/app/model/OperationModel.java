@@ -33,7 +33,7 @@ public class OperationModel implements Serializable {
 
 	public enum Source {
 		IOTBROKER, APIMANAGER, KAFKA, FLOWENGINE, INTERNAL_ROUTER, STREAMING_TWITTER, AUDIT, DIGITALTWINBROKER, KSQL,
-		RULES_ENGINE;
+		RULES_ENGINE, DATAFLOW, NOTEBOOK;
 	}
 
 	// Mandatory attributes

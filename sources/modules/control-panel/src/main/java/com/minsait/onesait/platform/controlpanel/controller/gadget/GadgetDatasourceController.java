@@ -37,9 +37,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.minsait.onesait.platform.business.services.gadget.GadgetDatasourceBusinessService;
+import com.minsait.onesait.platform.business.services.gadget.GadgetDatasourceBusinessServiceException;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
-import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -66,13 +67,13 @@ public class GadgetDatasourceController {
 	private GadgetDatasourceService gadgetDatasourceService;
 
 	@Autowired
+	private GadgetDatasourceBusinessService gadgetDatasourceBusinessService;
+	
+	@Autowired
 	private OntologyService ontologyService;
 
 	@Autowired
 	private UserService userService;
-
-	@Autowired
-	private QueryToolService queryToolService;
 
 	@Autowired
 	private EntityDeletionService entityDeletionService;
@@ -340,27 +341,44 @@ public class GadgetDatasourceController {
 	@GetMapping(value = "/getSampleDatasource/{id}", produces = "application/json")
 	public @ResponseBody String getSampleDatasource(@PathVariable("id") String datasourceId)
 			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-		if (gadgetDatasourceService.hasUserViewPermission(datasourceId, this.utils.getUserId())) {
-			GadgetDatasource gd = this.gadgetDatasourceService.getGadgetDatasourceById(datasourceId);
-			String query = gd.getQuery();
-			Ontology ontologyEnt = gd.getOntology();
-			String ontology;
-			if (ontologyEnt != null) {
-				ontology = ontologyEnt.getIdentification();
-			} else {
-				ontology = gadgetDatasourceService.getOntologyFromDatasource(query);
+		try {
+			return gadgetDatasourceBusinessService.getSampleGadgetDatasourceById(datasourceId, this.utils.getUserId());
+		} catch (GadgetDatasourceBusinessServiceException datasourceBusinessServiceException) {
+			switch(datasourceBusinessServiceException.getErrorType()) {
+				case NOT_FOUND:
+					log.error("Datasource " + datasourceId + " not found ", datasourceBusinessServiceException);
+					return "404";
+				case UNAUTHORIZED:
+					log.error("Datasource " + datasourceId + " unauthorized", datasourceBusinessServiceException);
+					return "403";
+				default:
+					return "error";
 			}
-			Ontology o = ontologyService.getOntologyByIdentification(ontology, utils.getUserId());
-			String sampleQuery = this.gadgetDatasourceService.getSampleQueryGadgetDatasourceById(datasourceId, ontology,
-					utils.getUserId());
-			if (!o.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
-				return queryToolService.querySQLAsJson(this.utils.getUserId(), ontology, sampleQuery, 0);
-			} else {
-				return queryToolService.queryNativeAsJson(this.utils.getUserId(), ontology, query);
+		} catch (Exception e) {
+			log.error("Error generic executing sample datasource ", e);
+			return "generic";
+		}
+	}
+	
+	@GetMapping(value = "/getFields/{id}", produces = "application/json")
+	public ResponseEntity<?> getFieldsDatasourceByIdentification(@PathVariable("id") String datasourceId)
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+		try {
+			return new ResponseEntity<>(gadgetDatasourceBusinessService.getFieldsGadgetDatasourceById(datasourceId, utils.getUserId(), false), HttpStatus.OK);
+		} catch (GadgetDatasourceBusinessServiceException datasourceBusinessServiceException) {
+			switch(datasourceBusinessServiceException.getErrorType()) {
+				case NOT_FOUND:
+					log.error("Datasource " + datasourceId + " not found ", datasourceBusinessServiceException);
+					return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
+				case UNAUTHORIZED:
+					log.error("Datasource " + datasourceId + " unauthorized", datasourceBusinessServiceException);
+					return new ResponseEntity<>("The datasource is unanthorized.", HttpStatus.UNAUTHORIZED);
+				default:
+					return new ResponseEntity<>("Generic error.", HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-
-		} else {
-			return "403";
+		} catch (Exception e) {
+			log.error("Error generic executing sample datasource ", e);
+			return new ResponseEntity<>("Generic error " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -453,10 +471,13 @@ public class GadgetDatasourceController {
 
 	private List<OntologyDTO> getOntologiesDTO() {
 		List<OntologyDTO> listOntologies = new ArrayList<>();
-		List<OntologyForList> ontologies = this.ontologyService.getOntologiesForListByUserId(utils.getUserId());
+
+		final List<com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO> ontologies = this.ontologyService
+				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		if (ontologies != null && !ontologies.isEmpty()) {
-			for (Iterator<OntologyForList> iterator = ontologies.iterator(); iterator.hasNext();) {
-				OntologyForList ontology = iterator.next();
+			for (Iterator<com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO> iterator = ontologies
+					.iterator(); iterator.hasNext();) {
+				com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO ontology = iterator.next();
 				OntologyDTO oDTO = new OntologyDTO();
 				oDTO.setIdentification(ontology.getIdentification());
 				oDTO.setDescription(ontology.getDescription());
@@ -464,6 +485,7 @@ public class GadgetDatasourceController {
 				listOntologies.add(oDTO);
 			}
 		}
+
 		return listOntologies;
 	}
 

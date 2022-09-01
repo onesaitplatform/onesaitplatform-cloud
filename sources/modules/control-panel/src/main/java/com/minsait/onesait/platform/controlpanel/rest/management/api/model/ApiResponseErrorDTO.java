@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 
 import com.minsait.onesait.platform.config.services.exceptions.ApiManagerServiceException;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,58 +28,58 @@ public class ApiResponseErrorDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "Error")
+	@Schema(description="Error")
 	@Getter
 	@Setter
 	private String error;
 
-	@ApiModelProperty(value = "Error msg")
+	@Schema(description="Error msg")
 	@Getter
 	@Setter
 	private String msg;
-	
+
 	public ApiResponseErrorDTO() {
 	}
-	
+
 	public ApiResponseErrorDTO(ApiManagerServiceException error) {
 		this.error = error.getError().name();
-		this.msg = error.getMessage();
+		msg = error.getMessage();
 	}
 
 	public ApiResponseErrorDTO(ApiManagerServiceException error, String msg) {
 		this.error = error.getError().name();
 		this.msg = msg;
 	}
-		
+
 	public HttpStatus defaultHttpStatus() {
 		HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-		
-		if (this.error.equals(ApiManagerServiceException.Error.NOT_FOUND.name()) || 
-				this.error.equals(ApiManagerServiceException.Error.USER_NOT_FOUND.name()) ||
-				this.error.equals(ApiManagerServiceException.Error.USER_ACCESS_NOT_FOUND.name())
+
+		if (error.equals(ApiManagerServiceException.Error.NOT_FOUND.name()) ||
+				error.equals(ApiManagerServiceException.Error.USER_NOT_FOUND.name()) ||
+				error.equals(ApiManagerServiceException.Error.USER_ACCESS_NOT_FOUND.name())
 				) {
 			httpStatus = HttpStatus.NOT_FOUND;
 		}
-		else if (this.error.equals(ApiManagerServiceException.Error.PERMISSION_DENIED.name()) ||
-				this.error.equals(ApiManagerServiceException.Error.USER_IS_OWNER.name())
+		else if (error.equals(ApiManagerServiceException.Error.PERMISSION_DENIED.name()) ||
+				error.equals(ApiManagerServiceException.Error.USER_IS_OWNER.name())
 				) {
 			httpStatus = HttpStatus.UNAUTHORIZED;
 		}
-		else if (this.error.equals(ApiManagerServiceException.Error.MISSING_ONTOLOGY.name()) ||
-				this.error.equals(ApiManagerServiceException.Error.MISSING_API_IDENTIFICATION.name()) ||
-				this.error.equals(ApiManagerServiceException.Error.MISSING_OPERATIONS.name()) ||
-				this.error.equals(ApiManagerServiceException.Error.INVALID_API_STATE.name())
+		else if (error.equals(ApiManagerServiceException.Error.MISSING_ONTOLOGY.name()) ||
+				error.equals(ApiManagerServiceException.Error.MISSING_API_IDENTIFICATION.name()) ||
+				error.equals(ApiManagerServiceException.Error.MISSING_OPERATIONS.name()) ||
+				error.equals(ApiManagerServiceException.Error.INVALID_API_STATE.name())
 				) {
 			httpStatus = HttpStatus.BAD_REQUEST;
 		}
-		else if (this.error.equals(ApiManagerServiceException.Error.EXISTING_API.name())
+		else if (error.equals(ApiManagerServiceException.Error.EXISTING_API.name())
 				) {
 			httpStatus = HttpStatus.CONFLICT;
 		}
-		
+
 		return httpStatus;
 	}
-	
+
 
 
 }

@@ -39,6 +39,9 @@ public class NotebookInvokeDTO {
 	private String domainName;
 	@Getter
 	@Setter
+	private String verticalSchema;
+	@Getter
+	@Setter
 	private String executionParams;
 	@Getter
 	@Setter

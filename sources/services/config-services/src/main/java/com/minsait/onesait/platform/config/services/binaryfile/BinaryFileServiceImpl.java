@@ -21,6 +21,7 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -47,6 +48,7 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	@Autowired
 	private UserService userService;
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 
 	@Override
@@ -78,6 +80,11 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 		}else {
 			return resourceService.hasAccess(user.getUserId(), id, ResourceAccessType.MANAGE);
 		}
+	}
+	
+	@Override
+	public BinaryFileAccess getAuthorizationById(String id) {
+		return accessRepository.findById(id).orElse(null);
 	}
 
 	@Override
@@ -132,10 +139,21 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 		}
 		return binaryFileRepository.findByUser(user);
 	}
+	
+
+	@Override
+	public List<BinaryFile> getAllFilesUserIsAllowed(User user) {
+		return binaryFileRepository.findByUserAllowed(user);
+	}
 
 	@Override
 	public BinaryFile getFile(String fileId) {
 		return binaryFileRepository.findById(fileId).orElse(null);
+	}
+	
+	@Override
+	public List<BinaryFile> getFileByPath(String fileId) {
+		return binaryFileRepository.findByPath(fileId);
 	}
 
 	@Override

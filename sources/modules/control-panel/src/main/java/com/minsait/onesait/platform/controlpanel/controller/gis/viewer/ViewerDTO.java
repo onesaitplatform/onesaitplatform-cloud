@@ -45,14 +45,14 @@ public class ViewerDTO {
 
 	@Getter
 	@Setter
-	private String latitude;
+	private Number latitude;
 
 	@Getter
 	@Setter
-	private String longitude;
+	private Number longitude;
 
 	@Getter
 	@Setter
-	private String height;
+	private Number height;
 
 }

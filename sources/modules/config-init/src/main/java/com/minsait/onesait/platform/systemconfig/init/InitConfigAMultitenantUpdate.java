@@ -51,6 +51,7 @@ import com.minsait.onesait.platform.multitenant.config.repository.MasterUserToke
 import com.minsait.onesait.platform.multitenant.config.repository.TenantRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
 
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

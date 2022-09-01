@@ -102,17 +102,17 @@
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">
 								<!-- DELETE -->
-								<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove" th:onclick="'deleteAppConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+								<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove" th:attr="onclick='deleteAppConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 
 								<span class="sep" th:if="${app.id} != null"></span>
 									
 								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel"	name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/apps/list} + '\');'"><span	th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel"	name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/apps/list} + '\');'"><span	th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 								<span class="sep" th:if="${app.id} != null"></span>
 
 								<!-- UPDATE -->								
-								<button id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit" value="Edit"	th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'"><span th:text="#{gen.editBtn}">	Edit </span></button>
+								<button id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit" value="Edit"	th:attr="onclick='javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'"><span th:text="#{gen.editBtn}">	Edit </span></button>
 							</div>
 						</div>
 					</div>
@@ -169,38 +169,57 @@
 											<p id="name" class="form-control-static-block "	th:text="*{secret}">Secret</p>
 										</div>
 									</div>
+								</div>
+								<div class="row main">
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{app.tokenValiditySeconds}">tokenValiditySeconds</label>
 											<p class="form-control-static-block " th:text="*{tokenValiditySeconds}">tokenValiditySeconds</p>
 										</div>
 									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
+									<div class="col-md-8 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{app.description}">description</label>
 											<p class="form-control-static-block " th:text="*{description}">Description</p>
 										</div>
 									</div>
 								</div>
-								<div class="row main">
-									<!-- TEMPLATE FIELDS -->
-									<div class="col-lg-12 col-md-12 col-xs-12">
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">
-											<table class="table table-hover table-striped" id="datamodel_properties" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla" role="row">
-														<th class="titulo-columnas"><label id="label_available" class="description"	th:text="#{app.role.name}">Role Name</label></th>
-														<th class="titulo-columnas"><label id="label_available" class="description"	th:text="#{app.role.description}">Role Description</label></th>
-													</tr>
-												</thead>
-												<tbody th:remove="all-but-first">
-												</tbody>
-											</table>
+								
+								<div class="portlet light " style="padding:0px; margin:0px">
+									<div class="portlet-title" style="padding:0px; margin:0px">
+										<div class="caption">
+											 <span class="caption-subject" th:text="#{app.roles}"> Roles</span>
+										</div>
+										<div class="caption" style="padding: 22px 8px 8px 10px">
+											<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+										</div>
+										<div id="search-on-title" class="hide input-icon search-icon">
+											<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+										</div>
+										<div class="tools hide">
+											<a href="" class="collapse" data-original-title="" title=""></a>
+											<a href="" class="fullscreen" data-original-title="" title=""></a>
 										</div>
 									</div>
-								</div>
+									<div class="portlet-body" style="display: block; height: auto;">
+										<div class="row main">
+											<div class="col-md-12">
+												<div id="contenedor-tabla-outside" class="contiene">
+													<table class="table table-hover" id="datamodel_properties" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none">
+														<thead>
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas"	th:text="#{app.role.name}">Role Name</th>
+																<th class="titulo-columnas"	th:text="#{app.role.description}">Role Description</th>
+															</tr>
+														</thead>
+														<tbody th:remove="all-but-first">
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>	
+								</div>							
 								<div class="col-sm-12 col-md-12" style="display: none;">
 									<div class="form-group" style="height: auto !important;">
 										<div type="text" class="col-md-12 form-control bootstrap-tagsinput"	id="id_parameter_roles"></div>
@@ -211,112 +230,99 @@
 						</div>
 						<div class="tab-pane fade in" id="tab_2">
 							<!-- AUTHORIZATIONS -->
-							<div class="row main">	
-								<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-									<span th:text="#{app.authorizations}">ASIGNACION DE USUARIOS</span>
+							<div class="portlet light " style="padding:0px; margin:0px">
+								<div class="portlet-title" style="padding:0px; margin:0px; padding-top:5px;">
+									<div class="panelHeader" style="display: inline;">
+										<span th:text="#{app.authorizations}">ASIGNACION DE USUARIOS</span>
+									</div>
+									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
+										<a onclick="$('.search-auth-icon').toggleClass('hide')" class="search-auth-icon" ><i class="icon-search"></i></a>
+									</div>
+									<div id="search-on-title-auth" class="hide input-icon search-auth-icon" style="display: inline; float:none">
+										<a class ="input-icon" onclick="$('.search-auth-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
+									</div>
+									<div class="tools hide">
+										<a href="" class="collapse" data-original-title="" title=""></a>
+										<a href="" class="fullscreen" data-original-title="" title=""></a>
+									</div>
 								</div>
-							</div>
-							<div class="row main">
-								<div class="col-md-12 col-sm-6 col-xs-12">
-									<div id="search-container" class="col-md-12 margin-bottom-10">
-										<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
-											<div class="row">
-												<div class="col-md-2 col-md-6 col-xs-12">
-													<div class="form-group">                                                            
-														<div class="input-group">                                                                                                                   
-															<input id="userid" th:placeholder="#{app.user}" name="userId" class="form-control" type="text" maxlength="70" value=""/>
-														</div>
-													</div>
-												</div>
-												<div class="col-md-2 col-md-6 col-xs-12">
-													<div class="form-group">                                                            
-														<div class="input-group">                                                               
-															<input id="fullname" th:placeholder="#{app.user.fullName}" name="fullName" class="form-control" type="text" maxlength="100" value=""/>
-														</div>
-													</div>
-												</div>
-												<div class="col-md-2 col-md-6 col-xs-12">
-													<div class="form-group">                                                            
-														<div class="input-group">                                                           
-															<select id="roles" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{app.auth.role}" name="roleType">
-																<option value=""></option>
-																<option th:each="role:${roleTypes}" th:value="${role.name}" th:text="${role.name}" ></option>
-															</select>
-														</div>
-													</div>
-												</div>                                         
-												<div class="col-md-2 col-xs-12">
-													<div class="btn-group">
-														<button type="button" id="search_user" name="search_user" th:value="#{gen.search}" value="Search" class="btn btn-sm btn-circle btn-outline blue" th:text="#{gen.search}"> Search </button>
-														<button type="button" id="reset_user" name="reset_user" value="Reset" class="btn btn-sm btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
-													</div>
-												</div>
+								<div class="portlet-body" style="display: block; height: auto;">
+									<div class="row main">
+										<div class="col-md-12">
+											<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="authorizations" class="table table-hover" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none">
+													<thead>
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas text-left" th:text="#{app.user}">User</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{app.user.fullName}" >Full Name</span></th>
+															<th id="roleType" class="titulo-columnas text-left" th:text="#{app.auth.role}">Role</th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="authorization : ${authorizations}" pages:paginate="10" style="height:32px">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left" th:text="${authorization.user}"></td>
+															<!-- USER -->
+															<td class="text-left" th:text="${authorization.userName}"></td>
+															<!-- ROLE  -->
+															<td class="text-left" th:text="${authorization.roleName}"></td>																
+														</tr>
+													</tbody>
+												</table>
 											</div>
 										</div>
-									</div>									
-									<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-										<!-- DATATABLE DANDELION CONF. -->												
-										<table id="authorizations" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">			
-											<thead>
-												<tr class="cabecera-tabla">
-													<th class="titulo-columnas " > <span id="usersFilter" ></span> </th>
-													<th class="titulo-columnas " > </th>
-													<th class="titulo-columnas text-left" > <span id="rolesFilter" ></span> </th>
-												</tr>
-												<tr class="cabecera-tabla">
-													<th dt:filterable="true" dt:filterCssClass="input-small" dt:selector="userFilter" class="titulo-columnas text-left" th:text="#{app.user}">User</th>
-													<th class="titulo-columnas text-left" ><span th:text="#{app.user.fullName}" >Full Name</span></th>
-													<th id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="roleFilter" dt:filterCssClass="input-small" class="titulo-columnas text-left" th:text="#{app.auth.role}">Role</th>
-												</tr>
-											</thead>
-											<tbody th:remove="all-but-first">
-												<tr th:each="authorization : ${authorizations}" pages:paginate="10">
-													<!-- IDENTIFICATION/NAME -->
-													<td class="text-left no-wrap bold internalId" th:text="${authorization.user}"></td>
-													<!-- USER -->
-													<td class="text-left " th:text="${authorization.userName}"></td>
-													<!-- ROLE  -->
-													<td class="text-left " th:text="${authorization.roleName}"></td>																
-												</tr>
-											</tbody>
-										</table>
-									</div>											
+									</div>
 								</div>
 							</div>
 						</div>
 						<div class="tab-pane fade in" id="tab_3">
 						<!-- APP ASSOCIATIONS -->
-							<div class="row main">	
-								<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-									<span th:text="#{app.associations}" >ASOCIACIONES </span>
+							<div class="portlet light " style="padding:0px; margin:0px">
+								<div class="portlet-title" style="padding:0px; margin:0px; padding-top:5px;">
+									<div class="panelHeader" style="display: inline;">
+										<span th:text="#{app.associations}" >ASOCIACIONES </span>
+									</div>
+									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
+										<a onclick="$('.search-assoc-icon').toggleClass('hide')" class="search-assoc-icon" ><i class="icon-search"></i></a>
+									</div>
+									<div id="search-on-title-assoc" class="hide input-icon search-assoc-icon" style="display: inline; float:none">
+										<a class ="input-icon" onclick="$('.search-assoc-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
+									</div>
+									<div class="tools hide">
+										<a href="" class="collapse" data-original-title="" title=""></a>
+										<a href="" class="fullscreen" data-original-title="" title=""></a>
+									</div>
 								</div>
 							</div>
-							<div class="row main">
-								<div class="col-md-12">											
-									<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-										<!-- DATATABLE DANDELION CONF. -->												
-										<table id="associations" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">
-											<thead>
-												<tr class="cabecera-tabla">
-													<th class="titulo-columnas text-left" th:text="#{app.appFather}">Father App</th>
-													<th class="titulo-columnas text-left" th:text="#{app.appChild}" >Child App</th>
-													<th class="titulo-columnas text-left" th:text="#{app.roleFather}">Father Role</th>
-													<th class="titulo-columnas text-left" th:text="#{app.roleChild}">Child Role</th>
-												</tr>
-											</thead>
-											<tbody th:remove="all-but-first">
-												<tr th:each="association : ${associations}" pages:paginate="10">
-													<!-- FATHER APP -->
-													<td class="text-left no-wrap bold" th:text="${association.fatherAppId}"></td>
-													<!-- CHILD APP-->
-													<td class="text-left " th:text="${association.childAppId}"></td>
-													<!-- FATHER ROLE  -->
-													<td class="text-left " th:text="${association.fatherRoleName}"></td>	
-													<!-- CHILD ROLE  -->
-													<td class="text-left " th:text="${association.childRoleName}"></td>																
-												</tr>
-											</tbody>
-										</table>																						
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="row main">
+									<div class="col-md-12">								
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<!-- DATATABLE DANDELION CONF. -->												
+											<table id="associations" class="table table-hover" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none">
+												<thead>
+													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-left" th:text="#{app.appFather}">Father App</th>
+														<th class="titulo-columnas text-left" th:text="#{app.appChild}" >Child App</th>
+														<th class="titulo-columnas text-left" th:text="#{app.roleFather}">Father Role</th>
+														<th class="titulo-columnas text-left" th:text="#{app.roleChild}">Child Role</th>
+													</tr>
+												</thead>
+												<tbody th:remove="all-but-first">
+													<tr th:each="association : ${associations}" pages:paginate="10" style="height:32px">
+														<!-- FATHER APP -->
+														<td class="text-left" th:text="${association.fatherAppId}"></td>
+														<!-- CHILD APP-->
+														<td class="text-left " th:text="${association.childAppId}"></td>
+														<!-- FATHER ROLE  -->
+														<td class="text-left " th:text="${association.fatherRoleName}"></td>	
+														<!-- CHILD ROLE  -->
+														<td class="text-left " th:text="${association.childRoleName}"></td>																
+													</tr>
+												</tbody>
+											</table>																						
+										</div>
 									</div>											
 								</div>
 							</div>
@@ -380,16 +386,19 @@
 		var oTable3 = $('#datamodel_properties').DataTable();
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('#datamodel_properties_wrapper div.dataTables_filter').append($('#dataTable-vis-toggle-datamodel'));	
+		$('#datamodel_properties_wrapper div.dataTables_filter').addClass('hide');
+		$('#datamodel_properties_wrapper > div.row').addClass('hide');
 		
 		$('#dataTable-vis-toggle-datamodel').removeClass('hide');
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('#authorizations_wrapper div.dataTables_filter').append($('#dataTable-vis-toggle-auth'));		
+		$('#authorizations_wrapper div.dataTables_filter').addClass('hide');
+		$('#authorizations_wrapper > div.row').addClass('hide');
 		$('#dataTable-vis-toggle-auth').removeClass('hide');
 		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#associations_wrapper div.dataTables_filter').append($('#dataTable-vis-toggle-assoc'));		
+		$('#associations_wrapper div.dataTables_filter').addClass('hide');
+		$('#associations_wrapper > div.row').addClass('hide');
 		$('#dataTable-vis-toggle-assoc').removeClass('hide');
-
+		
 		$('.dataTables_info').addClass('col-md-6 col-sm-6');
 		$('.dataTables_length').addClass('col-md-6 col-sm-6');
 		$('#authorizations_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
@@ -399,6 +408,13 @@
 		$('#datamodel_properties_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
 		$('#datamodel_properties_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('#datamodel_properties_length'));
 
+		$('#search-on-title-assoc').append($('#associations_wrapper div.dataTables_filter > label > input'));
+		$('#search-on-title-assoc > input').removeClass('input-xsmall')
+		$('#search-on-title-auth').append($('#authorizations_wrapper div.dataTables_filter > label > input'));
+		$('#search-on-title-auth > input').removeClass('input-xsmall')
+		$('#search-on-title').append($('#datamodel_properties_wrapper div.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		
 		$('.dataTables_paginate').attr('style', 'float:right !important');
 		
 		// FILTERING COLUMNS INIT
@@ -432,7 +448,7 @@
 		handleSingleSelection('associations');
 		
 		
-		yadcf.init(oTable, [	 			
+/* 		yadcf.init(oTable, [	 			
 		    {column_number : 0, filter_type: "text",  filter_container_id:"usersFilter",filter_default_label: [[#{apimanager.list.text.placeholder}]]},				
 		    {column_number : 2,   filter_type: "select",filter_container_id:"rolesFilter",filter_default_label: [[#{apimanager.list.value.placeholder}]]}				 
 		  ]);
@@ -440,7 +456,7 @@
     	 var filtersResets = $('.yadcf-filter-reset-button');
      	 filtersResets.css('margin-left', '10px'); 
          filtersResets.html('<i class="fa fa-times"></i>');
-         filtersResets.addClass("btn btn-default btn-sm");
+         filtersResets.addClass("btn btn-default btn-sm"); */
 	
 	});
 
@@ -462,7 +478,7 @@
 				}
 			)
 			// RESET ALL FILTERS BTN
-			$('#clearFilters').on('click', function(){			
+ 			$('#clearFilters').on('click', function(){			
 				yadcf.exResetAllFilters(oTable);		
 			});	
 			yadcf.init(oTable, [	 			
@@ -516,7 +532,7 @@
 		});	
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis-auth').on( 'click', function (e) {
+/* 		$('label.toggle-vis-auth').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var columnAuth = $('#authorizations').DataTable().column( $(this).attr('data-column') ); 
@@ -528,7 +544,7 @@
 			}
 			// toggle Text
 			$(this).toggleClass('text-muted line-through');			
-		});	
+		});	 */
 
 		$('label.toggle-vis-assoc').on( 'click', function (e) {
 			e.preventDefault(); 
@@ -573,7 +589,7 @@
 		if(createdRoles!==null && createdRoles.length >0){
 			 for (var i = 0; i < createdRoles.length; i++) {
 				var role = createdRoles[i];
-				 $('#datamodel_properties > tbody').append('<tr pages:paginate="10" data-roleName="'+role.name+'" data-roleDescription="'+role.description+'"><td>'+role.name+'</td><td >'+role.description+'</td></tr>');			
+				 $('#datamodel_properties > tbody').append('<tr pages:paginate="10" data-roleName="'+role.name+'" style="height:32px; data-roleDescription="'+role.description+'"><td>'+role.name+'</td><td >'+role.description+'</td></tr>');			
 			 }
 		}
 	  }

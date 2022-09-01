@@ -181,16 +181,16 @@
 															<!-- DATE CREATED -->
 															<td class="text-left"
 																th:if="${app.dateCreated!=null}">
-																<span th:text="${#dates.format(app.dateCreated,'YYYY/MM/dd')}" style="display:none" ></span>
-																<span th:text="${#dates.format(app.dateCreated,'dd/MM/YYYY')}" ></span></td>
+																<span th:text="${#dates.format(app.dateCreated,'yyyy/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(app.dateCreated,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left"
 																th:if="${app.dateCreated==null}" th:text="'---'"></td>
 																
 															<!-- DATE UPDATED -->
 															<td class="text-left"
 																th:if="${app.dateUpdated!=null}">
-																<span th:text="${#dates.format(app.dateUpdated,'YYYY/MM/dd')}" style="display:none" ></span>
-																<span th:text="${#dates.format(app.dateUpdated,'dd/MM/YYYY')}" ></span></td>
+																<span th:text="${#dates.format(app.dateUpdated,'yyyy/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(app.dateUpdated,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left"
 																th:if="${app.dateUpdated==null}" th:text="'---'"></td>	
 
@@ -202,7 +202,7 @@
 																		class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
 																		data-container="body" data-placement="bottom"
 																		th:data-original-title="#{gen.view}"
-																		th:onclick="'javascript:navigateUrl(\'' + @{|/apps/show/${app.id}/|} + '\');'"><i
+																		th:attr="onclick='javascript:navigateUrl(\'' + @{|/apps/show/${app.id}/|} + '\');'"><i
 																		class="la la-eye font-hg"></i></span>
 
 																	<!-- EDIT -->
@@ -211,10 +211,10 @@
 																		data-container="body" data-placement="bottom"
 																		th:title="#{gen.edit}"
 																		th:data-original-title="#{gen.edit}"
-																		th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'"><i
+																		th:attr="onclick='javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'"><i
 																		class="icon-edit"></i></span>
 													
-																	<span th:if="${#authentication.name} == ${app.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteAppConfirmation(\'' + ${app.id} + '\');'"><i class="icon-delete"></i></span>
+																	<span th:if="${#authentication.name} == ${app.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteAppConfirmation(\'' + ${app.id} + '\');'"><i class="icon-delete"></i></span>
 																</div>
 															</td>
 

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -42,6 +43,7 @@ public class BatchQuartzConfig extends GenericQuartzConfig {
 	}
 
 	@Bean(SchedulerNames.BATCH_SCHEDULER_NAME)
+	@Primary
 	public BatchScheduler batchScheduler(
 			@Autowired @Qualifier(SCHEDULER_BEAN_FACTORY_NAME) SchedulerFactoryBean schedulerFactoryBean) {
 		return new GenericBatchScheduler(schedulerFactoryBean.getScheduler(), getSchedulerBeanName());

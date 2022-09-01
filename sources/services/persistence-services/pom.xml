@@ -40,6 +40,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-persistence-timescaledb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-elasticsearch</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -55,10 +60,16 @@
 			<artifactId>onesaitplatform-persistence-hadoop</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-control</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-persistence-prestodb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -80,6 +91,11 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

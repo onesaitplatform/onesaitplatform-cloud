@@ -19,6 +19,7 @@ var DigitalTwinCreateController = function() {
 	var mountablePropModel = $('#properties').find('tr.mountable-model')[0].outerHTML; // save html-model for when select new datamodel, is remove current and create a new one.
 	var mountableActModel = $('#actions').find('tr.mountable-model')[0].outerHTML; // save html-model for when select new datamodel, is remove current and create a new one.
 	var mountableEventModel = $('#events').find('tr.mountable-model')[0].outerHTML; // save html-model for when select new datamodel, is remove current and create a new one. 
+	var myCodeMirror;
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 
 	var propertyTypeOntologyIndex=-1;
@@ -364,16 +365,17 @@ var DigitalTwinCreateController = function() {
 		logControl ? console.log('handleCodeMirror() on -> logicEditor') : '';	
 		
         var myTextArea = document.getElementById('logicEditor');
-        var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
         	mode: "text/javascript",
             lineNumbers: false,
             foldGutter: true,
             matchBrackets: true,
             styleActiveLine: true,
-            theme:"elegant",         
+            theme:"material",         
 
         });
 		myCodeMirror.setSize("100%", 350);
+
     }
 	
 	var validate = function (obj){
@@ -812,6 +814,11 @@ var DigitalTwinCreateController = function() {
 		    });
 			
 			$('#dialog-selectOntology').modal('hide');
+		},
+		refreshLogic:function(){
+	        setTimeout(function() {
+	        	myCodeMirror.refresh();
+	    	},100);
 		}
 	}
 }();

@@ -117,12 +117,12 @@
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
 									<button type="button" class="btn btn-primary button-plus-create" onclick="location.href='../virtualdatasources/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 								</div>						
-															
+											
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								
 								<div class="row main">
-					
+									
 									<!-- ONTOLOGY LIST -->
 									<div class="col-md-12">											
 										<div id="contenedor-tabla-outside" class="contiene hidden">																						
@@ -155,38 +155,39 @@
 															<td class="text-left" th:if="${datasource.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
 															<td class="text-left" th:if="${!datasource.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${datasource.createdAt!=null}"><span th:text="${#dates.format(datasource.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${datasource.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${datasource.updatedAt!=null}"><span th:text="${#dates.format(datasource.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${datasource.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																				
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/virtualdatasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																																				
 																	<!-- EDIT -->
-																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR' AND ${#authentication.name} != ${datasource.user.userId}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" disabled="true"><i class="icon-edit"></i></span>
 
 																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- CHANGE PRIVATE/PUBLIC -->
-																			<span th:if="${!datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{datasource.public}" data-container="body" data-placement="bottom" th:onclick="'javascript:makePublic(\''+${datasource.identification}+'\')'"><i class="icon-unlock"></i><span class="span-title-three-dots-icons" th:text="#{datasource.public}" > Public </span></span>
-																			<span th:if="${datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{datasource.private}" data-container="body" data-placement="bottom" th:onclick="'javascript:makePublic(\''+${datasource.identification}+'\')'"><i class="icon-lock"></i><span class="span-title-three-dots-icons" th:text="#{datasource.private}" > Private</span></span>
+																			<span th:if="${!datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{datasource.public}" data-container="body" data-placement="bottom" th:attr="onclick='javascript:makePublic(\''+${datasource.identification}+'\')'"><i class="icon-unlock"></i><span class="span-title-three-dots-icons" th:text="#{datasource.public}" > Public </span></span>
+																			<span th:if="${datasource.public} AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{datasource.private}" data-container="body" data-placement="bottom" th:attr="onclick='javascript:makePublic(\''+${datasource.identification}+'\')'"><i class="icon-lock"></i><span class="span-title-three-dots-icons" th:text="#{datasource.private}" > Private</span></span>
 																		</li>
 																		<li>
 																			<!-- CHECK CONNECTION -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i><span class="span-title-three-dots-icons" th:text="#{datasource.check}" > Check connection</span></span>
-																		</li>																																				<!-- DELETE -->
-																	    <li th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'">
-																	    	<span  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'showConfirmDeleteDialog(\''+${datasource.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
-																    	</li>
-																		
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i><span class="span-title-three-dots-icons" th:text="#{datasource.check}" > Check connection</span></span>
+																		</li>
+																		<!-- DELETE -->
+																		    <li th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'">
+																		    	<span  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='showConfirmDeleteDialog(\''+${datasource.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																	    	</li>
 																	</ul>
 																	</span>
-																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:onclick="'javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i>
 																	</span>
 																</div>
 															</td>
@@ -242,7 +243,6 @@
 					<input id="delete-datasourceId" type="hidden" name="datasourceId" />
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 				</form>
-	
 	<!-- FOOTER-INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
@@ -265,7 +265,8 @@
 	
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	console.log('SEARCHING ... [ Identification: ' + search[0] +']');
-	if (( search[0] != '')) { $('#search-toggle').trigger('click'); }	
+	if (( search[0] != '')) { $('#search-toggle').trigger('click'); }
+	
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
@@ -361,7 +362,7 @@
 		$('#search_datasource').on('click',function(){ $('#form_datasource')[0].submit(); });
 		
 	});
-	 var deleteUrl = [[@{'/virtualdatasources/'}]];
+	var deleteUrl = [[@{'/virtualdatasources/'}]];
 	var showConfirmDeleteDialog = function(id){	
 		$('#delete_datasource_create_form').attr('action', deleteUrl + id);
 		$('#datasourceId').val(id);

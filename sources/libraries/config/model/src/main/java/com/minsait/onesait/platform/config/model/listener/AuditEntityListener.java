@@ -26,6 +26,7 @@ import javax.persistence.Table;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
@@ -46,6 +47,8 @@ public class AuditEntityListener {
 
 	private static final String SYS_ADMIN = "sysadmin";
 
+	private final ObjectMapper mapper = new ObjectMapper();
+
 	public static void initialize() {
 		try {
 			eventProducer = BeanUtil.getBean(EventProducer.class);
@@ -65,11 +68,17 @@ public class AuditEntityListener {
 			final Date today = new Date();
 			final Table tab = entity.getClass().getAnnotation(Table.class);
 			final String id = findIdFieldValue(entity.getClass(), entity);
+			String entityPayload = null;
+			try {
+				entityPayload = mapper.writeValueAsString(entity);
+			} catch (final Exception e) {
+				//NO-OP
+			}
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.DELETE.name(),
 					Module.PERSISTENCE, null, null, ResultOperationType.SUCCESS,
 					MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName(), className,
-					id, entity.toString(), tab.name(), user);
+					id, entityPayload, tab.name(), user);
 			eventProducer.publish(event);
 		}
 
@@ -86,12 +95,18 @@ public class AuditEntityListener {
 			final Date today = new Date();
 			final Table tab = entity.getClass().getAnnotation(Table.class);
 			final String id = findIdFieldValue(entity.getClass(), entity);
+			String entityPayload = null;
+			try {
+				entityPayload = mapper.writeValueAsString(entity);
+			} catch (final Exception e) {
+				//NO-OP
+			}
 
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.UPDATE.name(),
 					Module.PERSISTENCE, null, null, ResultOperationType.SUCCESS,
 					MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName(), className,
-					id, entity.toString(), tab.name(), user);
+					id, entityPayload, tab.name(), user);
 			eventProducer.publish(event);
 		}
 	}
@@ -107,11 +122,17 @@ public class AuditEntityListener {
 			final Date today = new Date();
 			final Table tab = entity.getClass().getAnnotation(Table.class);
 			final String id = findIdFieldValue(entity.getClass(), entity);
+			String entityPayload = null;
+			try {
+				entityPayload = mapper.writeValueAsString(entity);
+			} catch (final Exception e) {
+				//NO-OP
+			}
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.INSERT.name(),
 					Module.PERSISTENCE, null, null, ResultOperationType.SUCCESS,
 					MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName(), className,
-					id, entity.toString(), tab.name(), user);
+					id, entityPayload, tab.name(), user);
 			eventProducer.publish(event);
 		}
 	}

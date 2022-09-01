@@ -137,8 +137,16 @@ $(document).ready(function(){
 					$(".row").css("margin","0px");
 					$(".mainrow").css("margin-top","-55px");
 					$("#main").css("margin-top", "50px").css("height","initial");
-					$(".noteAction.headroom--top").css("top","10px","!important");
-					$(".noteAction.headroom--pinned").css("top","10px","!important");
+					$(".noteAction.headroom--top").each(function () {
+					    this.style.setProperty( 'top', '10px', 'important' );
+					    this.style.setProperty( 'padding-left', '20px' );
+					    this.style.setProperty( 'padding-top', '5px' );
+					});
+					$(".noteAction.headroom--pinned").each(function () {
+					    this.style.setProperty( 'top', '10px', 'important' );
+					    this.style.setProperty( 'padding-left', '20px' );
+					    this.style.setProperty( 'padding-top', '5px' );
+					});
 				}
 				/*Notebook view*/
 				else{
@@ -157,10 +165,15 @@ $(document).ready(function(){
 					notebookId = location.hash.substring(location.hash.indexOf("#/notebook/")+11).split(/[\s,?]+/)[0]
 					if(loadname){
 						loadname = false;
+						var headers = {}
+						if (bearer) {
+							headers = {'Authorization': 'Bearer ' + bearer}
+						}
 						$.get(
 							{
 								url:"../app/nameByIdZep/"+notebookId,
-								dataType:"text"
+								dataType:"text",
+								headers: headers
 						}).done(function(data){
 							loadnameresponse = '<b class="form-control-static2 ellipsis">' + data + '</b>';		
 						}).fail(function(e){

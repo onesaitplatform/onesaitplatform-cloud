@@ -31,8 +31,11 @@ import com.minsait.onesait.platform.config.model.DatasetResource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
+import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 
 public interface ResourceService {
+
+	public void persistResource(String ontology, String query, String resourceId, String name, User user);
 
 	public List<String> getFilesFormats();
 
@@ -42,8 +45,10 @@ public interface ResourceService {
 	public Ontology createOntology(String ontologyIdentification, String ontologyDescription, String schema,
 			String userId) throws IOException;
 
-	public String insertDataIntoOntology(String ontology, String data, String userId)
+	public OperationResultModel insertDataIntoOntology(String ontology, String data, String userId)
 			throws JsonProcessingException, IOException;
+
+	public Api checkApiResource(String resourceUrl);
 
 	public List<Map<String, Object>> executeQuery(String ontology, String query, String userId);
 

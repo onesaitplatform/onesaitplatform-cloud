@@ -201,7 +201,6 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		config.setBasePath(getApiBasePath(api, numVersion));
 		final RestSwaggerReader reader = new RestSwaggerReader();
 		final Swagger swagger = reader.read(apiDto, config);
-
 		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}

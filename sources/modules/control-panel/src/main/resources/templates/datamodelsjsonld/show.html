@@ -1,0 +1,119 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2021 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+	
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND CODEMIRROR  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}"/>
+		
+		<!-- JSON EDITOR -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+	<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+	<!-- END PAGE TITLE-->
+	
+	<div style="border-bottom: 1px solid #d7dadc;    border-top: 1px solid #d7dadc;    height: 70px;    padding: 12px;">
+	<div class="page-logo" style="width: 205px; margin-top: -10;">
+			<!--  <div class="menu-toggler sidebar-toggler">
+				<span></span>
+			</div>-->
+			<a id="imagen" href="/controlpanel/" style="color:#051724"><img id="headerImg" alt="logo" style="width: 133px;    padding-top: 14px;  margin-left: 12px; " class="logo-default" src="/controlpanel/static/images/productlogo.svg"></a>
+			<div id="separator"></div>
+		</div></div>
+	
+	<div id="header"  >
+						<div class="row pageCreateHeader"  style="    margin-right: 0px;    margin-left: 0px;">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span  >JSON-LD Schema : </span><span th:text="${identificationSchema}"></span> <i class="fa fa-angle-right"></i><span> Type : </span><span th:text="${idJson}"></span>
+								</div>
+							</div>
+							
+							
+						</div>
+					</div>			
+	
+	<div class="row main" style="    margin-right: 0px;    margin-left: 0px;">
+			<div class="col-md-12 col-sm-12 col-xs-12" style="padding-right:0px;padding-left:0px;">
+				<div class="form-group">																			
+					<textarea readonly="true" id="ymlDataModel" name="ymlDataModel"  th:required="true" th:utext="${datamodeltxt}"  class="form-control-static-block bold autoExpand" rows="6" data-min-rows='5' ></textarea>
+				</div>
+			</div>
+		</div>
+
+	
+   <!--  <th:block th:utext="${datamodel.jsonSchema}"></th:block>-->
+	 <!-- MAIN INIT -->
+	<script  th:inline="javascript" type="application/ld+json" th:utext="${datamodel}">
+	//<![CDATA[ 
+	
+	//]]>
+	</script>		
+	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/addon/mode/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	
+	
+	<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	
+	<script  th:inline="javascript">
+	//<![CDATA[ 	
+		// MAIN WHEN READY
+	$( document ).ready(function() {	
+		var myTextArea = document.getElementById('ymlDataModel');
+        var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+        	mode: "application/ld+json",
+            lineNumbers: false,
+            matchBrackets: true,
+            styleActiveLine: false,
+             
+            readOnly:"nocursor"
+        });
+		myCodeMirror.setSize("100%", "85%");
+	});
+	//]]>
+</script>		 
+</body>
+</html>

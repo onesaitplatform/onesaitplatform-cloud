@@ -84,7 +84,14 @@ public class Sql2NativeTool {
 				return result;
 			}
 		} catch (final JSQLParserException e) {
-			throw new DBPersistenceException("Invalid SQL syntax");
+			log.error("Error executing query", e);
+			throw new DBPersistenceException(e.getLocalizedMessage());
+		} catch (final DBPersistenceException e) {
+			log.error("Error executing query", e);
+			throw e;
+		} catch(final Exception e) {
+			log.error("Error executing query", e);
+			throw new DBPersistenceException("Invalid SQL Syntax");
 		}
 
 
@@ -114,7 +121,10 @@ public class Sql2NativeTool {
 			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			queryConverter.write(byteArrayOutputStream);
 			return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
-		} catch (final ParseException | IOException e) {
+		}catch (final ParseException e) {
+			throw new DBPersistenceException(e.getCause().getLocalizedMessage(), e);
+		}
+		catch (IOException e) {
 			throw new DBPersistenceException(e.getMessage(), e);
 		}
 

@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
 		http.authorizeRequests().antMatchers("/oauth/**").permitAll().and().authorizeRequests()
-		.antMatchers("/login", "/oauth/authorize", "/logout").permitAll().and().formLogin().loginPage("/login")
+		.antMatchers("/login", "/oauth/authorize", "/logout", "/actuator/**").permitAll().and().formLogin().loginPage("/login")
 		.permitAll().and().logout().logoutUrl("/logout").and().authorizeRequests().anyRequest().permitAll();
 
 		http.headers().frameOptions().disable();
@@ -82,7 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.setAllowedOrigins(Arrays.asList(allowedURLs.split(",")));
+		config.setAllowedOriginPatterns(Arrays.asList(allowedURLs.split(",")));
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);

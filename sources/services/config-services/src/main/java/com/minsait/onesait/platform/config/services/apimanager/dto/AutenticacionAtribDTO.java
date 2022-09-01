@@ -16,23 +16,23 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 
 import java.io.Serializable;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
 public class AutenticacionAtribDTO implements Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "Attribute Api")
+	@Schema(description= "Attribute Api")
 	@Getter
 	@Setter
 	private String api;
 
-	@ApiModelProperty(value = "Attribute User")
+	@Schema(description= "Attribute User")
 	@Getter
 	@Setter
 	private String user;

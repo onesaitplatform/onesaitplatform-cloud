@@ -71,6 +71,7 @@
 	    window.__env.dashboardEngineUsername = '';
 		window.__env.dashboardEnginePassword = '';
 		window.__env.dashboardEngineOauthtoken = getOauthtoken();
+		window.__env.dashboardEngineOauthtokenFromQP = getOauthtokenFromQP();
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
 	    window.__env.restUrl = [[${iotbrokerurl}]];
@@ -83,6 +84,8 @@
 		window.__env.codeLocalStorage = getCodeLocalStorageParameter();
 		window.__env.resourceinuse = [[${resourceinuse}]];
 		window.__env.dashboardEngineProtocol = [[${protocol}]];
+		window.__env.versioningEnabled = [[${session.versioningEnabled}]];
+		
 	 
      //Function that catch url parameters and return these like a map   
      function getURLParameters()
@@ -145,7 +148,17 @@
 	 			return getURLParameterOauthtoken();
 	 		}
 	 	}
+	      function getOauthtokenFromQP(){
+	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
+	 		
+	 			return  false;
+	 		}else{
+	 		
+	 			return true;
+	 		}
+	 	}
 	     
+	
 	
 	   
 	     
@@ -167,6 +180,20 @@
 	<link rel="stylesheet" th:href="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.css')}"/>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
+	
+	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+	<script th:src="@{/static/vendor/sortable/Sortable.min.js}"></script>
+	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+	<script th:src="@{/static/vendor/vuedraggable/vuedraggable.umd.min.js}"></script>
+	<!-- import CSS -->
+	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
+	<!-- import JavaScript -->
+	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/fr.min.js}"></script>
+	<script th:src="@{/static/dashboards/utils/gadget-form-creator.js}"></script>
+	<link rel="stylesheet" th:href="@{/static/dashboards/utils/gadget-form-creator.css}">
 
 	<th:block th:utext="${headerlibs}"></th:block>
 

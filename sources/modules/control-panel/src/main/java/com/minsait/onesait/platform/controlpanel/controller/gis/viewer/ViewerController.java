@@ -174,9 +174,9 @@ public class ViewerController {
 		viewer.setIdentification(viewerDTO.getIdentification());
 		viewer.setDescription(viewerDTO.getDescription());
 		viewer.setJs(httpServletRequest.getParameter("jsViewer"));
-		viewer.setLatitude(viewerDTO.getLatitude());
-		viewer.setLongitude(viewerDTO.getLongitude());
-		viewer.setHeight(viewerDTO.getHeight());
+		viewer.setLatitude(viewerDTO.getLatitude().toString());
+		viewer.setLongitude(viewerDTO.getLongitude().toString());
+		viewer.setHeight(viewerDTO.getHeight().toString());
 
 		if (viewerService.checkExist(viewer)) {
 			response.put(CAUSE, "Viewer with identification: " + viewer.getIdentification() + " exists");
@@ -246,9 +246,9 @@ public class ViewerController {
 		viewer.setDescription(viewerDTO.getDescription());
 		viewer.setPublic(viewerDTO.getIsPublic());
 		viewer.setJs(httpServletRequest.getParameter("jsViewer"));
-		viewer.setLatitude(viewerDTO.getLatitude());
-		viewer.setLongitude(viewerDTO.getLongitude());
-		viewer.setHeight(viewerDTO.getHeight());
+		viewer.setLatitude(viewerDTO.getLatitude().toString());
+		viewer.setLongitude(viewerDTO.getLongitude().toString());
+		viewer.setHeight(viewerDTO.getHeight().toString());
 
 		if (httpServletRequest.getParameter(LAYER_SELECTED_HIDDEN) != null) {
 			Set<Layer> layersAux = viewer.getLayers();
@@ -301,9 +301,9 @@ public class ViewerController {
 		viewerDTO.setBaseLayer(viewer.getBaseLayer().getIdentification());
 		viewerDTO.setIsPublic(viewer.isPublic());
 		viewerDTO.setJs(viewer.getJs());
-		viewerDTO.setLatitude(viewer.getLatitude());
-		viewerDTO.setLongitude(viewer.getLongitude());
-		viewerDTO.setHeight(viewer.getHeight());
+		viewerDTO.setLatitude(Double.parseDouble(viewer.getLatitude()));
+		viewerDTO.setLongitude(Double.parseDouble(viewer.getLongitude()));
+		viewerDTO.setHeight(Double.parseDouble(viewer.getHeight()));
 
 		model.addAttribute("viewer", viewerDTO);
 
@@ -334,12 +334,12 @@ public class ViewerController {
 			Set<Layer> layers = new HashSet<>();
 			for (Layer layerRollback : viewerRollback.getLayers()) {
 				Layer layer = layerService.findById(layerRollback.getId(), utils.getUserId());
-				layer.getViewers().add(viewerRollback);
-				layers.add(layer);
 
 				if (layer.getViewers().contains(viewer)) {
 					layer.getViewers().remove(viewer);
 				}
+				layer.getViewers().add(viewerRollback);
+				layers.add(layer);
 			}
 
 			viewerRollback.setLayers(layers);
@@ -400,15 +400,25 @@ public class ViewerController {
 	public @ResponseBody String getLayerSvgImage(@PathVariable("layer") String layer) {
 		return this.layerService.getLayerSvgImage(layer);
 	}
+	
+	@GetMapping("/getLayerArcGIS/{layer}")
+	public @ResponseBody String getLayerArcGIS(@PathVariable("layer") String layer) {
+		return this.layerService.getLayerArcGIS(layer);
+	}
+	
+	@GetMapping("/getLayerCesiumAsset/{layer}")
+	public @ResponseBody String getLayerCesiumAsset(@PathVariable("layer") String layer) {
+		return this.layerService.getLayerCesiumAsset(layer);
+	}
 
 	@GetMapping("/getQueryParamsAndRefresh/{layer}")
 	public @ResponseBody String getQueryParamsAndRefresh(@PathVariable("layer") String layer) {
 		return this.layerService.getQueryParamsAndRefresh(layer);
 	}
 
-	@PostMapping("/getJSBaseCode")
+	@PostMapping("/getJSBaseCode/{technology}")
 	public @ResponseBody String getJSBaseCode(@RequestParam String latitude, @RequestParam String longitude,
-			@RequestParam String height) {
+			@RequestParam String height, @PathVariable("technology") String technology) {
 		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		Map<String, Object> dataMap = new HashMap<>();
 
@@ -416,8 +426,15 @@ public class ViewerController {
 			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
 
 			cfg.setTemplateLoader(templateLoader);
-			Template baseJSViewerTemplate = cfg.getTemplate("baseJSViewerTemplate.ftl");
+			
+			Template baseJSViewerTemplate;
+			if (technology!=null && technology.equals("cesium")) {
+				baseJSViewerTemplate = cfg.getTemplate("baseJSViewerTemplate.ftl");
+			} else {
+				baseJSViewerTemplate = cfg.getTemplate("baseJSViewerTemplateLatest.ftl");
+			}
 
+			dataMap.put("onesaitCesiumPath", webProjectPath + "onesaitCesium/v2");
 			dataMap.put("basePath", basePath);
 			dataMap.put("longitude", longitude);
 			dataMap.put("latitude", latitude);
@@ -494,8 +511,8 @@ public class ViewerController {
 		return "redirect:/403";
 	}
 
-	@GetMapping("/getHtmlCode")
-	public @ResponseBody String getHtmlCode() {
+	@GetMapping("/getHtmlCode/{technology}")
+	public @ResponseBody String getHtmlCode(@PathVariable("technology") String technology) {
 		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		Map<String, Object> dataMap = new HashMap<>();
 
@@ -503,11 +520,22 @@ public class ViewerController {
 			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
 
 			cfg.setTemplateLoader(templateLoader);
-			Template indexViewerTemplate = cfg.getTemplate("indexViewerTemplateAux.ftl");
 
-			dataMap.put("cesiumPath", webProjectPath + "/cesium/Cesium1.60/Cesium.js");
-			dataMap.put("widgetcss", webProjectPath + "/cesium/Cesium1.60/Widgets/widgets.css");
-			dataMap.put("heatmap", webProjectPath + "/cesium/CesiumHeatmap/CesiumHeatmap.js");
+			Template indexViewerTemplate;
+			if (technology!=null && technology.equalsIgnoreCase("cesium")) {
+				dataMap.put("cesiumPath", webProjectPath + "cesium/Cesium1.60/Cesium.js");
+				dataMap.put("widgetcss", webProjectPath + "cesium/Cesium1.60/Widgets/widgets.css");
+				dataMap.put("heatmap", webProjectPath + "cesium/CesiumHeatmap/CesiumHeatmap.js");
+				
+				indexViewerTemplate = cfg.getTemplate("indexViewerTemplateAux.ftl");
+			} else {
+				dataMap.put("cesiumPath", webProjectPath + "cesium/Cesium1.92/Cesium.js");
+				dataMap.put("widgetcss", webProjectPath + "cesium/Cesium1.92/Widgets/widgets.css");
+				dataMap.put("heatmap", webProjectPath + "cesium/CesiumHeatmap/CesiumHeatmap.js");
+				dataMap.put("onesaitCesiumPath", webProjectPath + "onesaitCesium/v2");
+				
+				indexViewerTemplate = cfg.getTemplate("indexViewerTemplateAuxLatest.ftl");
+			}
 
 			// write the freemarker output to a StringWriter
 			StringWriter stringWriter = new StringWriter();

@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.iotbroker.processor.impl;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
@@ -51,6 +53,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class InsertProcessor implements MessageTypeProcessor {
 
+	private static final String SOURCE = "source";
+
 	@Autowired
 	private RouterService routerService;
 
@@ -58,7 +62,8 @@ public class InsertProcessor implements MessageTypeProcessor {
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
+			Optional<IoTSession> session) {
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodyInsertMessage> insertMessage = (SSAPMessage<SSAPBodyInsertMessage>) message;
 
@@ -72,7 +77,7 @@ public class InsertProcessor implements MessageTypeProcessor {
 		}
 
 		final OperationModel model = OperationModel
-				.builder(insertMessage.getBody().getOntology(), OperationType.POST, user, Source.IOTBROKER)
+				.builder(insertMessage.getBody().getOntology(), OperationType.INSERT, user, getSource(message))
 				.body(insertMessage.getBody().getData().toString()).queryType(QueryType.NATIVE)
 				.deviceTemplate(deviceTemplate).device(device).clientSession(insertMessage.getSessionKey())
 				.clientConnection("").build();
@@ -118,6 +123,23 @@ public class InsertProcessor implements MessageTypeProcessor {
 		return true;
 	}
 
+	private Source getSource(SSAPMessage<? extends SSAPBodyMessage> message) {
+		SSAPBodyInsertMessage insertMessage = (SSAPBodyInsertMessage) message.getBody();
+		if (insertMessage.getTags() != null) {
+			try {
+				JsonNode json = new ObjectMapper().readTree(insertMessage.getTags());
+				if (!json.has(SOURCE)) {
+					return Source.IOTBROKER;
+				} else {
+					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
+				}
+			} catch (IOException e) {
+				return Source.IOTBROKER;
+			}
+		}
+		return Source.IOTBROKER;
+	}
+
 	private SSAPMessage<SSAPBodyReturnMessage> processNoTransactionalInsert(NotificationModel modelNotification,
 			SSAPMessage<SSAPBodyInsertMessage> insertMessage) throws Exception {
 		final SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
@@ -134,18 +156,19 @@ public class InsertProcessor implements MessageTypeProcessor {
 			responseMessage.setBody(new SSAPBodyReturnMessage());
 			responseMessage.getBody().setOk(true);
 
-			final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(repositoryResponse);
+			final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult
+					.fromString(repositoryResponse);
 			final long multidocumentCount = multidocument.getCount();
 			final JSONObject jsonObject = new JSONObject();
-			if(multidocumentCount == 1){
-				if(multidocument.getIds().isEmpty()){
+			if (multidocumentCount == 1) {
+				if (multidocument.getIds().isEmpty()) {
 					jsonObject.put("nInserted", multidocumentCount);
 				} else {
 					jsonObject.put("id", multidocument.getIds().get(0));
 				}
-			} else if (multidocumentCount > 1){
+			} else if (multidocumentCount > 1) {
 				jsonObject.put("nInserted", multidocumentCount);
-				if(!multidocument.getIds().isEmpty()){
+				if (!multidocument.getIds().isEmpty()) {
 					jsonObject.put("inserted", new JSONArray(multidocument.getIds()));
 				}
 			}

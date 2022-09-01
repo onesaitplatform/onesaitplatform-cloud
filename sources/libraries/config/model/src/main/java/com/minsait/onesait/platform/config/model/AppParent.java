@@ -23,9 +23,13 @@ import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -63,31 +67,54 @@ public abstract class AppParent extends AuditableEntityWithUUID {
 
 	@Column(name = "user_extra_fields", nullable = true)
 	@Lob
-	@JsonRawValue
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String userExtraFields;
+
+	@JsonSetter("userExtraFields")
+	public void setUserExtraFieldsJson(Object node) {
+		if (node != null) {
+			try {
+				userExtraFields = new ObjectMapper().writeValueAsString(node);
+			} catch (final Exception e) {
+			}
+		}
+	}
+
+	@JsonGetter("userExtraFields")
+	public Object setUserExtraFieldsJson() {
+		if (!StringUtils.isEmpty(userExtraFields)) {
+			try {
+				return new ObjectMapper().readTree(userExtraFields);
+			} catch (final Exception e) {
+				return userExtraFields;
+			}
+		}
+		return userExtraFields;
+	}
 
 	public AppParent() {
 	}
 
 	public AppParent(String id) {
-		this.setId(id);
+		setId(id);
 	}
 
 	public AppParent(String id, String identification, String description, String secret, String user_extra_fields,
 			int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
-		this.setId(id);
-		this.setIdentification(identification);
-		this.setDescription(description);
-		this.setCreatedAt(createAt);
-		this.setUpdatedAt(updateAt);
-		this.setSecret(secret);
-		this.setUserExtraFields(user_extra_fields);
-		this.setTokenValiditySeconds(tokenValiditySeconds);
-		Set<AppRole> appRoles = new HashSet<AppRole>();
+		setId(id);
+		setIdentification(identification);
+		setDescription(description);
+		setCreatedAt(createAt);
+		setUpdatedAt(updateAt);
+		setSecret(secret);
+		setUserExtraFields(user_extra_fields);
+		setTokenValiditySeconds(tokenValiditySeconds);
+		final Set<AppRole> appRoles = new HashSet<AppRole>();
 		if (appRole != null) {
 			appRoles.add(appRole);
 		}
 	}
+
 }

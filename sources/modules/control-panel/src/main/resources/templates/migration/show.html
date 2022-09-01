@@ -171,7 +171,7 @@
 														</div>
 	                                                </div>
 	                                                <div th:style="${errors != null} ? 'display:block' : 'display:none'">
-                                                      <button id="returnShow" type="button" class="btn grey-mint btn-outline sbold" name="go" value="show" th:onclick="'javascript:navigateUrl(\'' + @{|/migration/show|} + '\');'"><i class="la la-check"></i> <span th:text="#{migration.return}">Return</span></button>
+                                                      <button id="returnShow" type="button" class="btn grey-mint btn-outline sbold" name="go" value="show" th:attr="onclick='javascript:navigateUrl(\'' + @{|/migration/show|} + '\');'"><i class="la la-check"></i> <span th:text="#{migration.return}">Return</span></button>
                                                     </div> 
                                                 </form>
                                                 
@@ -214,7 +214,7 @@
 												<label class="" th:text="#{migration.option} + ':'">Select an option</label>
 													<div class="col-md-12 col-sm-6 col-xs-12">
 														<div id="options" >
-															<div class="col-md-2 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
 																<input type="radio" id="all"  name="export" value="all"/><p class="bold" style="display:inline;  padding-left: 10px" th:attr="data-content=#{migration.export.info}" th:text="#{migration.export.all}">Export all</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -222,7 +222,7 @@
 																	<span th:text="#{migration.export.info.all}"> info.</span>
 																</div>	
 															</div>
-															<div class="col-md-2 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
 																<input type="radio" id="user"  name="export" value="user" th:attr="data-content=#{migration.export.info}"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.user}">Export by user</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -236,7 +236,7 @@
 								                  					</select>
 																</div>
 															</div>
-															<div class="col-md-2 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<div class="col-md-3 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
 																<input type="radio" id="project"  name="export" value="project"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.project}">Export project</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -250,7 +250,7 @@
 								                  					</select>
 																</div>
 															</div>
-															<div class="col-md-2 col-sm-6 col-xs-12">
+															<div class="col-md-3 col-sm-6 col-xs-12">
 																<input type="radio" id="userAux"  name="export" value="userAux"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.user.option}">Export user</p>
 																<div class="alert alert-info alert-dismissable">
 																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
@@ -264,28 +264,54 @@
 								                  					</select>
 																</div>
 															</div>
-															<div class="col-md-4 col-sm-6 col-xs-12">
-																<input type="radio" id="mongo"  name="export" value="mongo"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.mongo}">Export Mongo Data</p>
-																<div class="alert alert-info alert-dismissable">
-																	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-																	<i class="fa fa-info-circle"></i>
-																	<span th:text="#{migration.export.mongo.info}"> info.</span>
+														</div>
+													</div>
+													<div class="col-md-12 col-sm-6 col-xs-12">
+														<div class="col-md-6 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
+															<input type="radio" id="mongo"  name="export" value="mongo"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.mongo}">Export Mongo Data</p>
+															<div class="alert alert-info alert-dismissable">
+																<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																<i class="fa fa-info-circle"></i>
+																<span th:text="#{migration.export.mongo.info}"> info.</span>
+															</div>
+															<div class="col-md-6">
+							                  					<label th:text="#{migration.export.mongo.ontology}" > Select ontologies </label>
+							                  					<select  id="ontologies" class="form-control" name="ontologies" disabled="disabled" multiple="multiple">
+				                                					<option th:each="ontology:${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}"></option>
+							                  					</select>
+															</div>
+															<div class="col-md-6">
+																<div class="form-group">
+																	<label class="" th:text="#{migration.export.mongo.user} + ':'">User</label><span class="required"> *</span>
+																	<input th:tabindex="1" disabled="disabled" id="userMongo" name="userMongo" type="text"   th:required="true" maxlength="50" class="form-control "  th:placeholder="#{migration.export.mongo.user}"/>
 																</div>
-																<div class="col-md-6">
-								                  					<label th:text="#{migration.export.mongo.ontology}" > Select ontologies </label>
-								                  					<select  id="ontologies" class="form-control" name="ontologies" disabled="disabled" multiple="multiple">
-					                                					<option th:each="ontology:${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}"></option>
-								                  					</select>
+																<div class="form-group">
+																	<label class="" th:text="#{migration.export.mongo.password} + ':'">Password</label><span class="required"> *</span>
+																	<input id="passwordMongo" disabled="disabled" name="passwordMongo" type="password" th:required="true"  maxlength="50" class="form-control " th:placeholder="#{migration.export.mongo.password}"/>
 																</div>
-																<div class="col-md-6">
-																	<div class="form-group">
-																		<label class="" th:text="#{migration.export.mongo.user} + ':'">User</label><span class="required"> *</span>
-																		<input th:tabindex="1" disabled="disabled" id="userMongo" name="userMongo" type="text"   th:required="true" maxlength="50" class="form-control "  th:placeholder="#{migration.export.mongo.user}"/>
-																	</div>
-																	<div class="form-group">
-																		<label class="" th:text="#{migration.export.mongo.password} + ':'">Password</label><span class="required"> *</span>
-																		<input id="passwordMongo" disabled="disabled" name="passwordMongo" type="password" th:required="true"  maxlength="50" class="form-control " th:placeholder="#{migration.export.mongo.password}"/>
-																	</div>
+															</div>
+														</div>
+														<div class="col-md-6 col-sm-6 col-xs-12">
+															<input type="radio" id="files"  name="export" value="files"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{migration.export.files}">Export BinaryFiles</p>
+															<div class="alert alert-info alert-dismissable">
+																<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+																<i class="fa fa-info-circle"></i>
+																<span th:text="#{migration.export.files.info}"> info.</span>
+															</div>
+															<div class="col-md-6">
+							                  					<label th:text="#{migration.export.files.files}" > Select files </label>
+							                  					<select  id="binaryFiles" class="form-control" name="binaryFiles" disabled="disabled" multiple="multiple">
+				                                					<option th:each="file:${binaryFiles}" th:value="${file.id}" th:text="${file.fileName}"></option>
+							                  					</select>
+															</div>
+															<div class="col-md-6">
+																<div class="form-group">
+																	<label class="" th:text="#{migration.export.mongo.user} + ':'">User</label><span class="required"> *</span>
+																	<input th:tabindex="1" disabled="disabled" id="userFiles" name="userFiles" type="text"   th:required="true" maxlength="50" class="form-control "  th:placeholder="#{migration.export.mongo.user}"/>
+																</div>
+																<div class="form-group">
+																	<label class="" th:text="#{migration.export.mongo.password} + ':'">Password</label><span class="required"> *</span>
+																	<input id="passwordFiles" disabled="disabled" name="passwordFiles" type="password" th:required="true"  maxlength="50" class="form-control " th:placeholder="#{migration.export.mongo.password}"/>
 																</div>
 															</div>
 														</div>
@@ -337,7 +363,7 @@
 		                                        </button>                                                                              
                                             </div> 
                                             <div th:style="*{diffs != null} ? 'display:block' : 'display:none'" class="col-md-12 col-xs-12">   
-                                                 <button id="returnShowFromSchema" type="button" class="btn grey-mint btn-outline sbold" name="go" value="show" th:onclick="'javascript:navigateUrl(\'' + @{|/migration/show|} + '\');'"><i class="la la-check"></i> <span th:text="#{migration.return}">Return</span></button>                                            
+                                                 <button id="returnShowFromSchema" type="button" class="btn grey-mint btn-outline sbold" name="go" value="show" th:attr="onclick='javascript:navigateUrl(\'' + @{|/migration/show|} + '\');'"><i class="la la-check"></i> <span th:text="#{migration.return}">Return</span></button>                                            
                                                  <div>
                                                     <label th:text="#{migration.differences}">Differences</label>                                                      
                                                  </div>
@@ -426,6 +452,8 @@
 			exportt(url, type);
 		}else if($('#mongo').is(":checked")){
 			exportMongo();
+		}else if($('#files').is(":checked")){
+			exportFiles();
 		}else{
 	    	$.confirm({
 				title: "Exporting Data",
@@ -635,6 +663,65 @@
 	        App.unblockUI("div#migrationPortlet");
     }
     
+    function exportFiles(){
+    	var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+    	url = "/controlpanel/migration/exportFiles/" + $("#binaryFiles").val();
+		type = 'post';
+		var data={'userMongo': $("#userMongo").val(), 'passwordMongo': $("#passwordMongo").val()};
+		
+		 var xhr = new XMLHttpRequest();
+	        xhr.open('POST', url, true);
+	        xhr.responseType = 'arraybuffer';
+	        xhr.onload = function () {
+	          if (this.status === 200) {
+	            var filename = "";
+	            var disposition = xhr.getResponseHeader('Content-Disposition');
+	            if (disposition) {
+	            	if(disposition.indexOf('attachment') !== -1){
+	            		 var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+	   	              var matches = filenameRegex.exec(disposition);
+	   	              if (matches !== null) {
+	   	            	  if(matches[1]){
+	   	                		filename = matches[1].replace(/['"]/g, '');
+	   	            	  }
+	   	              }
+	            	}
+	            }
+	            var type = xhr.getResponseHeader('Content-Type');
+
+	            var blob = new Blob([this.response], { type: type });
+
+	            var URL = window.URL || window.webkitURL;
+	            var downloadUrl = URL.createObjectURL(blob);
+
+	            if (filename) {
+	              // use HTML5 a[download] attribute to specify filename
+	              var a = document.createElement("a");
+	              // safari doesn't support this yet
+	              if (typeof a.download === 'undefined') {
+	                window.location = downloadUrl;
+	              } else {
+	                a.href = downloadUrl;
+	                a.download = filename;
+	                document.body.appendChild(a);
+	                a.click();
+	              }
+	            } else {
+	              window.location = downloadUrl;
+	            }
+
+	            setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+	          }
+	        };
+	        xhr.setRequestHeader('Content-type', 'application/json');
+	        xhr.setRequestHeader('X-Requested-By', 'Data Collector');
+	        xhr.setRequestHeader(csrf_header, csrf_value);
+	        xhr.send(JSON.stringify(data));
+	        App.unblockUI("div#migrationPortlet");
+    }
+    
+    
     $(document).ready(function () {
         $("#import_form_file").submit(function () {
             $("loadbtn").attr("disabled", true);
@@ -652,6 +739,9 @@
     		$("#ontologies").attr("disabled", "disabled");
     		$("#userMongo").attr("disabled", "disabled");
     		$("#passwordMongo").attr("disabled", "disabled");
+    		$("#userFiles").attr("disabled", "disabled");
+    		$("#passwordFiles").attr("disabled", "disabled");
+    		$("#binaryFiles").attr("disabled", "disabled");
     	}else if(option == "project"){
     		$("#projects").removeAttr("disabled", "disabled");
     		$("#userId").attr("disabled", "disabled");
@@ -659,6 +749,9 @@
     		$("#ontologies").attr("disabled", "disabled");
     		$("#userMongo").attr("disabled", "disabled");
     		$("#passwordMongo").attr("disabled", "disabled");
+    		$("#userFiles").attr("disabled", "disabled");
+    		$("#passwordFiles").attr("disabled", "disabled");
+    		$("#binaryFiles").attr("disabled", "disabled");
     	}else if(option == "all"){
     		$("#userId").attr("disabled", "disabled");
     		$("#projects").attr("disabled", "disabled");
@@ -666,6 +759,9 @@
     		$("#ontologies").attr("disabled", "disabled");
     		$("#userMongo").attr("disabled", "disabled");
     		$("#passwordMongo").attr("disabled", "disabled");
+    		$("#userFiles").attr("disabled", "disabled");
+    		$("#passwordFiles").attr("disabled", "disabled");
+    		$("#binaryFiles").attr("disabled", "disabled");
     	}else if(option == "userAux"){
     		$("#userId").attr("disabled", "disabled");
     		$("#projects").attr("disabled", "disabled");
@@ -673,6 +769,9 @@
     		$("#userMongo").attr("disabled", "disabled");
     		$("#passwordMongo").attr("disabled", "disabled");
     		$("#users").removeAttr("disabled");
+    		$("#userFiles").attr("disabled", "disabled");
+    		$("#passwordFiles").attr("disabled", "disabled");
+    		$("#binaryFiles").attr("disabled", "disabled");
     	}else if(option == "mongo"){
     		$("#userId").attr("disabled", "disabled");
     		$("#projects").attr("disabled", "disabled");
@@ -680,6 +779,19 @@
     		$("#ontologies").removeAttr("disabled");
     		$("#userMongo").removeAttr("disabled");
     		$("#passwordMongo").removeAttr("disabled");
+    		$("#userFiles").attr("disabled", "disabled");
+    		$("#passwordFiles").attr("disabled", "disabled");
+    		$("#binaryFiles").attr("disabled", "disabled");
+    	}else if(option == "files"){
+    		$("#userId").attr("disabled", "disabled");
+    		$("#projects").attr("disabled", "disabled");
+    		$("#users").attr("disabled", "disabled");
+    		$("#ontologies").attr("disabled", "disabled");
+    		$("#userMongo").attr("disabled", "disabled");
+    		$("#passwordMongo").attr("disabled", "disabled");
+    		$("#userFiles").removeAttr("disabled");
+    		$("#passwordFiles").removeAttr("disabled");
+    		$("#binaryFiles").removeAttr("disabled");
     	}
     });
     

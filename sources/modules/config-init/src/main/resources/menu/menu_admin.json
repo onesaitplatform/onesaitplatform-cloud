@@ -3,7 +3,6 @@
 	"rol": "ROLE_ADMINISTRATOR",
 	"noSession": "/console/login",
 	"navigation": [
-	
 		{
 			"title": {
 				"EN": "ADMINISTRATION",
@@ -15,8 +14,8 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "Tenant Management",
-						"ES": "Gestión de tenants",
+						"EN": "Tenants Management",
+						"ES": "Gestión de Tenants",
 						"FR": "Utilisateurs locataires"
 					},
 					"icon": "",
@@ -34,7 +33,7 @@
 				{
 					"title": {
 						"EN": "Data Models Management",
-						"ES": "Gestión DataModels",
+						"ES": "Gestión de Plantillas (Data Models)",
 						"FR": "Gestion des modèles de données"
 					},
 					"icon": "",
@@ -49,7 +48,6 @@
 					"icon": "",
 					"url": "/controlpanel/marketasset/list"
 				},
-
 				{
 					"title": {
 						"EN": "Control Panel Menu Management",
@@ -62,7 +60,7 @@
 				{
 					"title": {
 						"EN": "Control Panel Themes Management",
-						"ES": "Gestión de temas del Panel de Control",
+						"ES": "Gestión de Temas del Panel de Control",
 						"FR": "Gestion des thèmes du panneau de commande"
 					},
 					"icon": "",
@@ -70,9 +68,9 @@
 				},
 				{
 					"title": {
-						"EN": "Control Panel Trees Management",
-						"ES": "Gestión de árboles del Panel de Control",
-						"FR": "Gestion des arborescences du panneau de commande"
+						"EN": "Categorization Trees Management",
+						"ES": "Gestión de Árboles de Categorización",
+						"FR": "Gestion des arbres de catégorisation "
 					},
 					"icon": "",
 					"url": "/controlpanel/categorization/list"
@@ -88,8 +86,6 @@
 				}
 			]
 		},
-
-		
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
@@ -110,18 +106,18 @@
 				},
 				{
 					"title": {
-						"EN": "Ontologies Management",
-						"ES": "Gestión de Ontologías",
-						"FR": "Gestion des ontologies"
+						"EN": "Entities Management",
+						"ES": "Gestión de Entidades",
+						"FR": "Gestion des Entités"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
 				},
 				{
 					"title": {
-						"EN": "APIs Management",
-						"ES": "Gestión de APIs",
-						"FR": "Gestion des API"
+						"EN": "REST APIs Management",
+						"ES": "Gestión de APIs REST",
+						"FR": "Gestion des REST API"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
@@ -146,6 +142,15 @@
 				},
 				{
 					"title": {
+						"EN": "Serverless Applications Management",
+						"ES": "Gestión de aplicaciones serverless",
+						"FR": "Gestion des applications serverless"
+					},
+					"icon": "",
+					"url": "/controlpanel/serverless/applications"
+				},
+				{
+					"title": {
 						"EN": "Realms Management",
 						"ES": "Gestión de Dominios de Seguridad",
 						"FR": "Gestion de Domaine de Sécurité"
@@ -155,7 +160,6 @@
 				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "VISUALIZATION & GIS",
@@ -177,7 +181,7 @@
 				{
 					"title": {
 						"EN": "Dashboard Styles Management",
-						"ES": "Gestión Estilos Dashboards",
+						"ES": "Gestión de Estilos de Dashboards",
 						"FR": "Gestion des Styles de Tableau de Bord"
 					},
 					"icon": "",
@@ -212,7 +216,6 @@
 				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "ANALYTICS TOOLS",
@@ -248,10 +251,18 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
+				},
+				{
+					"title": {
+						"EN": "Models Manager Management",
+						"ES": "Gestión del Mánager de Modelos",
+						"FR": "Gestion du Gestionnaire de Modèles"
+					},
+					"icon": "",
+					"url": "/controlpanel/modelsmanager/show"
 				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "CLIENTS & DIGITAL TWINS",
@@ -264,8 +275,8 @@
 				{
 					"title": {
 						"EN": "Digital Clients Definition",
-						"ES": "Definición de Clientes Digitales",
-						"FR": "Définition des Clients Numériques"
+						"ES": "Definición de Clientes",
+						"FR": "Définition des Clients"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/list"
@@ -273,7 +284,7 @@
 				{
 					"title": {
 						"EN": "Digital Clients Management",
-						"ES": "Gestión de Clientes Digitales",
+						"ES": "Gestión de Clientes",
 						"FR": "Gestion des Clients Numériques"
 					},
 					"icon": "",
@@ -282,8 +293,8 @@
 				{
 					"title": {
 						"EN": "Digital Clients Simulations",
-						"ES": "Simulaciones de Clientes Digitales",
-						"FR": "Simulations de Clients Numériques"
+						"ES": "Simulaciones de Clientes",
+						"FR": "Simulations de Clients"
 					},
 					"icon": "",
 					"url": "/controlpanel/devicesimulation/list"
@@ -291,26 +302,26 @@
 				{
 					"title": {
 						"EN": "Digital Clients Status",
-						"ES": "Estado de Clientes Digitales",
-						"FR": "Statut des Clients Numériques"
+						"ES": "Estado de Clientes",
+						"FR": "Statut des Clients"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/show"
 				},
 				{
 					"title": {
-						"EN": "Subscriptions Definitions",
-						"ES": "Definiciones de Suscripciones",
-						"FR": "Définitions des Abonnements"
+						"EN": "Subscriptions Management",
+						"ES": "Gestion de Suscripciones",
+						"FR": "Gestion des Abonnements"
 					},
 					"icon": "",
 					"url": "/controlpanel/subscriptions/list"
 				},
 				{
 					"title": {
-						"EN": "Digital Twin Definitions",
-						"ES": "Definiciones de Digital Twin",
-						"FR": "Définitions de Jumeaux Numériques"
+						"EN": "Digital Twins Definition",
+						"ES": "Definición de Digital Twins",
+						"FR": "Définition de Jumeaux Numériques"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwintypes/list"
@@ -318,7 +329,7 @@
 				{
 					"title": {
 						"EN": "Digital Twin Management",
-						"ES": "Gestión Digital Twins",
+						"ES": "Gestión de Digital Twins",
 						"FR": "Gestion des Jumeaux Numériques"
 					},
 					"icon": "",
@@ -327,7 +338,7 @@
 				{
 					"title": {
 						"EN": "Digital Twin Status",
-						"ES": "Estado Digital Twins",
+						"ES": "Estado de Digital Twins",
 						"FR": "État du Jumeau Numérique"
 					},
 					"icon": "",
@@ -343,15 +354,80 @@
 			},
 			"icon": "icon-monitoring",
 			"url": "",
-			"submenu": [			
+			"submenu": [
 				{
 					"title": {
-						"EN": "View Lineages",
-						"ES": "Visualizar Linajes",
-						"FR": "Voir les Lignées"
+						"EN": "View Elements Lineage",
+						"ES": "Visualizar Linaje de Elementos",
+						"FR": "Visualiser la lignée des éléments"
 					},
 					"icon": "",
 					"url": "/controlpanel/lineage/show"
+				},
+				{
+					"title": {
+						"EN": "Process Traceability Management",
+						"ES": "Gestión de Trazabilidad de Procesos",
+						"FR": "Gestion de la traçabilité des processus"
+					},
+					"icon": "",
+					"url": "/controlpanel/process/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "OPEN DATA",
+				"ES": "INFORMACIÓN ABIERTA",
+				"FR": "DONNÉES OUVERTES"
+			},
+			"icon": "icon-open-data",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Open Data Portal Management",
+						"ES": "Gestión de Portal de Datos Abiertos",
+						"FR": "Gestion des Portail de Données Ouvertes"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/access"
+				},
+				{
+					"title": {
+						"EN": "My Organizations",
+						"ES": "Mis Organizaciones",
+						"FR": "Mes organisations"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/organizations/list"
+				},
+				{
+					"title": {
+						"EN": "My Datasets",
+						"ES": "Mis Conjuntos de Datos",
+						"FR": "Mes Ensembles de Données"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/datasets/list"
+				},
+				{
+					"title": {
+						"EN": "My Resources",
+						"ES": "Mis Recursos",
+						"FR": "Mes Ressources"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/resources/list"
+				},
+				{
+					"title": {
+						"EN": "Typologies Management",
+						"ES": "Gestión de Tipologías",
+						"FR": "Gestion des Typologies"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/typologies/list"
 				}
 			]
 		},
@@ -367,17 +443,26 @@
 				{
 					"title": {
 						"EN": "Export & Import Environment Tool",
-						"ES": "Exportación & Importación de Datos",
-						"FR": "Outil d'environnement d'exportation et d'importation"
+						"ES": "Herramienta de Exportación & Importación entre Entornos",
+						"FR": "Outil d'exportation et d'importation entre les environnements"
 					},
 					"icon": "",
 					"url": "/controlpanel/migration/show"
 				},
 				{
 					"title": {
+						"EN": "Billable modules",
+						"ES": "Modulos facturables",
+						"FR": "Modules facturables"
+					},
+					"icon": "",
+					"url": "/controlpanel/billingmodules/list"
+				},
+				{
+					"title": {
 						"EN": "Data to Ontology Import Tools",
-						"ES": "Herramientas de importación de datos a ontología",
-						"FR": "Outils d'importation de Données vers une Ontologie"
+						"ES": "Herramientas de carga de datos a Entidades",
+						"FR": "Outils d'importation de Données vers une Entités"
 					},
 					"icon": "",
 					"url": "/controlpanel/jsontool/tools"
@@ -385,7 +470,7 @@
 				{
 					"title": {
 						"EN": "Web Projects Management",
-						"ES": "Gestión Proyectos Web",
+						"ES": "Gestión de Proyectos Web",
 						"FR": "Gestion de Projets Web"
 					},
 					"icon": "",
@@ -393,12 +478,21 @@
 				},
 				{
 					"title": {
-						"EN": "Files Management",
-						"ES": "Gestión de ficheros",
-						"FR": "Gestion des fichiers"
+						"EN": "Files Management (old)",
+						"ES": "Gestión de Ficheros (antiguo)",
+						"FR": "Gestion des fichiers (ancien)"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "Files Management",
+						"ES": "Gestión de Fichero",
+						"FR": "Gestion des fichiers"
+					},
+					"icon": "",
+					"url": "/controlpanel/objectstore/list"
 				},
 				{
 					"title": {
@@ -411,9 +505,9 @@
 				},
 				{
 					"title": {
-						"EN": "REST Services Planner Management",
-						"ES": "Gestión Planificación de Servicios REST",
-						"FR": "Gestion du Planificateur de Services REST"
+						"EN": "REST APIs Planning",
+						"ES": "Planificación de APIs REST",
+						"FR": "Planificateur de APIs REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/restplanner/list"
@@ -421,42 +515,50 @@
 				{
 					"title": {
 						"EN": "Cache Management",
-						"ES": "Gestión de caché",
-						"FR": "Gestion des caches"
+						"ES": "Gestión de Caché",
+						"FR": "Gestion des Caches"
 					},
 					"icon": "",
 					"url": "/controlpanel/caches/list"
 				},
 				{
 					"title": {
-						"EN": "Internationalizations Management",
-						"ES": "Gestión de internacionalizaciones",
-						"FR": "Gestion des internationalisations"
+						"EN": "Internationalizations i18n Management",
+						"ES": "Gestión de internacionalizaciones i18n",
+						"FR": "Gestion des internationalisations i18n"
 					},
 					"icon": "",
 					"url": "/controlpanel/internationalizations/list"
 				},
 				{
 					"title": {
-						"EN": "Query Templates Management",
-						"ES": "Gestión de Plantillas de Consulta",
-						"FR": "Gestion des Modèles de Requête"
+						"EN": "SQL Query Templates Management",
+						"ES": "Gestión de Plantillas de Consulta SQL",
+						"FR": "Gestion des Modèles de Requête SQL"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytemplates/list"
 				},
 				{
 					"title": {
-						"EN": "External Database Connection Management",
-						"ES": "Gestión de Conexiones Externas a Base de datos",
-						"FR": "Gestion des Connexions à la Base de Données Externe"
+						"EN": "Database Connection Management",
+						"ES": "Gestión de Conexiones a Base de datos",
+						"FR": "Gestion des Connexions à la Base de Données"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
+				},
+				{
+					"title": {
+						"EN": "Kafka cluster Management",
+						"ES": "Gestión de cluster Kafka",
+						"FR": "Gestion du cluster Kafka"
+					},
+					"icon": "",
+					"url": "/controlpanel/kafka/cluster/list"
 				}
 			]
 		},
-		
 		{
 			"title": {
 				"EN": "TOOLS",
@@ -469,21 +571,21 @@
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta Consultas",
+						"ES": "Herramienta de Consultas",
 						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
 				},
 				{
-                    "title": {
-                        "EN": "UI Generation Tools",
-                        "ES": "Herramientas de generación de UI",
+					"title": {
+						"EN": "UI Generation Tools",
+						"ES": "Herramientas de generación de UI",
 						"FR": "Outils de Génération d'interface Utilisateur"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/low-code/"
-                },
+					},
+					"icon": "",
+					"url": "/controlpanel/low-code/"
+				},
 				{
 					"title": {
 						"EN": "System Audit",
@@ -496,7 +598,7 @@
 				{
 					"title": {
 						"EN": "Monitoring UI",
-						"ES": "Consola Monitorización",
+						"ES": "Consola de Monitorización",
 						"FR": "Interface Utilisateur de Surveillance"
 					},
 					"icon": "",
@@ -519,8 +621,54 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/kafka/monitoring/list"
-				}		
-				
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "VERSION CONTROL",
+				"ES": "CONTROL DE VERSIONES",
+				"FR": "CONTRÔLE DE VERSION"
+			},
+			"icon": "icon-github",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Configuration",
+						"ES": "Configuración",
+						"FR": "Réglage"
+					},
+					"icon": "",
+					"url": "/controlpanel/versioning/git-config"
+				},
+				{
+					"title": {
+						"EN": "Create Snapshot & Git Tag",
+						"ES": "Crear Snapshot y Tag de Git",
+						"FR": "Créer un instantané et une étiquette Git"
+					},
+					"icon": "",
+					"url": "/controlpanel/versioning/snapshot/platform"
+				},
+				{
+					"title": {
+						"EN": "Restore the platform",
+						"ES": "Restaurar la plataforma",
+						"FR": "Restaurer la plateforme"
+					},
+					"icon": "",
+					"url": "/controlpanel/versioning/restore/platform"
+				},
+				{
+					"title": {
+						"EN": "Restore resource",
+						"ES": "Restaurar recurso",
+						"FR": "Restaurer la ressource"
+					},
+					"icon": "",
+					"url": "/controlpanel/versioning/restore/resource"
+				}
 			]
 		}
 	]

@@ -22,7 +22,14 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +38,7 @@ import lombok.Setter;
 @Table(name = "DASHBOARD_CONF")
 @Configurable
 
-public class DashboardConf extends AuditableEntityWithUUID {
+public class DashboardConf extends AuditableEntityWithUUID implements Versionable<DashboardConf>{
 
 	private static final long serialVersionUID = 1L;
 
@@ -59,4 +66,30 @@ public class DashboardConf extends AuditableEntityWithUUID {
 	@Setter
 	private String headerlibs;
 
+	@JsonGetter("model")
+	public Object getModelJson() {
+		try {
+			return new ObjectMapper().readTree(model);
+		} catch (final Exception e) {
+			return model;
+		}
+	}
+	@JsonSetter("model")
+	public void setModelJson(ObjectNode node) {
+		try {
+			model = new ObjectMapper().writeValueAsString(node);
+		} catch (final JsonProcessingException e) {
+			model = null;
+		}
+	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() + "_" + getId() + ".yaml";
+	}
+	@Override
+	@JsonIgnore
+	public String getUserJson() {
+		return null;
+	}
 }

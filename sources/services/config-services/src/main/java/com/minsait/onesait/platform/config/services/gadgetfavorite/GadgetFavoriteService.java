@@ -20,10 +20,10 @@ import com.minsait.onesait.platform.config.model.GadgetFavorite;
 
 public interface GadgetFavoriteService {
 	void create(String identification, String idGadget, String idTemplate, String idDatasource, String type,
-			String config, String userId);
+			String config, String metainf, String userId);
 
 	public void update(String identification, String idGadget, String idTemplate, String idDatasource, String type,
-			String config, String userId);
+			String config, String metainf, String userId);
 
 	public void delete(String identification, String userId);
 

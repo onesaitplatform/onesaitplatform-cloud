@@ -45,7 +45,7 @@ public class ApiManagerAuditEvent extends OPAuditRemoteEvent {
 			String api) {
 
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, 1);
 
 		this.query = query;
 		this.data = data;

@@ -26,6 +26,7 @@ import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.Res
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 public interface OPResourceService {
 
@@ -73,5 +74,13 @@ public interface OPResourceService {
 			String currentUser);
 
 	public Collection<OPResource> getResourcesByType(String userId, String type);
+
+	public Collection<Versionable<?>> getResourcesVersionablesForUserAndType(User user, Class<?> type);
+
+	public Collection<Versionable<?>> getResourcesVersionablesByType(User user, Class<?> type);
+
+	public Collection<OPResource> getAllResourcesVersionablesVOs();
+
+	OPResource getResourceByIdentification(String identification);
 
 }

@@ -65,7 +65,7 @@ public class VideoCapture extends OPResource {
 	@Setter
 	private String ip;
 
-	@Column(name = "PORT")
+	@Column(name = "VIDEO_PORT")
 	@Getter
 	@Setter
 	private String port;

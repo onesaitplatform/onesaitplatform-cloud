@@ -47,6 +47,8 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
@@ -58,6 +60,14 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     LOADMAILCONFIG=false \
     LOADGRAYLOGDB=false \
     REALTIMEDBNAME=onesaitplatform_rtdb \
+    RTDB_EXECUTION_TIMEOUT=10000 \
+    RTDB_QUERIES_LIMIT=2000 \
+    MONGO_SOCKET_TIMEOUT=5000 \
+    MONGO_CONNECT_TIMEOUT=30000 \
+    MONGO_WAIT_TIME=5000 \
+    MONGO_POOL_SIZE=100 \
+    MONGO_SSL_ENABLED=false \
+    MONGO_USE_QUASAR=false \
     CONTROLPANEL_SERVICE=localhost \
     UPDATE_MODE_MULTITENANT=true \
     GRAYLOG_USER=admin \
@@ -67,6 +77,11 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     GRAYLOG_PORT=12201 \
     GRAYLOG_EXTERNAL_URI=http://log-centralizer:9000 \
     GRAYLOG_PLUGIN_AUTH_PATH_TOKEN=http://oauthservice:21000/oauth-server/oauth/token \
-    GRAYLOG_PLUGIN_AUTH_PATH_USERINFO=http://oauthservice:21000/oauth-server/oidc/userinfo
+    GRAYLOG_PLUGIN_AUTH_PATH_USERINFO=http://oauthservice:21000/oauth-server/oidc/userinfo\
+	TIMESCALE_ENABLED=false \
+	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
+	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
+	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
+	SERVER_BASE_DOMAIN_MINIO_AUTH=onesaitplatform.com
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

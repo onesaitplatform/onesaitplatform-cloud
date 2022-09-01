@@ -112,6 +112,8 @@ public interface UserService {
 
 	void evictFromCache(User user);
 
+	List<UserAmplified> getAllActiveUsersListPageable(Integer page, Integer size, String filter);
+
 	long countUsers();
 
 }

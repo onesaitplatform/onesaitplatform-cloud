@@ -59,7 +59,8 @@ public class EventsDigitalTwinType extends AuditableEntityWithUUID {
 	@Setter
 	private String description;
 
-	@Column(name = "STATUS", nullable = false, columnDefinition = "BIT")
+	@Column(name = "STATUS", nullable = false)
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter

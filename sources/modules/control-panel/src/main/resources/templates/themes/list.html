@@ -119,15 +119,15 @@
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
 								</div>
 								<div class="pull-right btn-title-group">
-									<button type="button" class="btn btn-outline blue dialog btn-no-border" th:onclick="'javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>
+									<button type="button" class="btn btn-outline blue dialog btn-no-border" th:attr="onclick='javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>
 									<div class="pull-right btn-group" id="divcreate" style="margin-left:30px;">
-										<button type="button" class="btn btn-primary button-plus-create" th:onclick="'javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+										<button type="button" class="btn btn-primary button-plus-create" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 									</div>
 								</div>								
 								<!--<div class="actions margin-right-20">
 									<div class="btn-group">
-										<button type="button" class="btn btn-outline btn-circle blue" th:onclick="'javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>									
-										<button type="button" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><span th:text="#{themes.newTheme}">New </span></button>
+										<button type="button" class="btn btn-outline btn-circle blue" th:attr="onclick='javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>									
+										<button type="button" class="btn btn-outline btn-circle btn-primary" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><span th:text="#{themes.newTheme}">New </span></button>
 									</div>
 								</div>-->
 							</div>
@@ -178,13 +178,13 @@
 															<td class="text-left " th:text="${theme.identification}"></td>
 															<!--CREATED -->
 															<td class="text-left" th:if="${theme.createdAt!=null}">
-																<span th:text="${#dates.format(theme.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
-																<span th:text="${#dates.format(theme.createdAt,'dd/MM/YYYY')}" ></span></td>
+																<span th:text="${#dates.format(theme.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(theme.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${theme.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATED -->
 															<td class="text-left" th:if="${theme.updatedAt!=null}">
-																<span th:text="${#dates.format(theme.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
-																<span th:text="${#dates.format(theme.updatedAt,'dd/MM/YYYY')}" ></span></td>
+																<span th:text="${#dates.format(theme.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
+																<span th:text="${#dates.format(theme.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${theme.updatedAt==null}" th:text="'---'"></td>
 															<!--ACTIVE-->
 															<td class="text-left" th:if="${theme.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
@@ -193,22 +193,22 @@
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
 																	<!-- VIEW -->
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/themes/show/${theme.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/show/${theme.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																	<!-- EDIT -->
 																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																		data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i	class="icon-edit" th:onclick="'javascript:navigateUrl(\'' + @{|/themes/edit/${theme.Id}/|} + '\');'"></i></span>
+																		data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i	class="icon-edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/edit/${theme.Id}/|} + '\');'"></i></span>
 																	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- ACTIVE -->
-																			<span th:if="${theme.active} == false" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:activeTheme(\''+${theme.Id}+'\');'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{themes.activate}" >Activate</span></span>
+																			<span th:if="${theme.active} == false" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:activeTheme(\''+${theme.Id}+'\');'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{themes.activate}" >Activate</span></span>
 																			<!-- INACTIVE -->
-																			<span th:if="${theme.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:deactivateTheme(\''+${theme.Id}+'\');'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{themes.deactivate}" >Deactivate</span></span>
+																			<span th:if="${theme.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deactivateTheme(\''+${theme.Id}+'\');'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{themes.deactivate}" >Deactivate</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'javascript:deleteTheme(\''+${theme.Id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deleteTheme(\''+${theme.Id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																		</li>
 																	</ul>
 																	</span>
@@ -224,7 +224,7 @@
 								<!--<div class="row"></div>
 								<div class="pull-left">
 									// CANCEL
-									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 								</div>-->
 							</div>
 						</div>

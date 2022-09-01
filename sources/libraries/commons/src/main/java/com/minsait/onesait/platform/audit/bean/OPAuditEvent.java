@@ -33,16 +33,21 @@ public class OPAuditEvent implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum EventType {
-		USER, SECURITY, ERROR, DATA, GENERAL, IOTBROKER, APIMANAGER, FLOWENGINE, BATCH, QUERY, SYSTEM
+		USER, SECURITY, ERROR, DATA, GENERAL, IOTBROKER, APIMANAGER, FLOWENGINE, BATCH, QUERY, SYSTEM, PROCESS_EXECUTION
 	}
 
 	public enum Module {
-		CONTROLPANEL, APIMANAGER, IOTBROKER, FLOWENGINE, ROUTER, RTDBMAINTAINER, SQLENGINE, PLANNER, OAUTHSERVER, DATAFLOW, NOTEBOOK, JAVACLIENT, PYTHONCLIENT, PERSISTENCE, DASHBOARDENGINE, IDENTITY_MANAGER
+		CONTROLPANEL, APIMANAGER, IOTBROKER, FLOWENGINE, ROUTER, RTDBMAINTAINER, SQLENGINE, PLANNER, OAUTHSERVER,
+		DATAFLOW, NOTEBOOK, JAVACLIENT, PYTHONCLIENT, PERSISTENCE, DASHBOARDENGINE, IDENTITY_MANAGER
 	}
 
 	public enum OperationType {
 
-		LOGIN, LOGIN_OAUTH, LOGOUT, JOIN, LEAVE, INSERT, UPDATE, DELETE, QUERY, SUBSCRIBE, UNSUBSCRIBE, INDICATION, COMMAND, START, STOP, LOG, START_TRANSACTION, COMMIT_TRANSACTION, ROLLBACK_TRANSACTION, EXECUTION, OAUTH_TOKEN_GENERATION, OAUTH_TOKEN_CHECK, OAUTH_TOKEN_REFRESH, OAUTH_TOKEN_REVOCATION, OAUTH_TOKEN_OIDC, NOTEBOOK_INVOCATION, SEND_MAIL, API_INVOCATION, START_DATAFLOW, STOP_DATAFLOW, CKECK_STATUS_DATAFLOW, KPI_EXECUTION, SOLVER_DS, WEBSOCKET_CONNECTED, PLUGIN_VALIDATION_SERVICE
+		PROCESS_EXECUTION, LOGIN, LOGIN_OAUTH, LOGOUT, JOIN, LEAVE, INSERT, UPDATE, DELETE, QUERY, SUBSCRIBE,
+		UNSUBSCRIBE, INDICATION, COMMAND, START, STOP, LOG, START_TRANSACTION, COMMIT_TRANSACTION, ROLLBACK_TRANSACTION,
+		EXECUTION, OAUTH_TOKEN_GENERATION, OAUTH_TOKEN_CHECK, OAUTH_TOKEN_REFRESH, OAUTH_TOKEN_REVOCATION,
+		OAUTH_TOKEN_OIDC, NOTEBOOK_INVOCATION, SEND_MAIL, API_INVOCATION, START_DATAFLOW, STOP_DATAFLOW,
+		CKECK_STATUS_DATAFLOW, KPI_EXECUTION, SOLVER_DS, WEBSOCKET_CONNECTED, PLUGIN_VALIDATION_SERVICE
 
 	}
 
@@ -98,13 +103,17 @@ public class OPAuditEvent implements Serializable {
 	@Setter
 	protected ResultOperationType resultOperation;
 
+	@Getter
+	@Setter
+	protected int version;
+
 	public OPAuditEvent() {
 		super();
 	}
 
 	public OPAuditEvent(String message, String id, EventType type, long timeStamp, String formatedTimeStamp,
 			String user, String ontology, String operationType, Module module, Map<String, Object> extraData,
-			String otherType, ResultOperationType resultOperation) {
+			String otherType, ResultOperationType resultOperation, int version) {
 		super();
 		this.message = message;
 		this.id = id;
@@ -118,6 +127,7 @@ public class OPAuditEvent implements Serializable {
 		this.extraData = extraData;
 		this.otherType = otherType;
 		this.resultOperation = resultOperation;
+		this.version = version;
 	}
 
 	@Override
@@ -125,7 +135,7 @@ public class OPAuditEvent implements Serializable {
 		return "OPAuditEvent [message=" + message + ", id=" + id + ", type=" + type + ", timeStamp=" + timeStamp
 				+ ", user=" + user + ", ontology=" + ontology + ", operationType=" + operationType + ", module="
 				+ module + ", extraData=" + extraData + ", otherType=" + otherType + ", result=" + resultOperation
-				+ "]";
+				+ ", version=" + version + "]";
 	}
 
 	private static final ObjectMapper mapper = new ObjectMapper();

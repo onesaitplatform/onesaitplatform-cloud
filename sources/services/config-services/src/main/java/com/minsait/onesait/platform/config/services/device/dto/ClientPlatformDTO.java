@@ -19,7 +19,7 @@ import java.util.Map;
 
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +33,7 @@ public class ClientPlatformDTO {
 
 	@Getter
 	@Setter
-	@ApiModelProperty(value = "Ontologies and access type", reference = "Map", example = "{\"ontology\" : \"accessType\"}")
+	@Schema(description= "Ontologies and access type", ref = "Map", example = "{\"ontology\" : \"accessType\"}")
 	private Map<String, AccessType> ontologies;
 
 	@Getter

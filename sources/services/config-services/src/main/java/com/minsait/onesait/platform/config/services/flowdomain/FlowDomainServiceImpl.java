@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Api;
@@ -68,6 +69,7 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	private FlowNodeRepository nodeRepository;
 
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private UserService userService;
@@ -101,10 +103,12 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 				if (node.getFlowNodeType() == Type.API_REST) {
 					deleteFlowAPI(node, user);
 				}
-				nodeRepository.delete(node);
+				//				nodeRepository.delete(node);
 			}
-			flowRepository.delete(flow);
+			//			flowRepository.delete(flow);
 		}
+		domain.getFlows().clear();
+		domainRepository.save(domain);
 	}
 
 	private void deleteFlowAPI(FlowNode node, User user) {

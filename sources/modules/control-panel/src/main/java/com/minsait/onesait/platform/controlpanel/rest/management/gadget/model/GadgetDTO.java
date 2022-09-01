@@ -18,19 +18,25 @@ import java.util.List;
 
 import javax.persistence.Lob;
 
+import com.minsait.onesait.platform.controlpanel.rest.management.gadgettemplate.model.GadgetTemplateDTOList;
+
 import lombok.Getter;
 import lombok.Setter;
 
 public class GadgetDTO {
-	
+
+	@Getter
+	@Setter
+	private String id;
+
 	@Getter
 	@Setter
 	private String identification;
-	
+
 	@Getter
 	@Setter
 	private String description;
-	
+
 	@Getter
 	@Setter
 	private GadgetDatasourceDTO datasource;
@@ -39,18 +45,42 @@ public class GadgetDTO {
 	@Getter
 	@Setter
 	private String config;
-	
+
 	@Lob
 	@Getter
 	@Setter
 	private List<String> gadgetMeasures;
-	
+
 	@Getter
 	@Setter
 	private String type;
 
 	@Getter
 	@Setter
+	private GadgetTemplateDTOList template;
+
+	@Getter
+	@Setter
 	private String user;
+
+	@Getter
+	@Setter
+	private Boolean instance;
 	
+	@Getter
+	@Setter
+	private String createdAt;
+
+	@Getter
+	@Setter
+	private String updatedAt;
+	
+	@Getter
+    @Setter
+    private String category;
+	
+	@Getter
+    @Setter
+    private String subcategory;
+
 }

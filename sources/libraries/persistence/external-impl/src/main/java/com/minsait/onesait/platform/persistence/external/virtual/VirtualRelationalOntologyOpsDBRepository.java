@@ -160,8 +160,19 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			final PreparedStatement sql = sqlGenerator.buildInsert().setOntology(ontology)
 					.setValuesAndColumnsForInstances(instances).generate(true);
 
-			sql.setStatement(SQLTableReplacer.replaceTableNameInInsert(sql.getStatement(),
-					ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
+			String statement = null;
+//			if (ontologyVirtualDatasource.getSgdb()
+//					.equals(OntologyVirtualDatasource.VirtualDatasourceType.POSTGRESQL)) {
+//				String[] split = sql.getStatement().split("VALUES");
+//				if (split.length > 0) {
+//					String values = split[1].trim().replace("'", "");
+//					statement = sql.getStatement().replace(split[1], values);
+//				}
+//			}
+
+			sql.setStatement(
+					SQLTableReplacer.replaceTableNameInInsert(statement != null ? statement : sql.getStatement(),
+							ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
 
 			if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE)
 					|| ontologyVirtualDatasource.getSgdb()

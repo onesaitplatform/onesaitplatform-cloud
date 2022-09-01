@@ -161,17 +161,17 @@
 														<!-- DESCRIPTION -->
 														<td class="text-left text-truncate-sm" th:title="${dashboard.description}" th:text="${dashboard.description}"></td>
 														<!-- TYPE -->
-														<td class="text-center"  th:if="${dashboard.type != null}  "><i   th:title="#{dashboards.list.synoptic}" class="fa fa-th-large font-hg font-blue-hoki tooltips"></i></td>
-														<td class="text-center"  th:if="${dashboard.type == null}  "><i   th:title="#{dashboards.list.dashboard}" class="fa fa-table font-hg font-blue-hoki tooltips"></i></td>
+														<td class="text-center"  th:if="${dashboard.type != null and dashboard.type.name() == 'SYNOPTIC'}  "><i   th:title="#{dashboards.list.synoptic}" class="fa fa-th-large font-hg font-blue-hoki tooltips"></i></td>
+														<td class="text-center"  th:if="${dashboard.type == null or dashboard.type.name() == 'DASHBOARD'}  "><i   th:title="#{dashboards.list.dashboard}" class="fa fa-table font-hg font-blue-hoki tooltips"></i></td>
 														
 														<!-- PUBLIC -->
 														<td class="text-left" th:if="${dashboard.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></span></td>
 														<td class="text-left" th:if="${!dashboard.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
 														<!-- DATE --> 
-		 												<td class="text-center" th:if="${dashboard.createdAt!=null}"><span th:text="${#dates.format(dashboard.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.createdAt,'dd/MM/YYYY')}" ></span></td>
+		 												<td class="text-center" th:if="${dashboard.createdAt!=null}"><span th:text="${#dates.format(dashboard.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.createdAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${dashboard.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE --> 
-		 												<td class="text-center" th:if="${dashboard.updatedAt!=null}"><span th:text="${#dates.format(dashboard.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.updatedAt,'dd/MM/YYYY')}" ></span></td>
+		 												<td class="text-center" th:if="${dashboard.updatedAt!=null}"><span th:text="${#dates.format(dashboard.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.updatedAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${dashboard.updatedAt==null}" th:text="'---'"></td>
 														<td class="text-center " th:text="${dashboard.id}"></td>
 														<!-- OPTIONS -->
@@ -189,31 +189,31 @@
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">
 																			<!-- EDIT ACCESS-->
 																			<li>
-																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/dashboardconf/${dashboard.id}/|} + '\');'"><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.auth.title}" >Dashboard Conf</span></span>
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/dashboardconf/${dashboard.id}/|} + '\');'"><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.auth.title}" >Dashboard Conf</span></span>
 																			</li>
 																			<!-- CLONE-->
 																			<li>
-																				<span th:title="#{dashboards.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:onclick="'javascript:cloneDashboardDialog(\''+${dashboard.id}+ '\',\'' +${dashboard.identification}+'\');'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.clone}" >Clone</span></span>
+																				<span th:title="#{dashboards.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='javascript:cloneDashboardDialog(\''+${dashboard.id}+ '\',\'' +${dashboard.identification}+'\');'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.clone}" >Clone</span></span>
 																			</li>
 																			<!-- URL -->
 																			<li>
-																				<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>
+																				<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>
 																		    </li>
 																		    <!-- DOWNLOAD -->
 																		    <li>																   
-																		    	<span th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/exportDashboard/${dashboard.id}/|} + '\');'"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.download}" >Download</span></span>
+																		    	<span th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/exportDashboard/${dashboard.id}/|} + '\');'"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.download}" >Download</span></span>
 																		    </li>
 																			<!-- IMPORT -->
 																			<li>
-																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:showImportDashboardTableDialog(\'' + ${dashboard.identification} + '\');'"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.import}" >Import</span></span>
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:showImportDashboardTableDialog(\'' + ${dashboard.identification} + '\');'"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.import}" >Import</span></span>
 																		    </li>																		    
 																		    <!-- EDIT DASHBOARD JSON-->
 																		    <li>
-																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.edit.model.json.tooltip}" >Edit Json</span></span>																	
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.edit.model.json.tooltip}" >Edit Json</span></span>																	
 																			</li>
 																		    <!-- DELETE -->
 																		    <li>
-																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																	    	</li>
 																	    </ul>
 																    </span>
@@ -447,6 +447,337 @@
 						copyURL(window.location.origin + url);
 					}	
 				}
+			}
+		});
+	};
+	
+var showExportImageDialog = function(id){
+
+	
+		var messageExportImage = [[#{dashboards.export.image}]];
+		var messageStandbyTime = [[#{dashboards.export.wait}]];
+		var messageheight= [[#{dashboards.export.height}]];
+		var messagewidth= [[#{dashboards.export.width}]];
+		var messagefullpage= [[#{dashboards.export.fullpage}]];
+		var messagepresetsize= [[#{dashboards.export.presetsize}]];
+		var messageparams= [[#{dashboards.export.params}]];
+		var globalMessage=[[#{dashboards.export.emptyfields}]];
+		
+		$.confirm({
+			icon: 'la la-file-image-o font-hg',
+			title: messageExportImage,
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="form-body container-fluid">
+				<div id="imagehaserror" class="alert alert-danger display-hide">
+				<span >${globalMessage}</span>
+			    </div>
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="imagewaittime" type="number" 
+									required="true" maxlength="100"
+									 class="form-control "  minlength="1" required value="20000" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-5 col-sm-6 col-xs-12">
+						<div class="form-group">							
+						<div class="mt-checkbox-list"> 
+							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" >${messagefullpage}?</div>
+								<input  id="checkboxfullscreen" class="form-control no-remove"  name="checkboxfullscreen" type="checkbox"    />
+								<span></span>
+							</label>
+						</div>
+					    </div>
+				      </div>
+				        
+					 </div>
+					 <div class="row">
+					 <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagepresetsize}</label>
+							  <select id="imageselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthimage()"  >
+							   <option   value="A0 H" >A0 H</option>
+							   <option   value="A0 V" >A0 V</option> 
+							   <option   value="A1 H" >A1 H</option>
+							   <option   value="A1 V" >A1 V</option> 
+							   <option   value="A2 H" >A2 H</option>
+							   <option   value="A2 V" >A2 V</option>
+							   <option   value="A3 H" >A3 H</option>
+							   <option   value="A3 V" >A3 V</option>
+							   <option selected  value="A4 H" >A4 H</option>
+							   <option   value="A4 V" >A4 V</option>
+							   <option   value="A5 H" >A5 H</option>
+							   <option   value="A5 V" >A5 V</option>
+							   <option   value="A6 H" >A6 H</option>
+							   <option   value="A6 V" >A6 V</option>							   
+						      </select>
+					    </div>
+				        </div>		
+						<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageheight}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="imageheight" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="794" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagewidth}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="imagewidth" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="1123" />
+						     </div>
+					    </div>
+				        </div>
+				        
+				        
+				        
+					 </div>
+					 <div class="row">
+						 <div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label>${messageparams}</label>														
+								<textarea id="imageparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
+							</div>							
+						</div>
+					</div> 
+				</div>
+				
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Cancel,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function(){ 
+					}											
+				},				
+				Send: {
+					text: Confirm,
+					btnClass: 'btn btn-primary',
+					action: function(){						
+						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);						
+						var imageparams = $('#imageparams').val();
+						var imagewidth = $('#imagewidth').val();
+						var imageheight = $('#imageheight').val();
+						var checkboxfullscreen = $('#checkboxfullscreen').prop('checked');
+						var imagewaittime = $('#imagewaittime').val();
+						var ident = id;
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
+							
+						var data ={};
+						if(typeof imageparams ==='undefined' || imageparams.trim().length===0){
+							data = {
+						    	waittime:imagewaittime,
+						    	height:imageheight,
+						    	width:imagewidth,
+						    	fullpage:checkboxfullscreen	,
+						    	token:token
+						    }
+						}else{
+							data = {
+							    	waittime:imagewaittime,
+							    	height:imageheight,
+							    	width:imagewidth,
+							    	fullpage:checkboxfullscreen,
+							    	params:imageparams,
+							    	token:token
+							    }
+						}
+						var ok = typeof imagewidth!=='undefined' && imagewidth!==null  && imagewidth.trim().length>0
+						&& typeof imageheight!=='undefined' && imageheight!==null  && imageheight.trim().length>0
+						&& typeof imagewaittime!=='undefined' && imagewaittime!==null  && imagewaittime.trim().length>0 ;	
+						if(ok){
+					    	var downloadUrl ='/controlpanel/dashboards/generateDashboardImage/'+id+'?'+ encodeQueryData(data);							    
+					    	var download = document.createElement('a');
+					    	download.href =   downloadUrl;					    	
+					    	download.click();							    	
+					    	return true;						
+						}else{
+							$('#imagehaserror').show();
+							return false;
+						}
+					}											
+				}
+			}
+		});
+	};
+	
+	function encodeQueryData(data) {
+		   const ret = [];
+		   for (let d in data)
+		     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+		   return ret.join('&');
+		}
+	
+	
+	var showExportPDFDialog = function(id){
+		
+		var messageExportPDF = [[#{dashboards.export.pdf}]];
+		var messageStandbyTime = [[#{dashboards.export.wait}]];
+		var messageheight= [[#{dashboards.export.height}]];
+		var messagewidth= [[#{dashboards.export.width}]];		
+		var messagepresetsize= [[#{dashboards.export.presetsize}]];
+		var messageparams= [[#{dashboards.export.params}]];
+		var globalMessage=[[#{dashboards.export.emptyfields}]];
+		
+		$.confirm({
+			icon: 'la la-file-pdf-o font-hg',
+			title: messageExportPDF,
+			theme: 'light',
+			columnClass: 'medium',
+			content:`	
+				<div class="form-body container-fluid">	
+				<div id="imagehaserror" class="alert alert-danger display-hide">
+				<span >${globalMessage}</span>
+			    </div>
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfwaittime" type="number" 
+									required="true" maxlength="100"
+									 class="form-control "  minlength="1" required value="20000" />
+						     </div>
+					    </div>
+				        </div>	
+				        
+					 </div>
+					 <div class="row">
+					 <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagepresetsize}</label>
+							  <select id="pdfselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthpdf()">
+							   <option   value="A0 H" >A0 H</option>
+							   <option   value="A0 V" >A0 V</option> 
+							   <option   value="A1 H" >A1 H</option>
+							   <option   value="A1 V" >A1 V</option> 
+							   <option   value="A2 H" >A2 H</option>
+							   <option   value="A2 V" >A2 V</option>
+							   <option   value="A3 H" >A3 H</option>
+							   <option   value="A3 V" >A3 V</option>
+							   <option selected  value="A4 H" >A4 H</option>
+							   <option   value="A4 V" >A4 V</option>
+							   <option   value="A5 H" >A5 H</option>
+							   <option   value="A5 V" >A5 V</option>
+							   <option   value="A6 H" >A6 H</option>
+							   <option   value="A6 V" >A6 V</option>							   
+						      </select>
+					    </div>
+				        </div>		
+						<div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messageheight}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfheight" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="794" />
+						     </div>
+					    </div>
+				        </div>	
+				        <div class="col-md-4 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<label >${messagewidth}</label><span class="required"> (*)</span>
+							<div class="input-icon ">
+								<input
+									id="pdfwidth" type="number" 
+									required="true" 
+									 class="form-control "  minlength="1" required value="1123" />
+						     </div>
+					    </div>
+				        </div>
+				        
+				        
+				        
+					 </div>
+					 <div class="row">
+						 <div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label>${messageparams}</label>														
+								<textarea id="pdfparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
+							</div>							
+						</div>
+					</div> 
+				</div>
+						`,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Cancel,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function(){ 
+					}											
+				},			
+				Ok: {
+					text: Confirm,
+					btnClass: 'btn btn-primary',
+					action: function(){ 						
+						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);;						
+						var pdfparams = $('#pdfparams').val();
+						var pdfwidth = $('#pdfwidth').val();
+						var pdfheight = $('#pdfheight').val();
+						var checkboxfullscreen = $('#checkboxfullscreen').val();
+						var pdfwaittime = $('#pdfwaittime').val();
+						var ident = id;
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
+						var ok = true;	
+						
+						var data ={};
+						if(typeof pdfparams ==='undefined' || pdfparams.trim().length===0){
+							data = {
+									waittime:pdfwaittime,
+							    	height:pdfheight,
+							    	width:pdfwidth,
+							    	fullpage:checkboxfullscreen,
+							    	token:token			    	
+						    }
+						}else{
+							data = {
+									waittime:pdfwaittime,
+							    	height:pdfheight,
+							    	width:pdfwidth,
+							    	fullpage:checkboxfullscreen,
+							    	token:token,
+							    	params:pdfparams
+							    }
+						}
+						var ok = typeof pdfwidth!=='undefined' && pdfwidth!==null  && pdfwidth.trim().length>0
+							&& typeof pdfheight!=='undefined' && pdfheight!==null  && pdfheight.trim().length>0
+							&& typeof pdfwaittime!=='undefined' && pdfwaittime!==null  && pdfwaittime.trim().length>0 ;	
+						if(ok){
+							var downloadUrl ='/controlpanel/dashboards/generatePDFImage/'+id+'?'+ encodeQueryData(data);							    
+					    	var download = document.createElement('a');
+					    	download.href = downloadUrl;					    	
+					    	download.click();							    	
+					    	return true;
+						} else{
+							$('#imagehaserror').show();
+							return false;
+						}
+						}
+					}											
+				
 			}
 		});
 	};

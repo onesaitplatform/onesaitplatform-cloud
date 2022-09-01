@@ -48,6 +48,8 @@ public class NotebookServiceConfiguration {
 	private String restPass;
 	@Value("${onesaitplatform.analytics.notebook.zeppelinGlobalTimeout:#{120000}}")
 	private String globalTimeout;
+	@Value("${onesaitplatform.analytics.notebook.restTimeout.millis:10000}")
+	private Long restTimeout;
 	private String baseURL;
 
 	@PostConstruct

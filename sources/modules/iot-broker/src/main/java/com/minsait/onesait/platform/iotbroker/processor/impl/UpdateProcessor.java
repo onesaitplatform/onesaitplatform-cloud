@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.iotbroker.processor.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
@@ -53,13 +55,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateProcessor implements MessageTypeProcessor {
 
+	private static final String SOURCE = "source";
+
 	@Autowired
 	private RouterService routerService;
 	@Autowired
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
+			Optional<IoTSession> session) {
 
 		if (SSAPMessageTypes.UPDATE.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyUpdateMessage> processUpdate = (SSAPMessage<SSAPBodyUpdateMessage>) message;
@@ -78,7 +83,8 @@ public class UpdateProcessor implements MessageTypeProcessor {
 
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processUpdate(SSAPMessage<SSAPBodyUpdateMessage> updateMessage, Optional<IoTSession> session) {
+	private SSAPMessage<SSAPBodyReturnMessage> processUpdate(SSAPMessage<SSAPBodyUpdateMessage> updateMessage,
+			Optional<IoTSession> session) {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
@@ -95,7 +101,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 		}
 
 		final OperationModel model = OperationModel
-				.builder(updateMessage.getBody().getOntology(), OperationType.PUT, user, Source.IOTBROKER,
+				.builder(updateMessage.getBody().getOntology(), OperationType.UPDATE, user, getSource(updateMessage),
 						updateMessage.includeIds())
 				.deviceTemplate(deviceTemplate).queryType(QueryType.NATIVE).body(updateMessage.getBody().getQuery())
 				.build();
@@ -119,7 +125,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 				final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(responseStr);
 				final JSONObject jsonObject = new JSONObject();
 				jsonObject.put("nModified", multidocument.getCount());
-				if(multidocument.getStrIds() != null && updateMessage.includeIds()){
+				if (multidocument.getStrIds() != null && updateMessage.includeIds()) {
 					jsonObject.put("modified", new JSONArray(multidocument.getStrIds()));
 				}
 				responseMessage.getBody().setData(objectMapper.readTree(jsonObject.toString()));
@@ -148,7 +154,8 @@ public class UpdateProcessor implements MessageTypeProcessor {
 		return responseMessage;
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processUpdateById(SSAPMessage<SSAPBodyUpdateByIdMessage> updateMessage, Optional<IoTSession> session) {
+	private SSAPMessage<SSAPBodyReturnMessage> processUpdateById(SSAPMessage<SSAPBodyUpdateByIdMessage> updateMessage,
+			Optional<IoTSession> session) {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
@@ -163,7 +170,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 		}
 
 		final OperationModel model = OperationModel
-				.builder(updateMessage.getBody().getOntology(), OperationType.PUT, user, Source.IOTBROKER)
+				.builder(updateMessage.getBody().getOntology(), OperationType.UPDATE, user, getSource(updateMessage))
 				.objectId(updateMessage.getBody().getId()).queryType(QueryType.NATIVE)
 				.body(updateMessage.getBody().getData().toString()).deviceTemplate(deviceTemplate).build();
 
@@ -230,6 +237,30 @@ public class UpdateProcessor implements MessageTypeProcessor {
 		}
 
 		return responseMessage;
+	}
+
+	private Source getSource(SSAPMessage<? extends SSAPBodyMessage> message) {
+		String tags = null;
+		if (message.getBody().getClass() == SSAPBodyUpdateByIdMessage.class) {
+			SSAPBodyUpdateByIdMessage insertMessage = (SSAPBodyUpdateByIdMessage) message.getBody();
+			tags = insertMessage.getTags();
+		} else {
+			SSAPBodyUpdateMessage insertMessage = (SSAPBodyUpdateMessage) message.getBody();
+			tags = insertMessage.getTags();
+		}
+		if (tags != null) {
+			try {
+				JsonNode json = new ObjectMapper().readTree(tags);
+				if (!json.has(SOURCE)) {
+					return Source.IOTBROKER;
+				} else {
+					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
+				}
+			} catch (IOException e) {
+				return Source.IOTBROKER;
+			}
+		}
+		return Source.IOTBROKER;
 	}
 
 	@Override

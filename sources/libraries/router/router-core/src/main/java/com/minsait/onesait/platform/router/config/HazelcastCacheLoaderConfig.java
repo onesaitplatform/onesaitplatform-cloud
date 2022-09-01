@@ -48,8 +48,8 @@ public class HazelcastCacheLoaderConfig {
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() throws IOException {
 		String configFile = "hazelcast-client.xml";
 		ClientConfig config = new XmlClientConfigBuilder(configFile).build();
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: {}", configFile,
-				config.getInstanceName(), config.getGroupConfig().getName());
+//		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: {}", configFile, 
+//				config.getInstanceName(), config.getClusterName());
 		return HazelcastClient.newHazelcastClient(config);
 	}
 
@@ -69,8 +69,8 @@ public class HazelcastCacheLoaderConfig {
 		xmlClientConfigBuilder.setProperties(props);
 		ClientConfig config = xmlClientConfigBuilder.build();
 
-		log.info("Configured Local Cache with data: Name {} Instance Name: {} Group Name: {} ", configFile,
-				config.getInstanceName(), config.getGroupConfig().getName());
+//		log.info("Configured Local Cache with data: Name {} Instance Name: {} Group Name: {} ", configFile, config.getInstanceName(), 
+//				config.getClusterName());
 
 		return HazelcastClient.newHazelcastClient(config);
 	}

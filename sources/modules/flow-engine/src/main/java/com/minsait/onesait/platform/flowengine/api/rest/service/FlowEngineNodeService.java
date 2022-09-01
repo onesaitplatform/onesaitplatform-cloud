@@ -20,8 +20,11 @@ import java.util.Set;
 import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DigitalTwinTypeDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
@@ -47,14 +50,12 @@ public interface FlowEngineNodeService {
 
 	public String validateUserDomain(UserDomainValidationRequest request);
 
-	public String submitQuery(String ontology, String queryType, String query, String authentication)
+	public String submitQuery(FlowEngineQueryRequest queryRequest) throws JsonProcessingException, NotFoundException;
+
+	public String submitInsert(FlowEngineInsertRequest insertRequest)
 			throws JsonProcessingException, NotFoundException;
 
-	public String submitInsert(String ontology, String data, String domainName)
-			throws JsonProcessingException, NotFoundException;
-	
-	public void submitAudit(String data, String domainName)
-			throws JsonProcessingException, NotFoundException;
+	public void submitAudit(String data, String domainName) throws JsonProcessingException, NotFoundException;
 
 	public List<DigitalTwinTypeDTO> getDigitalTwinTypes(String authentication);
 
@@ -67,16 +68,16 @@ public interface FlowEngineNodeService {
 	public List<NotebookDTO> getNotebooksByUser(String authentication);
 
 	public String getNotebookJSONDataByUser(String notebookId, String authentication);
-	
-	public ResponseEntity<String> invokeNotebook(NotebookInvokeDTO noebookInvocationData);
-	
-	public List<String> getPipelinesByUser(String authentication);
-	
-	public ResponseEntity<String> getPipelineStatus(String domainName, String idPipeline);
 
-	public ResponseEntity<String> stopDataflow(String domainName, String pipelineIdentification);
-	
-	public ResponseEntity<String> startDataflow(String domainName, String pipelineIdentification, String parameters, boolean resetOrigin);
+	public ResponseEntity<String> invokeNotebook(NotebookInvokeDTO noebookInvocationData);
+
+	public List<String> getPipelinesByUser(String authentication);
+
+	public ResponseEntity<String> getPipelineStatus(DataflowDTO dataflowData);
+
+	public ResponseEntity<String> stopDataflow(DataflowDTO dataflowData);
+
+	public ResponseEntity<String> startDataflow(DataflowDTO dataflowData);
 
 	public List<String> getControlpanelApis(String authentication);
 

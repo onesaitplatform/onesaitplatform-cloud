@@ -157,6 +157,15 @@ public class ESBaseApi {
 		} catch (final IOException e) {
 			log.error("Error Deleting Type " + e.getMessage());
 			return false;
+		} catch (final ElasticsearchStatusException e) {
+			if (e.getResourceType() != null && e.getResourceType().equals("index_or_alias") && e.status() != null
+					&& e.status().name() != null && e.status().name().equals("NOT_FOUND")) {
+				log.error("Error Deleting Type " + e.getMessage());
+				return false;
+			} else {
+
+				throw e;
+			}
 		}
 	}
 

@@ -17,20 +17,19 @@
 <!-- Modal Authorizations-->
 <div id="resources-modal" class="modal fade" role="dialog">
 	<div class="modal-dialog modal-xl">
-
 		<!-- Modal content-->
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal"></button>
 				<h4 class="modal-title" th:text="#{project.resources.results}">Resources matching input search</h4>
 			</div>
-			<div class="modal-body">
+			<div class="modal-body" style="height: calc(100vh - 200px);overflow-y:auto">
 			<!-- AUTHORIZATION ROLE-USER-TYPE -->
 				<div class="form-group">
 					<div id="resources-results" class="margin-bottom-20">
 						<table class="table" id="resources-results" data-loaded="false">
 						<caption th:text="#{project.resource.auths}"></caption>
-							<thead>
+							<thead class="table-header-background">
 								<tr class="cabecera-tabla" role="row" >
 									<th class="titulo-columnas" th:text="#{project.resource.identification}">Identification</th>
 									<th class="titulo-columnas" th:text="#{project.resource.type}">Type</th>
@@ -40,15 +39,15 @@
 									<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody >
 								<tr th:each="resource : ${resourcesMatch}" class="ldap-authorization-model">
 									<td>
-										<input type="text" name="identifications[]" readonly="readonly"  class="form-control"  th:value="${resource.identification}"/>
+										<input type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border" th:value="${resource.identification}"/>
 										<input type="hidden" name="ids[]" th:value="${resource.id}"/>
 									</td>
 									<td>
-										<input th:if="${resource.type != 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="form-control" th:value="${resource.type}"/>
-										<input th:if="${resource.type == 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="form-control" th:value="Dataflow"/>
+										<input th:if="${resource.type != 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="margin-top-4 no-border" th:value="${resource.type}"/>
+										<input th:if="${resource.type == 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="margin-top-4 no-border" th:value="Dataflow"/>
 									</td>
 									<td>
 										<select name="accesstypes[]" class="form-control select-modal accesstypes" data-live-search="true" data-width="100%" >			

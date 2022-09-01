@@ -75,12 +75,12 @@ public class FlowNodeServiceIntegrationTest {
 	@Before
 	public void setUp() {
 		// Create one domain, flow and notificator node
-		String temp = UUID.randomUUID().toString().substring(0, 30);
+		final String temp = UUID.randomUUID().toString().substring(0, 30);
 		ontologyId = "OntTest_" + temp;
 		domainIdentification = "DomainTest_" + temp;
-		User user = userService.getUser("developer");
+		final User user = userService.getUser("developer");
 
-		Ontology ontology = new Ontology();
+		final Ontology ontology = new Ontology();
 		ontology.setJsonSchema("{}");
 		ontology.setDescription("Ontology for testing purposes.");
 		ontology.setIdentification(ontologyId);
@@ -91,19 +91,19 @@ public class FlowNodeServiceIntegrationTest {
 		ontology.setUser(user);
 		ontologyService.createOntology(ontology, null);
 
-		FlowDomain domain = domainService.createFlowDomain(domainIdentification, user);
+		final FlowDomain domain = domainService.createFlowDomain(domainIdentification, user);
 
-		Flow flow = new Flow();
+		final Flow flow = new Flow();
 		flow.setActive(true);
 		flow.setIdentification("Test Flow 1" + temp);
 		flow.setFlowDomain(domain);
 		flow.setNodeRedFlowId("nodeRedFlowId");
 
-		flowService.createFlow(flow);
+		flowService.createFlow(flow, domain);
 
 		// Create Node with properties
 
-		FlowNode node = new FlowNode();
+		final FlowNode node = new FlowNode();
 		node.setFlow(flow);
 		node.setNodeRedNodeId("nodeRedNodeId");
 		node.setIdentification("nodeIdentification" + temp);
@@ -111,20 +111,20 @@ public class FlowNodeServiceIntegrationTest {
 		node.setMessageType(MessageType.INSERT);
 		node.setOntology(ontologyService.getOntologyByIdentification(ontologyId, user.getUserId()));
 		node.setPartialUrl("/notificationPointTest");
-		nodeService.createFlowNode(node);
+		nodeService.createFlowNode(node, flow);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeNotificationEntities_When_ItIsSearchedByOntologyIdAndType_Then_TheCorrectNotificationEntitiesAreReturned() {
-		List<NotificationEntity> notificationEntities = nodeService.getNotificationsByOntologyAndMessageType(ontologyId,
+		final List<NotificationEntity> notificationEntities = nodeService.getNotificationsByOntologyAndMessageType(ontologyId,
 				"INSERT");
 		Assert.assertTrue(notificationEntities != null && !notificationEntities.isEmpty());
 	}
 
 	@After
 	public void cleanUp() {
-		domainService.deleteFlowdomain(this.domainIdentification);
+		domainService.deleteFlowdomain(domainIdentification);
 		ontologyRepository.delete(ontologyService.getOntologyByIdentification(ontologyId, "developer"));
 	}
 }

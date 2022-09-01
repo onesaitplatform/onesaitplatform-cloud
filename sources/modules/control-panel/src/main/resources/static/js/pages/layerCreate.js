@@ -354,7 +354,7 @@ var LayerCreateController = function() {
 				[csrf_header]: csrf_value
 		    },
 			type:"POST",
-			async: true,
+			async: false,
 			data: { 'query': query, 'ontology': $("#ontology").val()},
 			dataType:"json",
 			success: function(response,status){
@@ -552,7 +552,7 @@ var LayerCreateController = function() {
 				logControl ? console.log('|---> Action-mode: INSERT') : '';
 				$('.formcolorpicker').each(function () {
 				    $(this).colorpicker({
-			            color: null
+			            color: '#9f60cd'
 			        });
 				});
 				
@@ -627,51 +627,47 @@ var LayerCreateController = function() {
 				
 				spinnerEachFrom = $("#inner_thinckness").TouchSpin({
 					min: 0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999.0,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
 				($("#inner_thinckness").val() == "") ? $("#inner_thinckness").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#outer_thinckness").TouchSpin({
 					min: 0.0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
-				($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(1.0) : null;		
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#size").TouchSpin({
 					min: 0.0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
-				($("#size").val() == "") ? $("#size").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); })
+				($("#size").val() == "") ? $("#size").val(15.0) : null;		
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); })
 				
 				spinnerEachFrom = $("#refresh").TouchSpin({
 					min: 0,
-					max: 999,
+					max: 999999,
 					stepinterval: 1,
-					maxboostedstep: 999,
 					verticalbuttons: true,
 					postfix: 's'
 				});			
 				
-				($("#refresh").val() == "") ? $("#refresh").val(0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				($("#refresh").val() == "") ? $("#refresh").val(10) : null;		
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				$("#refresh").TouchSpin({
 					initval: layerCreateJson.refreshTime
 				});
@@ -693,7 +689,7 @@ var LayerCreateController = function() {
 					$("#query").val(layerCreateJson.query);
 					$("#isQuery").attr("checked", "checked");
 					$("#query_def").show();
-					$("#filter_div").hide();
+					//$("#filter_div").hide();
 					
 					LayerCreateController.loadParamsQuery(layerCreateJson.query);
 					
@@ -717,37 +713,34 @@ var LayerCreateController = function() {
 					$("#isHeatMap").attr("checked", "checked");
 					spinnerEachFrom = $("#min").TouchSpin({
 						min: 0,
-						max: 999.0,
+						max: 999999,
 						stepinterval: 0.2,
-						maxboostedstep: 999.0,
 						verticalbuttons: true
 					});			
 					
 					($("#min").val() == "") ? $("#min").val(parseInt(layerCreateJson.heatMapMin)) : null;		
-					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 					
 					spinnerEachFrom = $("#max").TouchSpin({
 						min: 0.0,
-						max: 999.0,
+						max: 999999,
 						stepinterval: 0.2,
-						maxboostedstep: 999,
 						verticalbuttons: true
 					});			
 					
 					($("#max").val() == "") ? $("#max").val(parseInt(layerCreateJson.heatMapMax)) : null;		
-					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 					
 					spinnerEachFrom = $("#radius").TouchSpin({
 						min: 0.0,
-						max: 9999.0,
+						max: 9999,
 						stepinterval: 0.2,
-						maxboostedstep: 9999,
 						verticalbuttons: true,
 						postfix: 'px'
 					});			
 					
 					($("#radius").val() == "") ? $("#radius").val(parseInt(layerCreateJson.heatMapRadius)) : null;		
-					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 					
 					
 					$("#weightField").empty();
@@ -1091,13 +1084,26 @@ var LayerCreateController = function() {
 					[csrf_header]: csrf_value
 			    },
 			    success: function(response, status){
+			    	
 			    	if(response=='virtual'){
 			    		isVirtual=true;
-			    	}else{
-			    		LayerCreateController.changeOntology();
 			    	}
-			    
+			    	if (response != 'false'){
+			    		LayerCreateController.changeOntology();
+			    	} else {
+			    		$("#fields").empty();
+			    		$("#geometryTypes").attr("style","visibility:hidden");
+			    		toastr.error(layerCreateJson.validations.root,'');
+			    	}
 				}
+//
+//			    	if(response=='virtual'){
+//			    		isVirtual=true;
+//			    	}else{
+//			    		LayerCreateController.changeOntology();
+//			    	}
+//			    
+//				}
 			});
 			
 		},
@@ -1110,51 +1116,47 @@ var LayerCreateController = function() {
 			
 			spinnerEachFrom = $("#inner_thinckness").TouchSpin({
 				min: 0,
-				max: 999.0,
+				max: 999999,
 				stepinterval: 0.2,
-				maxboostedstep: 999.0,
 				verticalbuttons: true,
 				postfix: 'px'
 			});			
 			
 			($("#inner_thinckness").val() == "") ? $("#inner_thinckness").val(0.0) : null;		
-			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			spinnerEachFrom = $("#outer_thinckness").TouchSpin({
 				min: 0.0,
-				max: 999.0,
+				max: 999999,
 				stepinterval: 0.2,
-				maxboostedstep: 999,
 				verticalbuttons: true,
 				postfix: 'px'
 			});			
 			
-			($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(0.0) : null;		
-			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(1.0) : null;		
+//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			spinnerEachFrom = $("#size").TouchSpin({
 				min: 0.0,
-				max: 999.0,
+				max: 999999,
 				stepinterval: 0.2,
-				maxboostedstep: 999,
 				verticalbuttons: true,
 				postfix: 'px'
 			});			
 			
-			($("#size").val() == "") ? $("#size").val(0.0) : null;		
-			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			($("#size").val() == "") ? $("#size").val(15.0) : null;		
+//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			spinnerEachFrom = $("#refresh").TouchSpin({
 				min: 0,
-				max: 999,
+				max: 999999,
 				stepinterval: 1,
-				maxboostedstep: 999,
 				verticalbuttons: true,
 				postfix: 's'
 			});			
 			
-			($("#refresh").val() == "") ? $("#refresh").val(0) : null;		
-			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			($("#refresh").val() == "") ? $("#refresh").val(10) : null;		
+//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			$("#refresh").TouchSpin({
 				initval: 0
@@ -1282,37 +1284,34 @@ var LayerCreateController = function() {
 				$("#checkHeatMap").show();
 				spinnerEachFrom = $("#min").TouchSpin({
 					min: 0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999.0,
 					verticalbuttons: true
 				});			
 				
 				($("#min").val() == "") ? $("#min").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#max").TouchSpin({
 					min: 0.0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999,
 					verticalbuttons: true
 				});			
 				
 				($("#max").val() == "") ? $("#max").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#radius").TouchSpin({
 					min: 0.0,
-					max: 9999.0,
+					max: 9999,
 					stepinterval: 0.2,
-					maxboostedstep: 9999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
 				($("#radius").val() == "") ? $("#radius").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			}else if(type=="null"){
 				LayerCreateController.changeFieldAux();
 			}else{
@@ -1324,37 +1323,34 @@ var LayerCreateController = function() {
 				$("#checkHeatMap").show();
 				spinnerEachFrom = $("#min").TouchSpin({
 					min: 0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999.0,
 					verticalbuttons: true
 				});			
 				
 				($("#min").val() == "") ? $("#min").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#max").TouchSpin({
 					min: 0.0,
-					max: 999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 999,
 					verticalbuttons: true
 				});			
 				
 				($("#max").val() == "") ? $("#max").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#radius").TouchSpin({
 					min: 0.0,
-					max: 9999.0,
+					max: 999999,
 					stepinterval: 0.2,
-					maxboostedstep: 9999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
 				($("#radius").val() == "") ? $("#radius").val(0.0) : null;		
-				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			}else{
 				$("#checkHeatMap").hide();
 			}
@@ -1460,6 +1456,7 @@ var LayerCreateController = function() {
 			        });
 				    $("#fields_pop").empty();
 				    if($("#isQuery").is(":checked")){
+				    	LayerCreateController.loadParamsQuery($("#query").val());
 				    	fields = queryFields;
 				    	 $("#fields_pop").append('<option id="select_field" name="select_field" value="select">'+layerCreateJson.layerselect+'</option>');
 							$.each(fields, function (k,v){

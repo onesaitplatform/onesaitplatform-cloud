@@ -16,38 +16,38 @@ package com.minsait.onesait.platform.config.services.apimanager.dto;
 
 import java.io.Serializable;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
 public class ApiHeaderDTO implements Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "Header Name")
+	@Schema(description= "Header Name")
 	@Getter
 	@Setter
 	private String name;
 
-	@ApiModelProperty(value = "Header Type")
+	@Schema(description= "Header Type")
 	@Getter
 	@Setter
 	private String type;
 
-	@ApiModelProperty(value = "Header Description")
+	@Schema(description= "Header Description")
 	@Getter
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Header Value")
+	@Schema(description= "Header Value")
 	@Getter
 	@Setter
 	private String value;
 
-	@ApiModelProperty(value = "Header Condition")
+	@Schema(description= "Header Condition")
 	@Getter
 	@Setter
 	private String condition;

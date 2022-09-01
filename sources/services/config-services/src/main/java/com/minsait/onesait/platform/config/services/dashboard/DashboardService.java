@@ -125,6 +125,12 @@ public interface DashboardService {
 	
 	String getProtocol();
 
+	void setImage(Dashboard dashboard, byte[] image);
+
+	void generateDashboardImage(String dashboardId, String token);
+
+	void createModifyI18nResource(String id, DashboardCreateDTO dashboard, String userId);
+
 	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
 	// usersAccessType, boolean updated);
 

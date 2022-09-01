@@ -20,6 +20,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.OPResource;
@@ -37,8 +39,12 @@ public class OntologyVirtualDatasource extends OPResource {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Se guarda por índice en la tabla ontology_virtual_datasource así que no se
+	 * puede cambiar orden
+	 **/
 	public enum VirtualDatasourceType {
-		ORACLE, ORACLE11, MYSQL, MARIADB, SQLSERVER, POSTGRESQL, IMPALA, HIVE, OP_QUERYDATAHUB, KUDU
+		ORACLE, ORACLE11, MYSQL, MARIADB, SQLSERVER, POSTGRESQL, IMPALA, HIVE, OP_QUERYDATAHUB, KUDU, PRESTO
 	}
 
 	@Column(name = "DATASOURCE_DOMAIN", length = 128, nullable = true)
@@ -80,7 +86,9 @@ public class OntologyVirtualDatasource extends OPResource {
 	@Setter
 	private String poolSize;
 
-	@Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT default 0")
+	@Column(name = "PUBLIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@NotNull
 	@Getter
 	@Setter
@@ -108,12 +116,16 @@ public class OntologyVirtualDatasource extends OPResource {
 	@Setter
 	private Integer validationQueryTimeout;
 
-	@Column(name = "TEST_ON_BORROW", columnDefinition = "BIT default 1")
+	@Column(name = "TEST_ON_BORROW")
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("true")
 	@Getter
 	@Setter
 	private Boolean testOnBorrow;
 
-	@Column(name = "TEST_WHILE_IDLE", columnDefinition = "BIT default 1")
+	@Column(name = "TEST_WHILE_IDLE")
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("true")
 	@Getter
 	@Setter
 	private Boolean testWhileIdle;

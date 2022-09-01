@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class ApiInvokerUtils {
-
+	private static final String API_KEY= "X-OP-APIKey";
 	@Value("${onesaitplatform.flowengine.apiinvoker.response.utf8.force:false}")
 	private boolean forceUtf8Response;
 
@@ -152,6 +152,15 @@ public class ApiInvokerUtils {
 		if (consumes != null && !consumes.isEmpty()) {
 			resultInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, consumes.get(0));
 		}
+		//Check if we have the api token key on the invication params
+		try {
+			String apiTokenKey = getValueForParam(API_KEY, invokeRequest.getOperationInputParams());
+			if (!apiTokenKey.isEmpty()) {
+				resultInvocationParams.getHeaders().add(API_KEY, apiTokenKey);
+			}
+		}catch(final FlowDomainServiceException e) {
+			log.debug("No api key used");
+		}
 
 		for (final Parameter param : operation.getParameters()) {
 			// QUERY, PATH, BODY (formData ignore) or HEADER
@@ -159,6 +168,10 @@ public class ApiInvokerUtils {
 			boolean skipParam = false;
 			try {
 				value = getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
+				if(value.isEmpty() && param.getName().equalsIgnoreCase("Authorization")) {
+					//if empty we do not use it
+					skipParam = true;
+				}
 			} catch (final FlowDomainServiceException e) {
 				final String msg = "No value was found for parameter " + param.getName() + " in operation ["
 						+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName() + " from API ["

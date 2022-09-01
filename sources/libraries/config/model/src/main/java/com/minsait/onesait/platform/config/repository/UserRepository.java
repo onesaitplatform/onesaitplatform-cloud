@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -22,10 +23,12 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.versioning.VersionableVO;
 
 public interface UserRepository extends JpaRepository<User, String> {
 
@@ -40,21 +43,21 @@ public interface UserRepository extends JpaRepository<User, String> {
 	void flush();
 
 	@Override
-	@CachePut(cacheNames = USER_REPOSITORY, key = "#p0.userId")
+	@CachePut(cacheNames = USER_REPOSITORY, key = "{#p0.userId.toLowerCase()}")
 	<S extends User> S saveAndFlush(S entity);
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@CachePut(cacheNames = USER_REPOSITORY, key = "#p0.userId")
+	@CachePut(cacheNames = USER_REPOSITORY, key = "{#p0.userId.toLowerCase()}")
 	User save(User entity);
 
 	@Override
 	@Transactional
-	@CacheEvict(cacheNames = USER_REPOSITORY, key = "#p0.userId")
+	@CacheEvict(cacheNames = USER_REPOSITORY, key = "{#p0.userId.toLowerCase()}")
 	void delete(User id);
 
 	@Transactional
-	@CacheEvict(cacheNames = USER_REPOSITORY, key = "#p0")
+	@CacheEvict(cacheNames = USER_REPOSITORY, key = "{#p0.toLowerCase()}")
 	void deleteByUserId(String userId);
 
 	@Override
@@ -73,6 +76,15 @@ public interface UserRepository extends JpaRepository<User, String> {
 	@Query("SELECT o FROM User AS o WHERE o.active=true")
 	List<User> findAllActiveUsers();
 
+	@Query("SELECT COUNT(*) FROM User AS o WHERE o.active=true")
+	int countAllActiveUsers();
+
+	@Query("SELECT COUNT(*) FROM User AS o WHERE o.active=false")
+	int countAllInactiveUsers();
+
+	@Query("SELECT COUNT(*) FROM User AS o WHERE o.createdAt >= CURDATE()")
+	int countNewUsers();
+
 	@Query("SELECT o FROM User AS o WHERE o.email=:email")
 	List<User> findByEmail(@Param("email") String email);
 
@@ -80,11 +92,11 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	User findUserByEmail(String email);
 
-	@Cacheable(cacheNames = USER_REPOSITORY, unless = "#result == null", key = "#p0")
+	@Cacheable(cacheNames = USER_REPOSITORY, unless = "#result == null", key = "{#p0.toLowerCase()}")
 	User findByUserIdAndPassword(String userId, String password);
 
 	@Transactional
-	@Cacheable(cacheNames = USER_REPOSITORY, unless = "#result == null", key = "#p0")
+	@Cacheable(cacheNames = USER_REPOSITORY, unless = "#result == null", key = "{#p0.toLowerCase()}")
 	User findByUserId(String userId);
 
 	// Only for projects
@@ -111,4 +123,23 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	@Query("SELECT o FROM User AS o WHERE o.userId LIKE %:userId% AND o.active=true ORDER BY o.userId DESC")
 	List<User> findByUsernameLike(@Param("userId") String userId);
+
+	@Query("SELECT o.email FROM User AS o WHERE o.userId= :userId")
+	String findEmailByUserId(@Param("userId") String userId);
+
+	@Query("SELECT o.fullName FROM User AS o WHERE o.userId= :userId")
+	String findFullNameByUserId(@Param("userId") String userId);
+
+	@Modifying
+	@Transactional
+	public void deleteByUserIdNotIn(Collection<String> ids);
+
+	@Modifying
+	@Transactional
+	public default void deleteByIdNotIn(Collection<String> ids) {
+		deleteByUserIdNotIn(ids);
+	}
+
+	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.userId, o.userId, 'User') FROM User AS o")
+	public List<VersionableVO> findVersionableViews();
 }

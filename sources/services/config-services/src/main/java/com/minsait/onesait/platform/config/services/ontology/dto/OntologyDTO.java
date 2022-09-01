@@ -68,5 +68,9 @@ public class OntologyDTO extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private List<OntologyUserAccess> ontologyUserAccesses;
+	
+	@Getter
+	@Setter
+	private String rtdbDatasourceType;
 
 }

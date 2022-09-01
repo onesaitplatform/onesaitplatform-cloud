@@ -94,15 +94,15 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType.name() != 'NODE_RED'}))" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:onclick="'javascript:deleteAPIConfirmation(\'' + ${api.id}+ '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
+									<button th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType?.name() != 'NODE_RED'}))" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:attr="onclick='javascript:deleteAPIConfirmation(\'' + ${api.id}+ '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
 		
-									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType.name() != 'NODE_RED'}))" class="sep" ></span>
+									<span th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType?.name() != 'NODE_RED'}))" class="sep" ></span>
 															
 									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:onclick="'javascript:navigateUrl(\'' + '/controlpanel/apimanager/list' + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + '/controlpanel/apimanager/list' + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- UPDATE -->
-									<button th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType.name() != 'NODE_RED'}))" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:onclick="'javascript:navigateUrl(\'' + @{|/apimanager/update/${api.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									<button th:if="(((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'}) AND (${api.apiType?.name() != 'NODE_RED'}))" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/apimanager/update/${api.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
 							</div>
 						</div>
@@ -170,9 +170,9 @@
 											<div class="col-md-5 col-sm-5 col-xs-12">
 												<div class="form-group">
 	        	                                    <label class="control-label" for="selector-tipo-api" th:text="#{apimanager.apitype}">API</label>
-	            	                                <p th:if="${api.apiType.name()=='INTERNAL_ONTOLOGY'}" class="form-control-static-block " th:text="#{apimanager.apiType.rest}"> API Type </p>
-	                	                            <p th:if="${api.apiType.name()=='EXTERNAL_FROM_JSON'}" class="form-control-static-block " th:text="#{apimanager.apiType.externalfromjson}"> API Type </p>						                                           
-                        	                    	<p th:if="${api.apiType.name()=='NODE_RED'}" class="form-control-static-block " th:text="#{apimanager.apiType.nodered}"> API Type </p>						                                           
+	            	                                <p th:if="${api.apiType?.name()=='INTERNAL_ONTOLOGY'}" class="form-control-static-block " th:text="#{apimanager.apiType.rest}"> API Type </p>
+	                	                            <p th:if="${api.apiType?.name()=='EXTERNAL_FROM_JSON'}" class="form-control-static-block " th:text="#{apimanager.apiType.externalfromjson}"> API Type </p>						                                           
+                        	                    	<p th:if="${api.apiType?.name()=='NODE_RED'}" class="form-control-static-block " th:text="#{apimanager.apiType.nodered}"> API Type </p>						                                           
                             	                </div>
 											</div>
 											<div class="col-md-7 col-sm-7 col-xs-12">
@@ -255,7 +255,7 @@
 													<label class="control-label" style="display: inline-block;"  th:text="#{apimanager.apilimit}">Requests per minute</label>
 												</div>
 												<div class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both">
-													<input class="margin-right-10" id="checkboxPublic" name="checkboxPublic" type="checkbox" checked="checked" th:field="*{public}" />
+													<input class="margin-right-10" id="checkboxPublic" name="checkboxPublic" disabled="true" type="checkbox" checked="checked" th:field="*{public}" />
 													<label class="control-label" th:text="#{apimanager.public}">Public</label>
 												</div>
 												<div class="col-md-8 col-sm-6 col-xs-6 no-padding-right">
@@ -296,7 +296,7 @@
 											</div>
 										</div>										
 										<!-- operations -->
-										<div th:classappend="*{(apiType.name() == 'INTERNAL_ONTOLOGY'  || apiType.name() == 'iot') ? '':'hide'}" class="row main">
+										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}" class="row main">
 											<div id="ontologyOperations" class="col-md-12 panel-operations-view">
 												<div id="divGETAll" class="op_div">
 													<div id="buttonOperacionGETAll" class="op_button_div">
@@ -305,7 +305,7 @@
 													</div>
 													<div id="descOperationGETAll" class="op_desc_div" style="display:none">
 														<label id ="description_operacion_GETAll" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
-														<input id="description_GETAll" name="description_GET" class="form-control" type="text" maxlength="250"/>
+														<input id="description_GETAll" disabled="true" name="description_GET" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
 												<div id="divGET" class="op_div">
@@ -315,7 +315,7 @@
 													</div>
 													<div id="descOperationGET" class="op_desc_div" style="display:none">
 														<label id ="description_operacion_GET" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
-														<input id="description_GET" name="description_GET" class="form-control" type="text" maxlength="250"/>
+														<input id="description_GET"  disabled="true" name="description_GET" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
 												<div id="divPOST" class="op_div">
@@ -325,7 +325,7 @@
 													</div>
 													<div id="descOperationPOST" class="op_desc_div" style="display:none">
 														<label id ="description_operacion_POST" class="description" for="description_POST" th:text="#{apimanager.description}"></label>
-														<input id="description_POST" name="description_POST" class="form-control" type="text" maxlength="250"/>
+														<input id="description_POST"  disabled="true" name="description_POST" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
 												<div id="divPUT" class="op_div">
@@ -335,7 +335,7 @@
 													</div>
 													<div id="descOperationPUT" class="op_desc_div" style="display:none">
 														<b><label id ="description_operacion_PUT" class="description" for="description_PUT" th:text="#{apimanager.description}"></label></b>
-														<input id="description_PUT" name="description_PUT" class="form-control" type="text" maxlength="250"/>
+														<input id="description_PUT"  disabled="true" name="description_PUT" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
 												<div id="divDELETEID" class="op_div">
@@ -345,18 +345,18 @@
 													</div>
 													<div id="descOperationDELETEID" class="op_desc_div" style="display:none">
 														<b><label id ="description_operacion_DELETEID" class="description" for="description_DELETEID" th:text="#{apimanager.description}"></label></b>
-														<input id="description_DELETEID" name="description_DELETEID" class="form-control" type="text" maxlength="250"/>
+														<input id="description_DELETEID"  disabled="true" name="description_DELETEID" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
 												<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GETAll')}  AND ${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')}" th:id="${(operation.identification)}" class="op_div_selected">
 													<div th:id="${operation.identification + '_OPERATION'}" class="op_button_div row main" >
 														<div class="col-md-7">
-															<input th:if="((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:onclick="'javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'" />
+															<input th:if="((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'" />
 															<input th:if="((${#authentication.name} != ${api.user.userId}) AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'))" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" />
 															<label th:id="${operation.identification + '_LABEL'}" class="description" style="padding-right:15px; display: inline-block; font-weight:bold" th:text="${operation.identification}"/>
 														</div>
 														<div class="col-md-5">
-															<i th:if="((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" class="icon-edit pull-right" th:value="#{gen.show}" th:onclick="'javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'" ></i>
+															<i th:if="((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" class="icon-edit pull-right" th:value="#{gen.show}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'" ></i>
 														</div>
 													</div>
 													<div class="op_desc_div row main">
@@ -704,7 +704,7 @@
 	}
 	
 	var myCodeMirrorJson;
-	var apiType =[[${api.apiType.name()}]]
+	var apiType =[[${api.apiType?.name()}]]
 	var handleCodeMirrorJson = function () {			
 		
 		

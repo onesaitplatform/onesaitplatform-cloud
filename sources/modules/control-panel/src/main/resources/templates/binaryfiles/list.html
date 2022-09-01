@@ -145,6 +145,8 @@
 									      <div class="modal-body">
 									      <div class="form-group">
 									      	<form id="form_new" method="post" th:action="@{/files}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
+										      <!-- VERSIONING -->
+											  <th:block th:include="versioning/fragments/form-commit"></th:block>
 										      <input class="form-group button_text hide" id="buttonLoadFile" type="file" accept="*" name="file"  />
 										  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 										      <div class="form-group">
@@ -163,7 +165,7 @@
 										  </div>
 									      </div>									      
 									      <div class="modal-footer">
-									        <button type="button" class="btn btn-outline btn-circle btn-primary " id="submitNewFile" data-dismiss="modal" onclick="$('#form_new').submit()" disabled="true" th:text="#{gen.submit}" >Submit</button>
+									        <button type="button" class="btn btn-outline btn-circle btn-primary " id="submitNewFile" data-dismiss="modal" disabled="true" th:text="#{gen.submit}" >Submit</button>
 									      </div>
 									    </div>
 
@@ -185,6 +187,8 @@
 									      	<form id="form_update" method="post" th:action="@{/files/update}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
 									      	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />  
 									      	  <input type="hidden" name="fileId" id="updateFileId"/>
+										      <!-- VERSIONING -->
+											  <input th:if="${session.versioningEnabled}" id="commit-msg-input-update" type="hidden" name="commit-msg-inputs"/>
 										      <input class="form-control no-remove" type="text" name="metadata" id="metadataUpdate" th:placeholder="#{binaryfiles.metadata}"/>
 										      <br/>
 										      <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#buttonLoadUpdateFile').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{binaryfiles.select}"></span></button>
@@ -194,7 +198,7 @@
 										  </div>
 									      </div>									      
 									      <div class="modal-footer">
-									        <button id="submitUpdate" type="button" class="btn btn-outline btn-circle btn-primary disabled" data-dismiss="modal" onclick="$('#form_update').submit()">Submit</button>
+									        <button id="submitUpdate" type="button" class="btn btn-outline btn-circle btn-primary disabled" data-dismiss="modal">Submit</button>
 									      </div>
 									    </div>
 									
@@ -322,10 +326,10 @@
 															<!-- OWNER -->
 															<td class="text-left no-wrap " th:text="${file.user.userId}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${file.createdAt!=null}"><span th:text="${#dates.format(file.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${file.createdAt!=null}"><span th:text="${#dates.format(file.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${file.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${file.updatedAt!=null}"><span th:text="${#dates.format(file.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${file.updatedAt!=null}"><span th:text="${#dates.format(file.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${file.updatedAt==null}" th:text="'---'"></td>										
 															<!-- Access -->
 															<td class="text-left" th:if="${(file.user.userId eq #authentication.getName()) OR (accessMap.get(file.id) eq 'WRITE') OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}"><span th:text="1" style="display:none" ></span><i class="la la-pencil text-success font-hg"></i></td>
@@ -338,10 +342,10 @@
 															<td class="icon text-center" style="text-align: center; white-space: nowrap">
 
 																<!-- UPDATE -->
-																<span th:if="${file.user.userId eq #authentication.getName() OR (accessMap.get(file.id) eq 'WRITE')OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" th:onclick="'BinaryFilesController.updateModal(\''+${file.id}+'\')'"><i class="icon-edit"></i></span>
+																<span th:if="${file.user.userId eq #authentication.getName() OR (accessMap.get(file.id) eq 'WRITE')OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" th:attr="onclick='BinaryFilesController.updateModal(\''+${file.id}+'\')'"><i class="icon-edit"></i></span>
 
 																<!-- DOWNLOAD -->	
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.download}" th:data-original-title="#{binaryfiles.download}" th:onclick="'BinaryFilesController.getBinaryFile(\''+${file.id}+'\')'"><i class="icon-download"></i></span>
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{binaryfiles.download}" th:data-original-title="#{binaryfiles.download}" th:attr="onclick='BinaryFilesController.getBinaryFile(\''+${file.id}+'\')'"><i class="icon-download"></i></span>
 
 																<th:block  th:if="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE'))}">
 																<span class="dropdown">
@@ -349,27 +353,27 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- Copy link, accesible always -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
 																		</li>
 																		<li>
 																			<!-- SHARE -->	
-																			<span th:if="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE')) AND (not file.public) }" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.openAuthModal(\''+${file.id}+'\')'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.share}" >Share</span></span>
+																			<span th:if="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE')) AND (not file.public) }" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.openAuthModal(\''+${file.id}+'\')'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.share}" >Share</span></span>
 																		</li>
 																		<li>
 																			<!-- PUBLIC -->
-																			<span th:if="${(file.user.userId eq #authentication.getName() AND file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND file.public )} " class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.changePublic(\''+${file.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.private}" >Private</span></span>
-																			<span th:if="${(file.user.userId eq #authentication.getName() AND not file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND not file.public )}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.changePublic(\''+${file.id}+'\')'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.public}" >Public</span></span>
+																			<span th:if="${(file.user.userId eq #authentication.getName() AND file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND file.public )} " class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.changePublic(\''+${file.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.private}" >Private</span></span>
+																			<span th:if="${(file.user.userId eq #authentication.getName() AND not file.public) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' AND not file.public )}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.changePublic(\''+${file.id}+'\')'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.public}" >Public</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																			<span th:if="${(file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs btn-no-border btn-circle btn-outline tooltips color-red" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.confirmDelete(\''+${file.id}+'\')'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																			<span th:if="${(file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}" class="btn btn-xs btn-no-border btn-circle btn-outline tooltips color-red" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.confirmDelete(\''+${file.id}+'\')'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																		</li>
 																	</ul>
 																</span>
 																</th:block>
 																<th:block  th:unless="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE'))}">
 																	<!-- Copy link, accesible always -->
-																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:onclick="'BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"><i class="icon-url"></i></span>
+																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/}|+${file.id}+ '\')'"><i class="icon-url"></i></span>
 																</th:block>					
 															</td>
 														</tr>
@@ -582,6 +586,13 @@
 	 	
 		$("#contenedor-tabla-outside").removeClass("hidden");
 		
+		$('#submitNewFile').on('click', function(){
+			$('#form_new').submit();
+		})
+		
+		$('#submitUpdate').on('click', function(){
+			$('#form_update').submit();
+		})
 	});
 	
 	</script>

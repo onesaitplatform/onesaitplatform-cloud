@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import com.minsait.onesait.platform.router.transaction.operation.TransactionalOperation;
 
 import lombok.extern.slf4j.Slf4j;

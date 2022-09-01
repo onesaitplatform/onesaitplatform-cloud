@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.model.Ontology;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,11 +36,15 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_NULL)
 public class DroolsRuleDTO implements Serializable {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
 	private String id;
 	private Ontology sourceOntology;
 	private Ontology targetOntology;
 	private DroolsRule.Type type;
-	@ApiParam(format = "URL UTF-8 ENCODED DRL CODE")
+	@Parameter
 	private String DRL;
 	private MultipartFile table;
 	private String identification;

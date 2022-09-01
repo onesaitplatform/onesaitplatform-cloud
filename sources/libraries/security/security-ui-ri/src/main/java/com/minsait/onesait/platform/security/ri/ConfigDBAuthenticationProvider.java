@@ -92,7 +92,7 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 		final String password = credentials.toString();
 
 		if (aclEnabled && !acl.contains(name)) {
-			log.info("authenticate: User is not allowed to make login: {}", name);
+			log.warn("authenticate: User is not allowed to make login: {}", name);
 			throw new BadCredentialsException("Authentication failed. User is not in the ACL: " + name);
 		}
 		MasterUserLazy user;
@@ -101,12 +101,12 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 		}
 
 		if (user == null) {
-			log.info("authenticate: User not exist: {}", name);
+			log.warn("authenticate: User not exist: {}", name);
 			throw new BadCredentialsException("Authentication failed. User not exists: " + name);
 		}
 
 		if (!user.isActive()) {
-			log.info("authenticate: User not active: {}", name);
+			log.warn("authenticate: User not active: {}", name);
 			throw new BadCredentialsException("Authentication failed. User deactivated: " + name);
 		}
 		String hashPassword = null;
@@ -117,8 +117,7 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 			throw new BadCredentialsException("Authentication failed. Error authenticating.");
 		}
 		if (!hashPassword.equals(user.getPassword())) {
-			log.info("authenticate: Password incorrect: {} ", name);
-			log.warn("Plain user password incoming: {}, hashed {}. DB-Cache hashed password {}", password, hashPassword, user.getPassword());
+			log.warn("Authentication failed. Password incorrect for {} ", name);
 			publishFailureCredentials(user, authentication);
 			throw new BadCredentialsException("Authentication failed. Password incorrect for " + name);
 		}

@@ -21,6 +21,8 @@ import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTOForList;
 
+import net.sf.jsqlparser.JSQLParserException;
+
 public interface GadgetDatasourceService {
 
 	public List<GadgetDatasource> findAllDatasources();
@@ -50,8 +52,12 @@ public interface GadgetDatasourceService {
 
 	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId);
 
-	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user);
+	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user, int limit)
+			throws JSQLParserException;
 
+	public String getSampleQueryForFilterGadgetDatasourceById(String datasourceId, String ontology, String user, int limit)
+			throws JSQLParserException;
+	
 	public GadgetDatasource getDatasourceByIdentification(String dsIdentification);
 
 	public boolean isGroupDatasourceById(String id);
@@ -69,4 +75,5 @@ public interface GadgetDatasourceService {
 	List<String> getAllIdentificationsByUser(String userId);
 
 	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
+
 }

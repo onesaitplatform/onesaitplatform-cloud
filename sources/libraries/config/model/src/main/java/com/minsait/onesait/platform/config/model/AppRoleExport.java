@@ -58,7 +58,7 @@ public class AppRoleExport extends AppRoleParent {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<AppRoleChildExport> childRoles = new HashSet<>();
+	private Set<AppRoleExport> childRoles = new HashSet<>();
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)

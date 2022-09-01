@@ -141,9 +141,7 @@
 								<div class="inline font-xs" th:text="#{ontology.showMyOnt}" style="margin-left:7px;color:#505D66;">Show my ontologies</div>
 							</div>
 							<div class="pull-right btn-group btn-title-group" id="divcreate" >
-										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../ontologies/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
-							
-																
+								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../ontologies/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
 							</div>								
 						</div>
 						<div class="portlet-body" style="display: block; height: auto;">						
@@ -160,6 +158,7 @@
 														<th class="titulo-columnas text-left" th:text="#{ontology.identification}" >Identification</th>
 														<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}" >Owner</span></th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.description}">Description</th>
+														<th class="titulo-columnas text-left" th:text="#{ontology.rtdbinstance}">Database Instance</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.active}">Active</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.public}">Public</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.authorizations}">Authorizations</th>
@@ -177,6 +176,8 @@
 														<td class="text-left " th:text="${ontology.user.userId}"></td>
 														<!-- DESCRIPTION -->
 														<td class="text-left text-truncate-xxs" th:title="${ontology.description}" th:text="${ontology.description}"></td>
+														<!-- TYPE -->
+														<td class="text-left" th:text="${ontology.rtdbDatasourceType}? ${ontology.rtdbDatasource} + ' - ' + ${ontology.rtdbDatasourceType} : ${ontology.rtdbDatasource}"></td>
 														<!-- ACTIVE -->
 														<td class="text-left" th:if="${ontology.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
 														<td class="text-left" th:if="${!ontology.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
@@ -189,35 +190,39 @@
 														<!-- DATAMODEL -->
 														<td class="text-left " th:text="${ontology.dataModel?.identification}"></td>
 														<!-- DATE -->
-														<td class="text-left" th:if="${ontology.createdAt!=null}"><span th:text="${#dates.format(ontology.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ontology.createdAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-left" th:if="${ontology.createdAt!=null}"><span th:text="${#dates.format(ontology.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ontology.createdAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-left" th:if="${ontology.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE -->
-														<td class="text-left" th:if="${ontology.updatedAt!=null}"><span th:text="${#dates.format(ontology.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ontology.updatedAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-left" th:if="${ontology.updatedAt!=null}"><span th:text="${#dates.format(ontology.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ontology.updatedAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-left" th:if="${ontology.updatedAt==null}" th:text="'---'"></td>
 														<!-- OPTIONS -->
 														<td class="icon text-center" style="white-space: nowrap">
 															<div class="grupo-iconos">
 																<!-- VIEW -->															
-																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/show/${ontology.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/show/${ontology.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																		
 																<!-- EDIT NORMAL ONTOLOGY-->
-																<span  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND ${'MASTER-DataModel-30' != ontology.dataModel.id} " class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<span  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND ${'MASTER-DataModel-30' != ontology.dataModel.id} " class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																<th:block  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))) AND ${'MASTER-DataModel-30' != ontology.dataModel.id}">
-																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																</th:block>
 																<!-- EDIT DISABLED IF NO PERMISSIONS -->
 																<th:block  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))) AND ${'MASTER-DataModel-30' != ontology.dataModel.id}">
-																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} != 'ALL'" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
+																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} != 'ALL' " disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
+																	<span  th:if="${#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
+																	<span  th:if="${!#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true AND ${ontology.ontologyUserAccesses.?[user.userId == #authentication.name].isEmpty()}" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
 																</th:block>	
 
 																<!-- EDIT TIMESERIES ONTOLOGY-->
-																<span  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND ${'MASTER-DataModel-30' == ontology.dataModel.id} " class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<span  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND ${'MASTER-DataModel-30' == ontology.dataModel.id} " class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																<th:block  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))) AND ${'MASTER-DataModel-30' == ontology.dataModel.id}">
-																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																</th:block>
 																<!-- EDIT TIMESERIES DISABLED IF NO PERMISSIONS -->
 																<th:block  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))) AND ${'MASTER-DataModel-30' == ontology.dataModel.id}">
-																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} != 'ALL'" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} != 'ALL'" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="${#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="${!#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true AND ${ontology.ontologyUserAccesses.?[user.userId == #authentication.name].isEmpty()}" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																</th:block>
 																
 																<span class="dropdown">
@@ -226,39 +231,39 @@
 																		<!-- BEGIN APIS -->
 																		<li>
 																			<!-- CLONE -->
-																			<span  th:if="(${ontology.ontologyKPI} ==null)" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="icon-clone" th:onclick="'javascript:cloneOntology(\''+${ontology.id}+'\',false)'"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" th:onclick="'javascript:cloneOntology(\''+${ontology.id}+'\',false)'">CLONE</span></span>
+																			<span  th:if="(${ontology.ontologyKPI} ==null)" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="icon-clone" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',false)'"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',false)'">CLONE</span></span>
 																			<th:block th:if="((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
 																				<span th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-clone"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" >CLONE</span></span>
 																			</th:block>
-																			<span th:if="(${ontology.ontologyKPI} !=null)" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-clone" th:onclick="'javascript:cloneOntology(\''+${ontology.id}+'\',true)'"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" th:onclick="'javascript:cloneOntology(\''+${ontology.id}+'\',true)'" >CLONE</span></span>
+																			<span th:if="(${ontology.ontologyKPI} !=null)" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-clone" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',true)'"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',true)'" >CLONE</span></span>
 																			<th:block  th:if="((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
 																				<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} == 'ALL'" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-clone"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" >CLONE</span></span>
 																			</th:block>
 																		</li>
 																		<li>
 																			<!-- CRUD -->
-																			<span  th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom"  th:onclick="'javascript:navigateUrl(\'' + @{|/crud/admin/${ontology.id}/|} + '\');'"><i class="icon-crud"></i><span class="span-title-three-dots-icons" th:text="#{crud.crud}" >CRUD</span></span>
+																			<span  th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND (${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:navigateUrl(\'' + @{|/crud/admin/${ontology.id}/|} + '\');'"><i class="icon-crud"></i><span class="span-title-three-dots-icons" th:text="#{crud.crud}" >CRUD</span></span>
 																			<th:block  th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
-																				<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !(${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND ${ontologyAccess.user.userId} == ${#authentication.name} AND (${ontologyAccess.ontologyUserAccessType.name} == 'ALL' OR ${ontologyAccess.ontologyUserAccessType.name} == 'INSERT')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/crud/admin/${ontology.id}/|} + '\');'"><i class="icon-crud"></i><span class="span-title-three-dots-icons" th:text="#{crud.crud}" >CRUD</span></span>
+																				<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !(${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND ${ontologyAccess.user.userId} == ${#authentication.name} AND (${ontologyAccess.ontologyUserAccessType.name} == 'ALL' OR ${ontologyAccess.ontologyUserAccessType.name} == 'INSERT')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/crud/admin/${ontology.id}/|} + '\');'"><i class="icon-crud"></i><span class="span-title-three-dots-icons" th:text="#{crud.crud}" >CRUD</span></span>
 																			</th:block>
 																		</li>
 																		<li>
 																			<!-- START/STOP/EXECUTE -->
-																			<span  th:if="${ontology.ontologyKPI} !=null  AND ${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:onclick="'javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-stop"></i> <span class="span-title-three-dots-icons" th:text="#{gen.stop}" >STOP</span></span>
-																			<span  th:if="${ontology.ontologyKPI} !=null  AND !${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:onclick="'javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-play"></i> <span class="span-title-three-dots-icons" th:text="#{gen.play}" >PLAY</span></span>
+																			<span  th:if="${ontology.ontologyKPI} !=null  AND ${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-stop"></i> <span class="span-title-three-dots-icons" th:text="#{gen.stop}" >STOP</span></span>
+																			<span  th:if="${ontology.ontologyKPI} !=null  AND !${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-play"></i> <span class="span-title-three-dots-icons" th:text="#{gen.play}" >PLAY</span></span>
 																		</li>
 																		<li>
-																			<span  th:if="${ontology.ontologyKPI} !=null  " class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:onclick="'javascript:executeKPI(\'' + ${ontology.id} + '\');'"><i class="icon-kpi"></i> <span class="span-title-three-dots-icons" th:text="#{ontology.kpi.execute}" >EXECUTE KPI</span></span>
+																			<span  th:if="${ontology.ontologyKPI} !=null  " class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:executeKPI(\'' + ${ontology.id} + '\');'"><i class="icon-kpi"></i> <span class="span-title-three-dots-icons" th:text="#{ontology.kpi.execute}" >EXECUTE KPI</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																		    <span th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"  data-container="body" data-placement="bottom"  th:onclick="'deleteOntology(\'' + ${ontology.id} + '\');'"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>
+																		    <span th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"  data-container="body" data-placement="bottom"  th:attr="onclick='deleteOntology(\'' + ${ontology.id} + '\');'"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>
 																		</li>
 																	</ul>
 																</span>
 																
 																<!-- INDEXES -->
-																<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:onclick="'javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
+																<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
 															</div>
 														</td>
 													</tr>
@@ -282,26 +287,30 @@
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label th:text="#{ontology.rtdbinstance}"> Database Instance</label>
+													</span>		
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label th:text="#{ontology.active}"> Active</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{ontology.public}"> Public</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 														<label th:text="#{ontology.authorizations}"> Authorizations</label>
-													</span>
+													</span>											
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6"/>
+														<input class="toggle-vis" type="checkbox" data-column="7"/>
 														<label th:text="#{ontology.datamodel}"> Datamodel</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 														<label th:text="#{ontology.createdAt}"> Created At</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="9" checked/>
 														<label th:text="#{ontology.updatedAt}"> Updated At</label>
 													</span>							
 												</div>
@@ -442,7 +451,7 @@
 	      }); 
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		//$.each([ 2,6,7 ],
-		$.each([ 6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 	
 		

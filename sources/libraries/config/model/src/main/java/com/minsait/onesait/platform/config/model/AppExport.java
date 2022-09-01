@@ -74,7 +74,7 @@ public class AppExport extends AppParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppChildExport> childApps;
+	private Set<AppExport> childApps;
 
 	public AppExport() {
 	};

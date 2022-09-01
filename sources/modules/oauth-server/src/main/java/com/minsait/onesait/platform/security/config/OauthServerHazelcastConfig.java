@@ -14,24 +14,14 @@
  */
 package com.minsait.onesait.platform.security.config;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 
 
 @Configuration
 public class OauthServerHazelcastConfig {
 	@Autowired
 	private HazelcastInstance hazelcastInstance;
-
-	@Bean(name = "revokedTokens")
-	public Map<String, Long> revokedTokens() {
-		final IMap<String, Long> revokedTokens = hazelcastInstance.getMap("revokedTokens");
-		return revokedTokens;
-	}
 }

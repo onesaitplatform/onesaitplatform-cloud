@@ -461,6 +461,7 @@ var ApiCustomOpsController = function() {
 
 
     function viewCustomSql (op_name){
+	
         if (op_name!=null && op_name!=""){
             var operation;
             for(var i=0; i<operations.length; i+=1){

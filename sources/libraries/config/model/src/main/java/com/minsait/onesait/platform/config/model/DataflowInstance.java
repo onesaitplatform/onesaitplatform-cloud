@@ -25,11 +25,16 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -37,8 +42,8 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "dataflow_instances", uniqueConstraints = @UniqueConstraint(name = "instance_ident_UQ", columnNames = {
-		"IDENTIFICATION" }))
-public class DataflowInstance implements Serializable {
+"IDENTIFICATION" }))
+public class DataflowInstance implements Serializable, Versionable<DataflowInstance> {
 
 	private static final long serialVersionUID = 1L;
 	@Id
@@ -81,7 +86,9 @@ public class DataflowInstance implements Serializable {
 	@Setter
 	private String guestCredentials;
 
-	@Column(name = "IS_DEFAULT", nullable = false, columnDefinition = "BIT default 0")
+	@Column(name = "IS_DEFAULT", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@NotNull
 	@Getter
 	@Setter
@@ -102,9 +109,11 @@ public class DataflowInstance implements Serializable {
 
 	@JsonSetter("user")
 	public void setUserByUserId(String userId) {
-		final User newUser = new User();
-		newUser.setUserId(userId);
-		user = newUser;
+		if (!StringUtils.isEmpty(userId)) {
+			final User newUser = new User();
+			newUser.setUserId(userId);
+			user = newUser;
+		}
 	}
 
 	@Override
@@ -128,5 +137,16 @@ public class DataflowInstance implements Serializable {
 	@Override
 	public int hashCode() {
 		return java.util.Objects.hash(getIdentification());
+	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() +  ".yaml";
+	}
+
+	@JsonIgnore
+	@Override
+	public String getUserJson() {
+		return getUserIdentification();
 	}
 }

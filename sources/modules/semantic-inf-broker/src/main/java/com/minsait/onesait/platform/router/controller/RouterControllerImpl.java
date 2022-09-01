@@ -40,7 +40,6 @@ import com.minsait.onesait.platform.router.service.app.service.RouterDigitalTwin
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 import com.minsait.onesait.platform.router.service.app.service.RouterSubscriptionService;
 
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -71,7 +70,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/insert")
-	@ApiOperation(value = "insert")
+
 	public OperationResultModel insert(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Insert:");
@@ -89,7 +88,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PutMapping(value = "/update")
-	@ApiOperation(value = "update")
+
 	public OperationResultModel update(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Update:");
@@ -106,7 +105,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@DeleteMapping(value = "/delete")
-	@ApiOperation(value = "delete")
+
 	public OperationResultModel delete(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Delete:");
@@ -123,10 +122,11 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/query")
-	@ApiOperation(value = "query")
+
 	public OperationResultModel query(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
-		log.debug("Query: {} Ontology: {} Type {}",model.getOperationModel().getBody(), model.getOperationModel().getOntologyName(),model.getOperationModel().getQueryType() );
+		log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
+				model.getOperationModel().getOntologyName(), model.getOperationModel().getQueryType());
 		try {
 			return routerService.query(model);
 		} catch (final Exception e) {
@@ -140,7 +140,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/subscribe")
-	@ApiOperation(value = "subscribe")
+
 	public OperationResultModel subscribe(@RequestBody SubscriptionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Subscribe:");
@@ -157,7 +157,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/unsubscribe")
-	@ApiOperation(value = "unsubscribe")
+
 	public OperationResultModel unsubscribe(@RequestBody SubscriptionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("unSuscribe:");
@@ -173,7 +173,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 	}
 
 	@PostMapping(value = "/advice")
-	@ApiOperation(value = "advice")
+
 	@Override
 	public OperationResultModel advicePostProcessing(@RequestBody NotificationCompositeModel input) {
 		final long dStart = System.currentTimeMillis();
@@ -195,7 +195,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 	}
 
 	@PostMapping(value = "/token")
-	@ApiOperation(value = "token")
+
 	public String tokenPostProcessing(@RequestBody String input) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("tokenPostProcessing:");
@@ -207,7 +207,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 	}
 
 	@PostMapping(value = "/event")
-	@ApiOperation(value = "event")
+
 	@Auditable
 	public String eventProcessing(@RequestBody String input) {
 		final long dStart = System.currentTimeMillis();
@@ -222,7 +222,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 	}
 
 	@PostMapping(value = "/insertEvent")
-	@ApiOperation(value = "insertEvent")
+
 	@Override
 	public OperationResultModel insertEvent(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
@@ -235,7 +235,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 	}
 
 	@PostMapping(value = "/insertLog")
-	@ApiOperation(value = "insertLog")
+
 	@Override
 	public OperationResultModel insertLog(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
@@ -248,7 +248,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 	}
 
 	@PostMapping(value = "/updateShadow")
-	@ApiOperation(value = "updateShadow")
+
 	@Override
 	public OperationResultModel updateShadow(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
@@ -262,7 +262,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/insertAction")
-	@ApiOperation(value = "insertAction")
+
 	public OperationResultModel insertAction(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
 		final OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
@@ -275,7 +275,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/startTransaction")
-	@ApiOperation(value = "startTransaction")
+
 	public OperationResultModel startTransaction(@RequestBody TransactionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.info("Start Transaction:");
@@ -293,7 +293,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/commitTransaction")
-	@ApiOperation(value = "commitTransaction")
+
 	public OperationResultModel commitTransaction(@RequestBody TransactionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.info("Commit Transaction:");
@@ -311,7 +311,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/rollbackTransaction")
-	@ApiOperation(value = "rollbackTransaction")
+
 	public OperationResultModel rollbackTransaction(@RequestBody TransactionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.info("Rollback Transaction:");
@@ -329,7 +329,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	@Override
 	@PostMapping(value = "/notifyModules")
-	@ApiOperation(value = "notifyModules")
+
 	public OperationResultModel notifyModules(@RequestBody NotificationModel model) {
 		return routerService.notifyModules(model);
 	}

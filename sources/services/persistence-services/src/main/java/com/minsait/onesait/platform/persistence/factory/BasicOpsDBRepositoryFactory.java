@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.persistence.factory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Lazy;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -29,6 +30,8 @@ import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntology
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
 
 @Component
 public class BasicOpsDBRepositoryFactory {
@@ -46,6 +49,7 @@ public class BasicOpsDBRepositoryFactory {
 	private OntologyRepository ontologyRepository;
 
 	@Autowired
+	@Lazy
 	private VirtualOntologyOpsDBRepository virtualRepository;
 
 	@Autowired
@@ -54,10 +58,16 @@ public class BasicOpsDBRepositoryFactory {
 	@Autowired
 	private NoPersistenceBasicOpsDBRepository noPersistenceBasicOpsDBRepository;
 
+	@Autowired
+	private TimescaleDBBasicOpsDBRepository timescaleDBBasicOpsDBRepository;
+
 	@Autowired(required = false)
 	@Qualifier(NameBeanConst.KUDU_BASIC_OPS_BEAN_NAME)
 	private BasicOpsDBRepository kuduBasicOpsDBRepository;
 
+	@Autowired
+	private PrestoOntologyBasicOpsDBRepository prestoBasicOpsDBRepository;
+	
 	public BasicOpsDBRepository getInstance(String ontologyId) {
 		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
 		final RtdbDatasource dataSource = ds.getRtdbDatasource();
@@ -77,8 +87,12 @@ public class BasicOpsDBRepositoryFactory {
 			return virtualRepository;
 		} else if (RtdbDatasource.COSMOS_DB.equals(dataSource)) {
 			return cosmosBasicOps;
-		}else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
+		} else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
 			return noPersistenceBasicOpsDBRepository;
+		} else if (RtdbDatasource.TIMESCALE.equals(dataSource)) {
+			return timescaleDBBasicOpsDBRepository;
+		} else if (RtdbDatasource.PRESTO.equals(dataSource)) {
+			return prestoBasicOpsDBRepository;
 		} else {
 			return mongoBasicOps;
 		}

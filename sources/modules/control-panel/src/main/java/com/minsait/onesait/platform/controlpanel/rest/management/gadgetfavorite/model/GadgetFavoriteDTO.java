@@ -50,4 +50,8 @@ public class GadgetFavoriteDTO {
 	@Setter
 	private String user;
 
+	@Getter
+	@Setter
+	private String metainf;
+
 }

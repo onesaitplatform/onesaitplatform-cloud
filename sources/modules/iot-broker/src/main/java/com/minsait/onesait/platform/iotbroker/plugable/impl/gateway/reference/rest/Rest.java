@@ -75,9 +75,10 @@ import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.plugable.gateway.rest", name = "enable", havingValue = "true")
@@ -85,11 +86,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping(path = "/rest"
 // produces= MediaType.APPLICATION_JSON_UTF8_VALUE,
 // consumes=MediaType.APPLICATION_JSON_UTF8_VALUE
-)
+		)
 @EnableAutoConfiguration
 @Slf4j
 @CrossOrigin(origins = "*")
-@Api(value = "rest", description = "onesait Platform operations for devices")
+@Tag(name = "rest", description = "onesait Platform operations for devices")
 public class Rest implements WebMvcConfigurer {
 
 	@Autowired
@@ -122,13 +123,13 @@ public class Rest implements WebMvcConfigurer {
 		registry.addInterceptor(multitenancyInterceptor);
 	}
 
-	@ApiOperation(value = "Logs a client device into onesaitPlatform with token.\nReturns a sessionKey to use in further operations")
+	@Operation(summary = "Logs a client device into onesaitPlatform with token.\nReturns a sessionKey to use in further operations")
 	@GetMapping(value = "/client/join")
 	public ResponseEntity<?> join(
-			@ApiParam(value = "Token asociated to client platform", required = true) @RequestParam(name = "token") String token,
-			@ApiParam(value = "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
-			@ApiParam(value = "Desired ClientPlatform id. the value is chosen from user", required = true) @RequestParam(name = "clientPlatformId") String clientPlatformId,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "Token asociated to client platform", required = true) @RequestParam(name = "token") String token,
+			@Parameter(description= "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
+			@Parameter(description= "Desired ClientPlatform id. the value is chosen from user", required = true) @RequestParam(name = "clientPlatformId") String clientPlatformId,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyJoinMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyJoinMessage());
@@ -148,15 +149,15 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Logs a client device into onesaitPlatform Kafka cluster with token, vertical and tenant.\nReturns a sessionKey to use in further operations")
+	@Operation(summary = "Logs a client device into onesaitPlatform Kafka cluster with token, vertical and tenant.\nReturns a sessionKey to use in further operations")
 	@GetMapping(value = "/client/kafka/join")
 	public ResponseEntity<?> joinKafka(
-			@ApiParam(value = "Token asociated to client platform", required = true) @RequestParam(name = "token") String token,
-			@ApiParam(value = "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
-			@ApiParam(value = "Desired ClientPlatform id. the value is chosen from user", required = true) @RequestParam(name = "clientPlatformId") String clientPlatformId,
-			@ApiParam(value = "Client platform vertical", required = true) @RequestParam(name = "vertical") String vertical,
-			@ApiParam(value = "Client Platform tenant", required = true) @RequestParam(name = "tenant") String tenant,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "Token asociated to client platform", required = true) @RequestParam(name = "token") String token,
+			@Parameter(description= "Client Platform asociated to token", required = true) @RequestParam(name = "clientPlatform") String clientPlatform,
+			@Parameter(description= "Desired ClientPlatform id. the value is chosen from user", required = true) @RequestParam(name = "clientPlatformId") String clientPlatformId,
+			@Parameter(description= "Client platform vertical", required = true) @RequestParam(name = "vertical") String vertical,
+			@Parameter(description= "Client Platform tenant", required = true) @RequestParam(name = "tenant") String tenant,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyReturnMessage> verticalAndTenantResponse = checkVerticalAndTenant(token, vertical,
 				tenant);
@@ -181,11 +182,11 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Logs out a client device into onesaitPlatform with token")
+	@Operation(summary = "Logs out a client device into onesaitPlatform with token",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/client/leave")
 	public ResponseEntity<?> leave(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyLeaveMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyLeaveMessage());
@@ -203,14 +204,14 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Get a list of instances of a ontology data")
+	@Operation(summary = "Get a list of instances of a ontology data",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/ontology/{ontology}")
 	public ResponseEntity<?> list(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature ", required = true) @RequestParam(name = "query") String query,
-			@ApiParam(value = "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature ", required = true) @RequestParam(name = "query") String query,
+			@Parameter(description= "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		log.debug("Request with ontology {} and query {} type {}", ontology, query, queryType);
 
@@ -235,27 +236,27 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Get a list of instances of a ontology data through POST HTTP")
+	@Operation(summary = "Get a list of instances of a ontology data through POST HTTP",security = { @SecurityRequirement(name = "session-key") })
 	@PostMapping(value = "/ontology/{ontology}/query")
 	public ResponseEntity<?> postList(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature ", required = true) @RequestParam(name = "query") String query,
-			@ApiParam(value = "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Examples:\n\tNATIVE: db.temperature.find({})\n\tSQL: select * from temperature ", required = true) @RequestParam(name = "query") String query,
+			@Parameter(description= "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		return list(sessionKey, ontology, query, queryType, tags);
 
 	}
 
-	@ApiOperation(value = "Inserts a instance of a ontology expresed in json format")
+	@Operation(summary = "Inserts a instance of a ontology expresed in json format",security = { @SecurityRequirement(name = "session-key") })
 	@PostMapping(value = "/ontology/{ontology}")
 	public ResponseEntity<?> create(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Json data representing ontology instance", required = true) @RequestBody JsonNode data,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Json data representing ontology instance", required = true) @RequestBody JsonNode data,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyInsertMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyInsertMessage());
@@ -279,16 +280,16 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Updates a instance of a ontology expresed in json format")
+	@Operation(summary = "Updates a instance of a ontology expresed in json format",security = { @SecurityRequirement(name = "session-key") })
 	@PutMapping(value = "/ontology/{ontology}/{id}")
 	public ResponseEntity<?> updateById(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Ontology identification to perform operation", required = true) @PathVariable("id") String id,
-			@ApiParam(value = "Json data representing ontology instance", required = true) @RequestBody JsonNode data,
-			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Ontology identification to perform operation", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Json data representing ontology instance", required = true) @RequestBody JsonNode data,
+			@Parameter(description= "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyUpdateByIdMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyUpdateByIdMessage());
@@ -320,14 +321,14 @@ public class Rest implements WebMvcConfigurer {
 
 	// Use put operation instad this one
 	@Deprecated
-	@ApiOperation(value = "Updates a instance or instances of a ontology with a update query")
+	@Operation(summary = "Updates a instance or instances of a ontology with a update query",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/ontology/{ontology}/update")
 	public ResponseEntity<?> updateByQuery(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Examples: NATIVE: db.temperature.update({\"location\":\"Helsinki\"}, { $set:{\"value\":15}})", required = true) @RequestParam(name = "query") String query,
-			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Examples: NATIVE: db.temperature.update({\"location\":\"Helsinki\"}, { $set:{\"value\":15}})", required = true) @RequestParam(name = "query") String query,
+			@Parameter(description= "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids) {
 
 		final SSAPMessage<SSAPBodyUpdateMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyUpdateMessage());
@@ -356,15 +357,15 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Updates a instance or instances of a ontology with a update query in body")
+	@Operation(summary = "Updates a instance or instances of a ontology with a update query in body",security = { @SecurityRequirement(name = "session-key") })
 	@PutMapping(value = "/ontology/{ontology}/update")
 	public ResponseEntity<?> updateByQueryBody(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Examples: NATIVE: db.temperature.update({\"location\":\"Helsinki\"}, { $set:{\"value\":15}})", required = true, example = "") @RequestBody String query,
-			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Examples: NATIVE: db.temperature.update({\"location\":\"Helsinki\"}, { $set:{\"value\":15}})", required = true, example = "") @RequestBody String query,
+			@Parameter(description= "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyUpdateMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyUpdateMessage());
@@ -394,16 +395,16 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Delete a instance or instances of a ontology with a remove query")
+	@Operation(summary = "Delete a instance or instances of a ontology with a remove query",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/ontology/{ontology}/delete")
 	public ResponseEntity<?> deleteByQuery(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Examples: NATIVE: db.temperature.update({\"value\":15})", required = true) @RequestParam(name = "query") String query,
-			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Examples: NATIVE: db.temperature.update({\"value\":15})", required = true) @RequestParam(name = "query") String query,
+			@Parameter(description= "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags)
+					throws UnsupportedEncodingException {
 
 		final SSAPMessage<SSAPBodyDeleteMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyDeleteMessage());
@@ -436,15 +437,15 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Delete a instance of a ontology")
+	@Operation(summary = "Delete a instance of a ontology",security = { @SecurityRequirement(name = "session-key") })
 	@DeleteMapping(value = "/ontology/{ontology}/{id}")
 	public ResponseEntity<?> deleteById(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Ontology identification to perform operation", required = true) @PathVariable("id") String id,
-			@ApiParam(value = "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "TransactionId provided from start transaction operation", required = false) @RequestHeader(value = "TransactionId", required = false) String transactionId,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Ontology identification to perform operation", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Response Will include modidified Ids", required = false) @RequestParam(name = "ids", required = false, defaultValue = "false") String ids,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyDeleteByIdMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyDeleteByIdMessage());
@@ -474,10 +475,11 @@ public class Rest implements WebMvcConfigurer {
 	}
 
 	@PostMapping(value = "/ontology/decrypt/{ontology}")
+	@Operation(summary = "Decrypts ontology data",security = { @SecurityRequirement(name = "session-key") })
 	public ResponseEntity<?> decryptById(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
-			@ApiParam(value = "Json data representing ontology instance", required = true) @RequestBody String data) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Ontology to perform operation. Client platform must have granted permissions ", required = true) @PathVariable("ontology") String ontology,
+			@Parameter(description= "Json data representing ontology instance", required = true) @RequestBody String data) {
 
 		final Optional<IoTSession> session = securityPluginManager.getSession(sessionKey);
 
@@ -503,11 +505,11 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Start a Transaction")
+	@Operation(summary = "Start a Transaction",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/transaction/start")
 	public ResponseEntity<?> startTx(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyEmptySessionMandatoryMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyEmptySessionMandatoryMessage());
@@ -526,13 +528,13 @@ public class Rest implements WebMvcConfigurer {
 
 	}
 
-	@ApiOperation(value = "Commit a Transaction")
+	@Operation(summary = "Commit a Transaction",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/transaction/commit/{transactionId}")
 	public ResponseEntity<?> commitTx(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Lock ontologies during the transaction", required = false) @RequestHeader(value = "LockOntologies", defaultValue = "false") Boolean lockOntologies,
-			@ApiParam(value = "Transaction Identifier", required = true) @PathVariable("transactionId") String transactionId,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Lock ontologies during the transaction", required = false) @RequestHeader(value = "LockOntologies", defaultValue = "false") Boolean lockOntologies,
+			@Parameter(description= "Transaction Identifier", required = true) @PathVariable("transactionId") String transactionId,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyCommitTransactionMessage> request = new SSAPMessage<>();
 		final SSAPBodyCommitTransactionMessage commitBody = new SSAPBodyCommitTransactionMessage();
@@ -555,12 +557,12 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Rollback a Transaction")
+	@Operation(summary = "Rollback a Transaction",security = { @SecurityRequirement(name = "session-key") })
 	@GetMapping(value = "/transaction/rollback/{transactionId}")
 	public ResponseEntity<?> rollbackTx(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Transaction Identifier", required = true) @PathVariable("transactionId") String transactionId,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Transaction Identifier", required = true) @PathVariable("transactionId") String transactionId,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyEmptyMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyEmptyMessage());
@@ -579,14 +581,14 @@ public class Rest implements WebMvcConfigurer {
 		}
 	}
 
-	@ApiOperation(value = "Subscribe by subscription. The subscription have to be defined in controlpanel")
+	@Operation(summary = "Subscribe by subscription. The subscription have to be defined in controlpanel",security = { @SecurityRequirement(name = "session-key") })
 	@PostMapping(value = "/subscribe/{subscription}")
 	public ResponseEntity<?> subscribe(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Subscription to perform the operation. Client platform must have granted permissions ", required = true) @PathVariable("subscription") String subscription,
-			@ApiParam(value = "Value of the subscription ontology field", required = true) @RequestParam(name = "queryValue") String queryValue,
-			@ApiParam(value = "Endpoint where notifications will be sent", required = true) @RequestParam(name = "callback") String callback,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Subscription to perform the operation. Client platform must have granted permissions ", required = true) @PathVariable("subscription") String subscription,
+			@Parameter(description= "Value of the subscription ontology field", required = true) @RequestParam(name = "queryValue") String queryValue,
+			@Parameter(description= "Endpoint where notifications will be sent", required = true) @RequestParam(name = "callback") String callback,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(SSAPMessageGenerator
 				.generateRequestSubscriptionMessage(subscription, queryValue, callback, sessionKey, subscription, tags),
@@ -599,12 +601,12 @@ public class Rest implements WebMvcConfigurer {
 
 	}
 
-	@ApiOperation(value = "Unsubscribe by subscriptionId.")
+	@Operation(summary = "Unsubscribe by subscriptionId.",security = { @SecurityRequirement(name = "session-key") })
 	@PostMapping(value = "/unsubscribe/{subscriptionId}")
 	public ResponseEntity<?> unsubscribe(
-			@ApiParam(value = "SessionKey provided from join operation", required = true) @RequestHeader(value = "Authorization") String sessionKey,
-			@ApiParam(value = "Subscription ID ", required = true) @PathVariable("subscriptionId") String subscriptionId,
-			@ApiParam(value = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
+			@Parameter(description= "SessionKey provided from join operation", hidden = true) @RequestHeader(value = "Authorization") String sessionKey,
+			@Parameter(description= "Subscription ID ", required = true) @PathVariable("subscriptionId") String subscriptionId,
+			@Parameter(description= "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
 		final SSAPMessage<SSAPBodyReturnMessage> response = processor.process(
 				SSAPMessageGenerator.generateRequestUnsubscribeMessage(sessionKey, subscriptionId, tags),

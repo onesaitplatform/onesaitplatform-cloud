@@ -19,7 +19,13 @@
         <span th:text="#{marketasset.webproject}">Web Project</span>
     </div>
 </div>
-<div class="row main">
+
+<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+	<label class="no-padding-bottom" th:text=="'+'"></label>
+	<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{project.link.webproject}"></label>
+</div>
+
+<div class="row main borderPanel no-margin-left">
 	<div th:if="${projectObj.webProject == null}" class="col-md-6 col-sm-6 col-xs-12">
 		<div class="form-group">
 			<label class="control-label" th:text="#{project.webproject.list}">Webprojects:</label>
@@ -28,18 +34,20 @@
 				<option th:each="webproject :${webprojects}" th:value="${webproject.id}" th:text="${webproject.identification}" ></option>
 			</select>
 		</div>
+	</div>
+	<div th:if="${projectObj.webProject == null}" class="col-md-6 col-sm-6 col-xs-12 margin-top-24">
 		<div class="form-group pull-right">
 			<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.addWebProject()" th:text="#{project.link.webproject}"></button>
-			<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:onclick="'javascript:navigateUrlBlank(\''+@{|/webprojects/create|}+'\')'" th:text="#{gen.createBtn}"></button>																		
+			<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:attr="onclick='javascript:navigateUrlBlank(\''+@{|/webprojects/create|}+'\')'" th:text="#{gen.createBtn}"></button>
 		</div>
 	</div>
 	<div th:if="${projectObj.webProject != null}" class="col-md-6 col-sm-6 col-xs-12">
 		<div class="form-group">
 			<label class="control-label" th:text="#{project.webproject.list}">Webprojects:</label>
-			<div class="input-icon">
-				<input class="form-control" type="text" readonly="true" th:value="${projectObj.webProject.identification}"/>
-			</div>
+			<input class="form-control" type="text" readonly="true" th:value="${projectObj.webProject.identification}"/>
 		</div>
+	</div>
+	<div th:if="${projectObj.webProject != null}" class="col-md-6 col-sm-6 col-xs-12 margin-top-24">
 		<div class="form-group pull-right">
 			<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.removeWebProject()" th:text="#{project.unlink.webproject}"></button>
 		</div>

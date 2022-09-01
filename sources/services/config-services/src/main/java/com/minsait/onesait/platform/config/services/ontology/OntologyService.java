@@ -27,6 +27,7 @@ import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.OntologyDataAccess;
 import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
+import com.minsait.onesait.platform.config.model.OntologyPresto;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyRestOperation;
@@ -38,6 +39,7 @@ import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyFieldDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 
 public interface OntologyService {
@@ -206,5 +208,12 @@ public interface OntologyService {
 	OntologyElastic getOntologyElasticByOntologyId(Ontology ontology);
 
 	String getElementsAssociated(String ontologyId);
+
+	OntologyPresto getOntologyPrestoByOntologyId(Ontology ontology);
+
+	Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId);
+
+	Map<String, OntologyFieldDTO> getOntologyFieldsAndDesc(String identification, String sessionUserId)
+			throws IOException;
 
 }

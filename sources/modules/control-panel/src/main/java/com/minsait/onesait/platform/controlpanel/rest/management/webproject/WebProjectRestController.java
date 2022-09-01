@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,16 +39,20 @@ import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 
 @RestController
 @RequestMapping("api/webprojects")
-@Api(value = "Web Projects", tags = { "Web Projects API" })
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@Tag(name = "Web Projects")
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 public class WebProjectRestController {
 
 	@Autowired
@@ -55,8 +60,8 @@ public class WebProjectRestController {
 	@Autowired
 	private AppWebUtils utils;
 
-	@ApiOperation(value = "Create a web project")
-	@PostMapping
+	@Operation(summary = "Create a web project")
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> create(@RequestParam(required = true, value = "name") String name,
 			@RequestParam(required = true, value = "description") String description,
 			@RequestParam(required = false, value = "mainFileName", defaultValue = "index.html") String mainFileName,
@@ -78,14 +83,16 @@ public class WebProjectRestController {
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation(value = "Update content of a web project")
-	@PatchMapping("{name}/zip")
+	@Operation(summary = "Update content of a web project")
+	@PatchMapping(value="{name}/zip",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> patchZip(@RequestPart("zip") MultipartFile zip, @PathVariable("name") String name) {
 		final WebProjectDTO wp = webProjectService.getWebProjectByName(name, utils.getUserId());
-		if (wp == null)
+		if (wp == null) {
 			return ResponseEntity.notFound().build();
-		if (zip.isEmpty())
+		}
+		if (zip.isEmpty()) {
 			return ResponseEntity.badRequest().body("Empty zip file");
+		}
 		try {
 
 			webProjectService.uploadZip(zip, utils.getUserId());
@@ -97,8 +104,8 @@ public class WebProjectRestController {
 	}
 
 	@Deprecated
-	@ApiOperation(value = "Update web project")
-	@PutMapping("{name}")
+	@Operation(summary = "Update web project")
+	@PutMapping(value="{name}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> update(@PathVariable("name") String name,
 			@RequestParam(required = true, value = "description") String description,
 			@RequestParam(required = false, value = "mainFileName", defaultValue = "index.html") String mainFileName,
@@ -115,8 +122,8 @@ public class WebProjectRestController {
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation(value = "Update web project")
-	@PostMapping("{name}")
+	@Operation(summary = "Update web project")
+	@PostMapping(value="{name}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> updateWebProject(@PathVariable("name") String name,
 			@RequestParam(required = true, value = "description") String description,
 			@RequestParam(required = false, value = "mainFileName", defaultValue = "index.html") String mainFileName,
@@ -133,12 +140,13 @@ public class WebProjectRestController {
 		return ResponseEntity.ok().build();
 	}
 
-	@ApiOperation(value = "Delete web project")
+	@Operation(summary = "Delete web project")
 	@DeleteMapping("/{name}")
 	public ResponseEntity<String> delete(@PathVariable("name") String name) {
 		final WebProjectDTO wp = webProjectService.getWebProjectByName(name, utils.getUserId());
-		if (wp == null)
+		if (wp == null) {
 			return ResponseEntity.notFound().build();
+		}
 		try {
 			webProjectService.deleteWebProject(wp.getId(), utils.getUserId());
 			return ResponseEntity.ok().build();
@@ -147,9 +155,9 @@ public class WebProjectRestController {
 		}
 	}
 
-	@ApiOperation(value = "List all web projects")
+	@Operation(summary = "List all web projects")
 	@GetMapping
-	@ApiResponses(@ApiResponse(response = WebProjectDTO[].class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=WebProjectDTO[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<List<WebProjectDTO>> list(@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "description", required = false) String description) {
 		final List<WebProjectDTO> webprojects = webProjectService
@@ -157,31 +165,37 @@ public class WebProjectRestController {
 		return ResponseEntity.ok().body(webprojects);
 	}
 
-	@ApiOperation(value = "Find project by its name")
+	@Operation(summary = "Find project by its name")
 	@GetMapping("/{name}")
-	@ApiResponses(@ApiResponse(response = WebProjectDTO.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=WebProjectDTO.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<WebProjectDTO> find(@PathVariable("name") String name) {
 		final WebProjectDTO wp = webProjectService.getWebProjectByName(name, utils.getUserId());
-		if (wp == null)
+		if (wp == null) {
 			return ResponseEntity.notFound().build();
-		else
+		} else {
 			return ResponseEntity.ok().body(wp);
+		}
 	}
 
 	private void validateDTO(WebProjectDTO wp) {
 
 		Optional<String> message = Optional.empty();
 
-		if (StringUtils.isEmpty(wp.getIdentification()))
+		if (StringUtils.isEmpty(wp.getIdentification())) {
 			message = Optional.of("Identification must be provided");
-		if (wp.getZip() == null || wp.getZip().isEmpty())
+		}
+		if (wp.getZip() == null || wp.getZip().isEmpty()) {
 			message = Optional.of("Zip File must be provided");
-		if (utils.isFileExtensionForbidden(wp.getZip()))
+		}
+		if (utils.isFileExtensionForbidden(wp.getZip())) {
 			message = Optional.of("File must be ZIP");
-		if (wp.getZip().getSize() > utils.getMaxFileSizeAllowed())
+		}
+		if (wp.getZip().getSize() > utils.getMaxFileSizeAllowed()) {
 			message = Optional.of("ZIP File too large");
+		}
 
-		if (message.isPresent())
+		if (message.isPresent()) {
 			throw new WebProjectServiceException(message.get());
+		}
 	}
 }

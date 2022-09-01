@@ -22,8 +22,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -58,5 +61,18 @@ public class BinaryFileAccess extends AuditableEntityWithUUID {
 	@Setter
 	@Enumerated
 	private Type accessType;
+
+	@JsonSetter("user")
+	public void setUserJson(String userId) {
+		if (!StringUtils.isEmpty(userId)) {
+			final User u = new User();
+			u.setUserId(userId);
+			user = u;
+		}
+	}
+	@JsonGetter("user")
+	public String getUserJson() {
+		return user == null ? null : user.getUserId();
+	}
 
 }

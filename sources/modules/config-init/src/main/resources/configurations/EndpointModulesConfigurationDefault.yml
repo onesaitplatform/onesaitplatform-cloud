@@ -4,7 +4,7 @@ onesaitplatform:
     domain:
       base: http://localhost:18000/
     digitalTwinBroker:
-      base: http://localhost:19300/digitaltwinbroker  
+      base: http://localhost:19300/digitaltwinbroker
     iotbroker:
       base: http://localhost:19000/iot-broker
       advice: http://localhost:19000/iot-broker/advice
@@ -45,3 +45,20 @@ onesaitplatform:
       onlyview: http://localhost:8087/controlpanel/dashboards/view/
     reportEngine:
       base: http://localhost:18400/report-engine
+    minio:
+      base: http://localhost:9000
+      admin:
+         internal: https://minio-console.devonesaitplatform.com
+         external: https://minio-console.devonesaitplatform.com
+      browser:
+         internal: https://minio-browser.devonesaitplatform.com
+         external: https://minio-browser.devonesaitplatform.com
+      cookiedomain: devonesaitplatform.com
+    presto:
+      base: http://localhost:8080
+    prometheus:
+      base: https://localhost:8080/api/v1/query
+    serverless:
+      base: http://localhost:8086/serverless-manager
+    modeljsonld:
+      base: http://localhost:18000/controlpanel/datamodelsjsonld/

@@ -110,12 +110,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE  -->
-									<button th:if="((${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" id="deleteBtn"  type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'javascript:navigateUrl(\'' + @{|/marketasset/delete/${marketasset.id}/|} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="((${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" id="deleteBtn"  type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/marketasset/delete/${marketasset.id}/|} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 								
 									<span th:if="((${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" class="sep"></span>
 								
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/marketasset/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/marketasset/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<span class="sep no-border" th:if="${marketasset.id} != null"></span>
 										
@@ -246,7 +246,7 @@
 																<h4 class="media-heading">
 																	<b><a href="#" th:text="${comment.user.userId}"></a></b>
 																	<span class="c-date" th:text="${comment.createdAt}">23 May 2015, 10:40AM</span>
-																	<span th:if="((${#authentication.name} == ${comment.user.userId}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" class="btn btn-xs btn-outline red-sunglo" data-container="body" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:navigateUrl(\'' +@{/marketasset/deletecomment/__${marketasset.id}__/__${comment.id}__/} + '\');'" ><i class="fa fa-trash font-md" style="top: 0px;"></i></span>
+																	<span th:if="((${#authentication.name} == ${comment.user.userId}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" class="btn btn-xs btn-outline red-sunglo" data-container="body" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:attr="onclick='javascript:navigateUrl(\'' +@{/marketasset/deletecomment/__${marketasset.id}__/__${comment.id}__/} + '\');'" ><i class="fa fa-trash font-md" style="top: 0px;"></i></span>
 																</h4>
 																<b><span th:text="${comment.title}"></span></b>
 																
@@ -265,7 +265,7 @@
 															<textarea id="commentInput" name="commentInput" rows="8" th:placeholder="#{marketasset.comment.text}" class="form-control c-square"></textarea>
 														</div>
 														<div class="form-group text-right">
-															<button type="button" class="btn btn-md btn-outline btn-circle blue" th:onclick="'javascript:sendComment();'" th:text="#{marketasset.comment.button}">Submit Comment</button>
+															<button type="button" class="btn btn-md btn-outline btn-circle blue" th:attr="onclick='javascript:sendComment();'" th:text="#{marketasset.comment.button}">Submit Comment</button>
 														</div>
 													</form>
 												</div>

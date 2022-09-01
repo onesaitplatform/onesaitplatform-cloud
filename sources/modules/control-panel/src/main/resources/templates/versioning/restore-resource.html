@@ -1,0 +1,621 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2021 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"></title>
+
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+		<style>
+		  .fullscreen {
+		    position: fixed;
+		    width: 100%;
+		    height: 100% !important;
+		    left: 0;
+		    top: 0;
+		    z-index: 10000;
+		  }
+		</style>
+
+
+	</head>
+
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+		<!-- TEMPLATE -->
+
+		<!-- MAIN PAGE WRAPPER -->
+		<div class="page-wrapper">
+
+			<!-- BEGIN HEADER INCLUDE -->
+			<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+			<!-- END HEADER -->
+
+			<!-- HEADER AND CONTENT DIVIDER -->
+			<div class="clearfix"> </div>
+
+			<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+			<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+			<!-- END SIDEBAR -->
+
+			<!-- BEGIN CONTENT -->
+			<div class="page-content-wrapper">
+
+				<!-- BEGIN CONTENT BODY -->
+				<div class="page-content">
+
+					<!-- BEGIN PAGE BAR AND BREADCRUM-->
+					<div class="page-bar margin-bottom-20">
+						<ul class="page-breadcrumb">
+							<li>
+								<span  th:text="#{versioning.restore.versionable.breadcrumb}">Restore versionable</span>
+							</li>
+						</ul>
+					</div>
+					<!-- END PAGE BAR -->
+
+					<!-- BEGIN PAGE TITLE-->
+					<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+					<!-- END PAGE TITLE-->
+					<!-- BEGIN BODY -->
+    				<div id="divPortlet" class="row	equal flex-container">
+    					<!-- BEGIN TABS -->
+    					<div class="tabContainer flex-tabs-left">
+                            <div id="tab-restore-existing" class="option active">
+                                <a href="#tab_1" data-toggle="tab" aria-expanded="false">
+                                    <span class="caption-subject" th:text="#{versioning.restore.existing}"> Restore existing </span>
+                                </a>
+                            </div>
+                            <div id="tab-restore-deleted" class="option">
+                                <a href="#tab_2" data-toggle="tab" aria-expanded="false">
+                                    <span class="" th:text="#{versioning.restore.deleted}"> </span>
+                                </a>
+                            </div>
+                        </div>
+                        <!-- END TABS -->
+                        <!-- MAIN ROW -->
+                     	<div class="tab-content flex-content-right">
+                        <!-- BEGIN TAB1 -->
+						<div class="tab-pane fade in active" id="tab_1">
+							<div class="row main" style="background-color: #F0F1F2; margin-left: -30px; margin-right: -30; padding-top: 8px; padding-bottom: 8px; padding-right: 10px;" >
+								<div class="col-md-12 col-xs-12">
+									<div class="pull-right">
+										<!-- RE-INIT GIT -->
+	                                	<button id="btn-re-init" th:attr="onclick='syncGit()'"  type="button" class="btn btn-circle btn-outline blue" name="delete" value="Remove"><span th:text="#{versioning.sync.repo}"> </span></button>
+	                                    <span class="sep"></span>
+										<!-- SAVE TO LOCAL -->
+	                                    <button id="btn-save-local" th:attr="onclick='saveModifiedLocalFile();'"  type="button" class="btn btn-circle btn-outline blue" name="save-local" value="save-local" disabled><span  th:text="#{versioning.savelocal.btn}"> Guardar cambios </span></button>
+	                                    <span class="sep no-border"></span>
+	                                    <!-- RESTORE -->
+										<button type="button" id="btn-restore-existing" th:text="#{versioning.restore}" th:value="#{versioning.restore}" class="btn btn-primary btn-primary-save" disabled> Restore </button>
+									</div>
+								</div>
+  								</div>
+							<div class="row main">
+								<div class="col-md-4 col-sm-4 col-xs-4" id="classes-div">
+									<div class="form-group" id="classes">
+	                                    <label class="control-label" th:text="#{versioning.entity.type}">Entity type</label>
+	                                    <select id="classes-select" class="selectpicker form-control" data-live-search="true" data-width="100%">
+											<option value="">Select type...</option>
+											<option th:each="clazz: ${classes}" th:value="${clazz.key}" th:text="${clazz.value}"></option>
+										</select>
+	                                </div>
+								</div>
+								<div class="col-md-4 col-sm-4 col-xs-4" id="versionables-div">
+									<div class="form-group" id="versionables">
+	                                    <label class="control-label" th:text="#{versioning.entity}">Versionable Entity</label>
+	                                    <select id="versionables-select" class="selectpicker form-control" data-live-search="true" data-width="100%" disabled>
+											<option value="">Select entity...</option>
+											<option th:each="versionable : ${versionables}" th:value="${versionable.id}" th:text="${versionable.fileName()}"></option>
+										</select>
+	                                </div>
+								</div>
+							</div>
+							<div class="row main">
+								<div class="col-md-9 col-sm-9 col-xs-9" id="commits-div">
+									<div class="form-group" id="commits">
+	                                    <label class="control-label" th:text="#{versioning.commit.message}">ID COMMIT</label>
+	                                    <select id="commits-select" class="selectpicker form-control" data-live-search="true" data-width="100%" disabled>
+											<option value="">Select commit...</option>
+											<option th:each="commit : ${commits}" th:value="${commit.commitId}" th:text="${commit.commit.message}"></option>
+										</select>
+	                                </div>
+								</div>
+								<div class="col-md-3 col-sm-3 col-xs-3" id="commits-div">
+									<div class="form-group">
+										<label class="control-label" th:text="#{versioning.commit.id}">Commit message</label>
+										<input id="commit-message" th:required="true" maxlength="50" class="form-control" readonly/>
+									</div>
+								</div>
+							</div>
+							<div class="row main">
+							</div>
+							<div class="row main hide" id="diff-file-wrapper">
+								<div class="col-md-6 col-sm-6 col-xs-6" >
+									<label class="control-label" th:text="#{versioning.file.committed}">Content of file in commit</label>
+								</div>
+								<div class="col-md-6 col-sm-6 col-xs-6" >
+									<label class="control-label" th:text="#{versioning.file.current}">Current file content (Editable)</label>
+								</div>
+								<div class="col-md-12 col-sm-12 col-xs-12" >
+									<div style="height:600px" id="diff-file" ></div>
+								</div>
+							</div>
+						</div>
+						<!-- END TAB1 -->
+						<!-- BEGIN TAB2 -->
+						<div class="tab-pane fade in" id="tab_2">
+							<div class="row main" style="background-color: #F0F1F2; margin-left: -30px; margin-right: -30; padding-top: 8px; padding-bottom: 8px; padding-right: 10px;" >
+								<div class="col-md-12 col-xs-12">
+									<div class="pull-right">
+										<!-- PRELOAD -->
+										<button type="button" id="btn-preload-deleted" th:text="#{versioning.preload.deleted}" th:value="#{versioning.preload.deleted}" class="btn btn-primary btn-primary-save" disabled> Preload </button>
+	                                    <!-- RESTORE -->
+										<button type="button" id="btn-restore-deleted" th:text="#{versioning.restore}" th:value="#{versioning.restore}" class="btn btn-primary btn-primary-save" disabled> Restore </button>
+									</div>
+								</div>
+  								</div>
+							<div class="row main">
+								<div class="col-md-4 col-sm-4 col-xs-4">
+									<div class="form-group" id="classes">
+	                                    <label class="control-label" th:text="#{versioning.entity.type}">Entity type</label>
+	                                    <select id="classes-select-deleted" class="selectpicker form-control" data-live-search="true" data-width="100%">
+											<option value="">Select type...</option>
+											<option th:each="clazz: ${classes}" th:value="${clazz.key}" th:text="${clazz.value}"></option>
+										</select>
+	                                </div>
+								</div>
+								<div class="col-md-4 col-sm-4 col-xs-4">
+									<div class="form-group">
+										<label class="control-label" th:text="#{versioning.absolute.path.resource}">Full path to resource</label>
+										<input id="path-to-file" th:required="true" maxlength="150" class="form-control" readonly/>
+									</div>
+								</div>
+								<div class="col-md-4 col-sm-4 col-xs-4">
+									<div class="form-group">
+										<label class="control-label" th:text="#{versioning.commit.id}">Commit message</label>
+										<input id="commit-id-deleted" th:required="true" maxlength="100" class="form-control" readonly/>
+									</div>
+								</div>
+							</div>
+							<div class="row main">
+							</div>
+							<div class="row main">
+								<div style="width: 99%;" class="hide" id="deleted-file-wrapper">
+									<!-- <label class="control-label" th:text="#{versioning.file.current}">Current file content</label> -->
+									<div style="height:600px" id="deleted-file-content" ></div>
+								</div>
+							</div>
+						</div>
+						<!-- END TAB2 -->
+						</div>
+						<!-- END MAIN ROW -->
+					</div>
+					<!-- END BODY -->
+				</div>
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->
+		<!-- END MAIN PAGE WRAPPER -->
+
+		<!-- FOOTER INCLUDE -->
+		<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+
+
+		<!-- TEMPLATE -->
+
+		<!-- CORE CONTROLLERS -->
+		<script th:src="@{/static/js/app.js}"></script>
+		<script th:src="@{/static/js/layout.js}"></script>
+
+		<!-- PLUGINS -->
+		<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+		<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+		<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"></script>
+		<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+		<!-- MONACO/VSC -->
+		<script >
+		  var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
+		</script>
+
+		<script src="/controlpanel/static/vendor/vs/loader.js"></script>
+
+		<script src="/controlpanel/static/vendor/vs/editor/editor.main.nls.js"></script>
+
+		<script src="/controlpanel/static/vendor/vs/editor/editor.main.js"></script>
+		<!-- End Monaco Require -->
+		<script th:inline="javascript">
+			var urlRestoreResource = [[@{/versioning/restore/resource}]];
+			var urlSaveLocalChanges = [[@{/versioning/save/local-changes}]];
+			var csrfHeader = headerJson.csrfHeaderName;
+			var csrfToken = headerJson.csrfToken;
+			var headersObj = {};
+			headersObj[csrfHeader] = csrfToken;
+			headersObj['Content-Type'] = 'application/json';
+			var Close = headerJson.btnCancelar;
+			var restoredOk = [[#{versioning.msg.ok}]];
+			var restoredError = [[#{versioning.msg.error}]];
+			var saveOk = [[#{versioning.msg.save.ok}]];
+			var saveError = [[#{versioning.msg.save.error}]];
+			var saveLocalChangesPopUp = [[#{versioning.restore.savelocal.popup}]]
+			var restoreResourceContent = [[#{versioning.restore.resource.popup}]]
+			var restoreResourceTitle = [[#{versioning.restore}]]
+			var saveLocalChangesTitle =  [[#{versioning.savelocal.btn}]]
+
+			var initialize = () => {
+
+				$(".option a[href='#tab_1']").on("click", function(e) {
+					$('.tabContainer').find('.option').removeClass('active');
+			        $(this).closest("div").addClass('active');
+				});
+
+				$(".option a[href='#tab_2']").on("click", function(e) {
+					$('.tabContainer').find('.option').removeClass('active');
+			        $(this).closest("div").addClass('active');
+				});
+
+				//DELETED ENTITY INIT
+				$('#classes-select-deleted').off().on('change', function(){
+				    let comboVal = $('#classes-select-deleted').val();
+				    $('#deleted-file-wrapper').addClass('hide')
+				    $('#btn-restore-deleted').prop("disabled", true);
+				    if(comboVal === ''){
+				      $('#btn-preload-deleted').prop("disabled", true);
+				      $('#path-to-file').attr("readonly", true);
+				      $('#commit-id-deleted').attr("readonly", true);
+				    }else{
+				      $('#btn-preload-deleted').prop("disabled", false);
+				      $('#path-to-file').attr("readonly", false);
+				      $('#commit-id-deleted').attr("readonly", false);
+				    }
+				})
+
+				$('#btn-preload-deleted').off().on('click', function(){
+				    let encodedFilePath = encodeURIComponent($('#path-to-file').val());
+				    let clazz = $('#classes-select-deleted').val();
+				    let commitId = $('#commit-id-deleted').val();
+				    getFileContent(clazz, encodedFilePath , commitId, null, false, false, true);
+				})
+
+				 $('#btn-restore-deleted').off().on('click',function(){
+					let pathToFile = $('#path-to-file').val();
+				    let clazz = $('#classes-select-deleted').val();
+				    let commitId = $('#commit-id-deleted').val();
+				    restoreRequest(clazz,null,pathToFile,commitId,null,false);
+				 })
+
+				//DELETED ENTITY END
+
+				$('#classes-select').off().on('change', function(){
+					$('#versionables-select').prop('disabled', true);
+					$('#versionables-select').selectpicker('refresh');
+					let clazz = $('#classes-select').val();
+					$('#versionables').load(`${urlRestoreResource}/${clazz}`, function (){
+						$('#versionables-select').prop('disabled', false);
+						$('#commits-select').prop('disabled', true);
+						$('#commits-select').empty();
+						$('#diff-file-wrapper').addClass('hide')
+						$('#btn-save-local').prop("disabled", true);
+						$('#btn-restore-existing').prop("disabled", true);
+						$('#classes-select').selectpicker('refresh');
+						initialize();
+					})
+				})
+				$('#versionables-select').off().on('change', function(){
+					$('#commits-select').prop('disabled', true);
+					$('#commits-select').selectpicker('refresh');
+					let clazz = $('#classes-select').val();
+					let versionableId =  $('#versionables-select').val();
+					$('#commits').load(`${urlRestoreResource}/${versionableId}/commits?class=${clazz}`, function (){
+						$('#commits-select').prop('disabled', false);
+						$('#diff-file-wrapper').addClass('hide')
+						$('#btn-save-local').prop("disabled", true);
+						$('#btn-restore-existing').prop("disabled", true);
+						initialize();
+						getFileContent(clazz, versionableId, null, /*currentFileMonaco*/ null, false, true, false);
+						//currentFileMonaco.setValue($('#versionables-select').children(":selected").data('file_content'));
+					})
+				})
+
+				$('#commits-select').off().on('change', function(){
+					$('#commit-message').val($('#commits-select').val())
+					let clazz = $('#classes-select').val();
+					let versionableId =  $('#versionables-select').val();
+					let commitId = $('#commits-select').val();
+					getFileContent(clazz, versionableId, commitId, /*committedFileMonaco*/ null, true, false, false);
+				})
+
+				$('#btn-restore-existing').off().on('click', function(){
+					let clazz = $('#classes-select').val();
+					let versionableId =  $('#versionables-select').val();
+					let versionableFile =  $('#versionables-select').children(":selected").text();
+					let commitId = $('#commits-select').val();
+					//TO-DO restore message
+					restoreRequest(clazz, versionableId, versionableFile, commitId, null, true);
+				})
+				$('#versionables-select').selectpicker('refresh');
+				$('#commits-select').selectpicker('refresh');
+				$('#commit-message').text('')
+			}
+
+			var  restoreRequest = (clazz, entityId, fileName, commitId, restoreCommitMessage, isExisting) => {
+				let payload = {
+						existingVersionable: isExisting,
+						clazz,
+						commitId,
+						commitMessage: restoreCommitMessage,
+						fileName,
+						entityId
+				};
+			    $.confirm({
+					title: restoreResourceTitle,
+					theme: 'light',
+					content: restoreResourceContent + '<br/><input style="margin-top:10px" id="commit-message-input" type="text" name="commit-message" class="form-control " placeholder="Commit Message"/>',
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					buttons: {
+						close: {
+							text: headerJson.btnClose,
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.
+						},
+						OK: {
+							text: 'OK',
+							btnClass: 'btn btn-primary',
+							action: function (){
+								let commitMsg = $('#commit-message-input').val();
+								payload.commitMessage=commitMsg;
+								fetch(urlRestoreResource, {
+									method: 'POST',
+									headers: headersObj,
+									body: JSON.stringify(payload)
+								})
+								.then(r => {
+								    return r.json();
+								})
+								.then(r => {
+									if(r.operationResult === 'SUCCESS')
+										toastr.info(messagesForms.operations.genOpSuccess,`${r.resultMessage}`);
+									else
+										toastr.info(messagesForms.operations.genOpError,`${r.resultMessage}`);
+								})
+								.catch(r => {
+									console.error(r)
+								})
+							}
+						}
+					}
+				});
+
+
+			}
+
+			var getFileContent = (clazz, entityId, commitId, monacoObj, diffMode, currentFile, isFilePath) =>{
+				let appendVars = "";
+				if(isFilePath){
+					appendVars = `&filePath=${entityId}`;
+					entityId = "id";
+				}
+				fetch(`${urlRestoreResource}/${entityId}/commit/${commitId}/file-content?class=${clazz}&isFilePath=${isFilePath}${appendVars}`)
+				.then(r => r.text())
+				.then(t => {
+					if(currentFile)
+						currentFileValue = t;
+					else
+						modifiedFileValue= t;
+					if(diffMode){
+						$('#diff-file-wrapper').removeClass('hide')
+						$('#btn-save-local').prop("disabled", false);
+						$('#btn-restore-existing').prop("disabled", false);
+						initializeMonacoDiffMode(currentFileValue, modifiedFileValue );
+					}else{
+						$('#deleted-file-wrapper').removeClass('hide')
+						$('#btn-restore-deleted').prop("disabled", false);
+						console.log(t);
+						initializeMonacoDeletedFile();
+						deletedFileMonaco.setValue(t);
+						/*$('#diff-file-wrapper').addClass('hide')
+						$('#btn-save-local').prop("disabled", true);
+						$('#btn-restore-existing').prop("disabled", true);*/
+						//monacoObj.setValue(t)
+					}
+				})
+				.catch(e => console.log(e))
+			}
+			var deletedFileMonaco;
+			var deletedFile = document.getElementById('deleted-file-content');
+
+			var initializeMonacoDeletedFile = () => {
+				if(typeof deletedFileMonaco !== 'undefined'){
+					deletedFileMonaco.dispose();
+				}
+				deletedFileMonaco = monaco.editor.create(deletedFile, {
+				       value: '',
+				       language: 'yaml',
+				       readOnly: true,
+				       scrollBeyondLastLine: false,
+				       theme: "vs-dark",
+				       automaticLayout: true
+				});
+				//MONACO KEY EVENTS FULL SCREEN
+				var deletedFileMonaco_isfullscreen = false;
+				//TO-DO change key to F11 for windows
+				deletedFileMonaco.addCommand(monaco.KeyCode.Escape, function() {
+				    if(!deletedFileMonaco_isfullscreen){
+				        document.getElementById("deleted-file-content").classList.add("fullscreen");
+				        deletedFileMonaco_isfullscreen=true;
+				    }
+				    else{
+				        document.getElementById("deleted-file-content").classList.remove("fullscreen");
+				        deletedFileMonaco_isfullscreen=false;
+				    }
+				});
+			}
+			var diffEditor;
+			var diffFileMonaco_isfullscreen=false;
+			var diffFile = document.getElementById('diff-file');
+			var initializeMonacoDiffMode = (local, commit) => {
+				if(typeof diffEditor !== 'undefined'){
+					diffEditor.dispose();
+				}
+				diffEditor = monaco.editor.createDiffEditor(diffFile,{
+					readOnly: false,
+					scrollBeyondLastLine: false,
+			        theme: "vs-dark",
+			        automaticLayout: true
+			        //originalEditable: true
+				});
+				var originalModel = monaco.editor.createModel(commit,'yaml');
+				var modifiedModel = monaco.editor.createModel(local,'yaml');
+				diffEditor.setModel({
+					original: originalModel,
+					modified: modifiedModel
+				});
+				diffEditor.addCommand(monaco.KeyCode.Escape, function() {
+				    if(!diffFileMonaco_isfullscreen){
+				        document.getElementById("diff-file").classList.add("fullscreen");
+				        diffFileMonaco_isfullscreen=true;
+				    }
+				    else{
+				        document.getElementById("diff-file").classList.remove("fullscreen");
+				        diffFileMonaco_isfullscreen=false;
+				    }
+				});
+				diffEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function() {
+					saveModifiedLocalFile()
+				});
+			}
+
+			var saveModifiedLocalFile = () =>{
+			    let fileContent = diffEditor.getModel().modified.getValue();
+			    let clazz = $('#classes-select').val();
+				let versionableId =  $('#versionables-select').val();
+			    $.confirm({
+					title: saveLocalChangesTitle,
+					theme: 'light',
+					content: saveLocalChangesPopUp + '<br/><input style="margin-top:10px" id="commit-message-input" type="text" name="commit-message" class="form-control " placeholder="Commit Message"/>',
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					buttons: {
+						close: {
+							text: headerJson.btnClose,
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.
+						},
+						OK: {
+							text: 'OK',
+							btnClass: 'btn btn-primary',
+							action: function (){
+								let commitMsg = $('#commit-message-input').val();
+								let payload = {
+										clazz,
+										fileContent,
+										entityId: versionableId,
+										commitMsg
+								};
+								fetch(urlSaveLocalChanges, {
+									method: 'POST',
+									headers: headersObj,
+									body: JSON.stringify(payload)
+								})
+								.then(r => {
+								    return r.json();
+								})
+								.then(r => {
+									if(r.operationResult === 'SUCCESS')
+										toastr.info(messagesForms.operations.genOpSuccess,`${r.resultMessage}`);
+									else
+										toastr.info(messagesForms.operations.genOpError,`${r.resultMessage}`);
+								})
+								.catch(r => {
+									console.error(r)
+								})
+							}
+						}
+					}
+				});
+			}
+			$(document).ready(function() {
+				initialize();
+			});
+
+			var constants ={
+					syncContent: [[#{versioning.sync.repo.content}]],
+					syncTitle: [[#{versioning.sync.repo.title}]]
+
+				};
+			var baseUrl = [[@{/versioning}]]
+			var syncGit = () =>{
+				$.confirm({
+					title: `${constants.syncTitle}`,
+					theme: 'light',
+					columnClass: 'medium',
+					content: constants.syncContent,
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					buttons: {
+						close: {
+							text: headerJson.btnClose,
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.
+						},
+						Ok: {
+							text: 'OK',
+							btnClass: 'btn btn-primary',
+							action: function() {
+								fetch(`${baseUrl}/git-config/sync-repo`,
+								{
+									method: 'POST',
+									headers: headersObj
+
+								})
+								.then(r => {return r.text();})
+								.then(r => {
+									console.log(r);
+									window.location.reload()
+								})
+								.catch(e => {
+									console.error(e);
+									window.location.reload()
+								})
+							}
+						}
+					}
+				});
+			}
+		</script>
+	</body>
+</html>

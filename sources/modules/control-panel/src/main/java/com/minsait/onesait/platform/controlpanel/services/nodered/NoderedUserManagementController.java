@@ -29,8 +29,8 @@ import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.ApiResponseErrorDTO;
 import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 
 @RestController
 @RequestMapping("/nodered/auth")
@@ -43,11 +43,11 @@ public class NoderedUserManagementController {
 	@Autowired
 	private ConfigDBDetailsService detailsService;
 
-	@ApiOperation(value = "Get users access to api by identification or id")
+	@Operation(summary = "Get users access to api by identification or id")
 	@GetMapping(value = "/{userId}/{apiToken}")
 	public ResponseEntity<String> getAuthorizations(
-			@ApiParam(value = "User", required = true) @PathVariable(name = "userId") String userId,
-			@ApiParam(value = "Api token", required = true) @PathVariable("apiToken") String apiToken) {
+			@Parameter(description = "User", required = true) @PathVariable(name = "userId") String userId,
+			@Parameter(description = "Api token", required = true) @PathVariable("apiToken") String apiToken) {
 
 		ResponseEntity<String> response;
 		try {

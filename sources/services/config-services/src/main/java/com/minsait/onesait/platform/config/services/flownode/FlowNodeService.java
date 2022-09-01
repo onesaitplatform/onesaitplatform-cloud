@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.flownode;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.model.Flow;
 import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.NotificationEntity;
 
@@ -23,8 +24,8 @@ public interface FlowNodeService {
 
 	public List<FlowNode> getAllFlowNodes();
 
-	public FlowNode createFlowNode(FlowNode flowNode);
-
 	public List<NotificationEntity> getNotificationsByOntologyAndMessageType(String ontology, String messageType);
+
+	public FlowNode createFlowNode(FlowNode flowNode, Flow flow);
 
 }

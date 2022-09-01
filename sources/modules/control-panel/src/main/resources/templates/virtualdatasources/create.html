@@ -112,12 +112,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${datasource.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+									<button th:if="(${datasource.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='deleteDatasourceConfirmation(\'' + ${datasource.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 																								
 									<span class="sep" th:if="(${datasource.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button th:if="${datasource.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -129,7 +129,7 @@
 									<button th:if="${datasource.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
 										
 									<!-- UPDATE -->
-									<button th:if="(${datasource.id} != null)" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:onclick="'confirmEdit();'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button th:if="(${datasource.id} != null)" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='confirmEdit();'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
 								</div>
 							</div>
 						</div>
@@ -245,7 +245,7 @@
                                     <p th:text="#{datasource.edit.alert}"></p>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-default" th:onclick="'javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" data-dismiss="modal" th:value="#{gen.cancelBtn}"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                    <button type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" data-dismiss="modal" th:value="#{gen.cancelBtn}"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
                                     <button type="submit"  class="btn btn-default" name="update" th:value="#{gen.editBtn}"><span th:text="#{gen.editBtn}"> Edit </span></button>
                                 </div>
                             </div>
@@ -371,7 +371,7 @@
 		$('#modal-confirm-edit').modal('show');
 		event.preventDefault();
 	}
-	
+
 	var virtualdatasourcesCreateJson = { 	
 			"language" : currentLanguage,
 			"validform": {

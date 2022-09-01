@@ -209,25 +209,25 @@
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:window.open(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:window.open(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/webprojects/update/${webproject.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/webprojects/update/${webproject.id}/|} + '\');'"><i class="icon-edit"></i></span>
 
 																	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- DOWNLOAD -->
-																			<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'downloadZip(\'' + @{|/webprojects/downloadZip/${webproject.id}/|} + '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{gen.download}" >Download</span></span>
+																			<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='downloadZip(\'' + @{|/webprojects/downloadZip/${webproject.id}/|} + '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{gen.download}" >Download</span></span>
 																		</li>
 																		<li>
 																			<!-- COPY URL -->
-																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'copyURL(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >URL</span></span>
+																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='copyURL(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >URL</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																    		<span th:if="${#authentication.name} == ${webproject.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'deleteWebProject(\'' + ${webproject.id} + '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																    		<span th:if="${#authentication.name} == ${webproject.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteWebProject(\'' + ${webproject.id} + '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																		</li>
 																	</ul>
 																	</span>
@@ -327,8 +327,9 @@
 	// DELETE WEB PROJECT
 	var deleteWebProject = function(id){
 		console.log('deleteWebProjectConfirmation() -> formId: '+ id);
+			
+		HeaderController.showConfirmDeleteDialogWebProject(deleteUrl + id);	
 		
-		HeaderController.showConfirmDeleteDialogWebProject(deleteUrl + id);
 	}
 	
 	var copyURL = function(url){

@@ -1,19 +1,19 @@
 onesaitplatform:
   env:
     database:
-      execution-timeout: !!java.lang.Long 10000
-      queries-limit: 2000
+      execution-timeout: !!java.lang.Long ${RTDB_EXECUTION_TIMEOUT}
+      queries-limit: ${RTDB_QUERIES_LIMIT}
       mongodb-servers: ${REALTIMEDBSERVERS}
-      mongodb-database: onesaitplatform_rtdb
-      mongodb-socket-timeout: 5000
-      mongodb-connect-timeout: 30000
-      mongodb-max-wait-time: 5000
-      mongodb-pool-size: 100
+      mongodb-database: ${REALTIMEDBNAME}
+      mongodb-socket-timeout: ${MONGO_SOCKET_TIMEOUT}
+      mongodb-connect-timeout: ${MONGO_CONNECT_TIMEOUT}
+      mongodb-max-wait-time: ${MONGO_WAIT_TIME}
+      mongodb-pool-size: ${MONGO_POOL_SIZE}
       mongodb-read-from-secondaries: false
       mongodb-read-preference: secondaryPreferred
-      mongodb-write-concern: UNACKNOWLEDGED
-      mongodb-ssl-enabled: false
-      mongodb-use-quasar: false
+      mongodb-write-concern: ${REALTIMEDBWRITECONCERN}
+      mongodb-ssl-enabled: ${MONGO_SSL_ENABLED}
+      mongodb-use-quasar: ${MONGO_USE_QUASAR}
       mongodb-use-legacysql: false
       mongodb-quasar-timeout: 10000
       mongodb-quasar-compile: true
@@ -50,3 +50,4 @@ onesaitplatform:
       keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
     controlpanel:
       maxSessionsPerUser: 10
+      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$

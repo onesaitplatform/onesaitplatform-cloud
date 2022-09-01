@@ -26,7 +26,7 @@ public class ProcessorPathConfig {
 
 	@Value("${onesaitplatform.videobroker.path.processor-resources}")
 	public void setPath(String pathResources) {
-		setPath(pathResources);
+		setPathResources(pathResources);
 	}
 
 	synchronized void setPathResources(String path) {

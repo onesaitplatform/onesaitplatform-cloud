@@ -27,8 +27,12 @@ import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
 import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValidationNodeService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +47,8 @@ public class FlowEngineDataflowService {
 	private DataflowService dataflowService;
 	@Autowired
 	private FlowDomainService domainService;
+	@Autowired
+	private MasterUserRepository masterUserRepository;
 	
 	private static final String ERROR_DOMAIN = "{'error':'Domain ";
 	private static final String PIPELINE_NOT_EXISTS = "Specified Pipeline '{}' does not exist.";
@@ -60,88 +66,96 @@ public class FlowEngineDataflowService {
 	}
 
 	
-	public ResponseEntity<String> getPipelineStatus(String domainName, String pipelineIdentification) {
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainName);
+	public ResponseEntity<String> getPipelineStatus(DataflowDTO dataflowData) {
+		MultitenancyContextHolder.setVerticalSchema(dataflowData.getVerticalSchema());
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(dataflowData.getDomainName());
 		if (domain == null) {
-			log.error("Domain {} not found for DataFlow Status Check execution.", domainName);
-			return new ResponseEntity<>(ERROR_DOMAIN + domainName
-					+ " not found for DataFlow Status Check execution: '" + pipelineIdentification + "'.'}",
+			log.error("Domain {} not found for DataFlow Status Check execution.", dataflowData.getDomainName());
+			return new ResponseEntity<>(ERROR_DOMAIN + dataflowData.getDomainName()
+					+ " not found for DataFlow Status Check execution: '" + dataflowData.getDataflowIdentification() + "'.'}",
 					HttpStatus.BAD_REQUEST);
 		}
-
-		final Pipeline pipeline = dataflowService.getPipelineByIdentification(pipelineIdentification);
+		final User platformUser = domain.getUser();
+		final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
+		MultitenancyContextHolder.setTenantName(user.getTenant().getName());
+		final Pipeline pipeline = dataflowService.getPipelineByIdentification(dataflowData.getDataflowIdentification());
 		if (pipeline == null) {
 			// Pipeline does not exist
-			log.error(PIPELINE_NOT_EXISTS, pipelineIdentification);
+			log.error(PIPELINE_NOT_EXISTS, dataflowData.getDataflowIdentification());
 			return new ResponseEntity<>(PIPELINE_NOT_EXITS_MSG, HttpStatus.NOT_FOUND);
 		}
 
 		if (!dataflowService.hasUserViewPermission(pipeline, domain.getUser().getUserId())) {
 			// User has no permissions over the requested pipeline
-			log.error("User has no VIEW permissions over the specified Pipeline '{}'.", pipelineIdentification);
+			log.error("User has no VIEW permissions over the specified Pipeline '{}'.", dataflowData.getDataflowIdentification());
 			return new ResponseEntity<>(
 					"{'error':'Forbidden. User has no VIEW permissions over the requested resource.'}",
 					HttpStatus.FORBIDDEN);
 		}
 
-		return dataflowService.statusPipeline(domain.getUser().getUserId(), pipelineIdentification);
+		return dataflowService.statusPipeline(domain.getUser().getUserId(), dataflowData.getDataflowIdentification());
 	}
 
 	
-	public ResponseEntity<String> stopDataflow(String domainName, String pipelineIdentification) {
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainName);
+	public ResponseEntity<String> stopDataflow(DataflowDTO dataflowData) {
+		MultitenancyContextHolder.setVerticalSchema(dataflowData.getVerticalSchema());
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(dataflowData.getDomainName());
 		if (domain == null) {
-			log.error("Domain {} not found for DataFlow Stop execution.", domainName);
-			return new ResponseEntity<>(ERROR_DOMAIN + domainName + " not found for DataFlow Stop execution: '"
-					+ pipelineIdentification + "'.'}", HttpStatus.BAD_REQUEST);
+			log.error("Domain {} not found for DataFlow Stop execution.", dataflowData.getDomainName());
+			return new ResponseEntity<>(ERROR_DOMAIN + dataflowData.getDomainName() + " not found for DataFlow Stop execution: '"
+					+ dataflowData.getDataflowIdentification() + "'.'}", HttpStatus.BAD_REQUEST);
 		}
-
-		final Pipeline pipeline = dataflowService.getPipelineByIdentification(pipelineIdentification);
+		final User platformUser = domain.getUser();
+		final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
+		MultitenancyContextHolder.setTenantName(user.getTenant().getName());
+		final Pipeline pipeline = dataflowService.getPipelineByIdentification(dataflowData.getDataflowIdentification());
 		if (pipeline == null) {
 			// Pipeline does not exist
-			log.error(PIPELINE_NOT_EXISTS, pipelineIdentification);
+			log.error(PIPELINE_NOT_EXISTS, dataflowData.getDataflowIdentification());
 			return new ResponseEntity<>(PIPELINE_NOT_EXITS_MSG, HttpStatus.NOT_FOUND);
 		}
 
 		if (!dataflowService.hasUserEditPermission(pipeline, domain.getUser().getUserId())) {
 			// User has no permissions over the requested pipeline
-			log.error("User has no EDIT permissions over the specified Pipeline '{}'.", pipelineIdentification);
+			log.error("User has no EDIT permissions over the specified Pipeline '{}'.", dataflowData.getDataflowIdentification());
 			return new ResponseEntity<>(
 					"{'error':'Forbidden. User has no EDIT permissions over the requested resource.'}",
 					HttpStatus.FORBIDDEN);
 		}
-		return dataflowService.stopPipeline(domain.getUser().getUserId(), pipelineIdentification);
+		return dataflowService.stopPipeline(domain.getUser().getUserId(), dataflowData.getDataflowIdentification());
 	}
 
 	
-	public ResponseEntity<String> startDataflow(String domainName, String pipelineIdentification, String parameters,
-			boolean resetOrigin) {
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainName);
+	public ResponseEntity<String> startDataflow(DataflowDTO dataflowData) {
+		MultitenancyContextHolder.setVerticalSchema(dataflowData.getVerticalSchema());
+		final FlowDomain domain = domainService.getFlowDomainByIdentification(dataflowData.getDomainName());
 
 		if (domain == null) {
-			log.error("Domain {} not found for DataFlow Start execution.", domainName);
-			return new ResponseEntity<>(ERROR_DOMAIN + domainName + " not found for DataFlow Start execution: '"
-					+ pipelineIdentification + "'.'}", HttpStatus.BAD_REQUEST);
+			log.error("Domain {} not found for DataFlow Start execution.", dataflowData.getDomainName());
+			return new ResponseEntity<>(ERROR_DOMAIN + dataflowData.getDomainName() + " not found for DataFlow Start execution: '"
+					+ dataflowData.getDataflowIdentification() + "'.'}", HttpStatus.BAD_REQUEST);
 		}
-
-		final Pipeline pipeline = dataflowService.getPipelineByIdentification(pipelineIdentification);
+		final User platformUser = domain.getUser();
+		final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
+		MultitenancyContextHolder.setTenantName(user.getTenant().getName());
+		final Pipeline pipeline = dataflowService.getPipelineByIdentification(dataflowData.getDataflowIdentification());
 		if (pipeline == null) {
 			// Pipeline does not exist
-			log.error(PIPELINE_NOT_EXISTS, pipelineIdentification);
+			log.error(PIPELINE_NOT_EXISTS, dataflowData.getDataflowIdentification());
 			return new ResponseEntity<>(PIPELINE_NOT_EXITS_MSG, HttpStatus.NOT_FOUND);
 		}
 
 		if (!dataflowService.hasUserEditPermission(pipeline, domain.getUser().getUserId())) {
 			// User has no permissions over the requested pipeline
-			log.error("User has no EDIT permissions over the specified Pipeline '{}'.", pipelineIdentification);
+			log.error("User has no EDIT permissions over the specified Pipeline '{}'.", dataflowData.getDataflowIdentification());
 			return new ResponseEntity<>(
 					"{'error':'Forbidden. User has no EDIT permissions over the requested resource.'}",
 					HttpStatus.FORBIDDEN);
 		}
 
-		if (resetOrigin) {
-			dataflowService.resetOffsetPipeline(domain.getUser().getUserId(), pipelineIdentification);
+		if (dataflowData.getResetOrigin()) {
+			dataflowService.resetOffsetPipeline(domain.getUser().getUserId(), dataflowData.getDataflowIdentification());
 		}
-		return dataflowService.startPipeline(domain.getUser().getUserId(), pipelineIdentification, parameters);
+		return dataflowService.startPipeline(domain.getUser().getUserId(), dataflowData.getDataflowIdentification(), dataflowData.getParameters());
 	}
 }

@@ -14,9 +14,13 @@
  */
 package com.minsait.onesait.platform.libraries.mail;
 
+import java.io.IOException;
+
 import javax.mail.MessagingException;
 
 import org.springframework.mail.SimpleMailMessage;
+
+import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 
 public interface MailService {
 	void sendMail(String[] to, String subject, String text);
@@ -29,4 +33,8 @@ public interface MailService {
 			boolean htmlenable) throws MessagingException;
 	void sendHtmlMailWithFile(String to, String subject, String text, String attachmentName, String attachment,
             boolean htmlenable) throws MessagingException;
+	
+	void sendConfirmationMailMessage(String to, String subject, String htmlText, HtmlFileAttachment... files) throws MessagingException, IOException;
+	
+	void sendHtmlMail(String to[], String subject, String htmlText) throws MessagingException;
 }

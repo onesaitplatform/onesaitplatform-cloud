@@ -15,9 +15,10 @@
 package com.minsait.onesait.platform.config.model;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -32,9 +33,13 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -42,23 +47,23 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "VIEWER")
-public class Viewer extends OPResource {
+public class Viewer extends OPResource implements Versionable<Viewer>{
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "DESCRIPTION", length = 50, unique = false, nullable = false)
+	@Column(name = "DESCRIPTION", length = 512, unique = false, nullable = false)
 	@NotNull
 	@Getter
 	@Setter
 	private String description;
 
-	@ManyToMany(cascade = { CascadeType.PERSIST }, mappedBy = "viewers", fetch = FetchType.EAGER)
+	@ManyToMany(mappedBy = "viewers", fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private Set<Layer> layers = new HashSet<>();
 
-	@Column(name = "IS_PUBLIC", nullable = false, columnDefinition = "BIT")
+	@Column(name = "IS_PUBLIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
@@ -81,17 +86,19 @@ public class Viewer extends OPResource {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof Viewer))
+		}
+		if (!(o instanceof Viewer)) {
 			return false;
+		}
 		final Viewer that = (Viewer) o;
-		return this.getIdentification() != null && this.getIdentification().equals(that.getIdentification());
+		return getIdentification() != null && getIdentification().equals(that.getIdentification());
 	}
 
 	@Override
 	public int hashCode() {
-		return java.util.Objects.hash(this.getIdentification());
+		return java.util.Objects.hash(getIdentification());
 	}
 
 	@Column(name = "LATITUDE", length = 50, nullable = false)
@@ -111,5 +118,52 @@ public class Viewer extends OPResource {
 	@Getter
 	@Setter
 	private String height;
+
+	@JsonGetter("layers")
+	private Set<String> getLayersJson(){
+		return layers.stream().map(Layer::getId).collect(Collectors.toSet());
+	}
+
+	@JsonSetter("layers")
+	private void setLayersJson(Set<String> list) {
+		list.forEach(l -> {
+			final Layer layer = new Layer();
+			layer.setId(l);
+			layer.getViewers().add(this);
+			layers.add(layer);
+		});
+	}
+
+	@JsonGetter("baseLayer")
+	public String getBaseLayerJson() {
+		if(baseLayer != null) {
+			return baseLayer.getId();
+		}
+		return null;
+	}
+
+	@JsonSetter("baseLayer")
+	public void setBaseLayerJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final BaseLayer baseLayer = new BaseLayer();
+			baseLayer.setId(id);
+			this.baseLayer =  baseLayer;
+		}
+	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() + ".yaml";
+	}
+
+	@Override
+	public Versionable<Viewer> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+		Versionable<Viewer> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if(o!=null && !layers.isEmpty() && !CollectionUtils.isEmpty(excludedIds.get(Layer.class.getSimpleName()))) {
+			layers.removeIf(l -> excludedIds.get(Layer.class.getSimpleName()).contains(l.getId()));
+			o = this;
+		}
+		return o;
+	}
 
 }

@@ -156,7 +156,7 @@ var ViewerCreateController = function() {
     			src = base_tpl;
     			
     			// Javascript
-    			js = '<script>' + js + '</script>';
+    			js = '<script type="module" defer="defer">' + js + '</script>\n';
     			src = src.replace('</body>', js + '</body>');
     			src = src.replace(/"/g, "&quot;");
     			
@@ -195,7 +195,29 @@ var ViewerCreateController = function() {
         });
     }
 	
-	
+	var loadHTMLBase =  function() {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url : "/controlpanel/viewers/getHtmlCode/" + $("#technology").val(),
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'GET',
+			dataType: 'text', 
+			contentType: 'text/plain',
+			mimeType: 'text/plain',
+			async : false,
+			success : function(data) {
+				
+				base_tpl = data;
+				
+			},
+			error : function(data, status, er) {
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+			}
+		});
+	}
 	
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
@@ -246,29 +268,9 @@ var ViewerCreateController = function() {
 				}
 				return this;
 			};
-			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content");
-			$.ajax({
-				url : "/controlpanel/viewers/getHtmlCode",
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				type : 'GET',
-				dataType: 'text', 
-				contentType: 'text/plain',
-				mimeType: 'text/plain',
-				async : false,
-				success : function(data) {
-					
-					base_tpl = data;
-					
-				},
-				error : function(data, status, er) {
-					 
-					toastr.error(er,'');
-				}
-			});
 			
+			loadHTMLBase();
+						
 			// INSERT MODE ACTIONS  (ontologyCreateReg.actionMode = NULL ) 
 			if ( viewerCreateJson.actionMode === null){
 				logControl ? console.log('|---> Action-mode: INSERT') : '';
@@ -337,10 +339,12 @@ var ViewerCreateController = function() {
 						
 						var js = viewerCreateJson.js;
 						
-						var begin = js.indexOf("<script>");
+						var begin = js.lastIndexOf("<script");
 						var end = js.lastIndexOf("script>");
 						
-						js = js.substring(end -2,begin + 8);
+						js = js.substring(end -2,begin + 7);
+						
+						js = js.substring(js.indexOf(">") + 1);
 						
 						htmlEditor.setValue(js);
 						
@@ -481,10 +485,12 @@ var ViewerCreateController = function() {
 			
 			htmlEditor.setValue(formatted);
 			
+			loadHTMLBase();
+			
 			src = base_tpl;
 			
 			// Javascript
-			formatted = '<script>' + formatted + '<\/script>';
+			formatted = '<script type="module" defer="defer">' + formatted + '<\/script>';
 			src = src.replace('</body>', formatted + '</body>');
 			
 			iframe_doc.open();
@@ -538,14 +544,19 @@ var ViewerCreateController = function() {
 				}
 			});
 			
-			initMap= "initialBaseMap('"+$("#baseLayers").val()+"','', '"+url+"')\n";
+			if ($("#technology").val()=='cesium'){
+				initMap= "initialBaseMap('"+$("#baseLayers").val()+"','', '"+url+"')\n";
+			} else {
+				initMap= "onesaitCesium.layers.loadBasemap({id:'" + $("#baseLayers").val() + "',name:'" + $("#baseLayers").val() + "',url:'" + url + "',type:'" + $("#baseLayers").val().split('.')[0] + "',unique: true}, map)\n";
+			}
+			
 			var layersSelected = $("#layersSelect").val();
 			var layersTypes = viewerCreateJson.layersTypes;
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
 			if(!isBaseLayerLoad){
 				$.ajax({
-					url : "/controlpanel/viewers/getJSBaseCode/",
+					url : "/controlpanel/viewers/getJSBaseCode/" + $("#technology").val(),
 					headers: {
 						[csrf_header]: csrf_value
 				    },
@@ -600,7 +611,7 @@ var ViewerCreateController = function() {
 				var csrf_value = $("meta[name='_csrf']").attr("content");
 				var csrf_header = $("meta[name='_csrf_header']").attr("content");
 				$.ajax({
-					url : "/controlpanel/viewers/getJSBaseCode/",
+					url : "/controlpanel/viewers/getJSBaseCode/" + $("#technology").val(),
 					headers: {
 						[csrf_header]: csrf_value
 				    },
@@ -677,7 +688,13 @@ var ViewerCreateController = function() {
 												result = JSON.parse(result);
 												var urlLayer = result['url'];
 												var layerWms = result['layerWms'];
-												 data += "loadWms('"+urlLayer+"', '"+layerWms+"', '"+ layerAux +"')\n";
+												var layerId = result['id'];
+												 
+												if ($("#technology").val()=='cesium'){
+													data += "loadWms('" + urlLayer + "', '" + layerWms + "', '"+ layerAux + "')\n";
+												} else {
+													data += "onesaitCesium.layers.loadWms({url:'" + urlLayer + "', layers:'" + layerWms+"', id:'" + layerId + "', name:'" + layerAux + "'}, map)\n";
+												}
 												
 											},
 											error : function(data, status, er) {
@@ -702,15 +719,113 @@ var ViewerCreateController = function() {
 											success : function(result) {
 												result = JSON.parse(result);
 												var urlLayer = result['url'];
-												 data += "loadKml('"+urlLayer+"', '"+ layerAux +"')\n";
+												var layerId = result['id'];
+												 
+												if ($("#technology").val()=='cesium'){
+													data += "loadKml('"+urlLayer+"', '"+ layerAux +"')\n";
+												} else {
+													data += "onesaitCesium.layers.loadKml({url:'" + urlLayer + "', id:'" + layerId + "', name:'" + layerAux + "'}, map)\n";
+												}
 												
 											},
 											error : function(data, status, er) {
 												toastr.error(er,'');
 											}
 										});
+									
+								  }else if(layersTypes[layerAux] == 'svg_image' ){
+									  var csrf_value = $("meta[name='_csrf']").attr("content");
+									  var csrf_header = $("meta[name='_csrf_header']").attr("content");
+									  $.ajax({
+											url : "/controlpanel/viewers/getLayerSvgImage/" + layerAux,
+											headers: {
+												[csrf_header]: csrf_value
+										    },
+											type : 'GET',
+											dataType: 'text', 
+											contentType: 'text/plain',
+											mimeType: 'text/plain',
+											async : false,
+											success : function(result) {
+												result = JSON.parse(result);
+												var layerId = result['id'];
+												var urlLayer = result['url'] + '?disposition=1';
+												var west = result['west'];
+												var east = result['east'];
+												var south = result['south'];
+												var north = result['north'];
+												 
+												if ($("#technology").val()=='cesium'){
+													data += "addSvgLayer('"+urlLayer+"',"+west+","+ south+","+ east+","+ north+", '"+ layerAux +"')\n";
+												} else {
+													data += "onesaitCesium.layers.loadImage({url:'" + urlLayer + "', id:'" + layerId + "', name:'" + layerAux + "', position:{west:'" + west +"', south:'" + south +"', east:'" + east +"', north:'" + north +"'}}, map)\n";
+												}
+								
+											},
+											error : function(data, status, er) {
+												toastr.error(er,'');
+											}
+										});
+									  
+									  
 									  
 									 
+								  }else if(layersTypes[layerAux] == 'arcgis_mapserver' ){
+									  var csrf_value = $("meta[name='_csrf']").attr("content");
+									  var csrf_header = $("meta[name='_csrf_header']").attr("content");
+									  $.ajax({
+											url : "/controlpanel/viewers/getLayerArcGIS/" + layerAux,
+											headers: {
+												[csrf_header]: csrf_value
+										    },
+											type : 'GET',
+											dataType: 'text', 
+											contentType: 'text/plain',
+											mimeType: 'text/plain',
+											async : false,
+											success : function(result) {
+												result = JSON.parse(result);
+												var layerId = result['id'];
+												var urlLayer = result['url'];
+												var layerArcGIS = result['layersArcGIS'];
+
+												if ($("#technology").val()=='cesium'){
+													data += "loadAgsMapServer(toInputMap('" + layerId + "', '" + urlLayer + "', '', '" + layerArcGIS +"'), viewer)\n";
+												} else {
+													data += "onesaitCesium.layers.loadAgsMapServer({url:'" + urlLayer + "', id:'" + layerId + "', name:'" + layerArcGIS + "'}, map)\n";
+												}
+											},
+											error : function(data, status, er) {
+												toastr.error(er,'');
+											}
+										});
+								  } else if(layersTypes[layerAux] == 'cesium_ion_asset' ){
+									  var csrf_value = $("meta[name='_csrf']").attr("content");
+									  var csrf_header = $("meta[name='_csrf_header']").attr("content");
+									  $.ajax({
+											url : "/controlpanel/viewers/getLayerCesiumAsset/" + layerAux,
+											headers: {
+												[csrf_header]: csrf_value
+										    },
+											type : 'GET',
+											dataType: 'text', 
+											contentType: 'text/plain',
+											mimeType: 'text/plain',
+											async : false,
+											success : function(result) {
+												result = JSON.parse(result);
+												var layerId = result['id'];
+												var assetid = result['assetid'];
+												if ($("#technology").val()=='cesium'){
+													data += "loadIonAsset('"+assetid+"','"+ layerAux +"')\n";
+												} else {
+													data += "onesaitCesium.layers.loadIonAsset({code:'" + assetid + "', id:'" + layerId + "', name:'" + layerAux + "'}, map)\n";
+												}
+											},
+											error : function(data, status, er) {
+												toastr.error(er,'');
+											}
+										});
 								  }
 								 
 								}) 
@@ -752,13 +867,17 @@ var ViewerCreateController = function() {
 				}
 			});
 			
-			initMap= "initialBaseMap('"+$("#baseLayers").val()+"','', '"+url+"')\n";
+			if ($("#technology").val()=='cesium'){
+				initMap= "initialBaseMap('"+$("#baseLayers").val()+"','', '"+url+"')\n";
+			} else {
+				initMap= "onesaitCesium.layers.loadBasemap({id:'" + $("#baseLayers").val() + "',name:'" + $("#baseLayers").val() + "',url:'" + url + "',type:'" + $("#baseLayers").val().split('.')[0] + "',unique: true}, map)\n";
+			}
 			var layersTypes = viewerCreateJson.layersTypes;
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
 			
 			$.ajax({
-				url : "/controlpanel/viewers/getJSBaseCode/",
+				url : "/controlpanel/viewers/getJSBaseCode/" + $("#technology").val(),
 				headers: {
 					[csrf_header]: csrf_value
 			    },
@@ -773,7 +892,6 @@ var ViewerCreateController = function() {
 					  $.each(layersSelected, function(index, layerAux){
 						  if(layersTypes[layerAux] == 'iot' ){
 							  setLayers.push(layerAux);
-							
 						  }else if(layersTypes[layerAux] == 'heat' ){
 							  setHeatLayers.push(layerAux);
 			
@@ -792,10 +910,15 @@ var ViewerCreateController = function() {
 									async : false,
 									success : function(result) {
 										result = JSON.parse(result);
+										var layerId = result['id'];
 										var urlLayer = result['url'];
 										var layerWms = result['layerWms'];
-										 data += "loadWms('"+urlLayer+"', '"+layerWms+"', '"+ layerAux +"')\n";
 										
+										if ($("#technology").val()=='cesium'){
+											data += "loadWms('"+urlLayer+"', '"+layerWms+"', '"+ layerAux +"')\n";
+										} else {
+											data += "onesaitCesium.layers.loadWms({url:'" + urlLayer + "', layers:'" +layerWms+ "', id:'" + layerId + "', name:'" + layerAux + "'}, map)\n";
+										}
 									},
 									error : function(data, status, er) {
 										toastr.error(er,'');
@@ -819,7 +942,13 @@ var ViewerCreateController = function() {
 									success : function(result) {
 										result = JSON.parse(result);
 										var urlLayer = result['url'];
-										 data += "loadKml('"+urlLayer+"', '"+ layerAux +"')\n";
+										var layerId = result['id'];
+										 
+										if ($("#technology").val()=='cesium'){
+											data += "loadKml('"+urlLayer+"', '"+ layerAux +"')\n";
+										} else {
+											data += "onesaitCesium.layers.loadKml({url:'" + urlLayer + "', id:'" + layerId + "', name:'" + layerAux + "'}, map)\n";
+										}
 										
 									},
 									error : function(data, status, er) {
@@ -844,12 +973,18 @@ var ViewerCreateController = function() {
 									success : function(result) {
 										result = JSON.parse(result);
 										var urlLayer = result['url'] + '?disposition=1';
+										var layerId = result['id'];
 										var west = result['west'];
 										var east = result['east'];
 										var south = result['south'];
 										var north = result['north'];
-										 data += "addSvgLayer('"+urlLayer+"',"+west+","+ south+","+ east+","+ north+", '"+ layerAux +"')\n";
-										
+										 
+										if ($("#technology").val()=='cesium'){
+											data += "addSvgLayer('"+urlLayer+"',"+west+","+ south+","+ east+","+ north+", '"+ layerAux +"')\n";
+										} else {
+											data += "onesaitCesium.layers.loadImage({url:'" + urlLayer + "', id:'" + layerId + "', name:'" + layerAux + "', position:{west:'" + west +"', south:'" + south +"', east:'" + east +"', north:'" + north +"'}}, map)\n";
+										}
+						
 									},
 									error : function(data, status, er) {
 										toastr.error(er,'');
@@ -857,6 +992,63 @@ var ViewerCreateController = function() {
 								});
 							  
 							 
+						  }else if(layersTypes[layerAux] == 'arcgis_mapserver' ){
+							  var csrf_value = $("meta[name='_csrf']").attr("content");
+							  var csrf_header = $("meta[name='_csrf_header']").attr("content");
+							  $.ajax({
+									url : "/controlpanel/viewers/getLayerArcGIS/" + layerAux,
+									headers: {
+										[csrf_header]: csrf_value
+								    },
+									type : 'GET',
+									dataType: 'text', 
+									contentType: 'text/plain',
+									mimeType: 'text/plain',
+									async : false,
+									success : function(result) {
+										result = JSON.parse(result);
+										var layerId = result['id'];
+										var urlLayer = result['url'];
+										var layerArcGIS = result['layersArcGIS'];
+										
+										if ($("#technology").val()=='cesium'){
+											data += "loadAgsMapServer(toInputMap('" + layerId + "', '" + urlLayer + "', '', '" + layerArcGIS +"'), viewer)\n";
+										} else {
+											data += "onesaitCesium.layers.loadAgsMapServer({url:'" + urlLayer + "', id:'" + layerId + "', name:'" + layerArcGIS + "'}, map)\n";
+										}
+										 
+									},
+									error : function(data, status, er) {
+										toastr.error(er,'');
+									}
+								});
+						  } else if(layersTypes[layerAux] == 'cesium_ion_asset' ){
+							  var csrf_value = $("meta[name='_csrf']").attr("content");
+							  var csrf_header = $("meta[name='_csrf_header']").attr("content");
+							  $.ajax({
+									url : "/controlpanel/viewers/getLayerCesiumAsset/" + layerAux,
+									headers: {
+										[csrf_header]: csrf_value
+								    },
+									type : 'GET',
+									dataType: 'text', 
+									contentType: 'text/plain',
+									mimeType: 'text/plain',
+									async : false,
+									success : function(result) {
+										result = JSON.parse(result);
+										var layerId = result['id'];
+										var assetid = result['assetid'];
+										if ($("#technology").val()=='cesium'){
+											data += "loadIonAsset('"+assetid+"','"+ layerAux +"')\n";
+										} else {
+											data += "onesaitCesium.layers.loadIonAsset({code:'" + assetid + "', id:'" + layerId + "', name:'" + layerAux + "'}, map)\n";
+										}
+									},
+									error : function(data, status, er) {
+										toastr.error(er,'');
+									}
+								});
 						  }
 					  })
 					  
@@ -879,20 +1071,27 @@ var ViewerCreateController = function() {
 									var params = result["params"];
 									var refresh = result["refresh"];
 									
-									if(refresh>0){
-										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
-										data += 'intervalIds.push(setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+'));\n';
-									}else{
-										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
+									if ($("#technology").val()=='cesium'){
+										if(refresh>0){
+											data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
+											data += 'intervalIds.push(setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+'));\n';
+										}else{
+											data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
+										}
+									} else {
+										if(refresh>0){
+											data += "onesaitCesium.layers.loadOnesaitPlatformLayer({layerId:'" + v + "', basePath: basePath , query:'" + JSON.stringify(params) + "'}, map)\n";
+											data += "intervalIds.push(setInterval(function() {onesaitCesium.layers.loadOnesaitPlatformLayer({layerId:'" + v + "', basePath: basePath , query:'" + JSON.stringify(params) + "'}, map)}, " + refresh*1000 + "));\n";
+										} else {
+											data += "onesaitCesium.layers.loadOnesaitPlatformLayer({layerId:'" + v + "', basePath: basePath , query:'" + JSON.stringify(params) + "'}, map)\n";
+										}
 									}
-									
 								},
 								error : function(data, status, er) {
 									toastr.error(er,'');
 								}
 							});
-					  		
-					  		
+					  					  		
 						})
 						
 						$.each(setHeatLayers, function(k,v){
@@ -914,13 +1113,22 @@ var ViewerCreateController = function() {
 									var params = result["params"];
 									var refresh = result["refresh"];
 									
-									if(refresh>0){
-										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
-										data += 'intervalIds.push(setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+'));\n';
-									}else{
-										data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
+									if ($("#technology").val()=='cesium'){
+										if(refresh>0){
+											data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
+											data += 'intervalIds.push(setInterval(function() {getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\')}, '+refresh*1000+'));\n';
+										}else{
+											data += 'getLayerData(\''+v+'\',\''+JSON.stringify(params)+'\');\n';
+										}
+									} else {
+										if(refresh>0){
+											data += "onesaitCesium.layers.loadOnesaitPlatformLayer({layerId:'" + v + "', basePath: basePath , query:'" + JSON.stringify(params) + "'}, map)\n";
+											data += "intervalIds.push(setInterval(function() {onesaitCesium.layers.loadOnesaitPlatformLayer({layerId:'" + v + "', basePath: basePath , query:'" + JSON.stringify(params) + "'}, map)}, " + refresh*1000 + "));\n";
+										} else {
+											data += "onesaitCesium.layers.loadOnesaitPlatformLayer({layerId:'" + v + "', basePath: basePath , query:'" + JSON.stringify(params) + "'}, map)\n";
+										}
 									}
-									
+
 								},
 								error : function(data, status, er) {
 									toastr.error(er,'');

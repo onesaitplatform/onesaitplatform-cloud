@@ -23,6 +23,12 @@
 			<version>${mysql.driver.version}</version>
 		</dependency>
 
+    <!-- postgresql dependency -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
@@ -74,6 +80,11 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
+	        <groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
@@ -90,10 +101,6 @@
          			<groupId>org.springframework.boot</groupId>
          			<artifactId>spring-boot-starter-tomcat</artifactId>
       			</exclusion>
-						<exclusion>
-							<groupId>com.fasterxml.jackson.core</groupId>
-							<artifactId>jackson-databind</artifactId>
-						</exclusion>						
    			</exclusions>
 		</dependency>
 

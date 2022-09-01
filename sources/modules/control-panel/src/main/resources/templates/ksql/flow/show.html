@@ -158,16 +158,16 @@
 											<div class="form-actions">
 												<div class="pull-left">
 													<!-- CANCEL TO-DO: authentication and control -->
-													<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:KsqlFlowCreateController.go(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-													<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:KsqlFlowCreateController.go(\'' + @{/ksql/flow/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:KsqlFlowCreateController.go(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:KsqlFlowCreateController.go(\'' + @{/ksql/flow/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 												</div>
 											
 												<div class="pull-right">
 													
 													<!-- REMOVE -->
-													<button th:if="${ksqlFlow.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'KsqlFlowCreateController.deleteKsqlFlow(\'' + ${ksqlFlow.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													<button th:if="${ksqlFlow.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:attr="onclick='KsqlFlowCreateController.deleteKsqlFlow(\'' + ${ksqlFlow.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 													<!-- UPDATE -->
-													<button th:if="${ksqlFlow.id} != null" id="updateBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="update" th:onclick="'javascript:navigateUrl(\'' + @{|/ksql/flow/update/${ksqlFlow.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+													<button th:if="${ksqlFlow.id} != null" id="updateBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ksql/flow/update/${ksqlFlow.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 															
 												</div>
 											</div>											
@@ -270,13 +270,13 @@
 															<!-- STATEMENT -->
 															<td class="text-left " th:text="${ksqlRelation.ksqlResource.statementText}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${ksqlRelation.createdAt!=null}" th:text="${#dates.format(ksqlRelation.createdAt,'dd/MM/YYYY')}"></td>
+															<td class="text-left" th:if="${ksqlRelation.createdAt!=null}" th:text="${#dates.format(ksqlRelation.createdAt,'dd/MM/yyyy')}"></td>
 															<td class="text-left" th:if="${ksqlRelation.createdAt==null}" th:text="${ksqlRelation.createdAt}"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:KsqlFlowCreateController.enableCreationModal(\'view\',\''+@{|${ksqlRelation.id}|}+'\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:KsqlFlowCreateController.enableCreationModal(\'view\',\''+@{|${ksqlRelation.id}|}+'\');'"><i class="la la-eye font-hg"></i></span>
 																</div>
 															</td>
 															<script  th:inline="javascript">
@@ -378,8 +378,8 @@
 							</div>					
 							<div class="modal-footer">
 						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						        <button id="modalCreateButton" type="button" class="btn btn-primary" th:onclick="'javascript:KsqlFlowCreateController.createRelation();'" th:text="#{ksql.relation.modal.tittle.create}">Create KSQL Resource</button>
-						        <button id="modalEditButton" type="button" class="btn btn-primary" th:onclick="'javascript:KsqlFlowCreateController.updateRelationChanges();'" th:text="#{ksql.relation.modal.tittle.edit}" style="disbled:true;">Save changes</button>
+						        <button id="modalCreateButton" type="button" class="btn btn-primary" th:attr="onclick='javascript:KsqlFlowCreateController.createRelation();'" th:text="#{ksql.relation.modal.tittle.create}">Create KSQL Resource</button>
+						        <button id="modalEditButton" type="button" class="btn btn-primary" th:attr="onclick='javascript:KsqlFlowCreateController.updateRelationChanges();'" th:text="#{ksql.relation.modal.tittle.edit}" style="disbled:true;">Save changes</button>
 							</div>
 						</div>
 					</div>

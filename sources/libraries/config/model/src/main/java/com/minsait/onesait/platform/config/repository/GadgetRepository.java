@@ -14,9 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,31 +32,41 @@ public interface GadgetRepository extends JpaRepository<Gadget, String> {
 
 	List<Gadget> findByUser(User user);
 
-	List<Gadget> findByType(String type);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.type.id=:type)  ")
+	List<Gadget> findByType(@Param("type") String type);
 
-	List<Gadget> findByTypeOrderByIdentificationAsc(String type);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.type.id=:type)  ORDER BY g.identification ASC")
+	List<Gadget> findByTypeOrderByIdentificationAsc(@Param("type") String type);
 
-	List<Gadget> findByUserAndIdentificationContaining(User user, String identification);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.user=:user AND g.identification LIKE %:identification%)  ORDER BY g.identification ASC")
+	List<Gadget> findByUserAndIdentificationContaining(@Param("user") User user, @Param("identification") String identification);
 
-	List<Gadget> findByUserAndTypeContaining(User user, String type);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.user=:user AND g.type.id LIKE %:type%)  ORDER BY g.identification ASC")
+	List<Gadget> findByUserAndTypeContaining(@Param("user") User user, @Param("type") String type);
 
-	List<Gadget> findByIdentificationAndTypeAndUser(String identification, String type, User user);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.user=:user AND g.type.id=:type AND g.identification=:identification)  ORDER BY g.identification ASC")
+	List<Gadget> findByIdentificationAndTypeAndUser(@Param("identification") String identification, @Param("type") String type, @Param("user") User user);
 
-	List<Gadget> findByIdentificationAndType(String identification, String type);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.type.id=:type AND g.identification=:identification)  ORDER BY g.identification ASC")
+	List<Gadget> findByIdentificationAndType(@Param("identification") String identification, @Param("type") String type);
 
 	List<Gadget> findAllByOrderByIdentificationAsc();
 
-	List<Gadget> findByIdentificationContainingAndTypeContaining(String identification, String type);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.type.id LIKE %:type% AND g.identification LIKE %:identification%)  ORDER BY g.identification ASC")
+	List<Gadget> findByIdentificationContainingAndTypeContaining(@Param("identification") String identification, @Param("type") String type);
 
 	List<Gadget> findByIdentificationContaining(String identification);
 
-	List<Gadget> findByTypeContaining(String type);
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.type.id LIKE %:type%)  ")
+	List<Gadget>  findByTypeContaining(@Param("type") String type);
 
-	List<Gadget> findByUserAndIdentificationContainingAndTypeContaining(User user, String identification, String type);
+
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.user=:user AND g.type.id LIKE %:type% AND g.identification LIKE %:identification%)  ORDER BY g.identification ASC")
+	List<Gadget> findByUserAndIdentificationContainingAndTypeContaining(@Param("user") User user, @Param("identification") String identification, @Param("type") String type);
 
 	Gadget findByIdentification(String identification);
 
-	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.user=:user AND g.type=:type)  ORDER BY g.identification ASC")
+	@Query("SELECT g " + "FROM Gadget AS g " + "WHERE (g.user=:user AND g.type.id=:type)  ORDER BY g.identification ASC")
 	List<Gadget> findByUserAndType(@Param("user") User user, @Param("type") String type);
 
 	@Query("SELECT g " + "FROM Gadget AS g "
@@ -63,8 +77,11 @@ public interface GadgetRepository extends JpaRepository<Gadget, String> {
 			+ "WHERE (g.user=:user AND g.identification=:identification)  ORDER BY g.identification ASC")
 	List<Gadget> existByIdentificationUser(@Param("user") User user, @Param("identification") String identification);
 
-	@Query("SELECT distinct(g.type) FROM Gadget AS g ORDER BY g.type")
+	@Query("SELECT distinct(g.type.id) FROM Gadget AS g ORDER BY g.type.id")
 	List<String> findGadgetTypes();
+
+	@Query("SELECT distinct(g.type.id) FROM Gadget AS g WHERE (g.user=:user) ORDER BY g.type.id")
+	List<String> findGadgetTypesbyUser(@Param("user") User user);
 
 	@Query("SELECT g.identification FROM Gadget AS g ORDER BY g.identification ASC")
 	List<String> findAllIdentifications();
@@ -79,4 +96,8 @@ public interface GadgetRepository extends JpaRepository<Gadget, String> {
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.OPResourceDTO(o.identification, o.description, o.createdAt, o.updatedAt, o.user, 'GADGET', 0) FROM Gadget AS o WHERE o.user=:user AND (o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
 	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
 			@Param("identification") String identification, @Param("description") String description);
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

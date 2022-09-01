@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.hazelcast.core.Client;
-import com.hazelcast.core.ClientListener;
+import com.hazelcast.client.Client;
+import com.hazelcast.client.ClientListener;
 import com.hazelcast.core.HazelcastInstance;
 
 import lombok.extern.slf4j.Slf4j;

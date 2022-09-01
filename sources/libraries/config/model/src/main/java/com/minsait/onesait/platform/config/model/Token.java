@@ -28,9 +28,11 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 import com.minsait.onesait.platform.config.model.listener.EntityListener;
 
@@ -50,6 +52,7 @@ public class Token extends AuditableEntityWithUUID {
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private ClientPlatform clientPlatform;
 
 	@Column(name = "TOKEN", length = 50, unique = true, nullable = false)
@@ -65,7 +68,8 @@ public class Token extends AuditableEntityWithUUID {
 	@Setter
 	private Calendar lastConnection;
 
-	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
+	@Column(name = "ACTIVE", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
@@ -73,10 +77,12 @@ public class Token extends AuditableEntityWithUUID {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof Token))
+		}
+		if (!(o instanceof Token)) {
 			return false;
+		}
 		final Token that = (Token) o;
 		return getClientPlatform() != null
 				&& getClientPlatform().getIdentification().equals(that.getClientPlatform().getIdentification())
@@ -88,9 +94,11 @@ public class Token extends AuditableEntityWithUUID {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((getClientPlatform() == null) ? 0 : getClientPlatform().getIdentification().hashCode());
-		result = prime * result + ((getTokenName() == null) ? 0 : getTokenName().hashCode());
+				+ (getClientPlatform() == null ? 0 : getClientPlatform().getIdentification().hashCode());
+		result = prime * result + (getTokenName() == null ? 0 : getTokenName().hashCode());
 		return result;
 	}
+
+
 
 }

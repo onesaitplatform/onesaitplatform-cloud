@@ -97,7 +97,7 @@
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="pull-right">
 									<!-- CANCEL -->	
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardConfController.navigateUrl(\'' + @{/dashboardconf/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DashboardConfController.navigateUrl(\'' + @{/dashboardconf/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 								</div>
 							</div>
 						</div>

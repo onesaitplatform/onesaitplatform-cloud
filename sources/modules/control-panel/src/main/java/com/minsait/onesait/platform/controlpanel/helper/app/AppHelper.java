@@ -171,12 +171,12 @@ public class AppHelper {
 
 	}
 
-	public List<UserAppCreateDTO> getAuthorizations(String appIdentification, String filter){
+	public List<UserAppCreateDTO> getAuthorizations(String appIdentification, String filter) {
 		final List<AppUserListOauth> users;
-		if(StringUtils.isEmpty(filter)) {
+		if (StringUtils.isEmpty(filter)) {
 			users = appService.getAppUsersByApp(appIdentification);
-		}else {
-			users = appService.getAppUsersByAppAndUserIdLike(appIdentification, "%"+filter+"%");
+		} else {
+			users = appService.getAppUsersByAppAndUserIdLike(appIdentification, "%" + filter + "%");
 		}
 		return users.stream().map(u -> {
 			final UserAppCreateDTO userAppDTO = new UserAppCreateDTO();
@@ -187,6 +187,7 @@ public class AppHelper {
 			return userAppDTO;
 		}).collect(Collectors.toList());
 	}
+
 	private void copyRoleList(AppCreateDTO appDTO, AppList app, List<AppRoleListOauth> roles,
 			List<UserAppCreateDTO> usersList) {
 		final List<String> rolesList = new ArrayList<>();
@@ -293,9 +294,10 @@ public class AppHelper {
 		} else {
 			model.addAttribute("project", new Project());
 		}
+
 		model.addAttribute("app", appDTO);
 		model.addAttribute("roles", roles);
-		model.addAttribute("users", users);
+		model.addAttribute("users", this.obfuscateUsers(users));
 		model.addAttribute("appsChild", appsToChoose);
 		model.addAttribute("authorizations", usersList);
 		model.addAttribute("associations", appsAssociatedList);
@@ -303,9 +305,25 @@ public class AppHelper {
 		model.addAttribute("baseDn", ldapBaseDn);
 		model.addAttribute("projectTypes", Project.ProjectType.values());
 		model.addAttribute("authorizationsCount", appService.countUsersInApp(app.getIdentification()));
-		model.addAttribute("projects", projectService.getAllProjects().stream()
-				.filter(p -> p.getApp() == null && CollectionUtils.isEmpty(p.getUsers())).collect(Collectors.toList()));
+		model.addAttribute("projects",
+				projectService.getAllProjects().stream()
+						.filter(p -> p.getApp() == null && (CollectionUtils.isEmpty(p.getUsers())
+								|| (p.getUsers().contains(p.getUser()) && p.getUsers().size() == 1)))
+						.collect(Collectors.toList()));
 
+	}
+
+	private List<User> obfuscateUsers(List<User> users) {
+		List<User> obfuscatedUsers = new ArrayList<User>();
+		users.forEach(user -> {
+			User obfuscatedUser = new User();
+			obfuscatedUser.setUserId(user.getUserId());
+			obfuscatedUser.setFullName(user.getFullName());
+			obfuscatedUser.setProjects(user.getProjects());
+			obfuscatedUsers.add(obfuscatedUser);
+		});
+
+		return obfuscatedUsers;
 	}
 
 	private void asociateFatherRoles(List<AppAssociatedCreateDTO> appsAssociatedList, AppList app,

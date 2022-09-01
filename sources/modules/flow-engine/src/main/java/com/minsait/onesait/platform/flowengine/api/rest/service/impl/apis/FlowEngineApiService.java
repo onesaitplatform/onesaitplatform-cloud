@@ -57,6 +57,9 @@ import com.minsait.onesait.platform.flowengine.api.rest.service.impl.OpenAPI3Uti
 import com.minsait.onesait.platform.flowengine.exception.FlowengineApiNotFoundException;
 import com.minsait.onesait.platform.flowengine.exception.InvalidInvocationParamTypeException;
 import com.minsait.onesait.platform.flowengine.exception.NoValueForParamIvocationException;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
+import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -90,6 +93,8 @@ public class FlowEngineApiService {
 	private ApiInvokerUtils apiInvokerUtils;
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private MasterUserRepository masterUserRepository;
 
 	private static final String ERROR_DOMAIN = "{'error':'Domain ";
 
@@ -100,10 +105,13 @@ public class FlowEngineApiService {
 		ResponseEntity<String> result = null;
 		// Search api
 		log.debug("get domain by identification");
+		MultitenancyContextHolder.setVerticalSchema(invokeRequest.getVerticalSchema());
 		final FlowDomain domain = domainService.getFlowDomainByIdentification(invokeRequest.getDomainName());
 		User platformUser = null;
 		if (domain != null) {
 			platformUser = domain.getUser();
+			final MasterUser user = masterUserRepository.findByUserId(platformUser.getUserId());
+			MultitenancyContextHolder.setTenantName(user.getTenant().getName());
 		} else {
 			log.error("Domain {} not found for API execution.", invokeRequest.getDomainName());
 			return new ResponseEntity<>(ERROR_DOMAIN + invokeRequest.getDomainName()

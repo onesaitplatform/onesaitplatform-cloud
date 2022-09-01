@@ -44,4 +44,9 @@ public class FlowEngineDomain {
 	@Getter
 	@Setter
 	private int servicePort;
+	
+
+	@Getter
+	@Setter
+	private String vertical;
 }

@@ -46,13 +46,17 @@ import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.dataflow.StreamsetsApiWrapper;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Api(value = "Dataflow pipeline storage", tags = "Dataflow pipeline storage")
+
+
+@Tag(name = "Dataflow pipeline storage")
 @RestController
 @RequestMapping("api/dataflows")
 public class DataFlowStorageManagementController {
@@ -62,120 +66,120 @@ public class DataFlowStorageManagementController {
 	@Autowired
 	private AppWebUtils utils;
 
-	@ApiOperation(value = "Get pipeline configuration")
+	@Operation(summary = "Get pipeline configuration")
 	@GetMapping("/pipelines/{identification}/configuration")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline configuration", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Pipeline configuration", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> configPipeline(
-			@ApiParam(value = "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
-			throws UnsupportedEncodingException {
-		String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
+					throws UnsupportedEncodingException {
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		return dataflowService.getPipelineConfiguration(utils.getUserId(), identification);
 	}
 
-	@ApiOperation(value = "Export pipeline")
+	@Operation(summary = "Export pipeline")
 	@PostMapping("/pipelines/{identification}/export")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline exported", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Pipeline exported", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> exportPipeline(
-			@ApiParam(value = "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
-			throws UnsupportedEncodingException {
-		String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
+					throws UnsupportedEncodingException {
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		return dataflowService.exportPipeline(utils.getUserId(), identification);
 	}
 
-	@ApiOperation(value = "Import pipeline")
+	@Operation(summary = "Import pipeline")
 	@PostMapping("/pipelines/{identification}/import")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline imported", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Pipeline imported", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> importPipeline(
-			@ApiParam(value = "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
-			@ApiParam(value = "Overwrite pipeline if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
+			@Parameter(description= "Overwrite pipeline if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
 			@RequestBody(required = false) String config) throws UnsupportedEncodingException {
-		String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		return dataflowService.importPipeline(utils.getUserId(), identification, config, overwrite);
 	}
 
-	@ApiOperation(value = "Import pipeline data")
+	@Operation(summary = "Import pipeline data")
 	@PostMapping("/pipelines/{identification}/importData")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline imported", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Pipeline imported", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> importPipelineData(
-			@ApiParam(value = "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
-			@ApiParam(value = "Overwrite pipeline if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
+			@Parameter(description= "Overwrite pipeline if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
 			@RequestBody(required = false) String config) throws UnsupportedEncodingException {
-		String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		return dataflowService.importPipelineData(utils.getUserId(), identification, config, overwrite);
 	}
 
-	@ApiOperation(value = "Update pipeline")
+	@Operation(summary = "Update pipeline")
 	@PostMapping("/pipelines/{identification}/update")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline updated", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Pipeline updated", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> updatePipeline(
-			@ApiParam(value = "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
+			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
 			@RequestBody(required = false) String config) throws UnsupportedEncodingException {
-		String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		return dataflowService.updatePipeline(utils.getUserId(), identification, config);
 	}
 
-	@ApiOperation(value = "Clone pipeline")
+	@Operation(summary = "Clone pipeline")
 	@PostMapping("/pipelines/{identification}/clone")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "Pipeline cloned", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Pipeline cloned", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> clonePipeline(
-			@ApiParam(value = "Dataflow pipeline origin identification", required = true) @PathVariable("identification") String pipelineIdentificationOri,
-			@ApiParam(value = "Dataflow pipeline dest identification", required = true) @RequestParam("destIdentification") String pipelineIdentificationDest)
-			throws UnsupportedEncodingException {
-		String identificationOri = URLDecoder.decode(pipelineIdentificationOri, StandardCharsets.UTF_8.name());
-		String identificationDest = URLDecoder.decode(pipelineIdentificationDest, StandardCharsets.UTF_8.name());
+			@Parameter(description= "Dataflow pipeline origin identification", required = true) @PathVariable("identification") String pipelineIdentificationOri,
+			@Parameter(description= "Dataflow pipeline dest identification", required = true) @RequestParam("destIdentification") String pipelineIdentificationDest)
+					throws UnsupportedEncodingException {
+		final String identificationOri = URLDecoder.decode(pipelineIdentificationOri, StandardCharsets.UTF_8.name());
+		final String identificationDest = URLDecoder.decode(pipelineIdentificationDest, StandardCharsets.UTF_8.name());
 		return dataflowService.clonePipeline(utils.getUserId(), identificationOri, identificationDest);
 	}
 
-	@ApiOperation(value = "Pipelines")
+	@Operation(summary = "Pipelines")
 	@GetMapping("/pipelines")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Status of all pipelines obtained", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+			@ApiResponse(responseCode = "200", description = "Status of all pipelines obtained", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> pipelines(
-			@ApiParam(value = "Filter text", required = false, defaultValue = "") @RequestParam(name = "filterText", required = false, defaultValue = "") String filterText,
-			@ApiParam(value = "Label", required = false, defaultValue = StreamsetsApiWrapper.SystemLabel.ALL_PIPELINES, allowableValues = StreamsetsApiWrapper.SystemLabel.ALL_OPTIONS) @RequestParam(name = "label", required = false, defaultValue = StreamsetsApiWrapper.SystemLabel.ALL_PIPELINES) String label,
-			@ApiParam(value = "Offset", required = false, defaultValue = "0") @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
-			@ApiParam(value = "Len", required = false, defaultValue = "-1") @RequestParam(name = "limit", required = false, defaultValue = "-1") int len,
-			@ApiParam(value = "OrderBy", required = false, defaultValue = StreamsetsApiWrapper.OrderField.NAME, allowableValues = StreamsetsApiWrapper.OrderField.ALL_OPTIONS) @RequestParam(name = "orderBy", required = false, defaultValue = StreamsetsApiWrapper.OrderField.NAME) String orderBy,
-			@ApiParam(value = "Order", required = false, defaultValue = StreamsetsApiWrapper.Order.ASC, allowableValues = StreamsetsApiWrapper.Order.ALL_OPTIONS) @RequestParam(name = "order", required = false, defaultValue = StreamsetsApiWrapper.Order.ASC) String order,
-			@ApiParam(value = "Status", required = false, defaultValue = "false") @RequestParam(name = "status", required = false, defaultValue = "false") boolean status) {
+			@Parameter(description= "Filter text", required = false) @RequestParam(name = "filterText", required = false, defaultValue = "") String filterText,
+			@Parameter(description= "Label", required = false) @RequestParam(name = "label", required = false, defaultValue = StreamsetsApiWrapper.SystemLabel.ALL_PIPELINES) String label,
+			@Parameter(description= "Offset", required = false) @RequestParam(name = "offset", required = false, defaultValue = "0") int offset,
+			@Parameter(description= "Len", required = false) @RequestParam(name = "limit", required = false, defaultValue = "-1") int len,
+			@Parameter(description= "OrderBy", required = false) @RequestParam(name = "orderBy", required = false, defaultValue = StreamsetsApiWrapper.OrderField.NAME) String orderBy,
+			@Parameter(description= "Order", required = false) @RequestParam(name = "order", required = false, defaultValue = StreamsetsApiWrapper.Order.ASC) String order,
+			@Parameter(description= "Status", required = false) @RequestParam(name = "status", required = false, defaultValue = "false") boolean status) {
 
 		return dataflowService.pipelines(utils.getUserId(), filterText, label, offset, len, orderBy, order, status);
 	}
 
-	@ApiOperation(value = "delete pipeline")
+	@Operation(summary = "delete pipeline")
 	@DeleteMapping("/pipelines/{identification}")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Status of all pipelines obtained", response = String.class),
-			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
-			@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not Found"),
-			@ApiResponse(code = 500, message = "Internal Server Error") })
+			@ApiResponse(responseCode = "200", description = "Status of all pipelines obtained", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
+			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
+			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> deletePipeline(
-			@ApiParam(value = "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
+					throws UnsupportedEncodingException {
 
-		String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		Pipeline pipeline = dataflowService.getPipelineByIdentification(identification);
+		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
+		final Pipeline pipeline = dataflowService.getPipelineByIdentification(identification);
 		dataflowService.removeHardPipeline(pipeline.getId(), utils.getUserId());
 		return ResponseEntity.ok(identification);
 	}
@@ -190,7 +194,7 @@ public class DataFlowStorageManagementController {
 	}
 
 	@ExceptionHandler({ IllegalArgumentException.class, RestClientException.class, DataAccessException.class,
-			BadRequestException.class })
+		BadRequestException.class })
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public String handleOPException(final RuntimeException exception) {

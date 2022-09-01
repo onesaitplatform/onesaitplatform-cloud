@@ -5,7 +5,8 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-    
+      driver-class-name: ${CONFIGDB_DRIVER}
+
 onesaitplatform:
    database.mongodb:
       database: ${REALTIMEDBNAME}
@@ -25,7 +26,9 @@ onesaitplatform:
       enabled: ${GRAYLOG_ENABLED}
       host: ${GRAYLOG_HOST}
       port: ${GRAYLOG_PORT}
-
+   database.configdb.export:
+      minio.enabled: ${MINIO_ENABLED}
+      tmp.path: /temp/minio/backup/
 spring:
    datasource:
      hikari:
@@ -35,6 +38,7 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
+      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://rtdbmaintainerservice:${server.port}${server.servlet.contextPath}/
@@ -44,10 +48,18 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+   jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 quartz:
     datasource:
-      hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
-
+     hikari:
+        jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
+        username: ${SCHEDULERDBBUSER}
+        password: ${SCHEDULERDBBPASS}
+        driver-class-name: ${SCHEDULERDBBDRIVER}
+    jpa:
+      properties.hibernate.dialect: ${SCHEDULERDBBDIALECT}
+    driverDelegateClass: ${QUARTZ_DRIVER}
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs
+   file.path: /var/log/platform-logs

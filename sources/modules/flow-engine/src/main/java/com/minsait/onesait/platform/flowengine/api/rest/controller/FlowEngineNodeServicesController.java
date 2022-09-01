@@ -112,15 +112,13 @@ public class FlowEngineNodeServicesController {
 	@PostMapping(value = "/user/query", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitQuery(@RequestBody FlowEngineQueryRequest queryRequest)
 			throws JsonProcessingException, NotFoundException {
-		return flowEngineNodeService.submitQuery(queryRequest.getOntology(), queryRequest.getQueryType(),
-				queryRequest.getQuery(), queryRequest.getDomainName());
+		return flowEngineNodeService.submitQuery(queryRequest);
 	}
 
 	@PostMapping(value = "/user/insert", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitInsert(@RequestBody FlowEngineInsertRequest insertRequest)
 			throws JsonProcessingException, NotFoundException {
-		return flowEngineNodeService.submitInsert(insertRequest.getOntology(), insertRequest.getData(),
-				insertRequest.getDomainName());
+		return flowEngineNodeService.submitInsert(insertRequest);
 	}
 	
 	@PostMapping(value = "/user/audit", produces = { "application/javascript", "application/json" })
@@ -179,20 +177,17 @@ public class FlowEngineNodeServicesController {
 
 	@PostMapping(value = "/user/dataflow/status", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> getDataflowStatus(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.getPipelineStatus(dataflowData.getDomainName(),
-				dataflowData.getDataflowIdentification());
+		return flowEngineNodeService.getPipelineStatus(dataflowData);
 	}
 
 	@PostMapping(value = "/user/dataflow/start", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> startDataflow(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.startDataflow(dataflowData.getDomainName(),
-				dataflowData.getDataflowIdentification(), dataflowData.getParameters(), dataflowData.getResetOrigin());
+		return flowEngineNodeService.startDataflow(dataflowData);
 	}
 
 	@PostMapping(value = "/user/dataflow/stop", produces = { "application/javascript", "application/json" })
 	public @ResponseBody ResponseEntity<String> stopDataflow(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.stopDataflow(dataflowData.getDomainName(),
-				dataflowData.getDataflowIdentification());
+		return flowEngineNodeService.stopDataflow(dataflowData);
 	}
 
 	@GetMapping(value = "/user/management/api/rest", produces = { "application/javascript", "application/json" })

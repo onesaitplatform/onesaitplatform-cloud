@@ -25,7 +25,6 @@ import org.bson.types.BasicBSONList;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -110,10 +109,10 @@ public class MongoQueryAndParams {
 					aggregateQuery.add((Bson) listBson.get(i));
 				}
 				if (skip != -1) {
-					aggregateQuery.add((Bson) JSON.parse("{$skip:" + skip + "}"));
+					aggregateQuery.add((Bson) BasicDBObject.parse("{$skip:" + skip + "}"));
 				}
 				if (limit != -1) {
-					aggregateQuery.add((Bson) JSON.parse("{$limit:" + limit + "}"));
+					aggregateQuery.add((Bson) BasicDBObject.parse("{$limit:" + limit + "}"));
 				}
 
 			} else {
@@ -128,7 +127,7 @@ public class MongoQueryAndParams {
 				if (query.indexOf(".sort(") != -1) {
 					subquery = query.substring(query.indexOf(".sort("), query.length());
 					temp = subquery.substring(0 + 6, subquery.indexOf(")"));
-					sort = (Bson) JSON.parse(temp);
+					sort = (Bson) BasicDBObject.parse(temp);
 				}
 				if (query.indexOf(".skip(") != -1) {
 					subquery = query.substring(query.indexOf(".skip("), query.length());

@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.config.services.app.dto;
 
+import java.util.Date;
+
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -35,6 +37,9 @@ public class RealmUser  implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public enum Status {
+        ACTIVE, INACTIVE;
+    }
 	@Getter
 	@Setter
 	@NotNull
@@ -55,6 +60,14 @@ public class RealmUser  implements java.io.Serializable {
 	@Setter
 	@JsonInclude(Include.NON_NULL)
 	private String password;
+	@Getter
+	@Setter
+	@JsonInclude(Include.NON_NULL)
+	private boolean active;
+	@Getter
+	@Setter
+	@JsonInclude(Include.NON_NULL)
+	private Date creationDate;
 	@Getter
 	@Setter
 	@JsonInclude(Include.NON_NULL)

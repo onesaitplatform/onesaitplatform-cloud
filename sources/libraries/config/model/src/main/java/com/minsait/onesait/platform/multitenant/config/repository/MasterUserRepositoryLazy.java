@@ -34,16 +34,16 @@ public interface MasterUserRepositoryLazy extends JpaRepository<MasterUserLazy, 
 	@Modifying
 	@Transactional
 	@Query("DELETE FROM MasterUserLazy u WHERE u.userId= :userId")
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY})
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="{#p0.toLowerCase()}")
 	void deleteByUserId(@Param("userId") String userId);
 
 
-	@Cacheable(cacheNames=MASTER_USER_REPOSITORY_LAZY, unless = "#result == null")
+	@Cacheable(cacheNames=MASTER_USER_REPOSITORY_LAZY, unless = "#result == null", key="{#p0.toLowerCase()}")
 	@Query("SELECT u FROM MasterUserLazy u WHERE u.userId= :userId")
 	public MasterUserLazy findByUserId(@Param("userId") String userId);
 
 	@Override
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY})
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key="{#p0.toLowerCase()}")
 	@Transactional
 	void deleteById(String id);
 
@@ -52,17 +52,17 @@ public interface MasterUserRepositoryLazy extends JpaRepository<MasterUserLazy, 
 	void flush();
 
 	@Override
-	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "#p0.userId", unless = "#result == null")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "#p0.userId")
+	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "{#p0.userId.toLowerCase()}", unless = "#result == null")
+	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
 	<S extends MasterUserLazy> S saveAndFlush(S entity);
 
 	@Override
-	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "#p0.userId", unless = "#result == null")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "#p0.userId")
+	@CachePut(cacheNames = MASTER_USER_REPOSITORY_LAZY, key = "{#p0.userId.toLowerCase()}", unless = "#result == null")
+	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
 	<S extends MasterUserLazy> S save(S entity);
 
 	@Override
-	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key = "#p0.userId")
+	@CacheEvict(cacheNames = {MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY}, key = "{#p0.userId.toLowerCase()}")
 	void delete(MasterUserLazy entity);
 
 

@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
@@ -58,7 +58,6 @@ import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.Tim
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.TimeSeriesUnableToUpdateException;
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.WindowNotSupportedException;
 import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -284,7 +283,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 				final BasicDBObject objQuery = new BasicDBObject();
 				mTags.forEach((key, value) -> {
 					if (key.getPropertyDataType().equals(PropertyDataType.OBJECT)) {
-						objQuery.put(propertyPrefix.concat(key.getPropertyName()), JSON.parse(value.toString()));
+						objQuery.put(propertyPrefix.concat(key.getPropertyName()), BasicDBObject.parse(value.toString()));
 					} else {
 						objQuery.put(propertyPrefix.concat(key.getPropertyName()), value);
 					}
@@ -314,7 +313,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 						final BasicDBObject tagDBObj = new BasicDBObject();
 						tagDBObj.put("name", tag.getKey().getPropertyName());
 						if (tag.getKey().getPropertyDataType().equals(PropertyDataType.OBJECT)) {
-							tagDBObj.put(VALUE_STR, JSON.parse(tag.getValue().toString()));
+							tagDBObj.put(VALUE_STR, BasicDBObject.parse(tag.getValue().toString()));
 						} else {
 							tagDBObj.put(VALUE_STR, tag.getValue());
 						}
@@ -327,7 +326,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 					objStat.put(WINDOW_FRECUENCY_UNIT, window.getFrecuencyUnit().name());
 					BasicDBObject lastValue;
 					if (field.getKey().getPropertyDataType().equals(PropertyDataType.OBJECT)) {
-						lastValue = new BasicDBObject(VALUE_STR, JSON.parse(field.getValue().toString()));
+						lastValue = new BasicDBObject(VALUE_STR, BasicDBObject.parse(field.getValue().toString()));
 					} else {
 						lastValue = new BasicDBObject(VALUE_STR, field.getValue());
 					}
@@ -668,7 +667,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		}
 
 		if (field.getKey().getPropertyDataType() == PropertyDataType.OBJECT)
-			setFirstValueOfDocument(vMeasures, window, calendar, JSON.parse(field.getValue().toString()));
+			setFirstValueOfDocument(vMeasures, window, calendar, BasicDBObject.parse(field.getValue().toString()));
 		else
 			setFirstValueOfDocument(vMeasures, window, calendar, field.getValue());
 
@@ -682,7 +681,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 
 		mTags.forEach((key, value) -> {
 			if (key.getPropertyDataType().equals(PropertyDataType.OBJECT))
-				data.put(key.getPropertyName(), JSON.parse(value.toString()));
+				data.put(key.getPropertyName(), BasicDBObject.parse(value.toString()));
 			else
 				data.put(key.getPropertyName(), value);
 

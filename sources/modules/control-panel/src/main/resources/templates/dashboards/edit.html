@@ -111,7 +111,7 @@
                             <div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
                                     <!-- CANCEL  -->
-                                    <button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardController.go(\'' + @{/dashboards/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                    <button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DashboardController.go(\'' + @{/dashboards/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
                                                     
                                     <!-- UPDATE -->
                                     <button th:if="${dashboard.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"><span th:text="#{gen.changes}"> Save Changes</span></button>

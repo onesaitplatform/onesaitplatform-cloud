@@ -14,12 +14,16 @@
  */
 package com.minsait.onesait.platform.api.rest.api;
 
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -32,14 +36,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
+import com.apicatalog.jsonld.JsonLdOptions;
+import com.apicatalog.jsonld.document.Document;
+import com.apicatalog.jsonld.document.JsonDocument;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
 import com.minsait.onesait.platform.api.service.Constants;
 import com.minsait.onesait.platform.api.service.impl.ApiServiceImpl.ChainProcessingStatus;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.commons.metrics.Source;
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 
+import jakarta.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -70,14 +81,14 @@ public class ApiManagerEntryPoint {
 			ChainProcessingStatus status = (ChainProcessingStatus) mData.get(Constants.STATUS);
 			if (status == ChainProcessingStatus.STOP) {
 				log.error("STOP state detected: exiting");
-				return buildErrorResponse(mData);
+				return buildErrorResponse(mData, "");
 			}
 			log.debug("Processing logic ");
 			mData = apiService.processLogic(mData);
 			status = (ChainProcessingStatus) mData.get(Constants.STATUS);
 			if (status == ChainProcessingStatus.STOP) {
 				log.error("Error Processing Query, Stop Execution detected");
-				return buildErrorResponse(mData);
+				return buildErrorResponse(mData, "");
 
 			}
 			log.debug("Processing output");
@@ -87,7 +98,7 @@ public class ApiManagerEntryPoint {
 
 		} catch (final Exception e) {
 			log.error("Error processing operation", e);
-			return buildErrorResponse(mData);
+			return buildErrorResponse(mData, e.getMessage());
 		} finally {
 			if (null != metricsManager) {
 				String ontologyName = "";
@@ -113,24 +124,100 @@ public class ApiManagerEntryPoint {
 
 	private ResponseEntity<?> buildResponse(Map<String, Object> mData) {
 		final String contentType = (String) mData.get(Constants.CONTENT_TYPE);
-		final HttpHeaders headers = getDefaultHeaders(contentType);
-		final Object output = mData.get(Constants.OUTPUT);
+		final HttpHeaders headers = getDefaultHeaders(contentType,
+				mData.get(Constants.HTTP_RESPONSE_HEADERS) != null
+						? (HttpHeaders) mData.get(Constants.HTTP_RESPONSE_HEADERS)
+						: null);
+
+		Object output = mData.get(Constants.OUTPUT);
 		if (output instanceof ByteArrayResource) {
 			headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(((ByteArrayResource) output).contentLength()));
 			// headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline");
 		}
+
+		final Ontology onto = (Ontology) mData.get(Constants.ONTOLOGY);
+		if (onto != null) {
+			if (onto.isSupportsJsonLd() && contentType.equals("application/ld+json")) {
+				try {
+
+					// for all elements put @type and delete _id and context
+					JSONObject context = new JSONObject(onto.getJsonLdContext().toString());
+					JSONArray typeArray = context.getJSONArray("@type");
+					// context.remove("@type");
+
+					JSONArray originalArray = new JSONArray(output.toString());
+					for (int i = 0; i < originalArray.length(); i++) {
+						JSONObject explrObject = originalArray.getJSONObject(i);
+						if (explrObject.has("_id")) {
+							explrObject.remove("_id");
+						}
+						if (explrObject.has("contextData")) {
+							explrObject.remove("contextData");
+						}
+						String key = (String) explrObject.keys().next();
+						if (explrObject.has(key)) {
+							JSONObject parameterObj = explrObject.getJSONObject(key);
+							parameterObj.put("@type", typeArray.get(0).toString());
+						}
+
+						/*
+						 * JSONObject contexObj = new JSONObject(); contexObj.put("@vocab",
+						 * "http://schema.org/"); JSONObject elemRoot = new JSONObject();
+						 * elemRoot.put("@id", typeArray.get(0).toString()); contexObj.put(key,
+						 * elemRoot);
+						 */
+
+						JSONObject contexObj = new JSONObject(onto.getJsonLdContext());
+						// contexObj.put("@vocab", "http://schema.org/");
+						// JSONObject elemRoot = new JSONObject();
+						// elemRoot.put("@id", typeArray.get(0).toString());
+						// contexObj.put(key, elemRoot);
+
+						explrObject.put("@context", contexObj.get("@context"));
+					}
+
+					Document documentJson = JsonDocument
+							.of(new ByteArrayInputStream(originalArray.toString().getBytes()));
+					Document documentContext = JsonDocument
+							.of(new ByteArrayInputStream(onto.getJsonLdContext().getBytes()));
+
+					JsonLdOptions opt = new JsonLdOptions();
+					// opt.setUseNativeTypes(true);
+					// EXPANDED MODE
+					// JsonArray jsonArray =
+					// JsonLd.expand(documentJson).context(documentContext).options(opt).get();
+					// COMPACT MODE
+					JsonObject jsonArray = JsonLd.compact(documentJson, documentContext).get();
+
+					output = jsonArray;
+				} catch (JsonLdError ex) {
+					return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+				} catch (JSONException ex) {
+					return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else if (!onto.isSupportsJsonLd() && contentType.equals("application/ld+json")) {
+				return new ResponseEntity<>(headers, HttpStatus.NOT_ACCEPTABLE);
+			}
+		}
+
 		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null) {
 
 			return new ResponseEntity<>(output, headers, (HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));
 		} else {
-			return new ResponseEntity<>(output, headers, HttpStatus.OK);
+			return new ResponseEntity<>(output.toString(), headers, HttpStatus.OK);
 		}
-
 	}
 
-	private ResponseEntity<String> buildErrorResponse(Map<String, Object> mData) {
+	private ResponseEntity<String> buildErrorResponse(Map<String, Object> mData, String ex) {
 		final String contentType = (String) mData.get(Constants.CONTENT_TYPE);
-		final HttpHeaders headers = getDefaultHeaders(contentType);
+		final HttpHeaders headers = getDefaultHeaders(contentType,
+				mData.get(Constants.HTTP_RESPONSE_HEADERS) != null
+						? (HttpHeaders) mData.get(Constants.HTTP_RESPONSE_HEADERS)
+						: null);
+
+		if (contentType == null && !ex.isEmpty()) {
+			return new ResponseEntity<>(ex, headers, HttpStatus.BAD_REQUEST);
+		}
 		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null) {
 			return new ResponseEntity<>((String) mData.get(Constants.REASON), headers,
 					(HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));
@@ -141,14 +228,22 @@ public class ApiManagerEntryPoint {
 
 	}
 
-	private HttpHeaders getDefaultHeaders(String contentType) {
+	private HttpHeaders getDefaultHeaders(String contentType, HttpHeaders initialheaders) {
+
 		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+		if (initialheaders != null) {
+			initialheaders.entrySet().forEach(e -> {
+				headers.add(e.getKey(), e.getValue().iterator().next());
+			});
+		}
+		if (!headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
+			headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+		}
 		return headers;
 	}
 
 	private HttpHeaders getOptionsHeaders() {
-		final HttpHeaders headers = getDefaultHeaders(MediaType.APPLICATION_JSON_VALUE);
+		final HttpHeaders headers = getDefaultHeaders(MediaType.APPLICATION_JSON_VALUE, null);
 		headers.add("Access-Control-Allow-Headers", "X-SOFIA2-APIKey,auth-token,Content-Type");
 		headers.add("Access-Control-Allow-Methods", "POST,GET,DELETE,PUT,OPTIONS");
 		return headers;

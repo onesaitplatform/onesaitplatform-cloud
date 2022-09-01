@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.model.AppChildExport;
 import com.minsait.onesait.platform.config.model.AppExport;
@@ -79,19 +80,21 @@ import com.minsait.onesait.platform.controlpanel.rest.management.flowengine.Flow
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.NotebookManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.nodered.auth.exception.NoderedAuthException;
-import com.mongodb.util.JSON;
+import com.mongodb.BasicDBObject;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Migration Management", tags = { "Migration management service" })
+@Tag(name = "Migration Management")
 @RestController
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api/migration")
 @Slf4j
 public class MigrationManagementController {
@@ -131,9 +134,9 @@ public class MigrationManagementController {
 	@Autowired
 	private MigrationHelper migrationHelper;
 
-	@ApiOperation(value = "Export all. No users or projects will be exported.")
+	@Operation(summary = "Export all. No users or projects will be exported.")
 	@GetMapping("/export/all")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> exportAll() {
 
 		try {
@@ -156,11 +159,11 @@ public class MigrationManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Export by user. Only the selected user will be exported and projects will not be exported.")
+	@Operation(summary = "Export by user. Only the selected user will be exported and projects will not be exported.")
 	@GetMapping("/exportByUser/{user}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> exportByUser(
-			@ApiParam(value = "User", required = true) @PathVariable("user") String user) {
+			@Parameter(description= "User", required = true) @PathVariable("user") String user) {
 		try {
 			if (utils.isAdministrator()) {
 				ExportResult userData = migrationService.exportUser(userService.getUser(user));
@@ -180,11 +183,11 @@ public class MigrationManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Export by project. Users will not be exported.")
+	@Operation(summary = "Export by project. Users will not be exported.")
 	@GetMapping("/exportByProject/{project}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> exportByProject(
-			@ApiParam(value = "Project", required = true) @PathVariable("project") String project) {
+			@Parameter(description= "Project", required = true) @PathVariable("project") String project) {
 
 		try {
 			if (utils.isAdministrator()) {
@@ -205,11 +208,11 @@ public class MigrationManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Export users. Only the selected users will be exported.")
+	@Operation(summary = "Export users. Only the selected users will be exported.")
 	@GetMapping("/exportUsers/{users}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> exportUsers(
-			@ApiParam(value = "Users List", required = true) @PathVariable("users") List<String> users) {
+			@Parameter(description= "Users List", required = true) @PathVariable("users") List<String> users) {
 
 		try {
 			if (utils.isAdministrator()) {
@@ -227,9 +230,9 @@ public class MigrationManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Export schema.")
+	@Operation(summary = "Export schema.")
 	@GetMapping("/export/schema")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> exportSchema() {
 
 		try {
@@ -249,11 +252,11 @@ public class MigrationManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Compare schema.")
+	@Operation(summary = "Compare schema.")
 	@PostMapping("/compare/schema")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> compareSchema(
-			@ApiParam(value = "Schema", required = true) @Valid @RequestBody String otherSchema) {
+			@Parameter(description= "Schema", required = true) @Valid @RequestBody String otherSchema) {
 
 		try {
 			if (utils.isAdministrator()) {
@@ -272,15 +275,15 @@ public class MigrationManagementController {
 		}
 	}
 
-	// @ApiOperation(value = "Export Ontolgoies data.")
+	// @Operation(summary = "Export Ontolgoies data.")
 	// @PostMapping(value = "/exportMongo/{ontologies}")
-	// @ApiResponses(@ApiResponse(response = String.class, code = 200, message =
+	// @ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description =
 	// "OK"))
 	// public ResponseEntity<String> exportMongo(Model model, HttpServletResponse
 	// response, HttpServletRequest request,
-	// @ApiParam(value = "Ontologies List", required = true)
+	// @Parameter(description= "Ontologies List", required = true)
 	// @PathVariable("ontologies") List<String> ontologies,
-	// @ApiParam(value = "User and password of Mongo in the following format:
+	// @Parameter(description= "User and password of Mongo in the following format:
 	// {'userMongo': <userMongo>, 'passwordMongo': <passwordMongo>}", required =
 	// true) @Valid @RequestBody String data)
 	// throws IOException {
@@ -291,10 +294,10 @@ public class MigrationManagementController {
 	// return new ResponseEntity<>(file.getPath(), HttpStatus.OK);
 	// }
 
-	@ApiOperation(value = "Import Data.")
+	@Operation(summary = "Import Data.")
 	@PostMapping("/import")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
-	public ResponseEntity<?> importData(@ApiParam(value = "data", required = true) @Valid @RequestBody String json,
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
+	public ResponseEntity<?> importData(@Parameter(description= "data", required = true) @Valid @RequestBody String json,
 			@PathVariable("override") Boolean override) {
 
 		try {
@@ -327,7 +330,7 @@ public class MigrationManagementController {
 				sortedClazz.add(OntologyTimeSeriesWindow.class);
 				sortedClazz.add(OntologyTimeSeriesProperty.class);
 				sortedClazz.add(Api.class);
-				sortedClazz.add(ApiOperation.class);
+				sortedClazz.add(com.minsait.onesait.platform.config.model.ApiOperation.class);
 				sortedClazz.add(ApiQueryParameter.class);
 				sortedClazz.add(GadgetDatasource.class);
 				sortedClazz.add(AppChildExport.class);
@@ -402,15 +405,15 @@ public class MigrationManagementController {
 				final ResponseEntity<String> result = flowengineController
 						.exportFlowDomainByIdentification(obj.get(IDENTIFICATION).toString());
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
-					obj.put(DOMAIN_DATA, JSON.parse(result.getBody()));
+					obj.put(DOMAIN_DATA, BasicDBObject.parse(result.getBody()));
 				} else {
 					log.error("Error exporting domain data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 							result.getStatusCode().name());
-					obj.put(DOMAIN_DATA, JSON.parse("[]"));
+					obj.put(DOMAIN_DATA, BasicDBObject.parse("[]"));
 				}
 			} catch (final NoderedAuthException e) {
 				log.warn("Domain are not started. {}", e.getMessage());
-				obj.put(DOMAIN_DATA, JSON.parse("[]"));
+				obj.put(DOMAIN_DATA, BasicDBObject.parse("[]"));
 			}
 		}
 		return data;
@@ -456,11 +459,11 @@ public class MigrationManagementController {
 
 			final ResponseEntity<?> result = notebookController.exportNotebook(obj.get(IDZEP).toString());
 			if (result.getStatusCode().equals(HttpStatus.OK)) {
-				obj.put(NOTEBOOK_DATA, JSON.parse(new String((byte[]) result.getBody(), StandardCharsets.UTF_8)));
+				obj.put(NOTEBOOK_DATA, BasicDBObject.parse(new String((byte[]) result.getBody(), StandardCharsets.UTF_8)));
 			} else {
 				log.error("Error exporting notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 						result.getStatusCode().name());
-				obj.put(NOTEBOOK_DATA, JSON.parse("[]"));
+				obj.put(NOTEBOOK_DATA, BasicDBObject.parse("[]"));
 			}
 
 		}
@@ -515,11 +518,11 @@ public class MigrationManagementController {
 			try {
 				final ResponseEntity<?> result = dataflowController.exportPipeline(obj.get(IDENTIFICATION).toString());
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
-					obj.put(DATAFLOW_DATA, JSON.parse(result.getBody().toString()));
+					obj.put(DATAFLOW_DATA, BasicDBObject.parse(result.getBody().toString()));
 				} else {
 					log.error("Error exporting dataflow data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 							result.getStatusCode().name());
-					obj.put(DATAFLOW_DATA, JSON.parse("[]"));
+					obj.put(DATAFLOW_DATA, BasicDBObject.parse("[]"));
 				}
 			} catch (final UnsupportedEncodingException e) {
 				log.error("Error exportin dataflow data: {}. {}", obj.get(IDENTIFICATION).toString(), e);

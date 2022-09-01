@@ -184,6 +184,8 @@
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
+															<th class="titulo-columnas text-left" th:text="#{gen.public}">Public</th>
+															<th class="titulo-columnas" th:text="#{gen.type}">Type</th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
@@ -197,20 +199,26 @@
 															<td class="text-left " th:text="${layer.user.userId}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-xxs" th:title="${layer.description}" th:text="${layer.description}"></td>
+															<!-- PUBLIC -->
+															<td class="text-left" th:if="${layer.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!layer.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
+															<!-- TYPE -->
+															<td class="text-left text-truncate-xxs" th:if="${layer.externalType!=null}" th:title="${layer.externalType}" th:text="${layer.externalType}"></td>
+															<td class="text-left text-truncate-xxs" th:if="${layer.externalType==null}" th:title="#{resources.ontology}" th:text="#{resources.ontology}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${layer.createdAt!=null}" th:text="${#dates.format(layer.createdAt,'dd/MM/YYYY')}"></td>
-															<td class="text-left" th:if="${layer.createdAt==null}" th:text="${layer.createdAt}"></td>
+															<td class="text-left" th:if="${layer.createdAt!=null}"><span th:text="${#dates.format(layer.createdAt,'yyyy/MM/dd')}"style="display:none"></span><span th:text="${#dates.format(layer.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${layer.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${layer.updatedAt!=null}" th:text="${#dates.format(layer.updatedAt,'dd/MM/YYYY')}"></td>
-															<td class="text-left" th:if="${layer.updatedAt==null}" th:text="${layer.updatedAt}"></td>
+															<td class="text-left" th:if="${layer.updatedAt!=null}"><span th:text="${#dates.format(layer.updatedAt,'yyyy/MM/dd')}"style="display:none"></span><span th:text="${#dates.format(layer.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${layer.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/show/${layer.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/layers/show/${layer.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  th:if="${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/update/${layer.id}|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/layers/update/${layer.id}|} + '\');'"><i class="icon-edit"></i></span>
 																	<span  th:if="!(${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" disabled class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
 
 																	<span th:if="(${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')) AND (${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="dropdown">
@@ -218,20 +226,20 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- CRUD -->
-																			<span th:if="${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/crud/${layer.id}/|} + '\');'"><i class="icon-crud"></i><span class="span-title-three-dots-icons" th:text="#{crud.crud}" >CRUD</span></span>
+																			<span th:if="${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/layers/crud/${layer.id}/|} + '\');'"><i class="icon-crud"></i><span class="span-title-three-dots-icons" th:text="#{crud.crud}" >CRUD</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																    		<span th:if="${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'deleteLayer(\'' + ${layer.id} + '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																    		<span th:if="${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteLayer(\'' + ${layer.id} + '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																		</li>
 																	</ul>
 																	</span>
 
 																	<!-- CRUD -->
-																	<span th:if="(${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')) AND !(${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/layers/crud/${layer.id}/|} + '\');'"><i class="icon-crud"></i></span>
+																	<span th:if="(${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon')) AND !(${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/layers/crud/${layer.id}/|} + '\');'"><i class="icon-crud"></i></span>
 
 																	<!-- DELETE -->
-																    <span th:if="(${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND !(${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon'))" class="btn btn-xs btn-no-border icon-on-table color-red" data-container="body" data-placement="bottom" th:onclick="'deleteLayer(\'' + ${layer.id} + '\');'"><i class="icon-delete"></i></span>
+																    <span th:if="(${#authentication.name} == ${layer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND !(${layer.ontology} !=null AND ${layer.query} ==null AND ${!layer.virtual} AND ( ${layer.geometryType} == 'Point' OR ${layer.geometryType} == 'LineString' OR ${layer.geometryType} == 'Polygon'))" class="btn btn-xs btn-no-border icon-on-table color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteLayer(\'' + ${layer.id} + '\');'"><i class="icon-delete"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -255,10 +263,18 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{ontology.createdAt}"> Created At</label>
+															<label th:text="#{ontology.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{gen.type}"> Type</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{ontology.createdAt}"> Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{ontology.updatedAt}"> Updated At</label>
 														</span>
 													</div>
@@ -409,6 +425,9 @@
 		$('#layers_wrapper > div:nth-child(1)').hide();
 
 		$('.dataTables_paginate').attr('style', 'float:right !important');
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
+		
 		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
 			 var $menu = $("ul", this);	        
 	         offset = $menu.offset();
@@ -426,7 +445,7 @@
 	         $(this).data("myDropdownMenu").removeAttr('style');
 	     });
 		
-		$("#contenedor-tabla-outside").removeClass("hidden");
+		
 	});
 	
 	//]]>

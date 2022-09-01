@@ -203,19 +203,19 @@
 															<td class="text-left" th:if="${!viewer.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
 															
 															<!-- DATE -->
-															<td class="text-left" th:if="${viewer.createdAt!=null}" th:text="${#dates.format(viewer.createdAt,'dd/MM/YYYY')}"></td>
-															<td class="text-left" th:if="${viewer.createdAt==null}" th:text="${viewer.createdAt}"></td>
+															<td class="text-left" th:if="${viewer.createdAt!=null}"><span th:text="${#dates.format(viewer.createdAt,'yyyy/MM/dd')}"style="display:none"></span><span th:text="${#dates.format(viewer.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${viewer.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${viewer.updatedAt!=null}" th:text="${#dates.format(viewer.updatedAt,'dd/MM/YYYY')}"></td>
-															<td class="text-left" th:if="${viewer.updatedAt==null}" th:text="${viewer.updatedAt}"></td>
+															<td class="text-left" th:if="${viewer.updatedAt!=null}"><span th:text="${#dates.format(viewer.updatedAt,'yyyy/MM/dd')}"style="display:none"></span><span th:text="${#dates.format(viewer.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${viewer.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/viewers/view/${viewer.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/viewers/view/${viewer.id}|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  th:if="${#authentication.name} == ${viewer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/viewers/update/${viewer.id}|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="${#authentication.name} == ${viewer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/viewers/update/${viewer.id}|} + '\');'"><i class="icon-edit"></i></span>
 																	<span  th:if="!(${#authentication.name} == ${viewer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" disabled class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
 
 																	<span class="dropdown">
@@ -223,15 +223,15 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- DOWNLOAD -->
-																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:navigateUrl(\'' + @{|/viewers/download/${viewer.id}|} + '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{viewer.download}" >Download</span></span>
+																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/viewers/download/${viewer.id}|} + '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{viewer.download}" >Download</span></span>
 																		</li>
 																		<li>
 																			<!-- URL -->
-																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:onclick="'javascript:showViewerURLDialog(\'' + @{|/viewers/view/${viewer.id}} + '\');'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{viewer.url}" >URL</span></span>
+																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:showViewerURLDialog(\'' + @{|/viewers/view/${viewer.id}} + '\');'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{viewer.url}" >URL</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->
-																    		<span th:if="${#authentication.name} == ${viewer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:onclick="'deleteViewer(\'' + ${viewer.id} + '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn} " >Delete</span></span>
+																    		<span th:if="${#authentication.name} == ${viewer.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteViewer(\'' + ${viewer.id} + '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn} " >Delete</span></span>
 																		</li>
 																	</ul>
 																	</span>

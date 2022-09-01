@@ -5,6 +5,7 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
+      driver-class-name: ${CONFIGDB_DRIVER}
      
 onesaitplatform: #Config onesaitplatform specific
    iotbroker.plugable:
@@ -50,12 +51,18 @@ onesaitplatform: #Config onesaitplatform specific
         operationTimeout: ${KUDUCLIENTOPTIMEOUT}
         adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
         socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
-   database.timeseries:
-      timezone: ${TIMESERIES_TIMEZONE}
-      mongodb.insert.lock.wait:
-        check.millis: ${TIMESERIES_INSERT_LOCK_CHECK_MILLIS}
-        timeout.millis: ${TIMESERIES_INSERT_LOCK_TIMEOUT_MILLIS}
-
+   database.timeseries.timezone: ${TIMESERIES_TIMEZONE}
+   database.timescaledb:
+      enabled: ${TIMESCALE_ENABLED}
+      url: ${TIMESCALE_URL}
+      user: ${TIMESCALE_USER}
+      password: ${TIMESCALE_PASS}
+   database.minio:
+      access-key: ${MINIO_ROOT_USER}
+      secret-key: ${MINIO_ROOT_PASSWORD}
+   database.prestodb:
+      historicalCatalog: minio
+      historicalSchema: default
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
@@ -87,14 +94,17 @@ spring: ## General Config
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
+      driver-class-name: ${CONFIGDB_DRIVER}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+   jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs
+   file.path: /var/log/platform-logs
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}

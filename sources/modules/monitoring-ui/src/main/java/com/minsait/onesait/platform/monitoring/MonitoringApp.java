@@ -17,13 +17,11 @@ package com.minsait.onesait.platform.monitoring;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import de.codecentric.boot.admin.server.config.EnableAdminServer;
 
 @EnableAdminServer
 @SpringBootApplication
-@EnableJpaAuditing
 @ComponentScan("com.minsait.onesait.platform")
 public class MonitoringApp {
 

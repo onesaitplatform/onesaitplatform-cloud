@@ -25,6 +25,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -49,6 +50,7 @@ public class ConsoleMenu extends AuditableEntity {
 	@Column(name = "JSON", nullable = false)
 	@NotNull
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@JsonRawValue
 	@Getter
 	@Setter

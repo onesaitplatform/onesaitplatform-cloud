@@ -62,6 +62,8 @@ ENV SERVER_NAME=localhost \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     REALTIMEDBNAME=onesaitplatform_rtdb \
@@ -89,7 +91,8 @@ ENV SERVER_NAME=localhost \
     REPORT_LOCALE_LANG=es \
     REPORT_LOCALE_COUNTRY=ES \
     SBA_USERNAME=operations \
-	SBA_SECRET=changeIt2019!
+	SBA_SECRET=changeIt2019! \
+	MAX_HTTP_HEADER_SIZE=20000
 
 ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY"
 

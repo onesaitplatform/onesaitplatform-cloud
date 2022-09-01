@@ -16,9 +16,20 @@ package com.minsait.onesait.platform.audit.bean;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@JsonInclude(value = Include.NON_NULL)
 public class OPAuthAuditEvent extends OPAuditRemoteEvent {
 
 	private static final long serialVersionUID = -146537921734143436L;
+
+	@Getter
+	@Setter
+	private String logUser;
 
 	public OPAuthAuditEvent() {
 		super();
@@ -28,7 +39,7 @@ public class OPAuthAuditEvent extends OPAuditRemoteEvent {
 			String user, String ontology, String operationType, Module module, Map<String, Object> extraData,
 			String otherType, String remoteAddress, ResultOperationType resultOperation) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, 1);
 	}
 
 }

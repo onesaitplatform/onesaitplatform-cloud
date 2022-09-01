@@ -66,9 +66,9 @@ public class RestSwaggerReader {
 	private static final String XSOFIAEXTENSION = "x-sofia2-extension";
 
 	private static List<String> produces = new ArrayList<>(Arrays.asList(MediaType.APPLICATION_JSON,
-			MediaType.APPLICATION_ATOM_XML, MediaType.TEXT_PLAIN, "text/csv"));
+			MediaType.APPLICATION_ATOM_XML, MediaType.TEXT_PLAIN, "text/csv", "application/ld+json"));
 	private static List<String> consumes = new ArrayList<>(
-			Arrays.asList(MediaType.APPLICATION_JSON, MediaType.APPLICATION_ATOM_XML));
+			Arrays.asList(MediaType.APPLICATION_JSON, MediaType.APPLICATION_ATOM_XML, "application/ld+json"));
 
 	private static Map<String, Response> responses = new HashMap<>();
 	private static List<Scheme> schemes = new ArrayList<>();

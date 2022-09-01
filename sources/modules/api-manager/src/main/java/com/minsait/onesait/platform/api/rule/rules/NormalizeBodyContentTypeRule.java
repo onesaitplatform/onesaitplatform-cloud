@@ -33,8 +33,7 @@ import org.springframework.stereotype.Component;
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import com.mongodb.BasicDBObject;
 
 @Component
 @Rule
@@ -107,7 +106,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			final DBObject dbObject = (DBObject) JSON.parse(body);
+			final BasicDBObject dbObject = BasicDBObject.parse(body);
 			return dbObject != null;
 		} catch (final Exception e) {
 			return false;
@@ -115,9 +114,9 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 	}
 
 	public String depureJSON(String body) {
-		DBObject dbObject = null;
+		BasicDBObject dbObject = null;
 		try {
-			dbObject = (DBObject) JSON.parse(body);
+			dbObject = BasicDBObject.parse(body);
 			if (dbObject == null) {
 				return null;
 			} else {

@@ -24,8 +24,11 @@ import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -35,7 +38,7 @@ import lombok.Setter;
 @Table(name = "DASHBOARD_USER_ACCESS", uniqueConstraints = {
 		@UniqueConstraint(columnNames = { "DASHBOARD_ID", "USER_ID" }) })
 @Configurable
-public class DashboardUserAccess extends AuditableEntityWithUUID {
+public class DashboardUserAccess extends AuditableEntityWithUUID  {
 
 	private static final long serialVersionUID = 1L;
 
@@ -60,13 +63,57 @@ public class DashboardUserAccess extends AuditableEntityWithUUID {
 	@Setter
 	private User user;
 
+	@JsonGetter("dashboardUserAccessType")
+	public String getDashboardUATJson() {
+		return dashboardUserAccessType.getId();
+	}
+
+	@JsonSetter("dashboardUserAccessType")
+	public void setDashboardUATJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final DashboardUserAccessType d = new DashboardUserAccessType();
+			d.setId(id);
+			dashboardUserAccessType = d;
+		}
+	}
+
+	/*@JsonGetter("dashboard")
+	public String getDashboardJson() {
+		return dashboard.getId();
+	}
+
+	@JsonSetter("dashboard")
+	public void setDashboardJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final Dashboard d = new Dashboard();
+			d.setId(id);
+			dashboard = d;
+		}
+	}*/
+
+	@JsonGetter("user")
+	public String getUserJson() {
+		return user.getUserId();
+	}
+
+	@JsonSetter("user")
+	public void setUserJson(String userId) {
+		if (!StringUtils.isEmpty(userId)) {
+			final User u = new User();
+			u.setUserId(userId);
+			user = u;
+		}
+	}
+
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof DashboardUserAccess))
+		}
+		if (!(o instanceof DashboardUserAccess)) {
 			return false;
-		DashboardUserAccess that = (DashboardUserAccess) o;
+		}
+		final DashboardUserAccess that = (DashboardUserAccess) o;
 		return getDashboardUserAccessType() != null
 				&& getDashboardUserAccessType().equals(that.getDashboardUserAccessType()) && getDashboard() != null
 				&& getDashboard().equals(that.getDashboard()) && getUser() != null && getUser().equals(that.getUser());
@@ -79,11 +126,11 @@ public class DashboardUserAccess extends AuditableEntityWithUUID {
 
 	@Override
 	public String toString() {
-		String space = "-";
-		StringBuilder sb = new StringBuilder();
-		sb.append(getDashboard());
+		final String space = "-";
+		final StringBuilder sb = new StringBuilder();
+		sb.append(getDashboard().getIdentification());
 		sb.append(space);
-		sb.append(getUser());
+		sb.append(getUser().getUserId());
 		sb.append(space);
 		sb.append(getDashboardUserAccessType());
 		return sb.toString();

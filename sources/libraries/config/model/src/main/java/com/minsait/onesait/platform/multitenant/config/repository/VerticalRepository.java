@@ -57,7 +57,9 @@ public interface VerticalRepository extends JpaRepository<Vertical, String> {
 	<S extends Vertical> S saveAndFlush(S entity);
 
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
+	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY,
+			MasterUserRepository.MASTER_USER_REPOSITORY, MasterUserRepositoryLazy.MASTER_USER_REPOSITORY_LAZY,
+			TenantRepositoryLazy.TENANT_LAZY_REPOSITORY , TenantRepository.TENANT_REPOSITORY}, allEntries = true)
 	<S extends Vertical> S save(S entity);
 
 	@Override

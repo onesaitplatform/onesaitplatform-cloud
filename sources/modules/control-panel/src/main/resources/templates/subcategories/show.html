@@ -109,15 +109,15 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" th:onclick="'deleteSubcategory(\'' + ${subcategory.id} + '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
+									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" th:attr="onclick='deleteSubcategory(\'' + ${subcategory.id} + '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
 		
 									<span class="sep" ></span>
 															
 									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:onclick="'javascript:navigateUrl(\'' + @{/categories/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:attr="onclick='javascript:navigateUrl(\'' + @{/categories/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- UPDATE -->
-									<button id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:onclick="'javascript:navigateUrl(\'' + @{|/subcategories/update/${subcategory.id}/|} + '\');'"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									<button id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/subcategories/update/${subcategory.id}/|} + '\');'"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
 							</div>
 						</div>

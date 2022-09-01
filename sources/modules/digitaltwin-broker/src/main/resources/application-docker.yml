@@ -5,6 +5,7 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
+      driver-class-name: ${CONFIGDB_DRIVER}
      
 spring:
    datasource:
@@ -15,6 +16,7 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
+      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://digitaltwinbrokerservice:${server.port}${server.servlet.contextPath}/
@@ -24,6 +26,9 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+   jpa:
+      open-in-view: false
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 onesaitplatform:
   database.mongodb:
     database: ${REALTIMEDBNAME}
@@ -48,4 +53,4 @@ onesaitplatform:
 
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs
+   file.path: /var/log/platform-logs

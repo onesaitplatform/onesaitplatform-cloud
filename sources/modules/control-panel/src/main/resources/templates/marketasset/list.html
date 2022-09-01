@@ -118,7 +118,7 @@
 										<!-- ASSET CONTAINER class="project-container col-md-4 col-sm-6 col-xs-12 + project_type + proyect state" -->
 										<div th:each="marketasset : ${marketAssets}" th:class="'project-container col-md-3 col-sm-6 col-xs-12 ' + ${#strings.replace(marketasset.marketAssetType,' ','')} + ' '  + ${#strings.replace(marketasset.state,' ','')}">
 											<!-- ASSET PANEL va con fondo blanco, tocar panel-defautl para hacer un panel-white -->
-											<div class="panel panel-white " th:onclick="'javascript:navigateUrl(\'' + @{|/marketasset/show/${marketasset.id}/|} + '\');'">
+											<div class="panel panel-white " th:attr="onclick='javascript:navigateUrl(\'' + @{|/marketasset/show/${marketasset.id}/|} + '\');'">
 												<div class="panel-heading ">																						  
 												
 													<a th:href="@{|/marketasset/show/${marketasset.id}|}"><div class="uppercase no-wrap text-truncate-md project-title" th:title="${marketasset.title}" th:text="${marketasset.title}" >Identification</div></a>
@@ -150,7 +150,7 @@
 														<!-- SHOW ASSET -->
 														<a th:href="@{|/marketasset/show/${marketasset.id}|}" th:title="#{gen.view}" class="btn btn-xs btn-circle btn-outline blue no-border" ><i class="la la-eye font-hg"></i></a>
 														<!-- EDIT PROYECTO -->
-														<a th:title="#{gen.edit}" th:if="((${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))"  class="btn btn-xs btn-circle btn-outline blue no-border" th:onclick="'javascript:navigateUrl(\'' + @{|/marketasset/update/${marketasset.id}/|} + '\');'" ><i class="la la-edit font-hg"></i></a>
+														<a th:title="#{gen.edit}" th:if="((${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))"  class="btn btn-xs btn-circle btn-outline blue no-border" th:attr="onclick='javascript:navigateUrl(\'' + @{|/marketasset/update/${marketasset.id}/|} + '\');'" ><i class="la la-edit font-hg"></i></a>
 														<!-- DELETE ASSET -->																				
 														<!-- <span class="btn btn-xs btn-outline red-sunglo tooltips" data-container="body" data-placement="bottom" th:title="#{proyectos_listado_button_eliminar}" th:data-original-title="#{proyectos_listado_button_eliminar}" ><i class="fa fa-trash font-md"></i></span> -->
 													</div>

@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -36,6 +38,7 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.repository.UserRepositoryPageable;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
@@ -60,13 +63,18 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
 	@Autowired
+	@Lazy
 	private EntityDeletionService entityDeletionService;
 	@Autowired
 	private UserTokenService userTokenService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
 	@Autowired
+	@Lazy
 	private MultitenancyService multitenancyService;
+	@Autowired
+	private UserRepositoryPageable userRepositoryPageable;
+
 
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean isMultitenancyEnabled;
@@ -197,6 +205,25 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public List<UserAmplified> getAllActiveUsersListPageable(Integer page, Integer size, String filter) {
+		List<UserAmplified> users = null;
+		if (!StringUtils.hasText(filter)) {
+			users = userRepositoryPageable.findAll(PageRequest.of(page, size)).getContent().stream()
+					.map(UserAmplified::new).collect(Collectors.toList());
+		} else {
+			users = userRepositoryPageable.findByUserIdContainingOrFullNameContaining(filter, filter, PageRequest.of(page, size)).stream()
+					.map(UserAmplified::new).collect(Collectors.toList());
+		}
+
+		if (isMultitenancyEnabled) {
+			addTenantInfo(users, getActiveMasterUsersForCurrentVertical(true));
+		}
+
+		return users;
+	}
+
+
+	@Override
 	public List<User> getAllActiveUsers() {
 		return userRepository.findAllActiveUsers();
 
@@ -310,9 +337,12 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+
 	@Override
 	public boolean userExists(User user) {
-		return userRepository.findByUserId(user.getUserId()) != null;
+		final MasterUser mUser = multitenancyService.findUser(user.getUserId()).orElse(null);
+		final User u = userRepository.findByUserId(user.getUserId());
+		return mUser != null || u!=null;
 	}
 
 	@Override
@@ -337,10 +367,6 @@ public class UserServiceImpl implements UserService {
 
 			if (user.getRole() != null) {
 				final Role role = roleRepository.findByName(user.getRole().getName());
-				if (userDb.getRole().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())
-						&& role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
-					throw new UserServiceException("Cannot change role to ROLE_PLATFORM_ADMINISTRATOR");
-				}
 				userDb.setRole(role);
 
 			}

@@ -17,16 +17,12 @@ package com.minsait.onesait.platform.commons.security;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PasswordPatternMatcher {
 
-	@Value("${onesaitplatform.password.pattern:(?=^.{10,128}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$}")
-	private String passwordPattern;
-
-	public boolean isValidPassword(String data) {
+	public boolean isValidPassword(String data, String passwordPattern) {
 		final Pattern pattern = Pattern.compile(passwordPattern);
 		final Matcher matcher = pattern.matcher(data);
 		return matcher.find();

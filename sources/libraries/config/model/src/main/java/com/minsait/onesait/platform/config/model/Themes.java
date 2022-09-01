@@ -22,7 +22,9 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
@@ -37,19 +39,12 @@ import lombok.Setter;
 public class Themes extends AuditableEntity {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	public enum editItems {
-		LOGIN_TITLE,
-		LOGIN_IMAGE,
-		HEADER_IMAGE,
-		LOGIN_BACKGROUND_COLOR,
-		LOGIN_TITLE_ES,
-		FOOTER_TEXT,
-		FOOTER_TEXT_ES,
-		CSS,
-		JS
+		LOGIN_TITLE, LOGIN_IMAGE, HEADER_IMAGE, LOGIN_BACKGROUND_COLOR, LOGIN_TITLE_ES, FOOTER_TEXT, FOOTER_TEXT_ES,
+		CSS, JS
 	}
-	
+
 	@Id
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUIDGenerator")
@@ -57,22 +52,25 @@ public class Themes extends AuditableEntity {
 	@Getter
 	@Setter
 	private String id;
-	
+
 	@Column(name = "IDENTIFICATION", length = 50, nullable = false, unique = true)
 	@NotNull
 	@Getter
 	@Setter
 	private String identification;
-	
+
 	@Column(name = "JSON", nullable = false)
 	@NotNull
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@JsonRawValue
 	@Getter
 	@Setter
 	private String json;
-	
-	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT default 0")
+
+	@Column(name = "ACTIVE", nullable = false)
+	@Type(type = "org.hibernate.type.NumericBooleanType")
+	@ColumnDefault("0")
 	@NotNull
 	@Getter
 	@Setter

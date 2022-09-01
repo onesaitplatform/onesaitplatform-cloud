@@ -32,9 +32,9 @@
                 },
                 {
                     "title": {
-                        "EN": "External Database Connections Management",
-                        "ES": "Gestión de Conexiones Externas a Base de datos",
-						"FR": "Gestion des Connexions à la Base de Données Externe"
+                        "EN": "Database Connections Management",
+                        "ES": "Gestión de Conexiones a Base de datos",
+						"FR": "Gestion des Connexions à la Base de Données"
                     },
                     "icon": "",
                     "url": "/controlpanel/virtualdatasources/list"
@@ -76,10 +76,10 @@
                     "url": "/controlpanel/themes/list"
                 },
                 {
-                    "title": {
-                        "EN": "Control Panel Trees Management",
-                        "ES": "Gestión de árboles del Panel de Control",
-						"FR": "Gestion des arborescences du panneau de commande"
+                    "title": {						
+						"EN": "Categorization Trees Management",
+						"ES": "Gestión de Árboles de Categorización",
+						"FR": "Gestion des arbres de catégorisation "
                     },
                     "icon": "",
                     "url": "/controlpanel/categorization/list"
@@ -314,18 +314,18 @@
                 },
                 {
                     "title": {
-                        "EN": "Ontologies Management",
-                        "ES": "Gestión de Ontologías",
-						"FR": "Gestion des ontologies"
+                        "EN": "Entities Management",
+                        "ES": "Gestión de Entidades",
+						"FR": "Gestion des Entités"
                     },
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
                 },
                 {
                     "title": {
-                        "EN": "APIs Management",
-                        "ES": "Gestión de APIs",
-						"FR": "Gestion des API"
+                        "EN": "REST APIs Management",
+                        "ES": "Gestión de APIs REST",
+						"FR": "Gestion des APIs REST"
                     },
                     "icon": "",
                     "url": "/controlpanel/apimanager/list"
@@ -452,10 +452,19 @@
                     "url": "/controlpanel/migration/show"
                 },
                 {
+					"title": {
+						"EN": "Billable modules",
+						"ES": "Modulos facturables",
+						"FR": "Modules facturables"
+					},
+					"icon": "",
+					"url": "/controlpanel/billingmodules/list"
+				},
+                {
                     "title": {
-                        "EN": "Data to Ontology Import Tools",
-                        "ES": "Herramientas de importación de datos a ontología",
-						"FR": "Outils d'importation de Données vers une Ontologie"
+                        "EN": "Data to Entity Import Tools",
+                        "ES": "Herramientas de importación de datos a Entidades",
+						"FR": "Outils d'importation de Données vers une Entités"
                     },
                     "icon": "",
                     "url": "/controlpanel/jsontool/tools"
@@ -480,18 +489,18 @@
                 },
                 {
                     "title": {
-                        "EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada",
-						"FR": "Configuration Centralisée"
+                        "EN": "Configurations Management",
+						"ES": "Gestión de Configuraciones",
+						"FR": "Gestion des Configurations"
                     },
                     "icon": "",
                     "url": "/controlpanel/configurations/list"
                 },
                 {
                     "title": {
-                        "EN": "REST Services Planner Management",
-                        "ES": "Gestión Planificación de Servicios REST",
-						"FR": "Gestion du Planificateur de Services REST"
+						"EN": "REST APIs Planning",
+						"ES": "Planificación de APIs REST",
+						"FR": "Planificateur de APIs REST"
                     },
                     "icon": "",
                     "url": "/controlpanel/restplanner/list"
@@ -499,7 +508,7 @@
                 {
                     "title": {
                         "EN": "Cache Management",
-                        "ES": "Gestión de caché",
+                        "ES": "Gestión de Cachés",
 						"FR": "Gestion des caches"
                     },
                     "icon": "",
@@ -507,18 +516,18 @@
                 },
                 {
                     "title": {
-                        "EN": "Internationalizations Management",
-                        "ES": "Gestión de internacionalizaciones",
-						"FR": "Gestion des internationalisations"
+                        "EN": "Internationalizations i18n Management",
+                        "ES": "Gestión de internacionalizaciones i18n",
+						"FR": "Gestion des internationalisations i18n"
                     },
                     "icon": "",
                     "url": "/controlpanel/internationalizations/list"
                 },
                 {
                     "title": {
-                        "EN": "Query Templates Management",
-                        "ES": "Gestión de Plantillas de Consulta",
-						"FR": "Gestion des Modèles de Requête"
+                        "EN": "SQL Query Templates Management",
+                        "ES": "Gestión de Plantillas de Consultas SQL",
+						"FR": "Gestion des Modèles de Requête SQL"
                     },
                     "icon": "",
                     "url": "/controlpanel/querytemplates/list"
@@ -537,8 +546,8 @@
                 {
                     "title": {
                         "EN": "Digital Clients Definition",
-                        "ES": "Definición de Clientes Digitales",
-						"FR": "Définition des Clients Numériques"
+                        "ES": "Definición de Clientes",
+						"FR": "Définition des Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/list"
@@ -546,8 +555,8 @@
                 {
                     "title": {
                         "EN": "Digital Clients Management",
-                        "ES": "Gestión de Clientes Digitales",
-						"FR": "Gestion des Clients Numériques"
+                        "ES": "Gestión de Clientes",
+						"FR": "Gestion des Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/management/list"
@@ -555,8 +564,8 @@
                 {
                     "title": {
                         "EN": "Digital Clients Simulations",
-                        "ES": "Simulaciones de Clientes Digitales",
-						"FR": "Simulations de Clients Numériques"
+                        "ES": "Simulaciones de Clientes",
+						"FR": "Simulations de Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devicesimulation/list"
@@ -564,17 +573,17 @@
                 {
                     "title": {
                         "EN": "Digital Clients Status",
-                        "ES": "Estado de Clientes Digitales",
-						"FR": "Statut des Clients Numériques"
+                        "ES": "Estado de Clientes",
+						"FR": "Statut des Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/management/show"
                 },
                 {
                     "title": {
-                        "EN": "Digital Twin Definitions",
-                        "ES": "Definiciones de Digital Twin",
-						"FR": "Définitions de Jumeaux Numériques"
+                        "EN": "Digital Twins Definitions",
+                        "ES": "Definiciones de Digital Twins",
+						"FR": "Définitions de Digital Twins"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwintypes/list"
@@ -583,7 +592,7 @@
                     "title": {
                         "EN": "Digital Twin Management",
                         "ES": "Gestión Digital Twins",
-						"FR": "Gestion des Jumeaux Numériques"
+						"FR": "Gestion des Digital Twins"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwindevices/list"
@@ -592,7 +601,7 @@
                     "title": {
                         "EN": "Digital Twin Status",
                         "ES": "Estado Digital Twins",
-						"FR": "État du Jumeau Numérique"
+						"FR": "État du Digital Twins"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwindisplay/show"
@@ -619,12 +628,21 @@
 				},
 				{
                     "title": {
-                        "EN": "My DataRefiner Projects",
-                        "ES": "Mis Proyectos DataRefiner",
-						"FR": "Mes Projets DataRefiner"
+                        "EN": "My Data Refiner Projects",
+                        "ES": "Mis Proyectos Data Refiner",
+						"FR": "Mes Projets Data Refiner"
                     },
                     "icon": "",
                     "url": "/controlpanel/datacleanerui"
+                },
+				{
+                    "title": {
+                        "EN": "Process Traceability Management",
+                        "ES": "Gestión de Trazabilidad de Procesos",
+						"FR": "Gestion de la traçabilité des processus"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/process/list"
                 }
 			]
 		},
@@ -640,7 +658,7 @@
                 {
                     "title": {
                         "EN": "Query Tool",
-                        "ES": "Herramienta Consultas",
+                        "ES": "Herramienta de Consultas",
 						"FR": "Éditeur de Requêtes"
                     },
                     "icon": "",
@@ -658,7 +676,7 @@
                 {
                     "title": {
                         "EN": "Monitoring UI",
-                        "ES": "Consola Monitorización",
+                        "ES": "Consola de Monitorización",
 						"FR": "Interface Utilisateur de Surveillance"
                     },
                     "icon": "",

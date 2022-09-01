@@ -1,11 +1,12 @@
 ##--spring.config.name=apimanager
 ##security.require_ssl: true
 server: ## Config Web Server
-   max-http-header-size: 10000000
+   max-http-header-size: 20000
    port: 19100
    servlet:
       contextPath: /api-manager
-   jetty.max-http-post-size: 20000000      
+   jetty.max-http-form-post-size: 20000000     
+   forward-headers-strategy: native 
 
 
   
@@ -83,6 +84,9 @@ onesaitplatform: #Config onesaitplatform specific
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
 spring: ## General Config  
+   main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
    application.name: onesaitplatform-api-manager
    boot.admin: #Spring Boot Admin Config   
       client.url: http://localhost:18100/monitoring
@@ -114,8 +118,8 @@ spring: ## General Config
     enabled: true
    servlet:
       multipart:
-         max-file-size: 200Mb
-         max-request-size: 200Mb
+         max-file-size: 200MB
+         max-request-size: 200MB
 spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
 
@@ -138,8 +142,8 @@ security:
     
     ## LOGGING CONF
 logging:
-   path: ./target/ 
-   file: ${spring.application.name}
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
    level:
       com.minsait: DEBUG 
       org.springframework.boot: WARN

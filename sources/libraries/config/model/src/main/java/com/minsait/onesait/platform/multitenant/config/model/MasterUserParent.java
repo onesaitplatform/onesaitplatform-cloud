@@ -26,6 +26,7 @@ import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.converters.JPAHAS256ConverterCustom;
@@ -86,11 +87,13 @@ public class MasterUserParent extends AuditableEntity {
 
 	@Column(name = "EXTRA_FIELDS", nullable = true)
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String extraFields;
 
-	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
+	@Column(name = "ACTIVE", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter

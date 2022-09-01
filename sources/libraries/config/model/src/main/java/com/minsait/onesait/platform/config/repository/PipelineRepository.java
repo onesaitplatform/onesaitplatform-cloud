@@ -14,14 +14,18 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.minsait.onesait.platform.config.dto.PipelineForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
+import com.minsait.onesait.platform.config.dto.PipelineForList;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.User;
@@ -59,4 +63,8 @@ public interface PipelineRepository extends JpaRepository<Pipeline, String> {
 
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.PipelineForList(o.id, o.identification, o.idstreamsets, o.user, o.isPublic, 'null') " + "FROM Pipeline AS o ")
 	List<PipelineForList> findAllPipelineList();
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

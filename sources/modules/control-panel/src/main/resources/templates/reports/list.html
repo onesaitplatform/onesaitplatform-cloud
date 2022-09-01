@@ -210,7 +210,7 @@
 															<!-- OWNER -->
 															<td  class="text-left no-wrap " th:text="${report.owner}"></td>
 															<!-- DATE CREATED -->
-															<td class="text-left" th:if="${report.created!=null}"><span th:text="${#dates.format(report.created,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(report.created,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${report.created!=null}"><span th:text="${#dates.format(report.created,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(report.created,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${report.created==null}" th:text="'---'"></td>
 															<!-- PUBLIC -->
 															<td class="text-left" th:if="${report.isPublic}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>

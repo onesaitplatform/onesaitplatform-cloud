@@ -14,11 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
@@ -47,13 +49,15 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	List<Configuration> findByUser(User user);
 
+	Configuration findByIdentification(String identification);
+
 	Configuration findByDescription(String description);
 
 	List<Configuration> findByType(Type type);
 
 	List<Configuration> findByTypeAndUser(Type type, User user);
 
-	Configuration findByTypeAndEnvironmentAndSuffix(Type type, String environment, String suffix);
+	Configuration findByTypeAndEnvironmentAndIdentification(Type type, String environment, String identification);
 
 	List<Configuration> findByUserAndType(User userId, Type type);
 
@@ -63,9 +67,13 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	Configuration findByTypeAndEnvironment(Type type, String environment);
 
-	Configuration findByTypeAndSuffixIgnoreCase(Type type, String suffix);
+	Configuration findByTypeAndIdentificationIgnoreCase(Type type, String identification);
 
 	@Override
 	List<Configuration> findAll();
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 
 }

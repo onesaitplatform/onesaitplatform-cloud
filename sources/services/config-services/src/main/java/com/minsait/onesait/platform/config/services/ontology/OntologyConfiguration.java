@@ -66,7 +66,7 @@ public class OntologyConfiguration {
 	private String datasourceTableName;
 	private String datasourceDatabase;
 	private String datasourceSchema;
-
+	
 	private String enablePartitionIndexes;
 
 	private String primarykey;
@@ -104,6 +104,8 @@ public class OntologyConfiguration {
 	
 	private String customIdField;
 	
+	private String datasourceCatalog;
+	private String bucketName;
 
 	public OntologyConfiguration(HttpServletRequest request) {
 		// rest ontology
@@ -139,7 +141,7 @@ public class OntologyConfiguration {
 		datasourceTableName = request.getParameter("datasourceTableName");
 		datasourceDatabase = request.getParameter("datasourceDatabase");
 		datasourceSchema = request.getParameter("datasourceSchema");
-
+		
 		// otras
 		enablePartitionIndexes = request.getParameter("enablePartitionIndexes");
 		primarykey = request.getParameter("primarykey");
@@ -179,7 +181,11 @@ public class OntologyConfiguration {
 		}
 		
 		customIdField = request.getParameter("customIdField");
-
+		
+		// presto
+		
+		datasourceCatalog = request.getParameter("datasourceCatalog");
+		bucketName = request.getParameter("bucketName");
 	}
 
 }

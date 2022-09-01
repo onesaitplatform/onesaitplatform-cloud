@@ -535,11 +535,12 @@ public class ExternalApiRestOpsDBRepository implements BasicOpsDBRepository {
 		}
 		// transform headersConfig into map
 		final String headersConfig = ontologyRest.getHeaderId().getConfig();
-		final TypeReference<List<HashMap<String, String>>> typeRef = new TypeReference<List<HashMap<String, String>>>() {
+		final TypeReference<Map<String,String>[]> typeRef = new TypeReference<Map<String,String>[]>() {
 		};
 
 		try {
-			final List<Map<String, String>> headersList = mapperObj.readValue(headersConfig, typeRef);
+			//final List<Map<String, String>> headersList = mapperObj.readValue(headersConfig, typeRef);
+			final Map<String, String>[] headersList = mapperObj.readValue(headersConfig, typeRef);
 			for (final Map<String, String> headerMap : headersList) {
 				headers.put(headerMap.get("key"), headerMap.get("value"));
 			}

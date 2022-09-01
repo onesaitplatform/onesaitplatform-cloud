@@ -27,7 +27,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -43,18 +43,21 @@ public class OntologyTimeSeriesProperty extends AuditableEntityWithUUID {
 	}
 
 	public enum PropertyDataType {
-		STRING, INTEGER, NUMBER, OBJECT
+		STRING, INTEGER, NUMBER, OBJECT, ARRAY, TIMESTAMP
 	}
 
+	public enum AggregationFunction {
+		NONE, MAX, MIN, FIRST, LAST, SUM, PUSH
+	}
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_TIMESERIES_ID", referencedColumnName = "ID", nullable = false)
-	@JsonBackReference
+	@JsonIgnore
 	@Getter
 	@Setter
 	private OntologyTimeSeries ontologyTimeSeries;
@@ -78,4 +81,15 @@ public class OntologyTimeSeriesProperty extends AuditableEntityWithUUID {
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private PropertyDataType propertyDataType;
+
+	@Column(name = "PROPERTY_AGGREGATION_TYPE", nullable = true, length = 20)
+	@Getter
+	@Setter
+	@Enumerated(EnumType.STRING)
+	private AggregationFunction propertyAggregationType;
+
+	@Column(name = "PROPERTY_PUSH_SIGNAL", nullable = true, length = 200)
+	@Getter
+	@Setter
+	private String propertyPushSignal;
 }

@@ -60,4 +60,13 @@ public class Urls {
 
 	private ReportEngine reportEngine;
 
+	private Prometheus prometheus;
+
+	private MinIO minio;
+
+	private Presto presto;
+
+	private Serverless serverless;
+
+	private Modeljsonld modeljsonld;
 }

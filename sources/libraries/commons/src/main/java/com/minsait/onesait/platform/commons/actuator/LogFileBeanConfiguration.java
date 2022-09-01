@@ -22,6 +22,7 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.logging.LogFileWebEndpoint;
+import org.springframework.boot.logging.LogFile;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -50,7 +51,8 @@ public class LogFileBeanConfiguration {
 	@Bean
 	@Primary
 	public LogFileWebEndpoint logFileWebEndpoint() {
-		return new LogFileWebEndpoint(configEnv);
+		LogFile logFile = LogFile.get(configEnv);
+		return new LogFileWebEndpoint(logFile, null);
 	}
 
 	@Scheduled(fixedDelay = 600000)

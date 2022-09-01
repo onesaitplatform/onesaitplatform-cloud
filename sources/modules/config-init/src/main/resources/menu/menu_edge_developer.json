@@ -12,15 +12,6 @@
             "icon": "icon-development",
             "url": "",
             "submenu": [
-            {
-					"title": {
-						"EN": "View Lineages",
-						"ES": "Visualizar Linajes",
-						"FR": "Voir les Lignées"
-					},
-					"icon": "",
-					"url": "/controlpanel/lineage/show"
-				},
                 {
                     "title": {
                         "EN": "My Projects",
@@ -32,18 +23,18 @@
                 },
                 {
                     "title": {
-                        "EN": "My Ontologies",
-                        "ES": "Mis Ontologías",
-						"FR": "Mes Ontologies"
+                        "EN": "My Entities",
+                        "ES": "Mis Entidades",
+						"FR": "Mes Entités"
                     },
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
                 },
                 {
                     "title": {
-                        "EN": "My APIs",
-                        "ES": "Mis APIs",
-						"FR": "Mes API"
+                        "EN": "My REST APIs",
+                        "ES": "Mis APIs REST",
+						"FR": "Mes APIs REST"
                     },
                     "icon": "",
                     "url": "/controlpanel/apimanager/list"
@@ -203,8 +194,8 @@
                 },
                 {
                     "title": {
-                        "EN": "My DataSources",
-                        "ES": "Mis Fuentes de datos",
+                        "EN": "My Datasources",
+                        "ES": "Mis Datasources",
 						"FR": "Mes Sources de Données"
                     },
                     "icon": "",
@@ -241,7 +232,7 @@
         },
         {
             "title": {
-                "EN": "DEV TOOLS",
+                "EN": "DEV º",
                 "ES": "HERR. DESARROLLO",
 				"FR": "OUTILS DE DÉVELOPPEMENT"
             },
@@ -250,13 +241,22 @@
             "submenu": [
                 {
                     "title": {
-                        "EN": "Data to Ontology Import Tools",
-                        "ES": "Herramientas de importación de datos a ontología",
-						"FR": "Outils d'importation de Données vers une Ontologie"
+                        "EN": "Data to Entity Import Tool",
+                        "ES": "Herramienta de importación de datos a Entidad",
+						"FR": "Outils d'importation de Données vers une Entité"
                     },
                     "icon": "",
                     "url": "/controlpanel/jsontool/tools"
                 },
+                {
+					"title": {
+						"EN": "Billable modules",
+						"ES": "Modulos facturables",
+						"FR": "Modules facturables"
+					},
+					"icon": "",
+					"url": "/controlpanel/billingmodules/list"
+				},
                 {
                     "title": {
                         "EN": "My Web Projects",
@@ -277,45 +277,45 @@
                 },
                 {
 					"title": {
-						"EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada",
-						"FR": "Configuration Centralisée"
+						"EN": "My Configurations",
+						"ES": "Mis Configuraciones",
+						"FR": "MEs Configurations"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
 				},
                 {
                     "title": {
-                        "EN": "My REST Services Planner",
-                        "ES": "Mis planificador de servicios REST",
-						"FR": "Mon planificateur de services REST"
+						"EN": "My REST APIs Planning",
+						"ES": "Mis Planificación de APIs REST",
+						"FR": "Mon planificateur de APIs REST"
                     },
                     "icon": "",
                     "url": "/controlpanel/restplanner/list"
                 },
                 {
                     "title": {
-                        "EN": "My Internationalizations",
-                        "ES": "Mis internacionalizaciones",
-						"FR": "Mes Internationalisations"
+                        "EN": "My Internationalizations i18n",
+                        "ES": "Mis internacionalizaciones i18n",
+						"FR": "Mes Internationalisations i18n"
                     },
                     "icon": "",
                     "url": "/controlpanel/internationalizations/list"
                 },
                 {
                     "title": {
-                        "EN": "My Control Panel Trees",
-                        "ES": "Mis árboles del Panel de Control",
-						"FR": "Mes arborescences du panneau de contrôle"
+						"EN": "My Categorization Trees",
+						"ES": "Mis Árboles de Categorización",
+						"FR": "Mes arbres de catégorisation"
                     },
                     "icon": "",
                     "url": "/controlpanel/categorization/list"
                 },
                 {
 					"title": {
-						"EN": "My External Database Connections",
-						"ES": "Mis Conexiones Externas a Base de datos",
-						"FR": "Mes connexions à la base de données externe"
+						"EN": "My Database Connections",
+						"ES": "Mis Conexiones a Base de datos",
+						"FR": "Mes connexions à la base de données"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
@@ -334,8 +334,8 @@
                 {
                     "title": {
                         "EN": "My Digital Clients",
-                        "ES": "Mis Clientes Digitales",
-						"FR": "Mes Clients Numériques"
+                        "ES": "Mis Clientes",
+						"FR": "Mes Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/list"
@@ -343,8 +343,8 @@
                 {
                     "title": {
                         "EN": "My Digital Clients Instances",
-                        "ES": "Instancias de Clientes Digitales",
-						"FR": "Mes Instances de Clients Numériques"
+                        "ES": "Instancias de Clientes",
+						"FR": "Mes Instances de Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/management/list"
@@ -352,8 +352,8 @@
                 {
                     "title": {
                         "EN": "My Digital Clients Simulations",
-                        "ES": "Mis Simulaciones de Clientes Digitales",
-						"FR": "Mes Simulations de Clients Numériques"
+                        "ES": "Mis Simulaciones de Clientes",
+						"FR": "Mes Simulations de Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devicesimulation/list"
@@ -361,17 +361,17 @@
                 {
                     "title": {
                         "EN": "Digital Clients Visualization",
-                        "ES": "Visualización de Clientes Digitales",
-						"FR": "Visualisation des Clients Numériques"
+                        "ES": "Visualización de Clientes",
+						"FR": "Visualisation des Clients"
                     },
                     "icon": "",
                     "url": "/controlpanel/devices/management/show"
                 },
                 {
                     "title": {
-                        "EN": "My Digital Twin Definitions",
-                        "ES": "Mis Definiciones de Digital Twin",
-						"FR": "Mes définitions de Jumeaux Numériques"
+                        "EN": "My Digital Twins Definitions",
+                        "ES": "Mis Definiciones de Digital Twins",
+						"FR": "Mes définitions de Digital Twins"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwintypes/list"
@@ -380,7 +380,7 @@
                     "title": {
                         "EN": "My Digital Twins",
                         "ES": "Mis Digital Twins",
-						"FR": "Mes Jumeaux Numériques"
+						"FR": "Mes Digital Twins"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwindevices/list"
@@ -389,7 +389,7 @@
                     "title": {
                         "EN": "Digital Twin Status",
                         "ES": "Estado de mis Digital Twins",
-						"FR": "État du Jumeau Numérique"
+						"FR": "État du Digital Twins"
                     },
                     "icon": "",
                     "url": "/controlpanel/digitaltwindisplay/show"
@@ -416,12 +416,21 @@
 				},
 				{
                     "title": {
-                        "EN": "My DataRefiner Projects",
-                        "ES": "Mis Proyectos DataRefiner",
-						"FR": "Mes Projets DataRefiner"
+                        "EN": "My Data Refiner Projects",
+                        "ES": "Mis Proyectos Data Refiner",
+						"FR": "Mes Projets Data Refiner"
                     },
                     "icon": "",
                     "url": "/controlpanel/datacleanerui"
+                },
+				{
+                    "title": {
+                        "EN": "My Process Traceability",
+                        "ES": "Mis Trazabilidades de Procesos",
+						"FR": "Traçabilité des processus"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/process/list"
                 }
 			]
 		},
@@ -437,7 +446,7 @@
                 {
                     "title": {
                         "EN": "Query Tool",
-                        "ES": "Herramienta Consultas",
+                        "ES": "Herramienta de Consultas",
 						"FR": "Éditeur de Requêtes"
                     },
                     "icon": "",

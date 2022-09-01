@@ -18,6 +18,7 @@ import javax.validation.constraints.NotNull;
 
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.hadoop.kudu.table.KuduColumn;
+import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -94,6 +95,18 @@ public class ColumnDefinitionBusiness implements java.io.Serializable {
 		column.setRequired(this.notNull);
 		column.setDefaultValue(this.defautlValue);
 		column.setComment(this.colComment);
+		
+		return column;
+	}
+	
+	public ColumnPresto toColumnPresto() {
+		ColumnPresto column = new ColumnPresto();
+		column.setColumnName(this.name);
+		ColDataType dType = new ColDataType();
+		dType.setDataType(this.type);
+		column.setColDataType(dType);
+		column.setNotNull(this.notNull);
+		column.setColComment(this.colComment);
 		
 		return column;
 	}

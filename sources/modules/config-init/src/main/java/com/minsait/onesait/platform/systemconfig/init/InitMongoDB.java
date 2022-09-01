@@ -107,7 +107,7 @@ public class InitMongoDB {
 	private static final String ANDROID_IOT_FRAME = "androidIoTFrame";
 	private static final String METRICS_BASE = "MetricsBase";
 	private static final String SCHEMA_STR = "examples/Restaurants-schema.json";
-	
+
 	private final static String METRICS_INITIAL_TIME = "2019-01-01T00:00:00.000Z";
 
 	@Value("${onesaitplatform.database.mongodb.username:platformadmin}")
@@ -127,7 +127,6 @@ public class InitMongoDB {
 
 	@Value("${onesaitplatform.server.controlpanelservice:localhost:18000}")
 	private String controlpanelService;
-
 	
 	@Value("${onesaitplatform.init.samples:false}")
 	private boolean initSamples;
@@ -152,7 +151,7 @@ public class InitMongoDB {
 				init_ISO3166();
 				init_QA_WindTurbinesDataSet();
 				init_SupermarketsDataSet();
-			}
+			} 
 
 			log.info("initMongoDB correctly...");
 		}
@@ -226,7 +225,6 @@ public class InitMongoDB {
 			if (connect.collectionExists(mongodb_name, METRICS_BASE)) {
 				connect.dropCollection(mongodb_name, METRICS_BASE);
 			}
-
 			log.info("Deleted collections...");
 
 		} catch (final Exception e) {
@@ -638,7 +636,6 @@ public class InitMongoDB {
 		}
 
 	}
-
 
 	public void init_AuditGeneral() {
 		log.info("init AuditGeneral");

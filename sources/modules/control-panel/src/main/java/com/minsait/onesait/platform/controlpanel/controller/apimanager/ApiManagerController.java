@@ -88,24 +88,25 @@ public class ApiManagerController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String updateForm(@PathVariable("id") String id, Model model) {
 		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())
-				|| !apiManagerService.isApiStateValidForEditAuth(id))
+				|| !apiManagerService.isApiStateValidForEditAuth(id)) {
 			return ERROR_403;
+		}
 		apiManagerHelper.populateApiManagerUpdateForm(model, id);
 		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
 		resourcesInUseService.put(id, utils.getUserId());
-			
+
 		return "apimanager/create";
 	}
 
 	@GetMapping(value = "/show/{id}", produces = "text/html")
 	public String show(@PathVariable("id") String id, Model model) {
-		if (!apiManagerService.hasUserAccess(id, utils.getUserId()))
+		if (!apiManagerService.hasUserAccess(id, utils.getUserId())) {
 			return ERROR_403;
+		}
 		apiManagerHelper.populateApiManagerShowForm(model, id);
 
 		return "apimanager/show";
 	}
-
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
@@ -141,11 +142,11 @@ public class ApiManagerController {
 
 			final String apiId = apiManagerService.createApi(apiManagerHelper.apiMultipartMap(api), operationsObject,
 					authenticationObject);
-			if (!StringUtils.isEmpty(postProcessFx))
+			if (!StringUtils.isEmpty(postProcessFx)) {
 				apiManagerService.updateApiPostProcess(apiId, postProcessFx);
+			}
 
-
-			return "redirect:/apimanager/show/" + utils.encodeUrlPathSegment(apiId, request);
+			return "redirect:/apimanager/list/";
 		} catch (final Exception e) {
 			log.error("Could not create API : {}", e);
 			utils.addRedirectMessage("api.create.error", redirect);
@@ -161,8 +162,9 @@ public class ApiManagerController {
 			@RequestParam(required = false, defaultValue = "false") Boolean publish2gravitee,
 			RedirectAttributes redirect) {
 		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())
-				|| !apiManagerService.isApiStateValidForEdit(id))
+				|| !apiManagerService.isApiStateValidForEdit(id)) {
 			return ERROR_403;
+		}
 		if (bindingResult.hasErrors()) {
 			utils.addRedirectMessage("api.update.error", redirect);
 			return "redirect:/apimanager/update";
@@ -172,9 +174,9 @@ public class ApiManagerController {
 
 			apiManagerService.updateApi(apiManagerHelper.apiMultipartMap(api), deprecateApis, operationsObject,
 					authenticationObject);
-			if (!StringUtils.isEmpty(postProcessFx))
+			if (!StringUtils.isEmpty(postProcessFx)) {
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
-
+			}
 			resourcesInUseService.removeByUser(id, utils.getUserId());
 			return "redirect:/apimanager/show/" + api.getId();
 		} catch (final Exception e) {
@@ -189,12 +191,12 @@ public class ApiManagerController {
 	@Transactional
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		try {
-			if (!apiManagerService.hasUserEditAccess(id, utils.getUserId()))
+			if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())) {
 				return ERROR_403;
+			}
 			final Api api = apiManagerService.getById(id);
 			if (null != api) {
 				apiManagerService.removeAPI(id);
-				
 			}
 
 		} catch (final RuntimeException e) {
@@ -222,8 +224,9 @@ public class ApiManagerController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<UserApiDTO> createAuthorization(@RequestParam String api, @RequestParam String user) {
 		try {
-			if (!apiManagerService.hasUserEditAccess(api, utils.getUserId()))
+			if (!apiManagerService.hasUserEditAccess(api, utils.getUserId())) {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
 			final UserApi userApi = apiManagerService.updateAuthorization(api, user);
 			final UserApiDTO userApiDTO = new UserApiDTO(userApi);
 
@@ -239,10 +242,12 @@ public class ApiManagerController {
 	public ResponseEntity<String> deleteAuthorization(@RequestParam String id) {
 		try {
 			final UserApi userApi = apiManagerService.getUserApiAccessById(id);
-			if (userApi == null)
+			if (userApi == null) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			if (!apiManagerService.hasUserEditAccess(userApi.getApi().getId(), utils.getUserId()))
+			}
+			if (!apiManagerService.hasUserEditAccess(userApi.getApi().getId(), utils.getUserId())) {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
 			apiManagerService.removeAuthorizationById(id);
 			return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 		} catch (final RuntimeException e) {
@@ -267,7 +272,7 @@ public class ApiManagerController {
 
 	@PostMapping(value = "numVersion")
 	public @ResponseBody Integer numVersion(@RequestBody String numversionData) {
-		return (apiManagerService.calculateNumVersion(numversionData));
+		return apiManagerService.calculateNumVersion(numversionData);
 	}
 
 	@GetMapping(value = "/{id}/getImage")
@@ -286,8 +291,9 @@ public class ApiManagerController {
 	@GetMapping(value = "/updateState/{id}/{state}")
 	public String updateState(@PathVariable("id") String id, @PathVariable("state") String state, Model uiModel)
 			throws GenericOPException {
-		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId()))
+		if (!apiManagerService.hasUserEditAccess(id, utils.getUserId())) {
 			return ERROR_403;
+		}
 		apiManagerService.updateState(id, state);
 		return "redirect:/apimanager/list";
 	}
@@ -312,38 +318,15 @@ public class ApiManagerController {
 		}
 	}
 
-
-
 	@GetMapping(value = "/freeResource/{id}")
 	public @ResponseBody void freeResource(@PathVariable("id") String id) {
 		resourcesInUseService.removeByUser(id, utils.getUserId());
 		log.info("free resource", id);
 	}
 
-	@PostMapping(value = "/clone")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	public @ResponseBody ResponseEntity<String> cloneApi(Model model, @RequestParam String id,
-			@RequestParam String identification, RedirectAttributes redirect) {
-		try {
-						
-			final String apiId = apiManagerService.cloneApi(id, identification, utils.getUserId());
-
-			return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
-		} catch (final Exception e) {
-			log.error("Error clonning API : {}", e);
-			final Map<String, String> response = new HashMap<>();
-			response.put("status", "error");
-			response.put("cause", e.getMessage());
-			return new ResponseEntity<>(response.toString(), HttpStatus.BAD_REQUEST);
-		}
-	}	
-	
-	
-	
-	
 	@GetMapping(value = "/token/list")
 	public @ResponseBody List<String> getUserTokens() {
-		return (apiManagerHelper.getUserTokenList());
+		return apiManagerHelper.getUserTokenList();
 	}
 
 }

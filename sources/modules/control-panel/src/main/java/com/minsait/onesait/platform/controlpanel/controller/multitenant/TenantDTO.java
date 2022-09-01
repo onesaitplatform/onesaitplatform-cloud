@@ -29,5 +29,5 @@ public class TenantDTO {
 
 	private String name;
 	private List<String> vertical;
-	private int users;
+	private long users;
 }

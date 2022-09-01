@@ -27,18 +27,17 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
+import com.hazelcast.client.Client;
+import com.hazelcast.collection.IQueue;
 import com.hazelcast.config.ClasspathXmlConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.EvictionConfig;
-import com.hazelcast.config.EvictionConfig.MaxSizePolicy;
 import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.InMemoryFormat;
-import com.hazelcast.config.MaxSizeConfig;
+import com.hazelcast.config.MaxSizePolicy;
 import com.hazelcast.config.NearCacheConfig;
-import com.hazelcast.core.Client;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import com.minsait.onesait.platform.cache.listener.ClusterMembershipListener;
 import com.minsait.onesait.platform.cache.listener.HzDistributedObjectListener;
 import com.minsait.onesait.platform.cache.listener.NodeLifecycleListener;
@@ -68,14 +67,10 @@ public class HazelcastCacheLoader {
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() {
 		final Config config = new ClasspathXmlConfig("hazelcast.xml");
 		log.info("Configured Local Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
-			config.getMapConfig("revokedTokens").setTimeToLiveSeconds(revokeTokenTimeout)
-			.setMaxSizeConfig(new MaxSizeConfig(revokeTokenSize,
-					com.hazelcast.config.MaxSizeConfig.MaxSizePolicy.valueOf(revokeTokenMaxSizePolicy)))
-			.setEvictionPolicy(EvictionPolicy.LFU);
 		} catch (final Exception e) {
 			log.info("ignoring maps transactionalOperations and lockedOntologies");
 		}
@@ -98,14 +93,10 @@ public class HazelcastCacheLoader {
 		final Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml",
 				props);
 		log.info("Configured Local Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
 		try {
 			config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 			config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
-			config.getMapConfig("revokedTokens").setTimeToLiveSeconds(revokeTokenTimeout)
-			.setMaxSizeConfig(new MaxSizeConfig(revokeTokenSize,
-					com.hazelcast.config.MaxSizeConfig.MaxSizePolicy.valueOf(revokeTokenMaxSizePolicy)))
-			.setEvictionPolicy(EvictionPolicy.LFU);
 		} catch (final Exception e) {
 			log.info("ignoring maps transactionalOperations and lockedOntologies");
 		}
@@ -161,7 +152,7 @@ public class HazelcastCacheLoader {
 	private void addCacheConfig(Config config, String cacheName) {
 		final NearCacheConfig nearCacheConfig = new NearCacheConfig().setInMemoryFormat(InMemoryFormat.OBJECT)
 				.setCacheLocalEntries(true).setInvalidateOnChange(false).setTimeToLiveSeconds(600)
-				.setEvictionConfig(new EvictionConfig().setMaximumSizePolicy(MaxSizePolicy.ENTRY_COUNT).setSize(5000)
+				.setEvictionConfig(new EvictionConfig().setMaxSizePolicy(MaxSizePolicy.ENTRY_COUNT).setSize(5000)
 						.setEvictionPolicy(EvictionPolicy.LRU));
 		config.getMapConfig(cacheName).setInMemoryFormat(InMemoryFormat.BINARY).setNearCacheConfig(nearCacheConfig);
 	}

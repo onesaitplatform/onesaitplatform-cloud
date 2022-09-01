@@ -14,7 +14,7 @@
  */
 package com.minsait.onesait.platform.config.services.ontologydata;
 
-class TestResources {
+public class TestResources {
 		
 	static final String LONG_SCHEMA_WITH_ENCRYPTED = "{\n" + 
 			"    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n" + 

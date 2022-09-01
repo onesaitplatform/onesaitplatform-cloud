@@ -79,7 +79,6 @@ public class ApiManagerHelper {
 	private static final String OPERATIONS_STR = "operations";
 	private static final String CLIENTS_STR = "clients";
 
-
 	// To populate the List Api Form
 	public void populateApiManagerListForm(Model uiModel) {
 		final List<User> users = userRepository.findAll();
@@ -108,6 +107,7 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(OPERATIONS_STR, new ArrayList<String>());
 		uiModel.addAttribute("ontologies", ontologies);
 		uiModel.addAttribute("api", new Api());
+
 	}
 
 	// To populate de Api Create Form
@@ -122,7 +122,6 @@ public class ApiManagerHelper {
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
-
 		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
@@ -162,9 +161,7 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(OPERATIONS_STR, operations);
-
 		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
-
 		uiModel.addAttribute("api", api);
 		if (apiManagerService.postProcess(api))
 			uiModel.addAttribute("postProcessFx", apiManagerService.getPostProccess(api));

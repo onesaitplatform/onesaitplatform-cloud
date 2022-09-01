@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
@@ -155,6 +156,9 @@ public class ProjectController {
 		project.setUser(userService.getUser(utils.getUserId()));
 		try {
 			projectService.createProject(project);
+			Project projectDb = projectService.getByName(project.getIdentification());
+			projectService.addUserToProject(projectDb.getUser().getUserId(), projectDb.getId());
+			populateUsertabData(model, projectDb.getId());
 		} catch (final ProjectServiceException e) {
 			log.debug("Cannot create project");
 			utils.addRedirectException(e, redirect);
@@ -527,6 +531,13 @@ public class ProjectController {
 							.identification(r.getIdentification() + " - V" + ((Api) r).getNumversion())
 							.type(r.getClass().getSimpleName()).build())
 					.collect(Collectors.toList());
+		} else if (type_resource.equals("CONFIGURATION")) {
+			return resources2.stream()
+					.filter(r -> (r.getIdentification().toLowerCase().contains(identification.toLowerCase())
+							&& ((Configuration) r).getType().equals(Configuration.Type.EXTERNAL_CONFIG)))
+					.map(r -> ProjectResourceDTO.builder().id(r.getId()).identification(r.getIdentification())
+							.type(r.getClass().getSimpleName()).build())
+					.collect(Collectors.toList());
 		} else {
 			return resources2.stream()
 					.filter(r -> r.getIdentification().toLowerCase().contains(identification.toLowerCase()))
@@ -549,6 +560,8 @@ public class ProjectController {
 		urls.put(Resources.DATAFLOW.name(), "dataflow");
 		urls.put(Resources.GADGETDATASOURCE.name(), "datasources");
 		urls.put(Resources.ONTOLOGYVIRTUALDATASOURCE.name(), "virtualdatasources");
+		urls.put(Resources.CONFIGURATION.name(), "configurations");
+		urls.put(Resources.GADGETTEMPLATE.name(), "gadgettemplates");
 		return urls;
 	}
 }

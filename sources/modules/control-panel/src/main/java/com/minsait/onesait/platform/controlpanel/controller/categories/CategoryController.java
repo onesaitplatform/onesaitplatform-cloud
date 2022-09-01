@@ -17,9 +17,12 @@ package com.minsait.onesait.platform.controlpanel.controller.categories;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,6 +62,8 @@ public class CategoryController {
 	private AppWebUtils utils;
 
 	private static final String CATEGORY_STR = "category";
+	private static final String CATEGORY_TYPE_LIST_STR = "categoryTypeList";
+	private static final String SUBCATEGORIES_STR = "subcategories";
 	private static final String CAT_VAL_ERROR = "category.validation.error";
 	private static final String REDIRECT_CAT_CREATE = "redirect:/categories/create";
 	private static final String REDIRECT_CAT_LIST = "redirect:/categories/list";
@@ -104,6 +109,7 @@ public class CategoryController {
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		model.addAttribute(CATEGORY_STR, new Category());
+		model.addAttribute(CATEGORY_TYPE_LIST_STR, categoryConfigService.getCategoryTypeList());
 		return "categories/create";
 	}
 
@@ -111,6 +117,9 @@ public class CategoryController {
 	public String update(Model model, @PathVariable("id") String id) {
 		Category category = categoryConfigService.getCategoryToUpdate(id);
 		model.addAttribute(CATEGORY_STR, category);
+		model.addAttribute(CATEGORY_TYPE_LIST_STR, categoryConfigService.getCategoryTypeList());
+		model.addAttribute(SUBCATEGORIES_STR, subcategoryConfigService
+				.findSubcategoriesByCategory(categoryConfigService.getCategoryById(id)));
 		return "categories/create";
 	}
 
@@ -214,5 +223,41 @@ public class CategoryController {
 			return REDIRECT_CAT_LIST;
 		}
 	}
+	
+	@GetMapping(value = "/getSubcategories/{category}")
+	public @ResponseBody List<String> getSubcategories(@PathVariable("category") String category,
+			HttpServletResponse response) {
+		return subcategoryConfigService
+				.findSubcategoriesNamesByCategory(categoryConfigService.getCategoryByIdentification(category));
+	}
 
+	@PostMapping(value = "/addSubcategory/{id}")
+	public ResponseEntity<?> addSubcategory(@PathVariable("id") String id, @Valid Subcategory subcategory) {
+		try {
+			subcategoryConfigService.createSubcategory(subcategory, id);
+			final Subcategory s = subcategoryConfigService
+					.getSubcategoryByIdentificationAndCategory(subcategory.getIdentification(), categoryConfigService.getCategoryById(id));
+			return new ResponseEntity<>(s, HttpStatus.OK);
+		} catch (final Exception e) {
+			log.error("Generic internal error creating subcategory: " + e.getMessage());
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		
+	}
+
+	@PostMapping(value = "/removeSubcategory/{id}")
+	public ResponseEntity<String> removeSubcategory(@PathVariable("id") String id) {
+		final Subcategory subcategory = subcategoryConfigService.getSubcategoryById(id);
+		if (subcategory != null) {
+			try {
+				subcategoryConfigService.deleteSubcategory(id);
+				return new ResponseEntity<>("", HttpStatus.OK);
+			} catch (final Exception e) {
+				log.error("Error deleting subcategory. ", e);
+				return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
+			}
+		}
+		return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
+	}
+	
 }

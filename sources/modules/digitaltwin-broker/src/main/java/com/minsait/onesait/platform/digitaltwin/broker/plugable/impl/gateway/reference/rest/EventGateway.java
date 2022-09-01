@@ -21,63 +21,63 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 
 @RequestMapping(path="/event")
 @CrossOrigin(origins = "*")
-@Api(value="event", description="onesait Platform events for digital twins")
+@Tag(name="event", description="onesait Platform events for digital twins")
 public interface EventGateway {
-	
-	@ApiOperation(value = "Event Register to register the endpoint of the Digital Twin")
+
+	@Operation(summary= "Event Register to register the endpoint of the Digital Twin")
 	@RequestMapping(value="/register", method=RequestMethod.POST)
 	public ResponseEntity<?> register(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
-		
-	
-	@ApiOperation(value = "Event Ping")
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+
+
+	@Operation(summary= "Event Ping")
 	@RequestMapping(value="/ping", method=RequestMethod.POST)
 	public ResponseEntity<?> ping(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true)  JsonNode data);
-	
-	@ApiOperation(value = "Event Log")
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true)  JsonNode data);
+
+	@Operation(summary= "Event Log")
 	@RequestMapping(value="/log", method=RequestMethod.POST)
 	public ResponseEntity<?> log(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
-	
-	@ApiOperation(value = "Event Shadow")
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+
+	@Operation(summary= "Event Shadow")
 	@RequestMapping(value="/shadow", method=RequestMethod.POST)
 	public ResponseEntity<?> shadow(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
-	
-	@ApiOperation(value = "Event Notebook")
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+
+	@Operation(summary= "Event Notebook")
 	@RequestMapping(value="/notebook", method=RequestMethod.POST)
 	public ResponseEntity<?> notebook(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
-	
-	@ApiOperation(value = "Event Flow")
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+
+	@Operation(summary= "Event Flow")
 	@RequestMapping(value="/flow", method=RequestMethod.POST)
 	public ResponseEntity<?> flow(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
-	
-	@ApiOperation(value = "Event Rule")
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+
+	@Operation(summary= "Event Rule")
 	@RequestMapping(value="/rule", method=RequestMethod.POST)
 	public ResponseEntity<?> rule(
-			@ApiParam(value = "ApiKey provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
-	
-	@ApiOperation(value = "Custom Event")
+			@Parameter(description= "ApiKey provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+
+	@Operation(summary= "Custom Event")
 	@RequestMapping(value="/custom", method=RequestMethod.POST)
 	public ResponseEntity<?> custom(
-			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
+			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
 }

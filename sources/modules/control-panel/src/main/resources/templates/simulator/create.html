@@ -93,27 +93,30 @@
 					
 					<!-- FORM ACTIONS FOR UPDATE -->											
 					<input th:if="${simulation.id} != null" type="hidden" name="action" th:value="@{/devicesimulation/update/}"/>
-					<input th:if="${simulation.id} != null" type="hidden" name="_method" value="PUT"/>											
+					<input th:if="${simulation.id} != null" type="hidden" name="_method" value="PUT"/>			
+					
+					<!-- VERSIONING -->
+					<th:block th:include="versioning/fragments/form-commit"></th:block>								
 											
 				
 				<div id="header">
 					<div class="row pageCreateHeader">
-						<div class="col-md-8 col-sm-8 col-xs-12">
+						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="margin-top-4">
 								<span th:if="${simulation.id} == null" th:text="#{simulation.template.create}"> New</span>
 								<span th:if="${simulation.id} != null" th:text="${simulation.clientPlatform.identification}"> Update</span>
 							</div>
 						</div>
 						
-						<div class="col-md-4 col-sm-4 col-xs-12">
+						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">
 								<!-- DELETE -->
-								<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${simulation.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'deleteSimulation(\''+ ${simulation.id}+'\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+								<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${simulation.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteSimulation(\''+ ${simulation.id}+'\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 																							
 								<span class="sep" th:if="(${simulation.id} != null)"></span>
 								
 								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:cancelGo(\''+ ${simulation.id}+'\',\'' + @{/devicesimulation/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\''+ ${simulation.id}+'\',\'' + @{/devicesimulation/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 	
 								<!-- RESET -->
 								<button th:if="${simulation.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -166,7 +169,7 @@
 						<div class="row main">
 							<div class="form-group">
 								<div class="col-md-8">
-									<label class="control-label" th:text="#{simulation.interval}">Interval</label><span class="required"> *</span>
+									<label class="control-label" th:text="#{simulation.interval}">Interval</label> <small th:text="#{simulation.interval.seconds}"> </small><span class="required"> *</span>
 									<input th:required="true" type="number" th:placeholder="#{simulation.interval.placeholder}" class="form-control" name="interval"  id="interval" th:value="${simulation.interval} "/>
 									<span id="intervalerror" class="hide" th:text="#{simulation.intervalError}"><i class="la la-warning"></i> Required field</span>
 								</div>
@@ -213,7 +216,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="col-md-5 col-sm-5 col-xs-12 border-left padding-left-40 no-padding-top" id="row-panel-info">
+					<div class="col-md-5 col-sm-5 col-xs-12 border-left padding-left-40 no-padding-top" id="row-panel-info" style="display:none">
 						<div class="row main">
 							<div class="col-md-12 panelHeader">
 								<div id="properties_title" class="row main">
@@ -240,39 +243,41 @@
 									<option value="sequential" th:text="#{simulation.sequential}"/>													
 								</select>
 							</div>
-										<!-- TABS PROPERTIES/JSON -->
-										<div class="row main" style="box-shadow:0 0 0 0!important" id="tabs">
-											<!-- ONTOLOGY AUTHORIZATION -->
-											<div id="properties_panel" class="col-md-12">
-												<div id="ontologyFields" style="display:none; padding: 8px 12px 8px 12px;">											
-													<div th:fragment="ontologyFields">
-															<script th:inline="javascript">
-																fields = [[${fields}]];
-															</script>
-															<div th:each="field : ${fields}" class="row main" >
-																<div class="col-md-5 col-sm-6 col-xs-12">
-																	<label class="control-label" th:text="${field.key}">fields</label>
-																	<select th:id="${#strings.replace(field.key,'.','--')}" th:name="fields" th:title="#{simulation.choose}" data-width="100%" data-live-search="true" class="select form-control" th:onchange="'generateSimulatorFunctionDiv(\''+${#strings.replace(field.key,'.','--')}+'\')'" >
-																		<option th:text="#{simulation.choose}"/>
-																		<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'string') AND (simulator eq 'NULL' OR #strings.contains(simulator,'STRING')))}" th:value="${simulator}" th:text="${simulator}"/>
-																		<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'number') AND (simulator == 'NULL' OR #strings.contains(simulator,'NUMBER')))}" th:value="${simulator}" th:text="${simulator}"/>
-																		<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'integer' ) AND (simulator == 'NULL' OR #strings.contains(simulator,'INTEGER')))}" th:value="${simulator}" th:text="${simulator}"/>
-																		<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'date') AND (simulator == 'NULL' OR #strings.contains(simulator,'DATE')))}" th:value="${simulator}" th:text="${simulator}"/>
-																		<option th:each="simulator : ${simulators}"  th:if="${(#strings.toLowerCase(field.value) eq 'boolean') AND (#strings.contains(simulator,'BOOLEAN')) }" th:value="${simulator}" th:text="${simulator}"/>
-																	</select>
-																	<input type="hidden" th:value="simulator+${field.key}"/>	
-																</div>
-																<div th:id="${#strings.replace(field.key,'.','--')}+'Div'" style="display:none">
-																</div>
-															</div>
-													</div>
+							<!-- TABS PROPERTIES/JSON -->
+							<div class="row main" style="box-shadow:0 0 0 0!important" id="tabs">
+								<!-- ONTOLOGY AUTHORIZATION -->
+								<div id="properties_panel" class="col-md-12">
+									<div id="ontologyFields" style="display:none; padding: 8px 12px 8px 12px;">											
+										<div th:fragment="ontologyFields">
+											<script th:inline="javascript">
+												fields = [[${fields}]];
+											</script>
+											
+											<div th:each="field : ${fields}" class="row main" >
+												<div class="col-md-6 col-sm-6 col-xs-12">
+													<label class="control-label" th:text="${field.key}">fields</label>
+													<select th:id="${#strings.replace(field.key,'.','--')}" th:name="fields" th:title="#{simulation.choose}" data-width="100%" data-live-search="true" class="select form-control" th:attr="onchange='generateSimulatorFunctionDiv(\''+${#strings.replace(field.key,'.','--')}+'\')'" >
+														<option th:text="#{simulation.choose}"/>
+														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'string') AND (simulator eq 'NULL' OR #strings.contains(simulator,'STRING')))}" th:value="${simulator}" th:text="${simulator}"/>
+														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'number') AND (simulator == 'NULL' OR #strings.contains(simulator,'NUMBER')))}" th:value="${simulator}" th:text="${simulator}"/>
+														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'integer' ) AND (simulator == 'NULL' OR #strings.contains(simulator,'INTEGER')))}" th:value="${simulator}" th:text="${simulator}"/>
+														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'date') AND (simulator == 'NULL' OR #strings.contains(simulator,'DATE')))}" th:value="${simulator}" th:text="${simulator}"/>
+														<option th:each="simulator : ${simulators}"  th:if="${(#strings.toLowerCase(field.value) eq 'boolean') AND (#strings.contains(simulator,'BOOLEAN')) }" th:value="${simulator}" th:text="${simulator}"/>
+													</select>
+													
+													<input type="hidden" th:value="simulator+${field.key}"/>	
+												</div>
+												<div th:id="${#strings.replace(field.key,'.','--')}+'Div'" style="display:none">
 												</div>
 											</div>
-											<!-- TAB JSON INSTANCES -->
-											<div class="col-md-12" id="json_panel" hidden>
-												<div id="jsoneditor" style="height: 350px;"></div>
-											</div>
-										</div>								
+										</div>
+									</div>
+								</div>
+								<!-- TAB JSON INSTANCES -->
+								<div class="col-md-12" id="json_panel" hidden>
+									<div id="jsoneditor" style="height: 350px;"></div>
+								</div>
+							</div>								
 						</div>
 							
 									
@@ -537,6 +542,7 @@
 		// Reset form
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('simulation_create_form');
+			$("#row-panel-info").hide();
 			$("#interval").val(0); 
 			$("#ontologiesAndTokens").hide();
 			$("#json_check").hide();
@@ -570,6 +576,7 @@
 				$('#json_title').show();
 				$('#properties_panel').hide();
 				$('#json_panel').show();
+				$("#row-panel-info").show();
 			}
 			else{
 				$('#select-mode').addClass('hide');
@@ -577,8 +584,8 @@
 				$('#properties_title').show();
 				$('#json_panel').hide();
 				$('#properties_panel').show();
+				$("#row-panel-info").show();
 			}
-				
 		});
 		
 		if(simulationJson !=null)

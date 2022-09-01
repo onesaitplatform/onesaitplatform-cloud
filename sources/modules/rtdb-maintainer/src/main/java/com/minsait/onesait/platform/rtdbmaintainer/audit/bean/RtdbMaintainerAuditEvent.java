@@ -30,7 +30,7 @@ public class RtdbMaintainerAuditEvent extends OPAuditRemoteEvent {
 			Map<String, Object> extraData, String otherType, String remoteAddress, ResultOperationType resultOperation,
 			String query, String data) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, 1);
 	}
 
 }

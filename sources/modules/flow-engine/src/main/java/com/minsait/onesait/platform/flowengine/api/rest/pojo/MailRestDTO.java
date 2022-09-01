@@ -46,4 +46,7 @@ public class MailRestDTO {
 	@Getter
 	@Setter
 	private String domainName;
+	@Getter
+	@Setter
+	private String verticalSchema;
 }

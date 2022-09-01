@@ -47,6 +47,8 @@ public interface BinaryFileService {
 	public BinaryFileAccess createBinaryFileAccess(String fileId, String userId, String accessType, User user)
 			throws GenericOPException;
 
+	public BinaryFileAccess getAuthorizationById(String id);
+	
 	public List<BinaryFileAccess> getAuthorizations(String id, User user);
 
 	public void deleteBinaryFileAccess(String id, User user) throws GenericOPException;
@@ -58,5 +60,9 @@ public interface BinaryFileService {
 	public void setAuthorization(String id, Type accessType, User user);
 	
 	public void deleteAuthorization(String id, User user) throws GenericOPException;
+
+	public List<BinaryFile> getFileByPath(String fileId);
+
+	public List<BinaryFile> getAllFilesUserIsAllowed(User user);
 
 }

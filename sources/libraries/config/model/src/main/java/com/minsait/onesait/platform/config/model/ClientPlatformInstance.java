@@ -25,6 +25,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
@@ -42,7 +43,7 @@ import lombok.ToString;
 @Configurable
 @EntityListeners(AuditEntityListener.class)
 @ToString
-public class ClientPlatformInstance extends AuditableEntityWithUUID {
+public class ClientPlatformInstance extends AuditableEntityWithUUID  {
 
 	private static final long serialVersionUID = 1L;
 
@@ -63,7 +64,9 @@ public class ClientPlatformInstance extends AuditableEntityWithUUID {
 	@Setter
 	private String identification;
 
-	@Column(name = "CONNECTED", nullable = false, columnDefinition = "BIT default 0")
+	@Column(name = "CONNECTED", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@NotNull
 	@Getter
 	@Setter
@@ -92,7 +95,9 @@ public class ClientPlatformInstance extends AuditableEntityWithUUID {
 	@Setter
 	private String protocol;
 
-	@Column(name = "disabled", nullable = false, columnDefinition = "BIT default 0")
+	@Column(name = "disabled", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@NotNull
 	@Getter
 	@Setter
@@ -125,5 +130,6 @@ public class ClientPlatformInstance extends AuditableEntityWithUUID {
 	public int hashCode() {
 		return java.util.Objects.hash(getIdentification(), getClientPlatform());
 	}
+
 
 }

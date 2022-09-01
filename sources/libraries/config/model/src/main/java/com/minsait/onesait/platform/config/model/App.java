@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.model;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -33,8 +34,14 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
@@ -46,14 +53,14 @@ import lombok.ToString;
 @Configurable
 @EntityListeners(AuditEntityListener.class)
 @ToString
-public class App extends AppParent {
+public class App extends AppParent implements Versionable<App> {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 2199595602818161052L;
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne
 	@JoinColumn(name = "PROJECT_ID")
 	@Getter
 	@Setter
@@ -69,7 +76,6 @@ public class App extends AppParent {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private Set<AppRole> appRoles = new HashSet<>();
 
 	@JoinTable(name = "app_associated", joinColumns = {
@@ -78,11 +84,10 @@ public class App extends AppParent {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	@JsonIgnore
-	private Set<AppChild> childApps;
+	private Set<App> childApps = new HashSet<>();
 
 	public App() {
-	};
+	}
 
 	public App(String id, String identification, String description, User user, String secret, String user_extra_fields,
 			int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
@@ -100,12 +105,7 @@ public class App extends AppParent {
 			appRoles.add(appRole);
 		}
 		setAppRoles(appRoles);
-
-		/*
-		 * Set<App> childapps = new HashSet<App>(); if(childApp != null) {
-		 * childApps.add(new App(childApp)); } this.setChildApps(childapps);
-		 */
-	};
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -128,6 +128,98 @@ public class App extends AppParent {
 	public int hashCode() {
 
 		return java.util.Objects.hash(getIdentification());
+	}
+
+	@JsonSetter("user")
+	public void setUserJson(String userId) {
+		if (!StringUtils.isEmpty(userId)) {
+			final User u = new User();
+			u.setUserId(userId);
+			user = u;
+		}
+	}
+
+	@Override
+	@JsonGetter("user")
+	public String getUserJson() {
+		return user == null ? null : user.getUserId();
+	}
+
+	@JsonSetter("project")
+	public void setProjectJson(String projectId) {
+		// if (!StringUtils.isEmpty(projectId)) {
+		// final Project p = new Project();
+		// p.setId(projectId);
+		// p.setApp(this);
+		// project = p;
+		// }
+	}
+
+	@JsonGetter("project")
+	public String getProjectJson() {
+		return project == null ? null : project.getId();
+	}
+
+	@JsonSetter("appRoles")
+	public void setAppRolesJson(Set<AppRole> appRoles) {
+		appRoles.forEach(ar -> {
+			ar.setApp(this);
+			this.appRoles.add(ar);
+		});
+	}
+
+	@JsonGetter("childApps")
+	public Object getChidlAppsJson() {
+		final ObjectMapper mapper = new ObjectMapper();
+		final ArrayNode n = mapper.createArrayNode();
+		childApps.forEach(a -> {
+			n.add(a.getId());
+		});
+		return n;
+	}
+
+	// TO-DO version childApp???
+	@JsonSetter("childApps")
+	public void setChildAppsJson(Set<String> ids) {
+		ids.forEach(i -> {
+			final App ac = new App();
+			ac.setId(i);
+			childApps.add(ac);
+		});
+	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() + ".yaml";
+	}
+
+	@Override
+	public Versionable<App> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+		Versionable<App> app = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if (app != null) {
+			if (project != null && !CollectionUtils.isEmpty(excludedIds)
+					&& !CollectionUtils.isEmpty(excludedIds.get(Project.class.getSimpleName()))
+					&& excludedIds.get(Project.class.getSimpleName()).contains(project.getId())) {
+				setProject(null);
+				app = this;
+			}
+			if (!appRoles.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
+				appRoles.forEach(ar -> {
+					ar.getAppUsers().removeIf(au -> excludedUsers.contains(au.getUser().getUserId()));
+					ar.getChildRoles()
+					.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
+							&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
+				});
+
+				app = this;
+			}
+			if (!childApps.isEmpty() && !CollectionUtils.isEmpty(excludedIds)
+					&& !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))) {
+				childApps.removeIf(a -> excludedIds.get(App.class.getSimpleName()).contains(a.getId()));
+				app = this;
+			}
+		}
+		return app;
 	}
 
 }

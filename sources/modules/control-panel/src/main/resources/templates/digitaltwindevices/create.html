@@ -39,6 +39,7 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
 			
 	</head>	
 
@@ -113,12 +114,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${digitaltwindevice?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'DigitalTwinCreateController.deleteDigitalTwinDevice(\'' + ${digitaltwindevice.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>																																								
+									<button th:if="${digitaltwindevice?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DigitalTwinCreateController.deleteDigitalTwinDevice(\'' + ${digitaltwindevice.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>																																								
 
 									<span class="sep" th:if="(${digitaltwindevice?.id}  != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DigitalTwinCreateController.cancel(\'' + ${digitaltwindevice.id} + '\',\'' + @{/digitaltwindevices/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DigitalTwinCreateController.cancel(\'' + ${digitaltwindevice.id} + '\',\'' + @{/digitaltwindevices/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<span class="sep no-border" th:if="(${digitaltwindevice?.id}  != null)"></span>
 									
@@ -150,26 +151,28 @@
 					<!-- MAIN ROW -->
 					<div class="mainPanel">	
 						<div class="row main">
-							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+							<div class="col-md-7 col-sm-7 col-xs-4 panelHeader">
 								<span th:text="#{gen.generalInformation}">General Information</span>
 							</div>
-							<div class="col-md-3 col-sm-3 col-xs-3">
+							<div class="col-md-3 col-sm-3 col-xs-4 panelHeader">
+								<span class="margin-left-20 icon-location"></span>
+								<span th:text="#{device.management.location}" class="margin-left-10">Location</span>
+							</div>
+							<div class="col-md-2 col-sm-2 col-xs-4 panelHeader">
 								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 							</div>
 						</div>
 
 						<div class="row main">
-							<div class="col-md-5 col-sm-6 col-xs-12">
+							<div class="col-md-7 col-sm-7 col-xs-12">
 								<div class="row main">
-									<div class="col-md-12 col-xs-12">
+									<div class="col-md-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{digitaltwindevice.identification}">Identification</label><span class="required"> *</span>
-											<input th:tabindex="1" id="identification" type="text"  pattern="^[A-Za-z_-]+$"  th:required="true"  maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{digitaltwindevice.identification}"/>
+											<input th:tabindex="1" id="identification" type="text"  pattern="^[a-zA-Z0-9_-]+$"  th:required="true"  maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{digitaltwindevice.identification}"/>
 										</div>
 									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-12 col-xs-12">
+									<div class="col-md-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{digitaltwindevice.type}">Digital Twin Type</label><span class="required"> *</span>
 											<select id="typeDigitalTwin" name="typeDigitalTwin" class="form-control selectpicker" th:required="true" >
@@ -197,12 +200,10 @@
 											<input class="form-control" id="interface" name="interface" maxlength="50" th:field="*{intrface}" th:required="true" placeholder="Interface" />
 										</div>
 									</div>
-									<div class="col-md-2  col-xs-12">																																		
-										<div class="form-group">
-											<label class="control-label">IPV6</label> 
-											<div class="checkbox-list">
-												<label class="checkbox-inline"><input type="checkbox" id="ipv6"  name="ipv6" th:field="*{ipv6}" style="margin-left: 0px;margin-top: 8px;" /></label>
-											</div>
+									<div class="col-md-2 col-xs-12 margin-top-30">
+										<div class="pull-right">
+											<input type="checkbox" id="ipv6"  name="ipv6" th:field="*{ipv6}"/>
+											<label class="control-label margin-left-20">IPV6</label>
 										</div>
 									</div>
 								</div>
@@ -236,13 +237,19 @@
 										</div>
 									</div>
 									<div class="col-md-2 col-xs-2">
-										<div class="btn-group margin-top-25">
+										<div class="btn-group margin-top-25 pull-right">
 											<button type="button" class="btn btn-primary btn-primary-save" id="button3" th:text="#{digitaltwindevice.generate.apykey}">Generate API KEY</button>
 										</div>
 									</div>
 								</div>
+								<div class="row main">
+									<div class="col-md-12 col-sm-6 col-xs-12">
+										<textarea id="logicEditor" name="logicEditor"  th:required="true" class="form-control" rows="5" data-min-rows='5' ></textarea>
+									</div>
+									<input id="logic" name="logic" type="hidden"/>
+								</div>
 							</div>		
-							<div class="col-md-7 col-sm-7 col-xs-12">
+							<div class="col-md-5 col-sm-5 col-xs-12">
 								<div class="col-md-6">
 									<div class="form-group">
 										<label class="control-label" th:text="#{digitaltwindevice.latitude}">Latitude</label><span class="required"> *</span>
@@ -256,16 +263,11 @@
 									</div>
 								</div>
 								<div class="col-md-12">
-									<div id="map" class="thumbnail text-center" style="height:380px;"></div>
+									<div id="map" class="thumbnail text-center" style="height:600px;"></div>
 								</div>
 							</div>
 						</div>
-						<div class="row main">
-							<div class="col-md-12 col-sm-6 col-xs-12">
-								<textarea id="logicEditor" name="logicEditor"  th:required="true" class="form-control" rows="5" data-min-rows='5' ></textarea>
-							</div>
-							<input id="logic" name="logic" type="hidden"/>
-						</div>
+
 					</div>
 				</form>		
 			</div><!-- END CONTENT BODY -->
@@ -338,13 +340,15 @@
 			uluru = {lat: 53.516822602373786, lng: 14.697412318359397};
 			 var map = new google.maps.Map(document.getElementById('map'), {
 		          zoom: 3,
-		          center: uluru
+		          center: uluru,
+		          mapTypeId: 'satellite'
 		        });
 		}else{
 			uluru= new google.maps.LatLng([[${digitaltwindevice?.latitude}]],[[${digitaltwindevice?.longitude}]]);
 			 var map = new google.maps.Map(document.getElementById('map'), {
 		          zoom: 3,
-		          center: uluru
+		          center: uluru,
+		          mapTypeId: 'satellite'
 		        });
 			marker = new google.maps.Marker({
 		            position: uluru,
@@ -367,13 +371,8 @@
         	      map: map
         	    });
         	  }
-        	  google.maps.event.addListener(marker, "click", function (event) {
-                  latitude = event.latLng.lat();
-                  longitude = event.latLng.lng();
-                  $("#latitude").val(latitude);
-                  $("#longitude").val(longitude);
-                  console.log( latitude + ', ' + longitude );
-              });
+              $("#latitude").val(location.lat());
+              $("#longitude").val(location.lng());
         	}
 	}
 

@@ -23,13 +23,14 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
 
-ENV ASPECTJ_VERSION 1.8.9
+ENV ASPECTJ_VERSION 1.9.7
 
 RUN cd /usr/local \
     && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
+USER onesait
 
 EXPOSE 20000
 
@@ -53,6 +54,8 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     AUDITGLOBALNOTIFY=true \
@@ -84,9 +87,13 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
     SBA_USERNAME=operations \
-    SBA_SECRET=changeIt2019! \
-    TIMESERIES_INSERT_LOCK_CHECK_MILLIS=50 \
-    TIMESERIES_INSERT_LOCK_TIMEOUT_MILLIS=500
+	SBA_SECRET=changeIt2019! \
+	TIMESCALE_ENABLED=false \
+	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
+	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
+	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
+	MINIO_ROOT_USER=ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi) \
+	MINIO_ROOT_PASSWORD=ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh

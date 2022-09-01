@@ -84,5 +84,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, String> {
 	@Query("DELETE FROM AppUser a WHERE a.id = :id")
 	void deleteAppUserById(@Param("id") String id);
 
+	@Query("SELECT ur.role.app.identification FROM AppUserList AS ur WHERE ur.user.userId = :user")
+	List<String> findAppListListByUser(@Param("user") String user);
+
 
 }

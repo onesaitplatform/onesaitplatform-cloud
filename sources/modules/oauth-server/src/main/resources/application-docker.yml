@@ -5,6 +5,7 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
+      driver-class-name: ${CONFIGDB_DRIVER}
      
 onesaitplatform:
    oauth.cache:
@@ -25,8 +26,7 @@ onesaitplatform:
       port: 9300
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}      
-   audit.global.notify: ${AUDITGLOBALNOTIFY}
-   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+   audit.global.notify: ${AUDITGLOBALNOTIFY}  
    authentication:
       provider: ${AUTH_PROVIDER}
       configdb:
@@ -46,6 +46,7 @@ ldap:
   password: ${LDAP_ADMIN_PASSWORD}
   defaultRole: ${LDAP_DEFAULT_ROLE}
   administratorWhitelist: ${LDAP_ADMIN_WHITELIST}
+  groupWhitelist: ${LDAP_GROUP_WHITELIST}
   platformRolesGroup:
       administrator: ${LDAP_ADMINISTRATOR_DN}
       datascientist: ${LDAP_ANALYTICS_DN}
@@ -63,6 +64,7 @@ ldap:
      cn: ${LDAP_CN_ATT}
      groupOfNames: ${LDAP_GROUP_OF_NAMES_ATT}
   rolesmemberattribute: ${LDAP_ROLES_MEMBER_ATT}
+  authentication.regex: ${LDAP_AUTH_REGEX}
 
 
 spring:
@@ -74,6 +76,7 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
+      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://oauthservice:${server.port}${server.servlet.contextPath}/
@@ -83,6 +86,8 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+   jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 quartz:
     datasource:
       hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
@@ -90,6 +95,7 @@ quartz:
 security:
   signing-key: ${JWT_KEY}
   client-secret: ${JWT_CLIENT_SECRET}
+  expiration-time: ${JWT_EXPIRATION_TIME}
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs
+   file.path: /var/log/platform-logs

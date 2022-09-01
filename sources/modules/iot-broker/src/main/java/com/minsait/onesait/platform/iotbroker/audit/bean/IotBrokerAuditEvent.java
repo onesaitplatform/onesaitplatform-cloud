@@ -51,6 +51,11 @@ public class IotBrokerAuditEvent extends OPAuditRemoteEvent implements Serializa
 	@Setter
 	private String clientPlatformInstance;
 
+	@Getter
+	@Setter
+	private String loggedUser;
+
+
 	public IotBrokerAuditEvent() {
 		super();
 	}
@@ -60,7 +65,7 @@ public class IotBrokerAuditEvent extends OPAuditRemoteEvent implements Serializa
 			String otherType, String remoteAddress, ResultOperationType resultOperation, String sessionKey,
 			GatewayInfo gatewayInfo, String query, String data, String clientPlatform, String clientPlatformInstance) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, 1);
 		this.sessionKey = sessionKey;
 		this.gatewayInfo = gatewayInfo;
 		this.query = query;

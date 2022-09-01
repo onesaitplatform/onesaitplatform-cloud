@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.iotbroker.processor.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
@@ -52,13 +54,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DeleteProcessor implements MessageTypeProcessor {
 
+	private static final String SOURCE = "source";
+
 	@Autowired
 	private RouterService routerService;
 	@Autowired
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
+			Optional<IoTSession> session) {
 
 		if (SSAPMessageTypes.DELETE.equals(message.getMessageType())) {
 			final SSAPMessage<SSAPBodyDeleteMessage> deleteMessage = (SSAPMessage<SSAPBodyDeleteMessage>) message;
@@ -75,7 +80,8 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		return responseMessage;
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processDeleteById(SSAPMessage<SSAPBodyDeleteByIdMessage> message, Optional<IoTSession> session) {
+	private SSAPMessage<SSAPBodyReturnMessage> processDeleteById(SSAPMessage<SSAPBodyDeleteByIdMessage> message,
+			Optional<IoTSession> session) {
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
@@ -83,7 +89,7 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		final String user = session.isPresent() ? session.get().getUserID() : null;
 		final String deviceTemplate = session.isPresent() ? session.get().getClientPlatform() : null;
 		final OperationModel model = OperationModel
-				.builder(message.getBody().getOntology(), OperationType.DELETE, user, OperationModel.Source.IOTBROKER)
+				.builder(message.getBody().getOntology(), OperationType.DELETE, user, getSource(message))
 				.objectId(message.getBody().getId()).queryType(QueryType.NATIVE).deviceTemplate(deviceTemplate).build();
 
 		model.setClientSession(message.getSessionKey());
@@ -151,7 +157,8 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		return responseMessage;
 	}
 
-	private SSAPMessage<SSAPBodyReturnMessage> processDelete(SSAPMessage<SSAPBodyDeleteMessage> message, Optional<IoTSession> session) {
+	private SSAPMessage<SSAPBodyReturnMessage> processDelete(SSAPMessage<SSAPBodyDeleteMessage> message,
+			Optional<IoTSession> session) {
 
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
@@ -160,7 +167,7 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		final String user = session.isPresent() ? session.get().getUserID() : null;
 		final String deviceTemplate = session.isPresent() ? session.get().getClientPlatform() : null;
 		final OperationModel model = OperationModel
-				.builder(message.getBody().getOntology(), OperationType.DELETE, user, Source.IOTBROKER,
+				.builder(message.getBody().getOntology(), OperationType.DELETE, user, getSource(message),
 						message.includeIds())
 				.queryType(QueryType.NATIVE).body(message.getBody().getQuery()).deviceTemplate(deviceTemplate).build();
 
@@ -217,6 +224,23 @@ public class DeleteProcessor implements MessageTypeProcessor {
 		}
 
 		return responseMessage;
+	}
+
+	private Source getSource(SSAPMessage<? extends SSAPBodyMessage> message) {
+		SSAPBodyDeleteByIdMessage insertMessage = (SSAPBodyDeleteByIdMessage) message.getBody();
+		if (insertMessage.getTags() != null) {
+			try {
+				JsonNode json = new ObjectMapper().readTree(insertMessage.getTags());
+				if (!json.has(SOURCE)) {
+					return Source.IOTBROKER;
+				} else {
+					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
+				}
+			} catch (IOException e) {
+				return Source.IOTBROKER;
+			}
+		}
+		return Source.IOTBROKER;
 	}
 
 	@Override

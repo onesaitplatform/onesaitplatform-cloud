@@ -25,18 +25,18 @@
 				},
 				{
 					"title": {
-						"EN": "My Ontologies",
-						"ES": "Mis Ontologías",
-						"FR": "Mes Ontologies"
+						"EN": "My Entities",
+						"ES": "Mis Entidades",
+						"FR": "Mes Entités"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
 				},
 				{
 					"title": {
-						"EN": "My APIs",
-						"ES": "Mis APIs",
-						"FR": "Mes API"
+						"EN": "My REST APIs",
+						"ES": "Mis APIs REST",
+						"FR": "Mes APIs REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
@@ -44,13 +44,22 @@
 				{
 					"title": {
 						"EN": "My Microservices",
-						"ES": "Mis microservicios",
+						"ES": "Mis Microservicios",
 						"FR": "Mes Microservices"
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
 				}
 			]
+		},
+		{
+					"title": {
+						"EN": "My Serverless Applications",
+						"ES": "Mis aplicaciones serverless",
+						"FR": "Des applications serverless"
+					},
+					"icon": "",
+					"url": "/controlpanel/serverless/applications"
 		},
 
 		{
@@ -94,9 +103,9 @@
 				},
 				{
 					"title": {
-						"EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada",
-						"FR": "Configuration Centralisée"
+						"EN": "My Configurations",
+						"ES": "Mis Configuraciones",
+						"FR": "Mes Configurations"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
@@ -116,7 +125,7 @@
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta Consultas",
+						"ES": "Herramienta de Consultas",
 						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",

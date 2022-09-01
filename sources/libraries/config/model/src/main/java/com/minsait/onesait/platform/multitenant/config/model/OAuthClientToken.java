@@ -14,13 +14,12 @@
  */
 package com.minsait.onesait.platform.multitenant.config.model;
 
-import java.sql.Blob;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "oauth_client_token")
@@ -30,9 +29,10 @@ public class OAuthClientToken {
 	@Column(name = "token_id", unique = true, nullable = false)
 	private String tokenId;
 
-	@Lob
-	@Column(name = "token")
-	private Blob token;
+//	@Lob
+	@Column(name = "token", length = 16777217)
+	@Type(type = "org.hibernate.type.BinaryType")
+	private byte[] token;
 
 	@Column(name = "authentication_id")
 	private String authenticationId;
@@ -51,11 +51,11 @@ public class OAuthClientToken {
 		this.tokenId = tokenId;
 	}
 
-	public Blob getToken() {
+	public byte[] getToken() {
 		return token;
 	}
 
-	public void setToken(Blob token) {
+	public void setToken(byte[] token) {
 		this.token = token;
 	}
 

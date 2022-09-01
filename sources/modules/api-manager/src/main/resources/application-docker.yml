@@ -1,5 +1,6 @@
+server: 
+   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
 onesaitplatform:
-   secure.cookie: true
    authentication:
       oauth:
         osp-keycloak: ${USE_KEYCLOAK}
@@ -33,6 +34,7 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
+      driver-class-name: ${CONFIGDB_DRIVER}
 
 spring:
    datasource:
@@ -43,6 +45,7 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
+      driver-class-name: ${CONFIGDB_DRIVER}
       
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
@@ -53,10 +56,12 @@ spring:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+   jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs
+   file.path: /var/log/platform-logs
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}

@@ -109,7 +109,7 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/multitenancy/tenants} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/multitenancy/tenants} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
 									<!-- RESET -->
 									<button th:if="${tenant.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -158,7 +158,7 @@
 								<div class="col-md-4 col-sm-6 col-xs-12">
 									<div class="form-group">
 										<label class="control-label" th:text="#{user.id}">Identification</label><span class="required"> *</span>
-										<input id="userId" type="text" name="userId" th:required="true" minlength="4" maxlength="50" th:field="*{userId}" class="form-control " th:placeholder="#{user.id}" pattern="[a-zA-Z0-9_@.]{4,}" th:title="#{user.errorpattern}" th:readonly="*{userId}" th:classappend="${user.userId} ? no-remove : ''"  />
+										<input id="userId" type="text" name="userId" th:required="true" minlength="4" maxlength="50" th:field="*{userId}" class="form-control " th:placeholder="#{user.id}" pattern="[a-zA-Z0-9_@.-]{4,}" th:title="#{user.errorpattern}" th:readonly="*{userId}" th:classappend="${user.userId} ? no-remove : ''"  />
 									</div>
 								</div>
 								<div class="col-md-4 col-sm-6 col-xs-12">

@@ -1,0 +1,183 @@
+{
+  "navigation": {
+    "showBreadcrumbIcon": false,
+    "showBreadcrumb": false
+  },
+  "pages": [
+    {
+      "combinelayers": false,
+      "background": {
+        "file": []
+      },
+      "selectedlayer": 0,
+      "icon": "apps",
+      "layers": [
+        {
+          "gridboard": [
+            {
+              "$$hashKey": "object:76"
+            },
+            {
+              "border": {
+                "color": "hsl(0, 0%, 90%)",
+                "width": 0,
+                "radius": 5
+              },
+              "template": "gadget-crud",
+              "padding": 0,
+              "backgroundColor": "white",
+              "notshowDotsMenu": false,
+              "hideBadges": true,
+              "rows": 14,
+              "type": "livehtml",
+              "params": {
+                "typeGadget": "withWizard",
+                "hideIdColumn": false,
+                "initialEntity": ""
+              },
+              "$$hashKey": "object:154",
+              "nomargin": false,
+              "gadgetid": "MASTER-Gadget-16",
+              "subtype": "vueJS",
+              "x": 0,
+              "y": 0,
+              "header": {
+                "backgroundColor": "hsl(0, 0%, 100%)",
+                "enable": false,
+                "title": {
+                  "iconColor": "hsl( 206, 54%, 5%)",
+                  "icon": "",
+                  "text": "customgadget_1643037841182",
+                  "textColor": "hsl(206,54%,5%)"
+                },
+                "height": 40
+              },
+              "id": "MASTER-Gadget-16",
+              "tempId": "MASTER-GadgetTemplate-7",
+              "customMenuOptions": [],
+              "cols": 14
+            },
+            {
+              "border": {
+                "color": "hsl(0, 0%, 90%)",
+                "width": 0,
+                "radius": 5
+              },
+              "template": "gadget-import",
+              "padding": 0,
+              "backgroundColor": "white",
+              "notshowDotsMenu": false,
+              "hideBadges": true,
+              "rows": 10,
+              "type": "livehtml",
+              "params": {
+                "initialEntity": ""
+              },
+              "$$hashKey": "object:232",
+              "nomargin": false,
+              "gadgetid": "MASTER-Gadget-17",
+              "subtype": "vueJS",
+              "x": 14,
+              "y": 0,
+              "header": {
+                "backgroundColor": "hsl(0, 0%, 100%)",
+                "enable": false,
+                "title": {
+                  "iconColor": "hsl( 206, 54%, 5%)",
+                  "icon": "",
+                  "text": "customgadget_1643037849367",
+                  "textColor": "hsl(206,54%,5%)"
+                },
+                "height": 40
+              },
+              "id": "MASTER-Gadget-17",
+              "tempId": "MASTER-GadgetTemplate-8",
+              "customMenuOptions": [],
+              "cols": 6
+            }
+          ],
+          "title": "baseLayer",
+          "$$hashKey": "object:23"
+        }
+      ],
+      "title": "New Page",
+      "$$hashKey": "object:4"
+    }
+  ],
+  "interactionHash": {
+    "MASTER-Gadget-16": [],
+    "MASTER-Gadget-17": []
+  },
+  "gridOptions": {
+    "displayGrid": "onDrag&Resize",
+    "maxItemRows": 5000,
+    "outerMargin": true,
+    "disableWindowResize": false,
+    "minCols": 20,
+    "defaultItemCols": 1,
+    "disableLiveResize": true,
+    "maxItemArea": 25000,
+    "minItemRows": 1,
+    "emptyCellDragMaxCols": 5000,
+    "enableEmptyCellDrag": false,
+    "maxRows": 20,
+    "enableEmptyCellAlign": true,
+    "draggable": {
+      "delayStart": 100,
+      "ignoreContent": true,
+      "dragHandleClass": "drag-handler",
+      "enabled": true
+    },
+    "gridType": "fit",
+    "minItemArea": 1,
+    "compactType": "none",
+    "api": {},
+    "pushDirections": {
+      "east": true,
+      "south": true,
+      "north": true,
+      "west": true
+    },
+    "disableLiveMove": true,
+    "disablePushOnResize": true,
+    "maxItemCols": 5000,
+    "margin": 3,
+    "minRows": 20,
+    "resizable": {
+      "delayStart": 0,
+      "enabled": true
+    },
+    "swap": true,
+    "defaultItemRows": 1,
+    "enableEmptyCellContextMenu": false,
+    "enableEmptyCellDrop": true,
+    "scrollToNewItems": false,
+    "dragGadgetType": "livehtml",
+    "fixedRowHeight": 250,
+    "minItemCols": 1,
+    "emptyCellDragMaxRows": 5000,
+    "disablePushOnDrag": true,
+    "pushResizeItems": false,
+    "mobileBreakpoint": 640,
+    "disableWarnings": false,
+    "fixedColWidth": 250,
+    "enableEmptyCellClick": false,
+    "maxCols": 20,
+    "pushItems": false
+  },
+  "header": {
+    "backgroundColor": "#FFFFFF",
+    "enable": true,
+    "pageColor": "#2e6c99",
+    "iconColor": "#060E14",
+    "logo": {
+      "height": 48
+    },
+    "title": "Crud And Import Gadgets Example",
+    "textColor": "#060E14",
+    "height": 72
+  },
+  "showfavoritesg": true,
+  "parameterHash": {},
+  "updatedAt": 1643039042994
+}

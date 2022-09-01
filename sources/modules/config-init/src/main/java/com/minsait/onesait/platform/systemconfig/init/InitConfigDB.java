@@ -12,21 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
-
- * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2019 SPAIN
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *      http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.minsait.onesait.platform.systemconfig.init;
 
 import java.io.ByteArrayInputStream;
@@ -72,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
@@ -95,7 +81,6 @@ import com.minsait.onesait.platform.config.model.ApiQueryParameter.DataType;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter.HeaderType;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
-import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.BaseLayer;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -109,6 +94,7 @@ import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.model.DashboardUserAccessType;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
+import com.minsait.onesait.platform.config.model.DatasetResource;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
@@ -149,8 +135,6 @@ import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.model.Viewer;
-import com.minsait.onesait.platform.config.model.WebProject;
-import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 import com.minsait.onesait.platform.config.repository.BaseLayerRepository;
@@ -279,7 +263,6 @@ public class InitConfigDB {
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
 
-
 	private static final String ISO3166_2 = "ISO3166_2";
 
 	@Autowired
@@ -370,6 +353,7 @@ public class InitConfigDB {
 	private ResourceLoader resourceLoader;
 
 	@Autowired
+	@Lazy
 	private OntologyService ontologyService;
 
 	@Autowired
@@ -432,8 +416,41 @@ public class InitConfigDB {
 	@Value("${onesaitplatform.init.samples:false}")
 	private boolean initSamples;
 
-	@Value("${onesaitplatform.init.database.mongodb.servers:realtimedb:27017}")
+	@Value("${onesaitplatform.database.mongodb.servers:realtimedb:27017}")
 	private String rtdbServers;
+
+	@Value("${onesaitplatform.database.mongodb.database:onesaitplatform_rtdb}")
+	private String rtdbDatabase;
+
+	@Value("${onesaitplatform.database.mongodb.execution-timeout:10000}")
+	private String rtdbExecutionTimeout;
+
+	@Value("${onesaitplatform.database.mongodb.queries-limit:2000}")
+	private String rtdbQueriesLimit;
+
+	@Value("${onesaitplatform.database.mongodb.socket-timeout:5000}")
+	private String rtdbSocketTimeout;
+
+	@Value("${onesaitplatform.database.mongodb.connection-timeout:30000}")
+	private String rtdbConnectionTimeout;
+
+	@Value("${onesaitplatform.database.mongodb.wait-time:5000}")
+	private String rtdbWaitTime;
+
+	@Value("${onesaitplatform.database.mongodb.pool-size:100}")
+	private String rtdbPoolSize;
+
+	@Value("${onesaitplatform.database.mongodb.writeConcern:UNACKNOWLEDGED}")
+	private String rtdbWriteConcern;
+
+	@Value("${onesaitplatform.database.mongodb.sslEnabled:false}")
+	private String rtdbSslEnabled;
+
+	@Value("${onesaitplatform.database.mongodb.useQuasar:false}")
+	private String rtdbUseQuasar;
+
+	@Value("${onesaitplatform.server.minio.cookiedomain:localhost}")
+	private String minioCookiedomain;
 
 	@Autowired
 	private MasterConfigurationRepository masterConfigurationRepository;
@@ -455,6 +472,8 @@ public class InitConfigDB {
 	private static final String MASTER_GADGET_13 = "MASTER-Gadget-13";
 	private static final String MASTER_GADGET_14 = "MASTER-Gadget-14";
 	private static final String MASTER_GADGET_15 = "MASTER-Gadget-15";
+	private static final String MASTER_GADGET_16 = "MASTER-Gadget-16";
+	private static final String MASTER_GADGET_17 = "MASTER-Gadget-17";
 
 	private static final String MASTER_GADGET_DATASOURCE_1 = "MASTER-GadgetDatasource-1";
 	private static final String MASTER_GADGET_DATASOURCE_2 = "MASTER-GadgetDatasource-2";
@@ -476,6 +495,7 @@ public class InitConfigDB {
 	private static final String TICKET = "Ticket";
 	private static final String SUPERMARKETS = "Supermarkets";
 	private static final String INUNDACIONES = "Inundaciones500";
+	private static final String IONASSETSCESIUM = "IonAssets";
 
 	private static final String ISO3166_1 = "ISO3166_1";
 	private static final String TICKETING_APP = "TicketingApp";
@@ -486,16 +506,19 @@ public class InitConfigDB {
 	private static final String DOCKER = "docker";
 	private static final String QUERY = "query";
 	private static final String CESIUM = "cesium";
+	private static final String CESIUM2 = "cesium2";
 	private static final String TABLE = "table";
 
 	private static final String GADGET1CONFIG = "{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"\",\"display\":true}}]}}";
 	private static final String GADGET2CONFIG = "{\"tablePagination\":{\"limit\":\"5\",\"page\":1,\"limitOptions\":[5,10,20,50,100],\"style\":{\"backGroundTHead\":\"#ffffff\",\"backGroundTFooter\":\"#ffffff\",\"trHeightHead\":\"40\",\"trHeightBody\":\"40\",\"trHeightFooter\":\"40\",\"textColorTHead\":\"#141414\",\"textColorBody\":\"#000000\",\"textColorFooter\":\"#000000\"},\"options\":{\"rowSelection\":false,\"multiSelect\":false,\"autoSelect\":false,\"decapitate\":false,\"largeEditDialog\":false,\"boundaryLinks\":true,\"limitSelect\":true,\"pageSelect\":true}}}";
 	private static final String GADGET5CONFIG = "{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"\",\"display\":true},\"stacked\":false,\"sort\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"1000\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"sort\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}";
 	private static final String MASTER_INTERNATIONALIZATION_ONE = "MASTER-Internationalization-1";
+	private static final String MASTER_INTERNATIONALIZATION_TWO = "MASTER-Internationalization-2";
 	private static final String ACCESS_TYPE_ONE = "ACCESS-TYPE-1";
 	private static final String MAIN_PS_WD = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
 	private static final String CONSTANT_STR = "CONSTANT";
 	private static final String MASTER_DASHBOARD_FRTH = "MASTER-Dashboard-4";
+	private static final String MASTER_DASHBOARD_FIFTH = "MASTER-Dashboard-5";
 	private static final String PATH_ID = "/{id}";
 	private static final String MENU_NOT_FOUND = "Menu not found";
 	private static final String PIPELINE_DESCRIPTION = "Pipeline XML for microservice generation";
@@ -575,6 +598,10 @@ public class InitConfigDB {
 
 			initGadgetTemplateType();
 			log.info("OK init_GadgetTemplate_Type");
+			initGadgetTemplateInstances();
+			log.info("OK init_GadgetTemplate_Instances");
+			initGadgetsCrudAndImportTool();
+			log.info("OK init_GadgetTemplate_CrudAndImportTool");
 
 			if (initSamples) {
 
@@ -597,6 +624,9 @@ public class InitConfigDB {
 			initDashboardUserAccessType();
 			log.info("OK init_DashboardUserAccessType");
 
+			initInternationalizationGadgets();
+			log.info("OK init_Internationalization_Gadgets");
+
 			if (initSamples) {
 				initInternationalization();
 				log.info("OK init_Internationalization");
@@ -608,10 +638,10 @@ public class InitConfigDB {
 			log.info("OK initConsoleMenuRollBack");
 			initConfiguration();
 			log.info("OK init_Configuration");
+			initFlowDomain();
+			log.info("OK init_FlowDomain");
 
 			if (initSamples) {
-				initFlowDomain();
-				log.info("OK init_FlowDomain");
 
 				initDigitalTwin.initDigitalTwinType();
 				log.info("OK init_DigitalTwinType");
@@ -681,6 +711,9 @@ public class InitConfigDB {
 				initInternationalizationSample();
 				log.info("OK initInternationalizationSample");
 
+				initCrudAndImportSample();
+				log.info("OK initCrudAndImportSample");
+
 				// init_OntologyVirtualDatasource();
 				// log.info(" OK init_OntologyVirtualDatasource");
 				// init_realms();
@@ -695,10 +728,43 @@ public class InitConfigDB {
 				initLineageRelations();
 				log.info("OK initLineageRelations");
 			}
-
-
 		}
 
+	}
+
+	private void initCrudAndImportSample() {
+		initCrudAndImportGadgets();
+		initCrudAndImportDashboard();
+		initI18nResourcesCrudAndImport();
+
+	}
+
+	private void initCrudAndImportGadgets() {
+		if (gadgetRepository.findByIdentification("gadget-crud-example") == null) {
+			final Gadget gadget = new Gadget();
+			gadget.setId(MASTER_GADGET_16);
+			gadget.setIdentification("gadget-crud-example");
+			gadget.setPublic(false);
+			gadget.setInstance(true);
+			gadget.setDescription("gadget-crud-example");
+			gadget.setType(gadgetTemplateRepository.findById("MASTER-GadgetTemplate-7").orElse(null));
+			gadget.setConfig(
+					"{\"parameters\":{\"initialEntity\":\"\",\"typeGadget\":\"withWizard\",\"hideIdColumn\":false}}");
+			gadget.setUser(getUserAdministrator());
+			gadgetRepository.save(gadget);
+		}
+		if (gadgetRepository.findByIdentification("gadget-import-example") == null) {
+			final Gadget gadget = new Gadget();
+			gadget.setId(MASTER_GADGET_17);
+			gadget.setIdentification("gadget-import-example");
+			gadget.setPublic(false);
+			gadget.setInstance(true);
+			gadget.setDescription("gadget-import-example");
+			gadget.setType(gadgetTemplateRepository.findById("MASTER-GadgetTemplate-8").orElse(null));
+			gadget.setConfig("{\"parameters\":{\"initialEntity\":\"\"}}");
+			gadget.setUser(getUserAdministrator());
+			gadgetRepository.save(gadget);
+		}
 	}
 
 	@Autowired
@@ -731,8 +797,6 @@ public class InitConfigDB {
 	}
 
 	private @Autowired ApiRepository apiRepository;
-	private @Autowired ApiOperationRepository apiOperationRepository;
-
 
 	private void initSubscription() {
 		if (subscriptionRepository.findByIdentification("ticketStatus").isEmpty()) {
@@ -802,7 +866,7 @@ public class InitConfigDB {
 			id.setDescription("");
 			id.setValue("");
 			operation.getApiqueryparameters().addAll(Arrays.asList(id, body));
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
 
 			operation = new ApiOperation();
 			operation.setIdentification("project_POST");
@@ -818,7 +882,7 @@ public class InitConfigDB {
 			body.setDescription("");
 			body.setValue("");
 			operation.getApiqueryparameters().add(body);
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
 
 			operation = new ApiOperation();
 			operation.setIdentification("project_GET");
@@ -834,7 +898,7 @@ public class InitConfigDB {
 			id.setDescription("");
 			id.setValue("");
 			operation.getApiqueryparameters().add(id);
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
 
 			operation = new ApiOperation();
 			operation.setIdentification("project_GETAll");
@@ -842,7 +906,7 @@ public class InitConfigDB {
 			operation.setDescription("all");
 			operation.setOperation(com.minsait.onesait.platform.config.model.ApiOperation.Type.GET);
 			operation.setApi(api);
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
 
 			operation = new ApiOperation();
 			operation.setIdentification("project_DELETEID");
@@ -858,7 +922,7 @@ public class InitConfigDB {
 			id.setDescription("");
 			id.setValue("");
 			operation.getApiqueryparameters().add(id);
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
 
 			operation = new ApiOperation();
 			operation.setIdentification("name");
@@ -904,7 +968,7 @@ public class InitConfigDB {
 			parameter.setName("pname");
 			parameter.setDescription("");
 			operation.getApiqueryparameters().addAll(Arrays.asList(parameter, query, queryType, targetDb));
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
 
 			operation = new ApiOperation();
 			operation.setIdentification("id");
@@ -950,113 +1014,160 @@ public class InitConfigDB {
 			queryType.setName("queryType");
 			queryType.setDescription("");
 			operation.getApiqueryparameters().addAll(Arrays.asList(parameter, query, queryType, targetDb));
-			apiOperationRepository.save(operation);
+			api.getApiOperations().add(operation);
+
+			apiRepository.save(api);
 
 		}
 	}
 
 	private void initBaseLayers() {
-		final long count = baseLayerRepository.count();
-		if (count == 0) {
-			BaseLayer baseLayer = new BaseLayer();
-			baseLayer.setId("MASTER-BaseLayer-1");
-			baseLayer.setIdentification("osm.Mapnik.Labels");
-			baseLayer.setName("Open Street Maps");
-			baseLayer.setTechnology(CESIUM);
-			baseLayer.setUrl("https://a.tile.openstreetmap.org/");
 
-			baseLayerRepository.save(baseLayer);
+		BaseLayer baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-1");
+		baseLayer.setIdentification("osm.Mapnik.Labels");
+		baseLayer.setName("Open Street Maps");
+		baseLayer.setTechnology(CESIUM);
+		baseLayer.setUrl("https://a.tile.openstreetmap.org/");
 
-			baseLayer = new BaseLayer();
-			baseLayer.setId("MASTER-BaseLayer-2");
-			baseLayer.setIdentification("esri.Topo.Labels");
-			baseLayer.setName("ESRI World Topo Map");
-			baseLayer.setTechnology(CESIUM);
-			baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer");
+		baseLayerRepository.save(baseLayer);
 
-			baseLayerRepository.save(baseLayer);
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-2");
+		baseLayer.setIdentification("esri.Topo.Labels");
+		baseLayer.setName("ESRI World Topo Map");
+		baseLayer.setTechnology(CESIUM);
+		baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer");
 
-			baseLayer = new BaseLayer();
-			baseLayer.setId("MASTER-BaseLayer-3");
-			baseLayer.setIdentification("esri.Streets.Labels");
-			baseLayer.setName("ESRI World Street Map");
-			baseLayer.setTechnology(CESIUM);
-			baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer");
+		baseLayerRepository.save(baseLayer);
 
-			baseLayerRepository.save(baseLayer);
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-3");
+		baseLayer.setIdentification("esri.Streets.Labels");
+		baseLayer.setName("ESRI World Street Map");
+		baseLayer.setTechnology(CESIUM);
+		baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer");
 
-			baseLayer = new BaseLayer();
-			baseLayer.setId("MASTER-BaseLayer-4");
-			baseLayer.setIdentification("esri.Imagery.NoLabels");
-			baseLayer.setName("ESRI Imagery");
-			baseLayer.setTechnology(CESIUM);
-			baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+		baseLayerRepository.save(baseLayer);
 
-			baseLayerRepository.save(baseLayer);
-		}
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-4");
+		baseLayer.setIdentification("esri.Imagery.NoLabels");
+		baseLayer.setName("ESRI Imagery");
+		baseLayer.setTechnology(CESIUM);
+		baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-5");
+		baseLayer.setIdentification("osm.Mapnik.Labels.cs2");
+		baseLayer.setName("Open Street Maps");
+		baseLayer.setTechnology(CESIUM2);
+		baseLayer.setUrl("https://a.tile.openstreetmap.org/");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-6");
+		baseLayer.setIdentification("esri.Topo.Labels.cs2");
+		baseLayer.setName("ESRI World Topo Map");
+		baseLayer.setTechnology(CESIUM2);
+		baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-7");
+		baseLayer.setIdentification("esri.Streets.Labels.cs2");
+		baseLayer.setName("ESRI World Street Map");
+		baseLayer.setTechnology(CESIUM2);
+		baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-8");
+		baseLayer.setIdentification("esri.Imagery.NoLabels.cs2");
+		baseLayer.setName("ESRI Imagery");
+		baseLayer.setTechnology(CESIUM2);
+		baseLayer.setUrl("https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-9");
+		baseLayer.setIdentification("esri.Gray.NoLabels");
+		baseLayer.setName("ESRI Light Gray");
+		baseLayer.setTechnology(CESIUM);
+		baseLayer.setUrl("https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-10");
+		baseLayer.setIdentification("esri.lightGray.cs2");
+		baseLayer.setName("ESRI Light Gray");
+		baseLayer.setTechnology(CESIUM2);
+		baseLayer.setUrl("https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-11");
+		baseLayer.setIdentification("esri.DarkGray.NoLabels");
+		baseLayer.setName("ESRI Dark Gray");
+		baseLayer.setTechnology(CESIUM);
+		baseLayer.setUrl("https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
+		baseLayer = new BaseLayer();
+		baseLayer.setId("MASTER-BaseLayer-12");
+		baseLayer.setIdentification("esri.darkGray.cs2");
+		baseLayer.setName("ESRI Dark Gray");
+		baseLayer.setTechnology(CESIUM2);
+		baseLayer.setUrl("https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer");
+
+		baseLayerRepository.save(baseLayer);
+
 	}
 
 	private void initRealms() {
 
 		if (appRepository.findById("MASTER-Realm-1").orElse(null) == null) {
 			final App app = new App();
-			app.setId("MASTER-Realm-1");
-			app.setIdentification("GovConsole");
-			app.setDescription("This is a realm provided for the governance console");
+			app.setId("MASTER-Realm-2");
+			app.setIdentification("platformCenter");
+			app.setDescription("This is a realm provided for the Platform Center Console");
 			app.setUser(getUserDeveloper());
+			app.setSecret("changeIt2020");
 			AppRole role = new AppRole();
 			role.setApp(app);
-			role.setDescription("Front-end developer");
-			role.setName("FRONT");
+			role.setDescription("Administrator");
+			role.setName("ADMINISTRATOR");
 			app.getAppRoles().add(role);
 			role = new AppRole();
 			role.setApp(app);
-			role.setDescription("Back-end developer");
-			role.setName("BACK");
-			final AppUser developer = new AppUser();
-			developer.setRole(role);
-			developer.setUser(userDeveloper);
-			role.getAppUsers().add(developer);
-
+			role.setDescription("Consultant");
+			role.setName("CONSULTANT");
 			app.getAppRoles().add(role);
 			role = new AppRole();
 			role.setApp(app);
-			role.setDescription("Product owner");
-			role.setName("P.O.");
+			role.setDescription("Developer");
+			role.setName("DEVELOPER");
 			app.getAppRoles().add(role);
 			role = new AppRole();
 			role.setApp(app);
-			role.setDescription("UX designer");
-			role.setName("UX-UI");
+			role.setDescription("Product Owner");
+			role.setName("PRODUCT_OWNER");
 			app.getAppRoles().add(role);
 			role = new AppRole();
 			role.setApp(app);
-			role.setDescription("Devops CI/CD");
-			role.setName("DEVOPS");
-			app.getAppRoles().add(role);
-			role = new AppRole();
-			role.setApp(app);
-			role.setDescription("Administrator of the console");
-			role.setName("ADMIN");
-
-			final AppUser admin = new AppUser();
-			admin.setRole(role);
-			admin.setUser(getUserAdministrator());
-			role.getAppUsers().add(admin);
+			role.setDescription("Project ManagerProject Manager");
+			role.setName("PROJECT_MANAGER");
 			app.getAppRoles().add(role);
 
-			role = new AppRole();
-			role.setApp(app);
-			role.setDescription("User of the console");
-			role.setName("USER");
-
-			final AppUser userApp = new AppUser();
-			userApp.setRole(role);
-			userApp.setUser(getUser());
-			role.getAppUsers().add(userApp);
-			app.getAppRoles().add(role);
-			app.setUserExtraFields(
-					"{\"firstName\":\"string\",\"lastName\":\"string\",\"telephone\":\"string\",\"location\":{\"color\":\"string\",\"floor\":\"string\",\"place\":\"string\"}}");
 			appRepository.save(app);
 		}
 	}
@@ -1143,7 +1254,7 @@ public class InitConfigDB {
 		if (configurationRepository.count() == 0) {
 
 			Configuration config = new Configuration();
-			config.setSuffix("Twitter");
+			config.setIdentification("Twitter");
 			config.setId("MASTER-Configuration-1");
 			config.setType(Configuration.Type.TWITTER);
 			config.setUser(getUserAdministrator());
@@ -1153,18 +1264,18 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
-			config.setSuffix("Twitter");
+			config.setIdentification("Twitter");
 			config.setId("MASTER-Configuration-2");
 			config.setType(Configuration.Type.TWITTER);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
-			config.setSuffix("lmgracia");
+			config.setIdentification("lmgracia");
 			config.setDescription(TWITTER);
 			config.setYmlConfig(loadFromResources("configurations/TwitterConfiguration.yml"));
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
-			config.setSuffix("Scheduler");
+			config.setIdentification("Scheduler");
 			config.setId("MASTER-Configuration-3");
 			config.setType(Configuration.Type.SCHEDULING);
 			config.setUser(getUserAdministrator());
@@ -1174,7 +1285,7 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
-			config.setSuffix("PlatformModules");
+			config.setIdentification("PlatformModules");
 			config.setId("MASTER-Configuration-4");
 			config.setType(Configuration.Type.ENDPOINT_MODULES);
 			config.setUser(getUserAdministrator());
@@ -1185,7 +1296,7 @@ public class InitConfigDB {
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-5");
-			config.setSuffix("PlatformModules");
+			config.setIdentification("PlatformModules");
 			config.setType(Configuration.Type.ENDPOINT_MODULES);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DOCKER);
@@ -1197,7 +1308,7 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
-			config.setSuffix("Email");
+			config.setIdentification("Email");
 			config.setId("MASTER-Configuration-6");
 			config.setType(Configuration.Type.MAIL);
 			config.setUser(getUserAdministrator());
@@ -1213,7 +1324,7 @@ public class InitConfigDB {
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-8");
-			config.setSuffix("Monitoring");
+			config.setIdentification("Monitoring");
 			config.setType(Configuration.Type.MONITORING);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
@@ -1224,7 +1335,7 @@ public class InitConfigDB {
 			//
 			config = new Configuration();
 			config.setId("MASTER-Configuration-10");
-			config.setSuffix("Openshift");
+			config.setIdentification("Openshift");
 			config.setType(Configuration.Type.OPENSHIFT);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
@@ -1233,13 +1344,13 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 			//
 			config = new Configuration();
-			config.setSuffix("Rancher");
+			config.setIdentification("Rancher");
 			config.setId("MASTER-Configuration-11");
 			config.setType(Configuration.Type.DOCKER);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
 			config.setDescription("Rancher docker compose configuration");
-			config.setSuffix("Rancher");
+			config.setIdentification("Rancher");
 			config.setYmlConfig(loadFromResources("configurations/DockerCompose_Rancher.yml"));
 			configurationRepository.save(config);
 			//
@@ -1249,8 +1360,30 @@ public class InitConfigDB {
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
 			config.setDescription("Nginx conf template");
-			config.setSuffix("Nginx");
+			config.setIdentification("Nginx");
 			config.setYmlConfig(loadFromResources("configurations/nginx-template.conf"));
+			configurationRepository.save(config);
+
+			config = configurationRepository.findByTypeAndEnvironment(Type.ENDPOINT_MODULES, DEFAULT);
+			config = new Configuration();
+			config.setId("MASTER-Configuration-27");
+			config.setIdentification("BillableModules");
+			config.setType(Configuration.Type.ENDPOINT_MODULES);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setDescription("BillableModules for local environment");
+			config.setYmlConfig(loadFromResources("configurations/BillableModulesDefault.json"));
+			configurationRepository.save(config);
+
+			config = configurationRepository.findByTypeAndEnvironment(Type.ENDPOINT_MODULES, DOCKER);
+			config = new Configuration();
+			config.setId("MASTER-Configuration-28");
+			config.setIdentification("BillableModules");
+			config.setType(Configuration.Type.ENDPOINT_MODULES);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DOCKER);
+			config.setDescription("BillableModules for docker environment");
+			config.setYmlConfig(loadFromResources("configurations/BillableModulesDocker.json"));
 			configurationRepository.save(config);
 
 		}
@@ -1258,7 +1391,7 @@ public class InitConfigDB {
 		if (config == null) {
 			config = new Configuration();
 			config.setId("MASTER-Configuration-24");
-			config.setSuffix("Lineage");
+			config.setIdentification("Lineage");
 			config.setType(Configuration.Type.LINEAGE);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
@@ -1267,10 +1400,23 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 		}
 
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.CUSTOM, DEFAULT, "ADMIN_PANEL");
+		if (config == null) {
+			config = new Configuration();
+			config.setIdentification("ADMIN_PANEL");
+			config.setDescription("Administrator Panel Configuration");
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-25");
+			config.setType(Type.CUSTOM);
+			config.setUser(getUserAdministrator());
+			config.setYmlConfig(loadFromResources("configurations/AdminPanelConfiguration_default.yml"));
+			configurationRepository.save(config);
+		}
+
 		config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
-			config.setSuffix("Platform");
+			config.setIdentification("Platform");
 			config.setDescription("onesait Platform global configuration");
 			config.setEnvironment(DEFAULT);
 			config.setId("MASTER-Configuration-13");
@@ -1282,7 +1428,7 @@ public class InitConfigDB {
 		config = configurationRepository.findByTypeAndEnvironment(Type.OPEN_PLATFORM, DOCKER);
 		if (config == null) {
 			config = new Configuration();
-			config.setSuffix("Platform");
+			config.setIdentification("Platform");
 			config.setDescription("onesait Platform global configuration");
 			config.setEnvironment(DOCKER);
 			config.setId("MASTER-Configuration-14");
@@ -1292,16 +1438,70 @@ public class InitConfigDB {
 			if (yml == null) {
 				throw new GenericOPException("Null yaml from OpenPlatformConfiguration.yml");
 			}
-			config.setYmlConfig(replaceRTDBServers(yml));
+			config.setYmlConfig(applyCustomConfig(yml));
 
 			configurationRepository.save(config);
 		}
+/*
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.DOCKER, DEFAULT,
+				MICROSERVICE_STR);
+		if (config == null) {
+			config = new Configuration();
+			config.setDescription(MICROSERVICE_STR);
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-16");
+			config.setType(Type.DOCKER);
+			config.setUser(getUserAdministrator());
+			config.setIdentification(MICROSERVICE_STR);
+			config.setYmlConfig(loadFromResources("configurations/Microservice-compose.yml"));
+			configurationRepository.save(config);
+		}
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.JENKINS, DEFAULT,
+				"IOT_CLIENT_ARCHETYPE");
+		if (config == null) {
+			config = new Configuration();
+			config.setDescription(PIPELINE_DESCRIPTION);
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-17");
+			config.setType(Type.JENKINS);
+			config.setUser(getUserAdministrator());
+			config.setIdentification("IOT_CLIENT_ARCHETYPE");
+			config.setYmlConfig(loadFromResources("configurations/JenkinsXMLTemplateIoT.xml"));
+			configurationRepository.save(config);
+		}
 
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.JENKINS, DEFAULT,
+				"ML_MODEL_ARCHETYPE");
+		if (config == null) {
+			config = new Configuration();
+			config.setDescription(PIPELINE_DESCRIPTION);
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-18");
+			config.setType(Type.JENKINS);
+			config.setUser(getUserAdministrator());
+			config.setIdentification("ML_MODEL_ARCHETYPE");
+			config.setYmlConfig(loadFromResources("configurations/JenkinsXMLTemplateML.xml"));
+			configurationRepository.save(config);
+		}
 
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.JENKINS, DEFAULT,
+				"NOTEBOOK_ARCHETYPE");
+		if (config == null) {
+			config = new Configuration();
+			config.setDescription(PIPELINE_DESCRIPTION);
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-20");
+			config.setType(Type.JENKINS);
+			config.setUser(getUserAdministrator());
+			config.setIdentification("NOTEBOOK_ARCHETYPE");
+			config.setYmlConfig(loadFromResources("configurations/JenkinsXMLTemplateNaaS.xml"));
+			configurationRepository.save(config);
+		}
+*/
 		config = configurationRepository.findByTypeAndEnvironment(Type.GOOGLE_ANALYTICS, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
-			config.setSuffix("Google");
+			config.setIdentification("Google");
 			config.setId("MASTER-Configuration-19");
 			config.setType(Configuration.Type.GOOGLE_ANALYTICS);
 			config.setUser(getUserAdministrator());
@@ -1313,7 +1513,7 @@ public class InitConfigDB {
 		config = configurationRepository.findByTypeAndEnvironment(Type.EXPIRATIONUSERS, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
-			config.setSuffix("ExpirationUserPass");
+			config.setIdentification("ExpirationUserPass");
 			config.setId("MASTER-Configuration-21");
 			config.setType(Configuration.Type.EXPIRATIONUSERS);
 			config.setUser(getUserAdministrator());
@@ -1325,7 +1525,7 @@ public class InitConfigDB {
 		config = configurationRepository.findById("MASTER-Configuration-22").orElse(null);
 		if (config == null) {
 			config = new Configuration();
-			config.setSuffix("JsonSqlEngine");
+			config.setIdentification("JsonSqlEngine");
 			config.setId("MASTER-Configuration-22");
 			config.setType(Type.SQLENGINE);
 			config.setUser(getUserAdministrator());
@@ -1337,13 +1537,26 @@ public class InitConfigDB {
 		config = configurationRepository.findById("MASTER-Configuration-23").orElse(null);
 		if (config == null) {
 			config = new Configuration();
-			config.setSuffix("JavaSqlEngine");
+			config.setIdentification("JavaSqlEngine");
 			config.setId("MASTER-Configuration-23");
 			config.setType(Type.SQLENGINE);
 			config.setUser(getUserAdministrator());
 			config.setEnvironment(DEFAULT);
 			config.setDescription("Java class util file for SQL Engine");
 			config.setYmlConfig(loadFromResources("configurations/JavaUtilSqlEngine_default.java"));
+			configurationRepository.save(config);
+		}
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.KAFKA_PROPERTIES, DEFAULT,
+				"Kafka Client Properties");
+		if (config == null) {
+			config = new Configuration();
+			config.setDescription("Kafka connection and topic properties for clients.");
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-29");
+			config.setType(Type.KAFKA_PROPERTIES);
+			config.setUser(getUserAdministrator());
+			config.setIdentification("Kafka Client Properties");
+			config.setYmlConfig(loadFromResources("configurations/kafkaProperties.json"));
 			configurationRepository.save(config);
 		}
 
@@ -1382,17 +1595,19 @@ public class InitConfigDB {
 
 	public void initClientPlatform() {
 		log.info("init ClientPlatform");
-		final List<ClientPlatform> clients = clientPlatformRepository.findAll();
-		if (clients.isEmpty()) {
-			log.info("No clients ...");
-			ClientPlatform client = new ClientPlatform();
+
+		ClientPlatform client = new ClientPlatform();
+		if (!clientPlatformRepository.findById("MASTER-ClientPlatform-1").isPresent()) {
+
 			client.setId("MASTER-ClientPlatform-1");
 			client.setUser(getUserDeveloper());
 			client.setIdentification("Client-MasterData");
 			client.setEncryptionKey("b37bf11c-631e-4bc4-ae44-910e58525952");
 			client.setDescription("ClientPatform created as MasterData");
 			clientPlatformRepository.save(client);
+		}
 
+		if (!clientPlatformRepository.findById("MASTER-ClientPlatform-2").isPresent()) {
 			client = new ClientPlatform();
 			client.setId("MASTER-ClientPlatform-2");
 			client.setUser(getUserDeveloper());
@@ -1400,7 +1615,9 @@ public class InitConfigDB {
 			client.setEncryptionKey("f9dfe72e-7082-4fe8-ba37-3f569b30a691");
 			client.setDescription("ClientPatform created as Example");
 			clientPlatformRepository.save(client);
+		}
 
+		if (!clientPlatformRepository.findById("MASTER-ClientPlatform-3").isPresent()) {
 			client = new ClientPlatform();
 			client.setId("MASTER-ClientPlatform-3");
 			client.setUser(getUserDeveloper());
@@ -1408,7 +1625,8 @@ public class InitConfigDB {
 			client.setEncryptionKey(UUID.randomUUID().toString());
 			client.setDescription("Platform client for issues and ticketing");
 			clientPlatformRepository.save(client);
-
+		}
+		if (!clientPlatformRepository.findById("MASTER-ClientPlatform-4").isPresent()) {
 			client = new ClientPlatform();
 			client.setId("MASTER-ClientPlatform-4");
 			client.setUser(getUserDeveloper());
@@ -1416,7 +1634,8 @@ public class InitConfigDB {
 			client.setEncryptionKey(UUID.randomUUID().toString());
 			client.setDescription("Device template for testing");
 			clientPlatformRepository.save(client);
-
+		}
+		if (!clientPlatformRepository.findById("MASTER-ClientPlatform-5").isPresent()) {
 			client = new ClientPlatform();
 			client.setId("MASTER-ClientPlatform-5");
 			client.setUser(getUserAnalytics());
@@ -1765,7 +1984,8 @@ public class InitConfigDB {
 			if (yamlSt == null) {
 				throw new GenericRuntimeOPException("YAML is null");
 			}
-			return yamlSt.replace("${SERVER_NAME}", serverName);
+			return yamlSt.replace("${SERVER_NAME}", serverName).replace("${SERVER_BASE_DOMAIN_MINIO_AUTH}",
+					minioCookiedomain);
 		} catch (final Exception e) {
 			log.error("Error replacing environment: " + serverName + ".On endpoint configuration file");
 			log.error(e.getMessage());
@@ -1773,9 +1993,16 @@ public class InitConfigDB {
 		}
 	}
 
-	private String replaceRTDBServers(String yamlSt) {
+	private String applyCustomConfig(String yamlSt) {
 		try {
-			return yamlSt.replace("${REALTIMEDBSERVERS}", rtdbServers);
+			return yamlSt.replace("${REALTIMEDBSERVERS}", rtdbServers)
+					.replace("${RTDB_EXECUTION_TIMEOUT}", rtdbExecutionTimeout)
+					.replace("${RTDB_QUERIES_LIMIT}", rtdbQueriesLimit)
+					.replace("${MONGO_SOCKET_TIMEOUT}", rtdbSocketTimeout)
+					.replace("${MONGO_CONNECT_TIMEOUT}", rtdbConnectionTimeout)
+					.replace("${MONGO_WAIT_TIME}", rtdbWaitTime).replace("${MONGO_POOL_SIZE}", rtdbPoolSize)
+					.replace("${REALTIMEDBNAME}", rtdbDatabase).replace("${REALTIMEDBWRITECONCERN}", rtdbWriteConcern)
+					.replace("${MONGO_SSL_ENABLED}", rtdbSslEnabled).replace("${MONGO_USE_QUASAR}", rtdbUseQuasar);
 		} catch (final Exception e) {
 			log.error("Error replacing RTDB servers: " + rtdbServers + ".On endpoint configuration file");
 			log.error(e.getMessage());
@@ -1873,6 +2100,310 @@ public class InitConfigDB {
 			dashboardConf.setDescription("Style with swap, shadow, drawdrag and element align");
 			dashboardConfRepository.save(dashboardConf);
 		}
+		if (!dashboardConfRepository.existsById("MASTER-DashboardConf-6")) {
+			final DashboardConf dashboardConf = new DashboardConf();
+			final String defaultNewSchema = "{\"header\":{\"title\":\"My Dashboard\",\"enable\":true,\"height\":72,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"showfavoritesg\":true,\"navigation\":{\"showBreadcrumbIcon\":true,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"New Page\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":20,\"maxCols\":20,\"minRows\":20,\"maxRows\":20,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":1,\"defaultItemRows\":1,\"fixedColWidth\":250,\"fixedRowHeight\":250,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":true,\"pushItems\":false,\"disablePushOnDrag\":true,\"disablePushOnResize\":true,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"onDrag&Resize\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":false,\"enableEmptyCellAlign\":true,\"disableLiveResize\":true,\"disableLiveMove\":true,\"dragGadgetType\":\"livehtml\",\"api\":{}},\"interactionHash\":{\"1\":[]}}";
+			dashboardConf.setId("MASTER-DashboardConf-6");
+			dashboardConf.setIdentification("gadgets crud and importTool");
+			dashboardConf.setModel(defaultNewSchema);
+			dashboardConf.setHeaderlibs(
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/index.min.js\" integrity=\"sha512-YXb3YAMf5gMN1byYIGwVydJojIIYxbQDvTu1IJivRe6aXGB2yGRtuFAofi9esNMfn2AUKOT2hFKhrhX8QddyPA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/locale/en.min.js\" integrity=\"sha512-tFW30buD0d2p1ncQiM9FtIWruxY8cnB/DmSjrrRxWxlTr6om+DSsxMnknk5t6bs6/1/d6G21/itRYZ2Pmu7CdA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/el-search-table-pagination@0.4.34/lib/index.min.js\"></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/jsoneditor/jsoneditor.js\"></script>\n" + "\n"
+							+ "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n"
+							+ "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/theme-chalk/index.min.css\" integrity=\"sha512-oKuj7gKXGxOZuCSvOPZE1seWosmP4iy608AyAH4hPnGD6tPX4325S+wo6MJQz+L3Hq4tK3e0RMfu+TDFUZFrgA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n"
+							+ "\n" + "<script>\n" + "ELEMENT.locale(ELEMENT.lang.en)\n" + "var __env = __env || {};\n"
+							+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+							+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+							+ "			\"form.entity\": \"Entidad\",\n"
+							+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+							+ "			\"form.select\": \"Seleccionar\",\n"
+							+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+							+ "			\"form.operator\": \"Operador\",\n"
+							+ "			\"form.condition\": \"Condición\",\n"
+							+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+							+ "			\"form.write.here\": \"Escriba aquí\",\n"
+							+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+							+ "			\"form.orderby\": \"Ordenar por\",\n"
+							+ "			\"form.order.type\": \"Tipo de pedido\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Valor máximo\",\n"
+							+ "			\"form.offset\": \"Desplazamiento\",\n"
+							+ "			\"form.reset\": \"Restablecer\",\n" + "			\"form.search\": \"Buscar\",\n"
+							+ "			\"form.records\": \"Registros\",\n"
+							+ "			\"form.columns\": \"Columnas\",\n"
+							+ "			\"column.options\": \"Opciones\",\n"
+							+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+							+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+							+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+							+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+							+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+							+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+							+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+							+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+							+ "			\"form.edit.record\": \"Editar registro\",\n"
+							+ "			\"form.detail.record\": \"Registro detallado\",\n"
+							+ "			\"button.cancel\": \"Cancelar\",\n"
+							+ "			\"button.delete\": \"Eliminar\",\n" + "			\"button.save\": \"Guardar\",\n"
+							+ "			\"button.close\": \"Cerrar\",\n" + "			\"button.new\": \"Nuevo\",\n"
+							+ "			\"button.apply\": \"Aplicar\",\n"
+							+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+							+ "		    \"form.title.import\": \"Importar datos\",\n"
+							+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+							+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+							+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+							+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+							+ "		    \"button.click\": \"haga click aquí\",\n"
+							+ "		    \"button.click.upload\": \"para subirlo\",\n"
+							+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Importar\",\n"
+							+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+							+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+							+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+							+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+							+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+							+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+							+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+							+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+							+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+							+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+							+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+							+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+							+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+							+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+							+ "			\"button.all.records\": \"Todos los registros\",\n"
+							+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+							+ "			\"error.message.download\": \"Error descargando datos\",\n"
+							+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+							+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+							+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+							+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+							+ "			\"form.select\": \"Select\",\n"
+							+ "			\"form.select.fields\": \"Select Fields\",\n"
+							+ "			\"form.operator\": \"Operator\",\n"
+							+ "			\"form.condition\": \"Condition\",\n"
+							+ "			\"form.select.operator\": \"Select Operator\",\n"
+							+ "			\"form.write.here\": \"Write here\",\n"
+							+ "			\"form.select.field\": \"Select Field\",\n"
+							+ "			\"form.orderby\": \"Order by\",\n"
+							+ "			\"form.order.type\": \"Order Type\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Max Value\",\n"
+							+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+							+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+							+ "			\"form.columns\": \"Columns\",\n"
+							+ "			\"column.options\": \"Options\",\n"
+							+ "			\"form.new.record.title\": \"New record\",\n"
+							+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+							+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+							+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+							+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+							+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+							+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+							+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+							+ "			\"form.edit.record\": \"Edit record \",\n"
+							+ "			\"form.detail.record\": \"Detail record \",\n"
+							+ "			\"button.cancel\": \"Cancel\",\n"
+							+ "			\"button.delete\": \"Delete\",\n" + "			\"button.save\": \"Save\",\n"
+							+ "			\"button.close\": \"Close\",\n" + "			\"button.new\": \"New\",\n"
+							+ "			\"button.apply\": \"Apply\",\n"
+							+ "		    \"form.select.entity\": \"Select Entity\",\n"
+							+ "		    \"form.title.import\": \"Import records\",\n"
+							+ "		    \"form.download.template\": \"Download Template\",\n"
+							+ "			\"form.download.csv\":\"Download CSV\",\n"
+							+ "    		\"form.download.json\":\"Download JSON\",\n"
+							+ "		    \"button.drop\": \"Drop file or\",\n"
+							+ "		    \"button.click\": \"click here\",\n"
+							+ "		    \"button.click.upload\": \"to upload\",\n"
+							+ "		    \"form.info.max\": \"Max. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Import\",\n"
+							+ "		    \"button.showmore\": \"Show More Details\",\n"
+							+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+							+ "		    \"message.success.loaded.1\": \"The\",\n"
+							+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+							+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+							+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+							+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+							+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+							+ "		    \"error.message.processing\": \"Error processing data\",\n"
+							+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+							+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+							+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+							+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+							+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+							+ "			\"button.all.records\": \"All the records\",\n"
+							+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+							+ "			\"error.message.download\": \"Error downloading data\",\n"
+							+ "			\"error.message.empty\": \"Error there are no records\",\n"
+							+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+							+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+							+ "	var localLocale ='EN';\n" + "	try{\n"
+							+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+							+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+							+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+							+ " // link messages with internacionalization json on controlpanel\n"
+							+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+			dashboardConf.setDescription("styling with headers for crud gadgets and importTool");
+			dashboardConfRepository.save(dashboardConf);
+		}
+		if (!dashboardConfRepository.existsById("MASTER-DashboardConf-7")) {
+			final DashboardConf dashboardConf = new DashboardConf();
+			final String defaultNewSchema = "{\"header\":{\"title\":\"My Dashboard\",\"enable\":true,\"height\":72,\"logo\":{\"height\":48},\"backgroundColor\":\"#FFFFFF\",\"textColor\":\"#060E14\",\"iconColor\":\"#060E14\",\"pageColor\":\"#2e6c99\"},\"showfavoritesg\":true,\"navigation\":{\"showBreadcrumbIcon\":true,\"showBreadcrumb\":true},\"pages\":[{\"title\":\"New Page\",\"icon\":\"apps\",\"background\":{\"file\":[]},\"layers\":[{\"gridboard\":[{}],\"title\":\"baseLayer\",\"$$hashKey\":\"object:23\"}],\"selectedlayer\":0,\"combinelayers\":false,\"$$hashKey\":\"object:4\"}],\"gridOptions\":{\"gridType\":\"fit\",\"compactType\":\"none\",\"margin\":3,\"outerMargin\":true,\"mobileBreakpoint\":640,\"minCols\":20,\"maxCols\":20,\"minRows\":20,\"maxRows\":20,\"maxItemCols\":5000,\"minItemCols\":1,\"maxItemRows\":5000,\"minItemRows\":1,\"maxItemArea\":25000,\"minItemArea\":1,\"defaultItemCols\":1,\"defaultItemRows\":1,\"fixedColWidth\":250,\"fixedRowHeight\":250,\"enableEmptyCellClick\":false,\"enableEmptyCellContextMenu\":false,\"enableEmptyCellDrop\":true,\"enableEmptyCellDrag\":false,\"emptyCellDragMaxCols\":5000,\"emptyCellDragMaxRows\":5000,\"draggable\":{\"delayStart\":100,\"enabled\":true,\"ignoreContent\":true,\"dragHandleClass\":\"drag-handler\"},\"resizable\":{\"delayStart\":0,\"enabled\":true},\"swap\":true,\"pushItems\":false,\"disablePushOnDrag\":true,\"disablePushOnResize\":true,\"pushDirections\":{\"north\":true,\"east\":true,\"south\":true,\"west\":true},\"pushResizeItems\":false,\"displayGrid\":\"onDrag&Resize\",\"disableWindowResize\":false,\"disableWarnings\":false,\"scrollToNewItems\":false,\"enableEmptyCellAlign\":true,\"disableLiveResize\":true,\"disableLiveMove\":true,\"dragGadgetType\":\"livehtml\",\"api\":{}},\"interactionHash\":{\"1\":[]}}";
+			dashboardConf.setId("MASTER-DashboardConf-7");
+			dashboardConf.setIdentification("ODS gadgets crud and importTool");
+			dashboardConf.setModel(defaultNewSchema);
+			dashboardConf
+					.setHeaderlibs("<script src=\"/controlpanel/static/vendor/jsoneditor/jsoneditor.js\"></script>\n"
+							+ "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n" + "\n" + "\n" + "<script>\n"
+							+ "\n" + "var __env = __env || {};\n"
+							+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+							+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+							+ "			\"form.entity\": \"Entidad\",\n"
+							+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+							+ "			\"form.select\": \"Seleccionar\",\n"
+							+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+							+ "			\"form.operator\": \"Operador\",\n"
+							+ "			\"form.condition\": \"Condición\",\n"
+							+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+							+ "			\"form.write.here\": \"Escriba aquí\",\n"
+							+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+							+ "			\"form.orderby\": \"Ordenar por\",\n"
+							+ "			\"form.order.type\": \"Tipo de pedido\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Valor máximo\",\n"
+							+ "			\"form.offset\": \"Desplazamiento\",\n"
+							+ "			\"form.reset\": \"Restablecer\",\n" + "			\"form.search\": \"Buscar\",\n"
+							+ "			\"form.records\": \"Registros\",\n"
+							+ "			\"form.columns\": \"Columnas\",\n"
+							+ "			\"column.options\": \"Opciones\",\n"
+							+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+							+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+							+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+							+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+							+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+							+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+							+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+							+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+							+ "			\"form.edit.record\": \"Editar registro\",\n"
+							+ "			\"form.detail.record\": \"Registro detallado\",\n"
+							+ "			\"button.cancel\": \"Cancelar\",\n"
+							+ "			\"button.delete\": \"Eliminar\",\n" + "			\"button.save\": \"Guardar\",\n"
+							+ "			\"button.close\": \"Cerrar\",\n" + "			\"button.new\": \"Nuevo\",\n"
+							+ "			\"button.apply\": \"Aplicar\",\n"
+							+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+							+ "		    \"form.title.import\": \"Importar datos\",\n"
+							+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+							+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+							+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+							+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+							+ "		    \"button.click\": \"haga click aquí\",\n"
+							+ "		    \"button.click.upload\": \"para subirlo\",\n"
+							+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Importar\",\n"
+							+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+							+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+							+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+							+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+							+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+							+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+							+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+							+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+							+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+							+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+							+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+							+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+							+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+							+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+							+ "			\"button.all.records\": \"Todos los registros\",\n"
+							+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+							+ "			\"error.message.download\": \"Error descargando datos\",\n"
+							+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+							+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+							+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+							+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+							+ "			\"form.select\": \"Select\",\n"
+							+ "			\"form.select.fields\": \"Select Fields\",\n"
+							+ "			\"form.operator\": \"Operator\",\n"
+							+ "			\"form.condition\": \"Condition\",\n"
+							+ "			\"form.select.operator\": \"Select Operator\",\n"
+							+ "			\"form.write.here\": \"Write here\",\n"
+							+ "			\"form.select.field\": \"Select Field\",\n"
+							+ "			\"form.orderby\": \"Order by\",\n"
+							+ "			\"form.order.type\": \"Order Type\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Max Value\",\n"
+							+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+							+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+							+ "			\"form.columns\": \"Columns\",\n"
+							+ "			\"column.options\": \"Options\",\n"
+							+ "			\"form.new.record.title\": \"New record\",\n"
+							+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+							+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+							+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+							+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+							+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+							+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+							+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+							+ "			\"form.edit.record\": \"Edit record \",\n"
+							+ "			\"form.detail.record\": \"Detail record \",\n"
+							+ "			\"button.cancel\": \"Cancel\",\n"
+							+ "			\"button.delete\": \"Delete\",\n" + "			\"button.save\": \"Save\",\n"
+							+ "			\"button.close\": \"Close\",\n" + "			\"button.new\": \"New\",\n"
+							+ "			\"button.apply\": \"Apply\",\n"
+							+ "		    \"form.select.entity\": \"Select Entity\",\n"
+							+ "		    \"form.title.import\": \"Import records\",\n"
+							+ "		    \"form.download.template\": \"Download Template\",\n"
+							+ "			\"form.download.csv\":\"Download CSV\",\n"
+							+ "    		\"form.download.json\":\"Download JSON\",\n"
+							+ "		    \"button.drop\": \"Drop file or\",\n"
+							+ "		    \"button.click\": \"click here\",\n"
+							+ "		    \"button.click.upload\": \"to upload\",\n"
+							+ "		    \"form.info.max\": \"Max. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Import\",\n"
+							+ "		    \"button.showmore\": \"Show More Details\",\n"
+							+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+							+ "		    \"message.success.loaded.1\": \"The\",\n"
+							+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+							+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+							+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+							+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+							+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+							+ "		    \"error.message.processing\": \"Error processing data\",\n"
+							+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+							+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+							+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+							+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+							+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+							+ "			\"button.all.records\": \"All the records\",\n"
+							+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+							+ "			\"error.message.download\": \"Error downloading data\",\n"
+							+ "			\"error.message.empty\": \"Error there are no records\",\n"
+							+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+							+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+							+ "	var localLocale ='EN';\n" + "	try{\n"
+							+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+							+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+							+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+							+ " // link messages with internacionalization json on controlpanel\n"
+							+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+			dashboardConf.setDescription("styling ODS with headers for crud gadgets and importTool");
+			dashboardConfRepository.save(dashboardConf);
+		}
+
 	}
 
 	public void initDashboard() {
@@ -1931,6 +2462,168 @@ public class InitConfigDB {
 			dashboard.setPublic(true);
 			dashboard.setUser(getUserAdministrator());
 
+			dashboardRepository.save(dashboard);
+		}
+	}
+
+	public void initCrudAndImportDashboard() {
+		if (!dashboardRepository.findById(MASTER_DASHBOARD_FIFTH).isPresent()) {
+			log.info("init Dashboard Crud and Import Example");
+			final Dashboard dashboard = new Dashboard();
+			dashboard.setId(MASTER_DASHBOARD_FIFTH);
+			dashboard.setIdentification("Dashboard Crud and Import Example");
+			dashboard.setDescription("Dashboard Crud and Import Example");
+			dashboard.setJsoni18n("");
+			dashboard.setCustomcss("");
+			dashboard.setCustomjs("");
+			dashboard.setHeaderlibs(
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/index.min.js\" integrity=\"sha512-YXb3YAMf5gMN1byYIGwVydJojIIYxbQDvTu1IJivRe6aXGB2yGRtuFAofi9esNMfn2AUKOT2hFKhrhX8QddyPA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/locale/en.min.js\" integrity=\"sha512-tFW30buD0d2p1ncQiM9FtIWruxY8cnB/DmSjrrRxWxlTr6om+DSsxMnknk5t6bs6/1/d6G21/itRYZ2Pmu7CdA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/el-search-table-pagination@0.4.34/lib/index.min.js\"></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/jsoneditor/jsoneditor.js\"></script>\n" + "\n"
+							+ "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n"
+							+ "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/theme-chalk/index.min.css\" integrity=\"sha512-oKuj7gKXGxOZuCSvOPZE1seWosmP4iy608AyAH4hPnGD6tPX4325S+wo6MJQz+L3Hq4tK3e0RMfu+TDFUZFrgA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n"
+							+ "\n" + "<script>\n" + "ELEMENT.locale(ELEMENT.lang.en)\n" + "var __env = __env || {};\n"
+							+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+							+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+							+ "			\"form.entity\": \"Entidad\",\n"
+							+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+							+ "			\"form.select\": \"Seleccionar\",\n"
+							+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+							+ "			\"form.operator\": \"Operador\",\n"
+							+ "			\"form.condition\": \"Condición\",\n"
+							+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+							+ "			\"form.write.here\": \"Escriba aquí\",\n"
+							+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+							+ "			\"form.orderby\": \"Ordenar por\",\n"
+							+ "			\"form.order.type\": \"Tipo de pedido\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Valor máximo\",\n"
+							+ "			\"form.offset\": \"Desplazamiento\",\n"
+							+ "			\"form.reset\": \"Restablecer\",\n" + "			\"form.search\": \"Buscar\",\n"
+							+ "			\"form.records\": \"Registros\",\n"
+							+ "			\"form.columns\": \"Columnas\",\n"
+							+ "			\"column.options\": \"Opciones\",\n"
+							+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+							+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+							+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+							+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+							+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+							+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+							+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+							+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+							+ "			\"form.edit.record\": \"Editar registro\",\n"
+							+ "			\"form.detail.record\": \"Registro detallado\",\n"
+							+ "			\"button.cancel\": \"Cancelar\",\n"
+							+ "			\"button.delete\": \"Eliminar\",\n" + "			\"button.save\": \"Guardar\",\n"
+							+ "			\"button.close\": \"Cerrar\",\n" + "			\"button.new\": \"Nuevo\",\n"
+							+ "			\"button.apply\": \"Aplicar\",\n"
+							+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+							+ "		    \"form.title.import\": \"Importar datos\",\n"
+							+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+							+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+							+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+							+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+							+ "		    \"button.click\": \"haga click aquí\",\n"
+							+ "		    \"button.click.upload\": \"para subirlo\",\n"
+							+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Importar\",\n"
+							+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+							+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+							+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+							+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+							+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+							+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+							+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+							+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+							+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+							+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+							+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+							+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+							+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+							+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+							+ "			\"button.all.records\": \"Todos los registros\",\n"
+							+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+							+ "			\"error.message.download\": \"Error descargando datos\",\n"
+							+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+							+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+							+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+							+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+							+ "			\"form.select\": \"Select\",\n"
+							+ "			\"form.select.fields\": \"Select Fields\",\n"
+							+ "			\"form.operator\": \"Operator\",\n"
+							+ "			\"form.condition\": \"Condition\",\n"
+							+ "			\"form.select.operator\": \"Select Operator\",\n"
+							+ "			\"form.write.here\": \"Write here\",\n"
+							+ "			\"form.select.field\": \"Select Field\",\n"
+							+ "			\"form.orderby\": \"Order by\",\n"
+							+ "			\"form.order.type\": \"Order Type\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Max Value\",\n"
+							+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+							+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+							+ "			\"form.columns\": \"Columns\",\n"
+							+ "			\"column.options\": \"Options\",\n"
+							+ "			\"form.new.record.title\": \"New record\",\n"
+							+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+							+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+							+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+							+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+							+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+							+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+							+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+							+ "			\"form.edit.record\": \"Edit record \",\n"
+							+ "			\"form.detail.record\": \"Detail record \",\n"
+							+ "			\"button.cancel\": \"Cancel\",\n"
+							+ "			\"button.delete\": \"Delete\",\n" + "			\"button.save\": \"Save\",\n"
+							+ "			\"button.close\": \"Close\",\n" + "			\"button.new\": \"New\",\n"
+							+ "			\"button.apply\": \"Apply\",\n"
+							+ "		    \"form.select.entity\": \"Select Entity\",\n"
+							+ "		    \"form.title.import\": \"Import records\",\n"
+							+ "		    \"form.download.template\": \"Download Template\",\n"
+							+ "			\"form.download.csv\":\"Download CSV\",\n"
+							+ "    		\"form.download.json\":\"Download JSON\",\n"
+							+ "		    \"button.drop\": \"Drop file or\",\n"
+							+ "		    \"button.click\": \"click here\",\n"
+							+ "		    \"button.click.upload\": \"to upload\",\n"
+							+ "		    \"form.info.max\": \"Max. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Import\",\n"
+							+ "		    \"button.showmore\": \"Show More Details\",\n"
+							+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+							+ "		    \"message.success.loaded.1\": \"The\",\n"
+							+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+							+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+							+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+							+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+							+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+							+ "		    \"error.message.processing\": \"Error processing data\",\n"
+							+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+							+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+							+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+							+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+							+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+							+ "			\"button.all.records\": \"All the records\",\n"
+							+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+							+ "			\"error.message.download\": \"Error downloading data\",\n"
+							+ "			\"error.message.empty\": \"Error there are no records\",\n"
+							+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+							+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+							+ "	var localLocale ='EN';\n" + "	try{\n"
+							+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+							+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+							+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+							+ " // link messages with internacionalization json on controlpanel\n"
+							+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+			dashboard.setModel(loadFromResources("dashboardmodel/CrudImportDashExample.json"));
+			dashboard.setPublic(true);
+			dashboard.setUser(getUserAdministrator());
 			dashboardRepository.save(dashboard);
 		}
 	}
@@ -2326,7 +3019,7 @@ public class InitConfigDB {
 			gadget.setIdentification("My Gadget");
 			gadget.setPublic(false);
 			gadget.setDescription("gadget cousin score");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(GADGET1CONFIG);
 			gadget.setUser(getUserDeveloper());
 			gadgetRepository.save(gadget);
@@ -2336,7 +3029,7 @@ public class InitConfigDB {
 			gadget.setIdentification("airportsByCountry");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType(TABLE);
+			gadget.setType(gadgetTemplateRepository.findById(TABLE).orElse(null));
 			gadget.setConfig(GADGET2CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2346,7 +3039,7 @@ public class InitConfigDB {
 			gadget.setIdentification("airportsByCountryTop10");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Airports\",\"display\":true},\"stacked\":false,\"sort\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"1000\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"sort\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2357,7 +3050,7 @@ public class InitConfigDB {
 			gadget.setIdentification(DESTINATIONMAP_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("map");
+			gadget.setType(gadgetTemplateRepository.findById("map").orElse(null));
 			gadget.setConfig(
 					"{\"center\":{\"lat\":44.08758502824516,\"lng\":18.6328125,\"zoom\":1},\"markersFilter\":\"count\",\"jsonMarkers\":\"[\\n{\\\"markerColor\\\": \\\"#0066ff\\\", \\\"iconColor\\\":\\\"black\\\" ,\\\"icon\\\":\\\"plane\\\",\\\"min\\\":2001},\\n{\\\"markerColor\\\": \\\"#4d94ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":2000,\\\"min\\\":501},\\n{\\\"markerColor\\\": \\\"#80b3ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":500,\\\"min\\\":51},\\n{\\\"markerColor\\\": \\\"#b3d1ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":50,\\\"min\\\":6},\\n{\\\"markerColor\\\": \\\"#e6f0ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":5}\\n]\"}");
 			gadget.setUser(getUserAnalytics());
@@ -2368,7 +3061,7 @@ public class InitConfigDB {
 			gadget.setIdentification("destinationCountries");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(GADGET5CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2378,7 +3071,7 @@ public class InitConfigDB {
 			gadget.setIdentification("originCountries");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of routes\",\"display\":true},\"stacked\":false,\"sort\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"1000\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"sort\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2389,7 +3082,7 @@ public class InitConfigDB {
 			gadget.setIdentification(ROUTESDESTTOP_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(GADGET5CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2399,7 +3092,7 @@ public class InitConfigDB {
 			gadget.setIdentification(ROUTESORIGINTOP_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(GADGET5CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2416,7 +3109,7 @@ public class InitConfigDB {
 			gadget.setIdentification("airportsByCountry");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType(TABLE);
+			gadget.setType(gadgetTemplateRepository.findById(TABLE).orElse(null));
 			gadget.setConfig(GADGET2CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2428,7 +3121,7 @@ public class InitConfigDB {
 			gadget.setIdentification("airportsByCountryTop10");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Airports\",\"display\":true}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2441,7 +3134,7 @@ public class InitConfigDB {
 			gadget.setIdentification(DESTINATIONMAP_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("map");
+			gadget.setType(gadgetTemplateRepository.findById("map").orElse(null));
 			gadget.setConfig(
 					"{\"center\":{\"lat\":44.08758502824516,\"lng\":18.6328125,\"zoom\":1},\"markersFilter\":\"count\",\"jsonMarkers\":\"[\\n{\\\"markerColor\\\": \\\"#0066ff\\\", \\\"iconColor\\\":\\\"black\\\" ,\\\"icon\\\":\\\"plane\\\",\\\"min\\\":2001},\\n{\\\"markerColor\\\": \\\"#4d94ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":2000,\\\"min\\\":501},\\n{\\\"markerColor\\\": \\\"#80b3ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":500,\\\"min\\\":51},\\n{\\\"markerColor\\\": \\\"#b3d1ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":50,\\\"min\\\":6},\\n{\\\"markerColor\\\": \\\"#e6f0ff\\\", \\\"iconColor\\\":\\\"black\\\",\\\"icon\\\":\\\"plane\\\",\\\"max\\\":5}\\n]\"}");
 			gadget.setUser(getUserAnalytics());
@@ -2454,7 +3147,7 @@ public class InitConfigDB {
 			gadget.setIdentification("destinationCountries");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of routes\",\"display\":true}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2467,7 +3160,7 @@ public class InitConfigDB {
 			gadget.setIdentification("originCountries");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of routes\",\"display\":true}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2480,7 +3173,7 @@ public class InitConfigDB {
 			gadget.setIdentification(ROUTESDESTTOP_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(GADGET1CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2492,7 +3185,7 @@ public class InitConfigDB {
 			gadget.setIdentification(ROUTESORIGINTOP_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(GADGET1CONFIG);
 			gadget.setUser(getUserAnalytics());
 			gadgetRepository.save(gadget);
@@ -2509,7 +3202,7 @@ public class InitConfigDB {
 			gadget.setIdentification("producertbl");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType(TABLE);
+			gadget.setType(gadgetTemplateRepository.findById(TABLE).orElse(null));
 			gadget.setConfig(
 					"{\"tablePagination\":{\"limit\":\"100\",\"page\":1,\"limitOptions\":[5,10,20,50,100],\"style\":{\"backGroundTHead\":\"#ffffff\",\"backGroundTFooter\":\"#ffffff\",\"trHeightHead\":\"30\",\"trHeightBody\":\"30\",\"trHeightFooter\":\"30\",\"textColorTHead\":\"#555555\",\"textColorBody\":\"#555555\",\"textColorFooter\":\"#555555\"},\"options\":{\"rowSelection\":true,\"multiSelect\":false,\"autoSelect\":false,\"decapitate\":false,\"largeEditDialog\":false,\"boundaryLinks\":true,\"limitSelect\":true,\"pageSelect\":true}}}");
 			gadget.setUser(getUserAnalytics());
@@ -2522,7 +3215,7 @@ public class InitConfigDB {
 			gadget.setIdentification(PRODUCERERRORCAT_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("mixed");
+			gadget.setType(gadgetTemplateRepository.findById("mixed").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of errors\",\"display\":true},\"stacked\":true,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":true,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"Error category\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2535,7 +3228,7 @@ public class InitConfigDB {
 			gadget.setIdentification(TRENDERROR_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("line");
+			gadget.setType(gadgetTemplateRepository.findById("line").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of errors\",\"display\":true},\"stacked\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"1000\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"Date\"},\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2548,7 +3241,7 @@ public class InitConfigDB {
 			gadget.setIdentification(ERRORBYSITE_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("bar");
+			gadget.setType(gadgetTemplateRepository.findById("bar").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of errors\",\"display\":true},\"stacked\":true,\"ticks\":{\"suggestedMin\":\"\",\"suggestedMax\":\"\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":true,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"Site\"},\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2561,7 +3254,7 @@ public class InitConfigDB {
 			gadget.setIdentification(PRODUCERERRORTYPE_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("mixed");
+			gadget.setType(gadgetTemplateRepository.findById("mixed").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of errors\",\"display\":true},\"stacked\":true,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":true,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"Error code\"},\"hideLabel\":\"1\",\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2574,7 +3267,7 @@ public class InitConfigDB {
 			gadget.setIdentification(TRENDERRORTYPE_STR);
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType("line");
+			gadget.setType(gadgetTemplateRepository.findById("line").orElse(null));
 			gadget.setConfig(
 					"{\"scales\":{\"yAxes\":[{\"id\":\"#0\",\"display\":true,\"type\":\"linear\",\"position\":\"left\",\"scaleLabel\":{\"labelString\":\"Number of errors\",\"display\":true},\"stacked\":false,\"ticks\":{\"suggestedMin\":\"0\",\"suggestedMax\":\"\"},\"gridLines\":{\"display\":false}}],\"xAxes\":[{\"stacked\":false,\"ticks\":{},\"scaleLabel\":{\"display\":true,\"labelString\":\"Date\"},\"gridLines\":{\"display\":false}}]}}");
 			gadget.setUser(getUserAnalytics());
@@ -2587,7 +3280,7 @@ public class InitConfigDB {
 			gadget.setIdentification("tableerrordetail");
 			gadget.setPublic(false);
 			gadget.setDescription("");
-			gadget.setType(TABLE);
+			gadget.setType(gadgetTemplateRepository.findById(TABLE).orElse(null));
 			gadget.setConfig(
 					"{\"tablePagination\":{\"limit\":\"100\",\"page\":1,\"limitOptions\":[5,10,20,50,100],\"style\":{\"backGroundTHead\":\"#ffffff\",\"backGroundTFooter\":\"#ffffff\",\"trHeightHead\":\"30\",\"trHeightBody\":\"30\",\"trHeightFooter\":\"30\",\"textColorTHead\":\"#000000\",\"textColorBody\":\"#000000\",\"textColorFooter\":\"#000000\"},\"options\":{\"rowSelection\":false,\"multiSelect\":false,\"autoSelect\":false,\"decapitate\":false,\"largeEditDialog\":false,\"boundaryLinks\":true,\"limitSelect\":true,\"pageSelect\":true}}}");
 			gadget.setUser(getUserAnalytics());
@@ -3421,6 +4114,26 @@ public class InitConfigDB {
 
 			internationalizationRepository.save(internationalization);
 		}
+
+	}
+
+	public void initInternationalizationGadgets() {
+		log.info("init Internationalization_gadgets");
+		final List<Internationalization> internationaCRUDImportTool = internationalizationRepository
+				.findByIdentification("gadgetInternationalization");
+		if (internationaCRUDImportTool.isEmpty()) {
+			log.info("No internationalizations gadgetInternationalization...adding");
+
+			final Internationalization internationalization = new Internationalization();
+			internationalization.setId(MASTER_INTERNATIONALIZATION_TWO);
+			internationalization.setIdentification("gadgetInternationalization");
+			internationalization.setDescription("Internationalization for gadgets crud and importTool");
+			internationalization
+					.setJsoni18n(loadFromResources("internationalizations/InternationalizationCrudImporTool.json"));
+			internationalization.setPublic(true);
+			internationalization.setUser(getUserAdministrator());
+			internationalizationRepository.save(internationalization);
+		}
 	}
 
 	public void initI18nResources() {
@@ -3436,6 +4149,23 @@ public class InitConfigDB {
 						.setI18n(internationalizationRepository.findById(MASTER_INTERNATIONALIZATION_ONE).orElse(null));
 				i18nresource.setOpResource(dashboardRepository.findById(MASTER_DASHBOARD_FRTH).orElse(null));
 
+				i18nResourcesRepository.save(i18nresource);
+			}
+		}
+	}
+
+	public void initI18nResourcesCrudAndImport() {
+		log.info("init i18nResources");
+		final Optional<I18nResources> i18nResources = i18nResourcesRepository.findById("MASTER-I18nResources-2");
+		if (!i18nResources.isPresent()) {
+			log.info("No i18n resources for crud and import...adding");
+			if (internationalizationRepository.findById(MASTER_INTERNATIONALIZATION_TWO).isPresent()
+					&& dashboardRepository.findById(MASTER_DASHBOARD_FRTH).isPresent()) {
+				final I18nResources i18nresource = new I18nResources();
+				i18nresource.setId("MASTER-I18nResources-2");
+				i18nresource
+						.setI18n(internationalizationRepository.findById(MASTER_INTERNATIONALIZATION_TWO).orElse(null));
+				i18nresource.setOpResource(dashboardRepository.findById(MASTER_DASHBOARD_FIFTH).orElse(null));
 				i18nResourcesRepository.save(i18nresource);
 			}
 		}
@@ -3492,6 +4222,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontologyService.createOntology(ontology, null);
 		}
 		if (ontologyRepository.findByIdentification(TICKET) == null && initSamples) {
@@ -3508,6 +4239,7 @@ public class InitConfigDB {
 			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontologyService.createOntology(ontology, null);
 		}
 		if (ontologyRepository.findByIdentification(ONTOLOGY_CONTPERF) == null) {
@@ -3524,6 +4256,7 @@ public class InitConfigDB {
 			ontology.setDataModel(dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE).get(0));
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontologyService.createOntology(ontology, null);
 		}
 		if (ontologyRepository.findByIdentification(ONTOLOGY_HELSINKIPOPULATION) == null && initSamples) {
@@ -3539,7 +4272,7 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3560,7 +4293,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3580,7 +4313,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3602,7 +4335,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
-
+			ontology.setContextDataEnabled(true);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3622,7 +4355,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
-
+			ontology.setContextDataEnabled(true);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
 				ontologyService.createOntology(ontology, null);
@@ -3641,7 +4374,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3661,6 +4394,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3682,6 +4416,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(RtdbDatasource.DIGITAL_TWIN);
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3703,7 +4438,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(RtdbDatasource.DIGITAL_TWIN);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3723,7 +4458,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3743,7 +4478,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -3764,7 +4499,7 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserDeveloper());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -3789,6 +4524,7 @@ public class InitConfigDB {
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -3852,6 +4588,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
 			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
@@ -3912,6 +4649,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
 			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
@@ -3980,6 +4718,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
 			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
@@ -4044,6 +4783,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAdministrator());
 			ontology.setAllowsCypherFields(false);
+			ontology.setContextDataEnabled(true);
 			ontology.setRtdbDatasource(Ontology.RtdbDatasource.MONGO);
 			dataModels = dataModelRepository.findByIdentification(TIMESERIE_STR);
 			if (!dataModels.isEmpty()) {
@@ -4157,6 +4897,19 @@ public class InitConfigDB {
 			layerRepository.save(layer);
 		}
 
+		if (layerRepository.findByIdentification(IONASSETSCESIUM).isEmpty()) {
+
+			layer = new Layer();
+			layer.setId("MASTER-Layer-03");
+			layer.setIdentification(IONASSETSCESIUM);
+			layer.setDescription("Edificios modelados en 3D");
+			layer.setPublic(true);
+			layer.setExternalType("cesium_ion_asset");
+			layer.setLayerTypeWms("96188");
+			layer.setUser(getUserDeveloper());
+			layerRepository.save(layer);
+		}
+
 	}
 
 	private void initViewers() {
@@ -4187,6 +4940,29 @@ public class InitConfigDB {
 			viewerRepository.save(viewer);
 
 		}
+
+		if (viewerRepository.findByIdentification("MASTER-Viewer-02").isEmpty()) {
+			viewer.setId("MASTER-Viewer-02");
+			viewer.setIdentification("Edificios3Dviewer");
+			viewer.setDescription("Visor con modelado de edificios 3D");
+			viewer.setPublic(true);
+			viewer.setBaseLayer(baseLayerRepository.findByIdentification("esri.Streets.Labels.cs2").get(0));
+
+			final Layer layer01 = layerRepository.findByIdentification(IONASSETSCESIUM).get(0);
+
+			viewer.getLayers().add(layer01);
+
+			viewer.setUser(getUserDeveloper());
+			viewer.setJs(buildJSCodeCesium2());
+			viewer.setLatitude("40.41");
+			viewer.setLongitude("-3.69");
+			viewer.setHeight("6500");
+
+			layer01.getViewers().add(viewer);
+
+			viewerRepository.save(viewer);
+
+		}
 	}
 
 	private String buildJSCode() {
@@ -4200,8 +4976,39 @@ public class InitConfigDB {
 			cfg.setTemplateLoader(templateLoader);
 			final Template indexViewerTemplate = cfg.getTemplate("viewer.ftl");
 
-			dataMap.put("cesiumPath", webProjectPath + "/cesium/Cesium1.60/Cesium.js");
-			dataMap.put("widgetcss", webProjectPath + "/cesium/Cesium1.60/Widgets/widgets.css");
+			dataMap.put("cesiumPath", webProjectPath + "cesium/Cesium1.60/Cesium.js");
+			dataMap.put("widgetcss", webProjectPath + "cesium/Cesium1.60/Widgets/widgets.css");
+			dataMap.put("basePath", basePath);
+
+			// write the freemarker output to a StringWriter
+			final StringWriter stringWriter = new StringWriter();
+			indexViewerTemplate.process(dataMap, stringWriter);
+
+			// get the String from the StringWriter
+			return stringWriter.toString();
+		} catch (final IOException e) {
+			log.error("Error configuring the template loader. {}", e.getMessage());
+		} catch (final TemplateException e) {
+			log.error("Error processing the template loades. {}", e.getMessage());
+		}
+		return null;
+	}
+
+	private String buildJSCodeCesium2() {
+		final freemarker.template.Configuration cfg = new freemarker.template.Configuration(
+				freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+		final Map<String, Object> dataMap = new HashMap<>();
+
+		try {
+			final TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/examples");
+
+			cfg.setTemplateLoader(templateLoader);
+			final Template indexViewerTemplate = cfg.getTemplate("viewerCesium2.ftl");
+
+			dataMap.put("cesiumPath", webProjectPath + "cesium/Cesium1.92/Cesium.js");
+			dataMap.put("widgetcss", webProjectPath + "cesium/Cesium1.92/Widgets/widgets.css");
+			dataMap.put("heatmap", webProjectPath + "cesium/CesiumHeatmap/CesiumHeatmap.js");
+			dataMap.put("onesaitCesiumPath", webProjectPath + "onesaitCesium/v2");
 			dataMap.put("basePath", basePath);
 
 			// write the freemarker output to a StringWriter
@@ -4235,7 +5042,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4257,7 +5064,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4279,7 +5086,7 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4301,7 +5108,7 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4323,7 +5130,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4333,7 +5140,7 @@ public class InitConfigDB {
 		}
 		if (clientPlatformOntologyRepository
 				.findByClientPlatform(clientPlatformRepository.findByIdentification("DefaultClient")) != null) {
-			ClientPlatformOntology cpo = new ClientPlatformOntology();
+			final ClientPlatformOntology cpo = new ClientPlatformOntology();
 			cpo.setId("MASTER-ClientPlatformOntology-3");
 			cpo.setClientPlatform(clientPlatformRepository.findByIdentification("DefaultClient"));
 			cpo.setOntology(ontologyRepository.findByIdentification(AIRPORT_STR));
@@ -4360,7 +5167,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4382,7 +5189,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4404,7 +5211,7 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4426,7 +5233,7 @@ public class InitConfigDB {
 			ontology.setPublic(true);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4448,7 +5255,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 			if (!dataModels.isEmpty()) {
 				ontology.setDataModel(dataModels.get(0));
@@ -4469,7 +5276,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4491,7 +5298,7 @@ public class InitConfigDB {
 			ontology.setPublic(false);
 			ontology.setUser(getUserAnalytics());
 			ontology.setAllowsCypherFields(false);
-
+			ontology.setContextDataEnabled(true);
 			dataModels = dataModelRepository.findByIdentification(DATAMODEL_EMPTY_BASE);
 
 			if (!dataModels.isEmpty()) {
@@ -4927,7 +5734,7 @@ public class InitConfigDB {
 	}
 
 	private void initLineageRelations() {
-		ClientPlatform client = clientPlatformRepository.findByIdentification("DefaultClient");
+		final ClientPlatform client = clientPlatformRepository.findByIdentification("DefaultClient");
 		if (client != null && notebookRepository.findById("MASTER-Notebook-1").isPresent()
 				&& pipelineRepository.findById("MASTER-Pipeline-1").isPresent()) {
 			LineageRelations relation = new LineageRelations();
@@ -5228,7 +6035,7 @@ public class InitConfigDB {
 
 	private void initPipeline() {
 		if (pipelineRepository.findAll().isEmpty()) {
-			Pipeline pipe = new Pipeline();
+			final Pipeline pipe = new Pipeline();
 			pipe.setIdentification("PipelineDefault");
 			pipe.setInstance(dataflowInstanceRepository.findByDefaultInstance(true));
 			pipe.setUser(getUserAnalytics());
@@ -5290,17 +6097,18 @@ public class InitConfigDB {
 
 	public void initGadgetTemplateType() {
 		log.info("init GadgetTemplateType");
-		final String angularTemplateJS = "//Write your controller (JS code) code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\nvm.initLiveComponent = function(){\n\n};\n\n//This function will be call when data change. On first execution oldData will be null\nvm.drawLiveComponent = function(newData, oldData){\n\n};\n\n//This function will be call on element resize\nvm.resizeEvent = function(){\n\n}\n\n//This function will be call when element is destroyed\nvm.destroyLiveComponent = function(){\n\n};\n\n//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\nvm.receiveValue = function(data){\n\n};";
-		final String angularTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
+		final String angularTemplateJS = "//Write your controller (JS code) code here\n\n//Focus here and F11 or F10 to full screen editor\n\n//This function will be call once to init components\nvm.initLiveComponent = function(){\n\n};\n\n//This function will be call when data change. On first execution oldData will be null\nvm.drawLiveComponent = function(newData, oldData){\n\n};\n\n//This function will be call on element resize\nvm.resizeEvent = function(){\n\n}\n\n//This function will be call when element is destroyed\nvm.destroyLiveComponent = function(){\n\n};\n\n//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\nvm.receiveValue = function(data){\n\n};";
+		final String angularTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 or F10 to full screen editor-->";
 		final String angularHeaders = "";
-		final String vueTemplateJS = "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.querySelector('#' + vm.id + ' vuetemplate'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n";
-		final String vueTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
+		final String vueTemplateJS = "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.getElementById(vm.id).querySelector('vuetemplate  .gadget-app'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n";
+		final String vueTemplate = "<!--Focus here and F11 or F10 to full screen editor-->\n<!-- Write your CSS <style></style> here -->\n<div class=\"gadget-app\">\n<!-- Write your HTML <div></div> here -->\n</div>";
 		final String vueHeaders = "";
-		final String vueODSTemplateJS = "//Write your Vue with ODS JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.querySelector('#' + vm.id + ' vuetemplate'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n";
-		final String vueODSTemplate = "<!-- Write your HTML <div></div> and CSS <style></style> here -->\n<!--Focus here and F11 to full screen editor-->";
+		final String vueODSTemplateJS = "//Write your Vue with ODS JSON controller code here\n\n//Focus here and F11 or F10 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n\tel: document.getElementById(vm.id).querySelector('vuetemplate  .gadget-app'),\n\tdata:{\n\t\tds:[]\n\t},\n\tmethods:{\n\t\tdrawVueComponent: function(newData,oldData){\n\t\t\t//This will be call on new data\n\t\t},\n\t\tresizeEvent: function(){\n\t\t\t//Resize event\n\t\t},\n\t\tdestroyVueComponent: function(){\n\t\t\tvm.vueapp.$destroy();\n\t\t},\n\t\treceiveValue: function(data){\n\t\t\t//data received from datalink\n\t\t},\n\t\tsendValue: vm.sendValue,\n\t\tsendFilter: vm.sendFilter\n\t}\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n";
+		final String vueODSTemplate = "<!--Focus here and F11 or F10 to full screen editor-->\n<!-- Write your CSS <style></style> here -->\n<div class=\"gadget-app\">\n<!-- Write your HTML <div></div> here -->\n</div>";
+
 		final String vueODSHeaders = "";
-		final String reactTemplateJS = "//Write your controller (JS code) code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call for render the React Gadget\nfunction GadgetComponent(props) {\n    const ds = props.ds;\n    return React.createElement(\"div\", null, null);\n}\n\n//This function will be call on init event and when data arrives to the React Gadget\nvm.renderReactGadget = function(ds, old_ds){\n  ReactDOM.render(\n      React.createElement(GadgetComponent, { ds: ds || [] }), document.querySelector('#' + vm.id + ' reacttemplate' + ' .rootapp')\n  );\n}\n\n//This function will be call in destroy event of React Gadget\nvm.destroyReactGadget = function(){\n\n}\n\n//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\nvm.receiveValue = function(data){\n\n};";
-		final String reactTemplate = "<!-- Write your React CSS Style Here \n<!--Focus here and F11 to full screen editor-->";
+		final String reactTemplateJS = "//Write your controller (JS code) code here\n\n//Focus here and F11 or F10 to full screen editor\n\n//This function will be call for render the React Gadget\nfunction GadgetComponent(props) {\n    const ds = props.ds;\n    return React.createElement(\"div\", null, null);\n}\n\n//This function will be call on init event and when data arrives to the React Gadget\nvm.renderReactGadget = function(ds, old_ds){\n  ReactDOM.render(\n      React.createElement(GadgetComponent, { ds: ds || [] }), document.querySelector('#' + vm.id + ' reacttemplate' + ' .rootapp')\n  );\n}\n\n//This function will be call in destroy event of React Gadget\nvm.destroyReactGadget = function(){\n\n}\n\n//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\nvm.receiveValue = function(data){\n\n};";
+		final String reactTemplate = "<!-- Write your React CSS Style Here \n<!--Focus here and F11 or F10 to full screen editor-->";
 		final String reactHeaders = "<script src=\"/controlpanel/static/vendor/react/react.production.min.js\" crossorigin></script>\n<script src=\"/controlpanel/static/vendor/react/react-dom.production.min.js\" crossorigin></script>";
 		final List<GadgetTemplateType> gadgetsTemplatesType = gadgetTemplateTypeRepository.findAll();
 		if (gadgetsTemplatesType.isEmpty()) {
@@ -5308,7 +6116,7 @@ public class InitConfigDB {
 
 			GadgetTemplateType gadgetTemplateType = new GadgetTemplateType();
 			gadgetTemplateType.setId("angularJS");
-			gadgetTemplateType.setIdentification("Angular JS");
+			gadgetTemplateType.setIdentification("AngularJS");
 			gadgetTemplateType.setTemplate(angularTemplate);
 			gadgetTemplateType.setTemplateJS(angularTemplateJS);
 			gadgetTemplateType.setHeaderlibs(angularHeaders);
@@ -5316,7 +6124,7 @@ public class InitConfigDB {
 
 			gadgetTemplateType = new GadgetTemplateType();
 			gadgetTemplateType.setId("vueJS");
-			gadgetTemplateType.setIdentification("Vue JS");
+			gadgetTemplateType.setIdentification("VueJS");
 			gadgetTemplateType.setTemplate(vueTemplate);
 			gadgetTemplateType.setTemplateJS(vueTemplateJS);
 			gadgetTemplateType.setHeaderlibs(vueHeaders);
@@ -5324,7 +6132,7 @@ public class InitConfigDB {
 
 			gadgetTemplateType = new GadgetTemplateType();
 			gadgetTemplateType.setId("vueJSODS");
-			gadgetTemplateType.setIdentification("Vue JS + ODS");
+			gadgetTemplateType.setIdentification("VueJS+ODS");
 			gadgetTemplateType.setTemplate(vueODSTemplate);
 			gadgetTemplateType.setTemplateJS(vueODSTemplateJS);
 			gadgetTemplateType.setHeaderlibs(vueODSHeaders);
@@ -5332,7 +6140,7 @@ public class InitConfigDB {
 
 			gadgetTemplateType = new GadgetTemplateType();
 			gadgetTemplateType.setId("reactJS");
-			gadgetTemplateType.setIdentification("React JS");
+			gadgetTemplateType.setIdentification("ReactJS");
 			gadgetTemplateType.setTemplate(reactTemplate);
 			gadgetTemplateType.setTemplateJS(reactTemplateJS);
 			gadgetTemplateType.setHeaderlibs(reactHeaders);
@@ -5343,7 +6151,7 @@ public class InitConfigDB {
 	public void initGadgetTemplate() {
 		log.info("init GadgetTemplate");
 		final String templateJS = "//Write your controller (JS code) code here\r\n" + "\r\n"
-				+ "//Focus here and F11 to full screen editor\r\n" + "\r\n"
+				+ "//Focus here and F11 or F10 to full screen editor\r\n" + "\r\n"
 				+ "//This function will be call once to init components\r\n" + "vm.initLiveComponent = function(){\r\n"
 				+ "\r\n" + "};\r\n" + "\r\n"
 				+ "//This function will be call when data change. On first execution oldData will be null\r\n"
@@ -5382,10 +6190,10 @@ public class InitConfigDB {
 
 			gadgetTemplate = new GadgetTemplate();
 			gadgetTemplate.setId("MASTER-GadgetTemplate-2");
-			gadgetTemplate.setIdentification("Simple Value");
+			gadgetTemplate.setIdentification("SimpleValue");
 			gadgetTemplate.setPublic(true);
 			gadgetTemplate.setType("angularJS");
-			gadgetTemplate.setDescription("this template shows a value with its title and an icon");
+			gadgetTemplate.setDescription("template shows a value with its title and an icon");
 			gadgetTemplate.setTemplate("<style>\r\n" + "  .card-count{\r\n" + "   color: #2e43ab;\r\n"
 					+ "    font-weight: bold;\r\n" + "    font-size: -webkit-xxx-large; \r\n"
 					+ "   padding-left: 20px;\r\n" + SEPARATOR_BIS + "  .card-title{\r\n" + "   color: #000000;\r\n"
@@ -5397,7 +6205,7 @@ public class InitConfigDB {
 					+ "<div class=\"my-card\">\r\n" + "\r\n" + "\r\n"
 					+ " <md-icon class=\"card-icon\" style=\"font-size:35px\">assessment</md-icon> \r\n"
 					+ " <label class=\"card-title\"><!--label-osp  name=\"title\" type=\"text\"--></label><br>\r\n"
-					+ " <label class=\"card-count\">{{ds[0].<!--label-osp  name=\"ontology field\" type=\"ds_parameter\"-->}}</label>\r\n"
+					+ " <label class=\"card-count\">{{ds[0].<!--label-osp  name=\"ontologyfield\" type=\"ds_parameter\"-->}}</label>\r\n"
 					+ "      \r\n" + "\r\n" + "</div>\r\n" + "\r\n");
 
 			gadgetTemplate.setTemplateJS(templateJS);
@@ -5406,22 +6214,22 @@ public class InitConfigDB {
 
 			gadgetTemplate = new GadgetTemplate();
 			gadgetTemplate.setId("MASTER-GadgetTemplate-3");
-			gadgetTemplate.setIdentification("Chart Bubble");
+			gadgetTemplate.setIdentification("ChartBubble");
 			gadgetTemplate.setPublic(true);
 			gadgetTemplate.setType("angularJS");
 			gadgetTemplate.setDescription("this template creates a chart bubble");
 			gadgetTemplate.setTemplate("<span ng-init=\"\r\n" + "    cdata=[];\r\n"
-					+ "    cdatasetOverride={label: '<!--label-osp  name=\"series label\" type=\"text\"-->'};\r\n"
+					+ "    cdatasetOverride={label: '<!--label-osp  name=\"seriesLabel\" type=\"text\"-->'};\r\n"
 					+ "    options={\r\n" + "      legend: {display: true}, \r\n"
 					+ "      maintainAspectRatio: false, \r\n" + "      responsive: true,\r\n" + "      scales: {\r\n"
 					+ "        xAxes: [{\r\n" + "          display: true,\r\n" + "          scaleLabel: {\r\n"
-					+ "              labelString: '<!--label-osp  name=\"xAxes label\" type=\"text\"-->',\r\n"
+					+ "              labelString: '<!--label-osp  name=\"xAxeslabel\" type=\"text\"-->',\r\n"
 					+ "              display: true\r\n" + "          }\r\n" + "        }],\r\n"
 					+ "        yAxes: [{\r\n" + "          display: true,\r\n" + "          scaleLabel: {\r\n"
-					+ "              labelString: '<!--label-osp  name=\"yAxes label\" type=\"text\"-->',\r\n"
+					+ "              labelString: '<!--label-osp  name=\"yAxeslabel\" type=\"text\"-->',\r\n"
 					+ "              display: true\r\n" + "          }\r\n" + "        }]\r\n" + "      }\r\n"
 					+ "    };\"/>\r\n" + "\r\n" + "    \r\n" + "<span ng-repeat=\"inst in ds\">\r\n"
-					+ "  <span ng-init=\"cdata.push({x:inst.<!--label-osp  name=\"xAxes Data\" type=\"ds_parameter\"-->, y:inst.<!--label-osp  name=\"yAxes Data\" type=\"ds_parameter\"-->, r:inst.<!--label-osp  name=\"radio Data\" type=\"ds_parameter\"-->})\"></span>\r\n"
+					+ "  <span ng-init=\"cdata.push({x:inst.<!--label-osp  name=\"xAxesData\" type=\"ds_parameter\"-->, y:inst.<!--label-osp  name=\"yAxesData\" type=\"ds_parameter\"-->, r:inst.<!--label-osp  name=\"radioData\" type=\"ds_parameter\"-->})\"></span>\r\n"
 					+ "</span>\r\n" + "\r\n" + "<div style=\"height:calc(100% - 50px)\">\r\n" + "\r\n"
 					+ "<canvas class=\"chart chart-bubble\" chart-data=\"cdata\"\r\n"
 					+ "                  chart-colors=\"colors\" chart-options=\"options\" chart-series=\"cseries\" chart-labels=\"clabels\" chart-dataset-override=\"cdatasetOverride\"></canvas>\r\n"
@@ -5435,7 +6243,7 @@ public class InitConfigDB {
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-4").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 			gadgetTemplate.setId("MASTER-GadgetTemplate-4");
-			gadgetTemplate.setIdentification("React Material List");
+			gadgetTemplate.setIdentification("ReactMaterialList");
 			gadgetTemplate.setPublic(true);
 			gadgetTemplate.setType("reactJS");
 			gadgetTemplate.setHeaderlibs(
@@ -5445,8 +6253,7 @@ public class InitConfigDB {
 							+ "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap\" />\n"
 							+ "<!-- Icons to support Material Design -->\n"
 							+ "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" />");
-			gadgetTemplate.setDescription(
-					"This template creates a react js material list, for use it in dashboard you need to import dependencies");
+			gadgetTemplate.setDescription("react js material list need to import dependencies");
 			gadgetTemplate.setTemplate("<style>\n" + "    .MuiListItemText-root{\n" + "        background: #d8eaff\n"
 					+ "    }\n" + "</style>");
 
@@ -5468,7 +6275,7 @@ public class InitConfigDB {
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-5").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 			gadgetTemplate.setId("MASTER-GadgetTemplate-5");
-			gadgetTemplate.setIdentification("Vue Echart Line or Bar");
+			gadgetTemplate.setIdentification("VueEchartLineorBar");
 			gadgetTemplate.setPublic(true);
 			gadgetTemplate.setType("vueJS");
 			gadgetTemplate.setHeaderlibs(
@@ -5476,20 +6283,19 @@ public class InitConfigDB {
 							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
 							+ "    <script src=\"https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.min.js\"></script>\n"
 							+ "<script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>");
-			gadgetTemplate.setDescription(
-					"This template creates an vue echart component from datasource with type bar or line, for use it in dashboard you need to import dependencies");
+			gadgetTemplate.setDescription("vue echart component from datasource bar or line");
 			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
-					+ "<!--Focus here and F11 to full screen editor-->\n"
+					+ "<!--Focus here and F11 or F10 to full screen editor-->\n"
 					+ "<v-chart :options=\"chartConfig\"></v-chart>");
 
 			gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
-					+ "//Focus here and F11 to full screen editor\n" + "\n"
-					+ "var color = /*select-osp  name=\"Color Serie\" type=\"ds\" options=\"red,blue,green,orange,yellow,black,purple,pink\"*/ 'red'\n"
-					+ "var typechart = /*select-osp  name=\"Chart Type\" type=\"ds\" options=\"bar,line\"*/ 'line'\n"
+					+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
+					+ "var color = /*select-osp  name=\"ColorSerie\" type=\"ds\" options=\"red,blue,green,orange,yellow,black,purple,pink\"*/ 'red'\n"
+					+ "var typechart = /*select-osp  name=\"ChartType\" type=\"ds\" options=\"bar,line\"*/ 'line'\n"
 					+ "var key = /*label-osp  name=\"Key\" type=\"ds_parameter\"*/ \"key\"\n"
 					+ "var value = /*label-osp  name=\"Value\" type=\"ds_parameter\"*/ \"value\"\n" + "\n"
 					+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
-					+ "    el: document.querySelector('#' + vm.id + ' vuetemplate'),\n" + "    data: {\n"
+					+ "    el: document.getElementById(vm.id).querySelector('vuetemplate'),\n" + "    data: {\n"
 					+ "        ds: [{\"key\":\"A\",\"value\":123},{\"key\":\"B\",\"value\":143}]\n" + "    },\n"
 					+ "    computed: {\n" + "        chartConfig() {\n" + "            return {\n"
 					+ "                xAxis: {\n" + "                    type: 'category',\n"
@@ -5522,21 +6328,21 @@ public class InitConfigDB {
 							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
 							+ "    <script src=\"https://cdn.jsdelivr.net/npm/echarts@4.1.0/dist/echarts.min.js\"></script>\n"
 							+ "<script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>");
-			gadgetTemplate.setDescription("This template creates an vue ods select component from datasource");
+			gadgetTemplate.setDescription("vue ods select component from datasource");
 			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
-					+ "<!--Focus here and F11 to full screen editor-->\n" + "<ods-select\n" + "  v-model=\"value\"\n"
-					+ "  :placeholder=\"select\"\n" + "  @change=\"sendFilter(key,value)\"\n" + "  >\n"
-					+ "  <ods-option\n" + "    v-for=\"item in ds\"\n" + "    :key=\"item[key]\"\n"
+					+ "<!--Focus here and F11 or F10 to full screen editor-->\n" + "<ods-select\n"
+					+ "  v-model=\"value\"\n" + "  :placeholder=\"select\"\n" + "  @change=\"sendFilter(key,value)\"\n"
+					+ "  >\n" + "  <ods-option\n" + "    v-for=\"item in ds\"\n" + "    :key=\"item[key]\"\n"
 					+ "    :label=\"item[label]\"\n" + "    :value=\"item[key]\">\n" + "  </ods-option>\n"
 					+ "</ods-select>");
 
 			gadgetTemplate.setTemplateJS("//Write your Vue ODS JSON controller code here\n" + "\n"
-					+ "//Focus here and F11 to full screen editor\n" + "\n"
+					+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
 					+ "//This function will be call once to init components\n" + "\n"
-					+ "var key = /*label-osp  name=\"Key Select\" type=\"ds_parameter\"*/ \"value\"\n"
-					+ "var label =  /*label-osp  name=\"Value Select\" type=\"ds_parameter\"*/ \"label\"\n"
+					+ "var key = /*label-osp  name=\"KeySelect\" type=\"ds_parameter\"*/ \"value\"\n"
+					+ "var label =  /*label-osp  name=\"ValueSelect\" type=\"ds_parameter\"*/ \"label\"\n"
 					+ "var select = /*label-osp  name=\"PlaceHolder\" type=\"text\"*/ \"Select\"\n" + "\n"
-					+ "vm.vueconfig = {\n" + "    el: document.querySelector(\"#\" + vm.id + \" vuetemplate\"),\n"
+					+ "vm.vueconfig = {\n" + "    el: document.getElementById(vm.id).querySelector(\"vuetemplate\"),\n"
 					+ "    data: {\n" + "        ds: [{\n" + "            value: \"Option1\",\n"
 					+ "            label: \"Option1\"\n" + "        }, {\n" + "            value: \"Option2\",\n"
 					+ "            label: \"Option2\"\n" + "        }, {\n" + "            value: \"Option3\",\n"
@@ -5551,6 +6357,2793 @@ public class InitConfigDB {
 					+ "        receiveValue: function (data) {\n" + "            //data received from datalink\n"
 					+ "        },\n" + "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n"
 					+ "    }\n" + "}\n" + "\n" + "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);\n");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-9").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-9");
+			gadgetTemplate.setIdentification("VueEchartMixed");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs(
+					"<!--Write here your html code to load required libs and init scripts for your component\n"
+							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js\"></script>\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/vue-echarts@4.0.2\"></script>");
+			gadgetTemplate.setDescription("vue echart mixed chart with parameters");
+			gadgetTemplate.setTemplate("<!--Focus here and F11 or F10 to full screen editor-->\n"
+					+ "<!-- Write your CSS <style></style> here -->\n" + "<style>\n" + "    .fullsize {\n"
+					+ "        height: 100%;\n" + "        width: 100%;\n" + "    }\n" + "</style>\n"
+					+ "<div class=\"gadget-app\">\n" + "    <!-- Write your HTML <div></div> here -->\n"
+					+ "    <v-chart class=\"fullsize\" :options=\"chartConfig\" autoresize loading></v-chart>\n"
+					+ "</div>");
+
+			gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
+					+ "function findValues(jsonData, path) {\n"
+					+ "    if (!(jsonData instanceof Object) || typeof (path) === \"undefined\") {\n"
+					+ "        throw \"Not valid argument:jsonData:\" + jsonData + \", path:\" + path;\n" + "    }\n"
+					+ "    path = path.replace(/\\[(\\w+)\\]/g, '.$1'); // convert indexes to properties\n"
+					+ "    path = path.replace(/^\\./, ''); // strip a leading dot\n"
+					+ "    var pathArray = path.split('.');\n"
+					+ "    for (var i = 0, n = pathArray.length; i < n; ++i) {\n" + "        var key = pathArray[i];\n"
+					+ "        if (key in jsonData) {\n" + "            if (jsonData[key] !== null) {\n"
+					+ "                jsonData = jsonData[key];\n" + "            } else {\n"
+					+ "                return null;\n" + "            }\n" + "        } else {\n"
+					+ "            return key;\n" + "        }\n" + "    }\n" + "    return jsonData;\n" + "}\n" + "\n"
+					+ "function calculateSeries(data) {\n"
+					+ "    return vm.tparams.parameters.series.map(function (s) {\n" + "        var that = this\n"
+					+ "        var ds = ds;\n" + "        var s = {\n" + "            type: s.type,\n"
+					+ "            name: s.label,\n" + "            yAxisIndex: s.yAxis,\n"
+					+ "            data: data.map(inst => findValues(inst, s.field)),\n"
+					+ "            color: s.color\n" + "        }\n" + "        if (s.type == 'point') {\n"
+					+ "            s.type = 'line'\n" + "            s.lineStyle = {\n" + "                width: 0\n"
+					+ "            }\n" + "        }\n" + "        return s;\n" + "    })\n" + "}\n" + "\n"
+					+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
+					+ "    el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "    data: {\n"
+					+ "        ds: []\n" + "    },\n" + "    computed: {\n" + "        chartConfig() {\n"
+					+ "            return {\n" + "                legend: {\n"
+					+ "                    show: vm.tparams.parameters.general.showLegend\n" + "                },\n"
+					+ "                grid: {\n"
+					+ "                    left: Math.max(0, ...vm.tparams.parameters.axes.yAxis.filter(axis => axis.position === 'left').map(axis => parseInt(axis.offset?axis.offset:0))) + 60,\n"
+					+ "                    right: Math.max(0, ...vm.tparams.parameters.axes.yAxis.filter(axis => axis.position === 'right').map(axis => parseInt(axis.offset?axis.offset:0))) + 60\n"
+					+ "                },\n" + "                xAxis: {\n" + "                    type: 'category',\n"
+					+ "                    data: this.ds.map(inst => findValues(inst, vm.tparams.parameters.axes.xAxis.field)),\n"
+					+ "                    name: vm.tparams.parameters.axes.xAxis.label\n" + "                },\n"
+					+ "                yAxis: vm.tparams.parameters.axes.yAxis.map(function (yAxis) {\n"
+					+ "                    var yAxis = {\n" + "                        id: yAxis.id,\n"
+					+ "                        position: yAxis.position,\n"
+					+ "                        type: yAxis.type,\n" + "                        name: yAxis.label,\n"
+					+ "                        offset: parseInt(yAxis.offset?yAxis.offset:0)\n"
+					+ "                    }\n" + "                    if (yAxis.min) {\n"
+					+ "                        yAxis['min'] = yAxis.min\n" + "                    }\n"
+					+ "                    if (yAxis.max) {\n" + "                        yAxis['max'] = yAxis.max\n"
+					+ "                    }\n" + "                    return yAxis;\n" + "                }),\n"
+					+ "                series: calculateSeries(this.ds),\n" + "                tooltip: {\n"
+					+ "                    show: vm.tparams.parameters.general.showTooltip,\n"
+					+ "                    axisPointer: {\n" + "                        type: 'cross'\n"
+					+ "                    },\n" + "                    trigger: 'axis'\n" + "                },\n"
+					+ "                dataZoom: [\n" + "                    {\n"
+					+ "                        show: vm.tparams.parameters.axes.xAxis.showZoom,\n"
+					+ "                        realtime: true\n" + "                    }\n" + "                ]\n"
+					+ "            }\n" + "        }\n" + "    },\n" + "    methods: {\n"
+					+ "        drawVueComponent: function (newData, oldData) {\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
+					+ "        },\n" + "        receiveValue: function (data) {\n"
+					+ "            //data received from datalink\n" + "        },\n"
+					+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+					+ "    components: {\n" + "        'v-chart': VueECharts\n" + "    }\n" + "}\n" + "\n"
+					+ "vm.drawLiveComponent = function () { }\n" + "\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":4,\"type\":\"checkbox\",\"name\":\"showLegend\",\"default\":true,\"title\":\"Show Legend\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"showTooltip\",\"default\":true,\"title\":\"Show Tooltip\"}],\"name\":\"general\",\"title\":\"General\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\",\"title\":\"\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"field\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"showZoom\",\"default\":false,\"title\":\"Show Zoom\"}],\"name\":\"xAxis\",\"title\":\"X Axis \"},{\"id\":9,\"type\":\"section-array\",\"elements\":[{\"id\":10,\"type\":\"autogenerate-id\",\"name\":\"id\",\"prefix\":\"\"},{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\"},{\"id\":3,\"type\":\"selector\",\"name\":\"position\",\"options\":[{\"value\":\"left\",\"text\":\"\"},{\"value\":\"right\",\"text\":\"\"}],\"default\":\"left\"},{\"id\":3,\"type\":\"selector\",\"name\":\"type\",\"options\":[{\"value\":\"value\",\"text\":\"Linear\"},{\"value\":\"log\",\"text\":\"Logarithmic\"}],\"default\":\"value\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"min\",\"default\":\"0\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"max\",\"default\":\"\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"offset\",\"default\":\"0\"}],\"name\":\"yAxis\",\"title\":\"Y Axes\"}],\"name\":\"axes\",\"title\":\"Axes Config\"},{\"id\":9,\"type\":\"section-array\",\"elements\":[{\"id\":6,\"type\":\"ds-field\",\"name\":\"field\"},{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"color\",\"default\":\"rgba(30, 144, 255, 1)\"},{\"id\":3,\"type\":\"selector\",\"name\":\"type\",\"options\":[{\"value\":\"bar\",\"text\":\"\"},{\"value\":\"line\",\"text\":\"\"},{\"value\":\"point\",\"text\":\"\"}],\"default\":\"line\"},{\"id\":11,\"type\":\"model-selector\",\"name\":\"yAxis\",\"path\":\"axes.yAxis.*.id\"}],\"name\":\"series\",\"title\":\"Data Series\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-10").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-10");
+			gadgetTemplate.setIdentification("ScatterMap");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("angularJS");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("Leaflet Scatter map with variable size");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>	\n" + "    .gadget-app {\n"
+					+ "			width: 100%;\n" + "			height: 100%;\n" + "	}\n" + "</style>\n"
+					+ "<div class='gadget-app'></div>");
+
+			gadgetTemplate.setTemplateJS("//Write your controller (JS code) code here\n"
+					+ "//Focus here and F11 to full screen editor\n" + "\n" + "function getMinMax(data, field) {\n"
+					+ "    var minmax;\n" + "    if (!data.length) {\n" + "        console.warn(\"no data\")\n"
+					+ "        var minmax = {\n" + "            min: 0,\n" + "            max: 0\n" + "        }\n"
+					+ "    } else {\n" + "        var minmax = {\n" + "            min: data[0][field],\n"
+					+ "            max: data[0][field]\n" + "        }\n"
+					+ "        for (var i=1;i < data.length; i++) {\n"
+					+ "            minmax.min = Math.min(minmax.min, data[i][field]);\n"
+					+ "            minmax.max = Math.max(minmax.max, data[i][field]);\n" + "        }\n" + "    }\n"
+					+ "    return minmax;\n" + "}\n" + "\n" + "function valueToSize (min,max,value,minsize,maxsize) {\n"
+					+ "    var range = max-min;\n" + "    var rangesize = maxsize-minsize;\n"
+					+ "    return (value/range)*rangesize + parseFloat(minsize)\n" + "}\n" + "\n"
+					+ "//This function will be call once to init components\n"
+					+ "vm.initLiveComponent = function () {\n"
+					+ "    var mapElem = document.querySelector('#' + vm.id + ' .gadget-app')\n"
+					+ "    vm.map = L.map(mapElem, {\n"
+					+ "        center: [parseFloat(vm.tparams.parameters.center.latitude), parseFloat(vm.tparams.parameters.center.longitude)],\n"
+					+ "        zoom: parseInt(vm.tparams.parameters.center.zoom)\n" + "    });\n"
+					+ "    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {\n"
+					+ "        attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'\n"
+					+ "    }).addTo(vm.map);\n" + "    vm.map.createPane('markers');\n" + "};\n" + "\n"
+					+ "//This function will be call when data change. On first execution oldData will be null\n"
+					+ "vm.drawLiveComponent = function (newData, oldData) {\n"
+					+ "    var minmax = getMinMax(newData, vm.tparams.parameters.point.value);\n"
+					+ "    newData.map(function (d) {\n"
+					+ "        var cmarker = new L.CircleMarker([d[vm.tparams.parameters.point.latField], d[vm.tparams.parameters.point.lonField]], {\n"
+					+ "            pane: \"markers\",\n" + "            color: vm.tparams.parameters.point.color,\n"
+					+ "            fillColor: vm.tparams.parameters.point.color,\n" + "            fillOpacity: 0.5,\n"
+					+ "            stroke: false,\n"
+					+ "            radius: parseFloat(valueToSize(minmax.min,minmax.max,d[vm.tparams.parameters.point.value],vm.tparams.parameters.point.size.min,vm.tparams.parameters.point.size.max))\n"
+					+ "        });\n" + "        cmarker.addTo(vm.map).bindPopup(\n"
+					+ "            d[vm.tparams.parameters.point.title] + \"\\n\" + d[vm.tparams.parameters.point.value]\n"
+					+ "        );\n" + "    })\n" + "};\n" + "\n" + "//This function will be call on element resize\n"
+					+ "vm.resizeEvent = function () {\n" + "\n" + "}\n" + "\n"
+					+ "//This function will be call when element is destroyed\n"
+					+ "vm.destroyLiveComponent = function () {\n" + "\n" + "};\n" + "\n"
+					+ "//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\n"
+					+ "vm.receiveValue = function (data) {\n" + "\n" + "};");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":2,\"type\":\"input-number\",\"name\":\"latitude\",\"default\":\"0\",\"min\":\"-90\",\"max\":\"90\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"longitude\",\"default\":\"0\",\"min\":\"-180\",\"max\":\"180\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"zoom\",\"default\":\"0\",\"min\":\"0\"}],\"name\":\"center\",\"title\":\"Center\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":5,\"type\":\"color-picker\",\"name\":\"color\",\"default\":\"rgba(30, 144, 255, 1)\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"latField\",\"title\":\"Latitude Field\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"lonField\",\"title\":\"Longitude Field\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"title\",\"title\":\"Title\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"value\",\"title\":\"Value\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":2,\"type\":\"input-number\",\"name\":\"min\",\"default\":\"20\",\"min\":\"1\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"max\",\"default\":\"35\",\"min\":\"1\"}],\"name\":\"size\"}],\"name\":\"point\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-11").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-11");
+			gadgetTemplate.setIdentification("Simple Value (Vue)");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("Vue simple value with increment from previous value os datasource");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n" + "	.card-count {\n"
+					+ "		font-weight: bold;\n" + "		font-size: -webkit-xxx-large;\n"
+					+ "		padding-left: 20px;\n" + "	}\n" + "\n" + "	.card-count-perc {\n"
+					+ "		font-size: -webkit-large;\n" + "		padding-left: 10px;\n" + "	}\n" + "\n"
+					+ "	.card-title {\n" + "		color: #000000;\n" + "		font-size: x-large;\n" + "	}\n" + "\n"
+					+ "	.card-green {\n" + "		color: green;\n" + "	}\n" + "\n" + "	.my-card {\n"
+					+ "		padding: 15px;\n" + "	}\n" + "\n" + "	.card-icon {\n" + "		padding-top: 0px;\n"
+					+ "		padding-left: 0px;\n" + "		padding-bottom: 25px;\n" + "		padding-right: 25px;\n"
+					+ "	}\n" + "\n" + "	.fullsize {\n" + "		height: 100%;\n" + "		width: 100%;\n" + "	}\n"
+					+ "</style>\n" + "<div class=\"gadget-app\">\n" + "	<div class=\"my-card\">\n"
+					+ "		<!--<md-icon class=\"card-icon\" style=\"font-size:35px\"></md-icon>-->\n"
+					+ "		<label class=\"card-title\">{{title}}</label><br>\n"
+					+ "		<label v-bind:style=\"'color:' + colorField\" class=\"card-count\">{{ds[0][field]}}</label>\n"
+					+ "		<label v-bind:style=\"'color:' + increase.color\" class=\"card-count-perc\">{{' (' + increase.value + '%)'}}</label>\n"
+					+ "	</div>\n" + "</div>");
+
+			gadgetTemplate.setTemplateJS("//Write your Vue JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 to full screen editor\n" + "\n"
+					+ "//This function will be call once to init components\n" + "\n"
+					+ "var title = vm.tparams.parameters.title;\n" + "var field = vm.tparams.parameters.field;\n"
+					+ "var colorField = vm.tparams.parameters.colorField;\n" + "\n" + "vm.vueconfig = {\n"
+					+ "	el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "	data:{\n"
+					+ "		ds:[],\n" + "        title: title,\n" + "        field: field,\n"
+					+ "		colorField: colorField\n" + "	},\n" + "	computed: {\n" + "        increase() {\n"
+					+ "			if (this.ds.length<2) {\n" + "				return {\n"
+					+ "					value: \"+\" + 0,\n" + "					color: 'orange'\n"
+					+ "				}\n" + "			} else {\n"
+					+ "				if (!(isNaN(this.ds[0][this.field]) || isNaN(this.ds[1][this.field]))) {\n"
+					+ "					var value = 100-((this.ds[0][this.field]/this.ds[1][this.field])*100)\n"
+					+ "					return {\n" + "						value: value.toFixed(2),\n"
+					+ "						color: (value>0?'green':(value==0?'orange':'red'))\n"
+					+ "					}\n" + "				} else {\n" + "					return {\n"
+					+ "						value: \"?\",\n" + "						color: 'orange'\n"
+					+ "					}\n" + "				}\n" + "			}\n" + "		}\n"
+					+ "	},		\n" + "	methods:{\n" + "		drawVueComponent: function(newData,oldData){\n"
+					+ "			//This will be call on new data\n" + "		},\n" + "		resizeEvent: function(){\n"
+					+ "			//Resize event\n" + "		},\n" + "		destroyVueComponent: function(){\n"
+					+ "			vm.vueapp.$destroy();\n" + "		},\n" + "		receiveValue: function(data){\n"
+					+ "			//data received from datalink\n" + "		},\n" + "		sendValue: vm.sendValue,\n"
+					+ "		sendFilter: vm.sendFilter\n" + "	}\n" + "}\n" + "\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"name\":\"title\",\"type\":\"input-text\",\"title\":\"Title of KPI\"},{\"name\":\"field\",\"type\":\"ds-field\",\"title\":\"Field to show\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"colorField\",\"default\":\"rgba(0, 0, 0, 1)\",\"title\":\"Field Color\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+	}
+
+	public void initGadgetTemplateInstances() {
+		log.info("init GadgetTemplate instances");
+
+		GadgetTemplate gadgetTemplate;
+
+		// add gadget templates dummy for gadgets
+		if (gadgetTemplateRepository.findById("line").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("line");
+			gadgetTemplate.setIdentification("line");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("bar").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("bar");
+			gadgetTemplate.setIdentification("bar");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("mixed").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("mixed");
+			gadgetTemplate.setIdentification("mixed");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("pie").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("pie");
+			gadgetTemplate.setIdentification("pie");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("wordcloud").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("wordcloud");
+			gadgetTemplate.setIdentification("wordcloud");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("map").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("map");
+			gadgetTemplate.setIdentification("map");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("radar").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("radar");
+			gadgetTemplate.setIdentification("radar");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("table").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("table");
+			gadgetTemplate.setIdentification("table");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		if (gadgetTemplateRepository.findById("datadiscovery").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("datadiscovery");
+			gadgetTemplate.setIdentification("datadiscovery");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+		// end add gadget templates dummy for gadgets
+	}
+
+	private void initGadgetsCrudAndImportTool() {
+		log.info("init GadgetTemplate_CrudAndImportTool");
+		GadgetTemplate gadgetTemplate;
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-7").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-7");
+			gadgetTemplate.setIdentification("gadget-crud");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs(
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/index.min.js\" integrity=\"sha512-YXb3YAMf5gMN1byYIGwVydJojIIYxbQDvTu1IJivRe6aXGB2yGRtuFAofi9esNMfn2AUKOT2hFKhrhX8QddyPA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/locale/en.min.js\" integrity=\"sha512-tFW30buD0d2p1ncQiM9FtIWruxY8cnB/DmSjrrRxWxlTr6om+DSsxMnknk5t6bs6/1/d6G21/itRYZ2Pmu7CdA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "\n"
+							+ "<script src=\"https://cdn.jsdelivr.net/npm/el-search-table-pagination@0.4.34/lib/index.min.js\"></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/jsoneditor/jsoneditor.js\"></script>\n" + "\n"
+							+ "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n"
+							+ "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/theme-chalk/index.min.css\" integrity=\"sha512-oKuj7gKXGxOZuCSvOPZE1seWosmP4iy608AyAH4hPnGD6tPX4325S+wo6MJQz+L3Hq4tK3e0RMfu+TDFUZFrgA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n"
+							+ "\n" + "<script>\n" + "ELEMENT.locale(ELEMENT.lang.en)\n" + "var __env = __env || {};\n"
+							+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+							+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+							+ "			\"form.entity\": \"Entidad\",\n"
+							+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+							+ "			\"form.select\": \"Seleccionar\",\n"
+							+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+							+ "			\"form.operator\": \"Operador\",\n"
+							+ "			\"form.condition\": \"Condición\",\n"
+							+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+							+ "			\"form.write.here\": \"Escriba aquí\",\n"
+							+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+							+ "			\"form.orderby\": \"Ordenar por\",\n"
+							+ "			\"form.order.type\": \"Tipo de pedido\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Valor máximo\",\n"
+							+ "			\"form.offset\": \"Desplazamiento\",\n"
+							+ "			\"form.reset\": \"Restablecer\",\n" + "			\"form.search\": \"Buscar\",\n"
+							+ "			\"form.records\": \"Registros\",\n"
+							+ "			\"form.columns\": \"Columnas\",\n"
+							+ "			\"column.options\": \"Opciones\",\n"
+							+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+							+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+							+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+							+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+							+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+							+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+							+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+							+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+							+ "			\"form.edit.record\": \"Editar registro\",\n"
+							+ "			\"form.detail.record\": \"Registro detallado\",\n"
+							+ "			\"button.cancel\": \"Cancelar\",\n"
+							+ "			\"button.delete\": \"Eliminar\",\n" + "			\"button.save\": \"Guardar\",\n"
+							+ "			\"button.close\": \"Cerrar\",\n" + "			\"button.new\": \"Nuevo\",\n"
+							+ "			\"button.apply\": \"Aplicar\",\n"
+							+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+							+ "		    \"form.title.import\": \"Importar datos\",\n"
+							+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+							+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+							+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+							+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+							+ "		    \"button.click\": \"haga click aquí\",\n"
+							+ "		    \"button.click.upload\": \"para subirlo\",\n"
+							+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Importar\",\n"
+							+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+							+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+							+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+							+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+							+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+							+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+							+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+							+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+							+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+							+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+							+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+							+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+							+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+							+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+							+ "			\"button.all.records\": \"Todos los registros\",\n"
+							+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+							+ "			\"error.message.download\": \"Error descargando datos\",\n"
+							+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+							+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+							+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+							+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+							+ "			\"form.select\": \"Select\",\n"
+							+ "			\"form.select.fields\": \"Select Fields\",\n"
+							+ "			\"form.operator\": \"Operator\",\n"
+							+ "			\"form.condition\": \"Condition\",\n"
+							+ "			\"form.select.operator\": \"Select Operator\",\n"
+							+ "			\"form.write.here\": \"Write here\",\n"
+							+ "			\"form.select.field\": \"Select Field\",\n"
+							+ "			\"form.orderby\": \"Order by\",\n"
+							+ "			\"form.order.type\": \"Order Type\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Max Value\",\n"
+							+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+							+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+							+ "			\"form.columns\": \"Columns\",\n"
+							+ "			\"column.options\": \"Options\",\n"
+							+ "			\"form.new.record.title\": \"New record\",\n"
+							+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+							+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+							+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+							+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+							+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+							+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+							+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+							+ "			\"form.edit.record\": \"Edit record \",\n"
+							+ "			\"form.detail.record\": \"Detail record \",\n"
+							+ "			\"button.cancel\": \"Cancel\",\n"
+							+ "			\"button.delete\": \"Delete\",\n" + "			\"button.save\": \"Save\",\n"
+							+ "			\"button.close\": \"Close\",\n" + "			\"button.new\": \"New\",\n"
+							+ "			\"button.apply\": \"Apply\",\n"
+							+ "		    \"form.select.entity\": \"Select Entity\",\n"
+							+ "		    \"form.title.import\": \"Import records\",\n"
+							+ "		    \"form.download.template\": \"Download Template\",\n"
+							+ "			\"form.download.csv\":\"Download CSV\",\n"
+							+ "    		\"form.download.json\":\"Download JSON\",\n"
+							+ "		    \"button.drop\": \"Drop file or\",\n"
+							+ "		    \"button.click\": \"click here\",\n"
+							+ "		    \"button.click.upload\": \"to upload\",\n"
+							+ "		    \"form.info.max\": \"Max. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Import\",\n"
+							+ "		    \"button.showmore\": \"Show More Details\",\n"
+							+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+							+ "		    \"message.success.loaded.1\": \"The\",\n"
+							+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+							+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+							+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+							+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+							+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+							+ "		    \"error.message.processing\": \"Error processing data\",\n"
+							+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+							+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+							+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+							+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+							+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+							+ "			\"button.all.records\": \"All the records\",\n"
+							+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+							+ "			\"error.message.download\": \"Error downloading data\",\n"
+							+ "			\"error.message.empty\": \"Error there are no records\",\n"
+							+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+							+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+							+ "	var localLocale ='EN';\n" + "	try{\n"
+							+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+							+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+							+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+							+ " // link messages with internacionalization json on controlpanel\n"
+							+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+
+			gadgetTemplate.setDescription("CRUD gadget template");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n"
+					+ "    div.el-dialog__body h3 {\n" + "        font-size: 14px !important;\n"
+					+ "        display: none !important;\n" + "    }\n" + "\n" + "    .control-label {\n"
+					+ "        margin-top: 1px!important;\n" + "        color: #505D66 !important;\n"
+					+ "        font-weight: normal !important;\n" + "        width: fit-content !important;\n"
+					+ "        font-size: small !important;\n" + "    }\n" + "\n" + "    .control-label .required,\n"
+					+ "    .form-group .required {\n" + "        color: #A73535 !important;\n"
+					+ "        font-size: 12px !important;\n" + "        padding-left: 2px !important;\n" + "    }\n"
+					+ "\n" + "    .el-select {\n" + "        display: block !important;\n" + "\n" + "\n" + "    }\n"
+					+ "\n" + "    .wizard-style {\n" + "        top: 28px !important;\n"
+					+ "        margin-left: 15px !important;\n" + "    }\n" + "\n" + "    .reset-button {\n"
+					+ "        color: #A7AEB2!important;\n" + "        background: #ffffff!important;\n"
+					+ "        border: none!important;\n" + "        text-align: center!important;\n"
+					+ "        margin-top: 21px!important;\n" + "    }\n" + "\n" + "    .search-button {\n"
+					+ "        margin-left: 10px!important;\n" + "        background: #1168A6!important;\n"
+					+ "        border-radius: 2px!important;\n" + "        text-align: center!important;\n"
+					+ "        margin-top: 21px!important;\n" + "        color: #ffffff!important;\n" + "    }\n" + "\n"
+					+ "    .el-cancel-button {\n" + "        color: #1168A6!important;\n"
+					+ "        border: none!important;\n" + "        text-align: center!important;\n"
+					+ "        float:right;\n" + "    }\n" + "\n" + "    .el-apply-button {\n"
+					+ "        margin-left: 10px!important;\n" + "        margin-right: 20px!important;\n"
+					+ "        background: #1168A6!important;\n" + "        border-radius: 2px!important;\n"
+					+ "        text-align: center!important;\n" + "        color: #ffffff!important;\n"
+					+ "        float:right;\n" + "    }\n" + "\n" + "    .el-input__inner {\n"
+					+ "        background: #F7F8F8 !important;\n" + "    }\n" + "\n" + "    .button-plus {\n"
+					+ "        background: #1168A6!important;\n" + "        border-radius: 2px!important;\n"
+					+ "        height: 32px!important;\n" + "        width: 32px!important;\n"
+					+ "        margin-top: 28px!important;\n" + "        padding-left: 9px!important;\n" + "    }\n"
+					+ "\n" + "    .button-plus:hover {\n" + "        background: #1168A6!important;\n"
+					+ "        border-radius: 2px!important;\n" + "        height: 32px!important;\n"
+					+ "        width: 32px!important;\n" + "        margin-top: 28px!important;\n"
+					+ "        padding-left: 9px!important;\n" + "    }\n" + "\n" + "    .button-plus-create {\n"
+					+ "        background: #1168A6!important;\n" + "        border-radius: 2px!important;\n"
+					+ "        height: 32px!important;\n" + "        width: 32px!important;\n"
+					+ "        margin-top: 24px!important;\n" + "        padding-left: 9px!important;\n" + "    }\n"
+					+ "\n" + "    .button-plus-create:hover {\n" + "        background: #1168A6!important;\n"
+					+ "        border-radius: 2px!important;\n" + "        height: 32px!important;\n"
+					+ "        width: 32px;\n" + "        margin-top: 24px!important;\n"
+					+ "        padding-left: 9px!important;\n" + "    }\n" + "\n" + "    .records-title {\n"
+					+ "        margin-top: 30px !important;\n" + "        font-size: 17px !important;\n"
+					+ "        line-height: 24px !important;\n" + "        color: #051724 !important;\n" + "    }\n"
+					+ "\n" + "    .el-dialog-title {\n" + "        font-size: 17px !important;\n"
+					+ "        line-height: 24px !important;\n" + "        color: #051724 !important;\n" + "    }\n"
+					+ "    .el-dialog__header {\n" + "        padding: 37px 20px 10px !important;\n" + "    }\n"
+					+ "    .search-menu-title {\n" + "        margin-top: 26px !important;\n"
+					+ "        margin-left: 5px !important;\n" + "\n" + "    }\n" + "\n"
+					+ "    .search-menu-title-magnifying-glass {\n" + "        margin-top: 26px!important;\n"
+					+ "        margin-left: 10px!important;\n" + "        margin-bottom: -4px!important;\n" + "    }\n"
+					+ "\n" + "    .el-row-modal-grey {\n" + "        margin-bottom: -30px!important;\n"
+					+ "        margin-left: -20!important;\n" + "        margin-right: -20!important;\n"
+					+ "        padding-bottom: 24px!important;\n" + "        margin-top: 24px!important;\n" + "    }\n"
+					+ "\n" + "    .el-table .cell {\n" + "        font-size: 12px !important;\n" + "    }\n" + "\n"
+					+ "    .el-table .el-table__cell {\n" + "        padding: 5px 0 !important;\n" + "    }\n" + "\n"
+					+ "    .trash-icon-red {\n"
+					+ "        filter: invert(23%) sepia(100%) saturate(3793%) hue-rotate(352deg) brightness(91%) contrast(65%);\n"
+					+ "    }\n" + "\n" + "    .edit-icon-blue {\n"
+					+ "        filter: invert(31%) sepia(41%) saturate(2221%) hue-rotate(180deg) brightness(92%) contrast(90%);\n"
+					+ "    }\n" + "    .download-icons-grey {\n"
+					+ "          filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);\n"
+					+ "    }\n" + "    .el-form-item__content {\n" + "        display: none;\n" + "    }\n" + "\n"
+					+ "    .el-table th.el-table__cell {\n" + "        background-color: #f9f9f9 !important;\n"
+					+ "        color: #505D66 !important;\n" + "    }\n" + "\n" + "\n" + "    ::-webkit-scrollbar {\n"
+					+ "        right: 2px;\n" + "        width: 7px;\n" + "        height: 7px;\n" + "    }\n" + "\n"
+					+ "    ::-webkit-scrollbar-thumb {\n" + "        background: #959595ad;\n"
+					+ "        border-radius: 10px;\n" + "    }\n" + "    ::-webkit-scrollbar-track {\n"
+					+ "        box-shadow: inset 0 0 5px transparent;\n" + "        border-radius: 10px;\n" + "    }\n"
+					+ "\n" + "    .row {\n" + "        display: -ms-flexbox !important;\n"
+					+ "        display: flex !important;\n" + "        -ms-flex-wrap: wrap !important;\n"
+					+ "        flex-wrap: wrap !important;\n" + "        width:100% !important;\n"
+					+ "        margin-right: -15px !important;\n" + "        margin-left: -15px !important;\n"
+					+ "    }\n" + "    .col-md-12 {\n" + "        -ms-flex: 0 0 100% !important;\n"
+					+ "        flex: 0 0 100% !important;\n" + "        max-width: 100% !important;\n" + "    }\n"
+					+ "    .col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {\n"
+					+ "        position: relative !important;\n" + "        width: 100% !important;\n"
+					+ "        padding-right: 15px !important;\n" + "        padding-left: 15px !important;\n"
+					+ "    }\n" + "    label {\n" + "        display: inline-block !important;\n"
+					+ "        margin-bottom: 0.5rem !important;\n" + "    }\n" + "    .form-group {\n"
+					+ "        margin-bottom: 1rem !important;\n" + "    }\n" + "\n" + "    .form-control {\n"
+					+ "        display: block !important;\n" + "        width: 100%!important;\n"
+					+ "        height: calc(1.5em + 0.75rem + 2px)!important;\n"
+					+ "        padding: 0.375rem 0.75rem!important;\n" + "        font-size: 1rem!important;\n"
+					+ "        font-weight: 400!important;\n" + "        line-height: 1.5!important;\n"
+					+ "        color: #495057!important;\n" + "        background-color: #fff!important;\n"
+					+ "        background-clip: padding-box!important;\n"
+					+ "        border: 1px solid #ced4da!important;\n" + "        border-radius: 0.25rem!important;\n"
+					+ "        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out!important;\n"
+					+ "    }\n" + "    button, input, optgroup, select, textarea {\n"
+					+ "        margin: 0 !important;\n" + "        font-family: inherit !important;\n"
+					+ "        font-size: inherit !important;\n" + "        line-height: inherit !important;\n"
+					+ "    }\n" + "    .form-control:focus {\n" + "        color: #495057 !important;\n"
+					+ "        background-color: #fff !important;\n" + "        border-color: #80bdff !important;\n"
+					+ "        outline: 0 !important;\n"
+					+ "        box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%) !important;\n" + "    }\n" + "\n" + "\n"
+					+ "</style>\n" + "<div class=\"appgadget\">\n" + "    <!-- entity selector -->\n"
+					+ "    <el-row style=\"box-shadow: 0px 1px 0px #D7DADC;padding-top:24px;padding-bottom:24px\">\n"
+					+ "        <el-col :span=\"8\">\n"
+					+ "            <label class=\"control-label\">{{ $t(\"form.entity\") }}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                    *</span></label></br>\n"
+					+ "            <el-select :disabled=\"showSelectOntology\" size=\"small\"  v-model=\"selectedOntology\"\n"
+					+ "                @change=\"onChangeEntity($event)\" filterable :placeholder=\"$t('form.select')\">\n"
+					+ "                <el-option v-for=\"onto in ontologies\" :key=\"onto.identification\" :label=\"onto.identification\"\n"
+					+ "                    :value=\"onto.identification\">\n" + "                </el-option>\n"
+					+ "            </el-select>\n" + "        </el-col>\n" + "        <!-- wizard switch -->\n"
+					+ "        <el-col v-if=\"typeGadget=='withWizard'||typeGadget=='searchOnly'\" :span=\"8\">\n"
+					+ "            <el-switch class=\"wizard-style\" v-model=\"showWizard\" @change=\"calculeTableheight\" :disabled=\"disabledWizard\"\n"
+					+ "                :active-text=\"$t('form.show.wizard')\"></el-switch>\n" + "        </el-col>\n"
+					+ "    </el-row>\n" + "    <!-- wizard  -->\n"
+					+ "    <div class=\"crudWizard\" v-if=\"showWizard\">\n"
+					+ "        <el-row justify=\"center\" type=\"flex\"\n"
+					+ "            style=\"box-shadow: 0px 1px 0px #D7DADC;padding-top:24px;padding-bottom:24px\" :gutter=\"10\">\n"
+					+ "\n" + "            <el-col :xs=\"7\" :sm=\"7\" :md=\"7\" :lg=\"7\" :xl=\"7\">\n"
+					+ "                <label class=\"control-label\">{{ $t(\"form.where\") }}</label></br>\n"
+					+ "                <el-select size=\"small\" v-model=\"selectWizard\" multiple collapse-tags :placeholder=\"$t('form.select')\">\n"
+					+ "                    <el-option v-for=\"item in selectWizardOptions\" :key=\"item.value\" :label=\"item.label\"\n"
+					+ "                        :value=\"item.value\">\n" + "                    </el-option>\n"
+					+ "                </el-select>\n" + "            </el-col>\n"
+					+ "            <el-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\">\n"
+					+ "                <el-button size=\"small\" class=\"button-plus\" @click=\"dialogAddSelectVisibleFunction\"><img\n"
+					+ "                        v-bind:src=\"platformhost + '/static/images/dashboards/icon_button_plus.svg'\"></el-button>\n"
+					+ "            </el-col>\n"
+					+ "            <el-col :xs=\"7\" :sm=\"7\" :md=\"7\" :lg=\"7\" :xl=\"7\">\n"
+					+ "                <label v-if=\"typeGadget!='searchOnly'\" class=\"control-label\">{{ $t(\"form.orderby\") }}</label></br>\n"
+					+ "                <el-select v-if=\"typeGadget!='searchOnly'\" size=\"small\" v-model=\"orderByWizard\" multiple collapse-tags\n"
+					+ "                    :placeholder=\"$t('form.select')\">\n"
+					+ "                    <el-option v-for=\"itemo in orderByWizardOptions\" :key=\"itemo.value\" :label=\"itemo.label\"\n"
+					+ "                        :value=\"itemo.value\">\n" + "                    </el-option>\n"
+					+ "                </el-select>\n" + "            </el-col>\n"
+					+ "            <el-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\">\n"
+					+ "                <el-button v-if=\"typeGadget!='searchOnly'\" size=\"small\" class=\"button-plus\"\n"
+					+ "                    @click=\"dialogAddOrderByVisibleFunction\"><img\n"
+					+ "                        v-bind:src=\"platformhost + '/static/images/dashboards/icon_button_plus.svg'\"></el-button>\n"
+					+ "            </el-col>\n"
+					+ "            <el-col :xs=\"3\" :sm=\"3\" :md=\"3\" :lg=\"3\" :xl=\"3\" style=\"min-width:100px\">\n"
+					+ "                <label v-if=\"typeGadget!='searchOnly'\" class=\"control-label\">{{ $t(\"form.max.value\") }}</label> </br>\n"
+					+ "                <el-input v-if=\"typeGadget!='searchOnly'\" type=\"number\" size=\"small\" v-model=\"limitWizard\"\n"
+					+ "                    controls-position=\"right\" :min=\"0\">\n" + "                </el-input>\n"
+					+ "            </el-col>\n"
+					+ "            <el-col :xs=\"3\" :sm=\"3\" :md=\"3\" :lg=\"3\" :xl=\"3\" style=\"min-width:100px\">\n"
+					+ "                <label v-if=\"typeGadget!='searchOnly'\" class=\"control-label\"> {{ $t(\"form.offset\") }} </label></br>\n"
+					+ "                <el-input v-if=\"typeGadget!='searchOnly'\" type=\"number\" size=\"small\" v-model=\"offsetWizard\"\n"
+					+ "                    controls-position=\"right\" :min=\"0\">\n" + "                </el-input>\n"
+					+ "            </el-col>\n" + "\n"
+					+ "            <el-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\" style=\"min-width:100px\">\n"
+					+ "\n"
+					+ "                <el-button size=\"small\" class=\"reset-button float-right\" @click=\"resetWizard()\">{{ $t(\"form.reset\") }}\n"
+					+ "                </el-button>\n" + "            </el-col>\n"
+					+ "            <el-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\" style=\"min-width:100px\">\n"
+					+ "                <el-button size=\"small\" class=\"search-button float-right\" @click=\"searchWizard()\">\n"
+					+ "                    {{ $t(\"form.search\") }}</el-button>\n" + "\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </div>\n" + "    <!-- div table -->\n"
+					+ "    <div v-if=\"showTable\">\n"
+					+ "        <el-row justify=\"center\" type=\"flex\" :gutter=\"10\">\n"
+					+ "            <el-col :xs=\"3\" :sm=\"3\" :md=\"3\" :lg=\"2\" :xl=\"2\" >\n"
+					+ "                <label class=\"control-label records-title\">{{ $t(\"form.records\") }}</label>\n"
+					+ "            </el-col>\n"
+					+ "            <el-col :xs=\"5\" :sm=\"5\" :md=\"5\" :lg=\"6\" :xl=\"6\">\n"
+					+ "                <el-button size=\"small\" v-if=\"showMagnifyingGlass\" type=\"text\"\n"
+					+ "                    class=\"button-options-columns search-menu-title-magnifying-glass\"\n"
+					+ "                    @click=\"showMagnifyingGlass = false\"><img\n"
+					+ "                        v-bind:src=\"platformhost + '/static/images/dashboards/icon_magnifying_glass.svg'\"></el-button>\n"
+					+ "                <el-input type=\"string\" v-if=\"!showMagnifyingGlass\" class=\"search-menu-title\" size=\"small\"\n"
+					+ "                    v-model=\"searchString\">\n"
+					+ "                    <el-button size=\"small\" slot=\"prefix\" type=\"text\" class=\"button-options-columns\"\n"
+					+ "                        @click=\"showMagnifyingGlass = true\"><img\n"
+					+ "                            v-bind:src=\"platformhost + '/static/images/dashboards/icon_magnifying_glass.svg'\"></el-button>\n"
+					+ "                </el-input>\n" + "            </el-col>\n"
+					+ "            <el-col :offset=\"4\" :xs=\"12\" :sm=\"12\" :md=\"12\" :lg=\"12\" :xl=\"12\" style=\"text-align: right;\">\n"
+					+ "                <el-dropdown style=\"margin-right: 10px;\" @command=\"downloadData\">\n"
+					+ "                <el-button size=\"small\" type=\"text\" class=\"button-options-columns\" >\n"
+					+ "                    <img v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\"></el-button>\n"
+					+ "\n" + "                <el-dropdown-menu slot=\"dropdown\">\n"
+					+ "                    <el-dropdown-item v-if=\"executeSearch\" command=\"csv\" ><img style=\"margin-top: 8px;\" class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.csv\") }}</el-dropdown-item>\n"
+					+ "                    <el-dropdown-item v-if=\"executeSearch\" command=\"json\"  ><img style=\"margin-top: 8px;\" class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.json\") }}</el-dropdown-item>\n"
+					+ "                    <el-dropdown-item v-if=\"!executeSearch\" command=\"allcsv\" ><img style=\"margin-top: 8px;\" class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.csv\") }}</el-dropdown-item>\n"
+					+ "                    <el-dropdown-item v-if=\"!executeSearch\" command=\"alljson\"  ><img style=\"margin-top: 8px;\" class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.json\") }}</el-dropdown-item>\n"
+					+ "                </el-dropdown-menu>\n" + "                </el-dropdown>\n" + "\n" + "\n" + "\n"
+					+ "\n" + "\n"
+					+ "                <el-button size=\"small\" type=\"text\" class=\"button-options-columns\"\n"
+					+ "                    @click=\"dialogOptionsColumnsVisible = true\"><img\n"
+					+ "                        v-bind:src=\"platformhost + '/static/images/dashboards/icon_options_dots_bars.svg'\"></el-button>\n"
+					+ "                <el-button size=\"small\" class=\"button-plus-create\" @click=\"dialogCreateVisible= true\"><img\n"
+					+ "                        v-bind:src=\"platformhost + '/static/images/dashboards/icon_button_plus.svg'\"></el-button>\n"
+					+ "            </el-col>\n" + "        </el-row>\n" + "\n"
+					+ "        <!--el-search-table-pagination  -->\n"
+					+ "        <el-search-table-pagination type=\"local\" :height=\"tableHeight\" @sort-change=\"sortChange\"\n"
+					+ "            :data=\"tableData.filter(tableDatafilter)\" :page-sizes=\"[10, 25, 50]\" :columns=\"columns\"\n"
+					+ "            :form-options=\"formOptions\">\n"
+					+ "            <el-table-column :label=\"$t('column.options')\" slot=\"append\" width=\"120px\">\n"
+					+ "                <template slot-scope=\"scope\">\n"
+					+ "                    <el-button size=\"mini\" type=\"text\" @click=\"handleShow(scope.$index, scope.row)\"><img\n"
+					+ "                            v-bind:src=\"platformhost + '/static/images/dashboards/icon_eye.svg'\">\n"
+					+ "                    </el-button>\n"
+					+ "                    <el-button size=\"mini\" type=\"text\" @click=\"handleEdit(scope.$index, scope.row)\"><img\n"
+					+ "                            v-bind:src=\"platformhost + '/static/images/dashboards/edit.svg'\" class=\"edit-icon-blue\">\n"
+					+ "                    </el-button>\n"
+					+ "                    <el-button size=\"mini\" type=\"text\" @click=\"handleDelete(scope.$index, scope.row)\"><img\n"
+					+ "                            v-bind:src=\"platformhost + '/static/images/dashboards/delete.svg'\" class=\"trash-icon-red\">\n"
+					+ "                    </el-button>\n" + "                </template>\n"
+					+ "            </el-table-column>\n" + "        </el-search-table-pagination>\n" + "    </div>\n"
+					+ "    <!-- DELETE dialog -->\n"
+					+ "    <el-dialog modal=\"false\" append-to-body=\"true\" :visible.sync=\"dialogDeleteVisible\" width=\"25%\">\n"
+					+ "        <label class=\"el-dialog-title\">{{ $t(\"message.modal.delete.title\") }}</label></br>\n"
+					+ "        <label\n"
+					+ "            style=\"font-size: 12px;line-height: 16px; color: #505D66;\">{{ $t(\"message.modal.delete.subtitle\") }}</label>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedDelete\">\n"
+					+ "                    {{ $t(\"button.delete\") }}</el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\" @click=\"dialogDeleteVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</el-button>\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </el-dialog>\n" + "    <!-- EDIT dialog -->\n"
+					+ "    <el-dialog modal=\"true\" append-to-body=\"true\" :title=\"editTitle\" :visible.sync=\"dialogEditVisible\"\n"
+					+ "        @opened=\"openEdit\" width=\"25%\">\n"
+					+ "        <div :class=\"[idelem, 'editor_edit_holder']\" ></div>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedEdit\">{{ $t(\"button.save\") }}\n"
+					+ "                </el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\" @click=\"dialogEditVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</el-button>\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </el-dialog>\n" + "    <!-- SHOW/HIDE COLUMNS dialog -->\n"
+					+ "    <el-dialog modal=\"false\" append-to-body=\"false\" :title=\"$t('form.columns')\"\n"
+					+ "        :visible.sync=\"dialogOptionsColumnsVisible\" width=\"25%\">\n" + "\n"
+					+ "        <el-row v-for=\"visibleColumn in visibleColumns\" :key=\"visibleColumn.prop\" v-if=\"visibleColumn.label!='id'\">\n"
+					+ "            <el-col :span=\"24\">\n" + "                </br>\n"
+					+ "                <el-switch v-model=\"visibleColumn.visible\" :active-text=\"visibleColumn.prop\"\n"
+					+ "                    @change=\"dialogOptionsColumnsVisible = false;dialogOptionsColumnsVisible = true;\"></el-switch>\n"
+					+ "            </el-col>\n" + "        </el-row>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedChangeColumns\">\n"
+					+ "                    {{ $t(\"button.apply\") }}</el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\"\n"
+					+ "                    @click=\"dialogOptionsColumnsVisible = false\">{{ $t(\"button.cancel\") }}</el-button>\n"
+					+ "            </el-col>\n" + "        </el-row>\n" + "    </el-dialog>\n"
+					+ "     <!-- DOWNLOAD dialog -->\n"
+					+ "    <el-dialog modal=\"false\" append-to-body=\"false\" :title=\"$t('message.download.all')\"\n"
+					+ "        :visible.sync=\"dialogDownloadVisible\" width=\"25%\">\n" + "\n" + "\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                  <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedDownloadOnlySelec\">\n"
+					+ "                    {{ $t(\"button.only.selection.records\") }}</el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedDownloadAll\">\n"
+					+ "                    {{ $t(\"button.all.records\") }}</el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\"\n"
+					+ "                    @click=\"dialogDownloadVisible = false\">{{ $t(\"button.cancel\") }}</el-button>\n"
+					+ "            </el-col>\n" + "        </el-row>\n" + "    </el-dialog>\n"
+					+ "    <!-- DETAIL dialog -->\n"
+					+ "    <el-dialog modal=\"true\" append-to-body=\"true\" :title=\"showTitle\" :visible.sync=\"dialogShowVisible\"\n"
+					+ "        @opened=\"openShow\" width=\"25%\">\n"
+					+ "        <div :class=\"[idelem, 'editor_show_holder']\" ></div>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"dialogShowVisible = false\">\n"
+					+ "                    {{ $t(\"button.close\") }}</el-button>\n" + "\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </el-dialog>\n" + "    <!-- CREATE dialog -->\n"
+					+ "    <el-dialog modal=\"true\" append-to-body=\"true\" :title=\"$t('form.new.record.title')\"\n"
+					+ "        :visible.sync=\"dialogCreateVisible\" @opened=\"openCreate\" width=\"25%\">\n"
+					+ "        <div :class=\"[idelem, 'editor_new_holder']\" ></div>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedCreate\">\n"
+					+ "                    {{ $t(\"button.new\") }} <img style=\"margin-top: 6px;\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_button_plus.svg'\">\n"
+					+ "                </el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\" @click=\"dialogCreateVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</el-button>\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </el-dialog>\n" + "\n" + "    <!-- WHERE dialog -->\n"
+					+ "    <el-dialog modal=\"true\" append-to-body=\"true\" :title=\"$t('form.where')\" :visible.sync=\"dialogAddSelectVisible\"\n"
+					+ "        @opened=\"opendialogAddSelect\" width=\"25%\">\n" + "        <el-row type=\"flex\">\n"
+					+ "            <el-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.select.fields\")}} <span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <el-select size=\"small\" v-model=\"selectedParametereWhere\" :placeholder=\"$t('form.select.field')\">\n"
+					+ "                    <el-option v-for=\"col in columnsParams\" :key=\"col.prop\" :label=\"col.label\" :value=\"col.prop\">\n"
+					+ "                    </el-option>\n" + "                </el-select>\n"
+					+ "            </el-col>\n" + "        </el-row>\n" + "        <el-row type=\"flex\">\n"
+					+ "            <el-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.operator\")}}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <el-select size=\"small\" v-model=\"selectedOperatorWhere\" :placeholder=\"$t('form.select.operator')\">\n"
+					+ "                    <el-option v-for=\"ope in operators\" :key=\"ope\" :label=\"ope\" :value=\"ope\">\n"
+					+ "                    </el-option>\n" + "                </el-select>\n"
+					+ "            </el-col>\n" + "        </el-row>\n" + "        <el-row type=\"flex\">\n"
+					+ "            <el-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.condition\")}} <span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <el-input size=\"small\" :placeholder=\"$t('form.write.here')\" v-model=\"inputValueWhere\"></el-input>\n"
+					+ "            </el-col>\n" + "        </el-row>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedAddWhereParameter\">\n"
+					+ "                    {{ $t(\"button.apply\") }}</el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\" @click=\"dialogAddSelectVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</el-button>\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </el-dialog>\n" + "\n" + "\n" + "    <!-- ORDER BY dialog -->\n"
+					+ "    <el-dialog modal=\"true\" append-to-body=\"true\" title=\"Order by\" :visible.sync=\"dialogAddOrderByVisible\"\n"
+					+ "        @opened=\"opendialogAddOrderBy\" width=\"25%\">\n" + "        <el-row type=\"flex\">\n"
+					+ "            <el-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.select.fields\")}}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <el-select size=\"small\" v-model=\"selectedParametereOrderBy\" :placeholder=\"$t('form.select.field')\">\n"
+					+ "                    <el-option v-for=\"col in columnsParams\" :key=\"col.prop\" :label=\"col.label\" :value=\"col.prop\">\n"
+					+ "                    </el-option>\n" + "                </el-select>\n"
+					+ "            </el-col>\n" + "        </el-row>\n" + "        <el-row type=\"flex\">\n"
+					+ "            <el-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.order.type\")}}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <el-select size=\"small\" v-model=\"selectedOperatorOrderBy\" :placeholder=\"$t('form.select.operator')\">\n"
+					+ "                    <el-option v-for=\"ope in orders\" :key=\"ope\" :label=\"ope\" :value=\"ope\">\n"
+					+ "                    </el-option>\n" + "                </el-select>\n"
+					+ "            </el-col>\n" + "        </el-row>\n"
+					+ "        <el-row class=\"el-row-modal-grey\">\n" + "            <el-col>\n"
+					+ "                </br>\n"
+					+ "                <el-button size=\"small\" class=\"el-apply-button float-right\" @click=\"aceptedAddOrderByParameter\">\n"
+					+ "                    {{ $t(\"button.apply\") }}</el-button>\n"
+					+ "                <el-button size=\"small\" class=\"el-cancel-button float-right\" @click=\"dialogAddOrderByVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</el-button>\n" + "            </el-col>\n"
+					+ "        </el-row>\n" + "    </el-dialog>\n" + "\n" + "\n" + "</div>\n" + "");
+			gadgetTemplate.setTemplateJS("vm.vueconfig = {\n"
+					+ "   el: document.getElementById(vm.id).querySelector('vuetemplate .appgadget'),\n"
+					+ "   data: {\n" + "      typeGadget: 'withWizard', //['withWizard','noWizard','searchOnly']\n"
+					+ "      hideIdColumn: false, // show or hide id column\n"
+					+ "      initialEntity: \"\" , //variable that initializes the entity with the value assigned to it\n"
+					+ "\n" + "      showTable: false,\n" + "      showSelectOntology: true,\n"
+					+ "      showWizard: false,\n" + "      disabledWizard: true,\n" + "      idPath: \"\",\n"
+					+ "      ontologies: [],\n" + "      ontologyFieldsAndDesc: {},\n" + "      recordSelected: \"\",\n"
+					+ "      selectedOntology: \"\",\n" + "      selectedOntologySchema: {},\n" + "\n"
+					+ "      dialogDeleteVisible: false, //hide show dialogs\n" + "      dialogEditVisible: false,\n"
+					+ "      dialogCreateVisible: false,\n" + "      dialogShowVisible: false,\n"
+					+ "      dialogOptionsColumnsVisible: false,\n" + "      dialogAddSelectVisible: false,\n"
+					+ "      dialogDownloadVisible:false,\n" + "      idelem:vm.id,\n" + "      executeSearch:false,\n"
+					+ "      showMagnifyingGlass: true,\n" + "      jEditor: {},\n" + "      jShowEditor: {},\n"
+					+ "      tableHeight: 100,\n" + "      resizeObserver: {},\n" + "      selectWizard: [],\n"
+					+ "      selectWizardOptions: [],\n" + "      orderByWizard: [],\n"
+					+ "      orderByWizardOptions: [],\n" + "      dialogAddOrderByVisible: false,\n"
+					+ "      limitWizard: 100, // limit of records in the search for initialize at another value change on resetwizard too\n"
+					+ "      offsetWizard: 0, //offset records in the search\n" + "      whereCondition: '',\n"
+					+ "      uniqueID: '', // save path of id\n" + "      selectedParametereWhere: '',\n"
+					+ "      selectedOperatorWhere: '',\n" + "      selectedParametereOrderBy: '',\n"
+					+ "      selectedOperatorOrderBy: '',\n" + "      inputValueWhere: '',\n" + "      editTitle: '',\n"
+					+ "      showTitle: '',\n" + "      downloadType:'',\n"
+					+ "      visibleColumns: [], // list of visible columns\n" + "      columnsParams: [],\n"
+					+ "      searchString: '', // text for local search\n" + "      formOptions: {\n"
+					+ "         forms: []\n" + "      },\n" + "      orders: ['ASC', 'DESC'],\n"
+					+ "      operators: ['=', '>', '<', '>=', '<=', '!='],\n" + "      ds: [],\n"
+					+ "      columns: [],\n" + "      tableData: [],\n"
+					+ "      platformhost: __env.endpointControlPanel\n" + "   },\n" + "   methods: {\n"
+					+ "      drawVueComponent: function (newData, oldData) {\n"
+					+ "         //This will be call on new data\n" + "      },\n" + "      resizeEvent: function () {\n"
+					+ "         //Resize event\n" + "\n" + "      },\n" + "      destroyVueComponent: function () {\n"
+					+ "         vm.vueapp.$destroy();\n" + "      },\n" + "      receiveValue: function (data) {\n"
+					+ "         //data received from datalink\n" + "      },\n"
+					+ "      //function that initially reads the entities\n"
+					+ "      loadEntities: function (search, loading) {\n" + "         var that = this;\n"
+					+ "         vm.getEntities().then(function (data) {\n"
+					+ "            that.ontologies = data.data.map(function (obj) {\n" + "               return {\n"
+					+ "                  id: obj.id,\n" + "                  identification: obj.identification\n"
+					+ "               }\n" + "            });\n" + "\n"
+					+ "            if(that.initialEntity!=null && that.initialEntity!==\"\"){\n"
+					+ "               if (that.ontologies.some(e => e.identification === that.initialEntity)) {\n"
+					+ "                     that.selectedOntology = that.initialEntity;\n"
+					+ "                     that.onChangeEntity(that.selectedOntology);\n"
+					+ "                     that.showSelectOntology = true;\n" + "                     return;\n"
+					+ "                  } else {\n" + "                     that.$notify({\n"
+					+ "                        message: that.$t('error.message.ontology'),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "                  }\n"
+					+ "            }\n"
+					+ "            var urlparam = urlParamService.generateFiltersForGadgetId(vm.id);\n"
+					+ "            if (typeof urlparam !== 'undefined' && urlparam !== null && urlparam.length > 0) {\n"
+					+ "               if (urlparam[0].exp != null) {\n"
+					+ "                  var urlontology = urlparam[0].exp.replace(/\"/g, '');\n"
+					+ "                  if (that.ontologies.some(e => e.identification === urlontology)) {\n"
+					+ "                     that.selectedOntology = urlontology;\n"
+					+ "                     that.onChangeEntity(that.selectedOntology);\n"
+					+ "                     that.showSelectOntology = true;\n" + "                     return;\n"
+					+ "                  } else {\n" + "                     that.$notify({\n"
+					+ "                        message: that.$t('error.message.ontology'),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "                  }\n"
+					+ "               }\n" + "            } else {\n"
+					+ "               that.showSelectOntology = false;\n" + "            }\n" + "\n" + "         })\n"
+					+ "      },\n" + "      //function that obtains the information of the selected ontology\n"
+					+ "      loadHeadTable: function () {\n" + "         var that = this;\n"
+					+ "         if (this.ontologies != null && this.ontologies.length > 0) {\n"
+					+ "            for (var i = 0; i < this.ontologies.length; i++) {\n"
+					+ "               if (this.ontologies[i].identification === this.selectedOntology) {\n"
+					+ "                  vm.crudGetEntityInfo(this.ontologies[i].id).then(function (data) {\n"
+					+ "                     that.uniqueID = data.data.uniqueId;\n"
+					+ "                     that.selectedOntologySchema = that.changeDescriptionForTitle(data.data.jsonSchema);\n"
+					+ "                  });\n" + "                  break;\n" + "               }\n"
+					+ "            }\n" + "         }\n"
+					+ "         vm.getOntologyFieldsAndDesc(this.selectedOntology).then(function (data) {\n"
+					+ "            that.ontologyFieldsAndDesc = data.data;\n" + "            that.loadData();\n"
+					+ "         })\n" + "      },\n"
+					+ "      //function that gets the data and loads it to be displayed in the table\n"
+					+ "      //difference if it is an initial query or the search button is pressed\n"
+					+ "      loadData: function (fromSearch) {\n" + "         var that = this;\n"
+					+ "         that.showTable = false;\n" + "         var selectStatement = {};\n"
+					+ "         if (typeof fromSearch == 'undefined' || fromSearch == null || fromSearch == false) {\n"
+					+ "            selectStatement = {\n" + "               ontology: this.selectedOntology,\n"
+					+ "               columns: [],\n" + "               where: [],\n" + "               orderBy: [],\n"
+					+ "               limit: this.limitWizard,\n" + "               offset: this.offsetWizard\n"
+					+ "            };\n" + "         } else {\n" + "            selectStatement = {\n"
+					+ "               ontology: this.selectedOntology,\n" + "               columns: [],\n"
+					+ "               where: this.mapArrayToObjects(this.selectWizard),\n"
+					+ "               orderBy: this.mapArrayToObjects(this.orderByWizard),\n"
+					+ "               limit: this.limitWizard,\n" + "               offset: this.offsetWizard\n"
+					+ "            };\n" + "         }\n"
+					+ "         vm.crudQueryParams(selectStatement).then(function (data) {\n"
+					+ "            that.showTable = true;\n" + "            that.disabledWizard = false;\n"
+					+ "            //create columns from that.ontologyFieldsAndDesc\n"
+					+ "            var keys = Object.keys(that.ontologyFieldsAndDesc);\n" + "\n"
+					+ "            //validate error from data\n"
+					+ "            if (typeof data.data.error !== 'undefined') {\n" + "               that.$notify({\n"
+					+ "                  message: that.$t('error.message.querying.the.data'),\n"
+					+ "                  type: 'error'\n" + "               });\n" + "               return {};\n"
+					+ "            }\n" + "            if (keys != null && keys.length > 0) {\n"
+					+ "               if (typeof fromSearch != 'undefined' && fromSearch != null && fromSearch) {\n"
+					+ "                  var index = that.columns.findIndex(function (elem) {\n"
+					+ "                     return elem.prop === that.uniqueID\n" + "                  });\n"
+					+ "                  if (index < 0) {\n" + "                     that.idPath = that.uniqueID;\n"
+					+ "                     that.columns.push({\n" + "                        prop: that.uniqueID,\n"
+					+ "                        label: \"id\"\n" + "                     });\n" + "\n"
+					+ "                  }\n" + "                  that.tableData = data.data.map(function (dat) {\n"
+					+ "                     var refinedData = {};\n"
+					+ "                     for (var i = 0; i < that.columns.length; i++) {\n"
+					+ "                        let path = that.columns[i].prop.split('.');\n"
+					+ "                           try {\n"
+					+ "                                  refinedData[that.columns[i].prop] = path.reduce((a, v) => a[v], dat);              \n"
+					+ "                              } catch (error) {\n"
+					+ "                                   refinedData[that.columns[i].prop] = null; \n"
+					+ "                              }" + "                     }\n" + "\n"
+					+ "                     return refinedData;\n" + "                  })\n"
+					+ "               } else {\n" + "                  that.columns = [];\n" + "\n"
+					+ "                  var index = keys.findIndex(function (elem) {\n"
+					+ "                     return elem === that.uniqueID\n" + "                  });\n"
+					+ "                  if (index > -1) {\n" + "                     keys.splice(index, 1);\n"
+					+ "                  }\n" + "                  that.idPath = that.uniqueID;\n"
+					+ "                  that.columns.push({\n" + "                     prop: that.uniqueID,\n"
+					+ "                     label: \"id\"\n" + "                  });\n"
+					+ "                  keys = keys.sort(that.orderKeys);\n"
+					+ "                  //initial construction of table columns\n"
+					+ "                  for (var i = 0; i < keys.length; i++) {\n"
+					+ "                     var description = that.ontologyFieldsAndDesc[keys[i]].description;\n"
+					+ "                     if (description == null || typeof description == undefined || description.length == 0) {\n"
+					+ "                        description = that.ontologyFieldsAndDesc[keys[i]].path;\n"
+					+ "                     }\n"
+					+ "                     description = that.$t(description) || description;\n"
+					+ "                     that.columns.push({\n"
+					+ "                        prop: that.ontologyFieldsAndDesc[keys[i]].path,\n"
+					+ "                        thetype: that.ontologyFieldsAndDesc[keys[i]].type,\n"
+					+ "                        label: description,\n" + "                        minWidth: 100,\n"
+					+ "                        sortable: 'custom'\n" + "                     });\n" + "\n"
+					+ "                  }\n" + "\n" + "                  //mapping the data to display\n"
+					+ "                  that.tableData = data.data.map(function (dat) {\n"
+					+ "                     var refinedData = {};\n"
+					+ "                     for (var i = 0; i < that.columns.length; i++) {\n"
+					+ "                        if(typeof that.columns[i].prop!='undefined' && that.columns[i].prop!=null){\n"
+					+ "                           let path = that.columns[i].prop.split('.');\n"
+					+ "                             try {\n"
+					+ "                                  refinedData[that.columns[i].prop] = path.reduce((a, v) => a[v], dat);              \n"
+					+ "                              } catch (error) {\n"
+					+ "                                   refinedData[that.columns[i].prop] = null; \n"
+					+ "                              }" + "                        }\n" + "                     }\n"
+					+ "\n" + "                     return refinedData;\n" + "                  })\n"
+					+ "               }\n" + "               //hide or show id columns\n"
+					+ "               if (that.hideIdColumn) {\n" + "\n"
+					+ "                  var index = that.columns.findIndex(function (elem) {\n"
+					+ "                     return elem.label === 'id'\n" + "                  });\n"
+					+ "                  if (index > -1) {\n" + "                     that.columns.splice(index, 1);\n"
+					+ "                  }\n" + "\n" + "               }\n"
+					+ "               if (that.visibleColumns.length == 0 && that.columns.length > 0) {\n"
+					+ "                  that.visibleColumns = Array.from(that.columns);\n"
+					+ "                  that.columnsParams = Array.from(that.columns);\n"
+					+ "                  that.visibleColumns.forEach(function (element) {\n"
+					+ "                     element.visible = true;\n" + "                  });\n"
+					+ "               }\n" + "\n" + "\n" + "            }\n" + "         })\n" + "      },\n"
+					+ "      //function that is executed when the edition of a record is opened\n"
+					+ "      openEdit: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudFindById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "            delete data.data[0]._id;\n" + "            delete data.data[0].contextData;\n"
+					+ "            if (typeof that.jEditor.destroy == 'function') that.jEditor.destroy();\n"
+					+ "            that.jEditor = new JSONEditor(document.getElementsByClassName(vm.id+' editor_edit_holder')[0], {\n"
+					+ "               schema: JSON.parse(that.selectedOntologySchema),\n"
+					+ "               startval: data.data[0],\n" + "               theme: 'bootstrap3',\n"
+					+ "               iconlib: 'fontawesome4',\n" + "               disable_properties: true,\n"
+					+ "               disable_edit_json: true,\n" + "               disable_collapse: true,\n"
+					+ "               disable_array_reorder: true,\n"
+					+ "               disable_array_delete_all_rows: true,\n"
+					+ "               disable_array_delete_last_row: true,\n" + "               show_errors: 'change'\n"
+					+ "            });\n" + "         })\n" + "      },\n"
+					+ "      //function that is executed when the detail of a record is opened\n"
+					+ "      openShow: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudFindById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "            delete data.data[0]._id;\n" + "            delete data.data[0].contextData;\n"
+					+ "            if (typeof that.jShowEditor.destroy == 'function') that.jShowEditor.destroy();\n"
+					+ "            that.jShowEditor = new JSONEditor(document.getElementsByClassName(vm.id+' editor_show_holder')[0], {\n"
+					+ "               schema: JSON.parse(that.selectedOntologySchema),\n"
+					+ "               startval: data.data[0],\n" + "               theme: 'bootstrap3',\n"
+					+ "               mode: 'view',\n" + "               iconlib: 'fontawesome4',\n"
+					+ "               disable_properties: true,\n" + "               disable_edit_json: true,\n"
+					+ "               disable_collapse: true,\n" + "               disable_array_reorder: true,\n"
+					+ "               disable_array_delete_all_rows: true,\n"
+					+ "               disable_array_delete_last_row: true,\n" + "               show_errors: 'change'\n"
+					+ "            });\n" + "            that.jShowEditor.disable();\n" + "         })\n" + "      },\n"
+					+ "      //function that is executed when modal of creating a record is opened\n"
+					+ "      openCreate: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudFindById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "\n" + "            if (typeof that.jEditor.destroy == 'function') that.jEditor.destroy();\n"
+					+ "            that.jEditor = new JSONEditor(document.getElementsByClassName(vm.id+' editor_new_holder')[0], {\n"
+					+ "               schema: JSON.parse(that.selectedOntologySchema),\n"
+					+ "               startval: undefined,\n" + "               theme: 'bootstrap3',\n"
+					+ "               iconlib: 'fontawesome4',\n" + "               disable_properties: true,\n"
+					+ "               disable_edit_json: true,\n" + "               disable_collapse: true,\n"
+					+ "               disable_array_reorder: true,\n"
+					+ "               disable_array_delete_all_rows: true,\n"
+					+ "               disable_array_delete_last_row: true,\n" + "               show_errors: 'change'\n"
+					+ "            });\n" + "         })\n" + "\n" + "\n" + "      },\n"
+					+ "      //function that is executed when accepting a visibility change in the columns\n"
+					+ "      aceptedChangeColumns: function () {\n" + "            //delete columns visible = false\n"
+					+ "            //add columns visible = true if not exist\n" + "\n"
+					+ "            var that = this;\n"
+					+ "            this.visibleColumns.forEach(function (visibleCol) {\n"
+					+ "               if (that.columns.length > 0) {\n" + "                  var find = false;\n"
+					+ "                  for (var i = 0; i < that.columns.length; i++) {\n"
+					+ "                     if (that.columns[i].prop == visibleCol.prop) {\n"
+					+ "                        find = true;\n" + "                        if (!visibleCol.visible) {\n"
+					+ "                           that.columns.splice(i, 1);\n" + "                        }\n"
+					+ "                        break;\n" + "                     }\n" + "                  }\n"
+					+ "                  if (!find && visibleCol.visible) {\n"
+					+ "                     var obj = Object.assign({}, visibleCol);\n"
+					+ "                     delete obj.visible;\n" + "                     that.columns.push(obj);\n"
+					+ "                  }\n" + "               } else {\n"
+					+ "                  if (visibleCol.visible) {\n"
+					+ "                     var obj = Object.assign({}, visibleCol);\n"
+					+ "                     delete obj.visible;\n" + "                     that.columns.push(obj);\n"
+					+ "                  }\n" + "               }\n" + "            });\n"
+					+ "            this.dialogOptionsColumnsVisible = false;\n" + "            this.loadData(true);\n"
+					+ "         }\n" + "\n" + "         ,\n"
+					+ "      //function that is executed when clicking on edit a record\n"
+					+ "      handleEdit: function (index, row) {\n"
+					+ "         this.recordSelected = row[this.idPath];\n"
+					+ "         this.editTitle = this.$t('form.edit.record') + this.recordSelected;\n"
+					+ "         this.dialogEditVisible = true;\n" + "\n" + "      },\n"
+					+ "      //function that is executed when clicking on show a record\n"
+					+ "      handleShow: function (index, row) {\n"
+					+ "         this.recordSelected = row[this.idPath];\n"
+					+ "         this.showTitle = this.$t('form.detail.record') + this.recordSelected;\n"
+					+ "         this.dialogShowVisible = true;\n" + "\n" + "      },\n"
+					+ "      //function that is executed when clicking on delete a record\n"
+					+ "      handleDelete: function (index, row) {\n"
+					+ "         this.recordSelected = row[this.idPath];\n"
+					+ "         this.dialogDeleteVisible = true;\n" + "      },\n"
+					+ "      //function that is executed when accepting to edit a record\n"
+					+ "      aceptedEdit: function () {\n" + "         var that = this;\n"
+					+ "         console.log(this.jEditor.getValue());\n"
+					+ "         vm.crudUpdate(this.jEditor.getValue(), this.selectedOntology, this.recordSelected).then(function (data) {\n"
+					+ "            that.dialogEditVisible = false;\n" + "            that.loadData();\n"
+					+ "            that.$notify({\n"
+					+ "               message: that.$t('message.edited.successfully'),\n"
+					+ "               type: 'success'\n" + "            });\n" + "         })\n" + "\n" + "      },\n"
+					+ "      //function that is executed when accepting to create a new record\n"
+					+ "      aceptedCreate: function () {\n" + "         var that = this;\n"
+					+ "         console.log(this.jEditor.getValue());\n" + "\n"
+					+ "         vm.crudInsert(this.jEditor.getValue(), this.selectedOntology).then(function (data) {\n"
+					+ "            that.dialogCreateVisible = false;\n" + "            that.loadData();\n"
+					+ "            that.$notify({\n"
+					+ "               message: that.$t('message.created.successfully'),\n"
+					+ "               type: 'success'\n" + "            });\n" + "         })\n" + "\n" + "      },\n"
+					+ "      //function that is executed when accepting to delete a record\n"
+					+ "      aceptedDelete: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudDeleteById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "            that.loadData();\n" + "            that.$notify({\n"
+					+ "               message: that.$t('message.deleted.successfully'),\n"
+					+ "               type: 'success'\n" + "            });\n" + "         })\n"
+					+ "         this.dialogDeleteVisible = false\n" + "      },\n" + "      submit: function (_e) {\n"
+					+ "         alert(JSON.stringify(this.model));\n" + "      },\n" + "      reset: function () {\n"
+					+ "         this.$refs.JsonEditor.reset();\n" + "      },\n"
+					+ "      //function that is executed when selecting an entity\n" + "      onChangeEntity(value) {\n"
+					+ "         this.loadHeadTable();\n" + "         this.calculeTableheight();\n"
+					+ "         this.visibleColumns = [];\n" + "         this.resetWizard();\n"
+					+ "         this.executeSearch=false;\n" + "      },\n" + "\n" + "\n"
+					+ "      opendialogAddSelect: function () {\n" + "\n" + "      },\n"
+					+ "      opendialogAddOrderBy: function () {\n" + "\n" + "      },\n"
+					+ "      //function that clears the wizard fields\n" + "      resetWizard: function () {\n"
+					+ "         this.selectWizard = [];\n" + "         this.selectWizardOptions = [];\n"
+					+ "         this.orderByWizard = [];\n" + "         this.orderByWizardOptions = [];\n"
+					+ "         this.limitWizard = 100;\n" + "         this.offsetWizard = 0;\n" + "      },\n"
+					+ "      searchWizard: function () {\n" + "         this.loadData(true);\n"
+					+ "         this.executeSearch=true;\n" + "      },\n"
+					+ "      //function that creates a new option in the where combo\n"
+					+ "      aceptedAddWhereParameter: function () {\n"
+					+ "         if (typeof this.selectedParametereWhere != 'undefined' && this.selectedParametereWhere != null &&\n"
+					+ "            typeof this.selectedOperatorWhere != 'undefined' && this.selectedOperatorWhere != null &&\n"
+					+ "            typeof this.inputValueWhere != 'undefined' && this.inputValueWhere != null) {\n"
+					+ "            var paramDescription = '';\n" + "            var type = '';\n"
+					+ "            for (var i = 0; i < this.columnsParams.length; i++) {\n"
+					+ "               if (this.columnsParams[i].prop == this.selectedParametereWhere) {\n"
+					+ "                  paramDescription = this.columnsParams[i].label;\n"
+					+ "                  type = this.columnsParams[i].thetype;\n" + "                  break\n"
+					+ "               }\n" + "            }\n" + "            if (type != 'number') {\n"
+					+ "               this.inputValueWhere = \"'\" + this.inputValueWhere + \"'\";\n"
+					+ "            }\n"
+					+ "            var resultDescription = paramDescription + ' ' + this.selectedOperatorWhere + ' ' + this.inputValueWhere;\n"
+					+ "            var resultPath = {\n" + "               column: this.selectedParametereWhere,\n"
+					+ "               operator: this.selectedOperatorWhere,\n" + "               condition: 'AND',\n"
+					+ "               value: this.inputValueWhere\n" + "            };\n"
+					+ "            this.selectWizardOptions.push({\n" + "               label: resultDescription,\n"
+					+ "               value: JSON.stringify(resultPath)\n" + "            });\n"
+					+ "            this.dialogAddSelectVisible = false;\n" + "         } else {\n"
+					+ "            //show message need parameters\n" + "            that.$notify({\n"
+					+ "               message: that.$t('error.message.incomplete'),\n"
+					+ "               type: 'warning'\n" + "            });\n" + "         }\n" + "      },\n"
+					+ "      aceptedAddOrderByParameter: function () {\n"
+					+ "         if (typeof this.selectedOperatorOrderBy != 'undefined' && this.selectedOperatorOrderBy != null &&\n"
+					+ "            typeof this.selectedParametereOrderBy != 'undefined' && this.selectedParametereOrderBy != null) {\n"
+					+ "            var paramDescription = '';\n" + "            var type = '';\n"
+					+ "            for (var i = 0; i < this.columnsParams.length; i++) {\n"
+					+ "               if (this.columnsParams[i].prop == this.selectedParametereOrderBy) {\n"
+					+ "                  paramDescription = this.columnsParams[i].label;\n"
+					+ "                  break\n" + "               }\n" + "            }\n"
+					+ "            var resultDescription = paramDescription + \" \" + this.selectedOperatorOrderBy;\n"
+					+ "            var resultPath = {\n" + "               column: this.selectedParametereOrderBy,\n"
+					+ "               order: this.selectedOperatorOrderBy\n" + "            };\n"
+					+ "            this.orderByWizardOptions.push({\n" + "               label: resultDescription,\n"
+					+ "               value: JSON.stringify(resultPath)\n" + "            });\n" + "\n"
+					+ "            this.dialogAddOrderByVisible = false;\n" + "         }\n" + "      },\n"
+					+ "      //initialize orderby\n" + "      dialogAddOrderByVisibleFunction: function () {\n"
+					+ "         this.selectedOperatorOrderBy = null;\n"
+					+ "         this.selectedParametereOrderBy = null;\n"
+					+ "         this.dialogAddOrderByVisible = true;\n" + "      },\n" + "      //initialize where\n"
+					+ "      dialogAddSelectVisibleFunction: function () {\n"
+					+ "         this.selectedParametereWhere = null;\n"
+					+ "         this.selectedOperatorWhere = null;\n" + "         this.inputValueWhere = \"\";\n"
+					+ "         this.dialogAddSelectVisible = true;\n" + "      },\n"
+					+ "      orderColumns: function (a, b) {\n" + "         if (a.label == 'id') {\n"
+					+ "            return 1;\n" + "         } else if (b.label == 'id') {\n"
+					+ "            return -1;\n" + "         } else if (a.label > b.label) {\n"
+					+ "            return 1;\n" + "         } else if (a.label < b.label) {\n"
+					+ "            return -1;\n" + "         }\n" + "         return 0;\n" + "      },\n"
+					+ "      orderKeys: function (a, b) {\n" + "         if (a == 'id') {\n" + "            return 1;\n"
+					+ "         } else if (b == 'id') {\n" + "            return -1;\n"
+					+ "         } else if (a > b) {\n" + "            return 1;\n" + "         } else if (a < b) {\n"
+					+ "            return -1;\n" + "         }\n" + "         return 0;\n" + "      },\n" + "\n"
+					+ "      tableDatafilter: function (element) {\n"
+					+ "         if (this.searchString == null || this.searchString.trim().length == 0) {\n"
+					+ "            return true;\n" + "         }\n"
+					+ "         return JSON.stringify(element).toLowerCase().indexOf(this.searchString.toLowerCase()) > -1;\n"
+					+ "\n" + "      },\n" + "      aceptedDownloadAll: function(){\n" + "         var that = this;\n"
+					+ "         vm.validationDownloadEntity(this.selectedOntology,this.downloadType).then(function(data){\n"
+					+ "            if(data.data.message=='ok'){\n" + "               if(that.downloadType=='csv'){\n"
+					+ "                  vm.downloadEntityAllCsv(that.selectedOntology);\n"
+					+ "                  that.dialogDownloadVisible=false;\n" + "               }else{\n"
+					+ "                  vm.downloadEntityAllJson(that.selectedOntology);\n"
+					+ "                  that.dialogDownloadVisible=false;\n" + "               }\n"
+					+ "            }else{\n" + "                that.$notify({\n"
+					+ "                        message: that.$t(data.data.message),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "            }\n"
+					+ "         })\n" + "      },\n" + "      aceptedDownloadOnlySelec: function () {\n"
+					+ "         var selection = encodeURIComponent(JSON.stringify({ ontology: this.selectedOntology, columns: [], where: this.mapArrayToObjects(this.selectWizard), orderBy: this.mapArrayToObjects(this.orderByWizard), limit: this.limitWizard, offset: this.offsetWizard }));\n"
+					+ "         var that = this;\n"
+					+ "         vm.validationDownloadEntitySelected(this.selectedOntology, selection,this.downloadType).then(function (data) {\n"
+					+ "            if (data.data.message == 'ok') {\n"
+					+ "               if (that.downloadType == 'csv') {\n"
+					+ "                  vm.downloadEntitySelectedCsv(that.selectedOntology, selection);\n"
+					+ "                  that.dialogDownloadVisible = false;\n" + "               } else {\n"
+					+ "                  vm.downloadEntitySelectedJson(that.selectedOntology, selection);\n"
+					+ "                  that.dialogDownloadVisible = false;\n" + "               }\n"
+					+ "            }else{\n" + "               that.$notify({\n"
+					+ "                        message: that.$t(data.data.message),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "            }\n"
+					+ "         })\n" + "      },\n" + "      downloadData: function (command) {\n"
+					+ "         var that = this;\n" + "         if (command === 'allcsv') {\n"
+					+ "            vm.validationDownloadEntity(this.selectedOntology,'csv').then(function (data) {\n"
+					+ "               if (data.data.message == 'ok') {\n"
+					+ "                  vm.downloadEntityAllCsv(that.selectedOntology);\n"
+					+ "               } else {\n" + "                  that.$notify({\n"
+					+ "                           message: that.$t(data.data.message),\n"
+					+ "                           type: 'error'\n" + "                        });\n"
+					+ "               }\n" + "            })\n" + "         } else if (command === 'alljson') {\n"
+					+ "            vm.validationDownloadEntity(this.selectedOntology,'json').then(function (data) {\n"
+					+ "               if (data.data.message == 'ok') {\n"
+					+ "                  vm.downloadEntityAllJson(that.selectedOntology);\n" + "               }else{\n"
+					+ "                  that.$notify({\n"
+					+ "                        message: that.$t(data.data.message),\n"
+					+ "                           type: 'error'\n" + "                  });\n" + "               }\n"
+					+ "            })\n" + "         } else {\n" + "            this.downloadType = command;\n"
+					+ "            this.dialogDownloadVisible = true;\n" + "\n" + "         }\n" + "      },\n"
+					+ "      mapArrayToObjects: function (array) {\n" + "         var data = [];\n"
+					+ "         if (typeof array != 'undefined' && array != null && array.length > 0) {\n"
+					+ "            for (var i = 0; i < array.length; i++) {\n"
+					+ "               data.push(JSON.parse(array[i]));\n" + "            }\n" + "         }\n"
+					+ "         return data;\n" + "      },\n" + "      sortChange(column, key, order) {\n"
+					+ "         var that = this;\n" + "         var type = this.columns.filter(function (elem) {\n"
+					+ "            return elem.prop == column.prop\n" + "         });\n"
+					+ "         if (typeof type !== 'undefined' && type != null && type.length > 0) {\n"
+					+ "            type = type[0].thetype;\n" + "         } else {\n" + "            type = 'string';\n"
+					+ "         }\n" + "         this.tableData.sort(function (a, b) {\n"
+					+ "            if (column.order == 'descending') {\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) > that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return -1;\n" + "               }\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) < that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return 1;\n" + "               }\n" + "            } else {\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) < that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return -1;\n" + "               }\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) > that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return 1;\n" + "               }\n" + "            }\n"
+					+ "            return 0;\n" + "         });\n" + "\n" + "         console.log(column, key, order)\n"
+					+ "      },\n" + "      loadProperties:function(element,path,stack){\n"
+					+ "         if(element.properties){\n" + "            var keys = Object.keys(element.properties);\n"
+					+ "            var dot='';\n" + "            if (path.length>0){dot='.';}\n"
+					+ "            for(var i=0;i< keys.length; i++){\n"
+					+ "                  this.loadProperties(element.properties[keys[i]],path+dot+keys[i],stack);\n"
+					+ "               }\n" + "         }else{\n" + "            var keys = Object.keys(element);\n"
+					+ "            var findRef = false;\n" + "            var ref = \"\";\n"
+					+ "            for(var i=0;i< keys.length; i++){\n" + "               if( keys[i] == '$ref' ){\n"
+					+ "                  findRef = true;\n" + "                  ref = element.$ref.substring(2);\n"
+					+ "                  break;\n" + "               }\n" + "            }\n"
+					+ "            if( findRef ){\n" + "               stack.push({'path':path,'ref':ref});\n"
+					+ "            }else{\n" + "               if(element.description){\n"
+					+ "                  element.title = this.$t(element.description);\n"
+					+ "                  delete element.description;\n" + "               }else{\n"
+					+ "                  element.title = this.$t(path);\n" + "               }\n" + "\n"
+					+ "            }\n" + "         }\n" + "      },\n" + "\n"
+					+ "      //This function maps the labels by titles in the outline for the edit, creation and detail forms\n"
+					+ "      changeDescriptionForTitle: function (schema) {\n" + "\n"
+					+ "         var root = JSON.parse(schema);\n" + "         var stack = [];\n"
+					+ "         var result = this.loadProperties(root,'',stack);\n"
+					+ "         while(stack.length > 0){\n" + "            var stackElement = stack.pop();\n"
+					+ "            this.loadProperties(root[stackElement.ref],stackElement.path,stack);\n"
+					+ "         }\n" + "         return JSON.stringify(root);\n" + "      },\n"
+					+ "      formatFieldForSort: function (element, type) {\n" + "         if (type == 'number') {\n"
+					+ "            return Number(element);\n" + "         } else if (type == 'string') {\n"
+					+ "            return element + '';\n" + "         } else {\n" + "            return element;\n"
+					+ "         }\n" + "      },\n" + "      sendValue: vm.sendValue,\n"
+					+ "      sendFilter: vm.sendFilter,\n" + "      //calculate and resize the table\n"
+					+ "      calculeTableheight: function () {\n" + "         var totalHeight = 240;\n"
+					+ "         if (this.showWizard) {\n" + "            totalHeight = totalHeight + 108;\n"
+					+ "         }\n"
+					+ "         this.tableHeight = document.getElementById(vm.id).querySelector('vuetemplate').offsetHeight - totalHeight;\n"
+					+ "      }\n" + "   },\n" + "   mounted() {\n" + "      if(vm.tparams && vm.tparams.parameters){\n"
+					+ "         this.hideIdColumn=vm.tparams.parameters.hideIdColumn;\n"
+					+ "         this.initialEntity=vm.tparams.parameters.initialEntity;\n"
+					+ "         this.typeGadget=vm.tparams.parameters.typeGadget;\n" + "      }\n" + "\n"
+					+ "      this.loadEntities();\n" + "      var that = this;\n" + "      //Resize event observer\n"
+					+ "      this.resizeObserver = new ResizeObserver(function (entrie) {\n"
+					+ "         that.calculeTableheight();\n" + "      });\n"
+					+ "      this.resizeObserver.observe(document.getElementById(vm.id).querySelector('vuetemplate'));\n"
+					+ "   },\n" + "   i18n: window.i18n\n" + "\n" + "}\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"},{\"id\":3,\"type\":\"selector\",\"name\":\"typeGadget\",\"options\":[{\"value\":\"withWizard\",\"text\":\"withWizard\"},{\"value\":\"noWizard\",\"text\":\"noWizard\"},{\"value\":\"searchOnly\",\"text\":\"searchOnly\"}],\"title\":\"typeGadget\",\"default\":\"withWizard\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"hideIdColumn\",\"default\":false,\"title\":\"hideIdColumn\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-8").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-8");
+			gadgetTemplate.setIdentification("gadget-import");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs(
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/index.min.js\" integrity=\"sha512-YXb3YAMf5gMN1byYIGwVydJojIIYxbQDvTu1IJivRe6aXGB2yGRtuFAofi9esNMfn2AUKOT2hFKhrhX8QddyPA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/locale/en.min.js\" integrity=\"sha512-tFW30buD0d2p1ncQiM9FtIWruxY8cnB/DmSjrrRxWxlTr6om+DSsxMnknk5t6bs6/1/d6G21/itRYZ2Pmu7CdA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"></script>\n"
+							+ "\n" + "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n"
+							+ "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/element-ui/2.15.6/theme-chalk/index.min.css\" integrity=\"sha512-oKuj7gKXGxOZuCSvOPZE1seWosmP4iy608AyAH4hPnGD6tPX4325S+wo6MJQz+L3Hq4tK3e0RMfu+TDFUZFrgA==\" crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\" />\n"
+							+ "\n" + "<script>\n" + "ELEMENT.locale(ELEMENT.lang.en)\n" + "var __env = __env || {};\n"
+							+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+							+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+							+ "			\"form.entity\": \"Entidad\",\n"
+							+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+							+ "			\"form.select\": \"Seleccionar\",\n"
+							+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+							+ "			\"form.operator\": \"Operador\",\n"
+							+ "			\"form.condition\": \"Condición\",\n"
+							+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+							+ "			\"form.write.here\": \"Escriba aquí\",\n"
+							+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+							+ "			\"form.orderby\": \"Ordenar por\",\n"
+							+ "			\"form.order.type\": \"Tipo de pedido\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Valor máximo\",\n"
+							+ "			\"form.offset\": \"Desplazamiento\",\n"
+							+ "			\"form.reset\": \"Restablecer\",\n" + "			\"form.search\": \"Buscar\",\n"
+							+ "			\"form.records\": \"Registros\",\n"
+							+ "			\"form.columns\": \"Columnas\",\n"
+							+ "			\"column.options\": \"Opciones\",\n"
+							+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+							+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+							+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+							+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+							+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+							+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+							+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+							+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+							+ "			\"form.edit.record\": \"Editar registro\",\n"
+							+ "			\"form.detail.record\": \"Registro detallado\",\n"
+							+ "			\"button.cancel\": \"Cancelar\",\n"
+							+ "			\"button.delete\": \"Eliminar\",\n" + "			\"button.save\": \"Guardar\",\n"
+							+ "			\"button.close\": \"Cerrar\",\n" + "			\"button.new\": \"Nuevo\",\n"
+							+ "			\"button.apply\": \"Aplicar\",\n"
+							+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+							+ "		    \"form.title.import\": \"Importar datos\",\n"
+							+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+							+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+							+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+							+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+							+ "		    \"button.click\": \"haga click aquí\",\n"
+							+ "		    \"button.click.upload\": \"para subirlo\",\n"
+							+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Importar\",\n"
+							+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+							+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+							+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+							+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+							+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+							+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+							+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+							+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+							+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+							+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+							+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+							+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+							+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+							+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+							+ "			\"button.all.records\": \"Todos los registros\",\n"
+							+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+							+ "			\"error.message.download\": \"Error descargando datos\",\n"
+							+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+							+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+							+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+							+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+							+ "			\"form.select\": \"Select\",\n"
+							+ "			\"form.select.fields\": \"Select Fields\",\n"
+							+ "			\"form.operator\": \"Operator\",\n"
+							+ "			\"form.condition\": \"Condition\",\n"
+							+ "			\"form.select.operator\": \"Select Operator\",\n"
+							+ "			\"form.write.here\": \"Write here\",\n"
+							+ "			\"form.select.field\": \"Select Field\",\n"
+							+ "			\"form.orderby\": \"Order by\",\n"
+							+ "			\"form.order.type\": \"Order Type\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Max Value\",\n"
+							+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+							+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+							+ "			\"form.columns\": \"Columns\",\n"
+							+ "			\"column.options\": \"Options\",\n"
+							+ "			\"form.new.record.title\": \"New record\",\n"
+							+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+							+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+							+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+							+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+							+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+							+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+							+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+							+ "			\"form.edit.record\": \"Edit record \",\n"
+							+ "			\"form.detail.record\": \"Detail record \",\n"
+							+ "			\"button.cancel\": \"Cancel\",\n"
+							+ "			\"button.delete\": \"Delete\",\n" + "			\"button.save\": \"Save\",\n"
+							+ "			\"button.close\": \"Close\",\n" + "			\"button.new\": \"New\",\n"
+							+ "			\"button.apply\": \"Apply\",\n"
+							+ "		    \"form.select.entity\": \"Select Entity\",\n"
+							+ "		    \"form.title.import\": \"Import records\",\n"
+							+ "		    \"form.download.template\": \"Download Template\",\n"
+							+ "			\"form.download.csv\":\"Download CSV\",\n"
+							+ "    		\"form.download.json\":\"Download JSON\",\n"
+							+ "		    \"button.drop\": \"Drop file or\",\n"
+							+ "		    \"button.click\": \"click here\",\n"
+							+ "		    \"button.click.upload\": \"to upload\",\n"
+							+ "		    \"form.info.max\": \"Max. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Import\",\n"
+							+ "		    \"button.showmore\": \"Show More Details\",\n"
+							+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+							+ "		    \"message.success.loaded.1\": \"The\",\n"
+							+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+							+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+							+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+							+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+							+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+							+ "		    \"error.message.processing\": \"Error processing data\",\n"
+							+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+							+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+							+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+							+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+							+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+							+ "			\"button.all.records\": \"All the records\",\n"
+							+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+							+ "			\"error.message.download\": \"Error downloading data\",\n"
+							+ "			\"error.message.empty\": \"Error there are no records\",\n"
+							+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+							+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+							+ "	var localLocale ='EN';\n" + "	try{\n"
+							+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+							+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+							+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+							+ " // link messages with internacionalization json on controlpanel\n"
+							+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+			gadgetTemplate.setDescription("IMPORT gadget template");
+			gadgetTemplate.setTemplate("<style>\n" + ".el-upload-list__item-name {\n" + "  max-height:30px;\n"
+					+ "  font-size: small;}\n" + ".control-label {\n" + "  margin-top: 1px;\n" + "  color: #505D66;\n"
+					+ "  font-weight: normal;\n" + "  width: fit-content;\n" + "  font-size: small; }\n"
+					+ ".control-label .required,\n" + ".form-group .required {\n" + "  color: #A73535;\n"
+					+ "  font-size: 12px;\n" + "  padding-left: 2px; }\n" + ".el-textarea__inner {\n"
+					+ "  min-height: 40% !important;\n" + "} \n" + ".el-upload {\n" + "  width: 100%;\n" + "}\n"
+					+ ".el-upload-dragger{\n" + "  width: 100%;\n" + "  height: 150px;\n" + "}\n" + "footer {\n"
+					+ "  display: flex;\n" + "  flex-direction: row;\n" + "  align-items: center;\n"
+					+ "  justify-content: flex-end;\n" + "  padding: 16px 24px;\n" + "  background: #F0F1F2;\n" + "}\n"
+					+ ".livehtmlnotfull {\n" + "  display: block;\n" + "  width: calc(100%);\n"
+					+ "  position: absolute;\n" + "  top: 50%;\n" + "  left: 50%;\n"
+					+ "  transform: translate(-50%, -50%);\n" + "  overflow: hidden;\n" + "}\n" + ".custommargin {\n"
+					+ "  margin-left:15px; \n" + "  margin-right:15px;\n" + "}\n" + ".textButtonColor {\n"
+					+ "  color: #1168A6 !important;\n" + "}\n" + ".icons-grey {\n"
+					+ "  filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);\n"
+					+ "}\n" + ".icons-align {\n" + "  vertical-align: middle;\n" + "  margin-left: 5px;\n" + "}\n"
+					+ "</style>\n" + "\n" + "<div class=\"gadget-app\">\n"
+					+ "  <h5 class=\"gadget-title ng-binding ng-scope custommargin\">{{ $t(\"form.title.import\") }}</h5>\n"
+					+ "  <div class=\"selectOnto custommargin\" v-if=\"showSelect\">\n"
+					+ "    <label class=\"control-label\"> {{ $t(\"form.select.entity\") }} <span class=\"required\" aria-required=\"true\"> *  </span></label>\n"
+					+ "    <el-select :disabled=\"showSelectOntology\" v-model=\"selectedOntology\" @change=\"onChangeOntology($event)\" filterable :placeholder=\"$t('form.select')\" \n"
+					+ "      style=\"margin-top:5px; width: 100%;background: #F7F8F8;\" size=\"small\">\n"
+					+ "      <el-option\n" + "        v-for=\"onto in ontologies\"\n"
+					+ "        :key=\"onto.identification\"\n" + "        :label=\"onto.identification\"\n"
+					+ "        :value=\"onto.identification\">\n" + "      </el-option>\n" + "    </el-select>\n"
+					+ "  </div>\n" + "  <div class=\"custommargin\" v-if=\"showEntityName\">\n"
+					+ "    <label class=\"control-label\" style=\"color:#060E14;\">{{ $t(\"form.entity\")}}: </label><label class=\"control-label\"> {{selectedOntology}} <label>\n"
+					+ "  </div>\n" + "  <div class=\"downloadSchm custommargin\" style=\"margin-top: 10px;\">\n"
+					+ "    <el-button class=\"textButtonColor\" style=\"margin-top: 5px;border: 1px solid #1168A6;box-sizing: border-box;border-radius: 2px;text-align: center;\" \n"
+					+ "      size=\"small\" :disabled= \"downloaddisabled\" plain @click=\"dialogDownloadOptions = true\">{{ $t(\"form.download.template\") }} <i class=\"el-icon-download\"></i></el-button>\n"
+					+ "     <el-popover placement=\"top-start\" title=\"Info\" width=\"240\" trigger=\"hover\" :content=\"$t('form.download.info')\">\n"
+					+ "      <img class=\"icons-grey icons-align\" src=\"/controlpanel/static/images/dashboards/icon_info.svg\" slot=\"reference\">\n"
+					+ "    </el-popover>\n" + "  </div>\n" + "  \n"
+					+ "  <div id=\"uploadCSVFile\" class=\"custommargin\" style=\"margin-top: 15px;\">\n"
+					+ "    <el-upload id=\"upload-csv\" drag style=\"width: 100%; height: 210px;\"\n"
+					+ "      :action=\"urlimport\" :disabled= \"uploaddisabled\"\n"
+					+ "      :auto-upload=\"false\" :file-list=\"fileList\" \n"
+					+ "      :on-preview=\"handlePreview\" :on-remove=\"handleRemove\" \n"
+					+ "      :limit=\"limitUpload\"\n"
+					+ "      accept=\".csv, .json\" :before-upload=\"beforeCSVUpload\"\n"
+					+ "      ref=\"upload\"  :on-exceed=\"handleExceed\"\n"
+					+ "      :on-error=\"handleError\" :on-success=\"handleSuccess\">\n"
+					+ "      <i class=\"el-icon-upload2 fa-3x\" style=\"margin-top:25px;color: #505D66;\"></i>\n"
+					+ "      <div class=\"el-upload__text\">{{ $t(\"button.drop\") }} <em class=\"textButtonColor\">{{ $t(\"button.click\") }}</em> {{ $t(\"button.click.upload\") }}</div>\n"
+					+ "      <div slot=\"tip\" class=\"el-upload__tip\" style=\"font-size: 11px;line-height: 16px;color: #A7AEB2;\">{{ $t(\"form.info.max\") }}</div>\n"
+					+ "    </el-upload>\n" + "  </div>\n" + "  <footer style=\"margin-top: 10px;\">\n"
+					+ "    <div slot=\"tip\" style=\"text-align: right;\">\n"
+					+ "      <el-button class=\"textButtonColor\" style=\"margin-left: 10px; background: #F0F1F2; border: none;text-align: center;\" size=\"small\" plain @click=\"clearFiles\">Cancel</el-button>\n"
+					+ "      <el-button style=\"margin-left: 10px; background: #1168A6; border-radius: 2px;text-align: center;\" ref=\"importbutton\" size=\"small\" \n"
+					+ "        :disabled=\"importdisabled\" type=\"primary\" @click=\"submitUpload\">{{ $t(\"button.import\") }} <i class=\"el-icon-upload2\"></i></el-button>\n"
+					+ "    </div>\n" + "  </footer>\n"
+					+ "  <el-dialog modal append-to-body title=\"Error\" :visible.sync=\"dialogCreateVisible\" width=\"35%\" @close=\"closeErrDialog\">\n"
+					+ "    <div class=\"el-message-box__container\">\n"
+					+ "      <div class=\"el-message-box__status el-icon-error\"></div>\n"
+					+ "      <div class=\"el-message-box__message\">\n" + "        <span>{{msgerr}}</span>\n"
+					+ "      </div>\n" + "    </div>\n" + "     <div style=\"margin-top: 5px;\">\n"
+					+ "      <el-button class=\"textButtonColor\" v-if=\"showDetailBtn\" size=\"small\" @click=\"showErrDetails\" style=\"margin-left: 30px; border: none;text-align: center;\">{{ $t(\"button.showmore\") }}</el-button>\n"
+					+ "      <el-input v-if=\"showDetails\" type=\"textarea\" v-model=\"detailerr\" readonly></el-input>\n"
+					+ "    </div>\n" + "    <div style=\"text-align: right; margin-top: 10px;\">\n"
+					+ "      <el-button class=\"textButtonColor\" @click=\"closeErrDialog\" style=\"margin-left: 10px; border: none;text-align: center;\" size=\"small\">{{ $t(\"button.cancel\") }}</el-button>\n"
+					+ "    </div>\n" + "  </el-dialog>\n"
+					+ "  <el-dialog modal append-to-body :title=\"$t('message.choose.download.format')\" :visible.sync=\"dialogDownloadOptions\" width=\"25%\" @close=\"closeDialog\">\n"
+					+ "    <div class=\"el-message-box__container\" style=\"text-align: center;margin-top: 2px;\">\n"
+					+ "          <el-button class=\"textButtonColor\" style=\"margin-left: 10px;margin-top: 10px;border: 1px solid #1168A6;box-sizing: border-box;border-radius: 2px;text-align: center;\" \n"
+					+ "          size=\"small\" plain @click=\"getCSVSchema\"> {{ $t(\"form.download.csv\") }} <i class=\"el-icon-download\"></i></el-button>\n"
+					+ "          <el-button class=\"textButtonColor\" style=\"margin-top: 10px;border: 1px solid #1168A6;box-sizing: border-box;border-radius: 2px;text-align: center;\" \n"
+					+ "          size=\"small\" plain @click=\"getJSONSchema\"> {{ $t(\"form.download.json\") }} <i class=\"el-icon-download\"></i></el-button>\n"
+					+ "    </div>\n" + "  </el-dialog>\n" + "</div>");
+			gadgetTemplate.setTemplateJS("vm.vueconfig = {\n"
+					+ "    el: document.getElementById(vm.id).querySelector('vuetemplate  .gadget-app'),\n"
+					+ "    data:{\n"
+					+ "        initialEntity: \"\" , //variable that initializes the entity with the value assigned to it\n"
+					+ "        ontologies:[],\n" + "        selectedOntology:{},\n" + "        fileList:[],\n"
+					+ "        urlimport:'',\n" + "        importdisabled: '',\n" + "        downloaddisabled: '',\n"
+					+ "        uploaddisabled:'',\n" + "        detailerr:'',\n" + "        msgerr:'',\n"
+					+ "        showDetails: false,\n" + "        dialogCreateVisible:false,\n"
+					+ "        limitUpload:1,\n" + "        showDetailBtn: false,\n"
+					+ "        showSelectOntology: false,\n" + "        showSelect: true,\n"
+					+ "        showEntityName: false,\n" + "        dialogDownloadOptions: false\n" + "    },\n"
+					+ "    methods:{\n" + "        drawVueComponent: function(newData,oldData){\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function(){\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function(){\n" + "            vm.vueapp.$destroy();\n"
+					+ "        },\n" + "        receiveValue: function(data){\n"
+					+ "            //data received from datalink\n" + "        },\n"
+					+ "        loadOntologies:function(search, loading) {\n" + "            var that = this;\n"
+					+ "            vm.getEntities().then(function(data){\n"
+					+ "                that.ontologies = data.data.map(function(obj){return {id:obj.id,identification:obj.identification}});\n"
+					+ "\n" + "                if(that.initialEntity!=null && that.initialEntity!==\"\"){\n"
+					+ "                    if (that.ontologies.some(e => e.identification === that.initialEntity)) {\n"
+					+ "                            that.selectedOntology = that.initialEntity;\n"
+					+ "                            that.importdisabled = false;\n"
+					+ "                            that.downloaddisabled = false;\n"
+					+ "                            that.uploaddisabled = false;\n"
+					+ "                            that.showSelect = false;\n"
+					+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+					+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
+					+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
+					+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
+					+ "                }\n" + "\n"
+					+ "                var urlparam = urlParamService.generateFiltersForGadgetId(vm.id);\n"
+					+ "                if(typeof urlparam!== 'undefined' && urlparam!==null && urlparam.length>0){             \n"
+					+ "                    if(urlparam[0].exp!=null){\n"
+					+ "                        var urlontology = urlparam[0].exp.replace(/\"/g,'');\n"
+					+ "                        if(that.ontologies.some(e => e.identification === urlontology)) {\n"
+					+ "                            that.selectedOntology = urlontology;\n"
+					+ "                            that.importdisabled = false;\n"
+					+ "                            that.downloaddisabled = false;\n"
+					+ "                            that.uploaddisabled = false;\n"
+					+ "                            that.showSelect = false;\n"
+					+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+					+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
+					+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
+					+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
+					+ "                    }\n" + "                }else{\n"
+					+ "                    that.showSelectOntology=false;\n" + "                }\n"
+					+ "            })\n" + "        },\n" + "        getCSVSchema:function() {\n"
+					+ "            var that = this;\n"
+					+ "            vm.isComplexSchema(this.selectedOntology).then(function(data){\n"
+					+ "                if(data.data.message == 'ok'){\n"
+					+ "                    vm.downloadEntitySchemaCsv(that.selectedOntology);\n"
+					+ "                } else{\n"
+					+ "                that.msgerr = that.$t(data.data.message);               \n"
+					+ "                that.dialogCreateVisible = true;\n" + "                }\n" + "            });\n"
+					+ "            that.dialogDownloadOptions = false;\n" + "        },\n"
+					+ "        getJSONSchema: function() {\n" + "            var that = this;\n"
+					+ "            vm.downloadEntitySchemaJson(that.selectedOntology);\n"
+					+ "            that.dialogDownloadOptions = false;\n" + "        },\n"
+					+ "        submitUpload:function() {\n" + "            this.$refs.upload.submit();\n"
+					+ "        },\n" + "         onChangeOntology(value) {\n"
+					+ "            this.selectedOntology = value;\n"
+					+ "            this.urlimport = \"/dashboardengine/api/insertDataEntity/\" + value;  \n"
+					+ "            this.importdisabled = false;\n" + "            this.downloaddisabled = false;\n"
+					+ "            this.uploaddisabled = false;\n" + "        },\n"
+					+ "        beforeCSVUpload:function(file) { \n"
+					+ "            const isLt2M = file.size / 1024 < 2000;\n" + "            if(!isLt2M) {\n"
+					+ "                this.$alert(this.$t('error.message.exceed'), 'Warning', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'warning'\n"
+					+ "                });\n" + "                return false;\n" + "            }\n" + "        },\n"
+					+ "        handleError:function(err, file, fileList){\n" + "            var jsonerr;\n"
+					+ "            \n" + "            try{\n" + "                jsonerr = JSON.parse(err.message);\n"
+					+ "                this.msgerr = this.$t(jsonerr.message);\n"
+					+ "                if(jsonerr.detail != ''){\n"
+					+ "                    this.detailerr = JSON.stringify(jsonerr.detail);\n"
+					+ "                    this.showDetailBtn = true;\n" + "                }   \n"
+					+ "            } catch(objError){\n"
+					+ "                this.msgerr = err.name + \" \" + err.status;\n"
+					+ "                this.detailerr = err.message;\n" + "                this.showDetailBtn = true;\n"
+					+ "            }           \n" + "            this.dialogCreateVisible = true;\n" + "        },\n"
+					+ "        showErrDetails: function(){\n" + "            if(this.showDetails === true){\n"
+					+ "                this.showDetails = false;\n" + "            } else {\n"
+					+ "                try {\n" + "                    var obj = JSON.parse(this.detailerr);\n"
+					+ "                    this.detailerr = JSON.stringify(obj, undefined, 4);\n"
+					+ "                    this.showDetails = true;\n" + "                } catch(objError){\n"
+					+ "                    this.showDetails = true;\n" + "                }\n" + "            }\n"
+					+ "        },\n" + "        closeErrDialog: function(){\n"
+					+ "            this.showDetails = false;\n" + "            this.showDetailBtn = false;\n"
+					+ "            this.dialogCreateVisible = false;\n" + "        },\n"
+					+ "        closeDialog: function() {\n" + "            this.dialogDownloadOptions = false;\n"
+					+ "        },\n" + "        handleSuccess: function(response, file, fileList){\n"
+					+ "            if(response.message != '') {\n"
+					+ "            this.$alert(this.$t(\"message.success.loaded.1\") +' \"' + file.name + '\" ' + this.$t(\"message.success.loaded.2\") + ' \\r\\n' + this.$t(\"message.success.inserted\") + response.message, 'Success', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'success'\n"
+					+ "                });\n" + "            } else {\n"
+					+ "                this.$alert(this.$t(\"message.success.loaded.1\") +' \"' + file.name + '\" ' + this.$t(\"message.success.loaded.2\"), 'Success', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'success'\n"
+					+ "                });\n" + "            }\n" + "            this.$refs.upload.clearFiles();\n"
+					+ "            this.selectedOntology = null;\n" + "            this.importdisabled = true;\n"
+					+ "            this.downloaddisabled = true;\n" + "            this.uploaddisabled = true;\n"
+					+ "        },\n" + "        handlePreview: function(file){\n" + "        },\n"
+					+ "        handleRemove: function(file, fileList){\n" + "        },\n"
+					+ "        handleExceed: function(files, fileList){\n"
+					+ "            this.$alert(this.$t(\"message.alert.onefile\"), 'Warning', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'warning'\n"
+					+ "                });\n" + "        },\n" + "        clearFiles: function(){\n"
+					+ "            this.$refs.upload.clearFiles();\n" + "            this.selectedOntology = null;\n"
+					+ "            this.importdisabled = true;\n" + "            this.downloaddisabled = true;\n"
+					+ "            this.uploaddisabled = true;\n" + "        },\n"
+					+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+					+ "    mounted() {\n" + "        if(vm.tparams && vm.tparams.parameters){\n"
+					+ "            this.initialEntity=vm.tparams.parameters.initialEntity; \n" + "        }\n"
+					+ "        \n" + "        this.loadOntologies();\n" + "        this.onChangeOntology();\n"
+					+ "        this.importdisabled = true;\n" + "        this.downloaddisabled = true;\n"
+					+ "        this.uploaddisabled = true;\n" + "    },\n" + "    i18n: window.i18n\n" + "}\n" + "\n"
+					+ "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-12").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-12");
+			gadgetTemplate.setIdentification("ods-gadget-crud");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJSODS");
+			gadgetTemplate
+					.setHeaderlibs("<script src=\"/controlpanel/static/vendor/jsoneditor/jsoneditor.js\"></script>\n"
+							+ "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n" + "\n" + "\n" + "<script>\n"
+							+ "\n" + "var __env = __env || {};\n"
+							+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+							+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+							+ "			\"form.entity\": \"Entidad\",\n"
+							+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+							+ "			\"form.select\": \"Seleccionar\",\n"
+							+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+							+ "			\"form.operator\": \"Operador\",\n"
+							+ "			\"form.condition\": \"Condición\",\n"
+							+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+							+ "			\"form.write.here\": \"Escriba aquí\",\n"
+							+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+							+ "			\"form.orderby\": \"Ordenar por\",\n"
+							+ "			\"form.order.type\": \"Tipo de pedido\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Valor máximo\",\n"
+							+ "			\"form.offset\": \"Desplazamiento\",\n"
+							+ "			\"form.reset\": \"Restablecer\",\n" + "			\"form.search\": \"Buscar\",\n"
+							+ "			\"form.records\": \"Registros\",\n"
+							+ "			\"form.columns\": \"Columnas\",\n"
+							+ "			\"column.options\": \"Opciones\",\n"
+							+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+							+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+							+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+							+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+							+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+							+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+							+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+							+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+							+ "			\"form.edit.record\": \"Editar registro\",\n"
+							+ "			\"form.detail.record\": \"Registro detallado\",\n"
+							+ "			\"button.cancel\": \"Cancelar\",\n"
+							+ "			\"button.delete\": \"Eliminar\",\n" + "			\"button.save\": \"Guardar\",\n"
+							+ "			\"button.close\": \"Cerrar\",\n" + "			\"button.new\": \"Nuevo\",\n"
+							+ "			\"button.apply\": \"Aplicar\",\n"
+							+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+							+ "		    \"form.title.import\": \"Importar datos\",\n"
+							+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+							+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+							+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+							+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+							+ "		    \"button.click\": \"haga click aquí\",\n"
+							+ "		    \"button.click.upload\": \"para subirlo\",\n"
+							+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Importar\",\n"
+							+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+							+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+							+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+							+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+							+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+							+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+							+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+							+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+							+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+							+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+							+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+							+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+							+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+							+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+							+ "			\"button.all.records\": \"Todos los registros\",\n"
+							+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+							+ "			\"error.message.download\": \"Error descargando datos\",\n"
+							+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+							+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+							+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+							+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+							+ "			\"form.select\": \"Select\",\n"
+							+ "			\"form.select.fields\": \"Select Fields\",\n"
+							+ "			\"form.operator\": \"Operator\",\n"
+							+ "			\"form.condition\": \"Condition\",\n"
+							+ "			\"form.select.operator\": \"Select Operator\",\n"
+							+ "			\"form.write.here\": \"Write here\",\n"
+							+ "			\"form.select.field\": \"Select Field\",\n"
+							+ "			\"form.orderby\": \"Order by\",\n"
+							+ "			\"form.order.type\": \"Order Type\",\n"
+							+ "			\"form.where\": \"Where\",\n"
+							+ "			\"form.max.value\": \"Max Value\",\n"
+							+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+							+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+							+ "			\"form.columns\": \"Columns\",\n"
+							+ "			\"column.options\": \"Options\",\n"
+							+ "			\"form.new.record.title\": \"New record\",\n"
+							+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+							+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+							+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+							+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+							+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+							+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+							+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+							+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+							+ "			\"form.edit.record\": \"Edit record \",\n"
+							+ "			\"form.detail.record\": \"Detail record \",\n"
+							+ "			\"button.cancel\": \"Cancel\",\n"
+							+ "			\"button.delete\": \"Delete\",\n" + "			\"button.save\": \"Save\",\n"
+							+ "			\"button.close\": \"Close\",\n" + "			\"button.new\": \"New\",\n"
+							+ "			\"button.apply\": \"Apply\",\n"
+							+ "		    \"form.select.entity\": \"Select Entity\",\n"
+							+ "		    \"form.title.import\": \"Import records\",\n"
+							+ "		    \"form.download.template\": \"Download Template\",\n"
+							+ "			\"form.download.csv\":\"Download CSV\",\n"
+							+ "    		\"form.download.json\":\"Download JSON\",\n"
+							+ "		    \"button.drop\": \"Drop file or\",\n"
+							+ "		    \"button.click\": \"click here\",\n"
+							+ "		    \"button.click.upload\": \"to upload\",\n"
+							+ "		    \"form.info.max\": \"Max. 2mb csv\",\n"
+							+ "		    \"button.import\": \"Import\",\n"
+							+ "		    \"button.showmore\": \"Show More Details\",\n"
+							+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+							+ "		    \"message.success.loaded.1\": \"The\",\n"
+							+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+							+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+							+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+							+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+							+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+							+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+							+ "		    \"error.message.processing\": \"Error processing data\",\n"
+							+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+							+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+							+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+							+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+							+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+							+ "			\"button.all.records\": \"All the records\",\n"
+							+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+							+ "			\"error.message.download\": \"Error downloading data\",\n"
+							+ "			\"error.message.empty\": \"Error there are no records\",\n"
+							+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+							+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+							+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+							+ "	var localLocale ='EN';\n" + "	try{\n"
+							+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+							+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+							+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+							+ " // link messages with internacionalization json on controlpanel\n"
+							+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+
+			gadgetTemplate.setDescription("ODS CRUD gadget template");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n"
+					+ "    div.ods-dialog__body h3 {\n" + "        font-size: 14px !important;\n"
+					+ "        display: none !important;\n" + "    }\n" + "\n" + "    .control-label {\n"
+					+ "        margin-top: 1px!important;\n" + "        color: #505D66 !important;\n"
+					+ "        font-weight: normal !important;\n" + "        width: fit-content !important;\n"
+					+ "        font-size: small !important;\n" + "    }\n" + "\n" + "    .control-label .required,\n"
+					+ "    .form-group .required {\n" + "        color: #A73535 !important;\n"
+					+ "        font-size: 12px !important;\n" + "        padding-left: 2px !important;\n" + "    }\n"
+					+ "\n" + "    .ods-select {\n" + "        display: block !important;\n" + "\n" + "\n" + "    }\n"
+					+ "\n" + "    .wizard-style {\n" + "        top: 20px !important;\n"
+					+ "        margin-left: 15px !important;\n" + "    }\n" + "\n" + "\n" + "    .ods-input__inner {\n"
+					+ "        background: #F7F8F8 !important;\n" + "    }\n" + "\n" + "\n" + "    .records-title {\n"
+					+ "        margin-top: 6px !important;\n" + "        font-size: 17px !important;\n"
+					+ "        line-height: 24px !important;\n" + "        color: #051724 !important;\n" + "    }\n"
+					+ "\n" + "    .ods-dialog-title {\n" + "        font-size: 17px !important;\n"
+					+ "        line-height: 24px !important;\n" + "        color: #051724 !important;\n" + "    }\n"
+					+ "    .ods-dialog__header {\n" + "        padding: 37px 20px 10px !important;\n" + "    }\n"
+					+ "    .search-menu-title {\n" + "\n" + "        margin-left: 5px !important;\n" + "\n" + "    }\n"
+					+ "\n" + "    .search-menu-title-magnifying-glass {\n" + "\n"
+					+ "        margin-left: 10px!important;\n" + "        margin-bottom: -4px!important;\n" + "    }\n"
+					+ "\n" + "    .ods-row-modal-grey {\n" + "        margin-bottom: -30px!important;\n"
+					+ "        margin-left: -20!important;\n" + "        margin-right: -20!important;\n"
+					+ "        padding-bottom: 24px!important;\n" + "        margin-top: 24px!important;\n" + "    }\n"
+					+ "\n" + "    /*.el-table .cell {\n" + "        font-size: 12px !important;\n" + "    }\n" + "\n"
+					+ "    .el-table .el-table__cell {\n" + "        padding: 5px 0 !important;\n" + "    }*/\n" + "\n"
+					+ "\n" + "    .download-icons-grey {\n"
+					+ "          filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);\n"
+					+ "    }\n" + "    .el-form-item__contentel-form-item__content {\n" + "        display: none;\n"
+					+ "    }\n" + "\n" + "\n" + "\n" + "    .row {\n" + "        display: -ms-flexbox !important;\n"
+					+ "        display: flex !important;\n" + "        -ms-flex-wrap: wrap !important;\n"
+					+ "        flex-wrap: wrap !important;\n" + "        width:100% !important;\n"
+					+ "        margin-right: -15px !important;\n" + "        margin-left: -15px !important;\n"
+					+ "    }\n" + "    .col-md-12 {\n" + "        -ms-flex: 0 0 100% !important;\n"
+					+ "        flex: 0 0 100% !important;\n" + "        max-width: 100% !important;\n" + "    }\n"
+					+ "    .col, .col-1, .col-10, .col-11, .col-12, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-auto, .col-lg, .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-auto, .col-md, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-auto, .col-sm, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-auto, .col-xl, .col-xl-1, .col-xl-10, .col-xl-11, .col-xl-12, .col-xl-2, .col-xl-3, .col-xl-4, .col-xl-5, .col-xl-6, .col-xl-7, .col-xl-8, .col-xl-9, .col-xl-auto {\n"
+					+ "        position: relative !important;\n" + "        width: 100% !important;\n"
+					+ "        padding-right: 15px !important;\n" + "        padding-left: 15px !important;\n"
+					+ "    }\n" + "    /*label {\n" + "        display: inline-block !important;\n"
+					+ "        margin-bottom: 0.5rem !important;\n" + "    }*/\n" + "    .form-group {\n"
+					+ "        margin-bottom: 1rem !important;\n" + "    }\n" + "\n" + "    .form-control {\n"
+					+ "        display: block !important;\n" + "        width: 100%!important;\n"
+					+ "        height: calc(1.5em + 0.75rem + 2px)!important;\n"
+					+ "        padding: 0.375rem 0.75rem!important;\n" + "        font-size: 1rem!important;\n"
+					+ "        font-weight: 400!important;\n" + "        line-height: 1.5!important;\n"
+					+ "        color: #495057!important;\n" + "        background-color: #fff!important;\n"
+					+ "        background-clip: padding-box!important;\n"
+					+ "        border: 1px solid #ced4da!important;\n" + "        border-radius: 0.25rem!important;\n"
+					+ "        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out!important;\n"
+					+ "    }\n" + "     /*optgroup, select, textarea {\n" + "        margin: 0 !important;\n"
+					+ "        font-family: inherit !important;\n" + "        font-size: inherit !important;\n"
+					+ "        line-height: inherit !important;\n" + "    }\n" + "    button, input {\n"
+					+ "        margin: 0 !important;\n" + "        font-family: inherit !important;\n" + "\n"
+					+ "        line-height: inherit !important;\n" + "    }*/\n" + "    .form-control:focus {\n"
+					+ "        color: #495057 !important;\n" + "        background-color: #fff !important;\n"
+					+ "        border-color: #80bdff !important;\n" + "        outline: 0 !important;\n"
+					+ "        box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%) !important;\n" + "    }\n"
+					+ ".float-right{\n" + "    float: right;\n" + "    margin-left: 10px!important;\n"
+					+ "    margin-right: 10px!important;\n" + "}\n" + "\n" + "</style>\n"
+					+ "<div class=\"appgadget\" style=\"padding-left:10px;padding-right:10px;\">\n"
+					+ "    <!-- entity selector -->\n" + "    <ods-row >\n" + "        <ods-col :span=\"8\">\n"
+					+ "            <label class=\"control-label\">{{ $t(\"form.entity\") }}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                    *</span></label></br>\n"
+					+ "            <ods-select  :disabled=\"showSelectOntology\" size=\"small\"  v-model=\"selectedOntology\"\n"
+					+ "                @change=\"onChangeEntity($event)\" filterable :placeholder=\"$t('form.select')\">\n"
+					+ "                <ods-option v-for=\"onto in ontologies\" :key=\"onto.identification\" :label=\"onto.identification\"\n"
+					+ "                    :value=\"onto.identification\">\n" + "                </ods-option>\n"
+					+ "            </ods-select >\n" + "        </ods-col>\n" + "        <!-- wizard switch -->\n"
+					+ "        <ods-col v-if=\"typeGadget=='withWizard'||typeGadget=='searchOnly'\" :span=\"8\">\n"
+					+ "            <ods-switch class=\"wizard-style\" v-model=\"showWizard\" @change=\"calculeTableheight\" :disabled=\"disabledWizard\"\n"
+					+ "                :active-text=\"$t('form.show.wizard')\"></ods-switch>\n" + "        </ods-col>\n"
+					+ "    </ods-row>\n" + "        <ods-divider  direction=\"horizontal\"></ods-divider>\n"
+					+ "    <ods-row>\n" + "        </ods-row>\n" + "    <!-- wizard  -->\n"
+					+ "    <div class=\"crudWizard\" v-if=\"showWizard\">\n" + "        <ods-row  type=\"flex\"\n"
+					+ "            :gutter=\"10\">\n" + "\n"
+					+ "            <ods-col :xs=\"5\" :sm=\"5\" :md=\"5\" :lg=\"5\" :xl=\"5\">\n"
+					+ "                <label class=\"control-label\">{{ $t(\"form.where\") }}</label></br>\n"
+					+ "                <ods-select size=\"small\" v-model=\"selectWizard\" multiple collapse-tags :placeholder=\"$t('form.select')\">\n"
+					+ "                    <ods-option v-for=\"item in selectWizardOptions\" :key=\"item.value\" :label=\"item.label\"\n"
+					+ "                        :value=\"item.value\">\n" + "                    </ods-option>\n"
+					+ "                </ods-select>\n" + "            </ods-col>\n"
+					+ "            <ods-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\" style=\"margin-top: 12px;\">\n"
+					+ "                <ods-button  icon=\"ods-icon-plus\" type=\"primary\"  @click=\"dialogAddSelectVisibleFunction\"></ods-button>\n"
+					+ "            </ods-col>\n"
+					+ "            <ods-col :xs=\"5\" :sm=\"5\" :md=\"5\" :lg=\"5\" :xl=\"5\">\n"
+					+ "                <label v-if=\"typeGadget!='searchOnly'\" class=\"control-label\">{{ $t(\"form.orderby\") }}</label></br>\n"
+					+ "                <ods-select v-if=\"typeGadget!='searchOnly'\" size=\"small\" v-model=\"orderByWizard\" multiple collapse-tags\n"
+					+ "                    :placeholder=\"$t('form.select')\">\n"
+					+ "                    <ods-option v-for=\"itemo in orderByWizardOptions\" :key=\"itemo.value\" :label=\"itemo.label\"\n"
+					+ "                        :value=\"itemo.value\">\n" + "                    </ods-option>\n"
+					+ "                </ods-select>\n" + "            </ods-col>\n"
+					+ "            <ods-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\" style=\"margin-top: 12px;\">\n"
+					+ "                <ods-button v-if=\"typeGadget!='searchOnly'\" icon=\"ods-icon-plus\" type=\"primary\"\n"
+					+ "                    @click=\"dialogAddOrderByVisibleFunction\"></ods-button>\n"
+					+ "            </ods-col>\n"
+					+ "            <ods-col :xs=\"3\" :sm=\"3\" :md=\"3\" :lg=\"3\" :xl=\"3\" style=\"min-width:100px\">\n"
+					+ "                <label v-if=\"typeGadget!='searchOnly'\" class=\"control-label\">{{ $t(\"form.max.value\") }}</label> </br>\n"
+					+ "                <ods-input v-if=\"typeGadget!='searchOnly'\" type=\"number\" size=\"small\" v-model=\"limitWizard\"\n"
+					+ "                    controls-position=\"right\" :min=\"0\">\n" + "                </ods-input>\n"
+					+ "            </ods-col>\n"
+					+ "            <ods-col :xs=\"3\" :sm=\"3\" :md=\"3\" :lg=\"3\" :xl=\"3\" style=\"min-width:100px\">\n"
+					+ "                <label v-if=\"typeGadget!='searchOnly'\" class=\"control-label\"> {{ $t(\"form.offset\") }} </label></br>\n"
+					+ "                <ods-input v-if=\"typeGadget!='searchOnly'\" type=\"number\" size=\"small\" v-model=\"offsetWizard\"\n"
+					+ "                    controls-position=\"right\" :min=\"0\">\n" + "                </ods-input>\n"
+					+ "            </ods-col>\n" + "\n"
+					+ "            <ods-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\" style=\"min-width:100px; margin-top: 12px;\">\n"
+					+ "\n"
+					+ "                <ods-button   type=\"neutral\" class=\"float-right\" @click=\"resetWizard()\">{{ $t(\"form.reset\") }}\n"
+					+ "                </ods-button>\n" + "            </ods-col>\n"
+					+ "            <ods-col :xs=\"1\" :sm=\"1\" :md=\"1\" :lg=\"1\" :xl=\"1\" style=\"min-width:100px;margin-top: 12px;\">\n"
+					+ "                <ods-button  type=\"primary\" class=\" float-right\" @click=\"searchWizard()\">\n"
+					+ "                    {{ $t(\"form.search\") }}</ods-button>\n" + "\n" + "            </ods-col>\n"
+					+ "             <ods-divider></ods-divider>\n" + "        </ods-row>\n" + "    </div>\n"
+					+ "    <!-- div table -->\n" + "    <div v-if=\"showTable\">\n"
+					+ "        <ods-row justify=\"center\" type=\"flex\" :gutter=\"10\">\n"
+					+ "            <ods-col :xs=\"3\" :sm=\"3\" :md=\"3\" :lg=\"2\" :xl=\"2\" >\n"
+					+ "                <label class=\"control-label records-title\">{{ $t(\"form.records\") }}</label>\n"
+					+ "            </ods-col>\n"
+					+ "            <ods-col :xs=\"5\" :sm=\"5\" :md=\"5\" :lg=\"6\" :xl=\"6\">\n" + "\n"
+					+ "                <ods-input type=\"string\" class=\"search-menu-title\" size=\"small\"\n"
+					+ "                    v-model=\"searchString\">\n"
+					+ "                     <ods-icon   class=\"input-slot-icon\" slot=\"prepend\"  name=\"search\" style=\"margin-top: 15px;\"  size=\"16\" />\n"
+					+ "                </ods-input>\n" + "\n" + "\n" + "            </ods-col>\n"
+					+ "            <ods-col :offset=\"4\" :xs=\"12\" :sm=\"12\" :md=\"12\" :lg=\"12\" :xl=\"12\" style=\"text-align: right;\">\n"
+					+ "                <ods-dropdown  style=\"margin-right: 10px;padding: 8px;\" @command=\"downloadData\">\n"
+					+ "\n" + "                <ods-dropdown-menu slot=\"dropdown\">\n"
+					+ "                    <ods-dropdown-item v-if=\"executeSearch\" command=\"csv\" ><img  class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.csv\") }}</ods-dropdown-item>\n"
+					+ "                    <ods-dropdown-item v-if=\"executeSearch\" command=\"json\"  ><img  class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.json\") }}</ods-dropdown-item>\n"
+					+ "                    <ods-dropdown-item v-if=\"!executeSearch\" command=\"allcsv\" ><img  class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.csv\") }}</ods-dropdown-item>\n"
+					+ "                    <ods-dropdown-item v-if=\"!executeSearch\" command=\"alljson\"  ><img  class=\"download-icons-grey\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_download.svg'\">&nbsp;{{ $t(\"form.download.json\") }}</ods-dropdown-item>\n"
+					+ "                </ods-dropdown-menu>\n" + "                </ods-dropdown>\n" + "\n"
+					+ "                <ods-button   class=\"primary\" @click=\"dialogOptionsColumnsVisible = true\" icon=\"ods-icon-list\"></ods-button>\n"
+					+ "                <ods-button  class=\"primary\" icon=\"ods-icon-plus\" @click=\"dialogCreateVisible= true\"></ods-button>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "\n"
+					+ "       <!--ods table-------------------->\n" + "    <div>\n" + "      <ods-table\n"
+					+ "        :data=\"paginatedData\"\n" + "        style=\"width: 100%;\"\n"
+					+ "        :height=\"tableHeight\"\n" + "        :stripe=\"false\"\n" + "        :fit=\"true\"\n"
+					+ "        :showHeader=\"true\"\n" + "        @sort-change=\"sortChange\">\n"
+					+ "        <ods-table-column\n" + "          v-for=\"(column, i) in columns\"\n"
+					+ "          :key=\"`column-${column.prop}`\"\n"
+					+ "          :fixed=\"i === 0 && fixedFirstCol ? 'left' : i === columns.length - 1 && fixedLastCol ? 'right' : false\"\n"
+					+ "          :prop=\"column.prop\"\n" + "          :sortable=\"sortable\">\n"
+					+ "          <template slot=\"header\" slot-scope=\"scope\">\n"
+					+ "            {{ columns[scope.$index] !== '' ? columns[scope.$index].label : scope.row }}\n"
+					+ "          </template>\n" + "           <template slot-scope=\"scope\">\n" + "\n"
+					+ "        <span style=\"margin-left: 10px\">{{ scope.row[column.prop] }}</span>\n"
+					+ "      </template>\n" + "        </ods-table-column>\n" + "        <ods-table-column\n"
+					+ "            :label=\"$t('column.options')\"\n" + "            width=\"120\">\n"
+					+ "            <template slot-scope=\"scope\">\n"
+					+ "                 <ods-button size=\"small\" type=\"neutral\" icon=\"ods-icon-eye\" @click=\"handleShow(scope.$index, scope.row)\" style=\"margin-left:0px\">\n"
+					+ "                </ods-button>\n"
+					+ "                <ods-button size=\"small\" type=\"neutral\" icon=\"ods-icon-edit\" @click=\"handleEdit(scope.$index, scope.row)\" style=\"margin-left:0px\">\n"
+					+ "                </ods-button>\n"
+					+ "                <ods-button size=\"small\"  type=\"neutral\" @click=\"handleDelete(scope.$index, scope.row)\" style=\"margin-left:0px\"> <ods-icon    name=\"delete\"  color=\"#a73535\" />\n"
+					+ "                </ods-button>\n" + "            </template>\n"
+					+ "            </ods-table-column>\n" + "      </ods-table>\n" + "    </div>\n" + "    <div>\n"
+					+ "      <ods-pagination\n" + "        :current-page=\"page\"\n"
+					+ "        :page-size=\"pageSize\"\n" + "        :page-sizes=\"pageSizes\"\n"
+					+ "        :page-count=\"pageCount\"\n" + "        :total=\"totalItems\"\n"
+					+ "        @current-change=\"handlePageChange\"\n"
+					+ "        @size-change=\"handlePageSizeChange\">\n" + "      </ods-pagination>\n" + "    </div>\n"
+					+ "    <!-- ods table-------------------->\n" + "\n" + "    </div>\n"
+					+ "    <!-- DELETE dialog -->\n"
+					+ "    <ods-dialog modal=\"false\" append-to-body=\"true\" :visible.sync=\"dialogDeleteVisible\" width=\"25%\">\n"
+					+ "        <label class=\"ods-dialog-title\">{{ $t(\"message.modal.delete.title\") }}</label></br>\n"
+					+ "        <label\n"
+					+ "            style=\"font-size: 12px;line-height: 16px; color: #505D66;\">{{ $t(\"message.modal.delete.subtitle\") }}</label>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button type=\"primary\" class=\"float-right\" @click=\"aceptedDelete\">\n"
+					+ "                    {{ $t(\"button.delete\") }}</ods-button>\n"
+					+ "                <ods-button type=\"neutral\" class=\" float-right\" @click=\"dialogDeleteVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</ods-button>\n" + "            </ods-col>\n"
+					+ "        </ods-row>\n" + "    </ods-dialog>\n" + "    <!-- EDIT dialog -->\n"
+					+ "    <ods-dialog modal=\"true\" append-to-body=\"true\" :title=\"editTitle\" :visible.sync=\"dialogEditVisible\"\n"
+					+ "        @opened=\"openEdit\" width=\"25%\">\n"
+					+ "        <div :class=\"[idelem, 'editor_edit_holder']\"  ></div>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button type=\"primary\" class=\"float-right\" @click=\"aceptedEdit\">{{ $t(\"button.save\") }}\n"
+					+ "                </ods-button>\n"
+					+ "                <ods-button type=\"neutral\" class=\" float-right\" @click=\"dialogEditVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</ods-button>\n" + "            </ods-col>\n"
+					+ "        </ods-row>\n" + "    </ods-dialog>\n" + "    <!-- SHOW/HIDE COLUMNS dialog -->\n"
+					+ "    <ods-dialog modal=\"false\" append-to-body=\"false\" :title=\"$t('form.columns')\"\n"
+					+ "        :visible.sync=\"dialogOptionsColumnsVisible\" width=\"25%\">\n" + "\n"
+					+ "        <ods-row v-for=\"visibleColumn in visibleColumns\" :key=\"visibleColumn.prop\" v-if=\"visibleColumn.label!='id'\">\n"
+					+ "            <ods-col :span=\"24\">\n" + "                </br>\n"
+					+ "                <el-switch v-model=\"visibleColumn.visible\" :active-text=\"visibleColumn.prop\"\n"
+					+ "                    @change=\"dialogOptionsColumnsVisible = false;dialogOptionsColumnsVisible = true;\"></el-switch>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button type=\"primary\" class=\"float-right\" @click=\"aceptedChangeColumns\">\n"
+					+ "                    {{ $t(\"button.apply\") }}</ods-button>\n"
+					+ "                <ods-button type=\"neutral\" class=\" float-right\"\n"
+					+ "                    @click=\"dialogOptionsColumnsVisible = false\">{{ $t(\"button.cancel\") }}</ods-button>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "    </ods-dialog>\n"
+					+ "     <!-- DOWNLOAD dialog -->\n"
+					+ "    <ods-dialog modal=\"false\" append-to-body=\"false\" :title=\"$t('message.download.all')\"\n"
+					+ "        :visible.sync=\"dialogDownloadVisible\" width=\"25%\">\n" + "\n" + "\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                  <ods-button type=\"primary\" class=\"float-right\" @click=\"aceptedDownloadOnlySelec\">\n"
+					+ "                    {{ $t(\"button.only.selection.records\") }}</ods-button>\n"
+					+ "                <ods-button type=\"primary\" class=\"float-right\" @click=\"aceptedDownloadAll\">\n"
+					+ "                    {{ $t(\"button.all.records\") }}</ods-button>\n"
+					+ "                <ods-button type=\"neutral\" class=\"float-right\"\n"
+					+ "                    @click=\"dialogDownloadVisible = false\">{{ $t(\"button.cancel\") }}</ods-button>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "    </ods-dialog>\n"
+					+ "    <!-- DETAIL dialog -->\n"
+					+ "    <ods-dialog modal=\"true\" append-to-body=\"true\" :title=\"showTitle\" :visible.sync=\"dialogShowVisible\"\n"
+					+ "        @opened=\"openShow\" width=\"25%\">\n"
+					+ "        <div :class=\"[idelem, 'editor_show_holder']\" ></div>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button type=\"neutral\"  class=\"float-right\" @click=\"dialogShowVisible = false\">\n"
+					+ "                    {{ $t(\"button.close\") }}</ods-button>\n" + "\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "    </ods-dialog>\n"
+					+ "    <!-- CREATE dialog -->\n"
+					+ "    <ods-dialog modal=\"true\" append-to-body=\"true\" :title=\"$t('form.new.record.title')\"\n"
+					+ "        :visible.sync=\"dialogCreateVisible\" @opened=\"openCreate\" width=\"25%\">\n"
+					+ "        <div :class=\"[idelem, 'editor_new_holder']\" ></div>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button type=\"primary\"  class=\"float-right\" @click=\"aceptedCreate\">\n"
+					+ "                    {{ $t(\"button.new\") }} <img style=\"margin-top: 6px;\" v-bind:src=\"platformhost + '/static/images/dashboards/icon_button_plus.svg'\">\n"
+					+ "                </ods-button>\n"
+					+ "                <ods-button type=\"neutral\"  class=\"float-right\" @click=\"dialogCreateVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</ods-button>\n" + "            </ods-col>\n"
+					+ "        </ods-row>\n" + "    </ods-dialog>\n" + "\n" + "    <!-- WHERE dialog -->\n"
+					+ "    <ods-dialog modal=\"true\" append-to-body=\"true\" :title=\"$t('form.where')\" :visible.sync=\"dialogAddSelectVisible\"\n"
+					+ "        @opened=\"opendialogAddSelect\" width=\"25%\">\n" + "        <ods-row type=\"flex\">\n"
+					+ "            <ods-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.select.fields\")}} <span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <ods-select size=\"small\" v-model=\"selectedParametereWhere\" :placeholder=\"$t('form.select.field')\">\n"
+					+ "                    <ods-option v-for=\"col in columnsParams\" :key=\"col.prop\" :label=\"col.label\" :value=\"col.prop\">\n"
+					+ "                    </ods-option>\n" + "                </ods-select>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "        <ods-row type=\"flex\">\n"
+					+ "            <ods-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.operator\")}}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <ods-select size=\"small\" v-model=\"selectedOperatorWhere\" :placeholder=\"$t('form.select.operator')\">\n"
+					+ "                    <ods-option v-for=\"ope in operators\" :key=\"ope\" :label=\"ope\" :value=\"ope\">\n"
+					+ "                    </ods-option>\n" + "                </ods-select>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "        <ods-row type=\"flex\">\n"
+					+ "            <ods-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.condition\")}} <span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <ods-input size=\"small\" :placeholder=\"$t('form.write.here')\" v-model=\"inputValueWhere\"></ods-input>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button  type=\"primary\" class=\" float-right\" @click=\"aceptedAddWhereParameter\">\n"
+					+ "                    {{ $t(\"button.apply\") }}</ods-button>\n"
+					+ "                <ods-button  type=\"neutral\" class=\" float-right\" @click=\"dialogAddSelectVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</ods-button>\n" + "            </ods-col>\n"
+					+ "        </ods-row>\n" + "    </ods-dialog>\n" + "\n" + "\n" + "    <!-- ORDER BY dialog -->\n"
+					+ "    <ods-dialog modal=\"true\" append-to-body=\"true\" title=\"Order by\" :visible.sync=\"dialogAddOrderByVisible\"\n"
+					+ "        @opened=\"opendialogAddOrderBy\" width=\"25%\">\n" + "        <ods-row type=\"flex\">\n"
+					+ "            <ods-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.select.fields\")}}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <ods-select  v-model=\"selectedParametereOrderBy\" :placeholder=\"$t('form.select.field')\">\n"
+					+ "                    <ods-option v-for=\"col in columnsParams\" :key=\"col.prop\" :label=\"col.label\" :value=\"col.prop\">\n"
+					+ "                    </ods-option>\n" + "                </ods-select>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n" + "        <ods-row type=\"flex\">\n"
+					+ "            <ods-col :span=\"24\">\n"
+					+ "                <label class=\"control-label\">{{$t(\"form.order.type\")}}<span class=\"required\" aria-required=\"true\">\n"
+					+ "                        *</span></label></br>\n"
+					+ "                <ods-select  v-model=\"selectedOperatorOrderBy\" :placeholder=\"$t('form.select.operator')\">\n"
+					+ "                    <ods-option v-for=\"ope in orders\" :key=\"ope\" :label=\"ope\" :value=\"ope\">\n"
+					+ "                    </ods-option>\n" + "                </ods-select>\n"
+					+ "            </ods-col>\n" + "        </ods-row>\n"
+					+ "        <ods-row class=\"ods-row-modal-grey\">\n" + "            <ods-col>\n"
+					+ "                </br>\n"
+					+ "                <ods-button  type=\"primary\"  class=\"ods-self-end\" @click=\"aceptedAddOrderByParameter\">\n"
+					+ "                    {{ $t(\"button.apply\") }}</ods-button>\n"
+					+ "                <ods-button  type=\"neutral\"  class=\"ods-self-end\" @click=\"dialogAddOrderByVisible = false\">\n"
+					+ "                    {{ $t(\"button.cancel\") }}</ods-button>\n" + "            </ods-col>\n"
+					+ "        </ods-row>\n" + "    </ods-dialog>\n" + "\n" + "\n" + "</div>\n" + "");
+			gadgetTemplate.setTemplateJS("vm.vueconfig = {\n"
+					+ "   el: document.getElementById(vm.id).querySelector('vuetemplate .appgadget'),\n"
+					+ "   data: {\n" + "      typeGadget: 'withWizard', //['withWizard','noWizard','searchOnly']\n"
+					+ "      hideIdColumn: false, // show or hide id column\n"
+					+ "      initialEntity: \"\" , //variable that initializes the entity with the value assigned to it\n"
+					+ "\n" + "      showTable: false,\n" + "      showSelectOntology: true,\n"
+					+ "      showWizard: false,\n" + "      disabledWizard: true,\n" + "      idPath: \"\",\n"
+					+ "      ontologies: [],\n" + "      ontologyFieldsAndDesc: {},\n" + "      recordSelected: \"\",\n"
+					+ "      selectedOntology: \"\",\n" + "      selectedOntologySchema: {},\n" + "\n"
+					+ "      dialogDeleteVisible: false, //hide show dialogs\n" + "      dialogEditVisible: false,\n"
+					+ "      dialogCreateVisible: false,\n" + "      dialogShowVisible: false,\n"
+					+ "      dialogOptionsColumnsVisible: false,\n" + "      dialogAddSelectVisible: false,\n"
+					+ "      dialogDownloadVisible:false,\n" + "      idelem:vm.id,\n" + "      executeSearch:false,\n"
+					+ "      showMagnifyingGlass: true,\n" + "      jEditor: {},\n" + "      jShowEditor: {},\n"
+					+ "      tableHeight: 100,\n" + "      resizeObserver: {},\n" + "      selectWizard: [],\n"
+					+ "      selectWizardOptions: [],\n" + "      orderByWizard: [],\n"
+					+ "      orderByWizardOptions: [],\n" + "      dialogAddOrderByVisible: false,\n"
+					+ "      limitWizard: 100, // limit of records in the search for initialize at another value change on resetwizard too\n"
+					+ "      offsetWizard: 0, //offset records in the search\n" + "      whereCondition: '',\n"
+					+ "      uniqueID: '', // save path of id\n" + "      selectedParametereWhere: '',\n"
+					+ "      selectedOperatorWhere: '',\n" + "      selectedParametereOrderBy: '',\n"
+					+ "      selectedOperatorOrderBy: '',\n" + "      inputValueWhere: '',\n" + "      editTitle: '',\n"
+					+ "      showTitle: '',\n" + "      downloadType:'',\n"
+					+ "      visibleColumns: [], // list of visible columns\n" + "      columnsParams: [],\n"
+					+ "      searchString: '', // text for local search\n" + "      formOptions: {\n"
+					+ "         forms: []\n" + "      },\n" + "      orders: ['ASC', 'DESC'],\n"
+					+ "      operators: ['=', '>', '<', '>=', '<=', '!='],\n" + "      ds: [],\n"
+					+ "      columns: [],\n" + "      tableData: [],\n"
+					+ "      platformhost: __env.endpointControlPanel,\n" + "\n" + "\n" + "      pageSizes: [\n"
+					+ "      10,\n" + "      20,\n" + "      30,\n" + "      40,\n" + "      50,\n" + "      100\n"
+					+ "      ],\n" + "      pageSize:10,\n" + "      minimumPageSize:10,\n" + "      page: 1,\n"
+					+ "      fixedFirstCol:false,\n" + "    fixedLastCol:false,\n" + "      sortable:true\n" + "   },\n"
+					+ "     computed: {\n" + "      totalItems () {\n" + "        return this.filteredData.length\n"
+					+ "      },\n" + "      pageCount () {\n"
+					+ "        return Math.floor(this.totalItems / this.pageSize)\n" + "      },\n"
+					+ "      paginatedData () {\n"
+					+ "        return this.filteredData.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)\n"
+					+ "      },\n" + "      filteredData () {\n"
+					+ "            console.log(this.tableData.filter(this.tableDatafilter))\n"
+					+ "        return this.tableData.filter(this.tableDatafilter)\n" + "      },\n"
+					+ "      pageSizes () {\n" + "        return [\n" + "          this.minimumPageSize,\n"
+					+ "          this.minimumPageSize * 2,\n" + "          this.minimumPageSize * 3,\n"
+					+ "          this.minimumPageSize * 4,\n" + "          this.minimumPageSize * 5,\n"
+					+ "          this.minimumPageSize * 10\n" + "        ]\n" + "      },\n" + "    },\n"
+					+ "   methods: {\n" + "       handlePageSizeChange (pageSize) {\n"
+					+ "          this.pageSize = pageSize\n" + "          this.handlePageChange(this.page)\n"
+					+ "        },\n" + "        handlePageChange (page) {\n" + "          this.page = page\n"
+					+ "        },\n" + "      drawVueComponent: function (newData, oldData) {\n"
+					+ "         //This will be call on new data\n" + "      },\n" + "      resizeEvent: function () {\n"
+					+ "         //Resize event\n" + "\n" + "      },\n" + "      destroyVueComponent: function () {\n"
+					+ "         vm.vueapp.$destroy();\n" + "      },\n" + "      receiveValue: function (data) {\n"
+					+ "         //data received from datalink\n" + "      },\n"
+					+ "      //function that initially reads the entities\n"
+					+ "      loadEntities: function (search, loading) {\n" + "         var that = this;\n"
+					+ "         vm.getEntities().then(function (data) {\n"
+					+ "            that.ontologies = data.data.map(function (obj) {\n" + "               return {\n"
+					+ "                  id: obj.id,\n" + "                  identification: obj.identification\n"
+					+ "               }\n" + "            });\n" + "\n"
+					+ "            if(that.initialEntity!=null && that.initialEntity!==\"\"){\n"
+					+ "               if (that.ontologies.some(e => e.identification === that.initialEntity)) {\n"
+					+ "                     that.selectedOntology = that.initialEntity;\n"
+					+ "                     that.onChangeEntity(that.selectedOntology);\n"
+					+ "                     that.showSelectOntology = true;\n" + "                     return;\n"
+					+ "                  } else {\n" + "                     that.$notify({\n"
+					+ "                        message: that.$t('error.message.ontology'),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "                  }\n"
+					+ "            }\n"
+					+ "            var urlparam = urlParamService.generateFiltersForGadgetId(vm.id);\n"
+					+ "            if (typeof urlparam !== 'undefined' && urlparam !== null && urlparam.length > 0) {\n"
+					+ "               if (urlparam[0].exp != null) {\n"
+					+ "                  var urlontology = urlparam[0].exp.replace(/\"/g, '');\n"
+					+ "                  if (that.ontologies.some(e => e.identification === urlontology)) {\n"
+					+ "                     that.selectedOntology = urlontology;\n"
+					+ "                     that.onChangeEntity(that.selectedOntology);\n"
+					+ "                     that.showSelectOntology = true;\n" + "                     return;\n"
+					+ "                  } else {\n" + "                     that.$notify({\n"
+					+ "                        message: that.$t('error.message.ontology'),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "                  }\n"
+					+ "               }\n" + "            } else {\n"
+					+ "               that.showSelectOntology = false;\n" + "            }\n" + "\n" + "         })\n"
+					+ "      },\n" + "      //function that obtains the information of the selected ontology\n"
+					+ "      loadHeadTable: function () {\n" + "         var that = this;\n"
+					+ "         if (this.ontologies != null && this.ontologies.length > 0) {\n"
+					+ "            for (var i = 0; i < this.ontologies.length; i++) {\n"
+					+ "               if (this.ontologies[i].identification === this.selectedOntology) {\n"
+					+ "                  vm.crudGetEntityInfo(this.ontologies[i].id).then(function (data) {\n"
+					+ "                     that.uniqueID = data.data.uniqueId;\n"
+					+ "                     that.selectedOntologySchema = that.changeDescriptionForTitle(data.data.jsonSchema);\n"
+					+ "                  });\n" + "                  break;\n" + "               }\n"
+					+ "            }\n" + "         }\n"
+					+ "         vm.getOntologyFieldsAndDesc(this.selectedOntology).then(function (data) {\n"
+					+ "            that.ontologyFieldsAndDesc = data.data;\n" + "            that.loadData();\n"
+					+ "         })\n" + "      },\n"
+					+ "      //function that gets the data and loads it to be displayed in the table\n"
+					+ "      //difference if it is an initial query or the search button is pressed\n"
+					+ "      loadData: function (fromSearch) {\n" + "         var that = this;\n"
+					+ "         that.showTable = false;\n" + "         var selectStatement = {};\n"
+					+ "         if (typeof fromSearch == 'undefined' || fromSearch == null || fromSearch == false) {\n"
+					+ "            selectStatement = {\n" + "               ontology: this.selectedOntology,\n"
+					+ "               columns: [],\n" + "               where: [],\n" + "               orderBy: [],\n"
+					+ "               limit: this.limitWizard,\n" + "               offset: this.offsetWizard\n"
+					+ "            };\n" + "         } else {\n" + "            selectStatement = {\n"
+					+ "               ontology: this.selectedOntology,\n" + "               columns: [],\n"
+					+ "               where: this.mapArrayToObjects(this.selectWizard),\n"
+					+ "               orderBy: this.mapArrayToObjects(this.orderByWizard),\n"
+					+ "               limit: this.limitWizard,\n" + "               offset: this.offsetWizard\n"
+					+ "            };\n" + "         }\n"
+					+ "         vm.crudQueryParams(selectStatement).then(function (data) {\n"
+					+ "            that.showTable = true;\n" + "            that.disabledWizard = false;\n"
+					+ "            //create columns from that.ontologyFieldsAndDesc\n"
+					+ "            var keys = Object.keys(that.ontologyFieldsAndDesc);\n" + "\n"
+					+ "            //validate error from data\n"
+					+ "            if (typeof data.data.error !== 'undefined') {\n" + "               that.$notify({\n"
+					+ "                  message: that.$t('error.message.querying.the.data'),\n"
+					+ "                  type: 'error'\n" + "               });\n" + "               return {};\n"
+					+ "            }\n" + "            if (keys != null && keys.length > 0) {\n"
+					+ "               if (typeof fromSearch != 'undefined' && fromSearch != null && fromSearch) {\n"
+					+ "                  var index = that.columns.findIndex(function (elem) {\n"
+					+ "                     return elem.prop === that.uniqueID\n" + "                  });\n"
+					+ "                  if (index < 0) {\n" + "                     that.idPath = that.uniqueID;\n"
+					+ "                     that.columns.push({\n" + "                        prop: that.uniqueID,\n"
+					+ "                        label: \"id\"\n" + "                     });\n" + "\n"
+					+ "                  }\n" + "                  that.tableData = data.data.map(function (dat) {\n"
+					+ "                     var refinedData = {};\n"
+					+ "                     for (var i = 0; i < that.columns.length; i++) {\n"
+					+ "                        let path = that.columns[i].prop.split('.');\n"
+					+ "                           try {\n"
+					+ "                                  refinedData[that.columns[i].prop] = path.reduce((a, v) => a[v], dat);              \n"
+					+ "                              } catch (error) {\n"
+					+ "                                   refinedData[that.columns[i].prop] = null; \n"
+					+ "                              }" + "                     }\n" + "\n"
+					+ "                     return refinedData;\n" + "                  })\n"
+					+ "               } else {\n" + "                  that.columns = [];\n" + "\n"
+					+ "                  var index = keys.findIndex(function (elem) {\n"
+					+ "                     return elem === that.uniqueID\n" + "                  });\n"
+					+ "                  if (index > -1) {\n" + "                     keys.splice(index, 1);\n"
+					+ "                  }\n" + "                  that.idPath = that.uniqueID;\n"
+					+ "                  that.columns.push({\n" + "                     prop: that.uniqueID,\n"
+					+ "                     label: \"id\"\n" + "                  });\n"
+					+ "                  keys = keys.sort(that.orderKeys);\n"
+					+ "                  //initial construction of table columns\n"
+					+ "                  for (var i = 0; i < keys.length; i++) {\n"
+					+ "                     var description = that.ontologyFieldsAndDesc[keys[i]].description;\n"
+					+ "                     if (description == null || typeof description == undefined || description.length == 0) {\n"
+					+ "                        description = that.ontologyFieldsAndDesc[keys[i]].path;\n"
+					+ "                     }\n"
+					+ "                     description = that.$t(description) || description;\n"
+					+ "                     that.columns.push({\n"
+					+ "                        prop: that.ontologyFieldsAndDesc[keys[i]].path,\n"
+					+ "                        thetype: that.ontologyFieldsAndDesc[keys[i]].type,\n"
+					+ "                        label: description,\n" + "                        minWidth: 100,\n"
+					+ "                        sortable: 'custom'\n" + "                     });\n" + "\n"
+					+ "                  }\n" + "\n" + "                  //mapping the data to display\n"
+					+ "                  that.tableData = data.data.map(function (dat) {\n"
+					+ "                     var refinedData = {};\n"
+					+ "                     for (var i = 0; i < that.columns.length; i++) {\n"
+					+ "                        if(typeof that.columns[i].prop!='undefined' && that.columns[i].prop!=null){\n"
+					+ "                           let path = that.columns[i].prop.split('.');\n"
+					+ "                              try {\n"
+					+ "                                  refinedData[that.columns[i].prop] = path.reduce((a, v) => a[v], dat);              \n"
+					+ "                              } catch (error) {\n"
+					+ "                                   refinedData[that.columns[i].prop] = null; \n"
+					+ "                              }" + "                        }\n" + "                     }\n"
+					+ "\n" + "                     return refinedData;\n" + "                  })\n"
+					+ "                  console.log(that.tableData.filter(that.tableDatafilter))\n"
+					+ "               }\n" + "               //hide or show id columns\n"
+					+ "               if (that.hideIdColumn) {\n" + "\n"
+					+ "                  var index = that.columns.findIndex(function (elem) {\n"
+					+ "                     return elem.label === 'id'\n" + "                  });\n"
+					+ "                  if (index > -1) {\n" + "                     that.columns.splice(index, 1);\n"
+					+ "                  }\n" + "\n" + "               }\n"
+					+ "               if (that.visibleColumns.length == 0 && that.columns.length > 0) {\n"
+					+ "                  that.visibleColumns = Array.from(that.columns);\n"
+					+ "                  that.columnsParams = Array.from(that.columns);\n"
+					+ "                  that.visibleColumns.forEach(function (element) {\n"
+					+ "                     element.visible = true;\n" + "                  });\n"
+					+ "               }\n" + "\n" + "\n" + "            }\n" + "         })\n" + "      },\n"
+					+ "      //function that is executed when the edition of a record is opened\n"
+					+ "      openEdit: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudFindById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "            delete data.data[0]._id;\n" + "            delete data.data[0].contextData;\n"
+					+ "            if (typeof that.jEditor.destroy == 'function') that.jEditor.destroy();\n"
+					+ "            that.jEditor = new JSONEditor(document.getElementsByClassName(vm.id+' editor_edit_holder')[0], {\n"
+					+ "               schema: JSON.parse(that.selectedOntologySchema),\n"
+					+ "               startval: data.data[0],\n" + "               theme: 'bootstrap3',\n"
+					+ "               iconlib: 'fontawesome4',\n" + "               disable_properties: true,\n"
+					+ "               disable_edit_json: true,\n" + "               disable_collapse: true,\n"
+					+ "               disable_array_reorder: true,\n"
+					+ "               disable_array_delete_all_rows: true,\n"
+					+ "               disable_array_delete_last_row: true,\n" + "               show_errors: 'change'\n"
+					+ "            });\n" + "         })\n" + "      },\n"
+					+ "      //function that is executed when the detail of a record is opened\n"
+					+ "      openShow: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudFindById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "            delete data.data[0]._id;\n" + "            delete data.data[0].contextData;\n"
+					+ "            if (typeof that.jShowEditor.destroy == 'function') that.jShowEditor.destroy();\n"
+					+ "            that.jShowEditor = new JSONEditor(document.getElementsByClassName(vm.id+' editor_show_holder')[0], {\n"
+					+ "               schema: JSON.parse(that.selectedOntologySchema),\n"
+					+ "               startval: data.data[0],\n" + "               theme: 'bootstrap3',\n"
+					+ "               mode: 'view',\n" + "               iconlib: 'fontawesome4',\n"
+					+ "               disable_properties: true,\n" + "               disable_edit_json: true,\n"
+					+ "               disable_collapse: true,\n" + "               disable_array_reorder: true,\n"
+					+ "               disable_array_delete_all_rows: true,\n"
+					+ "               disable_array_delete_last_row: true,\n" + "               show_errors: 'change'\n"
+					+ "            });\n" + "            that.jShowEditor.disable();\n" + "         })\n" + "      },\n"
+					+ "      //function that is executed when modal of creating a record is opened\n"
+					+ "      openCreate: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudFindById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "\n" + "            if (typeof that.jEditor.destroy == 'function') that.jEditor.destroy();\n"
+					+ "            that.jEditor = new JSONEditor(document.getElementsByClassName(vm.id+' editor_new_holder')[0], {\n"
+					+ "               schema: JSON.parse(that.selectedOntologySchema),\n"
+					+ "               startval: undefined,\n" + "               theme: 'bootstrap3',\n"
+					+ "               iconlib: 'fontawesome4',\n" + "               disable_properties: true,\n"
+					+ "               disable_edit_json: true,\n" + "               disable_collapse: true,\n"
+					+ "               disable_array_reorder: true,\n"
+					+ "               disable_array_delete_all_rows: true,\n"
+					+ "               disable_array_delete_last_row: true,\n" + "               show_errors: 'change'\n"
+					+ "            });\n" + "         })\n" + "\n" + "\n" + "      },\n"
+					+ "      //function that is executed when accepting a visibility change in the columns\n"
+					+ "      aceptedChangeColumns: function () {\n" + "            //delete columns visible = false\n"
+					+ "            //add columns visible = true if not exist\n" + "\n"
+					+ "            var that = this;\n"
+					+ "            this.visibleColumns.forEach(function (visibleCol) {\n"
+					+ "               if (that.columns.length > 0) {\n" + "                  var find = false;\n"
+					+ "                  for (var i = 0; i < that.columns.length; i++) {\n"
+					+ "                     if (that.columns[i].prop == visibleCol.prop) {\n"
+					+ "                        find = true;\n" + "                        if (!visibleCol.visible) {\n"
+					+ "                           that.columns.splice(i, 1);\n" + "                        }\n"
+					+ "                        break;\n" + "                     }\n" + "                  }\n"
+					+ "                  if (!find && visibleCol.visible) {\n"
+					+ "                     var obj = Object.assign({}, visibleCol);\n"
+					+ "                     delete obj.visible;\n" + "                     that.columns.push(obj);\n"
+					+ "                  }\n" + "               } else {\n"
+					+ "                  if (visibleCol.visible) {\n"
+					+ "                     var obj = Object.assign({}, visibleCol);\n"
+					+ "                     delete obj.visible;\n" + "                     that.columns.push(obj);\n"
+					+ "                  }\n" + "               }\n" + "            });\n"
+					+ "            this.dialogOptionsColumnsVisible = false;\n" + "            this.loadData(true);\n"
+					+ "         }\n" + "\n" + "         ,\n"
+					+ "      //function that is executed when clicking on edit a record\n"
+					+ "      handleEdit: function (index, row) {\n"
+					+ "         this.recordSelected = row[this.idPath];\n"
+					+ "         this.editTitle = this.$t('form.edit.record') + this.recordSelected;\n"
+					+ "         this.dialogEditVisible = true;\n" + "\n" + "      },\n"
+					+ "      //function that is executed when clicking on show a record\n"
+					+ "      handleShow: function (index, row) {\n"
+					+ "         this.recordSelected = row[this.idPath];\n"
+					+ "         this.showTitle = this.$t('form.detail.record') + this.recordSelected;\n"
+					+ "         this.dialogShowVisible = true;\n" + "\n" + "      },\n"
+					+ "      //function that is executed when clicking on delete a record\n"
+					+ "      handleDelete: function (index, row) {\n"
+					+ "         this.recordSelected = row[this.idPath];\n"
+					+ "         this.dialogDeleteVisible = true;\n" + "      },\n"
+					+ "      //function that is executed when accepting to edit a record\n"
+					+ "      aceptedEdit: function () {\n" + "         var that = this;\n"
+					+ "         console.log(this.jEditor.getValue());\n"
+					+ "         vm.crudUpdate(this.jEditor.getValue(), this.selectedOntology, this.recordSelected).then(function (data) {\n"
+					+ "            that.dialogEditVisible = false;\n" + "            that.loadData();\n"
+					+ "            that.$notify({\n"
+					+ "               message: that.$t('message.edited.successfully'),\n"
+					+ "               type: 'success'\n" + "            });\n" + "         })\n" + "\n" + "      },\n"
+					+ "      //function that is executed when accepting to create a new record\n"
+					+ "      aceptedCreate: function () {\n" + "         var that = this;\n"
+					+ "         console.log(this.jEditor.getValue());\n" + "\n"
+					+ "         vm.crudInsert(this.jEditor.getValue(), this.selectedOntology).then(function (data) {\n"
+					+ "            that.dialogCreateVisible = false;\n" + "            that.loadData();\n"
+					+ "            that.$notify({\n"
+					+ "               message: that.$t('message.created.successfully'),\n"
+					+ "               type: 'success'\n" + "            });\n" + "         })\n" + "\n" + "      },\n"
+					+ "      //function that is executed when accepting to delete a record\n"
+					+ "      aceptedDelete: function () {\n" + "         var that = this;\n"
+					+ "         vm.crudDeleteById(this.recordSelected, this.selectedOntology).then(function (data) {\n"
+					+ "            that.loadData();\n" + "            that.$notify({\n"
+					+ "               message: that.$t('message.deleted.successfully'),\n"
+					+ "               type: 'success'\n" + "            });\n" + "         })\n"
+					+ "         this.dialogDeleteVisible = false\n" + "      },\n" + "      submit: function (_e) {\n"
+					+ "         alert(JSON.stringify(this.model));\n" + "      },\n" + "      reset: function () {\n"
+					+ "         this.$refs.JsonEditor.reset();\n" + "      },\n"
+					+ "      //function that is executed when selecting an entity\n" + "      onChangeEntity(value) {\n"
+					+ "         this.loadHeadTable();\n" + "         this.calculeTableheight();\n"
+					+ "         this.visibleColumns = [];\n" + "         this.resetWizard();\n"
+					+ "         this.executeSearch=false;\n" + "      },\n" + "\n" + "\n"
+					+ "      opendialogAddSelect: function () {\n" + "\n" + "      },\n"
+					+ "      opendialogAddOrderBy: function () {\n" + "\n" + "      },\n"
+					+ "      //function that clears the wizard fields\n" + "      resetWizard: function () {\n"
+					+ "         this.selectWizard = [];\n" + "         this.selectWizardOptions = [];\n"
+					+ "         this.orderByWizard = [];\n" + "         this.orderByWizardOptions = [];\n"
+					+ "         this.limitWizard = 100;\n" + "         this.offsetWizard = 0;\n" + "      },\n"
+					+ "      searchWizard: function () {\n" + "         this.loadData(true);\n"
+					+ "         this.executeSearch=true;\n" + "      },\n"
+					+ "      //function that creates a new option in the where combo\n"
+					+ "      aceptedAddWhereParameter: function () {\n"
+					+ "         if (typeof this.selectedParametereWhere != 'undefined' && this.selectedParametereWhere != null &&\n"
+					+ "            typeof this.selectedOperatorWhere != 'undefined' && this.selectedOperatorWhere != null &&\n"
+					+ "            typeof this.inputValueWhere != 'undefined' && this.inputValueWhere != null) {\n"
+					+ "            var paramDescription = '';\n" + "            var type = '';\n"
+					+ "            for (var i = 0; i < this.columnsParams.length; i++) {\n"
+					+ "               if (this.columnsParams[i].prop == this.selectedParametereWhere) {\n"
+					+ "                  paramDescription = this.columnsParams[i].label;\n"
+					+ "                  type = this.columnsParams[i].thetype;\n" + "                  break\n"
+					+ "               }\n" + "            }\n" + "            if (type != 'number') {\n"
+					+ "               this.inputValueWhere = \"'\" + this.inputValueWhere + \"'\";\n"
+					+ "            }\n"
+					+ "            var resultDescription = paramDescription + ' ' + this.selectedOperatorWhere + ' ' + this.inputValueWhere;\n"
+					+ "            var resultPath = {\n" + "               column: this.selectedParametereWhere,\n"
+					+ "               operator: this.selectedOperatorWhere,\n" + "               condition: 'AND',\n"
+					+ "               value: this.inputValueWhere\n" + "            };\n"
+					+ "            this.selectWizardOptions.push({\n" + "               label: resultDescription,\n"
+					+ "               value: JSON.stringify(resultPath)\n" + "            });\n"
+					+ "            this.dialogAddSelectVisible = false;\n" + "         } else {\n"
+					+ "            //show message need parameters\n" + "            that.$notify({\n"
+					+ "               message: that.$t('error.message.incomplete'),\n"
+					+ "               type: 'warning'\n" + "            });\n" + "         }\n" + "      },\n"
+					+ "      aceptedAddOrderByParameter: function () {\n"
+					+ "         if (typeof this.selectedOperatorOrderBy != 'undefined' && this.selectedOperatorOrderBy != null &&\n"
+					+ "            typeof this.selectedParametereOrderBy != 'undefined' && this.selectedParametereOrderBy != null) {\n"
+					+ "            var paramDescription = '';\n" + "            var type = '';\n"
+					+ "            for (var i = 0; i < this.columnsParams.length; i++) {\n"
+					+ "               if (this.columnsParams[i].prop == this.selectedParametereOrderBy) {\n"
+					+ "                  paramDescription = this.columnsParams[i].label;\n"
+					+ "                  break\n" + "               }\n" + "            }\n"
+					+ "            var resultDescription = paramDescription + \" \" + this.selectedOperatorOrderBy;\n"
+					+ "            var resultPath = {\n" + "               column: this.selectedParametereOrderBy,\n"
+					+ "               order: this.selectedOperatorOrderBy\n" + "            };\n"
+					+ "            this.orderByWizardOptions.push({\n" + "               label: resultDescription,\n"
+					+ "               value: JSON.stringify(resultPath)\n" + "            });\n" + "\n"
+					+ "            this.dialogAddOrderByVisible = false;\n" + "         }\n" + "      },\n"
+					+ "      //initialize orderby\n" + "      dialogAddOrderByVisibleFunction: function () {\n"
+					+ "         this.selectedOperatorOrderBy = null;\n"
+					+ "         this.selectedParametereOrderBy = null;\n"
+					+ "         this.dialogAddOrderByVisible = true;\n" + "      },\n" + "      //initialize where\n"
+					+ "      dialogAddSelectVisibleFunction: function () {\n"
+					+ "         this.selectedParametereWhere = null;\n"
+					+ "         this.selectedOperatorWhere = null;\n" + "         this.inputValueWhere = \"\";\n"
+					+ "         this.dialogAddSelectVisible = true;\n" + "      },\n"
+					+ "      orderColumns: function (a, b) {\n" + "         if (a.label == 'id') {\n"
+					+ "            return 1;\n" + "         } else if (b.label == 'id') {\n"
+					+ "            return -1;\n" + "         } else if (a.label > b.label) {\n"
+					+ "            return 1;\n" + "         } else if (a.label < b.label) {\n"
+					+ "            return -1;\n" + "         }\n" + "         return 0;\n" + "      },\n"
+					+ "      orderKeys: function (a, b) {\n" + "         if (a == 'id') {\n" + "            return 1;\n"
+					+ "         } else if (b == 'id') {\n" + "            return -1;\n"
+					+ "         } else if (a > b) {\n" + "            return 1;\n" + "         } else if (a < b) {\n"
+					+ "            return -1;\n" + "         }\n" + "         return 0;\n" + "      },\n" + "\n"
+					+ "      tableDatafilter: function (element) {\n"
+					+ "         if (this.searchString == null || this.searchString.trim().length == 0) {\n"
+					+ "            return true;\n" + "         }\n"
+					+ "         return JSON.stringify(element).toLowerCase().indexOf(this.searchString.toLowerCase()) > -1;\n"
+					+ "\n" + "      },\n" + "      aceptedDownloadAll: function(){\n" + "         var that = this;\n"
+					+ "         vm.validationDownloadEntity(this.selectedOntology,this.downloadType).then(function(data){\n"
+					+ "            if(data.data.message=='ok'){\n" + "               if(that.downloadType=='csv'){\n"
+					+ "                  vm.downloadEntityAllCsv(that.selectedOntology);\n"
+					+ "                  that.dialogDownloadVisible=false;\n" + "               }else{\n"
+					+ "                  vm.downloadEntityAllJson(that.selectedOntology);\n"
+					+ "                  that.dialogDownloadVisible=false;\n" + "               }\n"
+					+ "            }else{\n" + "                that.$notify({\n"
+					+ "                        message: that.$t(data.data.message),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "            }\n"
+					+ "         })\n" + "      },\n" + "      aceptedDownloadOnlySelec: function () {\n"
+					+ "         var selection = encodeURIComponent(JSON.stringify({ ontology: this.selectedOntology, columns: [], where: this.mapArrayToObjects(this.selectWizard), orderBy: this.mapArrayToObjects(this.orderByWizard), limit: this.limitWizard, offset: this.offsetWizard }));\n"
+					+ "         var that = this;\n"
+					+ "         vm.validationDownloadEntitySelected(this.selectedOntology, selection,this.downloadType).then(function (data) {\n"
+					+ "            if (data.data.message == 'ok') {\n"
+					+ "               if (that.downloadType == 'csv') {\n"
+					+ "                  vm.downloadEntitySelectedCsv(that.selectedOntology, selection);\n"
+					+ "                  that.dialogDownloadVisible = false;\n" + "               } else {\n"
+					+ "                  vm.downloadEntitySelectedJson(that.selectedOntology, selection);\n"
+					+ "                  that.dialogDownloadVisible = false;\n" + "               }\n"
+					+ "            }else{\n" + "               that.$notify({\n"
+					+ "                        message: that.$t(data.data.message),\n"
+					+ "                        type: 'error'\n" + "                     });\n" + "            }\n"
+					+ "         })\n" + "      },\n" + "      downloadData: function (command) {\n"
+					+ "         var that = this;\n" + "         if (command === 'allcsv') {\n"
+					+ "            vm.validationDownloadEntity(this.selectedOntology,'csv').then(function (data) {\n"
+					+ "               if (data.data.message == 'ok') {\n"
+					+ "                  vm.downloadEntityAllCsv(that.selectedOntology);\n"
+					+ "               } else {\n" + "                  that.$notify({\n"
+					+ "                           message: that.$t(data.data.message),\n"
+					+ "                           type: 'error'\n" + "                        });\n"
+					+ "               }\n" + "            })\n" + "         } else if (command === 'alljson') {\n"
+					+ "            vm.validationDownloadEntity(this.selectedOntology,'json').then(function (data) {\n"
+					+ "               if (data.data.message == 'ok') {\n"
+					+ "                  vm.downloadEntityAllJson(that.selectedOntology);\n" + "               }else{\n"
+					+ "                  that.$notify({\n"
+					+ "                        message: that.$t(data.data.message),\n"
+					+ "                           type: 'error'\n" + "                  });\n" + "               }\n"
+					+ "            })\n" + "         } else {\n" + "            this.downloadType = command;\n"
+					+ "            this.dialogDownloadVisible = true;\n" + "\n" + "         }\n" + "      },\n"
+					+ "      mapArrayToObjects: function (array) {\n" + "         var data = [];\n"
+					+ "         if (typeof array != 'undefined' && array != null && array.length > 0) {\n"
+					+ "            for (var i = 0; i < array.length; i++) {\n"
+					+ "               data.push(JSON.parse(array[i]));\n" + "            }\n" + "         }\n"
+					+ "         return data;\n" + "      },\n" + "      sortChange(column, key, order) {\n"
+					+ "         var that = this;\n" + "         var type = this.columns.filter(function (elem) {\n"
+					+ "            return elem.prop == column.prop\n" + "         });\n"
+					+ "         if (typeof type !== 'undefined' && type != null && type.length > 0) {\n"
+					+ "            type = type[0].thetype;\n" + "         } else {\n" + "            type = 'string';\n"
+					+ "         }\n" + "         this.tableData.sort(function (a, b) {\n"
+					+ "            if (column.order == 'descending') {\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) > that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return -1;\n" + "               }\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) < that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return 1;\n" + "               }\n" + "            } else {\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) < that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return -1;\n" + "               }\n"
+					+ "               if (that.formatFieldForSort(a[column.prop], type) > that.formatFieldForSort(b[column.prop], type)) {\n"
+					+ "                  return 1;\n" + "               }\n" + "            }\n"
+					+ "            return 0;\n" + "         });\n" + "\n" + "         console.log(column, key, order)\n"
+					+ "      },\n" + "      loadProperties:function(element,path,stack){\n"
+					+ "         if(element.properties){\n" + "            var keys = Object.keys(element.properties);\n"
+					+ "            var dot='';\n" + "            if (path.length>0){dot='.';}\n"
+					+ "            for(var i=0;i< keys.length; i++){\n"
+					+ "                  this.loadProperties(element.properties[keys[i]],path+dot+keys[i],stack);\n"
+					+ "               }\n" + "         }else{\n" + "            var keys = Object.keys(element);\n"
+					+ "            var findRef = false;\n" + "            var ref = \"\";\n"
+					+ "            for(var i=0;i< keys.length; i++){\n" + "               if( keys[i] == '$ref' ){\n"
+					+ "                  findRef = true;\n" + "                  ref = element.$ref.substring(2);\n"
+					+ "                  break;\n" + "               }\n" + "            }\n"
+					+ "            if( findRef ){\n" + "               stack.push({'path':path,'ref':ref});\n"
+					+ "            }else{\n" + "               if(element.description){\n"
+					+ "                  element.title = this.$t(element.description);\n"
+					+ "                  delete element.description;\n" + "               }else{\n"
+					+ "                  element.title = this.$t(path);\n" + "               }\n" + "\n"
+					+ "            }\n" + "         }\n" + "      },\n" + "\n"
+					+ "      //This function maps the labels by titles in the outline for the edit, creation and detail forms\n"
+					+ "      changeDescriptionForTitle: function (schema) {\n" + "\n"
+					+ "         var root = JSON.parse(schema);\n" + "         var stack = [];\n"
+					+ "         var result = this.loadProperties(root,'',stack);\n"
+					+ "         while(stack.length > 0){\n" + "            var stackElement = stack.pop();\n"
+					+ "            this.loadProperties(root[stackElement.ref],stackElement.path,stack);\n"
+					+ "         }\n" + "         return JSON.stringify(root);\n" + "      },\n"
+					+ "      formatFieldForSort: function (element, type) {\n" + "         if (type == 'number') {\n"
+					+ "            return Number(element);\n" + "         } else if (type == 'string') {\n"
+					+ "            return element + '';\n" + "         } else {\n" + "            return element;\n"
+					+ "         }\n" + "      },\n" + "      sendValue: vm.sendValue,\n"
+					+ "      sendFilter: vm.sendFilter,\n" + "      //calculate and resize the table\n"
+					+ "      calculeTableheight: function () {\n" + "         var totalHeight = 166;\n"
+					+ "         if (this.showWizard) {\n" + "            totalHeight = totalHeight + 103;\n"
+					+ "         }\n"
+					+ "         this.tableHeight = document.getElementById(vm.id).querySelector('vuetemplate').offsetHeight - totalHeight;\n"
+					+ "      }\n" + "   },\n" + "   mounted() {\n" + "      if(vm.tparams && vm.tparams.parameters){\n"
+					+ "         this.hideIdColumn=vm.tparams.parameters.hideIdColumn;\n"
+					+ "         this.initialEntity=vm.tparams.parameters.initialEntity;\n"
+					+ "         this.typeGadget=vm.tparams.parameters.typeGadget;\n" + "      }\n" + "\n"
+					+ "      this.loadEntities();\n" + "      var that = this;\n" + "      //Resize event observer\n"
+					+ "      this.resizeObserver = new ResizeObserver(function (entrie) {\n"
+					+ "         that.calculeTableheight();\n" + "      });\n"
+					+ "      this.resizeObserver.observe(document.getElementById(vm.id).querySelector('vuetemplate'));\n"
+					+ "   },\n" + "   i18n: window.i18n\n" + "\n" + "}\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"},{\"id\":3,\"type\":\"selector\",\"name\":\"typeGadget\",\"options\":[{\"value\":\"withWizard\",\"text\":\"withWizard\"},{\"value\":\"noWizard\",\"text\":\"noWizard\"},{\"value\":\"searchOnly\",\"text\":\"searchOnly\"}],\"title\":\"typeGadget\",\"default\":\"withWizard\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"hideIdColumn\",\"default\":false,\"title\":\"hideIdColumn\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
+
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-13").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-13");
+			gadgetTemplate.setIdentification("ods-gadget-import");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJSODS");
+			gadgetTemplate.setHeaderlibs("\n" + "<script src=\"https://unpkg.com/vue-i18n@8\"></script>\n" + "\n" + "\n"
+					+ "<script>\n" + "\n" + "var __env = __env || {};\n"
+					+ "if(typeof __env.i18njson=='undefined'|| __env.i18njson==null || typeof __env.i18njson.default=='undefined'){\n"
+					+ "  __env.i18njson={\n" + "    default:\"EN\",\n" + "    languages:{\"ES\": {\n"
+					+ "			\"form.entity\": \"Entidad\",\n"
+					+ "			\"form.show.wizard\": \"Mostrar asistente de búsqueda\",\n"
+					+ "			\"form.select\": \"Seleccionar\",\n"
+					+ "			\"form.select.fields\": \"Seleccionar campos\",\n"
+					+ "			\"form.operator\": \"Operador\",\n" + "			\"form.condition\": \"Condición\",\n"
+					+ "			\"form.select.operator\": \"Seleccionar operador\",\n"
+					+ "			\"form.write.here\": \"Escriba aquí\",\n"
+					+ "			\"form.select.field\": \"Seleccionar campo\",\n"
+					+ "			\"form.orderby\": \"Ordenar por\",\n"
+					+ "			\"form.order.type\": \"Tipo de pedido\",\n" + "			\"form.where\": \"Where\",\n"
+					+ "			\"form.max.value\": \"Valor máximo\",\n"
+					+ "			\"form.offset\": \"Desplazamiento\",\n" + "			\"form.reset\": \"Restablecer\",\n"
+					+ "			\"form.search\": \"Buscar\",\n" + "			\"form.records\": \"Registros\",\n"
+					+ "			\"form.columns\": \"Columnas\",\n" + "			\"column.options\": \"Opciones\",\n"
+					+ "			\"form.new.record.title\": \"Nuevo registro\",\n"
+					+ "			\"error.message.ontology\": \"La entidad pasada por parámetro no existe\",\n"
+					+ "			\"error.message.querying.the.data\": \"Se produjo un error al consultar los datos\",\n"
+					+ "			\"error.message.incomplete\": \"No ha rellenado todos los campos correctamente\",\n"
+					+ "			\"message.edited.successfully\": \"Registro editado correctamente\",\n"
+					+ "			\"message.created.successfully\": \"Registro creado correctamente\",\n"
+					+ "			\"message.deleted.successfully\": \"Registro eliminado correctamente\",\n"
+					+ "			\"message.modal.delete.title\": \"¿Está seguro de eliminar el registro?\",\n"
+					+ "			\"message.modal.delete.subtitle\": \"Esta acción es irreversible\",\n"
+					+ "			\"form.edit.record\": \"Editar registro\",\n"
+					+ "			\"form.detail.record\": \"Registro detallado\",\n"
+					+ "			\"button.cancel\": \"Cancelar\",\n" + "			\"button.delete\": \"Eliminar\",\n"
+					+ "			\"button.save\": \"Guardar\",\n" + "			\"button.close\": \"Cerrar\",\n"
+					+ "			\"button.new\": \"Nuevo\",\n" + "			\"button.apply\": \"Aplicar\",\n"
+					+ "		    \"form.select.entity\": \"Seleccionar Entidad\",\n"
+					+ "		    \"form.title.import\": \"Importar datos\",\n"
+					+ "		    \"form.download.template\": \"Descargar Esquema\",\n"
+					+ "			\"form.download.csv\":\"Descargar CSV\",\n"
+					+ "    		\"form.download.json\":\"Descargar JSON\",\n"
+					+ "		    \"button.drop\": \"Arrastre el fichero o\",\n"
+					+ "		    \"button.click\": \"haga click aquí\",\n"
+					+ "		    \"button.click.upload\": \"para subirlo\",\n"
+					+ "		    \"form.info.max\": \"Máx. 2mb csv\",\n" + "		    \"button.import\": \"Importar\",\n"
+					+ "		    \"button.showmore\": \"Mostrar más detalles\",\n"
+					+ "		    \"error.message.exceed\": \"El fichero no puede superar los 2MB\",\n"
+					+ "		    \"message.success.loaded.1\": \"El fichero\",\n"
+					+ "		    \"message.success.loaded.2\": \"se ha cargado correctamente.\",\n"
+					+ "		    \"message.alert.onefile\": \"Sólo se puede subir un fichero. Elimine el fichero seleccionado para cargar uno nuevo.\",\n"
+					+ "		    \"form.download.info\": \"El esquema se descargará con una entrada ejemplo con el formato de cada columna\",\n"
+					+ "		    \"error.message.csvformat\": \"No se puede descargar el esquema en formato csv. La entidad tiene una estructura compleja.\",\n"
+					+ "		    \"error.message.csvseparator\": \"Descargue el esquema. El caracter usado como separador en el csv debe ser ;\",\n"
+					+ "		    \"error.message.fileType\": \"Tipo de fichero incorrecto. Sólo se permite formato CSV, XML y JSON\",\n"
+					+ "		    \"error.message.processing\": \"Error en el procesado del dato\",\n"
+					+ "		    \"error.message.insert\": \"Se ha producido un error en la insercción de los datos\",\n"
+					+ "		    \"error.message.parsing\": \"Se ha producido un error en el parseo de los datos a insertar\",\n"
+					+ "		    \"error.message.exists\": \"La entidad no existe\",\n"
+					+ "		    \"message.success.inserted\": \"Registros insertados: \",\n"
+					+ "			\"message.download.all\":\"¿Quieres descargar solo la selección o todos los registros?\",\n"
+					+ "			\"button.all.records\": \"Todos los registros\",\n"
+					+ "			\"button.only.selection.records\": \"Sólo la selección\",\n"
+					+ "			\"error.message.download\": \"Error descargando datos\",\n"
+					+ "			\"error.message.empty\": \"Error no existen registros\",\n"
+					+ "			\"error.message.malformed.array\":\"La estructura de alguno de los arrays es incorrecta, el formato que se debe seguir es  param:{type:array,items:[{type:string}]}\",\n"
+					+ "         \"message.choose.download.format\": \"Elija el formato en el que desea descargar el esquema\"\n"
+					+ "		},\n" + "		\"EN\": {\n" + "			\"form.entity\": \"Entity\",\n"
+					+ "			\"form.show.wizard\": \"Show search wizard\",\n"
+					+ "			\"form.select\": \"Select\",\n"
+					+ "			\"form.select.fields\": \"Select Fields\",\n"
+					+ "			\"form.operator\": \"Operator\",\n" + "			\"form.condition\": \"Condition\",\n"
+					+ "			\"form.select.operator\": \"Select Operator\",\n"
+					+ "			\"form.write.here\": \"Write here\",\n"
+					+ "			\"form.select.field\": \"Select Field\",\n"
+					+ "			\"form.orderby\": \"Order by\",\n" + "			\"form.order.type\": \"Order Type\",\n"
+					+ "			\"form.where\": \"Where\",\n" + "			\"form.max.value\": \"Max Value\",\n"
+					+ "			\"form.offset\": \"Offset\",\n" + "			\"form.reset\": \"Reset\",\n"
+					+ "			\"form.search\": \"Search\",\n" + "			\"form.records\": \"Records\",\n"
+					+ "			\"form.columns\": \"Columns\",\n" + "			\"column.options\": \"Options\",\n"
+					+ "			\"form.new.record.title\": \"New record\",\n"
+					+ "			\"error.message.ontology\": \"The entity passed by parameter does not exist\",\n"
+					+ "			\"error.message.querying.the.data\": \"An error occurred while querying the data\",\n"
+					+ "			\"error.message.incomplete\": \"You did not fill in all the fields correctly\",\n"
+					+ "			\"message.edited.successfully\": \"Record edited successfully\",\n"
+					+ "			\"message.created.successfully\": \"Record created successfully\",\n"
+					+ "			\"message.deleted.successfully\": \"Record deleted successfully\",\n"
+					+ "			\"message.modal.delete.title\": \"Are you sure of delete the record?\",\n"
+					+ "			\"message.modal.delete.subtitle\": \"This action is irreversible.\",\n"
+					+ "			\"form.edit.record\": \"Edit record \",\n"
+					+ "			\"form.detail.record\": \"Detail record \",\n"
+					+ "			\"button.cancel\": \"Cancel\",\n" + "			\"button.delete\": \"Delete\",\n"
+					+ "			\"button.save\": \"Save\",\n" + "			\"button.close\": \"Close\",\n"
+					+ "			\"button.new\": \"New\",\n" + "			\"button.apply\": \"Apply\",\n"
+					+ "		    \"form.select.entity\": \"Select Entity\",\n"
+					+ "		    \"form.title.import\": \"Import records\",\n"
+					+ "		    \"form.download.template\": \"Download Template\",\n"
+					+ "			\"form.download.csv\":\"Download CSV\",\n"
+					+ "    		\"form.download.json\":\"Download JSON\",\n"
+					+ "		    \"button.drop\": \"Drop file or\",\n" + "		    \"button.click\": \"click here\",\n"
+					+ "		    \"button.click.upload\": \"to upload\",\n"
+					+ "		    \"form.info.max\": \"Max. 2mb csv\",\n" + "		    \"button.import\": \"Import\",\n"
+					+ "		    \"button.showmore\": \"Show More Details\",\n"
+					+ "		    \"error.message.exceed\": \"The upload file size cannot exceed 2MB!\",\n"
+					+ "		    \"message.success.loaded.1\": \"The\",\n"
+					+ "		    \"message.success.loaded.2\": \"file has been loaded successfully.\",\n"
+					+ "		    \"message.alert.onefile\": \"Only one file can be uploaded. Delete the selected file to load a new one.\",\n"
+					+ "		    \"form.download.info\": \"The scheme will be downloaded with an example entry with the format of each column\",\n"
+					+ "		    \"error.message.csvformat\": \"Cannot download schematic in csv format. The entity has a complex structure.\",\n"
+					+ "		    \"error.message.csvseparator\": \"Download the template. The character used as a separator in the csv must be ;\",\n"
+					+ "		    \"error.message.fileType\": \"Invalid file type. Only CSV, XML and JSON files are acceptable\",\n"
+					+ "		    \"error.message.processing\": \"Error processing data\",\n"
+					+ "		    \"error.message.insert\": \"There was an error inserting bulk data\",\n"
+					+ "		    \"error.message.parsing\": \"There was an error parsing the data to insert\",\n"
+					+ "		    \"error.message.exists\": \"The entity does not exist\",\n"
+					+ "		    \"message.success.inserted\": \"Records inserted: \",\n"
+					+ "			\"message.download.all\":\"Do you want to download only the selection or all the records?\",\n"
+					+ "			\"button.all.records\": \"All the records\",\n"
+					+ "			\"button.only.selection.records\": \"Only the selection\",\n"
+					+ "			\"error.message.download\": \"Error downloading data\",\n"
+					+ "			\"error.message.empty\": \"Error there are no records\",\n"
+					+ "			\"error.message.malformed.array\": \"The structure of some of the arrays is incorrect, the format to follow is param: {type: array, items: [{type: string}]}\",\n"
+					+ "         \"message.choose.download.format\": \"Choose the format in which you want to download the schematic\"\n"
+					+ "		}\n" + "}\n" + "  }\n" + "}  \n" + "function getLocale(){\n"
+					+ "	var localLocale ='EN';\n" + "	try{\n"
+					+ "		localLocale = getURLParameters()['lang'].toUpperCase();\n" + "	}catch(error){\n"
+					+ "		localLocale ='EN';\n" + "	}\n" + "	return localLocale\n" + "}\n" + "\n"
+					+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
+					+ " // link messages with internacionalization json on controlpanel\n"
+					+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
+
+			gadgetTemplate.setDescription("ODS Import gadget template");
+			gadgetTemplate.setTemplate("<style>\n" + "  .ods-upload-list__item-name {\n" + "    max-height:30px;\n"
+					+ "    font-size: small;}\n" + "  .control-label {\n" + "    margin-top: 1px;\n"
+					+ "    color: #505D66;\n" + "    font-weight: normal;\n" + "    width: fit-content;\n"
+					+ "    font-size: small; }\n" + "  .control-label .required,\n" + "  .form-group .required {\n"
+					+ "    color: #A73535;\n" + "    font-size: 12px;\n" + "    padding-left: 2px; }\n"
+					+ "  .ods-textarea__inner {\n" + "    min-height: 40% !important;\n" + "  } \n"
+					+ "  .ods-upload {\n" + "    width: 100%;\n" + "  }\n" + "  .ods-upload-dragger{\n"
+					+ "    width: 100%;\n" + "    height: 150px;\n" + "  }\n" + "  footer {\n" + "    display: flex;\n"
+					+ "    flex-direction: row;\n" + "    align-items: center;\n" + "    justify-content: flex-end;\n"
+					+ "    padding: 16px 24px;\n" + "    background: #F0F1F2;\n" + "  }\n" + "  .livehtmlnotfull {\n"
+					+ "    display: block;\n" + "    width: calc(100%);\n" + "    position: absolute;\n"
+					+ "    top: 50%;\n" + "    left: 50%;\n" + "    transform: translate(-50%, -50%);\n"
+					+ "    overflow: hidden;\n" + "  }\n" + "  .custommargin {\n" + "    margin-left:15px; \n"
+					+ "    margin-right:15px;\n" + "    margin-bottom: 10px;\n" + "  }\n" + "  \n" + "  .icons-grey {\n"
+					+ "    filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);\n"
+					+ "  }\n" + "  .icons-align {\n" + "    vertical-align: middle;\n" + "    margin-left: 5px;\n"
+					+ "  }\n" + "  </style>\n" + "  \n" + "  <div class=\"gadget-app\">\n"
+					+ "    <h5 class=\"gadget-title ng-binding ng-scope custommargin\">{{ $t(\"form.title.import\") }}</h5>\n"
+					+ "    <div class=\"selectOnto custommargin\" v-if=\"showSelect\">\n"
+					+ "      <label class=\"control-label\"> {{ $t(\"form.select.entity\") }} <span class=\"required\" aria-required=\"true\"> *  </span></label>\n"
+					+ "      <ods-select :disabled=\"showSelectOntology\" v-model=\"selectedOntology\" @change=\"onChangeOntology($event)\" filterable :placeholder=\"$t('form.select')\" \n"
+					+ "        style=\"margin-top:5px; width: 100%;background: #F7F8F8;\" size=\"small\">\n"
+					+ "        <ods-option\n" + "          v-for=\"onto in ontologies\"\n"
+					+ "          :key=\"onto.identification\"\n" + "          :label=\"onto.identification\"\n"
+					+ "          :value=\"onto.identification\">\n" + "        </ods-option>\n"
+					+ "      </ods-select>\n" + "    </div>\n"
+					+ "    <div class=\"custommargin\" v-if=\"showEntityName\">\n"
+					+ "      <label class=\"control-label\" style=\"color:#060E14;\">{{ $t(\"form.entity\")}}: </label><label class=\"control-label\"> {{selectedOntology}} <label>\n"
+					+ "    </div>\n" + "    <div class=\"downloadSchm custommargin\" style=\"margin-top: 10px;\">\n"
+					+ "      <ods-button class=\"primary\" style=\"margin-top: 5px;border: 1px solid #1168A6;box-sizing: border-box;border-radius: 2px;text-align: center;\" \n"
+					+ "        size=\"small\" :disabled= \"downloaddisabled\" plain @click=\"dialogDownloadOptions = true\">{{ $t(\"form.download.template\") }} <i class=\"el-icon-download\"></i></ods-button>\n"
+					+ "       <ods-popover placement=\"top-start\" title=\"Info\" width=\"240\" trigger=\"hover\" :content=\"$t('form.download.info')\">\n"
+					+ "        <span class=\"ods-icon-info\"  slot=\"reference\" style=\"height:12px\">\n"
+					+ "      </ods-popover>\n" + "    </div>\n"
+					+ "    <div id=\"uploadCSVFile \"  class=\"custommargin\" style=\"margin-top: 15px;\">\n"
+					+ "      <ods-upload id=\"upload-csv\" drag=\"true\" style=\"width: 100%; height: 210px;\"\n"
+					+ "        :action=\"urlimport\" :disabled= \"uploaddisabled\"\n"
+					+ "        :auto-upload=\"false\" :file-list=\"fileList\" \n"
+					+ "        :on-preview=\"handlePreview\" :on-remove=\"handleRemove\" \n"
+					+ "        :limit=\"limitUpload\"\n"
+					+ "        accept=\".csv, .json\" :before-upload=\"beforeCSVUpload\"\n"
+					+ "        ref=\"upload\"  :on-exceed=\"handleExceed\"\n"
+					+ "        :on-error=\"handleError\" :on-success=\"handleSuccess\">\n"
+					+ "        <i class=\"ods-icon-download fa-3x\" style=\"margin-top:25px;color: #505D66;\"></i>\n"
+					+ "        <div class=\"ods-upload__text\">{{ $t(\"button.drop\") }} <em class=\"textButtonColor\">{{ $t(\"button.click\") }}</em> {{ $t(\"button.click.upload\") }}</div>\n"
+					+ "        <div slot=\"tip\" class=\"ods-upload__tip\" style=\"font-size: 11px;line-height: 16px;color: #A7AEB2;\">{{ $t(\"form.info.max\") }}</div>\n"
+					+ "      </ods-upload>\n" + "    \n" + "    </div>\n" + "    <footer style=\"margin-top: 10px;\">\n"
+					+ "      <div slot=\"tip\" style=\"text-align: right;\">\n"
+					+ "        <ods-button class=\"secundary\" style=\"margin-left: 10px; background: #F0F1F2;text-align: center;\" size=\"small\" plain @click=\"clearFiles\">Cancel</ods-button>\n"
+					+ "        <ods-button style=\"margin-left: 10px; background: #1168A6; border-radius: 2px;text-align: center;\" ref=\"importbutton\" size=\"small\" \n"
+					+ "          :disabled=\"importdisabled\" type=\"primary\" @click=\"submitUpload\">{{ $t(\"button.import\") }} <i class=\"el-icon-upload2\"></i></ods-button>\n"
+					+ "      </div>\n" + "    </footer>\n"
+					+ "    <ods-dialog modal append-to-body title=\"Error\" :visible.sync=\"dialogCreateVisible\" width=\"35%\" @close=\"closeErrDialog\">\n"
+					+ "      <div class=\"ods-message-box__container\">       \n"
+					+ "        <div class=\"ods-message-box__message\">\n" + "          <span>{{msgerr}}</span>\n"
+					+ "        </div>\n" + "      </div>\n" + "       <div style=\"margin-top: 5px;\">\n"
+					+ "        <ods-button class=\"primary\" v-if=\"showDetailBtn\" size=\"small\" @click=\"showErrDetails\" style=\"margin-left: 30px; border: none;text-align: center;\">{{ $t(\"button.showmore\") }}</ods-button>\n"
+					+ "        <ods-input v-if=\"showDetails\" type=\"textarea\" v-model=\"detailerr\" readonly></ods-input>\n"
+					+ "      </div>\n" + "      <div style=\"text-align: right; margin-top: 10px;\">\n"
+					+ "        <ods-button class=\"textButtonColor\" @click=\"closeErrDialog\" style=\"margin-left: 10px; border: none;text-align: center;\" size=\"small\">{{ $t(\"button.cancel\") }}</ods-button>\n"
+					+ "      </div>\n" + "    </ods-dialog>\n"
+					+ "    <ods-dialog modal append-to-body :title=\"$t('message.choose.download.format')\" :visible.sync=\"dialogDownloadOptions\" width=\"25%\" @close=\"closeDialog\">\n"
+					+ "      <div class=\"ods-message-box__container\" style=\"text-align: center;margin-top: 2px;\">\n"
+					+ "            <ods-button class=\"textButtonColor\" style=\"margin-left: 10px;margin-top: 10px;border: 1px solid #1168A6;box-sizing: border-box;border-radius: 2px;text-align: center;\" \n"
+					+ "            size=\"small\" plain @click=\"getCSVSchema\"> {{ $t(\"form.download.csv\") }} <i class=\"el-icon-download\"></i></ods-button>\n"
+					+ "            <ods-button class=\"textButtonColor\" style=\"margin-top: 10px;border: 1px solid #1168A6;box-sizing: border-box;border-radius: 2px;text-align: center;\" \n"
+					+ "            size=\"small\" plain @click=\"getJSONSchema\"> {{ $t(\"form.download.json\") }} <i class=\"el-icon-download\"></i></ods-button>\n"
+					+ "      </div>\n" + "    </ods-dialog>\n" + "  </div>");
+			gadgetTemplate.setTemplateJS("vm.vueconfig = {\n"
+					+ "    el: document.getElementById(vm.id).querySelector('vuetemplate  .gadget-app'),\n"
+					+ "    data:{\n"
+					+ "        initialEntity: \"\" , //variable that initializes the entity with the value assigned to it\n"
+					+ "        ontologies:[],\n" + "        selectedOntology:{},\n" + "        fileList:[],\n"
+					+ "        urlimport:'',\n" + "        importdisabled: '',\n" + "        downloaddisabled: '',\n"
+					+ "        uploaddisabled:'',\n" + "        detailerr:'',\n" + "        msgerr:'',\n"
+					+ "        showDetails: false,\n" + "        dialogCreateVisible:false,\n"
+					+ "        limitUpload:1,\n" + "        showDetailBtn: false,\n"
+					+ "        showSelectOntology: false,\n" + "        showSelect: true,\n"
+					+ "        showEntityName: false,\n" + "        dialogDownloadOptions: false\n" + "    },\n"
+					+ "    methods:{\n" + "        drawVueComponent: function(newData,oldData){\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function(){\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function(){\n" + "            vm.vueapp.$destroy();\n"
+					+ "        },\n" + "        receiveValue: function(data){\n"
+					+ "            //data received from datalink\n" + "        },\n"
+					+ "        loadOntologies:function(search, loading) {\n" + "            var that = this;\n"
+					+ "            vm.getEntities().then(function(data){\n"
+					+ "                that.ontologies = data.data.map(function(obj){return {id:obj.id,identification:obj.identification}});\n"
+					+ "\n" + "                if(that.initialEntity!=null && that.initialEntity!==\"\"){\n"
+					+ "                    if (that.ontologies.some(e => e.identification === that.initialEntity)) {\n"
+					+ "                            that.selectedOntology = that.initialEntity;\n"
+					+ "                            that.importdisabled = false;\n"
+					+ "                            that.downloaddisabled = false;\n"
+					+ "                            that.uploaddisabled = false;\n"
+					+ "                            that.showSelect = false;\n"
+					+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+					+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
+					+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
+					+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
+					+ "                }\n" + "\n"
+					+ "                var urlparam = urlParamService.generateFiltersForGadgetId(vm.id);\n"
+					+ "                if(typeof urlparam!== 'undefined' && urlparam!==null && urlparam.length>0){             \n"
+					+ "                    if(urlparam[0].exp!=null){\n"
+					+ "                        var urlontology = urlparam[0].exp.replace(/\"/g,'');\n"
+					+ "                        if(that.ontologies.some(e => e.identification === urlontology)) {\n"
+					+ "                            that.selectedOntology = urlontology;\n"
+					+ "                            that.importdisabled = false;\n"
+					+ "                            that.downloaddisabled = false;\n"
+					+ "                            that.uploaddisabled = false;\n"
+					+ "                            that.showSelect = false;\n"
+					+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+					+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
+					+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
+					+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
+					+ "                    }\n" + "                }else{\n"
+					+ "                    that.showSelectOntology=false;\n" + "                }\n"
+					+ "            })\n" + "        },\n" + "        getCSVSchema:function() {\n"
+					+ "            var that = this;\n"
+					+ "            vm.isComplexSchema(this.selectedOntology).then(function(data){\n"
+					+ "                if(data.data.message == 'ok'){\n"
+					+ "                    vm.downloadEntitySchemaCsv(that.selectedOntology);\n"
+					+ "                } else{\n"
+					+ "                that.msgerr = that.$t(data.data.message);               \n"
+					+ "                that.dialogCreateVisible = true;\n" + "                }\n" + "            });\n"
+					+ "            that.dialogDownloadOptions = false;\n" + "        },\n"
+					+ "        getJSONSchema: function() {\n" + "            var that = this;\n"
+					+ "            vm.downloadEntitySchemaJson(that.selectedOntology);\n"
+					+ "            that.dialogDownloadOptions = false;\n" + "        },\n"
+					+ "        submitUpload:function() {\n" + "            this.$refs.upload.submit();\n"
+					+ "        },\n" + "         onChangeOntology(value) {\n"
+					+ "            this.selectedOntology = value;\n"
+					+ "            this.urlimport = \"/dashboardengine/api/insertDataEntity/\" + value;  \n"
+					+ "            this.importdisabled = false;\n" + "            this.downloaddisabled = false;\n"
+					+ "            this.uploaddisabled = false;\n" + "        },\n"
+					+ "        beforeCSVUpload:function(file) { \n"
+					+ "            const isLt2M = file.size / 1024 < 2000;\n" + "            if(!isLt2M) {\n"
+					+ "                this.$alert(this.$t('error.message.exceed'), 'Warning', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'warning'\n"
+					+ "                });\n" + "                return false;\n" + "            }\n" + "        },\n"
+					+ "        handleError:function(err, file, fileList){\n" + "            var jsonerr;\n"
+					+ "            \n" + "            try{\n" + "                jsonerr = JSON.parse(err.message);\n"
+					+ "                this.msgerr = this.$t(jsonerr.message);\n"
+					+ "                if(jsonerr.detail != ''){\n"
+					+ "                    this.detailerr = JSON.stringify(jsonerr.detail);\n"
+					+ "                    this.showDetailBtn = true;\n" + "                }   \n"
+					+ "            } catch(objError){\n"
+					+ "                this.msgerr = err.name + \" \" + err.status;\n"
+					+ "                this.detailerr = err.message;\n" + "                this.showDetailBtn = true;\n"
+					+ "            }           \n" + "            this.dialogCreateVisible = true;\n" + "        },\n"
+					+ "        showErrDetails: function(){\n" + "            if(this.showDetails === true){\n"
+					+ "                this.showDetails = false;\n" + "            } else {\n"
+					+ "                try {\n" + "                    var obj = JSON.parse(this.detailerr);\n"
+					+ "                    this.detailerr = JSON.stringify(obj, undefined, 4);\n"
+					+ "                    this.showDetails = true;\n" + "                } catch(objError){\n"
+					+ "                    this.showDetails = true;\n" + "                }\n" + "            }\n"
+					+ "        },\n" + "        closeErrDialog: function(){\n"
+					+ "            this.showDetails = false;\n" + "            this.showDetailBtn = false;\n"
+					+ "            this.dialogCreateVisible = false;\n" + "        },\n"
+					+ "        closeDialog: function() {\n" + "            this.dialogDownloadOptions = false;\n"
+					+ "        },\n" + "        handleSuccess: function(response, file, fileList){\n"
+					+ "            if(response.message != '') {\n"
+					+ "            this.$alert(this.$t(\"message.success.loaded.1\") +' \"' + file.name + '\" ' + this.$t(\"message.success.loaded.2\") + ' \\r\\n' + this.$t(\"message.success.inserted\") + response.message, 'Success', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'success'\n"
+					+ "                });\n" + "            } else {\n"
+					+ "                this.$alert(this.$t(\"message.success.loaded.1\") +' \"' + file.name + '\" ' + this.$t(\"message.success.loaded.2\"), 'Success', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'success'\n"
+					+ "                });\n" + "            }\n" + "            this.$refs.upload.clearFiles();\n"
+					+ "            this.selectedOntology = null;\n" + "            this.importdisabled = true;\n"
+					+ "            this.downloaddisabled = true;\n" + "            this.uploaddisabled = true;\n"
+					+ "        },\n" + "        handlePreview: function(file){\n" + "        },\n"
+					+ "        handleRemove: function(file, fileList){\n" + "        },\n"
+					+ "        handleExceed: function(files, fileList){\n"
+					+ "            this.$alert(this.$t(\"message.alert.onefile\"), 'Warning', {\n"
+					+ "                    confirmButtonText: 'OK',\n" + "                    type: 'warning'\n"
+					+ "                });\n" + "        },\n" + "        clearFiles: function(){\n"
+					+ "            this.$refs.upload.clearFiles();\n" + "            this.selectedOntology = null;\n"
+					+ "            this.importdisabled = true;\n" + "            this.downloaddisabled = true;\n"
+					+ "            this.uploaddisabled = true;\n" + "        },\n"
+					+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+					+ "    mounted() {\n" + "        if(vm.tparams && vm.tparams.parameters){\n"
+					+ "            this.initialEntity=vm.tparams.parameters.initialEntity; \n" + "        }\n"
+					+ "        \n" + "        this.loadOntologies();\n" + "        this.onChangeOntology();\n"
+					+ "        this.importdisabled = true;\n" + "        this.downloaddisabled = true;\n"
+					+ "        this.uploaddisabled = true;\n" + "    },\n" + "    i18n: window.i18n\n" + "}\n" + "\n"
+					+ "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"}]}");
 			gadgetTemplate.setUser(getUserAdministrator());
 			gadgetTemplateRepository.save(gadgetTemplate);
 		}
@@ -5587,21 +9180,22 @@ public class InitConfigDB {
 
 		log.info("init WebProject");
 
-		if (webProjectRepository.findByIdentification(CESIUM) == null) {
-
-			loadWebProyect();
-
-			final WebProject webProject = new WebProject();
-
-			webProject.setId("MASTER-webproject-1");
-			webProject.setDescription("Stand Alone Library of Cesium 1.60 nad CesiumHeatMap");
-			webProject.setIdentification(CESIUM);
-			webProject.setUser(getUserDeveloper());
-			webProject.setMainFile("Cesium1.60/Cesium.js");
-
-			webProjectRepository.save(webProject);
-
-		}
+		// if (webProjectRepository.findByIdentification(CESIUM) == null) {
+		//
+		// loadWebProyect();
+		//
+		// final WebProject webProject = new WebProject();
+		//
+		// webProject.setId("MASTER-webproject-1");
+		// webProject.setDescription("Stand Alone Library of Cesium 1.60 nad
+		// CesiumHeatMap");
+		// webProject.setIdentification(CESIUM);
+		// webProject.setUser(getUserDeveloper());
+		// webProject.setMainFile("Cesium1.60/Cesium.js");
+		//
+		// webProjectRepository.save(webProject);
+		//
+		// }
 
 	}
 
@@ -5612,6 +9206,7 @@ public class InitConfigDB {
 			final Category category = new Category();
 			category.setIdentification("GeneralCategory");
 			category.setDescription("General Category Description");
+			category.setType(Category.Type.GENERAL);
 			categoryRepository.save(category);
 
 			final Subcategory subcategory = new Subcategory();

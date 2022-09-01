@@ -26,23 +26,9 @@
 	 
 	<!-- BEGIN DASHBOARD INNER -->
 	<div class="row" style="margin-top: -32px;margin-bottom: 0px;">
-		<div class="col-md-12 ">
+		<div class="col-md-12 " style="padding-left: 60;">
 			<div class="portlet light" style="padding: 0px 0px 0px 0px">
-				<div class="portlet-title hidden">
-					<div class="caption">						
-						<span class="caption-subject font-grey-gallery uppercase"> <span >Dashboard</span></span>
-					</div>									
-					<div class="tools">
-						<a href="" class="collapse" data-original-title="" title=""> </a>
-						<a href="" class="fullscreen" data-original-title="" title=""> </a>										
-					</div>									
-				</div>
 				<div class="portlet-body" style="display: block; height: auto; padding-top: 0px; ">
-					<div class="row hidden">
-						<div class="col-md-12 col-sm-12 ">
-							<h3 class="" style="font-size: 16px;margin-top: 8px;color: #555;font-weight: inherit;">Dashboard</h3>
-						</div>
-					</div>
 					<!-- RECOMMENDED COL SYSTEM : -->
 					<!-- 6 GADGETS: col-md-2 col-md-6 col-xs-12 -->
 					<!-- 4 GADGETS: col-md-3 col-md-6 col-xs-12 -->
@@ -50,141 +36,140 @@
 					<!-- 2 GADGETS: col-md-6 col-md-6 col-xs-12 -->
 					
 					<div class="widget-row">
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/ontologies/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-network"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[0].value},data-counter='counterup'">0</span>
 											</h3>
-											<small  th:text="#{kpis.ontology}" >Ontologías</small>
+											<small  th:text="#{kpis.ontology}" >Entidades</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-network"></i>
-										</div>
+
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/users/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-users"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[1].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.users}">Users</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-users"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/apimanager/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-multimedia"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[2].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.apis}">APIs</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-multimedia"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 								<a class="nav-link nav-toggle nav-hover" href="/controlpanel/dashboards/list">
 									<div class="dashboard-stat2">
 										<div class="display">
-											<div class="number">
+											<div class="number" style="width: 110px">
+												<div class="icon">
+													<i class="flaticon-graph"></i>
+												</div>
 												<h3 class="font-blue-sharp">
 													<span data-counter="counterup" th:attr="data-value=${kpis[3].value},data-counter='counterup'">0</span>
 												</h3>
 												<small th:text="#{kpis.dashboards}">DASHBOARDS</small>
 											</div>
-											<div class="icon">
-												<i class="flaticon-graph"></i>
-											</div>
-								
 										</div>
 									</div>
 								</a>
 						</div>
 					</div>
 					<div class="widget-row ">
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/gadgets/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-app"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[4].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.gadgets}">GADGETS</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-app"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/devices/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-								
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-truck"></i>
+											</div>	
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[5].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.devices}">Devices</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-truck"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>		
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/notebooks/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-interface-5"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[6].value},data-counter='counterup'">0</span>
 											</h3>
 											<small  th:text="#{kpis.notebooks}" >Notebooks</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-interface-5"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/dataflow/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-technology"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[7].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.dataflows}">Dataflows</small>
-										</div>
-										<div class="icon">
-											<i class="flaticon-technology"></i>
 										</div>
 									</div>
 								</div>
@@ -192,69 +177,69 @@
 						</div>
 					</div>
 					<div class="widget-row ">
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/marketasset/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-cart"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[8].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.assets}">Assets</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-cart"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/projects/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-suitcase"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[9].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.projects}">PROJECTS</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-suitcase"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/flows/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-analytics"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[10].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.iotflows}">IOT FLOWS</small>
 										</div>
-										<div class="icon">
-											<i class="flaticon-analytics"></i>
-										</div>
 									</div>
 								</div>
 							</a>
 						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/files/list">
 								<div class="dashboard-stat2">
 									<div class="display">
-										<div class="number">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-folder"></i>
+											</div>
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" th:attr="data-value=${kpis[11].value},data-counter='counterup'">0</span>
 											</h3>
 											<small th:text="#{kpis.binaryfiles}">Binary files</small>
-										</div>
-										<div class="icon">
-											<i class="flaticon-folder"></i>
 										</div>
 									</div>
 								</div>

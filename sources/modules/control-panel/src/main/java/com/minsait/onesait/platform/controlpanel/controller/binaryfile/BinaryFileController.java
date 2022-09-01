@@ -79,7 +79,9 @@ public class BinaryFileController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	@Transactional
 	public String list(Model model) {
-		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId()));
+		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId())).stream()
+				.filter(bf -> bf.getRepository() != RepositoryType.MINIO_S3).collect(Collectors.toList());
+		
 		final Map<String, String> accessMap = new HashMap<>();
 		final List<BinaryFile> filteredList = list.stream()
 				.filter(bf -> !bf.getUser().getUserId().equals(webUtils.getUserId())).collect(Collectors.toList());

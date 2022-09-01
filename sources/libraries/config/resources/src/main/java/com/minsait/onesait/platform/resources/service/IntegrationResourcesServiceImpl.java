@@ -65,14 +65,16 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY,
 		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL, ADMIN;
 	}
-
 	public enum Module {
 		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"),
 		ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"),
-		DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"),
-		RULES_ENGINE("rulesEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
-		REPORT_ENGINE("reportEngine");
-		
+		DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"), GRAVITEE("gravitee"),
+		RULES_ENGINE("rulesEngine"), BPM_ENGINE("bpmEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
+		GIS_VIEWER("gisViewer"), REPORT_ENGINE("reportEngine"), OPEN_DATA("openData"), DATACLEANERUI("dataCleanerUI"),
+		LOGCENTRALIZER("logCentralizer"), KEYCLOAK_MANAGER("keycloakManager"), EDGE("edge"), MINIO("minio"),
+		PRESTO("presto"), PROMETHEUS("prometheus"), SERVERLESS("serverless"), MODELJSONLD("modeljsonld");
+
+
 		String moduleString;
 
 		Module(String module) {
@@ -230,12 +232,47 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					break;
 				}
 				break;
+			case PROMETHEUS:
+				switch (service) {
+				case BASE:
+					return urls.getPrometheus().getBase();
+				default:
+					break;
+				}
+			case MINIO:
+				switch (service) {
+				case BASE:
+					return urls.getMinio().getBase();
+				default:
+					break;
+				}
+			case PRESTO:
+				switch (service) {
+				case BASE:
+					return urls.getPresto().getBase();
+				default:
+					break;
+				}
+			case SERVERLESS:
+				switch (service) {
+				case BASE:
+					return urls.getServerless().getBase();
+				default:
+					break;
+				}
+			case MODELJSONLD:
+				switch (service) {
+				case BASE:
+					return urls.getModeljsonld().getBase();
+				default:
+					break;
+				}
 			default:
 				break;
 			}
 		} catch (
 
-				final Exception e) {
+		final Exception e) {
 			log.error("Error : {}", e);
 		}
 		return "RESOURCE_URL_NOT_FOUND";

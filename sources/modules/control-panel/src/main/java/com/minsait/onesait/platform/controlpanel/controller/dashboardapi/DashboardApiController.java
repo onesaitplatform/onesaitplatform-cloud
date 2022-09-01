@@ -63,6 +63,7 @@ public class DashboardApiController {
 		if (id != null && !id.equals("") && json != null && !json.equals("")) {
 			if (dashboardService.dashboardExistsById(id)) {
 				dashboardService.saveDashboardModel(id, json, utils.getUserId());
+				dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
 				return "{\"ok\":true}";
 			} else {
 				return "{\"error\":\"Dashboard does not exist\"}";

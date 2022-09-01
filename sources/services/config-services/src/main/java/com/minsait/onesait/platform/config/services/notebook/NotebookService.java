@@ -85,7 +85,12 @@ public interface NotebookService {
 	public ResponseEntity<String> runParagraph(String zeppelinId, String paragraphId, String bodyParams)
 			throws URISyntaxException, IOException;
 
+	public void runParagraphAsync(String zeppelinId, String paragraphId, String bodyParams)
+			throws URISyntaxException, IOException;
+
 	public ResponseEntity<String> runAllParagraphs(String zeppelinId) throws URISyntaxException, IOException;
+
+	public void runAllParagraphsAsync(String zeppelinId) throws URISyntaxException, IOException;
 
 	public ResponseEntity<String> getParagraphResult(String zeppelinId, String paragraphId)
 			throws URISyntaxException, IOException;

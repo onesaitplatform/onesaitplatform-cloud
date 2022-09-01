@@ -21,7 +21,7 @@ import javax.persistence.Converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.config.components.GitlabConfiguration;
+import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 @Converter(autoApply = true)
 public class GitlabConfigurationConverter implements AttributeConverter<GitlabConfiguration, String> {
