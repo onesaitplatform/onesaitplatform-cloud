@@ -96,7 +96,10 @@ then
     grep -rl '${GRAYLOG_PORT}' /tmp/conf/log4j.properties | xargs sed -i 's/${GRAYLOG_PORT}/'"$GRAYLOG_PORT"'/g'
     grep -rl '${GRAYLOG_APP_NAME}' /tmp/conf/log4j.properties | xargs sed -i 's/${GRAYLOG_APP_NAME}/'"$GRAYLOG_APP_NAME"'/g'
 else
-    rm /tmp/conf/log4j-graylog.properties
+    if [ -f /tmp/conf/log4j-graylog.properties ]
+    then
+       rm /tmp/conf/log4j-graylog.properties
+    fi   
 fi
 
 myuid=$(id -u)
@@ -109,5 +112,9 @@ if [ -z "$uidentry" ] ; then
 fi
 
 cp -rf /tmp/conf /zeppelin
+cp /tmp/.condarc /home/notebook/.condarc
+pip config set global.target $(python -m site --user-site)
+
+export PYTHONPATH='/zeppelin/interpreter/python/py4j-0.9.2/src:/zeppelin/interpreter/lib/python'
 
 exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:${ZEPPELIN_CLASSPATH} $ZEPPELIN_SERVER "$@"

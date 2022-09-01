@@ -17,7 +17,7 @@
 
     vm.arrayintervals=[];
     //Adding dashboard for security comprobations
-    vm.dashboard = $rootScope.dashboard ? $rootScope.dashboard : "";
+    //vm.dashboard = $rootScope.dashboard ? $rootScope.dashboard : "";
 
     vm.addListenerForHeartbeat = function(){
       socketService.addListenerForHeartbeat(
@@ -100,7 +100,7 @@
 
       var accessInfo = vm.gadgetToDatasource[gadgetID];
       if (typeof accessInfo !== 'undefined') {
-        
+
         var dsSolver = vm.poolingDatasources[accessInfo.ds].triggers[accessInfo.index];
         if (updateInfo != null && updateInfo.constructor === Array) {
           for (var index in updateInfo) {
@@ -123,7 +123,7 @@
           intents = 10;
         }
         if(intents > 0){
-          $timeout(function() {vm.updateDatasourceTriggerAndShot(gadgetID, updateInfo,intents-1)}, 100); 
+          $timeout(function() {vm.updateDatasourceTriggerAndShot(gadgetID, updateInfo,intents-1)}, 100);
         }
       }
 
@@ -151,7 +151,7 @@
     }
 
     vm.startRefreshIntervalData = function (gadgetID) {
-      try {      
+      try {
         var accessInfo = vm.gadgetToDatasource[gadgetID];
         var dsSolver = vm.poolingDatasources[accessInfo.ds].triggers[accessInfo.index];
         dsSolver.isActivated = true;
@@ -165,7 +165,7 @@
         }
         socketService.sendAndSubscribe({ "msg": fromTriggerToMessage(solverCopy, accessInfo.ds), id: angular.copy(gadgetID), type: "refresh", callback: vm.emitToTargets });
     } catch (error) {
-        
+
     }
     }
 
@@ -174,7 +174,7 @@
         var accessInfo = vm.gadgetToDatasource[gadgetID];
         var dsSolver = vm.poolingDatasources[accessInfo.ds].triggers[accessInfo.index];
         dsSolver.isActivated = false;
-    } catch (error) {        
+    } catch (error) {
     }
     }
 
@@ -191,7 +191,7 @@
           }
         }
         socketService.sendAndSubscribe({ "msg": fromTriggerToMessage(solverCopy, accessInfo.ds), id: angular.copy(gadgetID), type: "refresh", callback: vm.emitToTargets });
-    } catch (error) {        
+    } catch (error) {
     }
     }
 
@@ -227,7 +227,7 @@
     }
 
     vm.registerSingleDatasourceAndFirstShot = function (datasource, firstShot) {
-      
+
       if (datasource.type == "query") {//Query datasource. We don't need RT conection only request-response
         if (!(datasource.name in vm.poolingDatasources)) {
           vm.poolingDatasources[datasource.name] = datasource;
@@ -244,7 +244,7 @@
           var gpos = vm.gadgetToDatasource[datasource.triggers[0].emitTo];
           vm.poolingDatasources[datasource.name].triggers[gpos.index].listeners++;
         }
-        //One shot datasource, for pooling and          
+        //One shot datasource, for pooling and
         if (firstShot != null && firstShot) {
           for (var i = 0; i < datasource.triggers.length; i++) {
             console.log("firstShot", datasource.triggers);
@@ -261,7 +261,7 @@
           vm.poolingDatasources[datasource.name].intervalId = $interval(/*Datasource passed as parameter in order to call every refresh time*/
             function (datasource) {
               for (var i = 0; i < vm.poolingDatasources[datasource.name].triggers.length; i++) {
- 
+
                 var solverCopy = angular.copy(vm.poolingDatasources[datasource.name].triggers[i]);
                 solverCopy.params.filter = urlParamService.generateFiltersForGadgetId(vm.poolingDatasources[datasource.name].triggers[i].emitTo);
                 for (var index in vm.poolingDatasources[datasource.name].triggers[i].params.filter) {
@@ -277,7 +277,7 @@
               }
             }, datasource.refresh * 1000, 0, true, datasource
           );
-          
+
           //vm.poolingDatasources[datasource.name].intervalId = intervalId;
         }
       }
@@ -289,23 +289,23 @@
 
     vm.getDataFromDataSource = function (datasource, callback) {
       socketService.sendAndSubscribe({ "msg": fromTriggerToMessage(datasource.triggers[0], datasource.name), id: angular.copy(datasource.triggers[0].emitTo), type: "refresh", callback: callback });
-    } 
+    }
     vm.getDataFromDataSourceForFilter = function (datasource, callback) {
       socketService.sendAndSubscribe({ "msg": fromTriggerToMessage(datasource.triggers[0], datasource.name), id: generateUUID(), type: "refresh", callback: callback });
-    } 
-
-    function generateUUID(){
-      return (new Date()).getTime() + Math.floor(((Math.random()*1000000)));     
     }
 
-   
+    function generateUUID(){
+      return (new Date()).getTime() + Math.floor(((Math.random()*1000000)));
+    }
+
+
 
     vm.get = function (datasourcename, triggers) {
       var deferred = $q.defer();
-      socketService.sendAndSubscribe({ 
-        "msg": fromTriggerToMessage({"params":triggers?triggers:{}}, datasourcename), 
-        id: 1, 
-        type: "refresh", 
+      socketService.sendAndSubscribe({
+        "msg": fromTriggerToMessage({"params":triggers?triggers:{}}, datasourcename),
+        id: 1,
+        type: "refresh",
         callback: function(id,name,data){
           if(data.error){
             console.error("Error in response datasource: " + data.data);
@@ -434,7 +434,7 @@
     }
 
     vm.getFields = function(datasource){
-      return vm.getOne(datasource).then(        
+      return vm.getOne(datasource).then(
         function(data){
           var deferred = $q.defer();
           if(data.length){
@@ -451,11 +451,12 @@
     function fromTriggerToMessage(trigger, dsname) {
       var baseMsg = trigger.params;
       baseMsg.ds = dsname;
+      vm.dashboard = $rootScope.dashboard ? $rootScope.dashboard : "";
       baseMsg.dashboard = vm.dashboard;
       return baseMsg;
     }
 
-    
+
 
     vm.emitToTargets = function (id, name, data) {
       //pendingDatasources
@@ -489,7 +490,7 @@
     }
 
     vm.unregisterDatasourceTrigger = function (name, emiter) {
-      
+
       if (name in vm.pendingDatasources && vm.pendingDatasources[name].triggers.length == 0) {
         vm.pendingDatasources[name].triggers = vm.pendingDatasources[name].triggers.filter(function (trigger) { return trigger.emitTo != emiter });
 
@@ -527,7 +528,7 @@
 
 
 
-    //Create filter 
+    //Create filter
     vm.buildFilterStt = function (dataEvent) {
       return {
         filter: {
@@ -558,4 +559,4 @@
       }
     }
   }
-})(); 
+})();

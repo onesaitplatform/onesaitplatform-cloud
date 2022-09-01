@@ -5,7 +5,7 @@
     .service('utilsService', UtilsService);
 
   /** @ngInject */
-  function UtilsService(__env) {
+  function UtilsService(__env,httpService) {
     var vm = this;
 
     //force angular render in order to fast refresh view of component. $scope is pass as argument for render only this element
@@ -223,6 +223,17 @@
       return found;
     }
 
+
+    vm.searchTagContentDescriptionOrName = function(regexDescription,regexName, str){
+      var tag = vm.searchTagContentName(regexDescription,str);
+      if(typeof tag=='undefined' || tag==null || tag.length==0 ){
+        tag = vm.searchTagContentName(regexName,str);
+      }
+      return tag;
+    }
+    
+
+
     vm.searchTagContentName = function(regex,str){
       var m;
       var content;
@@ -290,6 +301,181 @@
       return str;
     }
 
+    vm.flattenObj = function (ob) {
+      var toReturn = {};
+
+      for (var i in ob) {
+        if (!ob.hasOwnProperty(i)) continue;
+
+        if ((typeof ob[i]) == 'object' && ob[i] !== null) {
+          var flatObject = vm.flattenObj(ob[i]);
+          for (var x in flatObject) {
+            if (!flatObject.hasOwnProperty(x)) continue;
+
+            toReturn[i + '.' + x] = flatObject[x];
+          }
+        } else {
+          toReturn[i] = ob[i];
+        }
+      }
+      return toReturn;
+    }
+
+    vm.unflattenObj = function (data) {
+      var result = {}
+      for (var i in data) {
+        var keys = i.split('.')
+        keys.reduce(function (r, e, j) {
+          return r[e] || (r[e] = isNaN(Number(keys[j + 1])) ? (keys.length - 1 == j ? data[i] : {}) : [])
+        }, result)
+      }
+      return result
+    }
+
+    vm.setRecProperty = function (obj, spath, value) {
+      var auxobj = obj;
+      var paths = spath.split(".");
+      for (var p = 0; p < paths.length; p++) {
+        var path = paths[p];
+        if (!auxobj.hasOwnProperty(path)) {
+          auxobj[path] = {}
+        }
+        if (p === (paths.length-1)) {
+          auxobj[path] = value
+        } else {
+          auxobj = auxobj[path]
+        }
+      }
+    }
+
+    vm.getDefaultParams = function(gform) {
+      function getDefault(elements, localvalue) {
+        for (var element in elements) {
+          if (elements[element].elements && elements[element].elements.length > 0) {
+            localvalue[elements[element].name] = {}
+            getDefault(elements[element].elements, localvalue[elements[element].name])
+          } else {
+            localvalue[elements[element].name] = JSON.parse(JSON.stringify(elements[element].default == undefined ? null : elements[element].default))
+          }
+        }
+      }
+      var defaultParams = {}
+      getDefault(gform, defaultParams);
+      return defaultParams;
+    }
+
+    vm.reassign = function(gform, parameters) { //reassign parameters to other level of gform. Only for saved parameters not used with 1 level of deep
+      var defaultParams = vm.getDefaultParams(gform); //we get default params of gform
+
+      var notUsedParams = [];
+      for (var key in parameters.parameters) { // we get the not used params: params in parameters.parameters and not in defaultParams
+        if (!defaultParams.hasOwnProperty(key)) {
+          notUsedParams.push(key)
+        }
+      }
+      if (notUsedParams.length > 0) {
+        var fdparams = Object.keys(vm.flattenObj(defaultParams)).filter(function(key){ //defaultParams with more than 1 level of deep flattened. 
+          return key.indexOf(".") != -1;
+        });
+        for (var i in notUsedParams) {
+          var param = notUsedParams[i];
+          for (var j in fdparams) {
+            var fdpath = fdparams[j];
+            if (fdpath.endsWith("." + param)) { //if recursive param in defaultparams ends with .name of not used param, the value will be reassing in this position in paramters.parameters
+              vm.setRecProperty(parameters.parameters, fdpath, parameters.parameters[param]);
+              delete parameters.parameters[param]
+              break;
+            }
+          }
+        }
+      }
+      return parameters;
+    }
+
+    vm.isValidObject = function(obj) { //obj is object and not array or null
+      return typeof obj === 'object' && !Array.isArray(obj) && obj !== null
+    }
+
+    vm.cleanDashboardTempFields = function (dashboard) {
+      var cleanDashboard = dashboard;
+      return cleanDashboard
+    }
+
+    vm.deepMerge = function () {
+      // create a new object
+      var target = {};
+
+      // deep merge the object into the target object
+      var merger = function(obj) {
+        for (var prop in obj) {
+          if (obj.hasOwnProperty(prop)) {
+            if (Object.prototype.toString.call(obj[prop]) === '[object Object]') {
+              // if the property is a nested object
+              target[prop] = vm.deepMerge(target[prop], obj[prop]);
+            } else {
+              // for regular property
+              target[prop] = obj[prop];
+            }
+          }
+        }
+      };
+
+      // iterate through all objects and 
+      // deep merge them with target
+      for (var i = 0; i < arguments.length; i++) {
+        merger(arguments[i]);
+      }
+
+      return target;
+    }
+
+    vm.fillWithDefaultFormData = function(paramsori, gform) {
+      var params = JSON.parse(JSON.stringify(paramsori));
+      if (!window.__env.dashboardEngineAvoidFillDefault) {
+        var defaultParams = vm.getDefaultParams(gform);
+        if (vm.isValidObject(params) && Array.isArray(gform)) {
+          if (params.hasOwnProperty("parameters")) {
+            if (vm.isValidObject(params.parameters)) {
+              var auxParams = vm.deepMerge(defaultParams, params.parameters);
+              params.parameters = auxParams;
+            } else {
+              console.info("Template can't be fill with default data because params.parameters exists but is not a valid object")
+            }
+          } else {
+            var auxParams = vm.deepMerge(defaultParams, params);
+            params.parameters = auxParams;
+          }
+        } else {
+          console.info("Template can't be fill with default data because params or defaultParams are not defined")
+        }
+      }
+      return params;
+    }
+
+    vm.legacyToNewParamsWithDatasource = function(parameters, datasource) { //return new params for legacy or parameters with stt {parameters:{...},datasource:{...}}
+      var auxparameters = {}
+      if (Array.isArray(parameters)) { // from legacy to new params
+        auxparameters['parameters'] = vm.legacyToNewParams(parameters);
+        auxparameters['datasource'] = datasource;
+      } else {
+        auxparameters = parameters;
+      }
+      return auxparameters;
+    }
+
+    vm.legacyToNewParams = function(parameters) { // return convertion of legacy params to new params, only for parameters without datasource
+      var auxparameters = {}
+      if (Array.isArray(parameters)) { // from legacy to new params
+        for (var i = 0; i < parameters.length ; i++) {
+          var param = parameters[i];
+          auxparameters[param.label] = typeof param.value === 'object' && param.value !== null ? param.value.field : param.value;
+        }
+      } else {
+        auxparameters = parameters;
+      }
+      return auxparameters;
+    }
+
     /** this function Replace parameteres for his selected values*/
     vm.parseProperties = function(str,parameters,jsparam){
       var regexTagHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
@@ -298,33 +484,42 @@
       var regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\:\,\+\_\/]*\s*\"/g;
       var found=[];
       found = vm.searchTag(regexTagHTML,str).concat(vm.searchTag(regexTagJS,str));	
-  
+      
+      var auxparameters = vm.legacyToNewParams(parameters);
+
       var parserList=[];
       for (var i = 0; i < found.length; i++) {
-        var tag = found[i];			
-       
-        if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                 
-          parserList.push({tag:tag,value:findValueForParameter(parameters,vm.searchTagContentName(regexName,tag),jsparam)});   
+        var tag = found[i];	
+        
+        function getKeyRec(paramMap, key) {
+          for (var k in paramMap) {
+            if (typeof paramMap[k] === "object") {
+              var ret = getKeyRec(paramMap[k], key)
+              if (ret) {
+                return ret;
+              }
+            } else if (key in paramMap) {
+              return paramMap[key];
+            }		
+          }
+          return null
+        }
+        var key = vm.searchTagContentName(regexName,tag);
+        var value = getKeyRec(auxparameters, key);
+        if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0 ||
+           tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0 ||
+           tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
+          parserList.push({tag:tag,value:(jsparam?("'" + value + "' || "):value)});   
         }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-          parserList.push({tag:tag,value:findValueForParameter(parameters,vm.searchTagContentName(regexName,tag),jsparam,true)});   
+          parserList.push({tag:tag,value:value + (jsparam?" || ":"")});   
         }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                
-          var field = parseArrayPosition(findValueForParameter(parameters,vm.searchTagContentName(regexName,tag)).field);
+          var field = value;
           if(!jsparam){                             
             parserList.push({tag:tag,value:"{{ds[0]."+field+"}}"});
           }
           else{
             parserList.push({tag:tag,value:"ds[0]."+field+" || "});
           }
-        }else if(tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                
-          var field = parseArrayPosition(findValueForParameter(parameters,vm.searchTagContentName(regexName,tag)).field);
-          if(!jsparam){                             
-            parserList.push({tag:tag,value:field});
-          }
-          else{
-            parserList.push({tag:tag,value:"'" + field + "' || "});
-          }                            
-        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){                
-          parserList.push({tag:tag,value:findValueForParameter(parameters,vm.searchTagContentName(regexName,tag),jsparam)});  
         }
       } 
       //Replace parameteres for his values
@@ -333,6 +528,30 @@
       }
       return str;
     }
+
+  //function for create custom gadget
+  vm.createCustomGadget = function(config,type){    
+   var identification = config.identification;
+   var description = config.description; 
+   if(!config.identification){
+    identification="customgadget"+(new Date()).getTime();
+   }
+   if(!description){
+     description = identification;
+   }
+   delete config.identification;
+   delete config.description;
+    var gadget = {
+      "identification": identification,
+      "description": description,               
+      "config": JSON.stringify(config),
+      "gadgetMeasures": [],
+      "type": type,
+      "instance":true
+    }
+    return httpService.createGadget(gadget);
+  }
+
 
     vm.icons = [
       "3d_rotation",

@@ -16,7 +16,8 @@
         custommenuoptions: "=?",
         showonlyfiltered: "=?",
         template: "<?",
-        params: "<?"
+        params: "<?",
+        gadgetid: "<?",
       }
     }).controller('LiveHTMLController',
       function LiveHTMLController($controller, $rootScope, $scope, $element, $mdCompiler, datasourceSolverService, httpService, interactionService, utilsService, urlParamService, filterService, $translate, $window) {
@@ -28,7 +29,8 @@
 
         /* Own code */
         var vm = this;
-    
+        vm.tparams = vm.params;
+
         vm.$onDestroy = function () {
           
           

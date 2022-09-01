@@ -15,7 +15,7 @@
           <md-select required md-autofocus placeholder="Select new template datasource" ng-model="element.datasource" ng-model-options="{trackBy: '$value.name'}" md-on-open="loadDatasources()">
             <md-option value=""></md-option>
             <md-option ng-value="{name:datasource.identification,id:datasource.id,refresh:datasource.refresh,type:datasource.mode}" ng-repeat="datasource in datasources">{{datasource.identification}}</md-option>
-          </md-select>
+          </md-select>         
         </md-input-container>
         <div  style="margin-top:25px;">
         <md-input-container layout="horizontal" layout-padding class="md-dialog-content" style="margin-top: -32px;margin-bottom: -28px;">

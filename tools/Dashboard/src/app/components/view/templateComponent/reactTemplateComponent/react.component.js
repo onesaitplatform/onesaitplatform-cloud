@@ -16,7 +16,8 @@
         custommenuoptions: "=?",
         showonlyfiltered: "=?",
         template: "<?",
-        params: "<?"
+        params: "<?",
+        gadgetid: "<?",
       }
     });
 
@@ -30,6 +31,7 @@
 
     /* Own code */
     var vm = this;
+    vm.tparams = vm.params;
 
     vm.reactapp = {}
 

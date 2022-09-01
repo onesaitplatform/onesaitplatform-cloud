@@ -1,0 +1,26 @@
+<md-dialog>
+    <form ng-cloak>
+        <md-dialog-content >
+            <div class="md-dialog-content" layout="column" layout-align="center center" >
+                <div class="md-dialog-alert-title" >Commit Message</div>
+                <div class="md-dialog-alert-text" >
+                    Resource Versioning is enabled, introduce commit message for these changes if you will.
+                </div>
+                <md-input-container flex="60">                   
+                    <input ng-model="message" md-autofocus >
+                  </md-input-container>
+        
+             </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="center center" >
+            <md-button class="cancel-button"  ng-click="skip()">
+                Skip
+            </md-button>
+
+            <md-button class="ok-button"  ng-click="commit()">
+                Commit
+            </md-button>
+
+        </md-dialog-actions>
+    </form>
+</md-dialog>
