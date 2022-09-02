@@ -25,7 +25,8 @@ RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /application && \
     chmod -R 777 /application && \
     chmod -R 777 /var/log && \
-    chmod -R 777 /usr/local
+    chmod -R 777 /usr/local && \
+    chmod -R 777 /usr/local/bin
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
