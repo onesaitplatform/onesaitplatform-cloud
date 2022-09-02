@@ -30,8 +30,6 @@ RUN cd /usr/local \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
-USER onesait
-
 EXPOSE 20000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
