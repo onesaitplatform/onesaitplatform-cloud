@@ -71,5 +71,5 @@ spring:
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
    jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
