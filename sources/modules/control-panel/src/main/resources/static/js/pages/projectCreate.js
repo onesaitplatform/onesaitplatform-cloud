@@ -476,7 +476,7 @@ var ProjectCreateController = function() {
 				type : methodType,
 				data : JSON.stringify(payload),
 				contentType : "application/json",
-				dataType : "html",
+				dataType : "html"
 			});
 		} else if (methodType == 'DELETE') {
 			return $.ajax({
@@ -485,8 +485,8 @@ var ProjectCreateController = function() {
 					[csrf_header]: csrf_value
 			    },
 				type : methodType,
-				data : payload,
-				dataType : "html",
+				data : JSON.stringify(payload),
+				dataType : "html"
 			});
 		}
 	}
