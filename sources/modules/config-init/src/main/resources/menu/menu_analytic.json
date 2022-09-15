@@ -39,15 +39,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
-				},
-				{
-					"title": {
-						"EN": "My Models Manager",
-						"ES": "Mi Model Mánager",
-						"FR": "Mon Gestionnaire de Modèles"
-					},
-					"icon": "",
-					"url": "/controlpanel/modelsmanager/show"
 				}
 			]
 		},
@@ -170,15 +161,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/rule-domains/list"
-				},
-				{
-					"title": {
-						"EN": "My Serverless Applications",
-						"ES": "Mis aplicaciones serverless",
-						"FR": "Des applications serverless"
-					},
-					"icon": "",
-					"url": "/controlpanel/serverless/applications"
 				},
 				{
 					"title": {
@@ -351,22 +333,13 @@
 				},
 				{
 					"title": {
-						"EN": "My Files (old)",
-						"ES": "Mis Ficheros (antiguo)",
-						"FR": "Mes fichiers (ancien)"
+						"EN": "My Files",
+						"ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
 				},
-				{
-                    "title": {
-                        "EN": "My Files",
-                        "ES": "Mis Ficheros",
-                        "FR": "Mes fichiers"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/objectstore/list"
-                },
 				{
 					"title": {
 						"EN": "My Configurations",
