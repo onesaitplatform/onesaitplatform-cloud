@@ -142,15 +142,6 @@
 				},
 				{
 					"title": {
-						"EN": "Serverless Applications Management",
-						"ES": "Gestión de aplicaciones serverless",
-						"FR": "Gestion des applications serverless"
-					},
-					"icon": "",
-					"url": "/controlpanel/serverless/applications"
-				},
-				{
-					"title": {
 						"EN": "Realms Management",
 						"ES": "Gestión de Dominios de Seguridad",
 						"FR": "Gestion de Domaine de Sécurité"
@@ -213,6 +204,24 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/reports/list"
+				},
+				{
+					"title": {
+						"EN": "GIS Viewers Management",
+						"ES": "Gestión de Visores GIS",
+						"FR": "Gestion de la visionneuse SIG"
+					},
+					"icon": "",
+					"url": "/controlpanel/viewers/list"
+				},
+				{
+					"title": {
+						"EN": "GIS Layers Management",
+						"ES": "Gestión de Capas GIS",
+						"FR": "Gestion des Couches SIG"
+					},
+					"icon": "",
+					"url": "/controlpanel/layers/list"
 				}
 			]
 		},
@@ -251,15 +260,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
-				},
-				{
-					"title": {
-						"EN": "Models Manager Management",
-						"ES": "Gestión del Mánager de Modelos",
-						"FR": "Gestion du Gestionnaire de Modèles"
-					},
-					"icon": "",
-					"url": "/controlpanel/modelsmanager/show"
 				}
 			]
 		},
@@ -377,62 +377,6 @@
 		},
 		{
 			"title": {
-				"EN": "OPEN DATA",
-				"ES": "INFORMACIÓN ABIERTA",
-				"FR": "DONNÉES OUVERTES"
-			},
-			"icon": "icon-open-data",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Open Data Portal Management",
-						"ES": "Gestión de Portal de Datos Abiertos",
-						"FR": "Gestion des Portail de Données Ouvertes"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/access"
-				},
-				{
-					"title": {
-						"EN": "My Organizations",
-						"ES": "Mis Organizaciones",
-						"FR": "Mes organisations"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/organizations/list"
-				},
-				{
-					"title": {
-						"EN": "My Datasets",
-						"ES": "Mis Conjuntos de Datos",
-						"FR": "Mes Ensembles de Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/datasets/list"
-				},
-				{
-					"title": {
-						"EN": "My Resources",
-						"ES": "Mis Recursos",
-						"FR": "Mes Ressources"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/resources/list"
-				},
-				{
-					"title": {
-						"EN": "Typologies Management",
-						"ES": "Gestión de Tipologías",
-						"FR": "Gestion des Typologies"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/typologies/list"
-				}
-			]
-		},
-		{
-			"title": {
 				"EN": "DEV TOOLS",
 				"ES": "HERR. DESARROLLO",
 				"FR": "OUTILS DE DÉVELOPPEMENT"
@@ -478,21 +422,12 @@
 				},
 				{
 					"title": {
-						"EN": "Files Management (old)",
-						"ES": "Gestión de Ficheros (antiguo)",
-						"FR": "Gestion des fichiers (ancien)"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
 						"EN": "Files Management",
-						"ES": "Gestión de Fichero",
+						"ES": "Gestión de Ficheros",
 						"FR": "Gestion des fichiers"
 					},
 					"icon": "",
-					"url": "/controlpanel/objectstore/list"
+					"url": "/controlpanel/files/list"
 				},
 				{
 					"title": {
