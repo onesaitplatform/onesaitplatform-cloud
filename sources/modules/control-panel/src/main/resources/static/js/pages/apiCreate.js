@@ -32,7 +32,7 @@ var ApiCreateController = function() {
 			$('#imageNoElementsOnTable').hide();
 		}
 	}
-6
+
 	// CONTROLLER PRIVATE FUNCTIONS	
     var showGenericErrorDialog= function(dialogTitle, dialogContent){		
 		logControl ? console.log('showErrorDialog()...') : '';
@@ -155,8 +155,7 @@ var ApiCreateController = function() {
         apiName = $('#identification').val();
         apiVersion = $('#numversion').val();
         apiEndPoint = $('#id_endpoint');
-        apiSwagger = $('#id_endpoint_swagger');
-        
+        apiSwagger = $('#id_endpoint_swagger');        
         switch (apiType) {
         	case 'EXTERNAL_FROM_JSON':
             case 'INTERNAL_ONTOLOGY':
@@ -194,6 +193,7 @@ var ApiCreateController = function() {
         	$('#row-panel-info').removeClass('hide');
         	myCodeMirror.refresh();
         }
+ 		
     }
 	
 	function loadOperations () {
@@ -210,6 +210,13 @@ var ApiCreateController = function() {
                         $('#div' + nameOp).addClass('op_div_selected');
                     }
                 }
+				//NODE-RED disable edit elements 
+	 			apiType = $('#apiType').val();
+				if (apiType && apiType.startsWith('NODE_RED')) { 
+					$('#getAllElements_Eliminar').addClass('hide');
+					$('.op_button_div > i').addClass('hide');
+					$('.op_button').attr("disabled", true);
+				}
             }
         } catch (err) {
             console.log('Fallo cargando operaciones',err);
@@ -981,14 +988,41 @@ var ApiCreateController = function() {
 		
 		// INSERT AUTHORIZATION
 		insertAuthorization: function(){
+			console.log("##########################INSERT#####################")
 			logControl ? console.log(LIB_TITLE + ': insertAuthorization()') : '';
+			existe=false;
 			if ( apiCreateReg.actionMode !== null){	
 				// UPDATE MODE ONLY AND VALUES on user
 				if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled')){
 					
-					// AJAX INSERT (ACTION,APIID,USER) returns object with data.
-					authorization('insert',apiCreateReg.apiId,$('#users').val(),'');
-								
+			    if ($("#api_authorizations > tbody > tr").size() > 0) {
+	                $("#api_authorizations > tbody > tr").each(
+		
+		
+						function() {
+							
+							let fila = $(this).children().eq(0);
+							
+							if(fila.children().eq(0).val() == $('#users').val()){	
+							   existe=true;
+							   
+							//alert("Ya tiene autorización el usuario " +$('#users').val());
+							toastr.warning(messagesForms.validation.genOpexist);
+							   
+							} 
+						
+						
+						
+						}
+					);
+				};
+					
+				// AJAX INSERT (ACTION,APIID,USER) returns object with data.
+				if(!existe) {
+					
+					authorization('insert',apiCreateReg.apiId,$('#users').val(),'');		
+					
+				 }	
 				}	
 			}
 		},

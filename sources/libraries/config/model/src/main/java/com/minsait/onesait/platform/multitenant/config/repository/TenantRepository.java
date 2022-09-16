@@ -20,6 +20,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
@@ -28,7 +30,7 @@ import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 public interface TenantRepository extends JpaRepository<Tenant, String> {
 	public static final String TENANT_REPOSITORY = "TenantRepository";
 
-	List<Tenant> findByVerticalsIn(Vertical vertical);
+	List<Tenant> findByVerticalsIn(List<Vertical> verticals);
 
 	@Cacheable(cacheNames = TENANT_REPOSITORY, unless = "#result == null", key = "#p0")
 	Tenant findByName(String name);
@@ -53,11 +55,15 @@ public interface TenantRepository extends JpaRepository<Tenant, String> {
 
 	@Override
 	@CachePut(cacheNames = TENANT_REPOSITORY, key = "#p0.name", unless = "#result == null")
+	@CacheEvict(cacheNames = VerticalRepository.VERTICAL_REPOSITORY, allEntries = true)
 	<S extends Tenant> S save(S entity);
 
 	@Override
 	@CacheEvict(cacheNames = TENANT_REPOSITORY, allEntries = true)
 	@Transactional
 	void deleteAll();
+
+	@Query("SELECT size(t.users) FROM Tenant t WHERE t.name= :tenantName ")
+	long countUsersByTenantName(@Param("tenantName") String tenantName);
 
 }

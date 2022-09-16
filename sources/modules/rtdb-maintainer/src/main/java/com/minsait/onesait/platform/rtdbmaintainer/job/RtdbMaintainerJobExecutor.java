@@ -36,10 +36,16 @@ public class RtdbMaintainerJobExecutor implements BatchGenericExecutor {
 	ExpirationUsersPassJob expirationUsersPassJob;
 	@Autowired
 	ExpirationResetUsersPassJob expirationResetUsersPassJob;
+	@Autowired
+	ProcessExecutionJob processExecutionJob;
+	@Autowired
+	BackupMinioJob backupMinio;
 
 	private static final String OKPI_JOB_KEY = "Ontology KPI";
 	private static final String JOB_EXPIRATION_USERS_PASS = "ExpirationUsersPassJob";
 	private static final String JOB_EXPIRATION_RESET_USERS_PASS = "ExpirationResetUsersPassJob";
+	private static final String PROCESS_EXECUTION_KEY = "ProcessExecution";
+	private static final String BACKUP_MINIO_KEY = "BackupMinio";
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -50,6 +56,10 @@ public class RtdbMaintainerJobExecutor implements BatchGenericExecutor {
 				expirationUsersPassJob.execute(context);
 			} else if (context.getJobDetail().getKey().toString().contains(JOB_EXPIRATION_RESET_USERS_PASS)) {
 				expirationResetUsersPassJob.execute(context);
+			} else if (context.getJobDetail().getKey().toString().contains(PROCESS_EXECUTION_KEY)) {
+				processExecutionJob.execute(context);
+			} else if (context.getJobDetail().getKey().toString().contains(BACKUP_MINIO_KEY)) {
+				backupMinio.execute(context);
 			} else {
 				rtdbMaintainerJob.execute(context);
 			}

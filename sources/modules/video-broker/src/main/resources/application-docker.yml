@@ -4,7 +4,7 @@ master:
       jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-
+      driver-class-name: ${CONFIGDB_DRIVER}
 spring:
   boot.admin: #Spring Boot Admin Config    
     client.url: http://monitoringuiservice:18100/monitoring  
@@ -17,6 +17,9 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
+      driver-class-name: ${CONFIGDB_DRIVER}
+   jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 onesaitplatform:
   kafka:
@@ -38,7 +41,7 @@ onesaitplatform:
 
 ## LOGGING CONF
 logging:
-   path: /var/log/platform-logs 
+   file.path: /var/log/platform-logs 
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}

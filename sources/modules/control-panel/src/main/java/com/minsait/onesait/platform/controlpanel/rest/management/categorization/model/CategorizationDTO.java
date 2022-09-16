@@ -29,5 +29,13 @@ public class CategorizationDTO {
 	@Setter
 	private String json;
 
+	public CategorizationDTO() {
+		super();
+	}
 
+	public CategorizationDTO(String identification, String json) {
+		super();
+		this.identification = identification;
+		this.json = json;
+	}
 }

@@ -14,9 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
@@ -36,4 +40,7 @@ public interface DashboardUserAccessRepository extends JpaRepository<DashboardUs
 
 	void deleteByDashboard(Dashboard dashboard);
 
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

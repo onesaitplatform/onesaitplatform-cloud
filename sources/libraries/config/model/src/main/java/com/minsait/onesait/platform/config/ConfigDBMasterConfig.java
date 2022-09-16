@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
@@ -31,7 +32,6 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
-import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -94,10 +94,14 @@ public class ConfigDBMasterConfig {
 		em.setDataSource(masterDataSource());
 		em.setPackagesToScan("com.minsait.onesait.platform.multitenant.config.model");
 		em.setPersistenceUnitName("onesaitPlatform-masterdb");
-		final JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		final HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		vendorAdapter.setGenerateDdl(true);
 		em.setJpaVendorAdapter(vendorAdapter);
 
-		em.setJpaPropertyMap(jpaProperties().getHibernateProperties(new HibernateSettings()));
+		Map<String, Object> hibernateSettings = new LinkedHashMap<>();
+		hibernateSettings.putAll(jpaProperties().getProperties());
+		
+		em.setJpaPropertyMap(hibernateSettings);
 		return em;
 	}
 
@@ -190,15 +194,21 @@ public class ConfigDBMasterConfig {
 		properties.put(org.hibernate.cfg.Environment.MULTI_TENANT_CONNECTION_PROVIDER, connectionProvider);
 		properties.put(org.hibernate.cfg.Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, tenantResolver);
 		properties.put(org.hibernate.cfg.Environment.PHYSICAL_NAMING_STRATEGY,
-				SpringPhysicalNamingStrategy.class.getName());
+				"com.minsait.onesait.platform.config.converters.CustomPhysicalNamingStrategy");
 		properties.put(org.hibernate.cfg.Environment.IMPLICIT_NAMING_STRATEGY,
 				SpringImplicitNamingStrategy.class.getName());
+		
+		if(hibernateDialect.contains("PostgreSQL")) {
+			properties.put(org.hibernate.cfg.Environment.MAX_FETCH_DEPTH, 0);//Avoid JOINs which causes problems with generated jpa sentences with Entities subclasses from another one and where a same name field has different types
+		}
 
 		properties.put(org.hibernate.cfg.Environment.DIALECT, hibernateDialect);
 		properties.put(org.hibernate.cfg.Environment.SHOW_SQL, hibernateShowSQL);
 		properties.put(org.hibernate.cfg.Environment.FORMAT_SQL, hibernateFormatSQL);
 		properties.put(org.hibernate.cfg.Environment.HBM2DDL_AUTO, hibernateDDLAutoMode);
 		properties.put(org.hibernate.cfg.Environment.HBM2DLL_CREATE_NAMESPACES, false);
+		
+				
 
 		emfBean.setJpaPropertyMap(properties);
 		log.info("tenantEntityManagerFactory set up successfully!");

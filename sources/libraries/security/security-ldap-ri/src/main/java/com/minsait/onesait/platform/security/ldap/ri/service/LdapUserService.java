@@ -34,8 +34,10 @@ import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.Filter;
 import org.springframework.ldap.support.LdapUtils;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -112,6 +114,7 @@ public class LdapUserService {
 	private static final String PERSON_STR = "person";
 
 	private Set<String> administratorWhitelist;
+	private Set<String> groupWhitelist;
 
 	@Autowired
 	public void setAdministratorWhitelist(@Value("${ldap.administratorWhitelist}") final String whitelist) {
@@ -119,7 +122,19 @@ public class LdapUserService {
 		administratorWhitelist = new HashSet<>(clList);
 	}
 
+	@Autowired
+	public void setGroupWhitelist(@Value("${ldap.groupWhitelist}") final String whitelist) {
+		if (!StringUtils.isEmpty(whitelist)) {
+			final List<String> clList = Arrays.asList(whitelist.split(";"));
+			groupWhitelist = new HashSet<>(clList);
+		}else {
+			groupWhitelist = null;
+		}
+	}
+
+
 	public User createUser(User user, String password, List<String> groups) {
+		checkGroups(groups);
 		user.setPassword(password);
 		user.setActive(true);
 		if (administratorWhitelist.contains(user.getUserId())) {
@@ -142,6 +157,7 @@ public class LdapUserService {
 	}
 
 	public void updateUserRole(User user, List<String> groups) {
+		checkGroups(groups);
 		final Role currentRole = user.getRole();
 		Role ldapRole;
 		if (administratorWhitelist.contains(user.getUserId())) {
@@ -173,7 +189,7 @@ public class LdapUserService {
 		}
 
 		if (matches.isEmpty()) {// Es posible que el usuario este en otro grupo y en el rol solo se tenga una
-								// referencia a su DN
+			// referencia a su DN
 			try {
 				final AndFilter filter2 = new AndFilter();
 				filter2.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
@@ -192,11 +208,16 @@ public class LdapUserService {
 		final User user = matches.get(0);
 		user.setUserId(userId);
 
-		final List<String> groups = ldapTemplateBase
-				.search(LdapUtils.emptyLdapName(), filter.encode(), (AttributesMapper<List<String>>) attributes -> {
-					final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
-					return Collections.list(enMember);
-				}).get(0);
+		List<String> groups = null;
+		try {
+			groups = ldapTemplateBase
+					.search(LdapUtils.emptyLdapName(), filter.encode(), (AttributesMapper<List<String>>) attributes -> {
+						final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+						return Collections.list(enMember);
+					}).get(0);
+		} catch (final Exception e) {
+			log.error("Error while retrieving ldap groups for user {}", userId, e);
+		}
 
 		createUser(user, defaultPassword, groups);
 	}
@@ -224,7 +245,7 @@ public class LdapUserService {
 				new LdapGroupMemberMapper(MEMBER_OF_GROUP));
 
 		if (!users.isEmpty() && users.get(0).isEmpty()) {// en el atributo member es posible que tengamos el DN del
-															// usuario en vez del uid (Esto pasa en Logrono)
+			// usuario en vez del uid (Esto pasa en Logrono)
 			final List<List<String>> membersDn = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn),
 					filterAnd.encode(), new LdapGroupMemberFromDNMapper(MEMBER_OF_GROUP));
 
@@ -302,4 +323,16 @@ public class LdapUserService {
 		}
 		return userToken;
 	}
+
+	private void checkGroups(List<String> groups) {
+		if (!CollectionUtils.isEmpty(groups) && !CollectionUtils.isEmpty(groupWhitelist)) {
+			final boolean valid = groupWhitelist.stream().anyMatch(groups::contains);
+			if (!valid) {
+				log.error("User group was not whitelisted. User groups: {}, whitelisted groups: {}",
+						String.join(",", groups), String.join(",", groupWhitelist));
+				throw new InsufficientAuthenticationException("User group was not whitelisted");
+			}
+		}
+	}
+
 }

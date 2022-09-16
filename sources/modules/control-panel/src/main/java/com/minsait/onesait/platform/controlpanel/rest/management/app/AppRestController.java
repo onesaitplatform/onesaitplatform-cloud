@@ -17,6 +17,9 @@ package com.minsait.onesait.platform.controlpanel.rest.management.app;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -44,6 +47,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
+import com.minsait.onesait.platform.config.model.AppRoleList;
 import com.minsait.onesait.platform.config.model.AppRoleListOauth;
 import com.minsait.onesait.platform.config.model.AppUserListOauth;
 import com.minsait.onesait.platform.config.model.User;
@@ -65,19 +69,22 @@ import com.minsait.onesait.platform.controlpanel.helper.app.AppHelper;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(value = "Realm Management", tags = { "Realm management service" })
+@Tag(name = "Realm Management")
 @RestController
 @RequestMapping("api/realms")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-	@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 public class AppRestController {
 
 	private static final String USER_STR = "User \"";
@@ -100,14 +107,14 @@ public class AppRestController {
 	private ObjectMapper mapper;
 	@Autowired
 	private AppUserRepository appUserRepository;
-	@Autowired(required = false)
 
-	@ApiOperation(value = "Get single realm info")
+
+	@Operation(summary = "Get single realm info")
 	@GetMapping("/{identification}")
-	@ApiResponses(@ApiResponse(response = Realm.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=Realm.class)), responseCode = "200", description = "OK"))
 	@Transactional
 	public ResponseEntity<?> getRealm(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification) {
 
 		final App app = appService.getAppByIdentification(identification);
 		if (app != null) {
@@ -123,12 +130,12 @@ public class AppRestController {
 		}
 	}
 
-	@ApiOperation(value = "Get realm's configured user extra fields")
+	@Operation(summary = "Get realm's configured user extra fields")
 	@GetMapping("/{identification}" + "/user-extra-fields")
-	@ApiResponses(@ApiResponse(response = JsonNode.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=JsonNode.class)), responseCode = "200", description = "OK"))
 	@Transactional
 	public ResponseEntity<?> getRealmUserExtraFields(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification)
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification)
 					throws IOException {
 
 		final App realm = appService.getAppByIdentification(identification);
@@ -151,13 +158,15 @@ public class AppRestController {
 		}
 	}
 
-	@ApiOperation(value = "Get all active realm users filtered by 'extra_fields' attribute")
+	@Operation(summary = "Get all active realm users filtered by 'extra_fields' attribute")
 	@GetMapping("/{identification}/users/filter/extra-fields/{jsonPath}/{value}")
-	@ApiResponses(@ApiResponse(response = RealmUser[].class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmUser[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getAllFilter(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@PathVariable(value = "jsonPath") String jsonPath, @PathVariable(value = "value") String value) {
-		final App appDb = appService.getAppByIdentification(identification);
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@PathVariable(value = "jsonPath") String jsonPath, @PathVariable(value = "value") String value,
+			@RequestParam(required = false, name = "realmRole") String realmRole) {
+
+		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
 			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
@@ -170,13 +179,16 @@ public class AppRestController {
 		}
 		final List<RealmUser> users = new ArrayList<>();
 		List<RealmUser> filteredUsers = new ArrayList<>();
-		appDb.getAppRoles().forEach(r -> users.addAll(r.getAppUsers().stream().filter(u -> {
+		final List<AppRoleList> arl = appService.getRolesByAppIdentification(identification);
+
+		arl.forEach(r -> users.addAll(r.getAppUsers().stream().filter(u -> {
 			if (!StringUtils.isEmpty(u.getUser().getExtraFields())) {
 				try {
-
-					final Object v = JsonPath.parse(u.getUser().getExtraFields()).read("$." + jsonPath, Object.class);
-
-					return v != null && value.equals(String.valueOf(v));
+					final String formatedJsonPath = jsonPath.startsWith("$.") ? jsonPath : "$." + jsonPath;
+					final Object v = JsonPath.parse(u.getUser().getExtraFields()).read(formatedJsonPath, Object.class);
+					final Pattern p = Pattern.compile(value);
+					final Matcher m = p.matcher(String.valueOf(v));
+					return m.matches();
 				} catch (final Exception e) {
 					log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId(), e);
 					return false;
@@ -188,18 +200,71 @@ public class AppRestController {
 				.fullName(u.getUser().getFullName()).mail(u.getUser().getEmail()).role(u.getRole().getName())
 				.username(u.getUser().getUserId()).build()).collect(Collectors.toList())));
 		for (final RealmUser realmUser : users) {
-			filteredUsers = usersWithRole(realmUser, filteredUsers);
+			usersWithRole(realmUser, filteredUsers);
+		}
+		if (!StringUtils.isEmpty(realmRole)) {
+			filteredUsers = filteredUsers.stream().filter(ru -> ru.getRole().contains(realmRole))
+					.collect(Collectors.toList());
 		}
 		return new ResponseEntity<>(filteredUsers, HttpStatus.OK);
 
 	}
 
-	@ApiOperation(value = "Update realm's user extra fields JSON config")
+	@Operation(summary = "Get all active realm users filtered by 'extra_fields' attribute and Json Path expression language")
+	@PostMapping("/{identification}/users/filter/extra-fields/json-path-evaluation")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmUser[].class)), responseCode = "200", description = "OK"))
+	public ResponseEntity<?> getAllFilterJsonPathExpression(
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@RequestBody String jsonPathExpression,
+			@RequestParam(required = false, name = "realmRole") String realmRole) {
+
+		final AppList appDb = appService.getAppListByIdentification(identification);
+
+		if (appDb == null) {
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
+		}
+
+		// user not administrator and not owner is not allowed to get Realm's users
+		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId())
+				&& !appService.isUserInApp(utils.getUserId(), appDb.getIdentification())) {
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
+		}
+		final List<RealmUser> users = new ArrayList<>();
+		List<RealmUser> filteredUsers = new ArrayList<>();
+		final List<AppRoleList> arl = appService.getRolesByAppIdentification(identification);
+
+		arl.forEach(r -> users.addAll(r.getAppUsers().stream().filter(u -> {
+			if (!StringUtils.isEmpty(u.getUser().getExtraFields())) {
+				try {
+					final List<Map<String, Object>> results = JsonPath.parse(u.getUser().getExtraFields()).read(jsonPathExpression);
+					return !results.isEmpty();
+				} catch (final Exception e) {
+					log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId(), e);
+					return false;
+				}
+
+			}
+			return false;
+		}).map(u -> RealmUser.builder().avatar(u.getUser().getAvatar()).extraFields(u.getUser().getExtraFields())
+				.fullName(u.getUser().getFullName()).mail(u.getUser().getEmail()).role(u.getRole().getName())
+				.username(u.getUser().getUserId()).build()).collect(Collectors.toList())));
+		for (final RealmUser realmUser : users) {
+			usersWithRole(realmUser, filteredUsers);
+		}
+		if (!StringUtils.isEmpty(realmRole)) {
+			filteredUsers = filteredUsers.stream().filter(ru -> ru.getRole().contains(realmRole))
+					.collect(Collectors.toList());
+		}
+		return new ResponseEntity<>(filteredUsers, HttpStatus.OK);
+
+	}
+
+	@Operation(summary = "Update realm's user extra fields JSON config")
 	@PatchMapping("/{identification}" + "/user-extra-fields")
 	@Transactional
 	public ResponseEntity<String> patchRealmUserExtraFields(
 			@ApiParam("Realm user's extra fields") @RequestBody String userExtraFields,
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
 			Errors errors) {
 
 		final App realm = appService.getAppByIdentification(identification);
@@ -224,9 +289,9 @@ public class AppRestController {
 		}
 	}
 
-	@ApiOperation(value = "Get all realms info")
+	@Operation(summary = "Get all realms info")
 	@GetMapping
-	@ApiResponses(@ApiResponse(response = Realm[].class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=Realm[].class)), responseCode = "200", description = "OK"))
 	@Transactional
 	public ResponseEntity<?> getRealms() {
 		final List<AppRole> allRoles = appService.getAllRoles();
@@ -241,10 +306,9 @@ public class AppRestController {
 		}
 	}
 
-	@ApiOperation(value = "Create a realm")
+	@Operation(summary = "Create a realm")
 	@PostMapping
-	@Transactional
-	public ResponseEntity<?> create(@ApiParam(value = "Realm", required = true) @RequestBody @Valid RealmCreate realm,
+	public ResponseEntity<?> create(@Parameter(description= "Realm", required = true) @RequestBody @Valid RealmCreate realm,
 			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
@@ -296,12 +360,11 @@ public class AppRestController {
 		throw new Exception();
 	}
 
-	@ApiOperation(value = "Updates a realm")
+	@Operation(summary = "Updates a realm")
 	@PutMapping("/{identification}")
-	@Transactional
 	public ResponseEntity<?> update(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "New Realm Description", required = true) @RequestBody @Valid RealmUpdate realm,
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "New Realm Description", required = true) @RequestBody @Valid RealmUpdate realm,
 			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
@@ -340,11 +403,10 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Deletes a realm")
+	@Operation(summary = "Deletes a realm")
 	@DeleteMapping("/{identification}")
-	@Transactional
 	public ResponseEntity<?> delete(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification) {
 
 		final App appDb = appService.getAppByIdentification(identification);
 
@@ -367,7 +429,7 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Get Authorizations for a realm")
+	@Operation(summary = "Get Authorizations for a realm")
 	@GetMapping("/{identification}/authorizations/{filter}")
 	public ResponseEntity<Object> getAuthorizations(@PathVariable("identification") String identification,
 			@PathVariable(required = false, value = "filter") String filter) {
@@ -385,11 +447,11 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Authorizes user with a role in a existing Realm")
+	@Operation(summary = "Authorizes user with a role in a existing Realm")
 	@PostMapping("/authorization")
 	@Transactional
 	public ResponseEntity<?> createAuthorization(
-			@ApiParam(value = "Realm Authorization", required = true) @Valid @RequestBody RealmUserAuth authorization,
+			@Parameter(description= "Realm Authorization", required = true) @Valid @RequestBody RealmUserAuth authorization,
 			Errors errors) {
 		log.debug("New realm authorization with user: {} and realm: {}", authorization.getUserId(),
 				authorization.getRealmId());
@@ -435,12 +497,12 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Invalidates user authorization for a Realm")
+	@Operation(summary = "Invalidates user authorization for a Realm")
 	@DeleteMapping("/authorization/realm/{identification}/user/{userId}")
 	@Transactional
 	public ResponseEntity<?> deleteAuthorization(
-			@ApiParam(value = "Realm identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "User id", required = true) @PathVariable("userId") String userId) {
+			@Parameter(description= "Realm identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId) {
 		log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
@@ -463,11 +525,11 @@ public class AppRestController {
 		}
 	}
 
-	@ApiOperation(value = "Creates a realm association given parent and child realms, as well as respective roles")
+	@Operation(summary = "Creates a realm association given parent and child realms, as well as respective roles")
 	@PostMapping("/association")
 	@Transactional
 	public ResponseEntity<?> createAssociation(
-			@ApiParam(value = "Realm Association", required = true) @Valid @RequestBody RealmAssociation association,
+			@Parameter(description= "Realm Association", required = true) @Valid @RequestBody RealmAssociation association,
 			Errors errors) {
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
@@ -502,14 +564,14 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Deletes a realm's association")
+	@Operation(summary = "Deletes a realm's association")
 	@DeleteMapping("/association/parent-realm/{parentRealmId}/parent-role/{parentRole}/child-realm/{childRealmId}/child-role/{childRole}")
 	@Transactional
 	public ResponseEntity<?> deleteAssociation(
-			@ApiParam(value = "Parent Realm id", required = true) @PathVariable("parentRealmId") String parentRealmId,
-			@ApiParam(value = "Child Realm id", required = true) @PathVariable("childRealmId") String childRealmId,
-			@ApiParam(value = "Parent role", required = true) @PathVariable("parentRole") String parentRole,
-			@ApiParam(value = "Child role", required = true) @PathVariable("childRole") String childRole) {
+			@Parameter(description= "Parent Realm id", required = true) @PathVariable("parentRealmId") String parentRealmId,
+			@Parameter(description= "Child Realm id", required = true) @PathVariable("childRealmId") String childRealmId,
+			@Parameter(description= "Parent role", required = true) @PathVariable("parentRole") String parentRole,
+			@Parameter(description= "Child role", required = true) @PathVariable("childRole") String childRole) {
 
 		final App appDbChild = appService.getAppByIdentification(childRealmId);
 		final App appDbParent = appService.getAppByIdentification(parentRealmId);
@@ -540,12 +602,12 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Get all roles in a Realm")
+	@Operation(summary = "Get all roles in a Realm")
 	@GetMapping("/{identification}/roles")
-	@ApiResponses(@ApiResponse(response = RealmRole[].class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmRole[].class)), responseCode = "200", description = "OK"))
 	@Transactional
 	public ResponseEntity<?> getRoles(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification) {
 
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
@@ -564,12 +626,11 @@ public class AppRestController {
 		return new ResponseEntity<>(roles, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Creates a role in a Realm")
+	@Operation(summary = "Creates a role in a Realm")
 	@PostMapping("/{identification}/roles")
-	@Transactional
 	public ResponseEntity<String> addRole(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "Realm role", required = true) @Valid @RequestBody RealmRole role) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Realm role", required = true) @Valid @RequestBody RealmRole role) {
 
 		final App appDb = appService.getAppByIdentification(identification);
 
@@ -595,12 +656,11 @@ public class AppRestController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@ApiOperation(value = "Deletes a role in a Realm")
+	@Operation(summary = "Deletes a role in a Realm")
 	@DeleteMapping("/{identification}/roles/{roleName}")
-	@Transactional
 	public ResponseEntity<?> deleteRole(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "Role name", required = true) @PathVariable("roleName") String roleName) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Role name", required = true) @PathVariable("roleName") String roleName) {
 
 		final App appDb = appService.getAppByIdentification(identification);
 
@@ -619,18 +679,17 @@ public class AppRestController {
 			return new ResponseEntity<>("Role \"" + roleName + "\" does not exist in realm \"" + identification + "\"",
 					HttpStatus.BAD_REQUEST);
 		}
-		appService.deleteRole(role);
-
+		appDb.getAppRoles().removeIf(ar -> ar.getName().equals(roleName));
 		appService.updateApp(appDb);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Get all users in a Realm")
+	@Operation(summary = "Get all users in a Realm")
 	@GetMapping("/{identification}/users")
-	@ApiResponses(@ApiResponse(response = RealmUser[].class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmUser[].class)), responseCode = "200", description = "OK"))
 	@Transactional
 	public ResponseEntity<?> getUsers(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification) {
 
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
@@ -649,9 +708,16 @@ public class AppRestController {
 		List<RealmUser> filteredUsers = new ArrayList<>();
 		appService.getAppUsersByApp(identification)
 		.forEach(u -> users.add(
-				RealmUser.builder().avatar(u.getUser().getAvatar()).extraFields(u.getUser().getExtraFields())
-				.fullName(u.getUser().getFullName()).mail(u.getUser().getEmail())
-				.role(u.getRole().getName()).username(u.getUser().getUserId()).build()));
+				RealmUser.builder()
+				.avatar(u.getUser().getAvatar())
+				.extraFields(u.getUser().getExtraFields())
+				.fullName(u.getUser().getFullName())
+				.mail(u.getUser().getEmail())
+				.role(u.getRole().getName())
+				.username(u.getUser().getUserId())
+				.creationDate(u.getUser().getCreatedAt())
+				.active(u.getUser().isActive())
+				.build()));
 		for (final RealmUser realmUser : users) {
 			filteredUsers = usersWithRole(realmUser, filteredUsers);
 		}
@@ -659,13 +725,13 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Gets a user in  a Realm")
+	@Operation(summary = "Gets a user in  a Realm")
 	@GetMapping("/{identification}/users/{userId}")
-	@ApiResponses(@ApiResponse(response = RealmUser.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmUser.class)), responseCode = "200", description = "OK"))
 	// @Transactional
 	public ResponseEntity<?> getUser(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "User id", required = true) @PathVariable("userId") String userId) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId) {
 
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
@@ -688,9 +754,16 @@ public class AppRestController {
 		final List<RealmUser> users = new ArrayList<>();
 		List<RealmUser> filteredUsers = new ArrayList<>();
 		appService.getAppUsersByUserIdAndApp(userId, identification).forEach(u -> {
-			users.add(RealmUser.builder().avatar(u.getUser().getAvatar()).extraFields(u.getUser().getExtraFields())
-					.fullName(u.getUser().getFullName()).mail(u.getUser().getEmail()).role(u.getRole().getName())
-					.username(u.getUser().getUserId()).build());
+			users.add(RealmUser.builder()
+					.avatar(u.getUser().getAvatar())
+					.extraFields(u.getUser().getExtraFields())
+					.fullName(u.getUser().getFullName())
+					.mail(u.getUser().getEmail())
+					.role(u.getRole().getName())
+					.username(u.getUser().getUserId())
+					.creationDate(u.getUser().getCreatedAt())
+					.active(u.getUser().isActive())
+					.build());
 		});
 		for (final RealmUser realmUser : users) {
 			filteredUsers = usersWithRole(realmUser, filteredUsers);
@@ -699,13 +772,13 @@ public class AppRestController {
 		return new ResponseEntity<>(filteredUsers, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Invalidates user authorization for a Realm")
+	@Operation(summary = "Invalidates user authorization for a Realm")
 	@DeleteMapping("/authorization/realm/{identification}/user/{userId}/rol/{rolId}")
 	@Transactional
 	public ResponseEntity<?> deleteUserRolAuthorization(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "User id", required = true) @PathVariable("userId") String userId,
-			@ApiParam(value = "Rol id", required = true) @PathVariable("rolId") String rolId) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId,
+			@Parameter(description= "Rol id", required = true) @PathVariable("rolId") String rolId) {
 		log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
@@ -728,12 +801,12 @@ public class AppRestController {
 
 	}
 
-	@ApiOperation(value = "Gets a user in a Realm by email")
+	@Operation(summary = "Gets a user in a Realm by email")
 	@GetMapping("/{identification}/user")
-	@ApiResponses(@ApiResponse(response = RealmUser.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmUser.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> getUserByEmail(
-			@ApiParam(value = "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "Email", required = true) @RequestParam("email") String email) {
+			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Email", required = true) @RequestParam("email") String email) {
 
 		final App appDb = appService.getAppByIdentification(identification);
 
@@ -775,6 +848,14 @@ public class AppRestController {
 		}
 
 	}
+
+	@Operation(summary = "Get a list of realms where the current user is member of")
+	@GetMapping("/member")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String[].class)), responseCode = "200", description = "OK"))
+	public ResponseEntity<List<String>> getRealmsForUser(){
+		return new ResponseEntity<>(appService.getAppNamesByUserIn(utils.getUserId()), HttpStatus.OK);
+	}
+
 
 	private List<RealmUser> usersWithRole(RealmUser realmUser, List<RealmUser> filteredUsers) {
 		boolean exist = false;

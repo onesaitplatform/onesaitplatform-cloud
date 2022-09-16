@@ -31,8 +31,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cdancy.jenkins.rest.shaded.javax.ws.rs.QueryParam;
+import com.minsait.onesait.platform.business.services.gadget.GadgetDatasourceBusinessService;
+import com.minsait.onesait.platform.business.services.gadget.GadgetDatasourceBusinessServiceException;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.UserRepository;
@@ -42,24 +46,36 @@ import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceServi
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadgetdatasource.model.DatasourceDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadgetdatasource.model.DatasourceDTOCreate;
+import com.minsait.onesait.platform.controlpanel.rest.management.user.UserManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
-@Api(value = "Datasource Management", tags = { "Datasource management service" })
+
+import lombok.extern.slf4j.Slf4j;
+
+@Tag(name = "Datasource Management")
 @RestController
 @RequestMapping("api/gadgetdatasources")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+@Slf4j
 public class GadgetDatasourceManagementRestController {
 
 	@Autowired
 	private GadgetDatasourceService datasourceService;
 
+	@Autowired
+	private GadgetDatasourceBusinessService gadgetDatasourceBusinessService;
+	
 	@Autowired
 	private OntologyService ontologyService;
 
@@ -78,8 +94,8 @@ public class GadgetDatasourceManagementRestController {
 	private static final String CONFIG = "";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get datasources")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get datasources")
 	@GetMapping
 	public ResponseEntity<?> getDatasources() {
 		try {
@@ -96,11 +112,11 @@ public class GadgetDatasourceManagementRestController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get datasource by identification or id")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get datasource by identification or id")
 	@GetMapping("/{identification}")
 	public ResponseEntity<?> getDatasourceByIdentification(
-			@ApiParam(value = "identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification) {
 		try {
 			GadgetDatasource datasource = datasourceService.getDatasourceByIdentification(identification);
 			if (datasource == null) {
@@ -119,11 +135,11 @@ public class GadgetDatasourceManagementRestController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Create a datasource")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Create a datasource")
 	@PostMapping
 	public ResponseEntity<?> createDatasource(
-			@ApiParam(value = "DatasourceDTO", required = true) @Valid @RequestBody DatasourceDTOCreate datasourceDTO) {
+			@Parameter(description= "DatasourceDTO", required = true) @Valid @RequestBody DatasourceDTOCreate datasourceDTO) {
 		try {
 			if (datasourceDTO.getQuery() == null || datasourceDTO.getIdentification() == null)
 				return new ResponseEntity<>("Missing required field. Required = [identification, query]",
@@ -153,11 +169,11 @@ public class GadgetDatasourceManagementRestController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Update a datasource")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Update a datasource")
 	@PutMapping
 	public ResponseEntity<?> updateDatasource(
-			@ApiParam(value = "DatasourceDTO", required = true) @Valid @RequestBody DatasourceDTOCreate datasourceDTO) {
+			@Parameter(description= "DatasourceDTO", required = true) @Valid @RequestBody DatasourceDTOCreate datasourceDTO) {
 		try {
 			if (datasourceDTO.getIdentification() == null)
 				return new ResponseEntity<>("Missing required field. Required = [identification]",
@@ -194,11 +210,11 @@ public class GadgetDatasourceManagementRestController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Delete a datasource by identification")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Delete a datasource by identification")
 	@DeleteMapping("/{identification}")
 	public ResponseEntity<?> deleteDatasource(
-			@ApiParam(value = "identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification) {
 
 		GadgetDatasource ds = datasourceService.getDatasourceByIdentification(identification);
 		if (ds == null)
@@ -211,6 +227,118 @@ public class GadgetDatasourceManagementRestController {
 		deletionService.deleteGadgetDataSource(ds.getId(), utils.getUserId());
 
 		return new ResponseEntity<>(String.format("The datasource %s has been deleted", identification), HttpStatus.OK);
+	}
+	
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get sample of datasource by identification or id")
+	@GetMapping("/getSample/{identification}")
+	public ResponseEntity<?> getSampleDatasourceByIdentification(
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Record limit of sample", required = false) @RequestParam(value = "limit", required = false) Integer limit) {
+		try {
+			String datasourceId;
+			GadgetDatasource datasource = datasourceService.getDatasourceByIdentification(identification);
+			if (datasource != null) {
+				datasourceId = datasource.getId(); 
+			} else {
+				datasourceId = identification;
+			}
+			
+			try {
+				return new ResponseEntity<>(gadgetDatasourceBusinessService.getSampleGadgetDatasourceById(datasourceId, utils.getUserId(), limit == null ? 1 : limit, false), HttpStatus.OK);
+			} catch (GadgetDatasourceBusinessServiceException datasourceBusinessServiceException) {
+				switch(datasourceBusinessServiceException.getErrorType()) {
+					case NOT_FOUND:
+						log.error("Datasource " + datasourceId + " not found ", datasourceBusinessServiceException);
+						return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
+					case UNAUTHORIZED:
+						log.error("Datasource " + datasourceId + " unauthorized", datasourceBusinessServiceException);
+						return new ResponseEntity<>("The datasource is unanthorized.", HttpStatus.UNAUTHORIZED);
+					default:
+						return new ResponseEntity<>("Generic error.", HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} catch (Exception e) {
+				log.error("Error generic executing sample datasource ", e);
+				return new ResponseEntity<>("Generic error " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get fields of datasource by identification or id")
+	@GetMapping("/getFields/{identification}")
+	public ResponseEntity<?> getFieldsDatasourceByIdentification(
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification) {
+		try {
+			String datasourceId;
+			GadgetDatasource datasource = datasourceService.getDatasourceByIdentification(identification);
+			if (datasource != null) {
+				datasourceId = datasource.getId(); 
+			} else {
+				datasourceId = identification;
+			}
+			
+			try {
+				return new ResponseEntity<>(gadgetDatasourceBusinessService.getFieldsGadgetDatasourceById(datasourceId, utils.getUserId(), false), HttpStatus.OK);
+			} catch (GadgetDatasourceBusinessServiceException datasourceBusinessServiceException) {
+				switch(datasourceBusinessServiceException.getErrorType()) {
+					case NOT_FOUND:
+						log.error("Datasource " + datasourceId + " not found ", datasourceBusinessServiceException);
+						return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
+					case UNAUTHORIZED:
+						log.error("Datasource " + datasourceId + " unauthorized", datasourceBusinessServiceException);
+						return new ResponseEntity<>("The datasource is unanthorized.", HttpStatus.UNAUTHORIZED);
+					default:
+						return new ResponseEntity<>("Generic error.", HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} catch (Exception e) {
+				log.error("Error generic executing sample datasource ", e);
+				return new ResponseEntity<>("Generic error " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get filter fields of datasource by identification or id")
+	@GetMapping("/getFilterFields/{identification}")
+	public ResponseEntity<?> getFilterFieldsDatasourceByIdentification(
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification) {
+		try {
+			String datasourceId;
+			GadgetDatasource datasource = datasourceService.getDatasourceByIdentification(identification);
+			if (datasource != null) {
+				datasourceId = datasource.getId(); 
+			} else {
+				datasourceId = identification;
+			}
+			
+			try {
+				return new ResponseEntity<>(gadgetDatasourceBusinessService.getFieldsGadgetDatasourceById(datasourceId, utils.getUserId(), true), HttpStatus.OK);
+			} catch (GadgetDatasourceBusinessServiceException datasourceBusinessServiceException) {
+				switch(datasourceBusinessServiceException.getErrorType()) {
+					case NOT_FOUND:
+						log.error("Datasource " + datasourceId + " not found ", datasourceBusinessServiceException);
+						return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
+					case UNAUTHORIZED:
+						log.error("Datasource " + datasourceId + " unauthorized", datasourceBusinessServiceException);
+						return new ResponseEntity<>("The datasource is unanthorized.", HttpStatus.UNAUTHORIZED);
+					default:
+						return new ResponseEntity<>("Generic error.", HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} catch (Exception e) {
+				log.error("Error generic executing sample datasource ", e);
+				return new ResponseEntity<>("Generic error " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} catch (GadgetDatasourceServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 	private DatasourceDTO fromDatasourceToDTO(GadgetDatasource ds) {

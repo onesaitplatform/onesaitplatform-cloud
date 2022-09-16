@@ -101,10 +101,14 @@ public interface MultitenancyService {
 
 	void changeUserTenant(String userId, String tenant);
 
+	void removeFromDefaultTenant(String userId, String tenant);
+
 	List<MasterUserToken> getAdminTokensForVerticals();
 
 	MasterUser getUser(String userId);
 
 	Vertical getVerticalFromSchema(String schema);
+
+	long countTenantUsers(String tenantName);
 
 }

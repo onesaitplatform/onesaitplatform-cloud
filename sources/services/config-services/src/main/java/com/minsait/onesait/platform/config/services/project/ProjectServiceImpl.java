@@ -191,7 +191,7 @@ public class ProjectServiceImpl implements ProjectService {
 					}
 				})
 
-				));
+						));
 			}
 			app.getAppRoles().forEach(r -> r.getAppUsers().forEach(au -> {
 				if (!users.contains(au)) {
@@ -424,7 +424,7 @@ public class ProjectServiceImpl implements ProjectService {
 		if (project.getApp() != null) {
 			final Set<AppRole> roles = project
 					.getApp().getAppRoles().stream().filter(ar -> null != ar.getAppUsers().stream()
-							.map(AppUser::getUser).filter(u -> u.equals(user)).findFirst().orElse(null))
+					.map(AppUser::getUser).filter(u -> u.equals(user)).findFirst().orElse(null))
 					.collect(Collectors.toSet());
 			return project.getProjectResourceAccesses().stream().filter(pra -> roles.contains(pra.getAppRole()))
 					.collect(Collectors.toSet());
@@ -507,7 +507,7 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		final Project project = opt.get();
 		roles.addAll(project.getApp().getAppRoles());
-		project.getApp().getAppRoles().forEach(a -> roles.addAll(EntitiesCast.castAppRoles(a.getChildRoles())));
+		project.getApp().getAppRoles().forEach(a -> roles.addAll(a.getChildRoles()));
 		return roles;
 	}
 

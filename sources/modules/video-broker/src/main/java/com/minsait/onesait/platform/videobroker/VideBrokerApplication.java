@@ -20,7 +20,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -32,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
 @ComponentScan(basePackages = { "com.minsait.onesait.platform" })
-@EnableJpaAuditing
 @EnableAsync
 @Slf4j
 public class VideBrokerApplication {

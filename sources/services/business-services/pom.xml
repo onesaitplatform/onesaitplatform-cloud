@@ -22,8 +22,8 @@
 			<artifactId>onesaitplatform-config-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
-	
+
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-services</artifactId>
@@ -42,7 +42,7 @@
 			</exclusions>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-planner</artifactId> 
+		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-planner</artifactId>
 			<version>${project.version}</version> </dependency> -->
 
 		<dependency>
@@ -58,6 +58,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>			
+
+		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>${mockito.version}</version> <!-- To use MockitoJUnitRunner -->
@@ -70,10 +76,10 @@
 		</dependency>
 
 	</dependencies>
-	
+
 	<build>
 		<plugins>
-		  <!-- skip deployment -->	
+		  <!-- skip deployment -->
 		  <plugin>
 		    <groupId>org.apache.maven.plugins</groupId>
 		    <artifactId>maven-deploy-plugin</artifactId>
@@ -81,8 +87,8 @@
 		    <configuration>
 		        <skip>true</skip>
 		    </configuration>
-		  </plugin>	
-		</plugins>	
-	</build>	
+		  </plugin>
+		</plugins>
+	</build>
 
 </project>

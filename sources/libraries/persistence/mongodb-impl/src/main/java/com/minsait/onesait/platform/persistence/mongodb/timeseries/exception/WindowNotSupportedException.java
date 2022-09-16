@@ -24,4 +24,8 @@ public class WindowNotSupportedException extends Exception {
 	public WindowNotSupportedException(String msg) {
 		super(msg);
 	}
+	
+	public WindowNotSupportedException(String msg, Exception e) {
+		super(msg, e);
+	}
 }

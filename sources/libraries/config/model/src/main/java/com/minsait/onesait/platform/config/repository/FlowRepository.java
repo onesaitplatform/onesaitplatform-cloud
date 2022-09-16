@@ -14,11 +14,18 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import com.minsait.onesait.platform.config.model.Flow;
+import com.minsait.onesait.platform.config.model.Token;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface FlowRepository extends JpaRepository<Flow, String> {
 
@@ -27,4 +34,11 @@ public interface FlowRepository extends JpaRepository<Flow, String> {
 	List<Flow> findByFlowDomain_Identification(String domainIdentification);
 
 	Flow findByNodeRedFlowId(String nodeRedFlowId);
+
+	@Query("SELECT f FROM Flow f WHERE f.flowDomain.user= :#{#user}")
+	List<Token> findByUser(User user);
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

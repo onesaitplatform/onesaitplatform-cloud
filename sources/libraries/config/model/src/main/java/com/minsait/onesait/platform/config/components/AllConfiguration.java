@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.config.components;
 
+import com.minsait.onesait.platform.git.GitlabConfiguration;
+
 import lombok.Data;
 
 @Data

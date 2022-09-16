@@ -33,8 +33,7 @@ import lombok.Setter;
 
 @Configurable
 @Entity
-@Table(name = "DIGITAL_TWIN_DEVICE", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
-		"IDENTIFICATION" }))
+@Table(name = "DIGITAL_TWIN_DEVICE", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
 
 @EntityListeners(EntityListener.class)
 public class DigitalTwinDevice extends OPResource {
@@ -77,7 +76,8 @@ public class DigitalTwinDevice extends OPResource {
 	@Setter
 	private String ip;
 
-	@Column(name = "IPV6", length = 512, nullable = false, columnDefinition = "BIT")
+	@Column(name = "IPV6", length = 512, nullable = false)
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
 	@Getter
 	@Setter
 	@NotNull

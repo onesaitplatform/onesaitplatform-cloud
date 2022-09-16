@@ -145,7 +145,7 @@
 														<div class="form-actions">
 															<div class="pull-left">
 																<!-- CANCEL TO-DO: authentication and control -->
-																<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/models/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+																<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/models/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 															</div>
 														</div>	
 													</div>

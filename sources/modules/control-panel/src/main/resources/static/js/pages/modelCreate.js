@@ -85,18 +85,22 @@ var ModelCreateController = function() {
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 
 		$.ajax({
-		    url: 'getSubcategories/'+$("#categories_select").val(),
+		    url: '/controlpanel/categories/getSubcategories/'+$("#categories_select").val(),
 		    headers: {
 				[csrf_header]: csrf_value
 		    },
 		    type: 'GET',						  
 		    success: function(result) {
-		    	
-		    	  
+	  
 		    	$("#subcategories").removeAttr("disabled");
 		    	$("#subcategories").empty();
-		    	$("#subcategories").append('<option value="" th:text="#{dashboards.subcategoryselect}"> Select Subategory...</option>');
-		    	
+	
+		    	$('#subcategories').append($('<option>', { 
+	    	        value: '',
+	    	        text : '',
+	    	        style : 'height:30px;'
+	    	    }));
+	
 		    	$.each(result, function (i, subcategory) {
 		    		
 		    		$("#subcategories").append($('<option>', { 
@@ -104,7 +108,8 @@ var ModelCreateController = function() {
 		    	        text : subcategory 
 		    	    }));
 		    	});
-		    	
+	
+		    	$("#subcategories").selectpicker("refresh");
 		    }
 		});
 	});

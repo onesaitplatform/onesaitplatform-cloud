@@ -23,6 +23,7 @@ import java.util.Random;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +32,7 @@ import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.CommandDTO;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.DataDTO;
 import com.minsait.onesait.platform.config.services.dashboardapi.dto.FilterDTO;
@@ -60,16 +62,21 @@ import lombok.extern.slf4j.Slf4j;
 public class DashboardApiServiceImpl implements DashboardApiService {
 
 	@Autowired
+	@Lazy
 	private GadgetService gadgetService;
 
 	@Autowired
 	private UserService userService;
 
 	@Autowired
+	@Lazy
 	private GadgetDatasourceService gadgetDatasourceService;
 
 	@Autowired
 	private GadgetTemplateService gadgetTemplateService;
+	@Autowired
+	private GadgetTemplateRepository gadgetTemplateRepository;
+
 
 	@Autowired
 	private OntologyService ontologyService;
@@ -275,7 +282,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 					responseDTO.setSetupLayout(commandDTO.getInformation().getSetupLayout());
 					responseDTO.setMessage(PROPERLY_CREATED_GADGET);
 					responseDTO.setId(gadget.getId());
-					responseDTO.setType(gadget.getType());
+					responseDTO.setType(gadget.getType().getId());
 					responseDTO.setFilters(createFiltersFromCommand(commandDTO, gadget.getId()));
 					return mapper.writeValueAsString(responseDTO);
 				} else if (commandDTO.getInformation().getGadgetType().equals(PIE)
@@ -294,7 +301,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 					responseDTO.setSetupLayout(commandDTO.getInformation().getSetupLayout());
 					responseDTO.setMessage(PROPERLY_CREATED_GADGET);
 					responseDTO.setId(gadget.getId());
-					responseDTO.setType(gadget.getType());
+					responseDTO.setType(gadget.getType().getId());
 					responseDTO.setFilters(createFiltersFromCommand(commandDTO, gadget.getId()));
 					return mapper.writeValueAsString(responseDTO);
 				} else {
@@ -689,7 +696,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		}
 		Gadget gadget = gadgetService.getGadgetById(userId, commandDTO.getInformation().getGadgetId());
 		List<GadgetMeasure> measures = updateGadgetMeasures(commandDTO, user);
-		gadgetService.addMeasuresGadget(gadget, idDataSource, measures);
+		gadgetService.addMeasuresGadget(gadget, idDataSource, measures, null, null);
 		return gadget;
 	}
 
@@ -723,7 +730,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		this.gadgetDatasourceService.updateGadgetDatasource(datasource);
 		Gadget gadget = gadgetService.getGadgetById(userId, commandDTO.getInformation().getGadgetId());
 		List<GadgetMeasure> measures = updateGadgetCoordinates(commandDTO);
-		gadgetService.addMeasuresGadget(gadget, idDataSource, measures);
+		gadgetService.addMeasuresGadget(gadget, idDataSource, measures, null, null);
 		return gadget;
 	}
 
@@ -767,7 +774,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		} else {
 			measures = createGadgetColumns(commandDTO, gadgetType, user, gadget, configGadget);
 		}
-		gadget = gadgetService.createGadget(gadget, datasource, measures);
+		gadget = gadgetService.createGadget(gadget, datasource, measures, null, null);
 		return gadget;
 	}
 
@@ -806,7 +813,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		// configuration depending on the type
 		String configGadget = "";
 		List<GadgetMeasure> measures = createGadgetCoordinates(commandDTO, gadgetType, user, gadget, configGadget);
-		gadget = gadgetService.createGadget(gadget, datasource, measures);
+		gadget = gadgetService.createGadget(gadget, datasource, measures, null, null);
 		return gadget;
 	}
 
@@ -825,7 +832,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		gadget.setConfig(configGadget);
 		gadget.setDescription("");
 		gadget.setPublic(Boolean.FALSE);
-		gadget.setType(gadgetType);
+		gadget.setType(gadgetTemplateRepository.findById(gadgetType).orElse(null));
 		gadget.setUser(user);
 
 		// Create measaures for gadget
@@ -1370,7 +1377,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		gadget.setConfig(configGadget);
 		gadget.setDescription("");
 		gadget.setPublic(Boolean.FALSE);
-		gadget.setType(gadgetType);
+		gadget.setType(gadgetTemplateRepository.findById(gadgetType).orElse(null));
 		gadget.setUser(user);
 
 		// Create measaures for gadget
@@ -1479,7 +1486,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 		gadget.setConfig(configGadget);
 		gadget.setDescription("");
 		gadget.setPublic(Boolean.FALSE);
-		gadget.setType(gadgetType);
+		gadget.setType(gadgetTemplateRepository.findById(gadgetType).orElse(null));
 		gadget.setUser(user);
 
 		// Create measaures for gadget

@@ -104,7 +104,8 @@ public class AuditServiceImpl implements AuditService {
 	@Override
 	public String getCustomQueryData(String query, String user)
 			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-		return queryToolService.querySQLAsJson(user, "Audit_" + user, query, 0);
+		String user_ontology = user.replace(".", "_");
+		return queryToolService.querySQLAsJson(user, "Audit_" + user_ontology, query, 0);
 	}
 
 	@Override

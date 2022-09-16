@@ -55,7 +55,8 @@ public class MarketAsset extends OPResource {
 		FREE;
 	}
 
-	@Column(name = "IS_PUBLIC", nullable = false, columnDefinition = "BIT")
+	@Column(name = "IS_PUBLIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
@@ -111,6 +112,7 @@ public class MarketAsset extends OPResource {
 	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "JSON_DESC", length = 1000000)
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String jsonDesc;
@@ -118,6 +120,7 @@ public class MarketAsset extends OPResource {
 	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "REJECTION_REASON", length = 500)
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String rejectionReason;

@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,15 +42,17 @@ import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationServ
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
-import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceInfoDTO;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
 import com.minsait.onesait.platform.persistence.hadoop.kudu.KuduManageDBRepository;
+import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
+import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
+import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
+import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicService;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicServiceException;
 
@@ -97,6 +100,15 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired(required = false)
 	private KuduManageDBRepository kuduManageRepository;
+	
+	@Autowired
+	private PrestoOntologyBasicOpsDBRepository prestoDBBasicOpsDBRepository;
+	
+	@Autowired
+	private PrestoManageDBRepository prestoManageDBRepository;
+	
+	@Autowired
+	private HistoricalMinioService historicalMinioService;
 
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
@@ -137,7 +149,8 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
             throw new OntologyServiceException(
                 "Ontology with identification: " + ontology.getIdentification() + " exists");
         }
-        invokeCreateOntology(ontology, config);
+
+		invokeCreateOntology(ontology, config);
         invokeCreateOntologyLogic(ontology, config);
 	}
 
@@ -162,6 +175,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		try {
 			ontologyLogicService.createOntology(ontology, config == null ? null : configToConfigMap(config));
 		} catch (final Exception e) {
+			log.error("Error creaing ontology", e);
 		    ontologyService.delete(ontology);
 		    throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
                 errorRollingBack + ": " + e.getMessage(), e);
@@ -218,6 +232,8 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
 			clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
 			clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
+			clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
+			clone.setJsonLdContext(ontology.getJsonLdContext());
 
 			ontologyService.createOntology(clone, config);
 		} else {
@@ -307,6 +323,8 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Override
 	public String getRelationalSchema(String datasource, String database, String schema, String collection) {
+		if (datasource.equals(VirtualDatasourceType.PRESTO.toString()))
+			return prestoDBBasicOpsDBRepository.getTableMetadata(database, schema, collection);
 		return virtualRepo.getTableMetadata(datasource, database, schema, collection);
 	}
 
@@ -318,11 +336,15 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public String getSQLCreateTable(CreateStatementBusiness statementBusiness, VirtualDatasourceType datasource) {
-		if (datasource.equals(VirtualDatasourceType.KUDU))
+	public String getSQLCreateTable(CreateStatementBusiness statementBusiness, VirtualDatasourceType datasource) throws OntologyBusinessServiceException {
+		if (datasource.equals(VirtualDatasourceType.KUDU)) {
+			if (kuduManageRepository == null) {
+				throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.EXTERNAL_TABLE_CREATION_ERROR, "KUDU service is not available");
+			}
 			return kuduManageRepository.getSQLCreateStatement(statementBusiness.toCreateStatementKudu());
-		final CreateStatement statement = statementBusiness.toCreateStatement();
-		return virtualRepo.getSQLCreateStatment(statement, datasource);
+		}if (datasource.equals(VirtualDatasourceType.PRESTO)) 
+			return prestoDBBasicOpsDBRepository.getSQLCreateStatment(statementBusiness.toCreateStatementPresto());
+		return virtualRepo.getSQLCreateStatment(statementBusiness.toCreateStatement(), datasource);
 	}
 
 	/***
@@ -383,7 +405,13 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		if (!StringUtils.isEmpty(config.getDatasourceSchema())) {
 			cmap.put("datasourceSchema", config.getDatasourceSchema());
 		}
-		
+		if (!StringUtils.isEmpty(config.getDatasourceCatalog())) {
+			cmap.put("datasourceCatalog", config.getDatasourceCatalog());
+		}
+		if (!StringUtils.isEmpty(config.getBucketName())) {
+			cmap.put("bucketName", config.getBucketName());
+		}
+
 		return cmap;
 	}
 
@@ -437,13 +465,39 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Override
 	public void deleteOntology(String id, String userId) {
-		final Ontology o = ontologyService.getOntologyById(id, userId);
+		final Ontology o = ontologyService.getOntologyByIdForDelete(id, userId);
+		final String identification = o.getIdentification();
 		// IF IT'S A COSMOSDB COLLECTION AND NO RECORDS REMOVE IT
 		if (RtdbDatasource.COSMOS_DB.equals(o.getRtdbDatasource())
-				&& cosmosBasicOpsRepository.count(o.getIdentification()) == 0)
-			cosmosManageRepository.removeTable4Ontology(o.getIdentification());
+				&& cosmosBasicOpsRepository.count(identification) == 0)
+			cosmosManageRepository.removeTable4Ontology(identification);
+		if (RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {
+			prestoManageDBRepository.removeTable4Ontology(identification);
+		}
 		entityDeleteionService.deleteOntology(id, userId);
-
+	}
+	
+	@Override
+	public void uploadHistoricalFile(MultipartFile file, String ontology) throws OntologyBusinessServiceException {
+		try {
+			historicalMinioService.uploadMultipartFileForOntology(file, ontology);
+		} catch (HistoricalMinioException e) {
+			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+					"Unable to upload file: " + e.getMessage());
+		}
 	}
 
+	@Override
+	public void deleteOntologyAndData(String id, String userId, boolean deleteData) throws OntologyBusinessServiceException {
+		final Ontology o = ontologyService.getOntologyByIdForDelete(id, userId);
+		final String identification = o.getIdentification();
+		if (!RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {
+			log.error("Error deleting ontology: Ontology Database Instance is not Presto - MinIO" );
+			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.ILLEGAL_ARGUMENT,
+					"Ontology Database Instance is not Presto - MinIO");
+		}
+		prestoManageDBRepository.removeTable4Ontology(identification, deleteData);
+		entityDeleteionService.deleteOntology(id, userId);
+	}
+	
 }

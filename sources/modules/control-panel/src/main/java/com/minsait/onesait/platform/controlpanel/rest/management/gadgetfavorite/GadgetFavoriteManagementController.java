@@ -46,18 +46,20 @@ import com.minsait.onesait.platform.controlpanel.rest.management.gadgetfavorite.
 import com.minsait.onesait.platform.controlpanel.rest.management.gadgetfavorite.model.GadgetTemplateDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 
 @RestController
-@Api(value = "Favorite Gadget Management", tags = { "Favorite Gadget management service" })
+@Tag(name = "Favorite Gadget Management")
 @RequestMapping("api/favoritegadget")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden"),
-		@ApiResponse(code = 404, message = "Not found") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden"),
+	@ApiResponse(responseCode = "404", description = "Not found") })
 public class GadgetFavoriteManagementController {
 
 	@Autowired
@@ -66,59 +68,73 @@ public class GadgetFavoriteManagementController {
 	@Autowired
 	private AppWebUtils utils;
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get favorite gadget by identification")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get favorite gadget by identification")
 	@GetMapping("/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getGadgetFavoriteByIdentification(
-			@ApiParam(value = "favorite gadget identification", required = true) @PathVariable("identification") String identification) {
-		String user = utils.getUserId();
-		GadgetFavorite gadgetFavorite = gadgetFavoriteService.findByIdentification(identification, user);
+			@Parameter(description= "favorite gadget identification", required = true) @PathVariable("identification") String identification) {
+		final String user = utils.getUserId();
+		final GadgetFavorite gadgetFavorite = gadgetFavoriteService.findByIdentification(identification, user);
 		if (gadgetFavorite == null) {
 			return new ResponseEntity<>("The gadget favorite does not exist", HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(toGadgetFavoriteDTO(gadgetFavorite), HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get all favorite gadgets identifications")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get all favorite gadgets identifications")
 	@GetMapping("/getallidentifications")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getAllIdentifications() {
-		String user = utils.getUserId();
-		List<String> list = gadgetFavoriteService.getAllIdentifications(user);
+		final String user = utils.getUserId();
+		final List<String> list = gadgetFavoriteService.getAllIdentifications(user);
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get all gadgets favorite ")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get all gadgets favorite ")
 	@GetMapping("/getall")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getAllGadgetsFavorite() {
-		String user = utils.getUserId();
-		List<GadgetFavorite> listResults = gadgetFavoriteService.findAll(user);
-		List<GadgetFavoriteDTO> list = new ArrayList<GadgetFavoriteDTO>();
-		for (GadgetFavorite gadgetFavorite : listResults) {
+		final String user = utils.getUserId();
+		final List<GadgetFavorite> listResults = gadgetFavoriteService.findAll(user);
+		final List<GadgetFavoriteDTO> list = new ArrayList<GadgetFavoriteDTO>();
+		for (final GadgetFavorite gadgetFavorite : listResults) {
 			list.add(toGadgetFavoriteDTO(gadgetFavorite));
 		}
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Returns boolean whether or not there is a favorite gadget with that identification")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get all gadgets favorite fields identification and metadata")
+	@GetMapping("/getallbyapp")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
+	public ResponseEntity<?> getAllByApp() {
+		final String user = utils.getUserId();
+		final List<GadgetFavorite> listResults = gadgetFavoriteService.findAll(user);
+		final List<GadgetFavoriteDTO> list = new ArrayList<GadgetFavoriteDTO>();
+		for (final GadgetFavorite gadgetFavorite : listResults) {
+			list.add(toGadgetFavoriteDTOByApp(gadgetFavorite));
+		}
+		return new ResponseEntity<>(list, HttpStatus.OK);
+	}
+
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Returns boolean whether or not there is a favorite gadget with that identification")
 	@GetMapping("/existwithidentification/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> existWithIdentification(
-			@ApiParam(value = "favorite gadget identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "favorite gadget identification", required = true) @PathVariable("identification") String identification) {
 		return new ResponseEntity<>(gadgetFavoriteService.existWithIdentification(identification), HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Create gadget favorite")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Create gadget favorite")
 	@PostMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> create(
-			@ApiParam(value = "GadgetFavoriteCreateDTO") @RequestBody GadgetFavoriteCreateDTO gadgetFavoriteDTO) {
+			@Parameter(description= "GadgetFavoriteCreateDTO") @RequestBody GadgetFavoriteCreateDTO gadgetFavoriteDTO) {
 
 		if (gadgetFavoriteDTO.getIdentification() == null || gadgetFavoriteDTO.getIdentification().isEmpty()
 				|| gadgetFavoriteDTO.getType() == null || gadgetFavoriteDTO.getType().isEmpty()) {
@@ -133,28 +149,29 @@ public class GadgetFavoriteManagementController {
 		try {
 			gadgetFavoriteService.create(gadgetFavoriteDTO.getIdentification(), gadgetFavoriteDTO.getIdGadget(),
 					gadgetFavoriteDTO.getIdGadgetTemplate(), gadgetFavoriteDTO.getIdDatasource(),
-					gadgetFavoriteDTO.getType(), gadgetFavoriteDTO.getConfig(), utils.getUserId());
-		} catch (GadgetFavoriteServiceException e) {
+					gadgetFavoriteDTO.getType(), gadgetFavoriteDTO.getConfig(), gadgetFavoriteDTO.getMetainf(),
+					utils.getUserId());
+		} catch (final GadgetFavoriteServiceException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode rootNode = mapper.createObjectNode();
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode rootNode = mapper.createObjectNode();
 		rootNode.put("message", "Favorite gadget created");
 		String result = null;
 		try {
 			result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
-		} catch (JsonProcessingException e) {
+		} catch (final JsonProcessingException e) {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Update gadget favorite")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Update gadget favorite")
 	@PutMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> update(
-			@ApiParam(value = "GadgetFavoriteCreateDTO") @RequestBody GadgetFavoriteCreateDTO gadgetFavoriteDTO) {
+			@Parameter(description= "GadgetFavoriteCreateDTO") @RequestBody GadgetFavoriteCreateDTO gadgetFavoriteDTO) {
 		if (gadgetFavoriteDTO.getIdentification() == null || gadgetFavoriteDTO.getIdentification().isEmpty()
 				|| gadgetFavoriteDTO.getType() == null || gadgetFavoriteDTO.getType().isEmpty()) {
 			return new ResponseEntity<>("Missing required fields. Required = [identification, type]",
@@ -165,57 +182,58 @@ public class GadgetFavoriteManagementController {
 		final GadgetFavorite gadgetFavorite = gadgetFavoriteService
 				.findByIdentification(gadgetFavoriteDTO.getIdentification(), user);
 		if (gadgetFavorite == null) {
-			String eMessage = "The favorite gadget does not exist. Identification = "
+			final String eMessage = "The favorite gadget does not exist. Identification = "
 					+ gadgetFavoriteDTO.getIdentification();
 			return new ResponseEntity<>(eMessage, HttpStatus.NOT_FOUND);
 		}
 
 		gadgetFavoriteService.update(gadgetFavoriteDTO.getIdentification(), gadgetFavoriteDTO.getIdGadget(),
 				gadgetFavoriteDTO.getIdGadgetTemplate(), gadgetFavoriteDTO.getIdDatasource(),
-				gadgetFavoriteDTO.getType(), gadgetFavoriteDTO.getConfig(), utils.getUserId());
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode rootNode = mapper.createObjectNode();
+				gadgetFavoriteDTO.getType(), gadgetFavoriteDTO.getConfig(), gadgetFavoriteDTO.getMetainf(),
+				utils.getUserId());
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode rootNode = mapper.createObjectNode();
 		rootNode.put("message", "favorite gadget " + gadgetFavoriteDTO.getIdentification() + " has been updated ");
 		String result = null;
 		try {
 			result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
-		} catch (JsonProcessingException e) {
+		} catch (final JsonProcessingException e) {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Delete favorite gadget by identification")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Delete favorite gadget by identification")
 	@DeleteMapping("/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> delete(
-			@ApiParam(value = "identification") @PathVariable("identification") String identification) {
+			@Parameter(description= "identification") @PathVariable("identification") String identification) {
 		if (identification == null || identification.isEmpty()) {
 			return new ResponseEntity<>("Missing required fields. Required = [identification]", HttpStatus.BAD_REQUEST);
 		}
-		String user = utils.getUserId();
+		final String user = utils.getUserId();
 		final GadgetFavorite gadgetFavorite = gadgetFavoriteService.findByIdentification(identification, user);
 		if (gadgetFavorite == null) {
-			String eMessage = "The favorite gadget does not exist. Identification = " + identification;
+			final String eMessage = "The favorite gadget does not exist. Identification = " + identification;
 			return new ResponseEntity<>(eMessage, HttpStatus.NOT_FOUND);
 		}
 		gadgetFavoriteService.delete(identification, user);
 
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode rootNode = mapper.createObjectNode();
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode rootNode = mapper.createObjectNode();
 		rootNode.put("message", "Favorite gadget deleted");
 		String result = null;
 		try {
 			result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
-		} catch (JsonProcessingException e) {
+		} catch (final JsonProcessingException e) {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	private GadgetFavoriteDTO toGadgetFavoriteDTO(GadgetFavorite gf) {
-		GadgetFavoriteDTO newGf = new GadgetFavoriteDTO();
+		final GadgetFavoriteDTO newGf = new GadgetFavoriteDTO();
 		newGf.setGadgetTemplate(toGadgetTemplateDTO(gf.getGadgetTemplate()));
 		newGf.setDatasource(toDatasourceDTO(gf.getDatasource()));
 		newGf.setGadget(toGadgetDTO(gf.getGadget(), gf.getDatasource()));
@@ -223,6 +241,14 @@ public class GadgetFavoriteManagementController {
 		newGf.setIdentification(gf.getIdentification());
 		newGf.setType(gf.getType());
 		newGf.setUser(gf.getUser().getUserId());
+		newGf.setMetainf(gf.getMetainf());
+		return newGf;
+	}
+
+	private GadgetFavoriteDTO toGadgetFavoriteDTOByApp(GadgetFavorite gf) {
+		final GadgetFavoriteDTO newGf = new GadgetFavoriteDTO();
+		newGf.setIdentification(gf.getIdentification());
+		newGf.setMetainf(gf.getMetainf());
 		return newGf;
 	}
 
@@ -258,7 +284,7 @@ public class GadgetFavoriteManagementController {
 		if (gadget != null) {
 			gDTO = new GadgetDTO();
 			gDTO.setConfig(gadget.getConfig());
-			gDTO.setType(gadget.getType());
+			gDTO.setType(gadget.getType().getId());
 			gDTO.setDescription(gadget.getDescription());
 			gDTO.setIdentification(gadget.getIdentification());
 			gDTO.setUser(gadget.getUser().getUserId());

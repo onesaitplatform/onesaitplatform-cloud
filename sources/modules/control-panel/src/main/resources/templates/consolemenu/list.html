@@ -166,25 +166,25 @@
 														<td class="text-left " th:text="${menu.roleType.id}"></td>
 														<!--DATE -->
 														<td class="text-left" th:if="${menu.createdAt!=null}">
-															<span th:text="${#dates.format(menu.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(menu.createdAt,'dd/MM/YYYY')}" ></span>
+															<span th:text="${#dates.format(menu.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(menu.createdAt,'dd/MM/yyyy')}" ></span>
 														</td>
 														<td class="text-left" th:if="${menu.createdAt==null}" th:text="'---'"></td>
 														<!-- DATE -->
 														<td class="text-left" th:if="${menu.updatedAt!=null}">
-															<span th:text="${#dates.format(menu.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
-															<span th:text="${#dates.format(menu.updatedAt,'dd/MM/YYYY')}" ></span>
+															<span th:text="${#dates.format(menu.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(menu.updatedAt,'dd/MM/yyyy')}" ></span>
 														</td>
 														<td class="text-left" th:if="${menu.updatedAt==null}" th:text="'---'"></td>
 														<!-- OPTIONS -->
 														<td class="icon text-center" style="white-space: nowrap">
 															<div class="grupo-iconos text-center">
 																<!-- VIEW -->
-																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/show/${menu.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/show/${menu.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																<!-- EDIT -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/edit/${menu.Id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/edit/${menu.Id}/|} + '\');'"><i class="icon-edit"></i></span>
 																<!-- RESET -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.resetBtn}" th:data-original-title="#{gen.resetBtn}" th:onclick="'javascript:rollback(\''+${menu.Id}+'\');'"><i class="icon-reset"></i></span>
+																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.resetBtn}" th:data-original-title="#{gen.resetBtn}" th:attr="onclick='javascript:rollback(\''+${menu.Id}+'\');'"><i class="icon-reset"></i></span>
 															</div>
 														</td>
 													</tr>

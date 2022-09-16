@@ -261,8 +261,6 @@ public class DigitalTwinDeviceController {
 		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
 	}
 
-
-
 	@GetMapping(value = "/freeResource/{id}")
 	public @ResponseBody void freeResource(@PathVariable("id") String id) {
 		resourcesInUseService.removeByUser(id, utils.getUserId());

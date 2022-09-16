@@ -88,7 +88,8 @@
 					<!-- FORM ACTIONS FOR UPDATE -->
 					<input th:if="${domain?.id} != null" type="hidden" name="action" th:value="@{'/flows/update/'+${domain.id}}"/>
 					<input th:if="${domain?.id} != null" type="hidden" name="_method" value="PUT"/>
-
+					<!-- VERSIONING -->
+					<th:block th:include="versioning/fragments/form-commit"></th:block>
 					<div id="header">
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
@@ -101,7 +102,7 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:FlowDomainCreateController.go(\'' + @{/flows/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:FlowDomainCreateController.go(\'' + @{/flows/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 	
 									<!-- RESET -->
 									<button th:if="${domain.identification} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>

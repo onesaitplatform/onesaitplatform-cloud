@@ -205,22 +205,22 @@
 															<!-- USER -->
 															<td class="text-left " th:text="${ksqlFlow.user.userId}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${ksqlFlow.createdAt!=null}"><span th:text="${#dates.format(ksqlFlow.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${ksqlFlow.createdAt!=null}"><span th:text="${#dates.format(ksqlFlow.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${ksqlFlow.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${ksqlFlow.updatedAt!=null}"><span th:text="${#dates.format(ksqlFlow.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${ksqlFlow.updatedAt!=null}"><span th:text="${#dates.format(ksqlFlow.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(ksqlFlow.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${ksqlFlow.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/ksql/flow/show/${ksqlFlow.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ksql/flow/show/${ksqlFlow.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  th:if="(${#authentication.name} == ${ksqlFlow.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/ksql/flow/update/${ksqlFlow.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="(${#authentication.name} == ${ksqlFlow.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ksql/flow/update/${ksqlFlow.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																	
 																	<!-- INDEXES -->
-																	<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:onclick="'javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
+																	<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
 																</div>
 															</td>
 														</tr>

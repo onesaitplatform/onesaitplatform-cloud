@@ -21,7 +21,7 @@
     var ed = this;
     
     //Gadget source connection type list
-    var typeGadgetList = ["pie","bar","map","livehtml","radar","table","mixed","line","wordcloud","gadgetfilter"];
+    var typeGadgetList = ["pie","bar","map","livehtml","radar","table","mixed","line","wordcloud","gadgetfilter","customgadget"];
    
     //ed.showButtons = true;
     ed.autoSaveActivated = false;
@@ -457,6 +457,9 @@ ed.showHideMoveToolBarButton = function () {
      if( ed.iframe == null || !ed.iframe){
       if( ed.synopticedit.showEditor){
         ed.stopAutosave();
+        $.find(".menusidebardashboard")[0].style.width = "0";
+        $.find(".dashboardcontent")[0].style.marginLeft = "0";
+        $("gridster").css("z-index", "");
       }else{
         ed.startAutosave();
       }
@@ -536,7 +539,9 @@ ed.showHideMoveToolBarButton = function () {
         }  
       }
     
-    ed.savePage = function (ev) {      
+
+
+    function savePageInternal(ev,message){      
       if(typeof $("#synoptic_editor")[0]!=='undefined'){
         ed.dashboard.synoptic =
         {
@@ -546,7 +551,7 @@ ed.showHideMoveToolBarButton = function () {
       }
       ed.dashboard.interactionHash = interactionService.getInteractionHashWithoutGadgetFilters();
       ed.dashboard.parameterHash = urlParamService.geturlParamHash();
-      httpService.saveDashboard(ed.id(), {"data":{"model":JSON.stringify(ed.dashboard),"id":"","identification":"a","customcss":"","customjs":"","jsoni18n":"","description":"a","public":ed.public}}).then(
+      httpService.saveDashboard(ed.id(), {"data":{"model":JSON.stringify(ed.dashboard),"id":"","identification":"a","customcss":"","customjs":"","jsoni18n":"","description":"a","public":ed.public}},message).then(
         function(d){
           if(d){
             $mdDialog.show({
@@ -585,8 +590,51 @@ ed.showHideMoveToolBarButton = function () {
         }
       );
       //alert(JSON.stringify(ed.dashboard));
+    }
+
+
+
+    ed.savePage = function (ev) {
+      if(__env.versioningEnabled){
+        $mdDialog.show({
+          controller: DialogVersionController,
+          templateUrl: 'app/partials/edit/addversionDialog.html',
+          parent: angular.element(document.body),
+          targetEvent: ev,
+          clickOutsideToClose:true,
+          fullscreen: false, // Only for -xs, -sm breakpoints.
+          locals: {           
+            ev: ev,
+          }
+        })
+        .then(function(answer) {
+          $scope.status = 'You said the information was "' + answer + '".';
+        }, function() {
+          $scope.status = 'You cancelled the dialog.';
+        });      
+      }else{
+        savePageInternal(ev);
+      }
     };
 
+    function DialogVersionController($scope, $mdDialog) {
+      $scope.hide = function() {
+        $mdDialog.hide();
+      };
+  
+      $scope.skip = function() {
+        savePageInternal($scope.ev);
+        $mdDialog.cancel();
+      };
+  
+      $scope.commit = function() {
+        if(!$scope.message){
+          $scope.message="";
+        }
+        savePageInternal($scope.ev,$scope.message); 
+        $mdDialog.hide();
+      };
+    }
 
 
     ed.getDataToSavePage = function (token) {    
@@ -1534,7 +1582,7 @@ ed.showHideMoveToolBarButton = function () {
     }
 
 
-    ed.showListBottomSheet = function() {
+   /* ed.showListBottomSheet = function() {
       $window.dispatchEvent(new Event("resize"));      
       $mdBottomSheet.show({
         templateUrl: 'app/partials/edit/addWidgetBottomSheet.html',
@@ -1552,7 +1600,25 @@ ed.showHideMoveToolBarButton = function () {
         // User clicked outside or hit escape
       });
       
+    };*/
+
+    ed.showListBottomSheet = function() {
+      if($.find(".menusidebardashboard")[0].style.width=='0px'){
+        $.find(".menusidebardashboard")[0].style.width = "300";
+        $.find(".dashboardcontent")[0].style.marginLeft = "300";
+        $("gridster").css("z-index", "1");
+      }else{
+        $.find(".menusidebardashboard")[0].style.width = "0";
+        $.find(".dashboardcontent")[0].style.marginLeft = "0";
+        $("gridster").css("z-index", "");
+      }
+      
+
+      $window.dispatchEvent(new Event("resize"));      
+      
+      
     };
+
 
     ed.toolbarButtonsAssignclass  = function() {
     

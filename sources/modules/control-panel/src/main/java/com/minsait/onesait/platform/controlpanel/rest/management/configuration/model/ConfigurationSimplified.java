@@ -48,7 +48,7 @@ public class ConfigurationSimplified {
 		username = configuration.getUser().getUserId();
 		type = configuration.getType();
 		description = configuration.getDescription();
-		identification = configuration.getSuffix();
+		identification = configuration.getIdentification();
 		environment = configuration.getEnvironment();
 		yml = configuration.getYmlConfig();
 

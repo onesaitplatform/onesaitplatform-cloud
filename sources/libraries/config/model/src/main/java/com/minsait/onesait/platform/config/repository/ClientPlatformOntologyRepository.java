@@ -28,6 +28,7 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPlatformOntology, String> {
 
@@ -63,7 +64,7 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Transactional
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	@Modifying
 	void deleteByOntology(Ontology ontology);
 
@@ -71,20 +72,20 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Transactional
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	@Modifying
 	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology","ClientPlatformOntologyRepositoryByClientPlatformAndInsertAccess" }, allEntries = true)
 	ClientPlatformOntology save(ClientPlatformOntology entity);
 
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	@Modifying
 	@Transactional
 	void delete(ClientPlatformOntology entity);
@@ -92,7 +93,10 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	void flush();
 
+	default List<ClientPlatformOntology> findByUser(User user){
+		return findAll();
+	}
 }

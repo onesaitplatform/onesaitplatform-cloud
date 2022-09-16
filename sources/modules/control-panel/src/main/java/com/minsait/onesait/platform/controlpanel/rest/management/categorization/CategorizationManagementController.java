@@ -46,17 +46,19 @@ import com.minsait.onesait.platform.controlpanel.rest.management.categorization.
 import com.minsait.onesait.platform.controlpanel.rest.management.categorization.model.CategorizationUserDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Categorization Management", tags = { "Categorization Management" })
+@Tag(name = "Categorization Management")
 @RestController
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api/categorization")
 @Slf4j
 public class CategorizationManagementController {
@@ -70,9 +72,9 @@ public class CategorizationManagementController {
 	@Autowired
 	private CategorizationUserService categorizationUserService;
 
-	@ApiOperation("Get all categorizations")
+	@Operation(summary="Get all categorizations")
 	@GetMapping
-	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = Categorization[].class))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=Categorization[].class))))
 	public ResponseEntity<Object> getAllCategorizations() {
 		List<Categorization> categorizationList;
 		if (utils.isAdministrator()) {
@@ -84,70 +86,70 @@ public class CategorizationManagementController {
 		return ResponseEntity.ok(categorizationList);
 	}
 
-	@ApiOperation(value = "Get categorization by id")
+	@Operation(summary = "Get categorization by id")
 	@GetMapping("/{identification}")
-	@ApiResponses({ @ApiResponse(code = 200, message = "OK", response = Categorization.class), @ApiResponse(code = 404, message = "Not found") })
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=Categorization.class))), @ApiResponse(responseCode = "404", description = "Not found") })
 	public ResponseEntity<Object> getCategorizationByID(
-			@ApiParam(value = "identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification) {
 		final Categorization categorization = categorizationService.getCategorizationByIdentification(identification);
 		if (categorization == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
-		User user = userService.getUser(utils.getUserId());
+		final User user = userService.getUser(utils.getUserId());
 		if (categorization.getUser().equals(user) || categorizationUserService.findByCategorizationAndUser(categorization, user)!=null) {
 			return ResponseEntity.ok(categorization);
 		}
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 	}
 
-	@ApiOperation("Create new categorization")
+	@Operation(summary="Create new categorization")
 	@PostMapping
-	@ApiResponses(@ApiResponse(code = 201, message = "Categorization created", response = String.class))
+	@ApiResponses(@ApiResponse(responseCode = "201", description = "Categorization created", content=@Content(schema=@Schema(implementation=String.class))))
 	public ResponseEntity<?> createCategorization(
-			@ApiParam(value = "categorization", required = true) @Valid @RequestBody CategorizationDTO categorizationDTO,
+			@Parameter(description= "categorization", required = true) @Valid @RequestBody CategorizationDTO categorizationDTO,
 			Errors errors) {
 		try {
-			
+
 			if (!categorizationDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-			    return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
 			}
-			
+
 			if (categorizationService.getCategorizationByIdentification(categorizationDTO.getIdentification()) != null) {
 				log.error("There is a Categorization Tree with the same Identification");
 				throw new GenericOPException("There is a Categorization Tree with the same Identification");
 			}
-			User user = userService.getUser(utils.getUserId());
-			
+			final User user = userService.getUser(utils.getUserId());
+
 			categorizationService.createCategorization(categorizationDTO.getIdentification(), categorizationDTO.getJson(), user);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Could not create the Categorization tree");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}		
+		}
 		return new ResponseEntity<>("Categorization created successfully", HttpStatus.OK);
 	}
-	
-	@ApiOperation(value = "Update an existing Categorization")
+
+	@Operation(summary = "Update an existing Categorization")
 	@PutMapping
 	public ResponseEntity<String> updateCategorization (
-			@ApiParam(value = "categorization", required = true) @Valid @RequestBody CategorizationDTO categorization) {
+			@Parameter(description= "categorization", required = true) @Valid @RequestBody CategorizationDTO categorization) {
 		final Categorization categorizationMemory = categorizationService.getCategorizationByIdentification(categorization.getIdentification());
 		if (!categorizationMemory.getUser().getUserId().equals(utils.getUserId())
 				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 		}
-		try {			
+		try {
 			categorizationService.updateCategorization(categorizationMemory, categorization.getJson());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Could not create the Categorization tree");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		return new ResponseEntity<>("Categorization updated successfully", HttpStatus.OK);
 	}
-	
-	@ApiOperation(value = "Delete an existing Categorization by Identification")
+
+	@Operation(summary = "Delete an existing Categorization by Identification")
 	@DeleteMapping("/{identification}")
 	public ResponseEntity<String> delete(
-			@ApiParam(value = "Categorization identification", required = true) @PathVariable("identification") String categoryIdentification) {
+			@Parameter(description= "Categorization identification", required = true) @PathVariable("identification") String categoryIdentification) {
 		final Categorization categorization = categorizationService.getCategorizationByIdentification(categoryIdentification);
 		if (!categorization.getUser().getUserId().equals(utils.getUserId())
 				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
@@ -156,84 +158,84 @@ public class CategorizationManagementController {
 		try {
 			categorizationService.deteleConfiguration(categorization.getId());
 			return new ResponseEntity<>("Categorization deleted successfully", HttpStatus.OK);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error delating the categorization tree: " + e);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 	}
-	
-	@ApiOperation(value = "Activate selected Categorization for user")
+
+	@Operation(summary = "Activate selected Categorization for user")
 	@GetMapping(value = "/{identification}/activate/{userId}")
 	public ResponseEntity<String> active(
-			@ApiParam(value = "Ontology identification", required = true) @PathVariable("identification") String categorizationIdentification,
-			@ApiParam(value = "User identification", required = true) @PathVariable("userId") String userId) {
+			@Parameter(description= "Ontology identification", required = true) @PathVariable("identification") String categorizationIdentification,
+			@Parameter(description= "User identification", required = true) @PathVariable("userId") String userId) {
 		try {
 			if (userId.equals(utils.getUserId()) || utils.isAdministrator()) {
-				User user = userService.getUser(userId);
+				final User user = userService.getUser(userId);
 				categorizationService.activateByCategoryAndUser(categorizationIdentification, user);
 			}
 			return new ResponseEntity<>("Categorization activated successfully", HttpStatus.OK);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error activating the tree: " + e);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}	
-	}	
-	
-	@ApiOperation(value = "Deactivate selected Categorization for user")
+		}
+	}
+
+	@Operation(summary = "Deactivate selected Categorization for user")
 	@GetMapping(value = "/{identification}/deactivate/{userId}")
 	public ResponseEntity<String> inactive(
-			@ApiParam(value = "Ontology identification", required = true) @PathVariable("identification") String categorizationIdentification,
-			@ApiParam(value = "User identification", required = true) @PathVariable("userId") String userId) {
+			@Parameter(description= "Ontology identification", required = true) @PathVariable("identification") String categorizationIdentification,
+			@Parameter(description= "User identification", required = true) @PathVariable("userId") String userId) {
 		try {
 			if (userId.equals(utils.getUserId()) || utils.isAdministrator()) {
-				User user = userService.getUser(userId);
+				final User user = userService.getUser(userId);
 				categorizationService.deactivateByCategoryAndUser(categorizationIdentification, user);
 			}
 			return new ResponseEntity<>("Categorization deactivated successfully", HttpStatus.OK);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Error deactivating the tree: " + e);
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
-	}	
-	
-	@ApiOperation("Get active categorizations")
+	}
+
+	@Operation(summary="Get active categorizations")
 	@GetMapping(value = "/getactive")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ClientPlatformDTO[].class))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ClientPlatformDTO[].class))))
 	public ResponseEntity<Object> getActiveCategorizations() {
-		List<Categorization> categorizations = categorizationService.getActiveCategorizations(userService.getUser(utils.getUserId()));
+		final List<Categorization> categorizations = categorizationService.getActiveCategorizations(userService.getUser(utils.getUserId()));
 		if (categorizations==null || categorizations.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 		return ResponseEntity.ok(categorizations);
-	}	
-	
-	@ApiOperation(value = "Authorize categorization to user")
+	}
+
+	@Operation(summary = "Authorize categorization to user")
 	@PostMapping(value = "{identification}/authorization")
 	public ResponseEntity<String> addAuthorization (
-			@ApiParam(value = "Categorization identification", required = true) @PathVariable("identification") String categorizationIdentification,
+			@Parameter(description= "Categorization identification", required = true) @PathVariable("identification") String categorizationIdentification,
 			@Valid @RequestBody CategorizationUserDTO categorizationUserDTO, Errors errors) {
-		
+
 		final Categorization categorization = categorizationService.getCategorizationByIdentification(categorizationIdentification);
-		if (!categorization.getUser().getUserId().equals(utils.getUserId()) 
+		if (!categorization.getUser().getUserId().equals(utils.getUserId())
 				&& !utils.isAdministrator()) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 		}
 		try {
-			User user = userService.getUser(categorizationUserDTO.getUserId());
-			Type shareType = CategorizationUser.Type.valueOf(categorizationUserDTO.getAuthorizationType());
+			final User user = userService.getUser(categorizationUserDTO.getUserId());
+			final Type shareType = CategorizationUser.Type.valueOf(categorizationUserDTO.getAuthorizationType());
 			categorizationService.addAuthorization(categorization, user, categorizationUserDTO.getAuthorizationType());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Could not create the share authorization");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		return new ResponseEntity<>("User authorizated successfully", HttpStatus.OK);
-	}	
-	
-	@ApiOperation(value = "Deauthorize categorization to user")
+	}
+
+	@Operation(summary = "Deauthorize categorization to user")
 	@DeleteMapping(value = "{identification}/authorization/{userId}")
 	public ResponseEntity<String> deleteAuthorization(
-			@ApiParam(value = "Categorization identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "User id", required = true) @PathVariable("userId") String userId) {
+			@Parameter(description= "Categorization identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId) {
 		final Categorization categorization = categorizationService.getCategorizationByIdentification(identification);
 		if (!categorization.getUser().getUserId().equals(utils.getUserId())
 				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
@@ -243,67 +245,67 @@ public class CategorizationManagementController {
 			final User user = userService.getUser(userId);
 			final CategorizationUser categorizationUser = categorizationUserService.findByCategorizationAndUser(categorization, user);
 			categorizationUserService.deleteCategorizationUser(categorizationUser);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Could not delete the share authorization");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		return new ResponseEntity<>("User authorization removed successfully", HttpStatus.OK);
 	}
-	
-	@ApiOperation("Get categorization from node")
+
+	@Operation(summary="Get categorization from node")
 	@GetMapping(value = "/{identification}/getcategory/{nodeId}")
 	public ResponseEntity<String> getCategorization(
-			@ApiParam(value = "Categorization identification", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "Node id", required = true) @PathVariable("nodeId") String nodeId) {
-		
+			@Parameter(description= "Categorization identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Node id", required = true) @PathVariable("nodeId") String nodeId) {
+
 		JSONArray category;
 		final Categorization categorization = categorizationService.getCategorizationByIdentification(identification);
-		
+
 		try {
 			final User user = userService.getUser(utils.getUserId());
 			final CategorizationUser categorizationUser = categorizationUserService.findByCategorizationAndUser(categorization, user);
-			
+
 			if (categorizationUser==null) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
-		
+
 		try {
 			category = categorizationService.getCategoryNode(categorization.getJson(), nodeId);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Could not get category");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 		return ResponseEntity.ok(category.toString());
 	}
-	
-	@ApiOperation("Get nodes from categorization")
+
+	@Operation(summary="Get nodes from categorization")
 	@PostMapping(value = "/{identification}/elements")
 	public ResponseEntity<String> getNodesCategorization(
-			@ApiParam(value = "Categorization identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Categorization identification", required = true) @PathVariable("identification") String identification,
 			@Valid @RequestBody String categorizationPath, Errors errors) {
 		JSONArray resultNodes;
 		final Categorization categorization = categorizationService.getCategorizationByIdentification(identification);
-		
+
 		try {
 			final User user = userService.getUser(utils.getUserId());
 			final CategorizationUser categorizationUser = categorizationUserService.findByCategorizationAndUser(categorization, user);
-			
+
 			if (categorizationUser==null) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		try {
 			resultNodes = categorizationService.getNodesCategory(categorization.getJson(), categorizationPath);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.error("Could not get category");
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 		return ResponseEntity.ok(resultNodes.toString());
 	}
-	
+
 }

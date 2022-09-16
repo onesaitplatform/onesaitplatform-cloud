@@ -30,25 +30,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 public class DefaultBatchScheduler  {
-	
-	
+
+
 	@Bean("defaultScheduler")
-	@ConditionalOnMissingBean(BatchScheduler.class)	
-	public BatchScheduler getDefaultBatchScheduler () {		
-		
-		
+	@ConditionalOnMissingBean(BatchScheduler.class)
+	public BatchScheduler getDefaultBatchScheduler () {
+
+
 		try {
-			ZeroSizeThreadPool threadPool = new ZeroSizeThreadPool();
-			
-			RAMJobStore jobStore = new RAMJobStore();
+			final ZeroSizeThreadPool threadPool = new ZeroSizeThreadPool();
+
+			final RAMJobStore jobStore = new RAMJobStore();
 			DirectSchedulerFactory.getInstance().createScheduler(threadPool, jobStore);
 			return new GenericBatchScheduler(DirectSchedulerFactory.getInstance().getScheduler(), "defaultScheduler");
-		} catch (SchedulerException e) {
+		} catch (final SchedulerException e) {
 			log.error("Error init default scheduler", e);
 		}
 		return null;
-		
-		
+
+
 	}
 
 }

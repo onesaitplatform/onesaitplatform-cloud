@@ -237,7 +237,8 @@ public class FlowDomainController {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			}
 			final FlowEngineDomain engineDom = FlowEngineDomain.builder().domain(domain.getIdentification())
-					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort()).build();
+					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort())
+					.vertical(MultitenancyContextHolder.getVerticalSchema()).build();
 			if (State.STOP.name().equals(domain.getState())) {
 				flowEngineService.startFlowEngineDomain(engineDom);
 				domain.setState(State.START.name());

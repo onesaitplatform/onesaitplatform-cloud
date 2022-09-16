@@ -123,9 +123,7 @@ public class AppController {
 			RedirectAttributes redirect) {
 
 		try {
-
 			appService.createApp(appHelper.dto2app(app));
-
 		} catch (final AppServiceException | IOException e) {
 			log.debug(NO_APP_CREATION);
 			utils.addRedirectException(e, redirect);

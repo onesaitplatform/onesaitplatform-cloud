@@ -5,16 +5,15 @@
 #server.ssl.key-alias: localhost
 
 
-   
-server: 
+
+server:
    max-http-header-size: 10000000
-   port: 18000    
-   jetty.max-http-post-size: 20000000
-   tomcat.max-http-post-size: 20000000
+   port: 18000
+   jetty.max-http-form-post-size: 20000000
+   tomcat.max-http-form-post-size: 20000000
+   forward-headers-strategy: native
    servlet:
       contextPath: /controlpanel
-
-      
 ldap:
   url: ldap://localhost:10389/
   base: ou=User,ou=onesait,ou=system
@@ -23,35 +22,41 @@ ldap:
   password: secret
   defaultRole: ROLE_USER
   administratorWhitelist: administrator,admin,fjgcornejo_ldap
+  groupWhitelist:
   platformRolesGroup:
-      administrator:  
-      datascientist: 
+      administrator:
+      datascientist:
       dataviewer:
-      developer: 
+      developer:
       devops:
       operations:
       partner:
       platformAdmin:
-      sysAdmin: 
-      user: 
+      sysAdmin:
+      user:
   attributesMap:
      userId: uid
      mail: mail
      cn: cn
      groupOfNames: groupOfNames
   rolesmemberattribute: member
+  authentication.regex: (.*)
 
 # all access to actuator endpoints without security
 
 
 
-master: 
+master:
    datasource:
-      hikari: 
+      hikari:
         jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
         username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
         driver-class-name: com.mysql.cj.jdbc.Driver
+#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_master_config
+#        username: postgres
+#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
+#        driver-class-name: org.postgresql.Driver
         pool-name: master-hikari-pool
         minimum-idle: 1
         maximum-pool-size: 2
@@ -75,7 +80,7 @@ onesaitplatform: #Config onesait Platform specific
         acl:
           enabled: false
           list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
-      twofa: 
+      twofa:
         enabled: false
         purgatory_time_minutes: 5
       default_password: ENC(CuRLX3QJtxVhyxmPckWXs93L0FR7NnYj)
@@ -107,7 +112,7 @@ onesaitplatform: #Config onesait Platform specific
            store_pass: axpotest
            key_alias: axpotest
            key_pass: axpotest
-        context:           
+        context:
            samlIncludePort: true
            samlScheme: https
            samlServerName: localhost
@@ -117,7 +122,7 @@ onesaitplatform: #Config onesait Platform specific
 
    videobroker:
     hazelcast.queue: videoQueue
-   
+
    rules-engine:
     hazelcast:
        topic_domains: topicDomains
@@ -126,22 +131,29 @@ onesaitplatform: #Config onesait Platform specific
 
 
    dashboard:
-         themeonesait.css: http://localhost:18000/controlpanel/static/vendor/onesait-ds/lib/theme-onesait/index.css
-         themeonesait.js: http://localhost:18000/controlpanel/static/vendor/onesait-ds/lib/index.js
-         vue.js: http://localhost:18000/controlpanel/static/vendor/onesait-ds/lib/vue.min.js
+         themeonesait.css: /controlpanel/static/vendor/onesait-ds/lib/theme-onesait/index.css
+         themeonesait.js: /controlpanel/static/vendor/onesait-ds/lib/index.js
+         vue.js: /controlpanel/static/vendor/onesait-ds/lib/vue.min.js
          export:
              url: http://dashboardexporterservice:20300
-             url.view: http://172.18.0.1:8087/controlpanel/dashboards/viewiframe/
+             url.view: http://localhost:8087/controlpanel/dashboards/viewiframe/
+             url.gadgets: http://localhost:8087/controlpanel/gadgets/view/
+             waittime: 10000
+             height: 595
+             width: 842
+             fullpage: false
+
    dashboardengine:
-         url: http://localhost:8087/controlpanel/dashboards/editfulliframe/
+         url: http://localhost:8087/controlpanel/dashboards/editfulliframe/s
          url.only.view: http://localhost:8087/controlpanel/dashboards/view/
          url.view: http://localhost:8087/controlpanel/dashboards/viewiframe/
+         url.gadgets: http://localhost:8087/controlpanel/gadgets/view/
    notebook:
          url: http://localhost:8087/controlpanel/notebooks/app/
    controlpanel:
          url: http://localhost:18000/controlpanel
    ontologies:
-         schema: 
+         schema:
              ignore-case-properties: false
    docker:
          tmp: /tmp/
@@ -178,7 +190,7 @@ onesaitplatform: #Config onesait Platform specific
       remove.file.timeout: 1800 #seconds
       tmp.file.path: /tmp/files/
       tmp.file.max.size: 10000 #MB
-   database.elasticsearch.enabled: true
+   database.elasticsearch.enabled: false
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -208,7 +220,7 @@ onesaitplatform: #Config onesait Platform specific
    database.hive:
       url: jdbc:hive2://localhost:10000/default
       username: cloudera-scm
-      password: 
+      password:
       driverClassName: org.apache.hive.jdbc.HiveDriver
    database.impala:
       url: jdbc:hive2://localhost:21050/default;auth=noSasl
@@ -225,6 +237,17 @@ onesaitplatform: #Config onesait Platform specific
         operationTimeout: 30000
         adminOperationTimeout: 30000
         socketReadTimeout: 10000
+   database.timescaledb:
+      enabled: false
+      url: jdbc:postgresql://localhost:5432/?currentSchema=public
+      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
+      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+   database.minio:
+      access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
+      secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
+   database.prestodb:
+      historicalCatalog: minio
+      historicalSchema: default
    urls:
     iotbroker: http://localhost:19000
     iotbroker.services: http://localhost:19000/sib/services
@@ -256,9 +279,9 @@ onesaitplatform: #Config onesait Platform specific
         host: localhost
         port: 9095
         user: admin
-        password: admin-secret 
+        password: admin-secret
         partitions: 4
-        replication: 1      
+        replication: 1
         prefix: ONTOLOGY_
         notification.prefix: ONTOLOGY_OUTPUT_
         group: ontologyGroup
@@ -266,7 +289,7 @@ onesaitplatform: #Config onesait Platform specific
         router.topic: router
         consumer.consumersCount : 10
         consumer.group : kafkaGroup
-        consumer.maxPollRecords : 5000 
+        consumer.maxPollRecords : 5000
         ksql:
           in.prefix: intopic_
           out:
@@ -278,7 +301,7 @@ onesaitplatform: #Config onesait Platform specific
       zeppelinProtocol: http
       zeppelinHostname: localhost
       zeppelinPort: 8080
-      zeppelinPathname: 
+      zeppelinPathname:
       shiroAdminUsername: admin
       shiroAdminPass: password1
       shiroUsername: user1
@@ -301,35 +324,46 @@ onesaitplatform: #Config onesait Platform specific
       guestUsername: guest
       guestPass: guest
       version: 3.10.0 # Currently supported: 3.3.0, 3.10.0, 3.13.0 and 3.18.1
+   analytics.modelsmanager:
+      protocol: http
+      hostname: localhost
+      port: 5000
+      pathname:
    router.avoidsslverification: true
-   router.alternativeURL: http://localhost:20000/router/router/ 
+   router.alternativeURL: http://localhost:20000/router/router/
    kafka.burrow.monitoring:
       request.timeout.ms: 5000
       cluster.name: local
       host.url: http://localhost:18400
    ksql.server.url: http://localhost:8088
-   user.registry.validation.url: http://localhost:18000/controlpanel/users/validateNewUser/
+   user.registry.validation.url: http://localhost:18000/controlpanel/users/validateNewUserFromLogin/
    user.reset.validation.url: http://localhost:18000/controlpanel/users/validateResetPassword/
+   user.password.generated.url: http://localhost:18000/controlpanel/users/showGeneratedCredentials/
    secure.cookie: false
    secure.cors: "*"
    secure.x-frame-options: true
-   password.pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    mailService:
       mailSupport: support@onesaitplatform.com
    queryTool:
       allowedOperations: false
    metrics:
       collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
-      enabled: true
+      enabled: false
    graylog:
       enabled: false
       host: 127.0.0.1
       port: 12201
-   
-spring: ## General Config  
+   filestore:
+      type: MINIO #MONGO_GRIDFS, FILE, MINIO
+
+spring: ## General Config
+   mvc.hiddenmethod.filter.enabled: true
+   main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
    application.name: onesaitplatform-control-panel
    thymeleaf: ## Thymeleaf Config
-      cache: false  
+      cache: false
       #encoding: UTF-8
       #prefix: classpath:/templates/
       #check-template: true
@@ -346,19 +380,24 @@ spring: ## General Config
      hikari:
       jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
       driver-class-name: com.mysql.cj.jdbc.Driver
+      connection-timeout: 10000
+#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
+#      username: postgres
+#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
+#      driver-class-name: org.postgresql.Driver
       minimum-idle: 2
       maximum-pool-size: 30
 
-     
+
    jpa:
       open-in-view: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update
-      hibernate.ddl-auto: validate
+      hibernate.ddl-auto: none
       properties:
         hibernate:
           format_sql: false
@@ -374,8 +413,8 @@ spring: ## General Config
             #  native_client_address: localhost:5701
             #  native_client_group: onesaitplatform
             #  native_client_password: onesaitplatform
-                       
-   boot.admin: #Spring Boot Admin Config   
+
+   boot.admin: #Spring Boot Admin Config
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
@@ -388,37 +427,45 @@ spring: ## General Config
          max-request-size: 200Mb
 
 management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always       
+management.endpoint.health.show-details: always
+management.health.ldap.enabled: false
+management.health.elasticsearch.enabled: false
 
-quartz:      
+quartz:
    datasource:
-     hikari: 
+     hikari:
         jdbc-url: "@onesaitplatform.quartzURL@"
+#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_scheduler
         username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+#        username: postgres
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
         driver-class-name: com.mysql.cj.jdbc.Driver
+#        driver-class-name: org.postgresql.Driver
         connection-timeout: 10000
+        pool-name: quartz-hikari-pool
         minimum-idle: 3
         maximum-pool-size: 10
-    
+
    jpa:
       ## Hibernate Properties
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update)
       properties.hibernate.hbm2ddl.auto: update
       properties.hibernate.hbm2ddl.import_files: /quartz-schema.sql
    autoStartupSchedulers:
       #- scriptScheduler
-      #- twitterScheduler  
-           
-      
+      #- twitterScheduler
+#   driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+   driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+
 ## Digital Twin
 digitaltwin:
    temp.dir: /tmp
    maven.exec.path: /usr/share/maven/bin/mvn
-   
-build.version: "@project.version@"   
+
+build.version: "@project.version@"
 
 
 #oauth configurations
@@ -429,13 +476,14 @@ security:
     client-secret: ENC(siZm4DUe6Y1FkxoUH7y0oUCiGDIq/vRX)
     grant-type: authorization_code,refresh_token,password
     scopes: openid
-    
+    expiration-time: 44000
+
 ## LOGGING CONF
 logging:
-   path: ./target/ 
-   file: ${spring.application.name}
+   file.path: ./target/
+   file.name: ${spring.application.name}
    level:
-      com.minsait: DEBUG
+      com.minsait: INFO
       org.springframework: INFO
       org.springframework.security: INFO
       org.springframework.boot.autoconfigure.security: INFO
@@ -449,26 +497,24 @@ logging:
 cloud-gateway:
   user: operations
   password: operations
-  url: https://development.onesaitplatform.com
+  url: https://nitroball.onesaitplatform.com
 
-    
 captcha:
   enable: false
   token: 6Lc40JkUAAAAANyTpMrn9JNwKsiNRCY0bZ32cWIh
-  
+
 splash:
-  enable: false 
+  enable: false
   everyXHours: 24
-  
+
 dynamic-load-balancer:
   enable: false
-  url: http://localhost:8000/nginx 
-  
+  url: http://localhost:8000/nginx
+
 csrf:
   enable: true
 
-jasypt.encryptor.password: onesait  
-
+jasypt.encryptor.password: onesait
 
 proxy-mail:
   host: localhost

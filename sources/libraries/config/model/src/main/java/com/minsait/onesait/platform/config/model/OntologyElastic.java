@@ -25,8 +25,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -65,12 +67,14 @@ public class OntologyElastic extends AuditableEntityWithUUID {
 	@Setter
 	private Integer replicas;
 	
-	@Column(name = "CUSTOM_CONFIG", columnDefinition = "BIT")
+	@Column(name = "CUSTOM_CONFIG")
+	@Type(type = "org.hibernate.type.BooleanType")
 	@Getter
 	@Setter
 	private Boolean customConfig;
 	
-	@Column(name = "TEMPLATE_CONFIG", columnDefinition = "BIT")
+	@Column(name = "TEMPLATE_CONFIG")
+	@Type(type = "org.hibernate.type.BooleanType")
 	@Getter
 	@Setter
 	private Boolean templateConfig;
@@ -98,7 +102,9 @@ public class OntologyElastic extends AuditableEntityWithUUID {
 	@Setter
 	private Integer substringEnd;
 	
-	@Column(name = "CUSTOM_ID", columnDefinition = "BIT default 0")
+	@Column(name = "CUSTOM_ID")
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@Getter
 	@Setter
 	private Boolean customIdConfig;
@@ -108,7 +114,9 @@ public class OntologyElastic extends AuditableEntityWithUUID {
 	@Setter
 	private String idField;
 	
-	@Column(name = "ALLOW_UPSERT_BY_ID", columnDefinition = "BIT default 0")
+	@Column(name = "ALLOW_UPSERT_BY_ID")
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@Getter
 	@Setter
 	private Boolean allowsUpsertById;

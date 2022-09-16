@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import javax.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -41,20 +43,20 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue", "OntologyRepositorySchema",
 			"ClientPlatformOntologyRepository", "ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	<S extends Ontology> List<S> saveAll(Iterable<S> entities);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true)
+	"OntologyRepositorySchema" }, allEntries = true)
 	void flush();
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue", "OntologyRepositorySchema",
 			"ClientPlatformOntologyRepository", "ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	<S extends Ontology> S saveAndFlush(S entity);
 
 	@SuppressWarnings("unchecked")
@@ -62,13 +64,13 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue", "OntologyRepositorySchema",
 			"ClientPlatformOntologyRepository", "ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	Ontology save(Ontology entity);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true)
+	"OntologyRepositorySchema" }, allEntries = true)
 
 	@Transactional
 	void delete(Ontology id);
@@ -80,7 +82,7 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true)
+	"OntologyRepositorySchema" }, allEntries = true)
 	@Transactional
 	void deleteAll();
 
@@ -259,13 +261,13 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@Override
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true, beforeInvocation = true)
+	"OntologyRepositorySchema" }, allEntries = true, beforeInvocation = true)
 	@Transactional
 	void deleteById(String id);
 
 	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
 			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
-			"OntologyRepositorySchema" }, allEntries = true, beforeInvocation = true)
+	"OntologyRepositorySchema" }, allEntries = true, beforeInvocation = true)
 	@Transactional
 	void deleteByIdentification(String identification);
 
@@ -280,5 +282,22 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 		return ontology.getJsonSchema();
 
 	}
+
+	@Modifying
+	@Transactional
+	@Query(value = "DELETE FROM ONTOLOGY_USER_ACCESS", nativeQuery = true)
+	void deleteUserAccesess();
+
+	@Modifying
+	@Transactional
+	@Query("DELETE FROM Ontology AS p WHERE p.id NOT IN :ids")
+	void deleteByIdNotInCustom(@Param("ids") Collection<String> ids);
+
+	@Modifying
+	@Transactional
+	@CacheEvict(cacheNames = { "OntologyRepository", "OntologyRepositoryAll", "OntologyRepositoryByIdentification",
+			"OntologyRepositoryByUser", "OntologyRepositoryByUserActiveTrue",
+	"OntologyRepositorySchema" }, allEntries = true)
+	void deleteByIdNotIn(Collection<String> ids);
 
 }

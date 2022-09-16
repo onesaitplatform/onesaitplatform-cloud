@@ -42,7 +42,7 @@ public class QuasarAuditEvent extends OPAuditRemoteEvent {
 			String otherType, String remoteAddress, ResultOperationType resultOperation, String query, String data,
 			String result) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, 1);
 		this.result = result;
 		this.query = query;
 	}

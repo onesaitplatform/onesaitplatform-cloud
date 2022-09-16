@@ -257,7 +257,7 @@ public class NotebookController {
 	public String share(Model model, @PathVariable("id") Notebook notebook) {
 		String userId = utils.getUserId();
 		User user = userRepository.findByUserId(userId);
-		if (notebook.getUser().toString().equals(userId) || utils.getRole().equals("ROLE_ADMINISTRATOR")) {
+		if (notebook.getUser().getUserId().equals(userId) || utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 			final List<User> users = userService.getDifferentUsersWithRole(user, Role.Type.ROLE_DATASCIENTIST);
 			users.remove(notebook.getUser());
 

@@ -91,7 +91,7 @@
 				<form role="form" id="datamodel_create_form" th:object="${datamodel}"  method="post" class="form">
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 					<!-- FORM ACTIONS FOR INSERT -->
-					<input th:if="${datamodel.id} == null" type="hidden" name="action" th:value="@{/datamodels/create}"/>
+					<input th:if="${datamodel?.id} == null" type="hidden" name="action" th:value="@{/datamodels/create}"/>
 							
 					<!-- FORM ACTIONS FOR UPDATE -->
 					<input th:if="${datamodel?.id} != null" type="hidden" name="action" th:value="@{'/datamodels/update/'+${datamodel.id}}"/>
@@ -109,24 +109,24 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${datamodel.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:onclick="'dataModelCreateController.deleteDataModel(\'' + ${datamodel?.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
+									<button th:if="(${datamodel?.id} != null)" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='dataModelCreateController.deleteDataModel(\'' + ${datamodel?.id} + '\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
 																								
-									<span class="sep" th:if="(${datamodel.id} != null)"></span>
+									<span class="sep" th:if="(${datamodel?.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/datamodels/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/datamodels/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
-									<button th:if="${datamodel.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${datamodel.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button th:if="${datamodel?.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button th:if="${datamodel?.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
 										
-									<span class="sep no-border" th:if="(${datamodel.id} != null)"></span>
+									<span class="sep no-border" th:if="(${datamodel?.id} != null)"></span>
 										
 									<!-- CREATE -->
-									<button th:if="${datamodel.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+									<button th:if="${datamodel?.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
 										
 									<!-- UPDATE -->
-									<button th:if="(${datamodel.id} != null)" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button th:if="(${datamodel?.id} != null)" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
 								</div>
 							</div>
 						</div>

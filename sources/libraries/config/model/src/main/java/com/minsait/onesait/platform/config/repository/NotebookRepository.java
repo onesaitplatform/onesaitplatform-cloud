@@ -14,9 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -55,4 +59,7 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
 			@Param("identification") String identification);
 
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

@@ -303,6 +303,13 @@ var HeaderController = function() {
 		$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
 				function(data){
 					console.log('getResourcesAssociated() -> ok');
+					if (data.rtdbDatasource.length > 0 && data.rtdbDatasource[0] === "PRESTO") {
+						Content = '<label class="mt-checkbox control-label" data-trigger="hover" data-placement="top" data-container="body">' +
+							'<div class="inline font-xs"> ' + headerReg.historicalOntologyDeleteData + '</div>' +
+							'<input id="deleteData" name="deleteData" type="checkbox" class="form-control"/>' +
+							'<span></span></label>';
+						Content += '<br>' + headerReg.historicalOntologyConfirm;
+					}
 					if(data.apis.length > 0) {
 						Content += "<br><b> APIs: </b>";
 						for(var i=0; i<data.apis.length; i++){
@@ -351,7 +358,16 @@ var HeaderController = function() {
 								text: Remove,
 								btnClass: 'btn btn-primary',
 								action: function(){ 
-									if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+									if ( document.forms[formId] ) { 
+										if (data.rtdbDatasource.length > 0 && data.rtdbDatasource[0] === "PRESTO") {
+											var action = $('#'+formId).attr('action');
+											var checkDeleteData = $('#deleteData').is(':checked');
+											$('#'+formId).attr('action', action + '/data/' + checkDeleteData);
+										}
+										document.forms[formId].submit(); 
+									} else { 
+										$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
+									}
 								}
 							}
 						}
@@ -373,8 +389,45 @@ var HeaderController = function() {
 		// i18 labels
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
-		var Content = headerReg.layerConfirm;
-		var Title = headerReg.layerDelete;	
+		var Content = headerReg.processConfirm;
+		var Title = headerReg.processDelete;	
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});
+
+	}
+	
+	// LAYER-CONFIRM-DIALOG
+	var showConfirmDialogProcess = function(formId){		
+		logControl ? console.log('showConfirmDialogProcess()...') : '';
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var Content = headerReg.processConfirm;
+		var Title = headerReg.processDelete;	
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
@@ -507,6 +560,90 @@ var HeaderController = function() {
 					btnClass: 'btn btn-primary',
 					action: function(){ 
 						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});
+
+	}
+	
+	var showConfirmDialogSub = function(formId,subcategoryId){		
+		console.log('showConfirmDialogSub()...');
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var Content = headerReg.categoryConfirm;
+		var Title = headerReg.categoryDelete;		
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { 
+							
+							$('#'+formId).attr('action', '/controlpanel/subcategories/' + subcategoryId);
+							document.forms[formId].submit(); 
+						} else { 
+							$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
+						}
+					}
+				}
+			}
+		});
+
+	}
+	
+	var showConfirmDialogCat = function(formId,categoryId){		
+		console.log('showConfirmDialogSub()...');
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var Content = headerReg.categoryConfirm;
+		var Title = headerReg.categoryDelete;		
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { 
+							
+							$('#'+formId).attr('action', '/controlpanel/categories/' + categoryId);
+							document.forms[formId].submit(); 
+						} else { 
+							$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
+						}
 					}
 				}
 			}
@@ -883,7 +1020,40 @@ var HeaderController = function() {
 			}
 		});
 	}
-	
+	// GADGET-CONFIRM-DIALOG
+	var showConfirmDialogInstance = function(formId){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = headerReg.gadgetInstanceConfirm;
+		var Title = headerReg.gadgetInstanceDelete;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}											
+				}
+			}
+		});
+	}
 	// DASHBOARD-CONF-CONFIRM-DIALOG
 	var showConfirmDialogDashboardConf = function(formId){	
 
@@ -1130,7 +1300,6 @@ var HeaderController = function() {
 		});
 	}
 
-
 	// INTERNATIONALIZATION-CONFIRM-DIALOG
 	var showInternationalizationConfirmDialog = function(formId){
 
@@ -1201,7 +1370,7 @@ var HeaderController = function() {
 		});		
 	}
 	
-	// WEBPROYECT-CONFIRM-DELETE-DIALOG
+// WEBPROYECT-CONFIRM-DELETE-DIALOG
 	var showConfirmDeleteDialogWebProject= function(url){	
 
 		//i18 labels
@@ -1235,8 +1404,6 @@ var HeaderController = function() {
 			}
 		});
 	}
-
-
 
 	// SERVER ERRORS-DIALOG
 	var errors = function(){		
@@ -1349,6 +1516,19 @@ var HeaderController = function() {
 			logControl ? console.log('showConfirmDialogCategory()...') : '';
 			showConfirmDialogCategory(formId);
 		},
+		
+		// SINGLE-CATEGORY-CONFIRM-DIALOG
+		showConfirmDialogCat : function(formId,categoryId){		
+			logControl ? console.log('showConfirmDialogCat()...') : '';
+			showConfirmDialogCat(formId,categoryId);
+		},
+		// SUBCATEGORY-CONFIRM-DIALOG
+		showConfirmDialogSub : function(formId,subcategoryId){		
+			logControl ? console.log('showConfirmDialogSub()...') : '';
+			showConfirmDialogSub(formId,subcategoryId);
+		},
+		
+		
 		// ONTOLOGY-CONFIRM-DIALOG
 		showConfirmDialogModel : function(formId){		
 			logControl ? console.log('showConfirmDialogModel()...') : '';
@@ -1420,13 +1600,19 @@ var HeaderController = function() {
 		
 		// GADGET-CONFIRM-DIALOG
 		showConfirmDialogGadget : function(formId){		
-			logControl ? console.log('showConfirmDialogDashboard()...') : '';
+			logControl ? console.log('showConfirmDialogGadget()...') : '';
 			showConfirmDialogGadget(formId);
 		},
+		// INSTANCE-CONFIRM-DIALOG
+		showConfirmDialogInstance : function(formId){		
+			logControl ? console.log('showConfirmDialogInstance()...') : '';
+			showConfirmDialogInstance(formId);
+		},
+		
 		showConfirmDeleteDialogWebProject : function(formId){		
 			logControl ? console.log('showConfirmDeleteDialogWebProject()...') : '';
 			showConfirmDeleteDialogWebProject(formId);
-		},		
+		},
 		showConfirmDialogDashboardConf : function(formId){		
 			logControl ? console.log('showConfirmDialogDashboardConf()...') : '';
 			showConfirmDialogDashboardConf(formId);
@@ -1466,6 +1652,11 @@ var HeaderController = function() {
 		showMarketAssetConfirmDialog : function(formId){		
 			logControl ? console.log('showMarketAssetConfirmDialog()...') : '';
 			showMarketAssetConfirmDialog(formId);
+		},
+		// PROCESS-CONFIRM-DIALOG
+		showConfirmDialogProcess : function(formId){		
+			logControl ? console.log('showConfirmDialogProcess()...') : '';
+			showConfirmDialogProcess(formId);
 		}
 	};
 }();

@@ -45,6 +45,8 @@ public class GadgetRepositoryIntegrationTest {
 	GadgetRepository repository;
 	@Autowired
 	UserRepository userRepository;
+	@Autowired
+	private GadgetTemplateRepository gadgetTemplateRepository;
 
 	private User getUserCollaborator() {
 		return this.userRepository.findByUserId("collaborator");
@@ -59,7 +61,7 @@ public class GadgetRepositoryIntegrationTest {
 			gadget.setUser(getUserCollaborator());
 			gadget.setPublic(true);
 			gadget.setIdentification("Gadget1");
-			gadget.setType("Tipo 1");
+			gadget.setType(gadgetTemplateRepository.findById("line").orElse(null));
 
 			repository.save(gadget);
 		}
@@ -69,7 +71,7 @@ public class GadgetRepositoryIntegrationTest {
 	@Transactional
 	public void given_SomeGadgetsExist_When_TheyAreSearchedByUserAndType_Then_TheCorrectObjectIsObtained() {
 		Gadget gadget = this.repository.findAll().get(0);
-		Assert.assertTrue(this.repository.findByUserAndType(gadget.getUser(), gadget.getType()).size() > 0);
+		Assert.assertTrue(this.repository.findByUserAndType(gadget.getUser(), gadget.getType().getId()).size() > 0);
 	}
 
 }

@@ -39,17 +39,23 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+
+
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Cache Management", tags = { "Cache management service" })
+@Tag(name = "Cache Management")
 @RestController
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-        @ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+        @ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api/caches")
 @Slf4j
 public class CacheRestController {
@@ -68,10 +74,10 @@ public class CacheRestController {
     private static final String STATUS_OK = "{\"status\": \"ok\"}";
 
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Create a new cache structure")
+    @Operation(summary = "Create a new cache structure")
     @PostMapping("/{identification}/")
     public ResponseEntity<String> create(
-            @ApiParam(value = "Identification for the cache structure", required = true) 
+            @Parameter(description= "Identification for the cache structure", required = true) 
             @PathVariable("identification") 
             String identification,
             @RequestBody(required=true) CacheDTO cacheDTO) throws JsonProcessingException {
@@ -104,10 +110,10 @@ public class CacheRestController {
     }
     
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Delete a map")
+    @Operation(summary = "Delete a map")
     @DeleteMapping("/maps/{identification}/")
     public ResponseEntity<String> deleteMap(
-            @ApiParam(value = "Identification for the map", required = true) 
+            @Parameter(description= "Identification for the map", required = true) 
             @PathVariable("identification") 
             String identification) {
         log.debug("Recieved request to delete a cached map {}", identification);
@@ -123,13 +129,13 @@ public class CacheRestController {
     }
     
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Put value of a type in map")
+    @Operation(summary = "Put value of a type in map")
     @PostMapping("/maps/{identification}/put/{key}/")
     public ResponseEntity<String> putIntoMap(
-            @ApiParam(value = "Identification of the map where put data", required = true) 
+            @Parameter(description= "Identification of the map where put data", required = true) 
             @PathVariable("identification") 
             String identification,
-            @ApiParam(value = "Key to store the data", required = true) 
+            @Parameter(description= "Key to store the data", required = true) 
             @PathVariable("key") 
             String key,
             @RequestBody(required=true) String value) {
@@ -147,10 +153,10 @@ public class CacheRestController {
     }
     
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Put values of a type in map")
+    @Operation(summary = "Put values of a type in map")
     @PostMapping("/maps/{identification}/putMany/")
     public ResponseEntity<String> putManyIntoMap(
-            @ApiParam(value = "Identification of the map where put data", required = true) 
+            @Parameter(description= "Identification of the map where put data", required = true) 
             @PathVariable("identification") 
             String identification,
             @RequestBody(required=false) Map<String, String> values) throws IOException {
@@ -169,13 +175,13 @@ public class CacheRestController {
     }
     
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Get one value from a map")
+    @Operation(summary = "Get one value from a map")
     @GetMapping("/maps/{identification}/get/{key}/")
     public ResponseEntity<String> getFromMap(
-            @ApiParam(value = "Identification of the map to get data", required = true) 
+            @Parameter(description= "Identification of the map to get data", required = true) 
             @PathVariable("identification") 
             String identification,
-            @ApiParam(value = "Key to search the data", required = true) 
+            @Parameter(description= "Key to search the data", required = true) 
             @PathVariable("key") 
             String key){
         log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
@@ -192,10 +198,10 @@ public class CacheRestController {
     }
     
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Get all values from a map")
+    @Operation(summary = "Get all values from a map")
     @GetMapping("/maps/{identification}/getAll/")
     public ResponseEntity<Map<String, String>> getAllFromMap(
-            @ApiParam(value = "Identification of the map to get data", required = true) 
+            @Parameter(description= "Identification of the map to get data", required = true) 
             @PathVariable("identification") 
             String identification){
         log.debug("Recieved request to get all data from cached map {}", identification);
@@ -212,10 +218,10 @@ public class CacheRestController {
     }
     
     @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-    @ApiOperation(value = "Get all values from a map")
+    @Operation(summary = "Get all values from a map")
     @PostMapping("/maps/{identification}/getMany/")
     public ResponseEntity<Map<String, String>> getManyFromMap(
-            @ApiParam(value = "Identification of the map to get data", required = true) 
+            @Parameter(description= "Identification of the map to get data", required = true) 
             @PathVariable("identification") 
             String identification,
             @RequestBody(required=true) Set<String> keys){

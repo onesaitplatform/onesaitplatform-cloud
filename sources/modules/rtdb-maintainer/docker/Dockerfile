@@ -17,8 +17,14 @@ ENV SERVER_NAME=localhost \
 	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \    
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
+	SCHEDULERDBBUSER=root \
+	SCHEDULERDBBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
+	SCHEDULERDBBDRIVER=com.mysql.cj.jdbc.Driver \
+	SCHEDULERDBBDIALECT=org.hibernate.dialect.MySQL5Dialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     AUDITGLOBALNOTIFY=true \
@@ -32,13 +38,19 @@ ENV SERVER_NAME=localhost \
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
     SBA_USERNAME=operations \
-	SBA_SECRET=changeIt2019!
+	SBA_SECRET=changeIt2019! \
+	QUARTZ_DRIVER=org.quartz.impl.jdbcjobstore.StdJDBCDelegate \
+	MINIO_ENABLED=true
 
 # Timezone
 RUN apk add --no-cache tzdata
 
+# MariaDB server and client
+RUN apk update && apk add mariadb mariadb-client
+
 RUN mkdir -p /var/log/platform-logs && \
     mkdir -p /tmp/export && \
+	mkdir -p /temp/minio/backup && \
     mkdir -p /tmp/rtdbhdb && \
     mkdir -p /usr/local/files && \
 	mkdir ./target
@@ -60,6 +72,7 @@ RUN chown -R onesait:onesait /var/log/platform-logs && \
 	chown -R onesait:onesait /usr/local/files && \
     chown -R onesait:onesait ./target && \
     chown onesait:onesait app.jar && \
+	chmod -R 777 /temp/minio/backup && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /tmp/export && \

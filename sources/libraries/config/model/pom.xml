@@ -22,6 +22,10 @@
 	<dependencies>
 		<!--por defecto usará Tomcat-pool -->
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-commons</artifactId>
 			<exclusions>
@@ -36,6 +40,17 @@
 			</exclusions>
 			<version>${project.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>		
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -83,6 +98,11 @@
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-audit</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.7</version>
 		</dependency>
 	</dependencies>
 

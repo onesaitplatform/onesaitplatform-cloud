@@ -4,7 +4,7 @@ master:
       jdbc-url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-     
+      driver-class-name: ${CONFIGDB_DRIVER}
 
 
 onesaitplatform:
@@ -24,10 +24,23 @@ onesaitplatform:
       username: ${REALTIMEDBUSER}
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
+      execution-timeout: ${RTDB_EXECUTION_TIMEOUT}
+      queries-limit: ${RTDB_QUERIES_LIMIT}
+      socket-timeout: ${MONGO_SOCKET_TIMEOUT}
+      connection-timeout: ${MONGO_CONNECT_TIMEOUT}
+      wait-time: ${MONGO_WAIT_TIME}
+      pool-size: ${MONGO_POOL_SIZE}
+      sslEnabled: ${MONGO_SSL_ENABLED}
+      useQuasar: ${MONGO_USE_QUASAR}
    database.elasticsearch:
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
       url: ${ELASTICDBHOST}
       port: 9300
+   database.timescaledb:
+      enabled: ${TIMESCALE_ENABLED}
+      url: ${TIMESCALE_URL}
+      user: ${TIMESCALE_USER}
+      password: ${TIMESCALE_PASS}
    webproject:
       rootfolder.path: /usr/local/webprojects/
       baseurl: https://${SERVER_NAME}/web/
@@ -35,6 +48,7 @@ onesaitplatform:
       url: https://${SERVER_NAME}/controlpanel
    server.name: ${SERVER_NAME}
    server.controlpanelservice: ${SERVER_NAME}
+   server.minio.cookiedomain: ${SERVER_BASE_DOMAIN_MINIO_AUTH}
    graylog:
          user: ${GRAYLOG_USER}
          password: ${GRAYLOG_PASS}
@@ -51,7 +65,11 @@ spring:
          jdbc-url: ${CONFIGDBURL}
          username: ${CONFIGDBUSER}
          password: ${CONFIGDBPASS}
+         driver-class-name: ${CONFIGDB_DRIVER}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+   jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
+

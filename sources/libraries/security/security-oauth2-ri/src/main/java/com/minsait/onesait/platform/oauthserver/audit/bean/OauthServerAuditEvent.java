@@ -44,9 +44,9 @@ public class OauthServerAuditEvent extends OPAuditRemoteEvent {
 	private OauthServerAuditEvent(String message, String id, EventType type, long timeStamp, String formatedTimeStamp,
 			String user, String ontology, String operationType, Module module, Map<String, Object> extraData,
 			String otherType, String remoteAddress, ResultOperationType resultOperation, String response,
-			String infoMessage) {
+			String infoMessage, int version) {
 		super(message, id, type, timeStamp, formatedTimeStamp, user, ontology, operationType, module, extraData,
-				otherType, remoteAddress, resultOperation);
+				otherType, remoteAddress, resultOperation, version);
 		this.infoMessage = infoMessage;
 		this.user = user;
 		this.response = response;

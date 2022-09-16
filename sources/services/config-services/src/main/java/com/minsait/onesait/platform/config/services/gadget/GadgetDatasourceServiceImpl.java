@@ -16,12 +16,14 @@ package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
@@ -41,6 +43,18 @@ import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SubSelect;
 
 @Service
 @Slf4j
@@ -61,6 +75,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private UserService userService;
@@ -133,11 +148,21 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		}
 		if (!gadgetDatasourceExists(gadgetDatasource)) {
 			log.debug("Gadget datasource no exist, creating...");
-			return gadgetDatasourceRepository.save(gadgetDatasource);
+			return gadgetDatasourceRepository.save(cleanQuery(gadgetDatasource));
 		} else {
 			throw new GadgetDatasourceServiceException(
 					"GadgetDatasource with identification: " + gadgetDatasource.getIdentification() + " exist");
 		}
+	}
+
+	private GadgetDatasource cleanQuery(GadgetDatasource gadgetDatasource) {
+		String datasource = gadgetDatasource.getQuery();
+		// replace the tab (\t), the new line (\n) and the carriage return (\r)
+		datasource = datasource.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", BLANK_CHARACTER);
+		// delete final ;
+		datasource = datasource.replaceAll("\\s*;\\s*$", "");
+		gadgetDatasource.setQuery(datasource);
+		return gadgetDatasource;
 	}
 
 	@Override
@@ -169,7 +194,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 			gadgetDatasourceDB.setOntology(gadgetDatasource.getOntology());
 			gadgetDatasourceDB.setQuery(gadgetDatasource.getQuery());
 			gadgetDatasourceDB.setRefresh(gadgetDatasource.getRefresh());
-			gadgetDatasourceRepository.save(gadgetDatasourceDB);
+			gadgetDatasourceRepository.save(cleanQuery(gadgetDatasourceDB));
 		} else {
 			throw new GadgetDatasourceServiceException("Cannot update GadgetDatasource that does not exist");
 		}
@@ -287,15 +312,47 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	}
 
 	@Override
-	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user) {
+	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user, int limit)
+			throws JSQLParserException {
 		final String query = gadgetDatasourceRepository.findById(datasourceId).orElse(null).getQuery();
 
-		final int i = query.toLowerCase().lastIndexOf(LIMIT_LOWERCASE);
-		if (i == -1) {// Add limit add the end
-			return query + " limit 1";
-		} else {
-			return query.substring(0, i) + " limit 1";
-		}
+		Statement statement = CCJSqlParserUtil.parse(query);
+		SelectBody selectBody = ((Select) statement).getSelectBody();
+		PlainSelect select = getPlainSelectFromSelect(selectBody);
+
+		Limit limitObj = new Limit();
+		limitObj.setRowCount(new LongValue(limit));
+		select.setLimit(limitObj);
+
+		return select.toString();
+
+		/*
+		 * final int i = query.toLowerCase().lastIndexOf(LIMIT_LOWERCASE); if (i == -1)
+		 * {// Add limit add the end return query + " limit " + limit; } else { return
+		 * query.substring(0, i) + " limit " + limit; }
+		 */
+	}
+
+	@Override
+	public String getSampleQueryForFilterGadgetDatasourceById(String datasourceId, String ontology, String user,
+			int limit) throws JSQLParserException {
+		final String query = gadgetDatasourceRepository.findById(datasourceId).orElse(null).getQuery();
+
+		Statement statement = CCJSqlParserUtil.parse(query);
+		SelectBody selectBody = ((Select) statement).getSelectBody();
+		PlainSelect select = getPlainSelectFromSelect(selectBody);
+
+		Limit limitObj = new Limit();
+		limitObj.setRowCount(new LongValue(limit));
+		select.setLimit(limitObj);
+		select.setGroupByElement(null);
+		select.setHaving(null);
+		List<SelectItem> ls = new LinkedList<>();
+		ls.add(new AllColumns());
+		select.setSelectItems(ls);
+		select.setDistinct(null);
+		return select.toString();
+
 	}
 
 	@Override
@@ -364,6 +421,32 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 		}
 		return null;
+	}
+
+	/*
+	 * Get Plain Select even in union cases with subquery at first level
+	 */
+	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
+		PlainSelect select;
+		if (SetOperationList.class.isInstance(selectBody)) { // union
+			PlainSelect plainSelect = new PlainSelect();
+
+			List<SelectItem> ls = new LinkedList<>();
+			ls.add(new AllColumns());
+			plainSelect.setSelectItems(ls);
+
+			SubSelect subSelect = new SubSelect();
+			subSelect.setSelectBody(selectBody);
+			plainSelect.setFromItem(subSelect);
+
+			select = plainSelect;
+		} else if (PlainSelect.class.isInstance(selectBody)) { // select
+			select = (PlainSelect) selectBody;
+		} else {
+			log.error("Wrong query type: " + selectBody.toString());
+			throw new GadgetDatasourceServiceException("Wrong query");
+		}
+		return select;
 	}
 
 	private Boolean isOntologyOnQuery(String ontology, String query) {

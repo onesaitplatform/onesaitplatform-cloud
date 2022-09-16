@@ -18,7 +18,7 @@
   -->
 <hazelcast-client
         xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
-        http://www.hazelcast.com/schema/client-config/hazelcast-client-config-3.7.xsd"
+        http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd"
         xmlns="http://www.hazelcast.com/schema/client-config"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<properties>
@@ -36,14 +36,10 @@
 		
 		<property name="hazelcast.client.invocation.timeout.seconds">5</property>
 	</properties>
-     <group>
-        <name>onesaitplatform</name>
-        <password>onesaitplatform</password>
-    </group>
-
-   
     
-     <network>
+    <cluster-name>onesaitplatform</cluster-name>
+
+    <network>
         <aws enabled="false"/>
         <smart-routing>true</smart-routing>
         <redo-operation>true</redo-operation>
@@ -58,12 +54,16 @@
                 </properties>
             </discovery-strategy>
         </discovery-strategies>
-        
-        <connection-attempt-period>20000</connection-attempt-period>
 		<connection-timeout>5000</connection-timeout>
-		<connection-attempt-limit>0</connection-attempt-limit><!-- 0 means forever -->
     </network>
     
-    
-    
+    <connection-strategy async-start="false"
+		reconnect-mode="ON">
+		<connection-retry>
+			<initial-backoff-millis>5000</initial-backoff-millis>
+			<max-backoff-millis>20000</max-backoff-millis>
+			<multiplier>1</multiplier>
+			<cluster-connect-timeout-millis>-1</cluster-connect-timeout-millis>
+		</connection-retry>
+	</connection-strategy>
 </hazelcast-client>

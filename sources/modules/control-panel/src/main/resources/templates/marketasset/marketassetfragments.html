@@ -73,7 +73,7 @@
 				<label th:text="#{marketasset.document}">Document</label>
 				<div class="clearfix"></div>
 				<div id="contentShow" th:style="*{contentId!= null AND contentId!= ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
-					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" th:onclick="'javascript:downloadContent();'"><span th:text="#{gen.download} + ' ' + #{marketasset.document}"> Download Document</span></button>
+					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" th:attr="onclick='javascript:downloadContent();'"><span th:text="#{gen.download} + ' ' + #{marketasset.document}"> Download Document</span></button>
 					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" onclick="manageContent()"><span th:text="#{gen.deleteBtn} + ' ' + #{marketasset.document}"> Remove Document</span></button>
 				</div>
 				<div id="contentForm" th:style="*{contentId== null OR contentId== ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
@@ -87,7 +87,7 @@
 	<div th:if="((${marketasset.state.name() != 'PENDING'}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" id="DOCUMENTDiv">
 		<h3 style="font-size: 15px; margin-top: -5px;" class="uppercase margin-bottom-20 bold"><i class="flaticon-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.document}"></span></h3>
 		<div class="form-group col-md-3 no-space ">
-			<button type="button" class="btn btn-outline btn-circle blue padding-both-10 uppercase btn-md  btn-block" th:onclick="'javascript:downloadContent();'" ><i class="la la-download"></i> <span th:text="#{gen.download}">Download</span></button>
+			<button type="button" class="btn btn-outline btn-circle blue padding-both-10 uppercase btn-md  btn-block" th:attr="onclick='javascript:downloadContent();'" ><i class="la la-download"></i> <span th:text="#{gen.download}">Download</span></button>
 		</div>
 	</div>
 	<div class="clearfix"></div>
@@ -119,7 +119,7 @@
 				<label th:text="#{marketasset.app}">App</label>
 				<div class="clearfix"></div>
 				<div id="contentShow" th:style="*{contentId!= null AND contentId!= ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
-					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" th:onclick="'javascript:downloadContent();'"><i class="fa fa-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.document}"> Download Document</span></button>
+					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" th:attr="onclick='javascript:downloadContent();'"><i class="fa fa-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.document}"> Download Document</span></button>
 					<button type="button" class="btn btn-sm btn-outline btn-circle blue" name="removeDocBtn" onclick="manageContent()"><i class="fa fa-times"></i> <span th:text="#{gen.deleteBtn} + ' ' + #{marketasset.document}"> Remove Document</span></button>
 				</div>
 				<div id="contentForm" th:style="*{contentId== null OR contentId== ''} ? 'display:block' : 'display:none'" class="margin-bottom-10">
@@ -139,7 +139,7 @@
 	<div th:if="((${marketasset.state.name() != 'PENDING'}) OR (${#authentication.name} == ${marketasset.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" id="DOCUMENTDiv">
 		<h3 style="font-size: 15px; margin-top: -5px;" class="uppercase margin-top-40 margin-bottom-20 bold"><i class="flaticon-download"></i> <span th:text="#{gen.download} + ' ' + #{marketasset.app}">Download Application:</span></h3>
 		<div class="form-group col-md-3 no-space ">
-			<button type="button" class="btn btn-outline btn-circle blue padding-both-10 uppercase btn-md btn-block" th:onclick="'javascript:downloadContent();'" ><i class="la la-download"></i> <span th:text="#{gen.download}">Download</span></button>
+			<button type="button" class="btn btn-outline btn-circle blue padding-both-10 uppercase btn-md btn-block" th:attr="onclick='javascript:downloadContent();'" ><i class="la la-download"></i> <span th:text="#{gen.download}">Download</span></button>
 		</div>
 	</div>
 	<div class="clearfix"></div>

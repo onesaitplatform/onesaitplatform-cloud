@@ -24,13 +24,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
-import com.minsait.onesait.platform.config.model.CategoryRelation.Type;
 import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.ParameterModel;
 import com.minsait.onesait.platform.config.model.Subcategory;
@@ -73,9 +73,6 @@ public class ModelServiceImpl implements ModelService {
 
 	@Autowired
 	private SubcategoryRepository subcategoryRepository;
-
-	@Autowired
-	private ModelService modelService;
 
 	@Autowired
 	private NotebookService notebookService;
@@ -122,7 +119,7 @@ public class ModelServiceImpl implements ModelService {
 		List<ParameterModel> parameters;
 
 		final CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(model.getId(),
-				CategoryRelation.Type.MODEL);
+				Category.Type.MODEL);
 		if (categoryRelation != null) {
 
 			category = categoryRepository.findById(categoryRelation.getCategory());
@@ -220,7 +217,7 @@ public class ModelServiceImpl implements ModelService {
 		JSONObject result = new JSONObject();
 		final JSONObject json = new JSONObject();
 		final JSONObject finalJson = new JSONObject();
-		final Model model = modelService.getModelById(id);
+		final Model model = getModelById(id);
 
 		if (model != null) {
 
@@ -324,13 +321,7 @@ public class ModelServiceImpl implements ModelService {
 
 				final Model modelAux = modelRepository.save(modelp);
 
-				final CategoryRelation relation = new CategoryRelation();
-				relation.setCategory(category.getId());
-				relation.setSubcategory(subcategory.getId());
-				relation.setType(Type.MODEL);
-				relation.setTypeId(modelAux.getId());
-				categoryRelationRepository.save(relation);
-
+				categoryRelationService.createCategoryRelation(modelAux.getId(), category, subcategory, Category.Type.MODEL);
 				parameterModelService.createParameterModel(httpServletRequest, modelAux);
 
 			} catch (final Exception e) {
@@ -350,12 +341,13 @@ public class ModelServiceImpl implements ModelService {
 				final Model modelAux = modelRepository.save(model);
 
 				parameterModelService.updateParameterModel(request, modelAux);
-
+				
 				final CategoryRelation categoryRelation = categoryRelationRepository.findByTypeId(idOld);
-				categoryRelation.setTypeId(modelAux.getId());
-				categoryRelation.setCategory(category.getId());
-				categoryRelation.setSubcategory(subcategory.getId());
-				categoryRelationRepository.save(categoryRelation);
+				if (categoryRelation == null) {
+					categoryRelationService.createCategoryRelation(idOld, category, subcategory, Category.Type.MODEL);
+				} else {
+					categoryRelationService.updateCategoryRelation(categoryRelation, idOld, category, subcategory);					
+				}
 
 			} catch (final Exception e) {
 				throw new ModelServiceException("Problems updating the model: " + e.getMessage());
@@ -405,7 +397,7 @@ public class ModelServiceImpl implements ModelService {
 		final List<ModelServiceDTO> modelsResult = new ArrayList<>();
 		for (final Model m : models) {
 			final CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(m.getId(),
-					CategoryRelation.Type.MODEL);
+					Category.Type.MODEL);
 			if (categoryRelation != null) {
 
 				final Category c = categoryRepository.findById(categoryRelation.getCategory());

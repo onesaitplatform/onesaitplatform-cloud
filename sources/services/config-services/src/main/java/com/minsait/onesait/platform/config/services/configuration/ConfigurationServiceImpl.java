@@ -27,7 +27,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
 import com.minsait.onesait.platform.config.components.AllConfiguration;
-import com.minsait.onesait.platform.config.components.GitlabConfiguration;
+import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
@@ -42,6 +42,7 @@ import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.services.exceptions.ConfigServiceException;
+import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,8 +92,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public Configuration createConfiguration(Configuration configuration) {
 
-		Configuration oldConfiguration = configurationRepository.findByTypeAndEnvironmentAndSuffix(
-				configuration.getType(), configuration.getEnvironment(), configuration.getSuffix());
+		Configuration oldConfiguration = configurationRepository.findByTypeAndEnvironmentAndIdentification(
+				configuration.getType(), configuration.getEnvironment(), configuration.getIdentification());
 		if (oldConfiguration != null) {
 			throw new ConfigServiceException(
 					"Exist a configuration of this type for the environment and suffix:" + configuration.toString());
@@ -103,7 +104,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		oldConfiguration.setType(configuration.getType());
 		oldConfiguration.setYmlConfig(configuration.getYmlConfig());
 		oldConfiguration.setDescription(configuration.getDescription());
-		oldConfiguration.setSuffix(configuration.getSuffix());
+		oldConfiguration.setIdentification(configuration.getIdentification());
 		oldConfiguration.setEnvironment(configuration.getEnvironment());
 		return configurationRepository.save(oldConfiguration);
 
@@ -115,7 +116,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			oc.setYmlConfig(configuration.getYmlConfig());
 			oc.setType(configuration.getType());
 			oc.setDescription(configuration.getDescription());
-			oc.setSuffix(configuration.getSuffix());
+			oc.setIdentification(configuration.getIdentification());
 			oc.setEnvironment(configuration.getEnvironment());
 			configurationRepository.save(oc);
 		});
@@ -175,7 +176,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		if (suffix == null) {
 			return configurationRepository.findByTypeAndEnvironment(type, environment);
 		} else {
-			return configurationRepository.findByTypeAndEnvironmentAndSuffix(type, environment, suffix);
+			return configurationRepository.findByTypeAndEnvironmentAndIdentification(type, environment, suffix);
 		}
 	}
 
@@ -186,8 +187,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public Urls getEndpointsUrls(String environment) {
-		final Configuration config = configurationRepository
-				.findByTypeAndEnvironment(Configuration.Type.ENDPOINT_MODULES, environment);
+		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndIdentification(
+				Configuration.Type.ENDPOINT_MODULES, environment, "PlatformModules");
 		final Constructor constructor = new Constructor(ModulesUrls.class);
 		final Representer representer = new Representer();
 		representer.getPropertyUtils().setSkipMissingProperties(true);
@@ -207,8 +208,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public GitlabConfiguration getGitlabConfiguration(String suffix, String environment) {
-		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.GITLAB, environment,
-				suffix);
+		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.GITLAB,
+				environment, suffix);
 		if (config == null) {
 			return null;
 		}
@@ -237,10 +238,22 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		}
 		return getAllConfigurationFromDBConfig(config).getOpenshift();
 	}
+	
+	@Override
+	public CaasConfiguration getCaasConfiguration(String id) {
+		final Configuration config = configurationRepository.findById(id).orElse(null);
+		if (config == null) {
+			return null;
+		}
+		final Constructor constructor = new Constructor(AllConfiguration.class);
+		final Yaml yaml = new Yaml(constructor);
+		return yaml.loadAs(config.getYmlConfig(), CaasConfiguration.class);
+	}
+
 
 	@Override
 	public Configuration getConfiguration(Type configurationType, String suffix) {
-		return configurationRepository.findByTypeAndSuffixIgnoreCase(configurationType, suffix);
+		return configurationRepository.findByTypeAndIdentificationIgnoreCase(configurationType, suffix);
 	}
 
 	@Override
@@ -265,7 +278,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public RancherConfiguration getRancherConfiguration(String suffix, String environment) {
 		final Configuration config = configurationRepository
-				.findByTypeAndEnvironmentAndSuffix(Configuration.Type.RANCHER, environment, suffix);
+				.findByTypeAndEnvironmentAndIdentification(Configuration.Type.RANCHER, environment, suffix);
 		if (config == null) {
 			return null;
 		} else {
@@ -289,7 +302,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Override
 	public JenkinsConfiguration getJenkinsConfiguration(String environment) {
-		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndSuffix(Type.JENKINS,
+		final Configuration config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.JENKINS,
 				environment, "jenkins");
 		if (config == null) {
 			return null;
@@ -318,6 +331,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			return "";
 		}
 		return configuration.getYmlConfig();
+	}
+
+	@Override
+	public Configuration getConfigurationByIdentification(String identification) {
+		return configurationRepository.findByIdentification(identification);
 	}
 
 }

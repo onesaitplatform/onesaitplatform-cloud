@@ -88,7 +88,6 @@ public class ApiFIQL {
 		}
 
 		apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
-
 		apiDTO.setEndpointExt(api.getEndpointExt());
 		apiDTO.setDescription(api.getDescription());
 		apiDTO.setMetainf(api.getMetaInf());
@@ -125,7 +124,6 @@ public class ApiFIQL {
 
 			apiDTO.setAuthentication(atributosDTO);
 		}
-
 		return apiDTO;
 	}
 

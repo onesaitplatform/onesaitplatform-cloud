@@ -175,9 +175,9 @@ style>.dropdown-submenu {
 						<!--  LANGUAGE -->
 						<li>
 							<select id="select_location" class="form-control"  name="languaje" onchange="location = this.value;">
-								<option value="?lang=en" th:selected="#{head.lang.en}=='English'" th:text="#{head.lang.en}">EN</option>
-								<option value="?lang=es" th:selected="#{head.lang.es}=='Español'" th:text="#{head.lang.es}">ES</option>
-								<option value="?lang=fr" th:selected="#{head.lang.fr}=='Fraçais'" th:text="#{head.lang.fr}">FR</option>
+								<option value="?lang=en" th:selected="#{head.language}=='English'" th:text="#{head.lang.en}">EN</option>
+								<option value="?lang=es" th:selected="#{head.language}=='Español'" th:text="#{head.lang.es}">ES</option>
+								<option value="?lang=fr" th:selected="#{head.language}=='Français'" th:text="#{head.lang.fr}">FR</option>
 							</select>
 						</li>
 						<!-- END LANGUAGE -->
@@ -232,9 +232,9 @@ style>.dropdown-submenu {
 						<!--  LANGUAGE -->
 						<li>
 							<select id="select_location" class="form-control"  name="languaje" onchange="location = this.value;">
-								<option value="?lang=en" th:selected="#{head.lang.en}=='English'" th:text="#{head.lang.en}">EN</option>
-								<option value="?lang=es" th:selected="#{head.lang.es}=='Español'" th:text="#{head.lang.es}">ES</option>
-								<option value="?lang=fr" th:selected="#{head.lang.fr}=='Fraçais'" th:text="#{head.lang.fr}">FR</option>
+								<option value="?lang=en" th:selected="document.documentElement.lang=='en'" th:text="#{head.lang.en}">EN</option>
+								<option value="?lang=es" th:selected="document.documentElement.lang=='es'" th:text="#{head.lang.es}">ES</option>
+								<option value="?lang=fr" th:selected="document.documentElement.lang=='fr'" th:text="#{head.lang.fr}">FR</option>
 							</select>
 						</li>
 
@@ -388,6 +388,8 @@ style>.dropdown-submenu {
 			"dashboardDelete":[[#{dashboards.delete.title}]],
 			"gadgetTemplateConfirm":[[#{gadgettemplates.del.confirm}]],
 			"gadgetTemplateDelete":[[#{gadgettemplates.delete.title}]],
+			"gadgetInstanceConfirm":[[#{gadgettemplates.instance.del.confirm}]],
+			"gadgetInstanceDelete":[[#{gadgettemplates.instance.delete.title}]],
 			"scheduledSearchConfirm":[[#{scheduledsearch.del.confirm}]],
 			"scheduledSearchDelete": [[#{scheduledsearch.delete.title}]],
 			"deviceConfirm":[[#{device.delete.confirm}]],
@@ -403,6 +405,8 @@ style>.dropdown-submenu {
 			"menu": [[${menu}]],
 			"layerConfirm" : [[#{layer.delete.info}]],
 			"layerDelete" : [[#{layer.delete.title}]],
+			"processConfirm" : [[#{process.delete.confirm}]],
+			"processDelete" : [[#{process.delete.title}]],
 			"queryTemplateConfirm":[[#{templates.del.confirm}]],
 			"queryTemplateDelete":[[#{templates.delete.title}]],
 			"datasetConfirm":[[#{datasets.delete.confirm}]],
@@ -418,6 +422,7 @@ style>.dropdown-submenu {
 			"microserviceDelete":[[#{microservice.delete.title}]],
 			"microserviceUrl":[[#{microservice.url.title}]],
 			"appDelete":[[#{app.delete.title}]],
+			"processDelete":[[#{process.delete.title}]],
 			"reportConfirm":[[#{reports.delete.confirm}]],
 			"reportDelete":[[#{reports.delete.title}]],
 			"apiDelete":[[#{apimanager.delete.title}]],
@@ -431,21 +436,41 @@ style>.dropdown-submenu {
 			"csrfHeaderName" : [[${_csrf.headerName}]],
 			"clickToCopy" : [[#{menu.modal.click.copy}]],
 			"webprojectDelete": [[#{webproject.delete.title }]],
-			"webprojectConfirm": [[#{webproject.delete.confirm}]]
+			"webprojectConfirm": [[#{webproject.delete.confirm}]],
+			"historicalOntologyConfirm": [[#{ontology.historical.delete.confirm}]],
+			"historicalOntologyDeleteData": [[#{ontology.historical.delete.data}]],
+			"commit": [[#{gen.commit}]],
+			"skip": [[#{gen.skip}]],
+			"kafkaClusterConnectionConfirm":[[#{kafka.cluster.connection.delete.confirm}]],
+			"kafkaClusterConnectionDelete":[[#{kafka.cluster.connection.delete.title}]],
+			"kafkaClusterConnectionTopicConfirm":[[#{kafka.cluster.consumer.topic.delete.confirm}]],
+			"kafkaClusterConnectionTopicDelete":[[#{kafka.cluster.consumer.topic.delete.title}]],
+			"kafkaClusterConnectionGroupConfirm":[[#{kafka.cluster.consumer.group.delete.confirm}]],
+			"kafkaClusterConnectionGroupDelete":[[#{kafka.cluster.consumer.group.delete.title}]],
+			"kafkaClusterPurgeConfirm":[[#{kafka.cluster.purge.delete.confirm}]],
+			"kafkaClusterPurgeDelete":[[#{kafka.cluster.purge.delete.title}]],
+			"kafkaClusterOffsetConfirm":[[#{kafka.cluster.offset.reset.confirm}]],
+			"kafkaClusterOffserReset":[[#{kafka.cluster.offset.reset.title}]],
+			"kafkaClusterConsumerGroupConfirm":[[#{kafka.cluster.consumer.delete.confirm}]],
+			"kafkaClusterConsumerGroupDelete":[[#{kafka.cluster.consumer.delete.title}]]
 		};
 		var messagesForms = {
 			"validation":{
 				"genFormError": [[#{gen.form.error}]],
+				"genOpexist": [[#{gen.op.exist}]],
 				"genFormSuccess":  [[#{gen.form.success}]]
 				},
 			"operations":{
 				"genOpError": [[#{gen.op.error}]],
 				"genOpSuccess": [[#{gen.op.success}]],
+				
 				"notification": [[#{gen.op.notification}]]
 				}
 		};
 		// LOAD DATA TO USE IN HEADERCONTROLLER
 		// HEADER CONTROLLER LOAD AND INIT ITSELF
+		
+		
 		
 		$('#select_location').click(function(e) { e.stopPropagation(); });
 		

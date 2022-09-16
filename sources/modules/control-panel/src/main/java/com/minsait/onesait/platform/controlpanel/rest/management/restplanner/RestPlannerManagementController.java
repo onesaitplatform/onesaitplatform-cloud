@@ -50,11 +50,17 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
-@Api(value = "Rest Planner management", tags = { "Rest Planner management service" })
+@Tag(name = "Rest Planner management")
 @RestController
 @RequestMapping("api/restplanner")
 public class RestPlannerManagementController {
@@ -80,7 +86,7 @@ public class RestPlannerManagementController {
 	private static final String ERROR_STR = "error";
 	private static final String STATUS_STR = "status";
 
-	@ApiOperation(value = "List rest planners")
+	@Operation(summary = "List rest planners")
 	@GetMapping(value = "/")
 	public ResponseEntity<?> listRestPlanners(@RequestHeader("Authorization") String authorization) {
 		try {
@@ -118,10 +124,10 @@ public class RestPlannerManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Get rest planner by identification")
+	@Operation(summary = "Get rest planner by identification")
 	@GetMapping(value = "/{restplanner}")
 	public ResponseEntity<?> getByIdentification(
-			@ApiParam(value = "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
 			@RequestHeader("Authorization") String authorization) {
 		try {
 
@@ -165,7 +171,7 @@ public class RestPlannerManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Create rest planner")
+	@Operation(summary = "Create rest planner")
 	@PostMapping(value = "/")
 	public ResponseEntity<?> newRestPlanner(@Valid @RequestBody RestPlannerDTO restPlannerDTO,
 			@RequestHeader("Authorization") String authorization) {
@@ -235,10 +241,10 @@ public class RestPlannerManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Delete rest planner")
+	@Operation(summary = "Delete rest planner")
 	@DeleteMapping(value = "/{restplanner}")
 	public ResponseEntity<?> deleteRestPlanner(
-			@ApiParam(value = "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
 			@RequestHeader("Authorization") String authorization) {
 
 		try {
@@ -272,7 +278,7 @@ public class RestPlannerManagementController {
 
 	}
 
-	@ApiOperation(value = "Update rest planner")
+	@Operation(summary = "Update rest planner")
 	@PutMapping(value = "/{restplanner}")
 	public ResponseEntity<?> updateRestPlanner(@Valid @RequestBody RestPlannerDTO restPlannerDTO,
 			@RequestHeader("Authorization") String authorization) {
@@ -322,10 +328,10 @@ public class RestPlannerManagementController {
 
 	}
 
-	@ApiOperation(value = "Start rest planner")
+	@Operation(summary = "Start rest planner")
 	@PostMapping(value = "/{restplanner}/start")
 	public ResponseEntity<?> startRestPlanner(
-			@ApiParam(value = "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
 			@RequestHeader("Authorization") String authorization) {
 
 		try {
@@ -362,10 +368,10 @@ public class RestPlannerManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Stop rest planner")
+	@Operation(summary = "Stop rest planner")
 	@PostMapping(value = "/{restplanner}/stop")
 	public ResponseEntity<?> stopRestPlanner(
-			@ApiParam(value = "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
 			@RequestHeader("Authorization") String authorization) {
 
 		try {
@@ -401,10 +407,10 @@ public class RestPlannerManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Execute rest planner")
+	@Operation(summary = "Execute rest planner")
 	@PostMapping(value = "/{restplanner}/execute")
 	public ResponseEntity<?> execute(
-			@ApiParam(value = "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
 			@RequestHeader("Authorization") String authorization) {
 
 		try {

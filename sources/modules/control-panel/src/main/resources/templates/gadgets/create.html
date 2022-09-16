@@ -210,10 +210,10 @@
 								 			<input type="hidden" id="config" th:field="*{config}"/>
 								 			<input type="hidden" id="type" th:field="*{type}"/>
 								 			<input type="hidden" id="description" th:field="*{description}"/>
-								 			<input type="hidden" id="public" th:field="*{public}"/>
 								 			<input type="hidden" id="id" th:field="*{id}"/>
 								 			<input type="hidden" id="jsonMeasures" name="jsonMeasures" />
 								 			<input type="hidden" id="datasourcesMeasures" name="datasourcesMeasures" />
+								 			<th:block th:include="versioning/fragments/form-commit"></th:block>
 								 		
 									 			<div class="row">
 													<div class="col-md-12"> 
@@ -228,8 +228,18 @@
 															<label class="control-label"  th:text="#{gadgets.create.name}">Gadget Name</label>
 															
 																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gen.name}" />
-															
+															    
 														</div>
+														
+														<div class="form-group hide">
+															<label class="control-label"  th:text="#{gadgets.privacy}">Privacy</label>
+															
+																<select  class="selectpicker  select show-tick form-control" th:value="*{public}" id="public" name="public">
+							                  					    <option th:text="#{gadgets.private}" th:selected="${gadget.public == false}" value="false">Private</option>
+																	<option th:text="#{gadgets.public}" th:selected="${gadget.public == true}" value="true">Public</option>
+							                  					</select>
+															
+															   
 													</div>	
 											
 														<div class="col-md-6 " id="div-datasource">								
@@ -253,7 +263,7 @@
 												</div>
 												<div class="pull-right">
 													<button th:if="${gadget.id} != null and ${dataSourceAccessType} != 'VIEW'" id="e-data-source" type="button" onclick="editDataSource();" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.edit}"> Edit DataSource</span></button>
-													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and !${iframe}" id="e-data-source-view" type="button" th:onclick="'GadgetsCreateController.go(\'' + @{|/datasources/show/${measures[0].datasource.Id}/|} + '\');'" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
+													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and !${iframe}" id="e-data-source-view" type="button" th:attr="onclick='GadgetsCreateController.go(\'' + @{|/datasources/show/${measures[0].datasource.Id}/|} + '\');'" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
 													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and  ${iframe}" id="e-data-source-view"  onclick="showDataSource();" type="button" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
 												</div>
 									
@@ -577,7 +587,7 @@
 													
 													<div class="pull-right">														
 														<!-- REMOVE -->
-														<button th:if="${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+														<button th:if="${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:attr="onclick='GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 														
 														<span class="sep"></span>
 														
@@ -598,7 +608,7 @@
 										
 										</form>					
 
-										<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+										<!-- AUXILIAR FORM TO DELETE TEMPLATE -->
 										<form id="delete_gadget_form" class="delete-gadget hide"  th:action="@{'/gadgets/'+${gadget.id}}"  method="post">
 											<input type="hidden" name="_method" value="DELETE"/>
 											<input type="hidden" name="id" th:value="${gadget.id}"/>
@@ -738,6 +748,8 @@
 		//we define the events of the # createBtn, # updateBtn buttons
 		//we save the values of the form  and do the submit
 	
+	var versioningEnabled = [[${session.versioningEnabled}]];
+	
 	function createGadgetFull() {	 
 		generateMeasuresArray()
 		if(gtype === "datadiscovery"){
@@ -757,7 +769,10 @@
 			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
 		}
 		$("#config").val(JSON.stringify(scope.vm.config.config));
-		$("#gadget_create_form").get(0).submit();   	 
+		//Only submit if not in versinoning mode
+		if(!versioningEnabled){
+			$("#gadget_create_form").get(0).submit();
+		}   	 
      };
 	
 	
@@ -1074,7 +1089,7 @@
 			scope.vm.ds = $("#datasources option:selected").val();
 	        if(gtype === "map"){	        
 	        	if(!scope.vm.config.config && !$("#config").val()){
-	        		scope.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:gtype};
+	        		scope.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:{id:gtype}};
 	        	}
 	        	else{
 	        		var lat;
@@ -1098,7 +1113,7 @@
 				    			markersFilter:$("#markersFilter").val(),
 				    			jsonMarkers:$("#jsonMarkers").val()
 				    			};
-	        		scope.vm.config = {config:gconfig,type:gtype};	
+	        		scope.vm.config = {config:gconfig,type:{id:gtype}};	
 	        	}
 	        }
 			else if(gtype == "pie"){
@@ -1134,7 +1149,7 @@
 				};
 				
 				// updating values to refresh gadget
-				scope.vm.config = {config:gconfig,type:gtype};
+				scope.vm.config = {config:gconfig,type:{id:gtype}};
 			}
 	        else{
 				if(gtype == "bar" || gtype == "line" || gtype == "mixed"){
@@ -1242,7 +1257,7 @@
 									}}];
 						}
 					}
-					scope.vm.config = {config:gconfig,type:gtype};	
+					scope.vm.config = {config:gconfig,type:{id:gtype}};	
 				}else if(gtype == "table"){
 					var gconfig = {tablePagination :{      
 						      limit: $('#limit').val(),
@@ -1269,7 +1284,7 @@
 						        pageSelect: $('#pageSelect').is(':checked')
 						      }
 						    }};
-					scope.vm.config = {config:gconfig,type:gtype};	
+					scope.vm.config = {config:gconfig,type:{id:gtype}};	
 				}else if(gtype == "datadiscovery"){
 					var gconfig;
 					if(!$("#config").val()){//new
@@ -1323,7 +1338,7 @@
 					scope.vm.ds = {"identification":$("#datasources option:selected").text()};
 				}
 				else{					
-					scope.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:gtype};	
+					scope.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:{id:gtype}};	
 				}
 	        }
 	        if(gtype == "table"){			
@@ -2136,6 +2151,10 @@
 			if(boundaryLinks) boundaryLinks = "checked";
 			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="boundaryLinks" ' + boundaryLinks + '/>';
 			gchtml += '</div>'
+			
+			
+			
+			
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.limitSelect+'</label>';
 			if(limitSelect) limitSelect = "checked";
@@ -2607,7 +2626,7 @@
 	"hide_header" :[[#{gadgets.hide.header}]],
 	"selectable_rows" :[[#{gadgets.selectable.rows}]],
 	"boundaryLinks" :[[#{gadgets.boundaryLinks}]],
-	"limitSelect" :[[#{gadgets.limitSelect}]],
+	"limitSelect" :[[#{gadgets.limitSelect}]],		
 	"page_select" :[[#{gadgets.page.select}]],
 	"pagination_limit" :[[#{gadgets.pagination.limit}]],
 	"head_background_color" : [[#{gadgets.head.background.color}]],

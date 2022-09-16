@@ -33,6 +33,8 @@ import com.minsait.onesait.platform.persistence.external.virtual.QueryAsTextVirt
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.QueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.services.QueryAsTextMongoDBImpl;
+import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBQueryAsTextDBRepository;
+import com.minsait.onesait.platform.persistence.presto.QueryAsTextPrestoDBImpl;
 
 @Component
 public class QueryAsTextDBRepositoryFactory {
@@ -64,6 +66,12 @@ public class QueryAsTextDBRepositoryFactory {
 
 	@Autowired
 	private CosmosDBQueryAsTextDBRepository comosDBQuery;
+	
+	@Autowired
+	private TimescaleDBQueryAsTextDBRepository timescaleDBQueryRepository;
+	
+	@Autowired
+	private QueryAsTextPrestoDBImpl prestoDBQuery;
 
 	public QueryAsTextDBRepository getInstance(String ontologyId, String sessionUserId) {
 		final Ontology ds = ontologyService.getOntologyByIdentification(ontologyId, sessionUserId);
@@ -102,6 +110,10 @@ public class QueryAsTextDBRepositoryFactory {
 			return comosDBQuery;
 		} else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
 			return noPersistenceQueryAsTextDBRepository;
+		} else if (RtdbDatasource.TIMESCALE.equals(dataSource)) {
+			return timescaleDBQueryRepository;
+		} else if (RtdbDatasource.PRESTO.equals(dataSource)) {
+			return prestoDBQuery;
 		} else {
 			return queryMongo;
 		}

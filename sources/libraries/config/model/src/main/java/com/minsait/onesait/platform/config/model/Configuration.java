@@ -18,41 +18,34 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Table(name = "CONFIGURATION")
 @Configurable
-public class Configuration extends AuditableEntityWithUUID {
+//@JsonPropertyOrder({ "configParseType" })
+@EqualsAndHashCode(callSuper=false)
+public class Configuration extends OPResource implements Versionable<Configuration> {
 
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
-		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX,
-		OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE
+		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX, OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE, VERSIONING, KAFKA_PROPERTIES
 	}
 
-	@ManyToOne
-	@OnDelete(action = OnDeleteAction.NO_ACTION)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
-	@Getter
-	@Setter
-	private User user;
-
 	@Column(name = "YML_CONFIG", nullable = false)
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	@NotNull
 	@Lob
 	@Getter
@@ -70,14 +63,66 @@ public class Configuration extends AuditableEntityWithUUID {
 	@Enumerated(EnumType.STRING)
 	private Type type;
 
-	@Column(name = "SUFFIX", length = 50)
-	@Getter
-	@Setter
-	private String suffix;
-
 	@Column(name = "DESCRIPTION", length = 255)
 	@Getter
 	@Setter
 	private String description;
+
+	//	@Transient
+	//	@Getter
+	//	private ParseType configParseType;
+
+	public enum ParseType {
+		YAML, JSON, OTHER
+	}
+
+
+	//TO-DO Pretify ymlConfig
+	//	@JsonGetter("configParseType")
+	//	public Object getConfigParseTypeJson() {
+	//		getYmlConfigJson();
+	//		return configParseType;
+	//	}
+
+	//	@JsonGetter("ymlConfig")
+	//	public Object getYmlConfigJson() {
+	//		try {
+	//			configParseType = ymlConfig.startsWith("{") || ymlConfig.startsWith("[") ? ParseType.JSON : ParseType.YAML;
+	//			return new YAMLMapper().readTree(ymlConfig);
+	//		} catch (final Exception e) {
+	//			configParseType = ParseType.OTHER;
+	//			return ymlConfig;
+	//		}
+	//	}
+
+	//	@JsonSetter("ymlConfig")
+	//	public void setJsonJson(Object node) {
+	//		try {
+	//			if (node != null) {
+	//				if (configParseType == null) {
+	//					configParseType = ParseType.OTHER;
+	//				}
+	//				switch (configParseType) {
+	//				case JSON:
+	//					ymlConfig = new ObjectMapper().writeValueAsString(node);
+	//					break;
+	//				case YAML:
+	//					ymlConfig = new YAMLMapper().writeValueAsString(node);
+	//					break;
+	//				case OTHER:
+	//				default:
+	//					ymlConfig = (@NotNull String) node;
+	//					break;
+	//				}
+	//			}
+	//		} catch (final Exception e) {
+	//			ymlConfig = (@NotNull String) node;
+	//		}
+	//	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() + "_" + getId() + ".yaml";
+	}
 
 }

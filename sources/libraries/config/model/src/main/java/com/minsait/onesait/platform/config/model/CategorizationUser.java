@@ -25,9 +25,11 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -71,7 +73,9 @@ public class CategorizationUser extends AuditableEntity {
 	@Setter
 	private User user;
 	
-	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT default 0")
+	@Column(name = "ACTIVE", nullable = false)
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@NotNull
 	@Getter
 	@Setter

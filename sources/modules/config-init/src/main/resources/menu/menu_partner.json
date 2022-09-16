@@ -25,9 +25,9 @@
 				},
 				{
 					"title": {
-						"EN": "My Ontologies",
-						"ES": "Mis Ontologías",
-						"FR": "Mes Ontologies"
+						"EN": "My Entities",
+						"ES": "Mis Entidades",
+						"FR": "Mes Entités"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
@@ -89,7 +89,7 @@
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta Consultas",
+						"ES": "Herramienta de Consultas",
 						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",

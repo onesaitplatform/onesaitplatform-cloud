@@ -103,17 +103,17 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"	value="Remove" th:onclick="'deleteRestPlannerConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+									<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"	value="Remove" th:attr="onclick='deleteRestPlannerConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 									<span class="sep"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button"class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel"	th:onclick="'javascript:navigateUrl(\'' + @{/restplanner/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button id="cancelBtn" type="button"class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel"	th:attr="onclick='javascript:navigateUrl(\'' + @{/restplanner/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 		
 									<span class="sep no-border"></span>
 										
 									<!-- UPDATE -->
-									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit" value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/restplanner/update/${restplanner.id}/|} + '\');'"><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit" value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/restplanner/update/${restplanner.id}/|} + '\');'"><span th:text="#{gen.editBtn}"> Edit </span></button>
 								</div>
 							</div>
 						</div>
@@ -126,13 +126,13 @@
 							</div>
 						</div>					
 						<div class="row main">
-							<div class="col-md-2 col-sm-6 col-xs-12">		
+							<div class="col-md-4 col-sm-4 col-xs-12">		
 								<div class="form-group">
 									<label class="control-label"><span th:text="#{gen.identification} + ':'">Identification</span> </label>
 									<p class="form-control-static-block " th:text="*{identification}" >  </p>
 								</div>
 							</div>				
-							<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="col-md-8 col-sm-8 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{gen.description}">Description </label>
 									<p class="form-control-static-block " th:text="*{description}"></p>
@@ -140,6 +140,29 @@
 							</div>
 						</div>
 						<div class="row main">
+							<div class="col-md-4 col-sm-4 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{restplanner.method} + ':'">HTTP Method</span> </label>
+									<p class="form-control-static-block " th:text="*{method}" ></p>
+								</div>
+							</div>
+							<div class="col-md-8 col-sm-8 col-xs-12">
+								<div class="form-group">
+									<label class="control-label"><span th:text="#{restplanner.url} + ':'">URL</span> </label>
+									<p class="form-control-static-block " th:text="*{url}" ></p>
+								</div>
+							</div>												
+						</div>		
+						<div class="row main">
+							<div class="col-md-4 col-sm-4 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{ontology.kpi.cron} + ':'">CRON</label>
+									<div class="form-group">
+										<p class="form-control-static-block " th:text="*{cron}" ></p>
+									</div>	
+									<span id="cronerror" class="help-block font-red hide" th:text="#{ontology.name.error}"><i class="la la-warning"></i></span>
+								</div>
+							</div>	
 							<div class="col-md-2 col-sm-4 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{ontology.kpi.date.from} + ':'">DATE FROM</label>
@@ -156,72 +179,37 @@
 									</div>	
 								</div>
 							</div>
-							<div class="col-md-4 col-sm-4 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{ontology.kpi.cron} + ':'">CRON</label>
-									<div class="form-group">
-										<p class="form-control-static-block " th:text="*{cron}" ></p>
-									</div>	
-									<span id="cronerror" class="help-block font-red hide" th:text="#{ontology.name.error}"><i class="la la-warning"></i></span>
-								</div>
-							</div>	
-						</div>					
-						<div class="row main">
-							<div class="col-md-2 col-sm-2 col-xs-12">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{restplanner.method} + ':'">HTTP Method</span> </label>
-									<p class="form-control-static-block " th:text="*{method}" ></p>
-								</div>
+						</div>
+						
+						<div class="row main pageCreateHeader no-margin-left padding-left-10 no-margin-right">
+							<label class="no-padding-bottom" th:text=="'+'"></label>
+							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{restplanner.headers}"></label>
+						</div>
+						
+						<div class="row main borderPanel no-margin-left margin-right-10 no-margin-right">
+							<div class="col-md-12 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(12vh); max-height: calc(12vh); overflow:auto">
+								<table id="headersList" class="table table-hover" dt:table="true">
+									<thead>
+										<tr class="cabecera-tabla">
+											<th class="titulo-columnas" th:text="#{restplanner.headers.key}">Key</th>
+											<th class="titulo-columnas" th:text="#{restplanner.headers.value}">Value</th>
+										</tr>
+									</thead>
+									<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+									</tbody>
+								</table>	
 							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{restplanner.url} + ':'">URL</span> </label>
-									<p class="form-control-static-block " th:text="*{url}" ></p>
-								</div>
-							</div>												
-						</div>						
+						</div>
+
 						<div class="row main">
-							<div id="OtherHeaders">
-								<!-- HEADERS LIST -->
-								<div class="col-md-10" id="headers_div">
-									<label class="control-label"><span id="schema_title" th:text="#{restplanner.headers}"> Headers</span></label>		
-									<div id="contenedor-tabla-outside" class="contiene margin-bottom-20">																						
-										<div>
-											<!-- DATATABLE DANDELION CONF.  -->												
-											<table id="headersList" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas" th:text="#{restplanner.headers.key}">Key</th>
-														<th class="titulo-columnas" th:text="#{restplanner.headers.value}">Value</th>
-													</tr>
-												</thead>
-												<tbody th:remove="all-but-first">
-												</tbody>
-											</table>	
-											<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{restplanner.headers.key}"> Key </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{restplanner.headers.value}"> Value </label>
-													</span>
-												</div>
-											</div>																						
-										</div>
-									</div>											
-								</div>
+							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+								<span th:text="#{restplanner.body}">Body</span>
 							</div>
-						</div>					
+						</div>	
+			
 						<div class="row">
-							<div class="col-md-10">
-								<div class="form-group">
-									<label class="control-label" th:text="#{restplanner.body}">Body</label>											
-									<textarea id="body" name="body"  th:field="*{body}" class="form-control"></textarea>
-							 	</div>
+							<div class="col-md-12">							
+								<textarea id="body" name="body"  th:field="*{body}" class="form-control"></textarea>
 							</div>
 						</div>					
 					</div><!-- END MAIN ROW -->
@@ -295,7 +283,7 @@
 		extractKeysValues([[${restplanner.headers}]]);
 
 		//DATATABLE 
-		var oTable = $('#headersList').DataTable();
+/* 		var oTable = $('#headersList').DataTable();
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
@@ -313,7 +301,7 @@
 		$('#filtering').removeClass('hide');
 		
 		// INIT row selection
-		handleSingleSelection('headersList');
+		handleSingleSelection('headersList'); */
 	});
 	
 	$( document ).ready(function() {
@@ -388,8 +376,8 @@
 			headKey=headArr[i].split(':')[0];
 			headValue=headArr[i].substring(headArr[i].indexOf(':')+1);
 			headersNames.push(headKey);
-			headersValues.push(headValue);
-			$("#headersList tbody").append('<tr id="header_'+headKey+'" pages:paginate="10"></tr>');
+			headersValues.push(headValue);  
+			$("#headersList tbody").append('<tr id="header_'+headKey+'" style="height:32px;" pages:paginate="10"></tr>');
 			$("#header_"+headKey).append('<td style="word-wrap: break-word;" class="text-left no-wrap " value="' + headKey + '" id="' + headKey + '">' + headKey +'</td>');
 			$("#header_"+headKey).append('<td style="word-wrap: break-word;" class="text-left no-wrap " value="' + headValue + '" id="value_' + headKey + '">' + headValue +'</td>');
 			$("#headers_div").show();

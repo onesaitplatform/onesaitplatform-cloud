@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -51,6 +52,7 @@ import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
+import com.minsait.onesait.platform.config.repository.LineageRelationsRepository;
 import com.minsait.onesait.platform.config.repository.OPResourceRepository;
 import com.minsait.onesait.platform.config.repository.OntologyDataAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
@@ -126,10 +128,12 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private OPResourceRepository resourceRepository;
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private GadgetDatasourceRepository gadgetDatasourceRepository;
 	@Autowired
+	@Lazy
 	private GadgetDatasourceService gadgetDatasourceService;
 	@Autowired
 	private GadgetMeasureRepository gadgetMeasureRepository;
@@ -153,6 +157,8 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	private AppUserRepository appUserRepository;
 	@Autowired
 	private DroolsRuleRepository droolsRuleRepository;
+	@Autowired
+	private LineageRelationsRepository lineageRelationsRepository;
 
 	@Override
 	public void deleteOntology(String id, String userId) {
@@ -201,7 +207,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 			}
 			if (ontologyRestRepository.findByOntologyId(ontology) != null) {
 				ontologyRestSecurityRepository
-						.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
+				.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
 			}
 
 			if (!droolsRuleRepository.findBySourceOntologyOrTargetOntology(ontology.getIdentification()).isEmpty()) {
@@ -209,6 +215,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 					droolsRuleRepository.delete(a);
 				});
 			}
+
 			gadgetDatasourceRepository.findByOntology(ontology).forEach(g -> {
 				deleteGadgetDataSource(g.getId(), userId);
 			});
@@ -376,6 +383,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Override
 	public void deleteUser(String userId) {
 		try {
+			lineageRelationsRepository.deleteByUser(userId);
 			appUserRepository.deleteByUserId(userId);
 			userRepository.deleteByUserId(userId);
 			invalidateUserTokens(userId);

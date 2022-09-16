@@ -1,0 +1,48 @@
+server:
+   port: 8086
+   servlet.contextPath: /serverless-manager
+
+onesaitplatform:
+   api-key: 52bd41e41c2c4b919ace6f43560a3d03
+   serverless:
+     url: https://development.onesaitplatform.com/fn
+   controlpanel:
+     url: http://localhost:18000/controlpanel
+   authentication:
+      oauth:
+        client:
+            clientId: onesaitplatform
+            clientSecret: onesaitplatform
+            accessTokenUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/token
+            userAuthorizationUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/auth?scope=openid
+            checkTokenEndpointUrl: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect
+            useCurrentUri: false
+            preEstablishedRedirectUri: http://localhost:18000/controlpanel/login
+        resource:
+            userInfoUri: http://localhost:8080/auth/realms/onesaitplatform/protocol/openid-connect/userinfo
+
+management.endpoints.web.exposure.include: "*"
+management.endpoint.health.show-details: always
+
+spring:
+   jpa:
+      database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+      properties:
+        hibernate:
+          format_sql: false
+          show_sql: false
+      hibernate:
+         ddl-auto: update
+         naming:
+            implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_serverless?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: changeIt!
+
+logging:
+   level:
+      com.minsait: INFO
+      org.springframework: INFO

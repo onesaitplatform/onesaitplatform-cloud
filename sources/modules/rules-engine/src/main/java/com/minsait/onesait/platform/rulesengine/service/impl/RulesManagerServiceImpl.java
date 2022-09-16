@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.hazelcast.core.ITopic;
+import com.hazelcast.topic.ITopic;
 import com.minsait.onesait.platform.commons.model.HazelcastMessageNotification;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleObject;

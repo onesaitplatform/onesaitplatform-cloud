@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.user;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -21,11 +23,13 @@ import java.util.Random;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +65,10 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.mail.MailService;
+import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -89,21 +95,37 @@ public class UserController {
 	@Qualifier("cachePendingRegistryUsers")
 	private Map<String, UserPendingValidation> cachePendingRegistryUsers;
 
+	@Autowired()
+	@Qualifier("cacheResetPasswordUsers")
+	private Map<String, String> cacheResetPasswordUsers;
+
+	@Autowired()
+	@Qualifier("cachePasswordChangedByAdministrator")
+	private Map<String, UserPendingShowPassword> cachePasswordChangedByAdministrator;
+
+	@Autowired
+	private IntegrationResourcesService resourcesService;
+
 	@Autowired
 	private MultitenancyService multitenancyService;
 
 	@Autowired
 	private ConfigurationService configurationService;
 
-	@Value("${onesaitplatform.user.registry.validation.url:http://localhost:18000/controlpanel/users/validateNewUser/}")
+	@Value("${onesaitplatform.user.registry.validation.url:http://localhost:18000/controlpanel/users/validateNewUserFromLogin/}")
 	private String validationUrlNewUser;
 
 	@Value("${onesaitplatform.user.reset.validation.url:http://localhost:18000/controlpanel/users/validateResetPassword/}")
-	private String validationUrlResetPassword;
+	private String resetPasswordUrl;
 
-	@Value("${onesaitplatform.password.pattern}")
-	private String passwordPattern;
+	@Value("${onesaitplatform.user.password.generated.url:http://localhost:18000/controlpanel/users/showGeneratedCredentials/}")
+	private String passworGeneratedByAdministratordUrl;
 
+	
+	@Value("${onesaitplatform.multitenancy.enabled}")
+	private boolean isMultitenantEnabled;
+
+	
 	private static final String REDIRECT_USER_LIST = "redirect:/users/list";
 	private static final String ERROR_403 = "error/403";
 	private static final String REDIRECT_USER_CREATE = "redirect:/users/create";
@@ -115,13 +137,20 @@ public class UserController {
 	private static final String REDIRECT_LOGIN = "redirect:/login";
 	private static final String DOES_NOT_EXIST = "\" does not exist";
 	private static final String USER_STR = "User \"";
+	private static final String USERS_CONSTANT = "users";
+	private static final String PASS_CONSTANT = "passwordPattern";
+	private static final String VALIDATION_ID_CONSTANT = "validationId";
+	private static final String ACTION_CONSTANT = "action";
+	private static final String CREDENTIALS_CONSTANT = "credentials";
+	private static final String MESSAGE_CONSTANT = "message";
+	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createForm(Model model) {
 
 		model.addAttribute("user", new User());
-		model.addAttribute("passwordPattern", passwordPattern);
+		model.addAttribute("passwordPattern", getPasswordPattern());
 		model.addAttribute("roleTypes", userService.getAllRoles());
 		model.addAttribute("tenants", multitenancyService.getTenantsForCurrentVertical());
 		return "users/create";
@@ -144,7 +173,7 @@ public class UserController {
 		log.info("Hard deleting user \"{}\"", id);
 		try {
 			utils.deactivateSessions(id);
-            operations.deleteAuditOntology(id);
+			operations.deleteAuditOntology(id);
 			userService.hardDeleteUser(id);
 		} catch (final Exception e) {
 			log.error("Error deleting user \"{}\"", id);
@@ -171,7 +200,7 @@ public class UserController {
 			return REDIRECT_USER_CREATE;
 		} else {
 			model.addAttribute("user", user);
-			model.addAttribute("passwordPattern", passwordPattern);
+			model.addAttribute("passwordPattern", getPasswordPattern());
 		}
 		return "users/create";
 	}
@@ -244,7 +273,11 @@ public class UserController {
 		final String repeatPass = request.getParameter("repeatpasswordbox");
 
 		if (bindingResult.hasErrors()) {
-			log.debug("Some user properties missing");
+			log.error("Some user properties missing: ");
+			bindingResult.getAllErrors().forEach(error->{
+				log.error(error.getDefaultMessage());	
+			});
+			
 
 			return "redirect:/users/update/" + user.getUserId() + "/" + bool;
 		}
@@ -271,40 +304,35 @@ public class UserController {
 						throw new UserServiceException("Password not valid because it has already been used before");
 					}
 					userService.updatePassword(user);
+					userService.updateUser(user);
 					if (utils.isAdministrator()) {
-						final String defaultMessage = "Your password has been changed. Your new password for onesait Platform: ";
-						final String emailMessage = utils.getMessage("user.update.password.email", defaultMessage)
-								.concat(" " + newPass);
-						try {
-							mailService.sendMail(user.getEmail(), emailMessage, emailMessage);
-
-						} catch (final Exception e) {
-							log.warn("Problem sending mail on update User ", e);
-						}
+						this.sendShowCredentialsMail(user.getEmail(), newPass, false);
 
 						if (!utils.getUserId().equals(user.getUserId())) {
 							utils.addRedirectInfoMessage("user.update.password.admin", redirect);
 							return REDIRECT_USER_SHOW + user.getUserId() + "/";
 						}
-
 					}
 				} else {
 					utils.addRedirectMessage("user.update.error.password", redirect);
 					return REDIRECT_USER_SHOW + user.getUserId() + "/";
 				}
 			}
-			if (utils.isAdministrator() && !StringUtils.isEmpty(tenant)) {
+			
+			if (utils.isAdministrator() && isMultitenantEnabled && !StringUtils.isEmpty(tenant)) {
 				multitenancyService.changeUserTenant(user.getUserId(), tenant);
 			}
-			userService.updateUser(user);
-		} catch (final RuntimeException e) {
-			log.debug("Cannot update user");
+			if (utils.isAdministrator()) {
+				userService.updateUser(user);
+			}
+			
+		} catch (final Exception e) {
+			log.error("Cannot update user", e);
 			utils.addRedirectException(e, redirect);
 			return "redirect:/users/update/".concat(id).concat("/").concat(String.valueOf(bool));
 		}
 		// utils.addRedirectMessage("user.update.success", redirect);
 		return REDIRECT_USER_SHOW + user.getUserId() + "/";
-
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -373,14 +401,13 @@ public class UserController {
 			roleType = null;
 		}
 
-        model.addAttribute("roleTypes", userService.getAllRoles());
-        
+		model.addAttribute("roleTypes", userService.getAllRoles());
+
 		if (userId == null && email == null && fullName == null && active == null && roleType == null) {
 			log.debug("No params for filtering, loading all users");
-			if(userService.countUsers() < 200L) {
+			if (userService.countUsers() < 200L) {
 				model.addAttribute("users", userService.getAllUsersList());
 			}
-
 
 		} else {
 			log.debug("Params detected, filtering users...");
@@ -486,15 +513,31 @@ public class UserController {
 						userPendingValidation.setUser(user);
 
 						final String defaultTitle = "[Onesait Plaform] New Account";
-						final String defaultMessage = "To complete your registry in Onesait Plaform, please follow this link:";
+						final String defaultMessage = "To complete your registry in Onesait Plaform, click in the link|Register User|In case of not being redirected, please copy and paste this url in your browser|If after 10 minutes you don't activate your user, it will be deleted";
 
 						final String emailTitle = utils.getMessage("user.create.mail.title", defaultTitle);
 						String emailMessage = utils.getMessage("user.create.mail.body", defaultMessage);
 
-						emailMessage = emailMessage.concat(" ").concat(validationUrlNewUser).concat(temporalUuid);
+						String[] emailParts = emailMessage.split("\\|");
+
+						String validationUrl = validationUrlNewUser.concat(temporalUuid);
+
+						String htmlText = "<html><body>"
+								+ "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>" + "<div>"
+								+ emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationUrl + "'>"
+								+ emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>"
+								+ "<div><strong>" + validationUrl + "</strong></div>" + "<br/>" + "<div>"
+								+ emailParts[3] + "</div>" + "</body></html>";
+
+						File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
+
+						HtmlFileAttachment demoImg = new HtmlFileAttachment();
+						demoImg.setFile(imgOnesaitPlatform);
+						demoImg.setFileKey("onesaitplatformimg");
 
 						log.info("Send email to: {} in order to register new user", user.getEmail());
-						mailService.sendMail(user.getEmail(), emailTitle, emailMessage);
+
+						mailService.sendConfirmationMailMessage(user.getEmail(), emailTitle, htmlText, demoImg);
 
 						cachePendingRegistryUsers.put(temporalUuid, userPendingValidation);
 
@@ -526,8 +569,31 @@ public class UserController {
 
 	}
 
-	@GetMapping(value = "/validateNewUser/{uuid}")
-	public String validateUser(@PathVariable(name = "uuid") String uuid, RedirectAttributes redirectAttributes) {
+	@GetMapping(value = "/validateNewUserFromLogin/{uuid}")
+	public String validateUser(@PathVariable(name = "uuid") String uuid, HttpServletRequest request,
+			HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
+		log.info("Received request to validate new user");
+
+		final UserPendingValidation userPendingValidation = cachePendingRegistryUsers.get(uuid);
+
+		if (null == userPendingValidation) {// Expired
+			log.debug("Link to reset password is expired");
+			utils.addRedirectMessage("user.create.expired", redirectAttributes);
+			return REDIRECT_LOGIN;
+		}
+
+		model.addAttribute(USERS_CONSTANT, new User());
+		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(VALIDATION_ID_CONSTANT, uuid);
+		model.addAttribute(ACTION_CONSTANT, "createNewUserFromLogin");
+
+		return "users/setPassword";
+
+	}
+
+	@PostMapping(value = "/createNewUserFromLogin")
+	public String createNewUserFromLogin(@RequestParam(required = false, name = "validationId") String uuid,
+			@ModelAttribute User user, Model model, RedirectAttributes redirectAttributes) {
 		log.info("Received request to validate new user");
 
 		final UserPendingValidation userPendingValidation = cachePendingRegistryUsers.get(uuid);
@@ -539,17 +605,32 @@ public class UserController {
 			}
 
 			final String nameRole = userPendingValidation.getRoleName();
-			final User user = userPendingValidation.getUser();
+			final User firstFormUser = userPendingValidation.getUser();
+
+			if (user.getPassword() == null || user.getPassword().trim().equals("")
+					|| !utils.paswordValidation(user.getPassword())) {
+				log.info("Password not valid because does not apply the pattern");
+				utils.addRedirectMessage("login.pattern.password", redirectAttributes);
+
+				model.addAttribute(USERS_CONSTANT, new User());
+				model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+				model.addAttribute(VALIDATION_ID_CONSTANT, uuid);
+				model.addAttribute(ACTION_CONSTANT, "resetPasswordFromLogin");
+				return "redirect:/users/validateResetPassword/" + uuid;
+
+			}
+
+			firstFormUser.setPassword(user.getPassword());
 
 			if (nameRole.equalsIgnoreCase("user")) {
-				userService.registerRoleUser(user);
-				operations.createPostOperationsUser(user);
-				operations.createPostOntologyUser(user);
+				userService.registerRoleUser(firstFormUser);
+				operations.createPostOperationsUser(firstFormUser);
+				operations.createPostOntologyUser(firstFormUser);
 
 			} else {
-				userService.registerRoleDeveloper(user);
-				operations.createPostOperationsUser(user);
-				operations.createPostOntologyUser(user);
+				userService.registerRoleDeveloper(firstFormUser);
+				operations.createPostOperationsUser(firstFormUser);
+				operations.createPostOntologyUser(firstFormUser);
 
 			}
 
@@ -560,11 +641,11 @@ public class UserController {
 			cachePendingRegistryUsers.remove(uuid);
 		}
 		return REDIRECT_LOGIN;
-
 	}
-	
+
 	@GetMapping(value = "/deactivateUser/{userId}")
-	public String deactivateUser(Model model, RedirectAttributes redirect, @PathVariable(name = "userId") String userId) {
+	public String deactivateUser(Model model, RedirectAttributes redirect,
+			@PathVariable(name = "userId") String userId) {
 
 		try {
 			if (!utils.isAdministrator() && utils.getUserId().equals(userId)
@@ -573,13 +654,13 @@ public class UserController {
 				utils.deactivateSessions(userId);
 				userService.deleteUser(userId);
 			}
-			
+
 			if (utils.isAdministrator()) {
 				return REDIRECT_USER_LIST;
 			} else {
 				return "redirect:/logout";
 			}
-			
+
 		} catch (final UserServiceException e) {
 			log.error("Cannot deactivatea user", e);
 			utils.addRedirectMessage("Cannot deactivatea user", redirect);
@@ -628,47 +709,151 @@ public class UserController {
 			utils.addRedirectMessage("user.error.mail", redirectAttributes);
 		} else {
 
-			final String upperCase = String.valueOf((char) (new Random().nextInt(26) + 'a')).toUpperCase();
-			final String newPassword = upperCase + UUID.randomUUID().toString().substring(0, 10) + "$";
-			user.setPassword(newPassword);
-			userService.updatePassword(user);
-			multitenancyService.setResetPass(user.getUserId());
-			log.info("Send new password to user by email {}", user.getEmail());
+			boolean inFlight = false;
+			for (final String cachedUserIdentifier : cacheResetPasswordUsers.values()) {
+				User currentUser = userService.getUserByIdentification(cachedUserIdentifier);
 
+				if (currentUser != null && currentUser.getEmail().equals(user.getEmail())) {
+					inFlight = true;
+				}
+			}
+
+			if (!inFlight) {
+
+				final String resetIdentifier = UUID.randomUUID().toString();
+
+				final String defaultTitle = "[Onesait Plaform] Reset Password";
+
+				final String defaultMessage = "To reset your password in Onesait Plaform, click in the link|Reset Password|In case of not being redirected, please copy and paste this url in your browser|If of you have not requested this operation, please ignore this message. This link will be available 10 minutes.";
+
+				final String emailTitle = utils.getMessage("user.reset.mail.title", defaultTitle);
+				String emailMessage = utils.getMessage("user.reset.mail.body", defaultMessage);
+
+				String[] emailParts = emailMessage.split("\\|");
+
+				String validationResetPasswordUrl = resetPasswordUrl.concat(resetIdentifier);
+
+				String htmlText = "<html><body>"
+						+ "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>" + "<div>"
+						+ emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationResetPasswordUrl + "'>"
+						+ emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>" + "<div><strong>"
+						+ validationResetPasswordUrl + "</strong></div>" + "<br/>" + "<div>" + emailParts[3] + "</div>"
+						+ "</body></html>";
+
+				HtmlFileAttachment demoImg = new HtmlFileAttachment();
+
+				try {
+					File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
+
+					demoImg.setFile(imgOnesaitPlatform);
+					demoImg.setFileKey("onesaitplatformimg");
+
+				} catch (IOException e) {
+					log.warn("Image could not be attached to mail", e);
+				}
+
+				log.info("Send email to: {} in order to register new user", user.getEmail());
+
+				try {
+					mailService.sendConfirmationMailMessage(user.getEmail(), emailTitle, htmlText, demoImg);
+					cacheResetPasswordUsers.put(resetIdentifier, user.getUserId());
+					utils.addRedirectMessage("user.reset.mail.sended", redirectAttributes);
+
+				} catch (Exception e) {
+					log.error("Error sending message", e);
+					utils.addRedirectMessage("login.error.email.fail", redirectAttributes);
+				}
+			} else {
+				utils.addRedirectMessage("user.reset.mail.inflight", redirectAttributes);
+			}
+
+		}
+
+		return REDIRECT_LOGIN;
+	}
+
+	@GetMapping(value = "/validateResetPassword/{uuid}")
+	public String validateResetPassword(@PathVariable(name = "uuid") String uuid, HttpServletRequest request,
+			HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
+		log.info("Received request to validate new user");
+
+		final String userPendingReset = cacheResetPasswordUsers.get(uuid);
+
+		if (null == userPendingReset) {// Expired
+			log.debug("Link to reset password is expired");
+			utils.addRedirectMessage("user.create.expired", redirectAttributes);
+			return REDIRECT_LOGIN;
+		}
+		model.addAttribute(USERS_CONSTANT, new User());
+		model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+		model.addAttribute(VALIDATION_ID_CONSTANT, uuid);
+		model.addAttribute(ACTION_CONSTANT, "resetPasswordFromLogin");
+
+		return "users/setPassword";
+
+	}
+
+	@PostMapping(value = "/resetPasswordFromLogin")
+	public String resetPasswordFromLogin(@RequestParam(required = false, name = "validationId") String uuid,
+			@ModelAttribute User user, Model model, RedirectAttributes redirectAttributes) {
+
+		log.info("Received request to reset password for validationId: {}", uuid);
+
+		final String userPendingResetPassword = cacheResetPasswordUsers.get(uuid);
+
+		if (null == userPendingResetPassword) {// Expired
+			log.debug("Link to reset password is expired");
+			utils.addRedirectMessage("user.create.expired", redirectAttributes);
+			return REDIRECT_LOGIN;
+		}
+
+		final User userToResetPassword = userService.getUserByIdentification(userPendingResetPassword);
+
+		if (userToResetPassword == null) {
+			log.debug("Mail invalid");
+			utils.addRedirectMessage("user.error.mail", redirectAttributes);
+		} else {
 			final Configuration configuration = configurationService
 					.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
-
 			@SuppressWarnings("unchecked")
 			final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
-			.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
-			final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
+					.fromYaml(configuration.getYmlConfig()).get("Authentication");
+			final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig.get("numberLastEntriesToCheck");
 
-			final StringBuilder body = new StringBuilder();
-			body.append(utils.getMessage("user.new.pass.for.user", "Your new password for user: "));
-			body.append(user.getUserId());
-			body.append(System.lineSeparator());
-			body.append(utils.getMessage("user.new.pass.for.user.is", " is : "));
-			body.append(" ");
-			body.append(newPassword);
-			body.append(System.lineSeparator());
-			body.append(utils.getMessage("user.new.pass.for.user.time.for.update.1", " You have "));
-			body.append(" ");
-			body.append(hours);
-			body.append(" ");
-			body.append(utils.getMessage("user.new.pass.for.user.time.for.update.2",
-					" hours to change this password but your user account will be blocked and you must contact the administrator. "));
-			try {
-				mailService.sendMail(user.getEmail(),
-						utils.getMessage("user.new.pass.title.message", "[Onesait Plaform] Reset Password"),
-						body.toString());
-			} catch (final Exception e) {
-				utils.addRedirectMessage("user.error.mailservice", redirectAttributes);
-				return REDIRECT_LOGIN;
+			if (user.getPassword() == null || user.getPassword().trim().equals("")
+					|| !utils.paswordValidation(user.getPassword())) {
+				log.info("Password not valid because does not apply the pattern");
+				utils.addRedirectMessage("login.pattern.password", redirectAttributes);
+
+				model.addAttribute(USERS_CONSTANT, new User());
+				model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+				model.addAttribute(VALIDATION_ID_CONSTANT, uuid);
+				model.addAttribute(ACTION_CONSTANT, "resetPasswordFromLogin");
+				return "redirect:/users/validateResetPassword/" + uuid;
+
+			} else if (!multitenancyService.isValidPass(userToResetPassword.getUserId(), user.getPassword(),
+					numberLastEntriesToCheck)) {
+				log.info("Password not valid because it has already been used before");
+				utils.addRedirectMessage("user.update.error.reuse.password", redirectAttributes);
+
+				model.addAttribute(USERS_CONSTANT, new User());
+				model.addAttribute(PASS_CONSTANT, getPasswordPattern());
+				model.addAttribute(VALIDATION_ID_CONSTANT, uuid);
+				model.addAttribute(ACTION_CONSTANT, "resetPasswordFromLogin");
+				return "redirect:/users/validateResetPassword/" + uuid;
+
+			} else {
+				userToResetPassword.setPassword(user.getPassword());
+				userService.updatePassword(userToResetPassword);
+				utils.addRedirectMessage("user.reset.success", redirectAttributes);
+				log.debug("Pass reset");
+
+				cacheResetPasswordUsers.remove(uuid);
 			}
-			utils.addRedirectMessage("user.reset.success", redirectAttributes);
-			log.debug("Pass reset");
 		}
+
 		return REDIRECT_LOGIN;
+
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -688,40 +873,108 @@ public class UserController {
 			multitenancyService.setResetPass(user.getUserId());
 			log.info("Send new password to user by email {}", user.getEmail());
 
-			final Configuration configuration = configurationService
-					.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
-
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
-			.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
-			final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
-
-			final StringBuilder body = new StringBuilder();
-			body.append(utils.getMessage("user.new.pass.for.user", "Your new password for user: "));
-			body.append(user.getUserId());
-			body.append(System.lineSeparator());
-			body.append(utils.getMessage("user.new.pass.for.user.is", " is : "));
-			body.append(" ");
-			body.append(newPassword);
-			body.append(System.lineSeparator());
-			body.append(utils.getMessage("user.new.pass.for.user.time.for.update.1", " You have "));
-			body.append(" ");
-			body.append(hours);
-			body.append(" ");
-			body.append(utils.getMessage("user.new.pass.for.user.time.for.update.2",
-					" hours to change this password but your user account will be blocked and you must contact the administrator. "));
 			try {
-				mailService.sendMail(user.getEmail(),
-						utils.getMessage("user.new.pass.title.message", "[Onesait Plaform] Reset Password"),
-						body.toString());
-			} catch (final Exception e) {
+				this.sendShowCredentialsMail(user.getEmail(), newPassword, true);
+			} catch (Exception e) {
 				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-
 			}
-			log.debug("Pass reset");
+
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
 
+	}
+
+	private void sendShowCredentialsMail(String email, String newPassword, boolean expiresPassword) throws Exception {
+
+		final String showIdentifier = UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString() + "-"
+				+ UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString() + "-"
+				+ UUID.randomUUID().toString();
+
+		final String defaultTitle = "[Onesait Plaform] Reset Password";
+		final String defaultMessage = "An administrator of Onesait Plaform modified your password, click in the link to get your new password|Get Password|In case of not being redirected, please copy and paste this url in your browser|This link will be available 2 hours";
+
+		final String emailTitle = utils.getMessage("user.reset.mail.title", defaultTitle);
+		String emailMessage = utils.getMessage("user.reset.administrator.mail.body", defaultMessage);
+
+		String[] emailParts = emailMessage.split("\\|");
+
+		String validationResetPasswordUrl = passworGeneratedByAdministratordUrl.concat(showIdentifier);
+
+		String htmlText = "<html><body>" + "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>"
+				+ "<div>" + emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationResetPasswordUrl
+				+ "'>" + emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>" + "<div><strong>"
+				+ validationResetPasswordUrl + "</strong></div>" + "<br/>" + "<div>" + emailParts[3] + "</div>"
+				+ "</body></html>";
+
+		HtmlFileAttachment demoImg = new HtmlFileAttachment();
+
+		try {
+			File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
+
+			demoImg.setFile(imgOnesaitPlatform);
+			demoImg.setFileKey("onesaitplatformimg");
+
+		} catch (IOException e) {
+			log.warn("Image could not be attached to mail", e);
+		}
+
+		try {
+			mailService.sendConfirmationMailMessage(email, emailTitle, htmlText, demoImg);
+
+			UserPendingShowPassword userPendingShowPassword = new UserPendingShowPassword();
+			userPendingShowPassword.setCredentials(newPassword);
+			userPendingShowPassword.setCredentialsExpires(expiresPassword);
+
+			this.cachePasswordChangedByAdministrator.put(showIdentifier, userPendingShowPassword);
+
+		} catch (Exception e) {
+			log.error("Error sending message", e);
+			throw e;
+		}
+
+		log.debug("Pass reset");
+	}
+
+	@GetMapping(value = "/showGeneratedCredentials/{uuid}")
+	public String showGeneratedCredentials(@PathVariable(name = "uuid") String uuid, HttpServletRequest request,
+			HttpServletResponse response, Model model, RedirectAttributes redirectAttributes) {
+		log.info("Received show password");
+
+		final UserPendingShowPassword userWithPasswordToshow = this.cachePasswordChangedByAdministrator.get(uuid);
+
+		if (null == userWithPasswordToshow) {// Expired
+			log.debug("Link to show password is expired");
+			utils.addRedirectMessage("user.reset.expired", redirectAttributes);
+
+		} else {
+			if (userWithPasswordToshow.isCredentialsExpires()) {
+				final Configuration configuration = configurationService
+						.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+
+				@SuppressWarnings("unchecked")
+				final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+						.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
+				final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
+
+				StringBuilder message = new StringBuilder();
+				message.append(utils.getMessage("user.new.pass.for.user.time.for.update.1", " You have "));
+				message.append(" ");
+				message.append(hours);
+				message.append(" ");
+				message.append(utils.getMessage("user.new.pass.for.user.time.for.update.2",
+						" hours to change this password or your user account will be blocked and you must contact the administrator. "));
+
+				model.addAttribute(MESSAGE_CONSTANT, message);
+			}
+			model.addAttribute(CREDENTIALS_CONSTANT, userWithPasswordToshow.getCredentials());
+		}
+
+		return "users/showGeneratedCredentials";
+
+	}
+
+	private String getPasswordPattern() {
+		return ((String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN));
 	}
 
 }

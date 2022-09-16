@@ -140,7 +140,7 @@
 							                            <td th:text="${token.createdAt}"></td>
 							                            <td class="text-left no-wrap"><span class="label bg-blue-sharp font-grey-carrara"><span th:text="${token.token}">tokenId</span></span></td>
 							                            <td class="icon text-center" style="white-space: nowrap">
-					                                        <span class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:calculateVersion(\'' + ${token.token} + '\');'"><i class="icon-delete"></i></span>                                                                                                                                                                         
+					                                        <span class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:attr="onclick='javascript:calculateVersion(\'' + ${token.token} + '\');'"><i class="icon-delete"></i></span>                                                                                                                                                                         
 							                           </td>
 							                        </tr>
 							                      </tbody>

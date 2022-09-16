@@ -17,13 +17,14 @@ package com.minsait.onesait.platform.config.services.flow;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.Flow;
+import com.minsait.onesait.platform.config.model.FlowDomain;
 
 public interface FlowService {
 
 	public List<Flow> getFlowByDomain(String domainIdentification);
 
-	public Flow createFlow(Flow flow);
-
 	public Flow getFlowByNodeRedFlowId(String nodeRedFlowId);
+
+	public Flow createFlow(Flow flow, FlowDomain domain);
 
 }

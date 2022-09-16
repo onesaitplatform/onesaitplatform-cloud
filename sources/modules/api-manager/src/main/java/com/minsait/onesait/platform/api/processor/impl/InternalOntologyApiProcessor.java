@@ -14,7 +14,9 @@
  */
 package com.minsait.onesait.platform.api.processor.impl;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 
+import com.apicatalog.jsonld.JsonLd;
+import com.apicatalog.jsonld.JsonLdError;
+import com.apicatalog.jsonld.document.Document;
+import com.apicatalog.jsonld.document.JsonDocument;
 import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
 import com.minsait.onesait.platform.api.cache.ApiCacheService;
 import com.minsait.onesait.platform.api.processor.ApiProcessor;
@@ -52,6 +58,7 @@ import com.minsait.onesait.platform.router.service.app.model.OperationModel.Quer
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
+import jakarta.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -76,11 +83,11 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 		final StopWatch watch = new StopWatch();
 		try {
 			final Api api = (Api) data.get(Constants.API);
-			if (api.getApicachetimeout() !=null) {
+			if (api.getApicachetimeout() != null) {
 				data = apiCacheService.getCache(data, api.getApicachetimeout());
 			}
 
-			if (data.get(Constants.OUTPUT)==null) {
+			if (data.get(Constants.OUTPUT) == null) {
 				watch.start();
 				data = processQuery(data);
 				watch.stop();
@@ -91,7 +98,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 				log.info("API PostProcess in {} ms", watch.getTotalTimeMillis());
 			}
 
-			if (api.getApicachetimeout() !=null) {
+			if (api.getApicachetimeout() != null) {
 				apiCacheService.putCache(data, api.getApicachetimeout());
 			}
 
@@ -105,7 +112,7 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 	}
 
 	@ApiManagerAuditable
-	private Map<String, Object> processQuery(Map<String, Object> data) throws JSONException {
+	private Map<String, Object> processQuery(Map<String, Object> data) throws JSONException, JsonLdError {
 
 		final Ontology ontology = (Ontology) data.get(Constants.ONTOLOGY);
 		final User user = (User) data.get(Constants.USER);
@@ -131,6 +138,24 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 			body = BODY == null ? "" : new String(BODY);
 		}
 
+		if (data.get(Constants.CONTENT_TYPE_INPUT).toString().equalsIgnoreCase("application/ld+json")) {
+			String context = ontology.getJsonLdContext();
+
+			Document documentJson = JsonDocument.of(new ByteArrayInputStream(body.getBytes()));
+			Document documentContext = JsonDocument.of(new ByteArrayInputStream(context.getBytes()));
+
+			JsonObject jsonObject = JsonLd.compact(documentJson, documentContext).compactToRelative(false).get();
+			JSONObject result = new JSONObject(jsonObject.toString());
+			result.remove("@type");
+			result.remove("@context");
+			for (Iterator iterator = result.keys(); iterator.hasNext();) {
+				String key = (String) iterator.next();
+				JSONObject internal = (JSONObject) result.get(key);
+				internal.remove("@type");
+			}
+			body = result.toString();
+		}
+
 		final OperationModel model = OperationModel
 				.builder(ontology.getIdentification(), OperationType.valueOf(operationType.name()), user.getUserId(),
 						OperationModel.Source.APIMANAGER)
@@ -154,7 +179,6 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 
 	}
 
-
 	private String getQueryMethod(String query) {
 		if (query.toLowerCase().indexOf("update") != -1) {
 			return "PUT";
@@ -167,9 +191,11 @@ public class InternalOntologyApiProcessor implements ApiProcessor {
 	private OperationType getOperationType(String method, String query) {
 		OperationType operationType = null;
 		if (method.equalsIgnoreCase(ApiOperation.Type.GET.name())) {
-			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().indexOf(".update(") !=-1) {
+			if (query.trim().toLowerCase().startsWith("update")
+					|| query.trim().toLowerCase().indexOf(".update(") != -1) {
 				operationType = OperationType.UPDATE;
-			} else if (query.trim().toLowerCase().startsWith("delete") || query.trim().toLowerCase().indexOf(".remove(") != -1) {
+			} else if (query.trim().toLowerCase().startsWith("delete")
+					|| query.trim().toLowerCase().indexOf(".remove(") != -1) {
 				operationType = OperationType.DELETE;
 			} else {
 				operationType = OperationType.QUERY;

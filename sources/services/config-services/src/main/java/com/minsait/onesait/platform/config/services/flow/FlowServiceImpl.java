@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Flow;
+import com.minsait.onesait.platform.config.model.FlowDomain;
+import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.FlowRepository;
 import com.minsait.onesait.platform.config.services.exceptions.FlowServiceException;
 
@@ -29,6 +31,9 @@ public class FlowServiceImpl implements FlowService {
 
 	@Autowired
 	private FlowRepository flowRepository;
+
+	@Autowired
+	private FlowDomainRepository flowDomainRepository;
 
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
@@ -39,11 +44,14 @@ public class FlowServiceImpl implements FlowService {
 	}
 
 	@Override
-	public Flow createFlow(Flow flow) {
-		Flow result = flowRepository.findByNodeRedFlowId(flow.getNodeRedFlowId());
+	public Flow createFlow(Flow flow, FlowDomain domain) {
+		final Flow result = flowRepository.findByNodeRedFlowId(flow.getNodeRedFlowId());
 		if (result == null) {
+			domain.getFlows().removeIf(f -> f.getIdentification().equals(flow.getIdentification()));
 			metricsManagerLogControlPanelFlowsCreation(flow.getFlowDomain().getUser().getUserId(), "OK");
-			return flowRepository.save(flow);
+			domain.getFlows().add(flow);
+			flowDomainRepository.save(domain);
+			return flow;
 		} else {
 			metricsManagerLogControlPanelFlowsCreation(flow.getFlowDomain().getUser().getUserId(), "KO");
 			throw new FlowServiceException("Flow already exists");

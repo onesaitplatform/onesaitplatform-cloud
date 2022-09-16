@@ -57,10 +57,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.ActionsDigitalTwinType;
 import com.minsait.onesait.platform.config.model.Api;
@@ -81,6 +82,7 @@ import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
+import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.MigrationData;
 import com.minsait.onesait.platform.config.model.MigrationData.DataType;
@@ -103,6 +105,7 @@ import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.MigrationDataRepository;
+import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.migration.DataFromDB;
 import com.minsait.onesait.platform.config.services.migration.ExportResult;
 import com.minsait.onesait.platform.config.services.migration.Instance;
@@ -120,7 +123,7 @@ import com.minsait.onesait.platform.controlpanel.rest.management.flowengine.Flow
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.NotebookManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.nodered.auth.exception.NoderedAuthException;
-import com.mongodb.util.JSON;
+import com.mongodb.BasicDBObject;
 
 import de.galan.verjson.core.IOReadException;
 import de.galan.verjson.core.NamespaceMismatchException;
@@ -170,6 +173,9 @@ public class MigrationController {
 	@Autowired
 	private MigrationDataRepository migrationDateRepository;
 
+	@Autowired
+	private BinaryFileService binaryFileService;
+
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	private static final String IMPORT_DATA_STR = "importData";
@@ -212,6 +218,7 @@ public class MigrationController {
 		model.addAttribute(CLASS_NAMES_STR, new ArrayList<String>());
 		model.addAttribute("selectedClasses", new SelectedClasses());
 		model.addAttribute("ontologies", ontologyService.getAllOntologiesForList(utils.getUserId(), null, null));
+		model.addAttribute("binaryFiles", binaryFileService.getAllFiles(userService.getUser(utils.getUserId())));
 		return MIGRATION_SHOW;
 	}
 
@@ -379,6 +386,12 @@ public class MigrationController {
 	public ResponseEntity<String> exportUsers(Model model, HttpServletResponse response, HttpServletRequest request,
 			@PathVariable("users") List<String> users)
 			throws IllegalArgumentException, IllegalAccessException, IOException {
+		if (users==null || users.isEmpty() || users.get(0).equals("null")) {
+			return new ResponseEntity<>(utils.getMessage("migration.export.select.user.error",
+					"Please select users to export."),
+					HttpStatus.FORBIDDEN);
+		}
+		
 		User loggedUser = userService.getUser(utils.getUserId());
 		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
 		Boolean status = checkExport();
@@ -429,6 +442,12 @@ public class MigrationController {
 	public ResponseEntity<String> exportProject(Model model, HttpServletResponse response, HttpServletRequest request,
 			@PathVariable("project") String project)
 			throws IllegalArgumentException, IllegalAccessException, IOException {
+		if (project==null || project.equals("null")) {
+			return new ResponseEntity<>(utils.getMessage("migration.export.select.project.error",
+					"Please select project to export."),
+					HttpStatus.FORBIDDEN);
+		}
+		
 		User loggedUser = userService.getUser(utils.getUserId());
 		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
 
@@ -518,6 +537,22 @@ public class MigrationController {
 			throws IOException {
 		JSONObject jsonBody = new JSONObject(body);
 		File file = migrationHelper.generateFiles(ontologies, jsonBody.getString("userMongo"),
+				jsonBody.getString("passwordMongo"));
+		final HttpHeaders respHeaders = new HttpHeaders();
+		respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		respHeaders.setContentDispositionFormData("attachment", file.getName());
+		respHeaders.setContentLength(file.length());
+		final InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
+		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
+	}
+
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PostMapping(value = "/exportFiles/{files}")
+	public ResponseEntity<InputStreamResource> exportFiles(Model model, HttpServletResponse response,
+			HttpServletRequest request, @PathVariable("files") List<String> files, @RequestBody String body)
+			throws IOException {
+		JSONObject jsonBody = new JSONObject(body);
+		File file = migrationHelper.generateBinaryFilesExport(files, jsonBody.getString("userMongo"),
 				jsonBody.getString("passwordMongo"));
 		final HttpHeaders respHeaders = new HttpHeaders();
 		respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -622,6 +657,7 @@ public class MigrationController {
 		sortedClazz.add(ClientPlatform.class);
 		sortedClazz.add(ClientPlatformInstance.class);
 		sortedClazz.add(Gadget.class);
+		sortedClazz.add(GadgetTemplate.class);
 		sortedClazz.add(GadgetMeasure.class);
 		sortedClazz.add(Dashboard.class);
 		sortedClazz.add(DigitalTwinType.class);
@@ -713,6 +749,7 @@ public class MigrationController {
 	private ExportResult exportDomain(ExportResult data, String token, String controlpanelUrl) {
 		// if data has FlowDomain.class then all domain data are exported too
 		Iterator<Serializable> iterator = data.getData().getInstances(FlowDomain.class).iterator();
+		ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getData().getInstanceData(FlowDomain.class, id);
@@ -725,15 +762,28 @@ public class MigrationController {
 						controlpanelUrl.concat("/api/flowengine/export/domain/" + obj.get(IDENTIFICATION).toString()),
 						HttpMethod.GET, entity, String.class);
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
-					obj.put(DOMAIN_DATA, JSON.parse(result.getBody()));
+					obj.put(DOMAIN_DATA, mapper.readValue(result.getBody(), JsonNode.class));
 				} else {
 					log.error("Error exporting domain data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 							result.getStatusCode().name());
-					obj.put(DOMAIN_DATA, JSON.parse("[]"));
+					obj.put(DOMAIN_DATA, mapper.readValue("[]", JsonNode.class));
 				}
 			} catch (NoderedAuthException e) {
 				log.warn("Domain are not started. {}", e.getMessage());
-				obj.put(DOMAIN_DATA, JSON.parse("[]"));
+				try {
+					obj.put(DOMAIN_DATA, mapper.readValue("[]", JsonNode.class));
+				} catch (IOException e1) {
+					log.error("Error parsing domain export result. DomainId: {} ", obj.get(IDENTIFICATION).toString(),
+							e);
+				}
+			} catch (IOException e) {
+				log.error("Error parsing domain export result. DomainId: {} ", obj.get(IDENTIFICATION).toString(), e);
+				try {
+					obj.put(DOMAIN_DATA, mapper.readValue("[]", JsonNode.class));
+				} catch (IOException e1) {
+					log.error("Error parsing domain export result. DomainId: {} ", obj.get(IDENTIFICATION).toString(),
+							e);
+				}
 			}
 		}
 		return data;
@@ -773,6 +823,7 @@ public class MigrationController {
 	private ExportResult exportNotebooks(ExportResult data, String token, String controlpanelUrl) {
 		// if data has Notebook.class then all notebooks data are exported too
 		Iterator<Serializable> iterator = data.getData().getInstances(Notebook.class).iterator();
+		ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getData().getInstanceData(Notebook.class, id);
@@ -784,12 +835,25 @@ public class MigrationController {
 			ResponseEntity<String> result = restTemplate.exchange(
 					controlpanelUrl.concat("/api/notebooks/export/" + obj.get(IDZEP).toString()), HttpMethod.GET,
 					entity, String.class);
-			if (result.getStatusCode().equals(HttpStatus.OK)) {
-				obj.put(NOTEBOOK_DATA, JSON.parse(result.getBody()));
-			} else {
-				log.error("Error exporting notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
-						result.getStatusCode().name());
-				obj.put(NOTEBOOK_DATA, JSON.parse("[]"));
+			try {
+				if (result.getStatusCode().equals(HttpStatus.OK)) {
+
+					obj.put(NOTEBOOK_DATA, mapper.readValue(result.getBody(), JsonNode.class));
+
+				} else {
+					log.error("Error exporting notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+							result.getStatusCode().name());
+					obj.put(NOTEBOOK_DATA, mapper.readValue("[]", JsonNode.class));
+				}
+
+			} catch (IOException e) {
+				log.error("Error parsing notebook export result. notebook: {} ", obj.get(IDENTIFICATION).toString(), e);
+				try {
+					obj.put(NOTEBOOK_DATA, mapper.readValue("[]", JsonNode.class));
+				} catch (IOException e1) {
+					log.error("Error parsing notebook export result. notebook: {} ", obj.get(IDENTIFICATION).toString(),
+							e);
+				}
 			}
 
 		}
@@ -851,11 +915,11 @@ public class MigrationController {
 					HttpMethod.POST, entity, String.class);
 
 			if (result.getStatusCode().equals(HttpStatus.OK)) {
-				obj.put(DATAFLOW_DATA, JSON.parse(result.getBody().toString()));
+				obj.put(DATAFLOW_DATA, BasicDBObject.parse(result.getBody().toString()));
 			} else {
 				log.error("Error exporting dataflow data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 						result.getStatusCode().name());
-				obj.put(DATAFLOW_DATA, JSON.parse("[]"));
+				obj.put(DATAFLOW_DATA, BasicDBObject.parse("[]"));
 			}
 
 		}

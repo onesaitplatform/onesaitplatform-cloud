@@ -164,24 +164,24 @@
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center" th:if="${instance.id}" >
-																	<span th:title="#{dataflow.instances.restart}" href="#" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.instances.restart}" th:onclick="'restartDataflow(event, \'' + ${instance.id} + '\');'"  ><i class="icon-reload"></i></span>
+																	<span th:title="#{dataflow.instances.restart}" href="#" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.instances.restart}" th:attr="onclick='restartDataflow(event, \'' + ${instance.id} + '\');'"  ><i class="icon-reload"></i></span>
 
-																	<span th:title="#{dataflow.instances.pipeline.manager}" th:onclick="'javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/ |} + '\');'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.instances.pipeline.manager}" ><i class="la la-stream font-hg"></i></span>
+																	<span th:title="#{dataflow.instances.pipeline.manager}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/ |} + '\');'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.instances.pipeline.manager}" ><i class="la la-stream font-hg"></i></span>
 
 																	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
-																			<span th:onclick="'javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/jvmMetrics |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.metrics}" ><i class="icon-monitoring"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.metrics}" >Metrics</span></span>
+																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/jvmMetrics |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.metrics}" ><i class="icon-monitoring"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.metrics}" >Metrics</span></span>
 																		</li>
 																		<li>
-																			<span th:onclick="'javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/logs |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.logs}" ><i class="icon-file"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.logs}" >Logs</span></span>
+																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/logs |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.logs}" ><i class="icon-file"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.logs}" >Logs</span></span>
 																		</li>
 																		<li>
-																			<span th:onclick="'javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/configuration |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.configuration}" ><i class="icon-configuration"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.configuration}" >Configuration</span></span>
+																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/configuration |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.configuration}" ><i class="icon-configuration"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.configuration}" >Configuration</span></span>
 																		</li>
 																		<li>
-																			<span th:onclick="'javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/packageManager |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.package.manager}" ><i class="icon-gift"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.package.manager}" >Package Manager</span></span>
+																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/packageManager |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.package.manager}" ><i class="icon-gift"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.package.manager}" >Package Manager</span></span>
 																		</li>
 																	</ul>
 																	</span>
@@ -189,8 +189,8 @@
 															</td>
 															<td class="icon text-center">
 																<div class="grupo-iconos text-center" th:if="${instance.id}" >
-																	<span th:title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/dataflow/instances/instance/${instance.id}/|} + '\');'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" ><i class="icon-edit"></i></span>
-																	<span th:if="${!instance.defaultInstance}" th:title="#{gen.deleteBtn}" href="#" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:onclick="'removeInstanceModal(event, \'' + ${instance.id} + '\');'" th:alt="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>
+																	<span th:title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/instances/instance/${instance.id}/|} + '\');'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" ><i class="icon-edit"></i></span>
+																	<span th:if="${!instance.defaultInstance}" th:title="#{gen.deleteBtn}" href="#" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:attr="onclick='removeInstanceModal(event, \'' + ${instance.id} + '\');'" th:alt="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>
 																</div>
 															</td>
 														</tr>

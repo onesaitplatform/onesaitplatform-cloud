@@ -43,6 +43,8 @@ ENV SERVER_NAME=localhost \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     DBADDPROPS="" \
@@ -51,7 +53,8 @@ ENV SERVER_NAME=localhost \
     GRAYLOG_PORT=12201 \
     USE_KEYCLOAK=false \
     SBA_USERNAME=operations \
-	SBA_SECRET=changeIt2019!
+	SBA_SECRET=changeIt2019! \
+	MAX_HTTP_HEADER_SIZE=20000
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

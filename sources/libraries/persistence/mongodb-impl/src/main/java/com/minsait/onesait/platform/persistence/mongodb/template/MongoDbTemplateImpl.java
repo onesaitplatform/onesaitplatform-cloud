@@ -50,7 +50,7 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoBulkWriteException;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.DistinctIterable;
@@ -68,8 +68,7 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import com.mongodb.util.JSON;
-import com.mongodb.util.JSONParseException;
+import com.mongodb.connection.ServerDescription;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -224,18 +223,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				query = query.substring(query.indexOf("count(") + 6, query.indexOf(")"));
 			}
 			if (query != null && query != "" && !query.trim().equals("{}") && !query.isEmpty()) {
-				final BasicDBObject queryObject = (BasicDBObject) JSON.parse(query);
-				return getCollection(database, collection, BasicDBObject.class).count(queryObject);
+				final BasicDBObject queryObject = BasicDBObject.parse(query);
+				return getCollection(database, collection, BasicDBObject.class).countDocuments(queryObject);
 			} else {
-				return getCollection(database, collection, BasicDBObject.class).count();
+				return getCollection(database, collection, BasicDBObject.class).countDocuments();
 			}
-			// if (!query.trim().equals("{}")) {
-			// BasicDBObject queryObject = (BasicDBObject) JSON.parse(query);
-			// return getCollection(database, collection,
-			// BasicDBObject.class).count(queryObject);
-			// } else {
-			// return getCollection(database, collection, BasicDBObject.class).count();
-			// }
 		} catch (final Throwable e) {
 			final String errorMessage = String.format(
 					"Unable to run count command. Database = %s, collection = %s, query = %s, cause = %s, errorMessage = %s.",
@@ -252,7 +244,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final String normalizedCollectionName = getNormalizedCollectionName(database, collection);
 			final CreateCollectionOptions options = new CreateCollectionOptions();
 			options.capped(false);
-			options.autoIndex(true);
+//			options.autoIndex(true); //Desaparece en el nuevo API
+			
 			mongoDBClientManager.electClient().getDatabase(database).createCollection(normalizedCollectionName,
 					options);
 		} catch (final Throwable e) {
@@ -359,15 +352,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			if (query == null) {
 				dbCollection.distinct(key, resultType);
 			} else {
-				result = dbCollection.distinct(key, (BasicDBObject) JSON.parse(query), resultType);
+				result = dbCollection.distinct(key, BasicDBObject.parse(query), resultType);
 			}
 			return result;
-		} catch (final JSONParseException e) {
-			final String errorMessage = String.format(
-					"Unable to parse JSON query. Query = %s, cause = %s, errorMessage = %s.", query, e.getCause(),
-					e.getMessage());
-			log.error(errorMessage);
-			throw new DBPersistenceException(errorMessage, e);
 		} catch (final Throwable e) {
 			final String errorMessage = String.format(
 					"Unable to retrieve the values. Database = %s , collection = %s , key = %s , query =%s , cause = %S , errorMessage = %s.",
@@ -438,7 +425,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final MongoCollection<BasicDBObject> dbCollection = getCollection(database, collection,
 					BasicDBObject.class);
 			FindIterable<BasicDBObject> result = null;
-			result = dbCollection.find((Bson) JSON.parse("{}"));
+			result = dbCollection.find((Bson) BasicDBObject.parse("{}"));
 			result = result.skip(skip);
 			result = result.limit(limit);
 			if (queryExecutionTimeoutMillis > 0) {
@@ -518,15 +505,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public ObjectId insert(String database, String collection, String data) throws DBPersistenceException {
-		try {
-			return insert(database, collection, (BasicDBObject) JSON.parse(data));
-		} catch (final JSONParseException e) {
-			final String errorMessage = String.format(
-					"Unable to parse JSON data. Data = %s, cause = %s, errorMessage = %s.", data, e.getCause(),
-					e.getMessage());
-			log.error(errorMessage);
-			throw new DBPersistenceException(errorMessage, e);
-		}
+		return insert(database, collection, BasicDBObject.parse(data));
 	}
 
 	private void fixPosibleNonCapitalizedGeometryPoint(BasicDBObject doc) {
@@ -604,14 +583,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				BasicDBObject doc = null;
 				boolean jsonParseError = false;
 				try {
-					doc = (BasicDBObject) JSON.parse(data.get(i));
-				} catch (final JSONParseException e) {
-					final String errorMessage = String.format(
-							"Unable to parse JSON data. Data = %s, cause = %s, errorMessage = %s.", data, e.getCause(),
-							e.getMessage());
-					log.error(errorMessage);
-					jsonParseError = true;
-					errorMsg = "Not a valid JSON object: " + e.getMessage();
+					doc = BasicDBObject.parse(data.get(i));
 				} finally {
 					if (!jsonParseError) {
 						bulkWrites.add(new InsertOneModel<>(doc));
@@ -693,18 +665,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MultiDocumentOperationResult remove(String database, String collection, String query, boolean includeIds)
 			throws DBPersistenceException {
-		try {
-			if (query.indexOf("db.") != -1) {
-				query = util.getQueryContent(query);
-			}
-			return remove(database, collection, BasicDBObject.parse(query), includeIds);
-		} catch (final JSONParseException e) {
-			final String errorMessage = String.format(
-					"Unable to parse JSON query. Query = %s, cause = %s, errorMessage = %s.", query, e.getCause(),
-					e.getMessage());
-			log.error(errorMessage);
-			throw new DBPersistenceException(errorMessage, e);
+		
+		if (query.indexOf("db.") != -1) {
+			query = util.getQueryContent(query);
 		}
+		return remove(database, collection, BasicDBObject.parse(query), includeIds);
 	}
 
 	@Override
@@ -926,7 +891,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 					obj.removeField("_id");
 				}
 				try {
-					result.add(objMapper.readValue(JSON.serialize(obj), targetQueryResultType));
+					result.add(objMapper.readValue(obj.toJson(), targetQueryResultType));
 				} catch (final IOException e) {
 					final String errorMessage = String.format(
 							"Unable to deserialize query result. Object = %s, queryResultType = %s, cause = %s, errorMessage = %s.",
@@ -963,11 +928,14 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public ServerAddress getReplicaSetMaster() {
-		if (mongoDBClientManager.electClient().getReplicaSetStatus() != null) {
-			return mongoDBClientManager.electClient().getReplicaSetStatus().getMaster();
-		} else {
-			return mongoDBClientManager.electClient().getServerAddressList().get(0);
+		MongoClient client=mongoDBClientManager.electClient();
+		
+		for(ServerDescription server:client.getClusterDescription().getServerDescriptions()){
+			if(server.isPrimary()) {
+				return server.getAddress();
+			}
 		}
+		return client.getClusterDescription().getClusterSettings().getHosts().get(0);
 	}
 
 	@Override
@@ -1030,14 +998,14 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	public Document getCurrentOps(int secsRunning) {
 		final String command = "{\"currentOp\": 1, \"active\": true, \"secs_running\" : { \"$gte\" : " + secsRunning
 				+ " }}";
-		return mongoDBClientManager.electClient().getDatabase(ADMIN_DB).runCommand((Bson) JSON.parse(command));
+		return mongoDBClientManager.electClient().getDatabase(ADMIN_DB).runCommand((Bson) BasicDBObject.parse(command));
 
 	}
 
 	@Override
 	public Document killOp(long opID) {
 		final String command = "{ \"killOp\": 1, \"op\": " + opID + " }";
-		return mongoDBClientManager.electClient().getDatabase(ADMIN_DB).runCommand((Bson) JSON.parse(command));
+		return mongoDBClientManager.electClient().getDatabase(ADMIN_DB).runCommand((Bson) BasicDBObject.parse(command));
 
 	}
 
@@ -1059,14 +1027,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				BasicDBObject doc = null;
 				boolean jsonParseError = false;
 				try {
-					doc = (BasicDBObject) JSON.parse(instances.get(i));
-				} catch (final JSONParseException e) {
-					final String errorMessage = String.format(
-							"Unable to parse JSON data. Data = %s, cause = %s, errorMessage = %s.", instances,
-							e.getCause(), e.getMessage());
-					log.error(errorMessage);
-					jsonParseError = true;
-					errorMsg = "Not a valid JSON object: " + e.getMessage();
+					doc = BasicDBObject.parse(instances.get(i));
 				} finally {
 					if (!jsonParseError) {
 						mapDocs.put(i, doc);

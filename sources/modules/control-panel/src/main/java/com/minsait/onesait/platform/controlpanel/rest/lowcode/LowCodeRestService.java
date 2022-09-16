@@ -35,14 +35,16 @@ import com.minsait.onesait.platform.controlpanel.services.lowcode.FigmaService;
 import com.minsait.onesait.platform.controlpanel.services.lowcode.FigmaServiceException;
 import com.minsait.onesait.platform.controlpanel.services.lowcode.FigmaSetUp;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("api/low-code")
-@Api(value = "Low Code UI Generation", tags = { "Low Code UI Generation Service" })
+@Tag(name = "Low Code UI Generation")
 @Slf4j
 public class LowCodeRestService {
 
@@ -50,8 +52,8 @@ public class LowCodeRestService {
 	private FigmaService figmaService;
 
 	@GetMapping("plugin-mappings")
-	@ApiOperation(value = "Extract data from FIGMA project")
-	@ApiResponse(code = 200, message = "OK", response = FigmaExtractedData.class)
+	@Operation(summary = "Extract data from FIGMA project")
+	@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = FigmaExtractedData.class)))
 	public ResponseEntity<FigmaExtractedData> getPluginMappings(@RequestParam("fimaFileId") String figmaFileId,
 			@RequestParam("figmaToken") String figmaToken) {
 
@@ -64,8 +66,8 @@ public class LowCodeRestService {
 	}
 
 	@PostMapping("generate")
-	@ApiOperation(value = "Generate low code UI")
-	@ApiResponse(code = 200, message = "OK", response = byte[].class)
+	@Operation(summary = "Generate low code UI")
+	@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = byte[].class)))
 	public ResponseEntity<byte[]> getPluginMappings(@RequestBody FigmaSetUp figmaSetUp) {
 
 		try {

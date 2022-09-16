@@ -60,7 +60,7 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 
 	@Override
 	public void create(String identification, String idGadget, String idTemplate, String idDatasource, String type,
-			String config, String userId) {
+			String config, String metainf, String userId) {
 
 		if (null == gadgetFavoriteRepository.findByIdentification(identification)) {
 			GadgetFavorite gadgetFavorite = new GadgetFavorite();
@@ -90,6 +90,7 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 			gadgetFavorite.setConfig(config);
 			final User user = userRepository.findByUserId(userId);
 			gadgetFavorite.setUser(user);
+			gadgetFavorite.setMetainf(metainf);
 			gadgetFavoriteRepository.save(gadgetFavorite);
 		}
 	}
@@ -112,7 +113,7 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 
 	@Override
 	public void update(String identification, String idGadget, String idTemplate, String idDatasource, String type,
-			String config, String userId) {
+			String config, String metainf, String userId) {
 		GadgetFavorite gadgetFavorite = gadgetFavoriteRepository.findByIdentification(identification);
 		if (null != gadgetFavorite) {
 			if (null != idDatasource && idDatasource.length() > 0) {
@@ -144,6 +145,7 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 			}
 			gadgetFavorite.setType(type);
 			gadgetFavorite.setConfig(config);
+			gadgetFavorite.setMetainf(metainf);
 			gadgetFavoriteRepository.save(gadgetFavorite);
 		}
 

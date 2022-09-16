@@ -39,9 +39,18 @@ onesaitplatform:
     rulesEngine:
       base: https://${SERVER_NAME}/rules-engine
       advice: http://rules-engine-service:20200/rules-engine/advice
+      deployment: https://${SERVER_NAME}/bpm-engine/rest/deployment/create
     dashboardEngine:
       edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
       view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
       onlyview: https://${SERVER_NAME}/controlpanel/dashboards/view/
     reportEngine:
       base: http://reportengine:18400/report-engine
+    minio:
+      base: http://minioservice:9000
+    presto:
+      base: http://prestoservice:8080
+    prometheus:
+      base: https://${SERVER_NAME}/api/v1/query
+    serverless:
+      base: http://serverless-manager:8086/serverless-manager

@@ -14,16 +14,34 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import com.minsait.onesait.platform.config.model.DashboardConf;
+import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.versioning.VersionableVO;
 
 public interface DashboardConfRepository extends JpaRepository<DashboardConf, String> {
 
 	List<DashboardConf> findByIdentification(String identification);
 
 	List<DashboardConf> findAllByOrderByIdentificationAsc();
+
+	default List<DashboardConf> findByUser(User user){
+		return findAll();
+	}
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.identification, o.id, 'DashboardConf') FROM DashboardConf AS o")
+	public List<VersionableVO> findVersionableViews();
 
 }

@@ -238,6 +238,7 @@ public class NodeRedDomainSyncMonitorImpl implements NodeRedDomainSyncMonitor, R
 				domainStatus.setPort(domain.getPort());
 				domainStatus.setServicePort(domain.getServicePort());
 				domainStatus.setState(domain.getState());
+				domainStatus.setVertical(v.getSchema());
 				domainsToSync.add(domainStatus);
 			}
 			MultitenancyContextHolder.clear();

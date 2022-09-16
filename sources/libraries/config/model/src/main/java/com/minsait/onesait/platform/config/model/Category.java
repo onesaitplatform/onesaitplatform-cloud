@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -33,6 +35,10 @@ public class Category extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
+	public enum Type {
+		GENERAL, DASHBOARD, GADGET, MODEL, REPORT 
+	}
+	
 	@Column(name = "IDENTIFICATION", length = 50, unique = true, nullable = false)
 	@NotNull
 	@Getter
@@ -44,5 +50,12 @@ public class Category extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String description;
+
+	@Column(name = "TYPE", length = 50, unique = false, nullable = false)
+	@Enumerated(EnumType.STRING)
+	@NotNull
+	@Getter
+	@Setter
+	private Type type;
 
 }

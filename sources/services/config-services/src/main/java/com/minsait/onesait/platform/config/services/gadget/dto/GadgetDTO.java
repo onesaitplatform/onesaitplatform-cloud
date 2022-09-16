@@ -39,7 +39,13 @@ public class GadgetDTO implements Serializable {
 
 	private boolean isPublic;
 
+	private boolean isInstance;
+
 	private String config;
 
 	private String id;
+	
+    private String category;
+    
+    private String subcategory; 
 }

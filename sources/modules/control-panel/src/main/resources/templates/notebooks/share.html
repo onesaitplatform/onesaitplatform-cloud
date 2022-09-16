@@ -201,7 +201,7 @@
 								</select>
 							</div>
 							<div class="form-group margin-top-20 pull-right">
-								<button type="button" class="btn btn-primary btn-primary-save" th:onclick="'javascript:insertAuthorization(\'' + ${notebookid} + '\');'" th:text="#{notebook.insertauthorization}">Add Share Authorization</button>
+								<button type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='javascript:insertAuthorization(\'' + ${notebookid} + '\');'" th:text="#{notebook.insertauthorization}">Add Share Authorization</button>
 							</div>
 						</div>
 						<div class="col-md-10 col-sm-8 col-xs-12">
@@ -220,7 +220,7 @@
 									<tbody>
 										<tr class="authorization-model" th:each="int : ${int}" pages:paginate="10" >
 											<!-- IDENTIFICATION/NAME -->
-											<td class="text-left no-wrap bold" th:text="${int.user}"></td>
+											<td class="text-left no-wrap bold" th:text="${int.user.userId}"></td>
 											<!-- USER -->
 											<!-- <td class="text-left " th:text="${int.notebook}"></td> -->
 											<!-- ACCESS TYPE  -->
@@ -228,7 +228,7 @@
 											<!-- OPTIONS  -->
 											<td class="icon text-center" style="white-space: nowrap">
 												<div class="grupo-iconos text-center">
-												<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="Delete" th:onclick="'javascript:removeAuthorization(\'' + ${int.id} + '\');'"><i class="icon-delete"></i></span>
+												<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="Delete" th:attr="onclick='javascript:removeAuthorization(\'' + ${int.id} + '\');'"><i class="icon-delete"></i></span>
 												</div>
 											</td>														
 										</tr>

@@ -1,3 +1,4 @@
+
 server:
   port: 20100
   servlet.contextPath: /flowengine
@@ -19,9 +20,13 @@ master:
         
 
 management.endpoints.web.exposure.include: "*"
+management.health.elasticsearch.enabled: false
 management.endpoint.health.show-details: always
 
 spring:
+  main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
   application.name: onesaitplatform-flow-engine
   ## JPA Config
   datasource:
@@ -49,9 +54,9 @@ spring:
       client.instance.metadata.user.password: ${spring.boot.admin.client.password}
   servlet:
       multipart:
-         max-file-size: 200Mb
-         max-request-size: 200Mb
-
+         max-file-size: 200MB
+         max-request-size: 200MB
+   
 onesaitplatform:
    audit.global.notify: true
    router.avoidsslverification: true
@@ -121,7 +126,12 @@ onesaitplatform:
       sql.connectionTimeout.millis: 10000
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
-      port: 9300    
+      port: 9300
+   database.timescaledb:
+      enabled: false
+      url: jdbc:postgresql://localhost:5432/?currentSchema=public
+      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
+      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
    analytics.notebook:
       zeppelinGlobalTimeout: 120000
       zeppelinProtocol: http
@@ -143,7 +153,7 @@ onesaitplatform:
       
 ## LOGGING CONF
 logging:
-   path: ./target/ 
-   file: ${spring.application.name}
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
    level:
       com.minsait: INFO

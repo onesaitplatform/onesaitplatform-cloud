@@ -39,16 +39,22 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.mail.MailService;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+
+
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Mail Management", tags = { "Mail management service" })
+@Tag(name = "Mail Management")
 @RestController
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @Slf4j
 @RequestMapping("api" + OP_MAIL)
 public class MailManagementController {
@@ -70,8 +76,8 @@ public class MailManagementController {
 	@Autowired
 	private SupportRepository supportRepository;
 
-	@ApiOperation(value = "Send mail to support")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail to support")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendSupport")
 	public ResponseEntity<String> sendSupport(@RequestParam("message") String message) {
 		final User user = userService.getUserByIdentification(utils.getUserId());
@@ -87,8 +93,8 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Send html mail to support")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send html mail to support")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendHtmlSupport")
 	public ResponseEntity<String> sendSupportHtml(@RequestParam("htmlMessage") String htmlMessage,
 			String attachmentName, @RequestBody String attachment) {
@@ -103,8 +109,8 @@ public class MailManagementController {
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Send mail to support with templates")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail to support with templates")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendTemplatesSupport")
 	public ResponseEntity<String> sendSupportTemplates(@RequestParam("template") SimpleMailMessage template,
 			@RequestParam("templateArgs") String templateArgs) {
@@ -118,8 +124,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send mail")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendMultiple")
 	public ResponseEntity<String> send(@RequestParam("to") String[] to, @RequestParam("message") String message,
 			String subject) {
@@ -136,8 +142,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send mail")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/send")
 	public ResponseEntity<String> sendToOne(@RequestParam("to") String to, @RequestParam("message") String message,
 			String subject) {
@@ -145,8 +151,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send html mail")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send html mail")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendHtmlMultiple")
 	public ResponseEntity<String> sendHtml(@RequestParam("to") String[] to,
 			@RequestParam("htmlMessage") String htmlMessage, String attachmentName, @RequestBody String attachment,
@@ -161,8 +167,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send html mail")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send html mail")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendHtml")
 	public ResponseEntity<String> sendHtmlToOne(@RequestParam("to") String to,
 			@RequestParam("htmlMessage") String htmlMessage, String attachmentName, @RequestBody String attachment,
@@ -171,8 +177,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send mail with file")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail with file")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendMailWithFileMultiple")
 	public ResponseEntity<String> sendMailWithFile(@RequestParam("to") String[] to,
 			@RequestParam("Message") String message, String attachmentName, @RequestBody String attachment,
@@ -187,8 +193,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send mail with file")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail with file")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendMailWithFile")
 	public ResponseEntity<String> sendMailWithFileToOne(@RequestParam("to") String to,
 			@RequestParam("Message") String message, String attachmentName, @RequestBody String attachment,
@@ -197,8 +203,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send mail with templates")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail with templates")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendTemplatesMultiple")
 	public ResponseEntity<String> sendTemplates(@RequestParam("to") String[] to,
 			@RequestParam("template") SimpleMailMessage template, @RequestParam("templateArgs") String templateArgs,
@@ -213,8 +219,8 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "Send mail with templates")
-	@ApiResponses(@ApiResponse(response = MailService.class, code = 200, message = "OK"))
+	@Operation(summary = "Send mail with templates")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
 	@PostMapping(OP_MAIL + "/sendTemplates")
 	public ResponseEntity<String> sendTemplatesToOne(@RequestParam("to") String to,
 			@RequestParam("template") SimpleMailMessage template, @RequestParam("templateArgs") String templateArgs,
@@ -223,7 +229,7 @@ public class MailManagementController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-	@ApiOperation(value = "Send support Request mail")
+	@Operation(summary = "Send support Request mail")
 	@PostMapping(OP_MAIL + "/sendSupportRequest")
 	public ResponseEntity<String> sendEmail(@RequestParam("supportRequestId") String supportRequestId,
 			@RequestParam("message") String message) {
@@ -241,6 +247,21 @@ public class MailManagementController {
 			return new ResponseEntity<>(STATUS_FAIL, HttpStatus.BAD_REQUEST);
 		}
 
+		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
+	}
+	
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@Operation(summary = "Send mail with html body")	
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=MailService.class)), responseCode = "200", description = "OK"))
+	@PostMapping(OP_MAIL + "/sendHtmlBodyEmail")
+	public ResponseEntity<String> sendHtmlBodyEmail(@RequestParam("to") String[] to, @RequestBody String message,
+			String subject) {
+		try {
+			mailService.sendHtmlMail(to, subject, message);
+		} catch (final RuntimeException | MessagingException e) {
+			log.error(ERROR_REQUEST + e.getMessage());
+			return new ResponseEntity<>(STATUS_FAIL, HttpStatus.BAD_REQUEST);
+		}
 		return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
 	}
 

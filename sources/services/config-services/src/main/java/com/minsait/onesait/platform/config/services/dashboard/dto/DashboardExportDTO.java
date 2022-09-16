@@ -60,6 +60,8 @@ public class DashboardExportDTO implements Serializable {
 
 	private String headerlibs;
 
+	private List<String> i18n;
+
 	private String description;
 
 	private boolean isPublic;
@@ -77,4 +79,9 @@ public class DashboardExportDTO implements Serializable {
 	private List<GadgetMeasureDTO> gadgetMeasures;
 
 	private List<GadgetTemplateDTO> gadgetTemplates;
+	
+	private byte[] image;
+
+	private boolean generateImage;
+
 }

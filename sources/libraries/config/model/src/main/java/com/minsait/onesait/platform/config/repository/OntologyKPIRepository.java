@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,10 +23,13 @@ import javax.transaction.Transactional;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.versioning.VersionableVO;
 
 public interface OntologyKPIRepository extends JpaRepository<OntologyKPI, String> {
 
@@ -44,33 +48,43 @@ public interface OntologyKPIRepository extends JpaRepository<OntologyKPI, String
 
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
 			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
-			"OntologyRepositoryByIdentification" }, allEntries = true)
+	"OntologyRepositoryByIdentification" }, allEntries = true)
 	@Transactional
 	void deleteByOntology(Ontology ontology);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
 			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
-			"OntologyRepositoryByIdentification" }, allEntries = true)
+	"OntologyRepositoryByIdentification" }, allEntries = true)
 	@Transactional
 	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
 			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
-			"OntologyRepositoryByIdentification" }, allEntries = true)
+	"OntologyRepositoryByIdentification" }, allEntries = true)
 	@Transactional
 	void delete(OntologyKPI entity);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
 			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
-			"OntologyRepositoryByIdentification" }, allEntries = true)
+	"OntologyRepositoryByIdentification" }, allEntries = true)
 	OntologyKPI save(OntologyKPI datamodel);
 
 	@Override
 	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
 			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
-			"OntologyRepositoryByIdentification" }, allEntries = true)
+	"OntologyRepositoryByIdentification" }, allEntries = true)
 	void flush();
+
+	@Modifying
+	@Transactional
+	@CacheEvict(cacheNames = { "OntologyKPIRepository", "OntologyKPIRepositoryByUser",
+			"OntologyKPIRepositoryByOntology", "OntologyKPIRepositoryByJobName", "OntologyRepository",
+	"OntologyRepositoryByIdentification" }, allEntries = true)
+	void deleteByIdNotIn(Collection<String> ids);
+
+	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.ontology.identification, o.id, 'OntologyKPI') FROM OntologyKPI AS o")
+	public List<VersionableVO> findVersionableViews();
 }

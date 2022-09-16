@@ -23,13 +23,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.persistence.mongodb.config.MongoDbCredentials;
 import com.minsait.onesait.platform.persistence.mongodb.template.MongoDbTemplateImpl;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +51,7 @@ public class MongoConnectionIntegrationTest {
 	MongoDbCredentials credentials;
 	@Autowired
 	MongoClient client;
-	@Autowired
-	MongoTemplate nativeTemplate;
+
 	static final String COL_NAME = "jjcollection";
 	static final String DATABASE = "onesaitplatform_rtdb";
 
@@ -72,10 +70,9 @@ public class MongoConnectionIntegrationTest {
 		try {
 			MongoDatabase database = client.getDatabase(client.listDatabaseNames().first());
 
-			log.info("Options", client.getMongoClientOptions().getMaxWaitTime());
 			Assert.assertTrue(database.listCollections().first() != null);
 			String collection = database.listCollections().first().getString("name");
-			Assert.assertEquals(0, database.getCollection(collection).count());
+			Assert.assertEquals(0, database.getCollection(collection).countDocuments());
 		} catch (Exception e) {
 			Assert.fail("No connection with MongoDB");
 		}

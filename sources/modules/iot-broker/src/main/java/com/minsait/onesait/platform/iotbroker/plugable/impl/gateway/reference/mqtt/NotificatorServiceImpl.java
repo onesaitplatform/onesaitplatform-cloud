@@ -62,28 +62,25 @@ public class NotificatorServiceImpl implements NotificatorService {
 		try {
 			message = SSAPJsonParser.getInstance().deserialize(msg);
 
-			Collection<String> clients = MoquetteBroker.getServer().getConnectionsManager().getConnectedClientIds();
-			Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(message.getBody().getSubscriptionId());
+			final Collection<String> clients = MoquetteBroker.getClients();
+			final Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(message.getBody().getSubscriptionId());
 			if (clients.contains(subscriptor.getClientId())) {
-				messageExecutor.execute(new Runnable() {
-					@Override
-					public void run() {
-						log.info("Digital Broker has the MQTT connection with client.");
-						final SSAPMessage<SSAPBodyIndicationMessage> s = message;
-						String playload = "";
-						try {
-							playload = SSAPJsonParser.getInstance().serialize(s);
-						} catch (final SSAPParseException e) {
-							log.error("Error serializing indicator message" + e.getMessage());
-						}
-						final MqttPublishMessage message = MqttMessageBuilders.publish()
-								.topicName(subscriptionTopic + "/" + s.getSessionKey()).retained(false)
-								.qos(MqttQoS.valueOf(qos)).payload(Unpooled.copiedBuffer(playload.getBytes())).build();
-						MoquetteBroker.getServer().internalPublish(message, s.getSessionKey());
+				messageExecutor.execute(() -> {
+					log.info("Digital Broker has the MQTT connection with client.");
+					final SSAPMessage<SSAPBodyIndicationMessage> s = message;
+					String playload = "";
+					try {
+						playload = SSAPJsonParser.getInstance().serialize(s);
+					} catch (final SSAPParseException e) {
+						log.error("Error serializing indicator message" + e.getMessage());
 					}
+					final MqttPublishMessage message1 = MqttMessageBuilders.publish()
+							.topicName(subscriptionTopic + "/" + s.getSessionKey()).retained(false)
+							.qos(MqttQoS.valueOf(qos)).payload(Unpooled.copiedBuffer(playload.getBytes())).build();
+					MoquetteBroker.getServer().internalPublish(message1, s.getSessionKey());
 				});
 			}
-		} catch (SSAPParseException e) {
+		} catch (final SSAPParseException e) {
 			log.error("Error parsing SSAPIndicationMessage. msg = {}", msg, e);
 		}
 	}

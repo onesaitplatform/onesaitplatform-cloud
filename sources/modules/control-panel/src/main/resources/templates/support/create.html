@@ -85,10 +85,10 @@
                         <div class="col-md-6 col-sm-6 col-xs-12">
                             <div class="pull-right">
                                 <!-- CANCEL --> 
-                                <button id="cancelBtn" type="button" class="btn btn-primary-cancel"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                <button id="cancelBtn" type="button" class="btn btn-primary-cancel"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/main/|} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
                                 
                                 <!-- CREATE -->   
-                                <button id="sendSR" type="button" class="btn btn-primary btn-primary-save" th:text="#{gen.submit}" th:onclick="'javascript:showCreateRequestDialog();'">Send</button> 
+                                <button id="sendSR" type="button" class="btn btn-primary btn-primary-save" th:text="#{gen.submit}" th:attr="onclick='javascript:showCreateRequestDialog();'">Send</button> 
                             </div>
                         </div>
                     </div>

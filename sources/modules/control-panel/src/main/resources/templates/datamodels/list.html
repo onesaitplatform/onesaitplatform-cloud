@@ -227,10 +227,10 @@
 																<span class="label label-primary" style="margin-right: 3px" th:each="label : ${#strings.arraySplit(datamodel.labels, ',')}" th:text="${label}">A Smoke Test</span>
 															</td>
 															<!-- DATE --> 
-			 												<td class="text-left" th:if="${datamodel.createdAt!=null}"><span th:text="${#dates.format(datamodel.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datamodel.createdAt,'dd/MM/YYYY')}" ></span></td>
+			 												<td class="text-left" th:if="${datamodel.createdAt!=null}"><span th:text="${#dates.format(datamodel.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datamodel.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${datamodel.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE --> 
-			 												<td class="text-left" th:if="${datamodel.updatedAt!=null}"><span th:text="${#dates.format(datamodel.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datamodel.updatedAt,'dd/MM/YYYY')}" ></span></td>
+			 												<td class="text-left" th:if="${datamodel.updatedAt!=null}"><span th:text="${#dates.format(datamodel.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datamodel.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${datamodel.updatedAt==null}" th:text="'---'"></td>
 															<!-- JSONSCHEMA -->
 															<td class="text-left text-truncate-sm" th:text="${datamodel.jsonSchema}" th:title="${datamodel.jsonSchema}"></td>		
@@ -238,10 +238,10 @@
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/show/${datamodel.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																			
+																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/show/${datamodel.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																			
 																	
 																	<!-- EDIT -->
-																	<span th:tittle="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${datamodel.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span th:tittle="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/update/${datamodel.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																</div>
 															</td>													
 														</tr>

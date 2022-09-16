@@ -12,6 +12,8 @@ ENV SERVER_NAME=localhost \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
@@ -60,7 +62,10 @@ ENV SERVER_NAME=localhost \
     REVOKED_TOKENS_SIZE_POLICY=PER_NODE \
     CORS_ALLOWED_URLS="*" \
     SBA_USERNAME=operations \
-	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
+	LDAP_GROUP_WHITELIST= \
+    LDAP_AUTH_REGEX=(.*) \
+    JWT_EXPIRATION_TIME=44000
 
 # Timezone
 RUN apk add --no-cache tzdata \
@@ -90,8 +95,8 @@ RUN chown -R onesait:onesait /var/log/platform-logs && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
-EXPOSE 21000
 
+EXPOSE 21000
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
 

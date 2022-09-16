@@ -14,11 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -39,8 +41,17 @@ public interface BinaryFileRepository extends JpaRepository<BinaryFile, String> 
 	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) ORDER BY bf.fileName ASC")
 	List<BinaryFile> findByUser(@Param("user") User user);
 
+	@Query("select bf from BinaryFile as bf WHERE (bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE bfa.user=:user)) ORDER BY bf.fileName ASC")
+	List<BinaryFile> findByUserAllowed(@Param("user") User user);
+
+	@Query("select bf from BinaryFile as bf WHERE (bf.path=:path)")
+	List<BinaryFile> findByPath(@Param("path") String path);
+
 	@Override
 	@Transactional
 	void deleteById(String id);
 
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

@@ -29,13 +29,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 
 		httpSecurity
-				// by default uses a Bean by the name of corsConfigurationSource
-				.cors().and()
-				// we don't need CSRF because our token is invulnerable
-				.csrf().disable().authorizeRequests()
-				// allow anonymous resource requests
-				.anyRequest().permitAll().antMatchers("/actuator/**", "/health/", "/info", "/metrics", "/trace", "/api")
-				.permitAll();
+		// by default uses a Bean by the name of corsConfigurationSource
+		.cors().and()
+		// we don't need CSRF because our token is invulnerable
+		.csrf().disable().authorizeRequests()
+		// allow anonymous resource requests
+		.anyRequest().permitAll();
 
 		// Custom JWT based security filter
 

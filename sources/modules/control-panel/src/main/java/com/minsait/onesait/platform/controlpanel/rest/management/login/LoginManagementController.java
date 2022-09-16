@@ -60,12 +60,18 @@ import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 import com.minsait.onesait.platform.security.jwt.ri.CustomTokenService;
 import com.minsait.onesait.platform.security.jwt.ri.ResponseToken;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Login Oauth", tags = { "Login Oauth service" })
+@Tag(name = "Login Oauth")
 @RestController
 @RequestMapping("api" + OP_LOGIN)
 @ConditionalOnMissingBean(PlugableOauthAuthenticator.class)
@@ -99,7 +105,7 @@ public class LoginManagementController {
 
 	private static final String ERROR_RESPONSE = "Leaving Info Token with with Error response = ";
 
-	@ApiOperation(value = "Post Login Oauth2")
+	@Operation(summary = "Post Login Oauth2")
 	@GetMapping("principal")
 	public ResponseEntity<OAuth2AccessToken> principal(Authentication auth, HttpServletRequest request) {
 		final OAuth2AccessToken token = postLoginOauthNopass(auth);
@@ -107,7 +113,7 @@ public class LoginManagementController {
 
 	}
 
-	@ApiOperation(value = "Post Login Oauth2")
+	@Operation(summary = "Post Login Oauth2")
 	@PostMapping
 	public ResponseEntity<OAuth2AccessToken> postLoginOauth2(@Valid @RequestBody RequestLogin request) {
 
@@ -172,13 +178,13 @@ public class LoginManagementController {
 
 	}
 
-	@ApiOperation(value = "GET Login Oauth2")
+	@Operation(summary = "GET Login Oauth2")
 	@GetMapping(value = "/username/{username}/password/{password}")
 	@Deprecated
 	public ResponseEntity<OAuth2AccessToken> getLoginOauth2(
-			@ApiParam(value = USERNAME, required = true) @PathVariable(USERNAME) String username,
-			@ApiParam(value = PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
-			@ApiParam(value = "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
+			@Parameter(description= USERNAME, required = true) @PathVariable(USERNAME) String username,
+			@Parameter(description= PSWD_STR, required = true) @PathVariable(name = PSWD_STR) String password,
+			@Parameter(description= "vertical", required = false) @RequestParam(name = "vertical") String vertical) {
 
 		try {
 

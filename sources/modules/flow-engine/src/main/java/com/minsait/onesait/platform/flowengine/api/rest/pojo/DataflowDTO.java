@@ -30,6 +30,9 @@ public class DataflowDTO {
 	private String domainName;
 	@Getter
 	@Setter
+	private String verticalSchema;
+	@Getter
+	@Setter
 	private String parameters;
 	@Getter
 	@Setter

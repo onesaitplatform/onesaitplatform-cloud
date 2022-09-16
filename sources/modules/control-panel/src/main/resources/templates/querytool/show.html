@@ -178,13 +178,15 @@
 					$('#historicalQuery').selectpicker('refresh');
 				}else{
 					
-					for(var i=1;i<maxSize;i++){
+					$('#historicalQuery').empty();
+					for(var i=1;i<maxSize;i++){						
 						localStorage.setItem("Option_"+i, localStorage.getItem("Option_"+(i+1)));
-						document.getElementById('Option_'+i).innerHTML = $('#Option_'+(i+1)).val();
+						$('#historicalQuery').append('<option id="Option_'+ i +'">'+localStorage.getItem("Option_"+ i)+'</option>');
+
 					}
 					
 					localStorage.setItem("Option_"+maxSize, newQuery);
-					document.getElementById('Option_'+maxSize).innerHTML = localStorage.getItem("Option_"+maxSize);
+					$('#historicalQuery').append('<option id="Option_'+ maxSize +'">'+localStorage.getItem("Option_"+ maxSize)+'</option>');
 					$('#historicalQuery').selectpicker('refresh');					
 				}
 			}
@@ -228,7 +230,7 @@
 					//ERROR 
 						$("#typeQuery").removeAttr("disabled");
 						$("#typeQuery").selectpicker('refresh');
-					/*
+					/*					
 					if(rtdb!="Mongo"){
 						$("#typeQuery").val("native");
 						$("#typeQuery").attr("disabled", "disabled");
@@ -1006,10 +1008,14 @@ pre {
 				$('#result-panel').addClass("hide");
 				$('.queryconfopts').removeClass('hide'); 
 				$('.queryconfopts').addClass('hide');  
-				$('#pulse').addClass("hide");
+				$('#pulse').addClass("hide");				
 				$('#button-compile').removeClass("hide");
 				$('#downloadButtons').removeClass("hide");
 				$('#downloadButtonsBis').removeClass("hide");
+				$('#downloadButtons').addClass("hide");
+				$('#downloadButtonsBis').addClass("hide");					
+				
+			
 			}
 			$('#imageNoBBDDSelected').show();
 		}
@@ -1093,8 +1099,7 @@ pre {
 			   $('#contenedor-tabla-outside1').css('height','auto');
 			   $('#contenedor-tabla-outside2').removeClass('in');
 			   combo.disabled = false;
-			   getRtdbFromOntology();
-			   
+			   getRtdbFromOntology();			   
 			   switch (rtdb){
 			   		case "MYSQL":
 			   		case "MARIADB":
@@ -1102,16 +1107,30 @@ pre {
 			   		case "POSTGRESQL":
 			   		case "ORACLE":
 			   		case "ORACLE11":
+			   		case "ELASTIC_SEARCH":
+			   		case "PRESTO":
 			   			opcion='sql';
 						$("#typeQuery").val("sql");
-						$("#typeQuery").selectpicker('refresh');
-						// $("#typeQuery").attr("disabled", "disabled");
+						$("#typeQuery").selectpicker('refresh');						
+						setTimeout(function (){	$("#typeQuery").attr("disabled", "disabled");},100);
+						changeMonacoLenguage($('#typeQuery').val());
+						$('#button-compile').show();
+						$('#monacoFormat').hide();
 				   		break;
 			   		default:
 			   			setTimeout(function (){$("#typeQuery").removeAttr("disabled");$("#typeQuery").selectpicker('refresh');},100);
 			   			break;
 			   }
-
+				// if the type of database is ELASTIC_SEARCH it is hidden				
+				 
+				if(rtdb === "ELASTIC_SEARCH"){
+					$('#downloadButtons').addClass("hide");
+					$('#downloadButtonsBis').addClass("hide");
+				}else{
+					$('#downloadButtons').removeClass("hide");
+					$('#downloadButtonsBis').removeClass("hide");
+				}
+				
 			   // DEFAULT QUERIES
 			   // IF ONE IS SELECTED, THAT ONE IS CHOSEN AS DEFAULT
 			   if ( $('#selector_ontologias').val() != '' ){ ontologia_base = $('#selector_ontologias').val(); }
@@ -1132,7 +1151,7 @@ pre {
 			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="SQLSERVER") ){ 
 				   $('#querySql').innerHTML =  "SELECT TOP (3) * FROM " + ontologia_base;
 				   setMonacoValue("SELECT TOP (3) * FROM " + ontologia_base); }
-			   else if (( opcion == "sql") && (queryKp == "null") && (bdtrType == "rtdb") || (rtdb=="MYSQL") || (rtdb=="MARIADB") || (rtdb=="POSTGRESQL")){ 
+			   else if (( opcion == "sql") && (queryKp == "null") && (bdtrType == "rtdb") || (rtdb=="MYSQL") || (rtdb=="MARIADB") || (rtdb=="POSTGRESQL") || (rtdb=="ELASTIC_SEARCH")){ 
 				   $('#querySql').innerHTML =  "SELECT * FROM " + ontologia_base +" AS c LIMIT 3"; 
 				   setMonacoValue("SELECT * FROM " + ontologia_base +" LIMIT 3"); }
 			  

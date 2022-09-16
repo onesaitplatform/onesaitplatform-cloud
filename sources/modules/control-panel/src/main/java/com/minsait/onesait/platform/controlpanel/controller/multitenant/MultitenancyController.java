@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +42,7 @@ import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 @Controller
 @RequestMapping("multitenancy")
@@ -50,13 +50,14 @@ public class MultitenancyController {
 
 	private static final String VERTICAL = "vertical";
 	private static final String VERTICALS = "verticals";
+	private static final String PASSWORD_PATTERN = "password-pattern";
 	@Autowired
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private AppWebUtils utils;
-	
-	@Value("${onesaitplatform.password.pattern}")
-	private String passwordPattern;
+
+	@Autowired
+	private IntegrationResourcesService resourcesService;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")
 	@GetMapping("verticals")
@@ -92,7 +93,8 @@ public class MultitenancyController {
 		final Optional<Vertical> v = multitenancyService.getVertical(vertical);
 		if (v.isPresent()) {
 			return v.get().getTenants().stream()
-					.map(t -> TenantDTO.builder().name(t.getName()).users(t.getUsers().size())
+					.map(t -> TenantDTO.builder().name(t.getName())
+							.users(multitenancyService.countTenantUsers(t.getName()))
 							.vertical(t.getVerticals().stream().map(Vertical::getName).collect(Collectors.toList()))
 							.build())
 					.collect(Collectors.toList());
@@ -134,7 +136,7 @@ public class MultitenancyController {
 	public String tenantCreate(Model model) {
 		model.addAttribute("tenant", new Tenant());
 		model.addAttribute("user", new User());
-		model.addAttribute("passwordPattern", passwordPattern);
+		model.addAttribute("passwordPattern", getPasswordPattern());
 		if (utils.isPlatformAdmin()) {
 			model.addAttribute("verticals", multitenancyService.getAllVerticals());
 		}
@@ -193,4 +195,7 @@ public class MultitenancyController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	private String getPasswordPattern() {
+		return ((String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN));
+	}
 }

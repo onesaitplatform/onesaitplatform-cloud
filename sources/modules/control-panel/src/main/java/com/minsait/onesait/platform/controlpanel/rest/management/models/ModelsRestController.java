@@ -17,14 +17,20 @@ package com.minsait.onesait.platform.controlpanel.rest.management.models;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 
 @CrossOrigin(origins = "*")
-@Api(value = "Model Management", tags = { "Model management service" })
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@Tag(name = "Model Management")
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 public interface ModelsRestController {
 
 	public ResponseEntity<?> getByCategoryAndSubcategory(String category, String subcategory);

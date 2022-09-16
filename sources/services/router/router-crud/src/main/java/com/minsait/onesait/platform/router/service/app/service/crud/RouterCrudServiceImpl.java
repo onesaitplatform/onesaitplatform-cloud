@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.router.service.app.service.crud;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,6 +49,7 @@ import com.minsait.onesait.platform.router.audit.aop.Auditable;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.QueryType;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
+import com.minsait.onesait.platform.router.service.app.service.ProcessExecutionService;
 import com.minsait.onesait.platform.router.service.app.service.RouterCrudService;
 import com.minsait.onesait.platform.router.service.app.service.RouterCrudServiceException;
 
@@ -83,6 +86,10 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 	@Autowired
 	private IntegrationResourcesService resourcesServices;
 
+	@Autowired
+	private ProcessExecutionService processExecutionService;
+	private ExecutorService proccessExecutor = Executors.newSingleThreadExecutor();
+
 	private static final String ERROR_STR = "ERROR";
 	private static final String INSERT_STR = "INSERT";
 	private static final String INSERT_ERROR = "Error inserting data";
@@ -97,10 +104,12 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 		final String METHOD = operationModel.getOperationType().name();
 		final String ontologyName = operationModel.getOntologyName();
 
+		Integer count = 0;
 		String output = "";
 		result.setMessage("OK");
 		result.setStatus(true);
 		RtdbDatasource rtdbDatasource = null;
+
 		try {
 			final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
 
@@ -119,10 +128,10 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			if (METHOD.equalsIgnoreCase("POST")
 					|| METHOD.equalsIgnoreCase(OperationModel.OperationType.INSERT.name())) {
 
-				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
+				if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL) || rtdbDatasource.equals(RtdbDatasource.PRESTO)) {
 					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, false,
 							ontology);
-					final ComplexWriteResult data = virtualRepo.insertBulk(ontologyName, processedData, true, true);
+					final ComplexWriteResult data = basicOpsService.insertBulk(ontologyName, processedData, true, true);
 					final List<? extends DBResult> results = data.getData();
 					final InsertResult insertResult = new InsertResult();
 					final MultiDocumentOperationResult insertResultData = new MultiDocumentOperationResult();
@@ -130,9 +139,9 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 					if (!results.isEmpty()) {
 						results.stream().map(DBResult::getId).map(Optional::ofNullable).filter(Optional::isPresent)
-						.map(Optional::get).forEach(idList::add);
+								.map(Optional::get).forEach(idList::add);
 					}
-
+					count = results.size();
 					insertResultData.setCount(results.size());
 					insertResultData.setIds(idList);
 					insertResult.setType(ComplexWriteResultType.BULK);
@@ -140,8 +149,8 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					output = insertResult.toString();
 				} else {
 
-					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel, true,
-							ontology);
+					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel,
+							ontology.isContextDataEnabled(), ontology);
 
 					final ComplexWriteResult data = basicOpsService.insertBulk(ontologyName, processedData, true, true);
 
@@ -186,11 +195,13 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 							output = insertResult.toString();
 						}
+
 					} else if (data.getType() == ComplexWriteResultType.TIME_SERIES) {
 						insertResult.setType(ComplexWriteResultType.TIME_SERIES);
 						insertResult.setData(results);
 						output = insertResult.toString();
 					}
+					count = results.size();
 				}
 			}
 		} catch (final DataSchemaValidationException e) {
@@ -200,6 +211,10 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setMessage("Error validating schema of the ontology:" + e.getMessage());
 			result.setErrorCode("ErrorValidationSchema");
 			result.setOperation("INSERT_STR");
+			final int c = count;
+			proccessExecutor.execute(() -> {
+				processExecutionService.checkOperation(operationModel, result, c);
+			});
 			throw new RouterCrudServiceException(INSERT_ERROR, e, result);
 		} catch (final OntologyDataJsonProblemException e) {
 			log.error("Error validating ontology references", e);
@@ -208,6 +223,10 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setMessage("Error validating ontology references:" + e.getMessage());
 			result.setErrorCode("ErrorValidationReferences");
 			result.setOperation(INSERT_STR);
+			final int c = count;
+			proccessExecutor.execute(() -> {
+				processExecutionService.checkOperation(operationModel, result, c);
+			});
 			throw new RouterCrudServiceException(INSERT_ERROR, e, result);
 		} catch (final DBPersistenceException e) {
 			log.error("insert", e);
@@ -216,6 +235,10 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setMessage(e.getMessage());
 			result.setErrorCode("");
 			result.setOperation(INSERT_STR);
+			final int c = count;
+			proccessExecutor.execute(() -> {
+				processExecutionService.checkOperation(operationModel, result, c);
+			});
 			throw new RouterCrudServiceException(INSERT_ERROR, e, result);
 		} catch (final Exception e) {
 			log.error("insert", e);
@@ -224,10 +247,18 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setMessage(e.getMessage());
 			result.setErrorCode("");
 			result.setOperation(INSERT_STR);
+			final int c = count;
+			proccessExecutor.execute(() -> {
+				processExecutionService.checkOperation(operationModel, result, c);
+			});
 			throw new RouterCrudServiceException(e, result);
 		}
 		result.setResult(output);
 		result.setOperation(METHOD);
+		final int c = count;
+		proccessExecutor.execute(() -> {
+			processExecutionService.checkOperation(operationModel, result, c);
+		});
 		return result;
 	}
 
@@ -247,6 +278,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 		final boolean includeIds = operationModel.isIncludeIds();
 		final String clientPlatform = operationModel.getDeviceTemplate();
 
+		Integer count = 0;
 		String output = "";
 		result.setMessage("OK");
 		result.setStatus(true);
@@ -266,6 +298,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					} else {
 						output = operationResult.toString();
 					}
+					count = new Long(operationResult.getCount()).intValue();
 				} else {
 					if (objectId != null && !objectId.isEmpty()) {
 						final String processedBody = ontologyDataService.preProcessUpdateData(operationModel);
@@ -281,10 +314,12 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						} else {// generic _id search no explicit return of oid (inside data)
 							output = basicOpsService.findById(ontologyName, objectId);
 						}
+						count = 1;
 					} else {
 						switch (operationModel.getQueryType()) {
 						case SQL:
 							output = executeSQLQuery(body, ontologyName, user, clientPlatform);
+							count = 1;
 							break;
 						case NATIVE:
 						default:
@@ -334,9 +369,11 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 										output = insertResult.toString();
 									}
+									count = results.size();
 								}
 							} else {
 								output = basicOpsService.updateNative(ontologyName, body, includeIds).toString();
+								count = 1;
 							}
 							break;
 
@@ -349,10 +386,19 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setResult(output);
 			result.setStatus(false);
 			result.setMessage(e.getMessage());
+			final int c = count;
+			proccessExecutor.execute(() -> {
+				processExecutionService.checkOperation(operationModel, result, c);
+			});
 		}
 
 		result.setResult(output);
 		result.setOperation(method);
+		final Integer c = count;
+		proccessExecutor.execute(() -> {
+			processExecutionService.checkOperation(operationModel, result, c);
+		});
+
 		return result;
 	}
 
@@ -395,6 +441,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 		final String USER = operationModel.getUser();
 		final String CLIENTPLATFORM = operationModel.getDeviceTemplate();
 
+		Integer count = 0;
 		String output = "";
 		result.setMessage("OK");
 		result.setStatus(true);
@@ -410,19 +457,22 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					} else {
 						output = String.valueOf(virtualRepo.deleteNative(ontologyName, BODY, INCLUDEIDs));
 					}
+					count = 1;
 				} else {
 
 					if (OBJECT_ID != null && OBJECT_ID.length() > 0) {
 						output = basicOpsService.deleteNativeById(ontologyName, OBJECT_ID).toString();
+						count = OBJECT_ID.length();
 					} else {
 						if (operationModel.getQueryType().equals(QueryType.SQL)) {
 							output = !nullString(CLIENTPLATFORM)
 									? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
 											BODY, 0)
-											: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
+									: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
 						} else {
 							output = basicOpsService.deleteNative(ontologyName, BODY, INCLUDEIDs).toString();
 						}
+						count = 1;
 					}
 
 				}
@@ -432,9 +482,19 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setResult(output);
 			result.setStatus(false);
 			result.setMessage(e.getMessage());
+			final Integer c = count;
+			proccessExecutor.execute(() -> {
+				processExecutionService.checkOperation(operationModel, result, c);
+			});
 		}
 		result.setResult(output);
 		result.setOperation(METHOD);
+
+		final Integer c = count;
+		proccessExecutor.execute(() -> {
+			processExecutionService.checkOperation(operationModel, result, c);
+		});
+
 		return result;
 	}
 
@@ -481,7 +541,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						OUTPUT = !nullString(CLIENTPLATFORM)
 								? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName, BODY,
 										0)
-										: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
+								: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
 					} else if (QUERY_TYPE.equalsIgnoreCase(QueryType.NATIVE.name())) {
 						if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
 							OUTPUT = virtualRepo.queryNativeAsJson(ontologyName, BODY);
@@ -490,8 +550,8 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							OUTPUT = !nullString(CLIENTPLATFORM)
 									? queryToolService.queryNativeAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
 											BODY, 0, getMaxRegisters())
-											: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0,
-													getMaxRegisters());
+									: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0,
+											getMaxRegisters());
 						}
 					} else {
 						OUTPUT = basicOpsService.findById(ontologyName, OBJECT_ID);

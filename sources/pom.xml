@@ -12,7 +12,8 @@
 	<description>onesait Platform is the Digital Platform of Minsait, aka Open Platform</description>
 
 	<properties>
-		<revision>3.0.0-ce</revision>
+
+		<revision>4.0.0-ce</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -21,9 +22,9 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<commons-io.version>2.4</commons-io.version>
 		<javafaker.version>0.14</javafaker.version>
-		<spring-boot.version>2.0.0.RELEASE</spring-boot.version>
-		<spring-boot-admin-server.version>2.0.2</spring-boot-admin-server.version>
-		<spring-boot-admin-starter-client.version>2.0.2</spring-boot-admin-starter-client.version>
+		<spring-boot.version>2.6.4</spring-boot.version>
+		<spring-boot-admin-server.version>2.6.2</spring-boot-admin-server.version>
+		<spring-boot-admin-starter-client.version>2.6.2</spring-boot-admin-starter-client.version>
 		<httpclient.version>4.5.2</httpclient.version>
 		<docker-spotify.version>1.0.0</docker-spotify.version>
 		<springfox-swagger2.version>2.8.0</springfox-swagger2.version>
@@ -35,25 +36,24 @@
 		<project.year>2019</project.year>
 		<project.organization.name>minsait by Indra</project.organization.name>
 		<project.website>https://onesaitplatform.com</project.website>
-		<freemarket.version>2.3.21</freemarket.version>
-		<elasticsearch.version>7.9.3</elasticsearch.version>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
 		<jsqlparser.version>3.1</jsqlparser.version>
-		<sql-to-mongo.version>3.0.7</sql-to-mongo.version>
-		<mongo-driver.version>3.12.0</mongo-driver.version>
+		<sql-to-mongo.version>3.0.8</sql-to-mongo.version>
+		<mongo-driver.version>4.3.1</mongo-driver.version>
 		<mockito.version>2.22.0</mockito.version>
 		<tika.version>1.20</tika.version>
 		<onesaitplatform.quartzURL>jdbc:mysql://localhost:3306/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false&amp;autoReconnect=true</onesaitplatform.quartzURL>
-		<onesaitplatform.client.version>3.3.0-RELEASE</onesaitplatform.client.version>
-		<hazelcast.zookeeper.version>3.6.3</hazelcast.zookeeper.version>
-		<hazelcast.version>3.12</hazelcast.version>
+		<onesaitplatform.client.version>3.2.0-RELEASE</onesaitplatform.client.version>
+		<hazelcast-client.version>3.12.12</hazelcast-client.version>
+		<hazelcast.zookeeper.version>4.0.2</hazelcast.zookeeper.version>
+		<hazelcast.version>5.1</hazelcast.version>
 		<curator.version>2.13.0</curator.version>
 		<jasypt.version>2.0.0</jasypt.version>
 		<saml2.version>1.0.3.RELEASE</saml2.version>
-		<aspectj.version>1.8.9</aspectj.version>
 		<gson.version>2.8.5</gson.version>
+		<joda.version>2.10</joda.version>
 
 		<jaspersoft.ws.version>1.0.1</jaspersoft.ws.version>
 		<postgresql.version>42.2.8</postgresql.version>
@@ -65,26 +65,64 @@
 		<log4j-api.version>2.8</log4j-api.version>
 		<spring.security.oauth.version>2.3.0.RELEASE</spring.security.oauth.version>
 		<spring.security.oauth-autoconfigure.version>2.1.0.RELEASE</spring.security.oauth-autoconfigure.version>
-		<com.fasterxml.jackson.core.databind.version>2.9.10.7</com.fasterxml.jackson.core.databind.version>
-		<com.fasterxml.jackson.core.annotations.version>2.9.10</com.fasterxml.jackson.core.annotations.version>
+		<minio.version>7.1.4</minio.version> <!-- Versiones 8+ son incompatibles con la version actual de Hazelcast -->
+		<json-ld.version>1.2.0-java8</json-ld.version>
+		<snakeyaml.version>1.30</snakeyaml.version>
+		<thymeleaf-extras-springsecurity4.version>3.0.4.RELEASE</thymeleaf-extras-springsecurity4.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.13.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>${snakeyaml.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.minsait.onesait.platform</groupId>
 				<artifactId>onesaitplatform-plugin-interfaces</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+
+			<!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync -->
 			<dependency>
 				<groupId>org.mongodb</groupId>
-				<artifactId>mongo-java-driver</artifactId>
-				<version>${mongo-driver.version}</version><!--$NO-MVN-MAN-VER$ -->
+				<artifactId>mongodb-driver-sync</artifactId>
+				<version>${mongo-driver.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>org.mongodb</groupId>
+				<artifactId>mongodb-driver-core</artifactId>
+				<version>${mongo-driver.version}</version>
+			</dependency>
+
+
 			<dependency>
 				<groupId>org.mongodb</groupId>
 				<artifactId>bson</artifactId>
-				<version>${mongo-driver.version}</version><!--$NO-MVN-MAN-VER$ -->
+				<version>${mongo-driver.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -140,17 +178,7 @@
 				<version>${springfox-swagger2.version}</version>
 			</dependency>
 
-			<dependency>
-				<groupId>org.elasticsearch</groupId>
-				<artifactId>elasticsearch</artifactId>
-				<version>${elasticsearch.version}</version>
-			</dependency>
 
-			<dependency>
-				<groupId>org.elasticsearch.client</groupId>
-				<artifactId>transport</artifactId>
-				<version>${elasticsearch.version}</version>
-			</dependency>
 
 			<dependency>
 				<groupId>com.spotify</groupId>
@@ -174,6 +202,12 @@
 				<groupId>com.google.code.gson</groupId>
 				<artifactId>gson</artifactId>
 				<version>${gson.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>${mockito.version}</version>
 			</dependency>
 
 			<!-- Zookeeper SPI -->
@@ -207,7 +241,7 @@
 			<dependency>
 				<groupId>com.hazelcast</groupId>
 				<artifactId>hazelcast-client</artifactId>
-				<version>${hazelcast.version}</version>
+				<version>${hazelcast-client.version}</version>
 			</dependency>
 
 			<!-- Jasypt encription -->
@@ -261,16 +295,17 @@
 				<version>${oracle.version}</version>
 			</dependency>
 
+			<!-- minio -->
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>${com.fasterxml.jackson.core.databind.version}</version>
+				<groupId>io.minio</groupId>
+				<artifactId>minio</artifactId>
+				<version>${minio.version}</version>
 			</dependency>
-
+			
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-annotations</artifactId>
-				<version>${com.fasterxml.jackson.core.annotations.version}</version>
+				<groupId>com.apicatalog</groupId>
+				<artifactId>titanium-json-ld</artifactId>
+				<version>${json-ld.version}</version>
 			</dependency>
 
 		</dependencies>
@@ -323,6 +358,8 @@
 		<module>libraries/persistence/external-impl</module>
 		<module>libraries/persistence/cosmosdb-impl</module>
 		<module>libraries/persistence/no-persistence-impl</module>
+		<module>libraries/persistence/timescaledb-impl</module>
+		<module>libraries/persistence/prestodb-impl</module>
 
 		<!--DIGITAL TWIN -->
 		<module>libraries/digital-twin/digital-twin-library</module>
@@ -377,6 +414,7 @@
 		<module>modules/rules-engine</module>
 		<module>modules/rest-planner</module>
 		<module>modules/report-engine</module>
+
 
 		<!--<module>modules/scripting-engine</module -->
 		<!--<module>modules/streaming-twitter</module> -->
@@ -731,31 +769,31 @@
 			</distributionManagement>
 		</profile>
 		<!-- END artifacts deployment section -->
-		
-		<!-- Dashboard Compile Section-->
+
+		<!-- Dashboard Compile Section -->
 		<profile>
-		    <id>Windows</id>
-		    <activation>
-		      <os>
-		        <family>Windows</family>
-		      </os>
-		    </activation>
-		    <properties>
-		      <script.extension>.bat</script.extension>
-		      <script.prefix></script.prefix>
-		    </properties>
-		  </profile>
-		  <profile>
-		    <id>unix</id>
-		    <activation>
-		      <os>
-		        <family>unix</family>
-		      </os>
-		    </activation>
-		    <properties>
-		      <script.extension>.sh</script.extension>
-		      <script.prefix>./</script.prefix>
-		    </properties>
+			<id>Windows</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+			</activation>
+			<properties>
+				<script.extension>.bat</script.extension>
+				<script.prefix></script.prefix>
+			</properties>
+		</profile>
+		<profile>
+			<id>unix</id>
+			<activation>
+				<os>
+					<family>unix</family>
+				</os>
+			</activation>
+			<properties>
+				<script.extension>.sh</script.extension>
+				<script.prefix>./</script.prefix>
+			</properties>
 		</profile>
 		<!-- En Dashboard Compile Section -->
 	</profiles>

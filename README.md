@@ -1,60 +1,62 @@
-<p align="center">
-  <a src='https://www.onesaitplatform.com/'>
-    <img src='resources/images/onesaitPlatform-CreatingNewBusiness.png'/>
-  </a>
-</p>
+# Onesait Platform Community Edition
 
-## Versions
-The platform has 3 distributions, that combined, they cover transformation and creation of new digital business needs
-<p align="center">
-    <img src='resources/images/onesaitPlatform-VersionsDescription.png'/>
-</p>
-
-## Why?
-We are sure that we have a unique offer in the market based on a combination of differential elements:
-<p align="center">
-    <img src='resources/images/onesaitPlatform-Why.png'/>
-</p>
-
-
-## Definition & Modules
-**onesait Platform** is a technological platform that accelerates the digital transformation, allowing the agile construction of applications through the use of integrated open source components and the combination of the latest technologies in the treatment, intelligent analysis and publication of information. 
-It has a large catalog of components that enable the construction of classic management applications, as well as advanced systems that apply intelligence to processes, connect the physical world with the virtual one, or scale intelligently to adapt to the needs of the business.
+## What is?
+Onesait Platform is a platform open source and integrator of services, which facilitates the accelerated development, deployment and operation of solutions built on it.  It offers components that support the development of microservices, integrations, appification, analytics, data mining, creation of ML and AI algorithms, IoT developments, ...
 <p align="center">
     <img src='resources/images/onesaitPlatform-Modules.png'/>
 </p>
+The platform is multi-client and supports multi-cloud deployment (any private or public cloud, or on the customer's premises) in an independent way and avoiding vendor-locking, in addition it allows consuming services from providers... 
 
-You can find a complete description of these modules at [Platform Modules](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/177078320/Platform+Modules)
+## A View on Platform
+The entire Platform is managed from a unified Web Console (Control Panel), here you can see some of its capabilities:
 
-If you want a more technical detail you can read our [Architectural Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/360455/Architecture+Guides)
+**Menus**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/2.menus.gif)
 
-## Getting started with the platform
+**REST APIs**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/5.apis.gif)
 
-The best way yo start with Onesait Platform is accesing our [Developer Portal](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/229867544/Documentation) where you can find a complete set of guides and tutorials.
+**Flow Engine**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/6.flows.gif)
 
-For the quick start you can start watching one of the [Introductory Videos](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/31424597/Introductory+Videos)
-or perhaps you prefer to work with the Platform, then follow our [Getting Started Guide](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/33179/Getting+Started)
+**DataFlow**
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/7.dataflows.gif)
 
+**Dashboard Example **
+![](https://raw.githubusercontent.com/onesaitplatform/onesaitplatform-cloud-media/main/resources/videos/11.dashboard1.gif)
 
-## Getting help
+You can see more videos about Platform functionalities <a href="CONTROLPANEL_VIDEOS.md" target="_blank">here</a>.
 
-Having trouble with onesait Platform? We’d like to help!
+## Documentation
+You can find all the Platform documentation in the <a href="https://onesaitplatform.refined.site/" target="_blank">Developer Portal</a>.
 
-* Check the reference documentation, especially the [Component Guides](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/229867544/Documentation), they provide solutions to the most common questions.
-* Learn more about the platform in our [Confluence Developer Portal]( https://dev.onesaitplatform.com)
-* Report bugs of the platform at [onesait Platform GitHub](https://github.com/onesaitplatform)
+Inside you can find workshops, tutorials, demo videos, development guides, deployment guides,...
 
+We recommend that you start with our <a href="https://onesaitplatform.refined.site/space/DOCT/2221610206/Getting+Started+with+Onesait+Platform+CloudLab)" target="_blank">Getting Started Guide</a>.
+
+## Support
+Having trouble with Onesait Platform? We’d like to help!
+
+* Check the reference documentation, especially the [Component Guides](https://onesaitplatform.refined.site/space/DOCT/2220425217/Component+Guides)
+* Report bugs on <a href="https://github.com/onesaitplatform/onesaitplatform-cloud/issues" target="_blank">GitHub Issues</a>
 
 ## Roadmap & Contributions
 
-At the link you can find our [Roadmap](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/289144833/Roadmap+Onesait+Platform)
+At the link you can find our [Roadmap](https://onesaitplatform.refined.site/space/ROAD/2283470956/Roadmap+Onesait+Platform)
 
-As we are working on a open source model, you can contribute with us. To contribute to onesait Platform, please visit [How to contribute](https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/9142309/Contribution+Guide) information.
+To contribute to Onesait Platform, please visit [How to contribute](https://onesaitplatform.refined.site/space/DOCT/2220814633/How+to+contribute%3F) information.
 
+## Current Contributors
+
+<a href="https://github.com/onesaitplatform/onesaitplatform-cloud/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=onesaitplatform/onesaitplatform-cloud" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## License
 
-onesait Platform is Open Source software released under the [Apache Software License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+Onesait Platform is Open Source software released under the [Apache Software License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 See [`LICENSE`](LICENSE) and [`copyright.txt`](copyright.txt) for details.
 

@@ -15,7 +15,7 @@
 package com.minsait.onesait.platform.api.service;
 
 public final class Constants {
-	
+
 	private Constants() {}
 
 	public static final String API_AUT_BASICO = "BASIC";
@@ -69,5 +69,7 @@ public final class Constants {
 	public static final String REQUEST = "REQUEST";
 
 	public static final String CONTEXT_USER = "$context.userId";
+
+	public static final String HTTP_RESPONSE_HEADERS="RESPONSE_HEADERS";
 
 }

@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -50,4 +51,8 @@ public interface FlowDomainRepository extends JpaRepository<FlowDomain, String> 
 	@Transactional
 	@Query("UPDATE FlowDomain d SET d.state = :state WHERE d.id = :id")
 	void saveState(@Param("state") String state, @Param("id") String id);
+
+	@Modifying
+	@Transactional
+	void deleteByIdNotIn(Collection<String> ids);
 }

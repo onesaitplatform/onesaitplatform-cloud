@@ -28,6 +28,8 @@ import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelation
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoNativeManageDBRepository;
+import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBManageDBRepository;
+import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
 
 @Component
 public class ManageDBRepositoryFactory {
@@ -46,10 +48,16 @@ public class ManageDBRepositoryFactory {
 
 	@Autowired
 	private VirtualRelationalOntologyManageDBRepository relationalManager;
+	
+	@Autowired
+	private TimescaleDBManageDBRepository timescaleManager;
 
 	@Autowired(required = false)
 	@Qualifier(NameBeanConst.KUDU_MANAGE_DB_REPO_BEAN_NAME)
 	private ManageDBRepository kuduManageDBRepository;
+	
+	@Autowired
+	private PrestoManageDBRepository prestoManageDBRepository;
 
 	@Autowired
 	private OntologyRepository ontologyRepository;
@@ -73,6 +81,10 @@ public class ManageDBRepositoryFactory {
 			return cosmosDB;
 		} else if (RtdbDatasource.NO_PERSISTENCE.equals(dataSource)) {
 			return noPersistenceManageDBRepository;
+		} else if (RtdbDatasource.TIMESCALE.equals(dataSource)) {
+			return timescaleManager;
+		} else if (RtdbDatasource.PRESTO.equals(dataSource)) {
+			return prestoManageDBRepository;
 		} else {
 			return mongoManage;
 		}

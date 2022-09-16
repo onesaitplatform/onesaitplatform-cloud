@@ -14,9 +14,9 @@
  */
 package com.minsait.onesait.platform.router.config.hazelcast;
 
-import com.hazelcast.core.MemberAttributeEvent;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
+
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,10 +40,10 @@ public class ClusterMembershipListener implements MembershipListener {
 
 	}
 
-	@Override
-	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
-		 log.info("Member attribute changed: " + memberAttributeEvent);
-
-	}
+//	@Override
+//	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
+//		 log.info("Member attribute changed: " + memberAttributeEvent);
+//
+//	}
 
 }

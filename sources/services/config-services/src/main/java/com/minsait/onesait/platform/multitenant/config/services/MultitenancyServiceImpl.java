@@ -40,6 +40,7 @@ import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
+import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -103,6 +104,9 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	private ClientPlatformService deviceService;
 	@Autowired
 	private DigitalTwinDeviceService digitalTwinDeviceService;
+	@Autowired
+	private UserRepository userRepository;
+
 
 	@Override
 	public Optional<MasterUser> findUser(String userId) {
@@ -441,7 +445,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 				if (!user.getTenant().getName().equals(t.getName())) {
 					user.setTenant(t);
 					masterUserRepository.save(user);
-
 					oauthAccessTokenRepository.findByUserName(userId).forEach(token -> {
 						oauthRefreshTokenRepository.deleteById(token.getRefreshToken());
 						oauthAccessTokenRepository.deleteById(token.getTokenId());
@@ -468,6 +471,21 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	}
 
 	@Override
+	@Transactional
+	public void removeFromDefaultTenant(String userId, String tenant) {
+		final MasterUser user = masterUserRepository.findByUserId(userId);
+		if (user != null) {
+			getTenant(tenant).ifPresent(t -> {
+				if(t.getVerticals().stream().noneMatch(v -> v.getSchema().equals(MultitenancyContextHolder.getVerticalSchema()))) {
+					MultitenancyContextHolder.setIgnoreRemoveEvent(true);
+					userRepository.deleteByUserId(userId);
+				}
+			});
+		}
+
+	}
+
+	@Override
 	public List<MasterUserToken> getAdminTokensForVerticals() {
 		return masterUserTokenRepository.findAdminUsers();
 	}
@@ -480,6 +498,11 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	@Override
 	public Vertical getVerticalFromSchema(String schema) {
 		return verticalRepository.findByNameOrSchema(schema);
+	}
+
+	@Override
+	public long countTenantUsers(String tenantName) {
+		return tenantRepository.countUsersByTenantName(tenantName);
 	}
 
 }

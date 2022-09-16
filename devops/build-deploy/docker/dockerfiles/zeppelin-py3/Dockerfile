@@ -24,7 +24,11 @@ ENV Z_VERSION="0.8.2"
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+    LC_ALL=en_US.UTF-8 \
+    NOTEBOOK_HOME="/home/notebook" \
+    NOTEBOOK_WORKDIR="/home/notebook/sharedworkspace" \
+    MLFLOW_TRACKING_URI= \
+    ARTIFACT_STORE=
 
 RUN echo "$LOG_TAG update and install basic packages" && \
     apt-get -y update && \
@@ -55,7 +59,7 @@ RUN echo "$LOG_TAG Install miniconda3 related packages" && \
     libglib2.0-0 libgit2-dev libxext6 libsm6 libxrender1 \
     git mercurial subversion && \
     echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda3-py37_4.9.2-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh
 ENV PATH /opt/conda/bin:$PATH
@@ -69,15 +73,16 @@ RUN echo "$LOG_TAG Install python related packages" && \
     # font, image for matplotlib
     apt-get install -y libpng-dev libfreetype6-dev libxft-dev && \
     # for tkinter
-    apt-get install -y python-tk libxml2-dev libxslt-dev zlib1g-dev && \
+    apt-get install -y python-tk libxml2-dev libxslt-dev zlib1g-dev unixodbc-dev && \
     conda config --set always_yes yes --set changeps1 no && \
     conda update -q conda && \
     conda info -a && \
-    conda config --add channels conda-forge && \
+#    conda config --add channels conda-forge && \
     conda install -q numpy pandas matplotlib pandasql scikit-learn ipython jupyter_client ipykernel bokeh tensorflow keras && \
     pip install -q scipy ggplot grpcio bkzep selenium bs4 scrapy networkX gensim seaborn && \
     pip install -q scipy ggplot grpcio bkzep  && \
-	pip install onesaitplatform-client-services
+	  pip install onesaitplatform-client-services && \
+    pip install mlflow mlflow-onesaitplatform-plugin
 
 RUN echo "$LOG_TAG Install R related packages" && \
     echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
@@ -93,17 +98,17 @@ RUN echo "$LOG_TAG Install R related packages" && \
     apt-get -y install libcurl4-gnutls-dev libssl-dev && \
     add-apt-repository ppa:cran/libgit2 && \
     apt-get update && \
-    apt-get -y install libssh2-1-dev libgit2-dev && \
+    apt-get -y install libssh2-1-dev libgit2-dev libxml2-dev libxslt-dev && \
     R -e "install.packages('gert')" && \
-    R -e "install.packages('devtools', repos='http://cran.us.r-project.org')" && \
-    R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
-    Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
+    R -e "withr::with_makevars(c(CXX = 'g++ -std=c++11'),install.packages('devtools', repos='http://cran.us.r-project.org'))" && \
+#    R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
+    Rscript -e "library('devtools'); install_version('Rcpp', version = '1.0.7', repos = 'http://cran.us.r-project.org'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
 ENV GRAYLOG_ENABLED=false \
     GRAYLOG_HOST=graylog \
     GRAYLOG_PORT=12201 \
     GRAYLOG_APP_NAME=Zeppelin-server-1
-    
+
 RUN echo "$LOG_TAG Download Zeppelin binary" && \
     wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
@@ -124,41 +129,59 @@ RUN groupadd -r notebook -g 433 && useradd -u 431 -r -g notebook -d /opt/noteboo
 RUN chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
 COPY shiro.ini ${Z_HOME}/conf/
+COPY interpreter.json ${Z_HOME}/conf/
 # Bug in zeppelin (search in /zeppelin for zeppelin-site.xml)
-#COPY zeppelin-site.xml ${Z_HOME}/conf/ 
-COPY zeppelin-site.xml ${Z_HOME} 
-COPY zeppelin-onesait-platform*.jar ${Z_HOME}/interpreter/onesaitplatform/  
+#COPY zeppelin-site.xml ${Z_HOME}/conf/
+COPY zeppelin-site.xml ${Z_HOME}/conf/
+COPY zeppelin-onesait-platform*.jar ${Z_HOME}/interpreter/onesaitplatform/
 COPY zeppelin-onesait-platform*.jar ${Z_HOME}/lib/interpreter/
 COPY authenticator*.jar ${Z_HOME}/lib/
-COPY zeppelin.sh ${Z_HOME}/bin/    
+COPY zeppelin.sh ${Z_HOME}/bin/
 COPY log4j.properties ${Z_HOME}/conf/
 COPY log4j-graylog.properties ${Z_HOME}/conf/
 
 RUN chmod 777 ${Z_HOME}/bin/zeppelin.sh
 
 RUN echo "$LOG_TAG Download Spark binary" && \
-    #wget -O /tmp/spark-2.4.5-bin-hadoop2.7.tgz http://apache.uvigo.es/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz && 
-    wget -O /tmp/spark-2.4.5-bin-hadoop2.7.tgz https://archive.apache.org/dist/spark/spark-2.4.5/spark-2.4.5-bin-hadoop2.7.tgz && \ 
-    #try at https://archive.apache.org/dist/spark/spark-2.4.5/
-    tar -zxvf /tmp/spark-2.4.5-bin-hadoop2.7.tgz && \
-    rm -rf /tmp/spark-2.4.5-bin-hadoop2.7.tgz 
-	
-ENV SPARK_HOME=/spark-2.4.5-bin-hadoop2.7
-    
+    wget -O /tmp/spark-2.4.8-bin-hadoop2.7.tgz http://apache.uvigo.es/spark/spark-2.4.8/spark-2.4.8-bin-hadoop2.7.tgz && \
+    tar -zxvf /tmp/spark-2.4.8-bin-hadoop2.7.tgz && \
+    rm -rf /tmp/spark-2.4.8-bin-hadoop2.7.tgz
+
+ENV SPARK_HOME=/spark-2.4.8-bin-hadoop2.7
+
 RUN apt-get -y update && \
-	apt-get install -y libmysqlclient-dev    
+	apt-get install -y libmysqlclient-dev
 
 RUN cp -r /zeppelin/conf /tmp && \
-    chmod -R 777 /tmp/conf && \
-    chown -R notebook:notebook /tmp/conf && \
+    chmod -R 777 /tmp/conf/log4j.properties && \
+    chown -R notebook:notebook /tmp/conf/log4j.properties && \
+    chmod -R 777 /tmp/conf/log4j-graylog.properties && \
+    chown -R notebook:notebook /tmp/conf/log4j-graylog.properties && \
     chmod -R 777 ${Z_HOME} && \
     chown -R notebook:notebook ${Z_HOME}
 # ------------------------------------------------
+RUN mkdir /home/notebook && \
+    mkdir /home/notebook/sharedworkspace && \
+    usermod -d /home/notebook notebook && \
+    chown notebook:notebook /home/notebook/ && \
+    chgrp -Rf root /home/notebook && chmod -Rf g+w /home/notebook && \
+    chown notebook:notebook /home/notebook/sharedworkspace && \
+    chgrp -Rf root /home/notebook/sharedworkspace && chmod -Rf g+w /home/notebook/sharedworkspace && \
+    chown -R notebook:notebook /opt/conda && \
+    chgrp -Rf root /opt/conda && chmod -Rf g+w /opt/conda
+
+COPY .condarc /tmp
+
+# ------ OPENSHIFT COMPATIBILITY --------
+RUN ln -s /home/notebook/.conda /.conda && \
+    ln -s /home/notebook/.condarc /.condarc && \
+    ln -s /home/notebook/.local /.local && \
+    ln -s /home/notebook/.config /.config
 
 EXPOSE 8080
 
 USER notebook
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
-WORKDIR ${Z_HOME}
-CMD ["bin/zeppelin.sh"]
+WORKDIR ${NOTEBOOK_WORKDIR}
+CMD ["/zeppelin/bin/zeppelin.sh"]

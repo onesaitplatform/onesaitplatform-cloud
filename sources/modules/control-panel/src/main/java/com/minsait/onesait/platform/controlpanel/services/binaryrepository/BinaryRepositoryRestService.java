@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,8 +48,8 @@ import com.minsait.onesait.platform.business.services.binaryrepository.BinaryFil
 import com.minsait.onesait.platform.business.services.binaryrepository.BinaryFileSimpleDTO;
 import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
 import com.minsait.onesait.platform.config.model.BinaryFile;
-import com.minsait.onesait.platform.config.model.BinaryFileAccess;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
+import com.minsait.onesait.platform.config.model.BinaryFileAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.BinaryFileRepository;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
@@ -56,16 +57,16 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Api(value = "Binary repository  Management", tags = { "Binary repository management service" })
+@Tag(name = "Binary repository  Management")
 @RestController
 @RequestMapping("/binary-repository")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 public class BinaryRepositoryRestService {
 
 	@Autowired
@@ -84,7 +85,7 @@ public class BinaryRepositoryRestService {
 
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
-	
+
 	private static final String UNAUTHORIZED_USER = "Unauthorized user";
 	private static final String FILE_NOT_EXISTS = "File does not exist";
 	private static final String USER_NOT_EXISTS = "User does not exist";
@@ -92,8 +93,8 @@ public class BinaryRepositoryRestService {
 	private static final String AUTH_DELETED = "Authorization deleted successfully";
 	private static final String AUTH_UPDATED = "Authorization updated successfully";
 
-	@PostMapping("")
-	public ResponseEntity<?> addBinary(@RequestParam("file") MultipartFile file,
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> addBinary(@Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
 			@RequestParam(value = "repository", required = false) RepositoryType repository) {
 		try {
@@ -188,8 +189,8 @@ public class BinaryRepositoryRestService {
 	}
 
 	@Deprecated
-	@PutMapping("/{id}")
-	public ResponseEntity<?> updateBinary(@PathVariable("id") String fileId, @RequestParam("file") MultipartFile file,
+	@PutMapping(value="/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> updateBinary(@PathVariable("id") String fileId, @Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata) throws IOException {
 		try {
 			binaryRepositoryLogicService.updateBinary(fileId, file, metadata);
@@ -203,8 +204,8 @@ public class BinaryRepositoryRestService {
 
 	}
 
-	@PostMapping("/{id}")
-	public ResponseEntity<?> update(@PathVariable("id") String fileId, @RequestParam("file") MultipartFile file,
+	@PostMapping(value="/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> update(@PathVariable("id") String fileId,@Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata) throws IOException {
 		try {
 			binaryRepositoryLogicService.updateBinary(fileId, file, metadata);
@@ -266,10 +267,10 @@ public class BinaryRepositoryRestService {
 	private Long getMaxSize() {
 		return (Long) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("max-size");
 	}
-	
+
 	@GetMapping(value = "/{id}/authorizations")
 	public ResponseEntity<?> getAuthorizations(@PathVariable("id") String fileId) {
-		
+
 		if (binaryFileService.getFile(fileId) == null) {
 			return new ResponseEntity<>(FILE_NOT_EXISTS, HttpStatus.NOT_FOUND);
 		}
@@ -284,14 +285,14 @@ public class BinaryRepositoryRestService {
 			return new ResponseEntity<>(authorizationsDTO, HttpStatus.OK);
 		} catch (final Exception e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}		
+		}
 	}
 
 	@PostMapping(value = "/{id}/authorizations")
 	public ResponseEntity<?> setAuthorizations(
-			@ApiParam(value = "id") @PathVariable(value = "id") String fileId,
+			@Parameter(description = "id") @PathVariable(value = "id") String fileId,
 			@Valid @RequestBody BinaryFileAccessSimplifiedDTO binaryFileAccess) {
-	
+
 		if (binaryFileService.getFile(fileId) == null) {
 			return new ResponseEntity<>(FILE_NOT_EXISTS, HttpStatus.NOT_FOUND);
 		}
@@ -301,15 +302,15 @@ public class BinaryRepositoryRestService {
 		if (userService.getUser(binaryFileAccess.getUserId()) == null) {
 			return new ResponseEntity<>(USER_NOT_EXISTS, HttpStatus.BAD_REQUEST);
 		}
-		if (!binaryFileAccess.getAccessType().equals(BinaryFileAccess.Type.READ.toString()) && 
+		if (!binaryFileAccess.getAccessType().equals(BinaryFileAccess.Type.READ.toString()) &&
 				!binaryFileAccess.getAccessType().equals(BinaryFileAccess.Type.WRITE.toString())) {
-			return new ResponseEntity<>(String.format(WRONG_ACCESS_TYPE, BinaryFileAccess.Type.READ.toString(), BinaryFileAccess.Type.WRITE.toString()), 
+			return new ResponseEntity<>(String.format(WRONG_ACCESS_TYPE, BinaryFileAccess.Type.READ.toString(), BinaryFileAccess.Type.WRITE.toString()),
 					HttpStatus.BAD_REQUEST);
 		}
 		try {
 			binaryRepositoryLogicService.setAuthorization(fileId, binaryFileAccess.getUserId(),  binaryFileAccess.getAccessType());
 		}
-		catch (final BinaryRepositoryException e) {				
+		catch (final BinaryRepositoryException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
@@ -318,8 +319,8 @@ public class BinaryRepositoryRestService {
 
 	@DeleteMapping(value = "/{id}/authorizations/{userId}")
 	public ResponseEntity<?> removeAuthorizations(
-			@ApiParam(value = "id") @PathVariable(value = "id") String fileId,
-			@ApiParam(value = "userId") @PathVariable(value = "userId") String userId) {
+			@Parameter(description = "id") @PathVariable(value = "id") String fileId,
+			@Parameter(description = "userId") @PathVariable(value = "userId") String userId) {
 
 		if (binaryFileService.getFile(fileId) == null) {
 			return new ResponseEntity<>(FILE_NOT_EXISTS, HttpStatus.NOT_FOUND);
@@ -330,7 +331,7 @@ public class BinaryRepositoryRestService {
 		try {
 			binaryRepositoryLogicService.deleteAuthorization(fileId, userId);
 		}
-		catch (final BinaryRepositoryException e) {				
+		catch (final BinaryRepositoryException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(AUTH_DELETED,HttpStatus.OK);

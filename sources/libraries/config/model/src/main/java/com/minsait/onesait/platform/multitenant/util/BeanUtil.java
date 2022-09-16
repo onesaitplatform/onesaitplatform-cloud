@@ -21,10 +21,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 import com.minsait.onesait.platform.config.model.listener.EntityListener;
+import com.minsait.onesait.platform.config.model.listener.VersioningListener;
 
 @Service
 public class BeanUtil implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
@@ -38,6 +40,7 @@ public class BeanUtil implements ApplicationContextAware, ApplicationListener<Co
 	public void initializeRepositoryBeans() {
 		EntityListener.initialize();
 		AuditEntityListener.initialize();
+		VersioningListener.initialize();
 	}
 
 	public static <T> T getBean(Class<T> beanClass) {
@@ -48,6 +51,9 @@ public class BeanUtil implements ApplicationContextAware, ApplicationListener<Co
 		return context;
 	}
 
+	public static Environment getEnv() {
+		return context.getEnvironment();
+	}
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		initializeRepositoryBeans();

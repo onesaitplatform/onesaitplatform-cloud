@@ -67,6 +67,26 @@
 					"url": "/controlpanel/marketasset/list"
 				}
 			]
+		},
+		{
+			"title": {
+				"EN": "VERSION CONTROL",
+				"ES": "CONTROL DE VERSIONES",
+				"FR": "CONTRÔLE DE VERSION"
+			},
+			"icon": "icon-github",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Restore resource",
+						"ES": "Restaurar recurso",
+						"FR": "Restaurer la ressource"
+					},
+					"icon": "",
+					"url": "/controlpanel/versioning/restore/resource"
+				}
+			]
 		}
 	]
 }

@@ -16,6 +16,11 @@ package com.minsait.onesait.platform.config.services.ontology.dto;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Type;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Getter;
@@ -91,11 +96,23 @@ public class OntologyKPIDTO {
 	@Getter
 	@Setter
 	private boolean allowsCypherFields;
-	
+
+	@Getter
+	@Setter
+	private boolean contextDataEnabled;
+
 	@Getter
 	@Setter
 	private String postProcess;
 
+    @Getter
+    @Setter
+    private boolean supportsJsonLd;
+    
+    @Getter
+    @Setter
+    private String jsonLdContext;
+    
 	// ontology fields
 
 	@Override

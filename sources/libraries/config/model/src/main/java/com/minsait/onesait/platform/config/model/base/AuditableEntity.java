@@ -27,30 +27,62 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
+import com.minsait.onesait.platform.config.model.listener.VersioningListener;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 @MappedSuperclass
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
-allowGetters = true)
-@EntityListeners(AuditingEntityListener.class)
+// @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
+// allowGetters = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@EntityListeners({ AuditingEntityListener.class, VersioningListener.class , AuditEntityListener.class})
 @ToString
 public abstract class AuditableEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "CREATED_AT",nullable = false, updatable = false)
+	@Column(name = "CREATED_AT", nullable = false, updatable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreatedDate
-	@Getter @Setter private Date createdAt;
+	@Getter
+	@Setter
+	private Date createdAt;
 
-	@Column(name = "UPDATED_AT",nullable = false)
+	@Column(name = "UPDATED_AT", nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	@LastModifiedDate
-	@Getter @Setter  private Date updatedAt;
+	@Getter
+	@Setter
+	private Date updatedAt;
 
+	@JsonGetter("createdAt")
+	public Long getCreatedAtJson() {
+		return createdAt == null ? null : createdAt.getTime();
+	}
+
+	@JsonSetter("createdAt")
+	public void setCreatedAJson(Long millis) {
+		if (millis != null) {
+			createdAt = new Date(millis);
+		}
+	}
+
+	@JsonGetter("updatedAt")
+	public Long getUpdatedAtJson() {
+		return updatedAt == null ? null : updatedAt.getTime();
+	}
+
+	@JsonSetter("updateAt")
+	public void setUpdatedAJson(Long millis) {
+		if (millis != null) {
+			updatedAt = new Date(millis);
+		}
+	}
 
 }

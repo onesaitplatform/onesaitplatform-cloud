@@ -14,15 +14,9 @@
  */
 package com.minsait.onesait.platform.audit;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.hazelcast.config.Config;
 
 @Configuration
 public class AuditHazelcastConfiguration {
- @Bean
- public Config config() {
-   return new Config(); // Set up any non-default config here
- }
+
 }

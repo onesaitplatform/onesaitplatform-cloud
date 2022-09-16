@@ -54,7 +54,6 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	private static final String ERROR_ZIPPING_FILES = "Error zipping files ";
 	private static final String WTOP_ZIP = "wtop.zip";
-
 	@Autowired
 	private WebProjectRepository webProjectRepository;
 
@@ -73,9 +72,6 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Value("${onesaitplatform.webproject.template.zip:http://localhost:18000/controlpanel/static/wtop/wtop.zip}")
 	private String wtop;
-
-
-
 
 	@Override
 	public List<WebProjectDTO> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
@@ -248,17 +244,16 @@ public class WebProjectServiceImpl implements WebProjectService {
 		unzipFile(folder, file.getOriginalFilename());
 	}
 
-
 	@Override
-	public void uploadWebTemplate( String userId) {
+	public void uploadWebTemplate(String userId) {
 
 		final String folder = rootFolder + userId + SLASH_STRING;
 		deleteFolder(folder);
-		uploadWebTemplateToFolder( folder);
+		uploadWebTemplateToFolder(folder);
 		unzipFile(folder, WTOP_ZIP);
 	}
 
-	private void uploadWebTemplateToFolder(  String path) {
+	private void uploadWebTemplateToFolder(String path) {
 
 		final String fileName = WTOP_ZIP;
 
@@ -282,7 +277,6 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 		log.debug("File: " + path + fileName + " uploaded");
 	}
-
 
 	private void uploadFileToFolder(MultipartFile file, String path) {
 

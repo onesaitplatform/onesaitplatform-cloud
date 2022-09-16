@@ -25,7 +25,7 @@ public interface SubcategoryService {
 
 	List<String> getAllIdentifications();
 
-	void createSubcategory(Subcategory category, String categoryId);
+	void createSubcategory(Subcategory subcategory, String categoryId);
 
 	Subcategory getSubcategoryToUpdate(String id);
 

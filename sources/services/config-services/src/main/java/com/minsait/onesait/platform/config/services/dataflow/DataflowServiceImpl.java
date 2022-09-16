@@ -40,6 +40,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -61,8 +63,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
-import com.minsait.onesait.platform.config.dto.PipelineForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
+import com.minsait.onesait.platform.config.dto.PipelineForList;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.PipelineUserAccess;
@@ -115,6 +117,7 @@ public class DataflowServiceImpl implements DataflowService {
 	private UserRepository userRepository;
 
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 
 	@Autowired
@@ -129,7 +132,7 @@ public class DataflowServiceImpl implements DataflowService {
 
 	@Autowired
 	private SecurityService securityService;
-	
+
 	private final ObjectMapper mapper = new ObjectMapper();
 	private DataflowInstance defaultinstance;
 
@@ -342,6 +345,14 @@ public class DataflowServiceImpl implements DataflowService {
 
 		return getHttpBinary(path, httpMethod, body, headers, instance);
 	}
+
+
+	@Override
+	@Cacheable(key="#p0 + #p1", cacheNames="DataFlowIcons", unless = "#result == null")
+	public byte[] getyHttpBinary(String lib, String id, HttpServletRequest requestServlet, String body, String user) {
+		return getyHttpBinary(requestServlet, body, user).getBody();
+	}
+
 
 	private ResponseEntity<byte[]> getHttpBinary(String url, HttpMethod httpMethod, String body, HttpHeaders headers,
 			DataflowInstance instance) {
@@ -558,7 +569,7 @@ public class DataflowServiceImpl implements DataflowService {
 				log.error("Encoding not supported on name {}", pipeline.getIdentification(), e);
 				metricsManagerLogControlPanelDataflowsCreation(userId, "KO");
 				throw new BadRequestException("Encoding not supported with name " + pipeline.getIdentification()
-						+ " Message: " + e.getMessage());
+				+ " Message: " + e.getMessage());
 			}
 		}
 	}
@@ -592,7 +603,7 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	private Pipeline updateDBPipeline(final String identification, final String streamsetsId, final User user) {
-		Pipeline pl = pipelineRepository.findByIdentification(identification);
+		final Pipeline pl = pipelineRepository.findByIdentification(identification);
 		pl.setIdstreamsets(streamsetsId);
 		return pipelineRepository.save(pl);
 	}
@@ -770,7 +781,7 @@ public class DataflowServiceImpl implements DataflowService {
 		Pipeline pipeline = null;
 		try {
 			pipeline = getPipelineByIdentification(pipelineIdentification);
-		} catch (NotFoundException e) {
+		} catch (final NotFoundException e) {
 			throw new BadRequestException(e.getMessage() + ": " + pipelineIdentification);
 		}
 		final User user = getUserById(userId);
@@ -1276,7 +1287,7 @@ public class DataflowServiceImpl implements DataflowService {
 		} else {
 			throw new BadRequestException(
 					"Pipeline not exported from instance '" + getDefaultDataflowInstance().getIdentification()
-							+ "' Status" + exportResponse.getStatusCode() + " Response: " + exportResponse.getBody());
+					+ "' Status" + exportResponse.getStatusCode() + " Response: " + exportResponse.getBody());
 		}
 	}
 
@@ -1311,22 +1322,23 @@ public class DataflowServiceImpl implements DataflowService {
 	private boolean isUserAssigned(final User user, final List<User> users) {
 		return users.stream().anyMatch(userInstance -> userInstance.equals(user));
 	}
-	
+
+	@Override
 	public List<Pipeline> getPipelinesForListWithProjectsAccess(String userId) {
-		
+
 		final User user = userRepository.findByUserId(userId);
 		final List<PipelineForList> pipelineForLists = pipelineRepository.findAllPipelineList();
 		if (!user.isAdmin()) {
 			securityService.setSecurityToInputList(pipelineForLists, user, "Pipeline");
 		}
 		final List<Pipeline> pipelineList = new ArrayList<>();
-		for (PipelineForList p: pipelineForLists) {
+		for (final PipelineForList p: pipelineForLists) {
 			if (p.getAccessType() != null) {
-				Pipeline pipeline = getPipelineById(p.getId());
+				final Pipeline pipeline = getPipelineById(p.getId());
 				pipelineList.add(pipeline);
 			}
 		}
-		
+
 		return pipelineList;
 	}
 
@@ -1339,7 +1351,7 @@ public class DataflowServiceImpl implements DataflowService {
 		final HttpHeaders headers = getAuthorizationHeadersForPipelineAndUser(pipeline, user);
 		final String basePath = pipeline.getInstance().getUrl();
 		final ResponseEntity<String> response = StreamsetsApiWrapper.getCommittedOffsets(rt, headers, basePath, pipeline.getIdstreamsets());
-		
+
 		if (response.getStatusCode() == HttpStatus.OK) {
 			return response;
 		} else {

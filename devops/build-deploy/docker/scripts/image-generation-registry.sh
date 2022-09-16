@@ -109,7 +109,9 @@ buildConfigDB()
 	echo "ConfigDB image generation with Docker CLI: "
 	if [ "$PERSISTENCE_CONFIGDB_MYSQL" = true ]; then
 		docker build -t $USERNAME/configdb:$1 -f Dockerfile.mysql .
-	elif [ "$PUSH2OCPREGISTRY" = true ]; then
+    elif [ "$PERSISTENCE_CONFIGDB_POSTGRESQL" = true ]; then
+		docker build -t $USERNAME/configdb:$1 -f Dockerfile.postgres .
+    elif [ "$PUSH2OCPREGISTRY" = true ]; then
 		docker build -t $USERNAME/configdb:$1 -f Dockerfile.ocp .
 	else
 		docker build -t $USERNAME/configdb:$1 .
@@ -646,6 +648,11 @@ if [[ "$PERSISTENCE_CONFIGDB" = true && "$(docker images -q $USERNAME/configdb 2
 fi
 
 if [[ "$PERSISTENCE_CONFIGDB_MYSQL" = true && "$(docker images -q $USERNAME/configdb 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/configdb
+	buildConfigDB $PERSISTENCE_TAG
+fi
+
+if [[ "$PERSISTENCE_CONFIGDB_POSTGRESQL" = true && "$(docker images -q $USERNAME/configdb 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/configdb
 	buildConfigDB $PERSISTENCE_TAG
 fi

@@ -96,6 +96,10 @@ public class OntologyCreateDTO {
 
 	@Getter
 	@Setter
+	private boolean contextDataEnabled;
+
+	@Getter
+	@Setter
 	private int shards;
 
 	@Getter
@@ -105,15 +109,15 @@ public class OntologyCreateDTO {
 	@Getter
 	@Setter
 	private String patternField;
-	
+
 	@Getter
 	@Setter
 	private String patternFunction;
-	
+
 	@Getter
 	@Setter
 	private int substringStart;
-	
+
 	@Getter
 	@Setter
 	private int substringEnd;

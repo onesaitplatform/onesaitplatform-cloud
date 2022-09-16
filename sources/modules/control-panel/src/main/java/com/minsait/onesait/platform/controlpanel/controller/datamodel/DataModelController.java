@@ -112,8 +112,8 @@ public class DataModelController {
 	public String create(Model model, @Valid DataModel dataModel, BindingResult bindingResult) {
 
 		this.populateFormData(model);
-		if (bindingResult.hasErrors())
-			model.addAttribute("datamodel", new DataModel());
+
+		model.addAttribute("datamodel", new DataModel());
 		return DATAMOD_CREATE;
 	}
 

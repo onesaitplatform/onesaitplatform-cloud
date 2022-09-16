@@ -14,14 +14,22 @@
  */
 package com.minsait.onesait.platform.config.services.categoryrelation;
 
-import java.util.List;
-
+import com.minsait.onesait.platform.config.model.Category;
+import com.minsait.onesait.platform.config.model.Category.Type;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
+import com.minsait.onesait.platform.config.model.Subcategory;
 
 public interface CategoryRelationService {
 
-	CategoryRelation getByTypeIdAndType(String typeId, CategoryRelation.Type type);
+	CategoryRelation getByTypeIdAndType(String typeId, Type type);
 
 	CategoryRelation getByIdType(String typeId);
 
+	void createCategoryRelation(String resourceId, Category category, Subcategory subcategory, Type type);
+	
+	void updateCategoryRelation(CategoryRelation categoryRelation, String resourceId, Category category,
+			Subcategory subcategory);
+	
+	void deleteCategoryRelation(String resourceId);
+	
 }

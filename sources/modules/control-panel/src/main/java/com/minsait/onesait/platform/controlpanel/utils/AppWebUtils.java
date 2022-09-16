@@ -77,6 +77,7 @@ public class AppWebUtils {
 	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
 	public static final String IDENTIFICATION_PATERN = "[a-zA-Z0-9_-]*";
 	public static final String IDENTIFICATION_PATERN_SPACES = "[a-zA-Z 0-9_-]*";
+	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
@@ -134,7 +135,7 @@ public class AppWebUtils {
 
 		return role != null
 				&& (role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()) || role.getRoleParent() != null
-						&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()));
+				&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()));
 
 	}
 
@@ -214,6 +215,14 @@ public class AppWebUtils {
 
 	}
 
+	public String getCurrentXOpAPIKey() {
+		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
+		if (request.isPresent()) {
+			return request.get().getHeader("X-OP-APIKey");
+		}
+		return null;
+	}
+
 	private static Optional<HttpServletRequest> getCurrentHttpRequest() {
 		return Optional.ofNullable(RequestContextHolder.getRequestAttributes()).filter(
 				requestAttributes -> ServletRequestAttributes.class.isAssignableFrom(requestAttributes.getClass()))
@@ -234,7 +243,7 @@ public class AppWebUtils {
 	}
 
 	public boolean paswordValidation(String data) {
-		return passwordPatternMatcher.isValidPassword(data);
+		return passwordPatternMatcher.isValidPassword(data, getPasswordPattern());
 	}
 
 	public String beautifyJson(String json) throws JsonProcessingException {
@@ -297,7 +306,7 @@ public class AppWebUtils {
 		try {
 			return Arrays.asList(
 					((String) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("allowed-extensions"))
-							.split(","));
+					.split(","));
 
 		} catch (final Exception e) {
 			log.error("No allowed extensions stated on Global Configuration, update your database");
@@ -327,4 +336,7 @@ public class AppWebUtils {
 		throw new GenericRuntimeOPException("No request currently active");
 	}
 
+	private String getPasswordPattern() {
+		return (String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN);
+	}
 }

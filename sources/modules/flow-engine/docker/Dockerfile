@@ -10,7 +10,7 @@ LABEL module.maintainer="onesaitplatform@indra.es" \
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV ASPECTJ_VERSION 1.8.9
+ENV ASPECTJ_VERSION 1.9.7
 
 ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
 	SERVERNAME=localhost \
@@ -24,6 +24,8 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
     CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
     AUDITGLOBALNOTIFY=true \
@@ -41,13 +43,19 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
 	SBA_USERNAME=operations \
-	SBA_SECRET=changeIt2019!
+	SBA_SECRET=changeIt2019! \
+	TIMESCALE_ENABLED=false \
+	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
+	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
+    TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
+    PROMETHEUS_ENABLED=false \
+    FLOW_SECRET=n0-s3cr3T
 
 COPY --from=nodebase /usr/local/bin/node /bin
 
 # Download tzdata for Timezone support and aspectj library
 RUN apk add --no-cache \
-    tzdata \ 
+    tzdata \
     npm \
     python \
     build-base \
@@ -57,9 +65,9 @@ RUN apk add --no-cache \
     openssh
 
 RUN mkdir -p /opt/nodeRed && \
-	mkdir -p /tmp/logs/flowEngine && \
+	  mkdir -p /tmp/logs/flowEngine && \
     mkdir -p /var/log/platform-logs && \
-	mkdir ./target && \
+	  mkdir ./target && \
     cd /usr/local && \
     wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
 
@@ -79,10 +87,10 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /usr/local && \
     chmod -R 777 /opt/nodeRed &&\
     cd /opt/nodeRed/Flow-Engine-Manager &&\
-    npm i appmetrics-dash
+    npm i appmetrics-dash && \
+    npm i prom-client
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
-
 
 EXPOSE 10000 20100 5050
 

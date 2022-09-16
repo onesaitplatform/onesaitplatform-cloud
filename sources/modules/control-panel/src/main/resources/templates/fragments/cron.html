@@ -41,200 +41,347 @@
 
     <div th:fragment="cron" id="cronFragment">
     	<div id="dialog-cron" class="modal fade" role="dialog">
-		<div class="modal-dialog">
-
-			<!-- Modal content-->
-			<div class="modal-content" style="height: 500px">
-				<div class="modal-header">
-					<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
+			<div class="modal-dialog">
+				<!-- Modal content-->
+				<div class="modal-content" style="height: auto">
+					<div class="modal-body">
+						<div class="row main">
+							<div class="col-md-12 col-sm-12 col-xs-12">
 								<div class="margin-top-4">
-									<span  > CRON</span>
-									
-								</div>
-							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-								
-										
-									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" data-dismiss="modal"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-		
-										
-									<!-- CREATE -->
-									<button  id="createBtn" type="button" class="btn btn-primary btn-primary-save" name="create" onclick="generarCron($('#dialog-cron').modal('hide'));" ><span th:text="#{gen.changes}"> New</span></button>
-
-									
+									<H4>Cron</H4>
 								</div>
 							</div>
 						</div>
-				
+						<div class="row main margin-bottom-20" id="tabsCron">
+			                <div id="crontabcontainer" class="wizardContainer col-md-12 col-sm-12 col-xs-12">
+			                    <div class = "wizard-option active"><a  href="#tabsCron-1" data-toggle="tab" onclick="updatePeriod('Segundo', this);" th:text="#{cron.dialog.second}"/></div>
+			                    <div class = "wizard-option"><a href="#tabsCron-2"  data-toggle="tab" onclick="updatePeriod('Minuto', this);" th:text="#{cron.dialog.minute}"/></div>
+			                    <div class = "wizard-option"><a href="#tabsCron-3"  data-toggle="tab" onclick="updatePeriod('Horario', this);" th:text="#{cron.dialog.horary}"/></div>
+			                    <div class = "wizard-option"><a href="#tabsCron-4"  data-toggle="tab" onclick="updatePeriod('Diario', this);" th:text="#{cron.dialog.diary}"/></div>
+			                    <div class = "wizard-option"><a href="#tabsCron-5"  data-toggle="tab" onclick="updatePeriod('Semanal', this);" th:text="#{cron.dialog.weekly}"/></div>
+			                    <div class = "wizard-option"><a href="#tabsCron-6"  data-toggle="tab" onclick="updatePeriod('Mensual', this);" th:text="#{cron.dialog.monthly}"/></div>
+			                    <div class = "wizard-option"><a href="#tabsCron-7"  data-toggle="tab" onclick="updatePeriod('Anual', this);" th:text="#{cron.dialog.yearly}"/></div>
+			                </div>
+			            </div>
+	                	<div class="tab-content margin-left-20">
+			                <div id="tabsCron-1" class="tab-pane active" >
+			                	<div class="row main">
+			                		<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.dialog.every}">every</label>
+						                    <input id="segundo-segundos" name="segundos-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 1, 59));" value="10"/>
+										</div>
+				                    </div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">
+										<label class="control-label" th:text="#{cron.dialog.seconds}"></label>
+									</div>
+								</div>
+			                </div>
+			                <div  id="tabsCron-2" class="tab-pane " >
+			                	<div class="row main">
+									<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+				                    		<label class="control-label" th:text="#{cron.dialog.every}"></label>
+				                    		<input id="minuto-minutos" name="minuto-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 1, 59));" value="10"/>
+										</div>
+				                    </div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">			                    
+					                    <label class="control-label" th:text="#{cron.dialog.minutes}"></label>
+									</div>
+								</div>
+			                </div>
+			                <div id="tabsCron-3" class="tab-pane " >
+			                	<div class="row main">
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-30 no-padding-left" style="width:30px">
+					                    <input id="radioHorarioPeriodo" type="radio" name="Horario" value="Periodo" checked="checked"/>
+									</div>
+			                		<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.dialog.every}"></label>
+						                    <input id="horario-periodo" name="horario-periodo" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 23);" value="1"/>
+			                			</div>
+			                		</div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">			                    
+					                    <label class="control-label" th:text="#{cron.dialog.hours}"></label>
+									</div>	                		
+								</div>
+								<div class="row main">
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-30 no-padding-left" style="width:30px">
+										<input id="radioHorarioHora" type="radio" name="Horario" value="Hora"/>
+									</div>
+			                		<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left no-padding-right">
+			                			<div class="form-group">
+						                    <label class="control-label" style="width:45px;" th:text="#{cron.at}"></label>
+						                    <input id="horario-hora" name="horario-hora" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
+		                       			</div>
+			                		</div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-26 no-padding-left">
+					                    <input id="horario-minutos" name="horario-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>
+									</div>						
+			                	</div>
+			                </div>
+			                <div id="tabsCron-4" class="tab-pane " >
+			                	<div class="row main">
+									<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+				                    		<label class="control-label" th:text="#{cron.dialog.every}"></label>
+				                    		<input id="diario-dia" name="diario-dia" class="form-control " type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 6);" value="1"/>
+										</div>
+				                    </div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">			                    
+					                    <label class="control-label" th:text="#{cron.days.at}"></label>
+									</div>	 		                	
+									<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+				                    		<label class="control-label" style="width:45px;" th:text="#{cron.at}"></label>
+						                    <input id="diario-hora" name="diario-hora" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
+										</div>
+									</div>	 		                	
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-26 no-padding-left">
+			                			<div class="form-group">
+						                    <input id="diario-minutos" name="diario-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
+										</div>
+				                    </div>		                	
+								</div>
+			                </div>
+			                <div id="tabsCron-5" class="tab-pane">
+			                	<div class="row main">
+			                		<div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="lunes" name="lunes" value="MON" class="hide" autocomplete="off">
+										<label class="lbl-no-selected" for="lunes" th:text="#{cron.monday}"></label>
+				                    </div>
+				                    <div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="martes" name="martes" value="TUE" class="hide" autocomplete="off">
+					                    <label class="lbl-no-selected" for="martes" th:text="#{cron.tuesday}"></label>
+				                    </div>
+				                    <div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="miercoles" name="miercoles" value="WED" class="hide" autocomplete="off">
+					                    <label class="lbl-no-selected" for="miercoles" th:text="#{cron.wednsday}"></label>
+				                    </div>
+				                    <div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="jueves" name="jueves" value="THU" class="hide" autocomplete="off">
+					                    <label class="lbl-no-selected" for="jueves" th:text="#{cron.thursday}"></label>
+				                    </div>
+				                    <div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="viernes" name="viernes" value="FRI" class="hide" autocomplete="off">
+					                    <label class="lbl-no-selected" for="viernes" th:text="#{cron.friday}"></label>
+				                    </div>
+				                    <div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="sabado" name="sabado" value="SAT" class="hide" autocomplete="off">
+					                    <label class="lbl-no-selected" for="sabado" th:text="#{cron.saturday}"></label>
+				                    </div>
+				                    <div class="col-md-1 col-sm-1 col-xs-1 no-padding-both" style="width: 69px" >
+					                    <input type="checkbox" id="domingo" name="domingo" value="SUN" class="hide" autocomplete="off">
+					                    <label class="lbl-no-selected" for="domingo" th:text="#{cron.sunday}"></label>
+									</div>
+								</div>
+								<div class="row main">
+			                		<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" style="width:45px;" th:text="#{cron.at}"></label>
+						                    <input id="semanal-hora" name="semanal-hora" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
+		                       			</div>
+			                		</div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-26 no-padding-left">
+					                    <input id="semanal-minutos" name="semanal-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>
+									</div>						
+			                	</div>
+			                </div>
+			                <div id="tabsCron-6" class="tab-pane " >
+			                	<div class="row main">
+			                		<div class="col-md-1 col-sm-3 col-xs-6 margin-top-30 no-padding-left" style="width:30px">
+					                    <input id="radioMensualPeriodo1" type="radio" name="Mensual" value="Periodo1" checked="checked"/>
+									</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.the.day}"></label>
+						                    <input id="mensual-periodo1-dia" name="mensual-periodo1-dia" class="form-control " type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 23);" value="1"/>
+			                			</div>
+			                		</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.of.each}"></label>
+						                    <input id="mensual-periodo1-mes" name="mensual-periodo1-mes" class="form-control" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 23);" value="1"/>
+			                			</div>
+			                		</div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">			                    
+					                    <label class="control-label" th:text="#{cron.months}"></label>
+									</div>	                		
+								</div>
+								<div class="row main">
+			                		<div class="col-md-1 col-sm-3 col-xs-6 margin-top-30 no-padding-left" style="width:30px">
+					                    <input id="radioMensualPeriodo2" type="radio" name="Mensual" value="Periodo1"/>
+									</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.the}"></label>
+											<select id="mensual-periodo2-orden" class="form-control">
+												<option value="#1" th:text="#{cron.first}"/>
+												<option value="#2" th:text="#{cron.second}"/>
+												<option value="#3" th:text="#{cron.third}"/>
+												<option value="#4" th:text="#{cron.fourth}"/>
+											</select>
+										</div>
+			                		</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left margin-top-26">
+										<select  id="mensual-periodo2-dia" class="form-control">
+					                        <option value="MON" th:text="#{cron.monday}"/>
+					                        <option value="TUE" th:text="#{cron.tuesday}"/>
+					                        <option value="WED" th:text="#{cron.wednsday}"/>
+					                        <option value="THU" th:text="#{cron.thursday}"/>
+					                        <option value="FRI" th:text="#{cron.friday}"/>
+					                        <option value="SAT" th:text="#{cron.saturday}"/>
+					                        <option value="SUN" th:text="#{cron.sunday}"/>
+					                    </select>
+			                		</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.of.each}"></label>
+						                    <input id="mensual-periodo2-mes" name="mensual-periodo1-mes" class="form-control" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 23);" value="1"/>
+			                			</div>
+			                		</div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">			                    
+					                    <label class="control-label" th:text="#{cron.months}"></label>
+									</div>
+								</div>
+								<div class="row main">
+			                		<div class="col-md-1 col-sm-3 col-xs-6 margin-top-30 no-padding-left" style="width:30px">
+					                    <input id="radioMensualPeriodo3" type="radio" name="Mensual" value="Periodo1"/>
+									</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.the}"></label>
+											<select id="mensual-periodo3-orden" class="form-control">
+												<option value="#1" th:text="#{cron.first}"/>
+												<option value="#2" th:text="#{cron.second}"/>
+												<option value="#3" th:text="#{cron.third}"/>
+												<option value="#4" th:text="#{cron.fourth}"/>
+											</select>
+										</div>
+			                		</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left margin-top-26">
+										<select  id="mensual-periodo3-dia" class="form-control">
+					                        <option value="MON" th:text="#{cron.monday}"/>
+					                        <option value="TUE" th:text="#{cron.tuesday}"/>
+					                        <option value="WED" th:text="#{cron.wednsday}"/>
+					                        <option value="THU" th:text="#{cron.thursday}"/>
+					                        <option value="FRI" th:text="#{cron.friday}"/>
+					                        <option value="SAT" th:text="#{cron.saturday}"/>
+					                        <option value="SUN" th:text="#{cron.sunday}"/>
+					                    </select>
+			                		</div>
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.from}"></label>
+						                    <select id="mensual-periodo3-mes" class="form-control">
+						                        <option value="1" th:text="#{cron.january}"/>
+						                        <option value="2" th:text="#{cron.february}"/>
+						                        <option value="3" th:text="#{cron.march}"/>
+						                        <option value="4" th:text="#{cron.april}"/>
+						                        <option value="5" th:text="#{cron.may}"/>
+						                        <option value="6" th:text="#{cron.june}"/>
+						                        <option value="7" th:text="#{cron.july}"/>
+						                        <option value="8" th:text="#{cron.august}"/>
+						                        <option value="9" th:text="#{cron.september}"/>
+						                        <option value="10" th:text="#{cron.october}"/>
+						                        <option value="11" th:text="#{cron.november}"/>
+						                        <option value="12" th:text="#{cron.december}"/>
+						                    </select>
+			                			</div>
+			                		</div>
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-34 no-padding-left">			                    
+					                    <label class="control-label" th:text="#{cron.months}"></label>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+				                    		<label class="control-label" style="width:45px;" th:text="#{cron.at}"></label>
+						                    <input id="mensual-hora" name="mensual-hora" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
+										</div>
+									</div>	 		                	
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-26 no-padding-left">
+			                			<div class="form-group">
+						                    <input id="mensual-minutos" name="mensual-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
+										</div>
+				                    </div>
+								</div>
+			                </div>
+			                <div id="tabsCron-7" class="tab-pane ">
+								<div class="row main">
+			                		<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+						                    <label class="control-label" th:text="#{cron.dialog.every}"></label>
+											<input id="anual-dia" name="anual-dia" class="form-control " type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" value="1" onchange="validate(this, 1, 31);"/>
+										</div>
+			                		</div>
+			                		
+			                		<div class="col-md-2 col-sm-3 col-xs-6 no-padding-left">
+					                    <label class="control-label" th:text="#{cron.from}"></label>
+					                    <select id="anual-mes" class="form-control">
+					                        <option value="1" th:text="#{cron.january}"/>
+					                        <option value="2" th:text="#{cron.february}"/>
+					                        <option value="3" th:text="#{cron.march}"/>
+					                        <option value="4" th:text="#{cron.april}"/>
+					                        <option value="5" th:text="#{cron.may}"/>
+					                        <option value="6" th:text="#{cron.june}"/>
+					                        <option value="7" th:text="#{cron.july}"/>
+					                        <option value="8" th:text="#{cron.august}"/>
+					                        <option value="9" th:text="#{cron.september}"/>
+					                        <option value="10" th:text="#{cron.october}"/>
+					                        <option value="11" th:text="#{cron.november}"/>
+					                        <option value="12" th:text="#{cron.december}"/>
+					                    </select>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-1 col-sm-3 col-xs-6 no-padding-left">
+			                			<div class="form-group">
+				                    		<label class="control-label" style="width:45px;" th:text="#{cron.at}"></label>
+						                    <input id="anual-hora" name="anual-hora" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
+										</div>
+									</div>	 		                	
+									<div class="col-md-1 col-sm-3 col-xs-6 margin-top-26 no-padding-left">
+			                			<div class="form-group">
+						                    <input id="anual-minutos" name="anual-minutos" class="form-control" style="width:45px;" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
+										</div>
+				                    </div>									
+								</div>
+			                </div>
+						</div>
+					</div>
+					<div class="modal-footer padding-top-10 padding-bottom-10">
+						<div class="row main">
+							<div class="col-md-12 col-sm-12 col-xs-12">
+								<div class="pull-right">
+									<!-- CANCEL -->											
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" data-dismiss="modal"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<!-- CREATE -->
+									<button  id="createCronBtn" type="button" class="btn btn-primary btn-primary-save" name="create" onclick="generarCron($('#dialog-cron').modal('hide'));" ><span th:text="#{gen.confirmBtn}"> Confirm</span></button>
+								</div>
+							</div>					
+						</div>
+					</div>
 				</div>
-				<div class="modal-body">
-					  <div id="tabsCron">
-					
-                <ul class="nav nav-tabs">
-                    <li class = "active" ><a  href="#tabsCron-1" data-toggle="tab" onclick="updatePeriod('Segundo');" th:text="#{cron.dialog.second}"/></li>
-                    <li><a href="#tabsCron-2"  data-toggle="tab" onclick="updatePeriod('Minuto');" th:text="#{cron.dialog.minute}"/></li>
-                    <li><a href="#tabsCron-3"  data-toggle="tab" onclick="updatePeriod('Horario');" th:text="#{cron.dialog.horary}"/></li>
-                    <li ><a href="#tabsCron-4"  data-toggle="tab" onclick="updatePeriod('Diario');" th:text="#{cron.dialog.diary}"/></li>
-                    <li ><a href="#tabsCron-5"  data-toggle="tab" onclick="updatePeriod('Semanal');" th:text="#{cron.dialog.weekly}"/></li>
-                    <li><a href="#tabsCron-6"  data-toggle="tab" onclick="updatePeriod('Mensual');" th:text="#{cron.dialog.monthly}"/></li>
-                    <li ><a href="#tabsCron-7"  data-toggle="tab" onclick="updatePeriod('Anual');" th:text="#{cron.dialog.yearly}"/></li>
-                </ul>
-                <div class="tab-content">
-                <div  id="tabsCron-1" class="tab-pane active" >
-                    <label th:text="#{cron.dialog.every}"/>
-                    <input id="segundo-segundos" name="segundos-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 1, 59));" value="10"/>
-                    <label th:text="#{cron.dialog.seconds}"/>
-                </div>
-                <div  id="tabsCron-2" class="tab-pane " >
-                    <label th:text="#{cron.dialog.every}"/>
-                    <input id="minuto-minutos" name="minuto-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 1, 59));" value="10"/>
-                    <label th:text="#{cron.dialog.minutes}"/>
-                </div>
-                <div  id="tabsCron-3" class="tab-pane " >
-                    <input id="radioHorarioPeriodo" type="radio" name="Horario" value="Periodo" checked="checked"/>
-                    <label th:text="#{cron.dialog.every}"/>
-                    <input id="horario-periodo" name="horario-periodo" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 23);" value="1"/>
-                    <label th:text="#{cron.dialog.hours}"/>
-                    <br/>
-                    <br/>
-                    <input id="radioHorarioHora" type="radio" name="Horario" value="Hora"/>
-                    <label th:text="#{cron.at}"/>
-                    <input id="horario-hora" name="horario-hora" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
-                    <input id="horario-minutos" name="horario-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
-                </div>
-                <div  id="tabsCron-4" class="tab-pane " >
-                    <label th:text="#{cron.dialog.every}"/>
-                    <input id="diario-dia" name="diario-dia" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 6);" value="1"/>
-                    <label th:text="#{cron.days.at}"/>
-                    <input id="diario-hora" name="diario-hora" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
-                    <input id="diario-minutos" name="diario-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
-                </div>
-                <div  id="tabsCron-5" class="tab-pane " >
-                    <input type="checkbox" id="lunes" name="lunes" value="MON" th:text="#{cron.monday}"/>
-                    <input type="checkbox" id="martes" name="martes" value="TUE" th:text="#{cron.tuesday}"/>
-                    <input type="checkbox" id="miercoles" name="miercoles" value="WED" th:text="#{cron.wednsday}"/>
-                    <input type="checkbox" id="jueves" name="jueves" value="THU" th:text="#{cron.thursday}"/>
-                    <br/>
-                    <input type="checkbox" id="viernes" name="viernes" value="FRI" th:text="#{cron.friday}"/>
-                    <input type="checkbox" id="sabado" name="sabado" value="SAT" th:text="#{cron.saturday}"/>
-                    <input type="checkbox" id="domingo" name="domingo" value="SUN" th:text="#{cron.sunday}"/>
-                    <br/>
-                    <br/>
-                    <label  th:text="#{cron.at}"/>
-                    <input id="semanal-hora" name="semanal-hora" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
-                    <input id="semanal-minutos" name="semanal-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
-                </div>
-                <div  id="tabsCron-6" class="tab-pane " >
-                    <input id="radioMensualPeriodo1" type="radio" name="Mensual" value="Periodo1" checked="checked"/>
-                    <label th:text="#{cron.the.day}"/>
-                    <input id="mensual-periodo1-dia" name="mensual-periodo1-dia" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 31);" value="1"/>
-                    <label th:text="#{cron.of.each}"/>
-                    <input id="mensual-periodo1-mes" name="mensual-periodo1-mes" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 11);" value="1"/>
-                    <label th:text="#{cron.months}"/>
-                    <br/>
-                    <br/>
-                    <input id="radioMensualPeriodo2" type="radio" name="Mensual" value="Periodo1"/>
-                    <label th:text="#{cron.the}"/>
-					<select  id="mensual-periodo2-orden">
-						<option value="#1" th:text="#{cron.first}"/>
-						<option value="#2" th:text="#{cron.second}"/>
-						<option value="#3" th:text="#{general_tercer}"/>
-						<option value="#4" th:text="#{cron.fourth}"/>
-					</select>
-					<select  id="mensual-periodo2-dia">
-                        <option value="MON" th:text="#{cron.monday}"/>
-                        <option value="TUE" th:text="#{cron.tuesday}"/>
-                        <option value="WED" th:text="#{cron.wednsday}"/>
-                        <option value="THU" th:text="#{cron.thursday}"/>
-                        <option value="FRI" th:text="#{cron.friday}"/>
-                        <option value="SAT" th:text="#{cron.saturday}"/>
-                        <option value="SUN" th:text="#{cron.sunday}"/>
-                    </select>
-                    <label th:text="#{cron.of.each}"/>
-                    <input id="mensual-periodo2-mes" name="mensual-periodo1-mes" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="validate(this, 1, 11);" value="1"/>
-                    <label th:text="#{cron.months}"/>
-                    <br/>
-                    <br/>
-                    <input id="radioMensualPeriodo3" type="radio" name="Mensual" value="Periodo1"/>
-                    <label th:text="#{cron.the}"/>
-                    <select  id="mensual-periodo3-orden">
-                        <option value="#1" th:text="#{cron.first}"/>
-                        <option value="#2" th:text="#{cron.second}"/>
-                        <option value="#3" th:text="#{cron.third}"/>
-                        <option value="#4" th:text="#{cron.fourth}"/>
-                    </select>                    
-                    <select  id="mensual-periodo3-dia">
-                        <option value="MON" th:text="#{cron.monday}"/>
-                        <option value="TUE" th:text="#{cron.tuesday}"/>
-                        <option value="WED" th:text="#{cron.wednsday}"/>
-                        <option value="THU" th:text="#{cron.thursday}"/>
-                        <option value="FRI" th:text="#{cron.friday}"/>
-                        <option value="SAT" th:text="#{cron.saturday}"/>
-                        <option value="SUN" th:text="#{cron.sunday}"/>
-                    </select>                    
-                    <label th:text="#{cron.from}"/>
-                    <select  id="mensual-periodo3-mes">
-                        <option value="1" th:text="#{cron.january}"/>
-                        <option value="2" th:text="#{cron.february}"/>
-                        <option value="3" th:text="#{cron.march}"/>
-                        <option value="4" th:text="#{cron.april}"/>
-                        <option value="5" th:text="#{cron.may}"/>
-                        <option value="6" th:text="#{cron.june}"/>
-                        <option value="7" th:text="#{cron.july}"/>
-                        <option value="8" th:text="#{cron.august}"/>
-                        <option value="9" th:text="#{cron.september}"/>
-                        <option value="10" th:text="#{cron.october}"/>
-                        <option value="11" th:text="#{cron.november}"/>
-                        <option value="12" th:text="#{cron.december}"/>
-                    </select>                     
-                    <br/>
-                    <br/>
-                    <label th:text="#{cron.at}"/>
-                    <input id="mensual-hora" name="mensual-hora" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
-                    <input id="mensual-minutos" name="mensual-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
-                </div>
-                <div  id="tabsCron-7" class="tab-pane " >
-                    <label th:text="#{cron.dialog.every}"/>
-                    <input id="anual-dia" name="anual-dia" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" value="1" onchange="validate(this, 1, 31);"/>
-                    <label th:text="#{cron.from}"/>
-                    <select  id="anual-mes">
-                        <option value="1" th:text="#{cron.january}"/>
-                        <option value="2" th:text="#{cron.february}"/>
-                        <option value="3" th:text="#{cron.march}"/>
-                        <option value="4" th:text="#{cron.april}"/>
-                        <option value="5" th:text="#{cron.may}"/>
-                        <option value="6" th:text="#{cron.june}"/>
-                        <option value="7" th:text="#{cron.july}"/>
-                        <option value="8" th:text="#{cron.august}"/>
-                        <option value="9" th:text="#{cron.september}"/>
-                        <option value="10" th:text="#{cron.october}"/>
-                        <option value="11" th:text="#{cron.november}"/>
-                        <option value="12" th:text="#{cron.december}"/>
-                    </select>
-                    <label th:text="#{cron.at}"/>
-                    <input id="anual-hora" name="mensual-hora" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 23));" value="12"/>
-                    <input id="anual-minutos" name="mensual-minutos" style="width: 40px;" class="element text small" type="number" onkeypress="if (isNaN(String.fromCharCode(event.keyCode))) return false;" onchange="complete(validate(this, 0, 59));" value="00"/>                    
-                </div>
-            </div>
-             </div>
-				</div>
-			
 			</div>
-
 		</div>
-	</div>
+
 	 <script type="text/javascript" th:inline="javascript"> 
             //<![CDATA[
                 var periodoCron = "Segundo";
+                
+                $("#tabsCron-5").find("input").off('change').on('change', function(){
+                    $(this).next('label').prop('class', this.checked ? 'lbl-selected' : 'lbl-no-selected');
+                });
+                
 	            function showCronDialog() {	               
 	                $( "#dialog-cron" ).modal();
 	              }
+	            
 	        
-	            function updatePeriod(periodo){
+	            function updatePeriod(periodo, tabObj){
+	            	$('#crontabcontainer').find('.wizard-option').removeClass('active');
+	            	tabObj.parentElement.classList.add('active');
 	            	periodoCron=periodo;
 	            };
 	            function generarCron(){
@@ -260,7 +407,7 @@
                     document.getElementById("cron").value=cron;
                     if (document.getElementById('descripcion_campo_temporizador')){
                         document.getElementById('descripcion_campo_temporizador').innerHTML = [[#{cron.dialog.every}]] + " " + remove0prefix(document.getElementById("segundo-segundos").value) + " " + [[#{cron.dialog.seconds}]];
-                    }
+                    }                    
                     $("#cron").change();
                     
                 };
@@ -315,7 +462,7 @@
                 function generarDiasSemana(){
                 	var dias = "";
                 	var selected = new Array();
-                	selected = $("#tabsCron-5").children("input:checked");
+                	selected = $("#tabsCron-5").find("input:checked");
                 	for (var i=0;i<selected.length;i++) { 
                 		  if (dias!=""){
                 			  dias = dias +",";
@@ -327,7 +474,7 @@
                 function generarMensajeDiasSemana(){
                     var dias = "";
                     var selected = new Array();
-                    selected = $("#tabsCron-5").children("input:checked");
+                    selected = $("#tabsCron-5").find("input:checked");
                     for (var i=0;i<selected.length;i++) { 
                           if (dias!=""){
                               dias = dias +",";
@@ -409,8 +556,6 @@
                 }
             //]]>
         </script> 
-        </div>
-      
-  
+ 	</div> 
 </body>
 </html>

@@ -34,6 +34,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -42,7 +44,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "API_OPERATION")
 @Configurable
-public class ApiOperation extends AuditableEntityWithUUID {
+public class ApiOperation extends AuditableEntityWithUUID  {
 
 	private static final long serialVersionUID = 1L;
 
@@ -55,6 +57,7 @@ public class ApiOperation extends AuditableEntityWithUUID {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
+	@JsonIgnore
 	private Api api;
 
 	@OneToMany(mappedBy = "apiOperation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -99,8 +102,16 @@ public class ApiOperation extends AuditableEntityWithUUID {
 
 	@Column(name = "POST_PROCESS")
 	@Lob
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String postProcess;
 
+	@JsonSetter("apiqueryparameters")
+	public void setApiQueryParametersJson(Set<ApiQueryParameter> apiqueryparameters) {
+		apiqueryparameters.forEach(s -> {
+			s.setApiOperation(this);
+			this.apiqueryparameters.add(s);
+		});
+	}
 }

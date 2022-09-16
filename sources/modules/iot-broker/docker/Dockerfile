@@ -45,6 +45,8 @@ ENV SERVER_NAME=localhost \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
@@ -73,7 +75,12 @@ ENV SERVER_NAME=localhost \
     GRAYLOG_PORT=12201 \
 	INTERNAL_SSL=false \
 	SBA_USERNAME=operations \
-	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
+	TIMESCALE_ENABLED=false \
+	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
+	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
+	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+	
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

@@ -24,7 +24,6 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.json.JSONArray;
@@ -186,7 +185,7 @@ public class ModelController {
 	public String create(org.springframework.ui.Model model) {
 		model.addAttribute(MODEL_DTO_STR, new ModelDTO());
 		model.addAttribute("notebooks", notebookService.getNotebooks(utils.getUserId()));
-		model.addAttribute("categories", categoryService.getAllIdentifications());
+		model.addAttribute("categories", categoryService.getCategoriesByTypeAndGeneralType(Category.Type.MODEL));
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("dashboards", dashboardService.getByUserId(utils.getUserId()));
 		return "models/create";
@@ -199,7 +198,7 @@ public class ModelController {
 			Model modelp = modelService.getModelById(id);
 
 			CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
-					CategoryRelation.Type.MODEL);
+					Category.Type.MODEL);
 			Category category = categoryService.getCategoryById(categoryRelation.getCategory());
 			Subcategory subcategory = subcategoryService.getSubcategoryById(categoryRelation.getSubcategory());
 
@@ -246,7 +245,7 @@ public class ModelController {
 			model.addAttribute(PARAMETERS_STR, paramsDto);
 			model.addAttribute("ids", ids);
 			model.addAttribute("notebooks", notebookService.getNotebooks(utils.getUserId()));
-			model.addAttribute("categories", categoryService.getAllIdentifications());
+			model.addAttribute("categories", categoryService.getCategoriesByTypeAndGeneralType(Category.Type.MODEL));
 			model.addAttribute("subcategories", subcategoryService.findSubcategoriesByCategory(category));
 			model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
 			model.addAttribute("dashboards", dashboardService.getByUserId(utils.getUserId()));
@@ -255,13 +254,6 @@ public class ModelController {
 			log.error("Error prasing parameters model: " + e.getMessage());
 			return REDIRECT_MODELS_LIST;
 		}
-	}
-
-	@GetMapping(value = "/getSubcategories/{category}")
-	public @ResponseBody List<String> getSubcategories(@PathVariable("category") String category,
-			HttpServletResponse response) {
-		return subcategoryService
-				.findSubcategoriesNamesByCategory(categoryService.getCategoryByIdentification(category));
 	}
 
 	@GetMapping(value = "/getConfigParagraph/{notebook}")
@@ -510,7 +502,7 @@ public class ModelController {
 			if (modelp != null) {
 
 				CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
-						CategoryRelation.Type.MODEL);
+						Category.Type.MODEL);
 				Category category = categoryService.getCategoryById(categoryRelation.getCategory());
 				Subcategory subcategory = subcategoryService
 						.getSubcategoryById(categoryRelation.getSubcategory());

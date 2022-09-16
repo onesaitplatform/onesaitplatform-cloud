@@ -103,10 +103,10 @@
 						<div class="col-md-6 col-sm-6 col-xs-12">
 							<div class="pull-right">
 								<!-- CANCEL -->
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/consolemenu/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/consolemenu/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 								<!-- UPDATE -->
-								<button th:if="${option == 'edit'}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" th:onclick="'editMenu(\'' + ${idCm} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
-								<button th:if="${option == 'show'}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/edit/${id}/|} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
+								<button th:if="${option == 'edit'}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='editMenu(\'' + ${idCm} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
+								<button th:if="${option == 'show'}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/edit/${id}/|} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
 							</div>
 						</div>
 					</div>

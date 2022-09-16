@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.WebProject;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,13 +37,13 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_NULL)
 public class WebProjectDTO {
 
-	@ApiParam(required = true, example = "Web project demo")
+	@Parameter(required = true, example = "Web project demo")
 	private String description;
-	@ApiParam(required = false, example = "index.html")
+	@Parameter(required = false, example = "index.html")
 	private String mainFile;
-	@ApiParam(required = true)
+	@Parameter(required = true)
 	private MultipartFile zip;
-	@ApiParam(required = true)
+	@Parameter(required = true)
 	private String identification;
 	private String created;
 	private String updated;

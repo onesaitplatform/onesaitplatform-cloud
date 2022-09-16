@@ -76,6 +76,8 @@ public interface AppService {
 
 	public void updateApp(App app);
 
+	public List<String> getAppNamesByUserIn(String userId);
+
 	public void deleteRole(AppRole role);
 
 	public AppRole findRole(String roleId);
@@ -88,10 +90,12 @@ public interface AppService {
 
 	public AppList getAppListByIdentification(String identification);
 
+	public List<AppRoleList> getRolesByAppIdentification(String identification);
+
 	public AppList getAppListById(String id);
 
 	public List<AppUserListOauth> getAppUsersByUserIdAndApp(String userId, String appIdentification);
-	
+
 	public List<AppUserListOauth> getAppUsersByApp(String appIdentification);
 
 	public List<AppUserListOauth> getAppUsersByUserIdAndRoleAndApp (String userId, String role, String appIdentification);

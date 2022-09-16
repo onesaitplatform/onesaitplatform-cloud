@@ -33,14 +33,20 @@ var ProjectCreateController = function() {
 
 			if (!useRealm) {
 				$('#platform-users').removeClass('hide');
+				$('#platform-users-header').removeClass('hide');
 				$('#realms-select').addClass('hide');
 				$('#alert-realm').addClass('hide');
 				$('#create-realm').addClass('hide');
+				$('#platform-users-table').addClass('col-md-9');
+				$('#platform-users-table').removeClass('col-md-12');
 			} else {
 				$('#platform-users').addClass('hide');
+				$('#platform-users-header').addClass('hide');
 				$('#realms-select').removeClass('hide');
 				$('#alert-realm').removeClass('hide');
 				$('#create-realm').removeClass('hide');
+				$('#platform-users-table').addClass('col-md-12');
+				$('#platform-users-table').removeClass('col-md-9');
 			}
 
 		});
@@ -212,20 +218,25 @@ var ProjectCreateController = function() {
 	var addPlatformUser = function() {
 		var user = $('#users').val();
 		if (user != '') {
+			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding user..."});
 			$("#users-tab-fragment").load('/controlpanel/projects/adduser', {
 				'user' : user,
 				'project' : projectCreateJson.projectId
 			}, function() {
+				App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding user..."});
 				refreshSelectpickers();
 				toastr.success(messagesForms.operations.genOpSuccess,'');
+				App.unblockUI();
 			});
 		} else {
 			toastr.info(projectCreateJson.validations.selectUser,'');
 		}
+		
 	}
 
 	var removePlatformUser = function(user) {
 		if (user != '') {
+			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing user..."});
 			$("#users-tab-fragment").load('/controlpanel/projects/removeuser',
 					{
 						'user' : user,
@@ -233,6 +244,7 @@ var ProjectCreateController = function() {
 					}, function() {
 						refreshSelectpickers();
 						toastr.success(messagesForms.operations.genOpSuccess,'');
+						App.unblockUI();
 					});
 		} else {
 			toastr.info(projectCreateJson.validations.selectUser,'');
@@ -304,10 +316,16 @@ var ProjectCreateController = function() {
 
 			if (!useRealm) {
 				$('#platform-users').removeClass('hide');
+				$('#platform-users-header').removeClass('hide');
 				$('#realms-select').addClass('hide');
+				$('#platform-users-table').addClass('col-md-9');
+				$('#platform-users-table').removeClass('col-md-12');
 			} else {
 				$('#platform-users').addClass('hide');
+				$('#platform-users-header').addClass('hide');
 				$('#realms-select').removeClass('hide');
+				$('#platform-users-table').addClass('col-md-12');
+				$('#platform-users-table').removeClass('col-md-9');
 			}
 
 		});
@@ -317,6 +335,7 @@ var ProjectCreateController = function() {
 	var getResourcesFiltered = function() {
 		var identification = $('#resource-identification-filter').val()
 		var type = $('#resource-type-filter').val();
+		App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Searching..."});
 		$('#resources-modal-fragment').load(
 				'/controlpanel/projects/resources?identification='
 						+ identification + '&project='
@@ -324,6 +343,7 @@ var ProjectCreateController = function() {
 				function() {
 					$('#resources-modal').modal('show');
 					refreshSelectpickers();
+					App.unblockUI();
 				});
 	}
 
@@ -385,10 +405,12 @@ var ProjectCreateController = function() {
 								handleAuth(authorization, 'POST').done(updateResourcesFragment)
 								.fail(showGenericError);
 							}
+							App.unblockUI();
 						});
 			} else {
 				handleAuth(authorization, 'POST').done(updateResourcesFragment)
 				.fail(showGenericError);
+				
 			}
 		}
 	}
@@ -438,8 +460,9 @@ var ProjectCreateController = function() {
 			'id' : id,
 			'project' : projectCreateJson.projectId
 		};
+		App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing..."});
 		handleAuth(payload, 'DELETE').done(updateResourcesFragment).fail();
-
+		App.unblockUI();
 	}
 	var handleAuth = function(payload, methodType) {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -453,7 +476,7 @@ var ProjectCreateController = function() {
 				type : methodType,
 				data : JSON.stringify(payload),
 				contentType : "application/json",
-				dataType : "html",
+				dataType : "html"
 			});
 		} else if (methodType == 'DELETE') {
 			return $.ajax({
@@ -462,8 +485,8 @@ var ProjectCreateController = function() {
 					[csrf_header]: csrf_value
 			    },
 				type : methodType,
-				data : payload,
-				dataType : "html",
+				data : JSON.stringify(payload),
+				dataType : "html"
 			});
 		}
 	}
@@ -481,7 +504,7 @@ var ProjectCreateController = function() {
 		refreshSelectpickers();
 	}
 
-	var sortHTML = function(id, sel, sortvalue, attribute){
+	var sortHTML = function(id, sel, sortvalue){
 		  var a, b, i, ii, y, bytt, v1, v2, cc, j;
 		  a = $(id);
 		  for (i = 0; i < a.length; i++) {
@@ -494,8 +517,8 @@ var ProjectCreateController = function() {
 		        for (ii = 0; ii < (b.length - 1); ii++) {
 		          bytt = 0;
 		          if (sortvalue) {
-		            v1 = b[ii].querySelector(sortvalue).children[0].getAttribute(attribute);
-		            v2 = b[ii + 1].querySelector(sortvalue).children[0].getAttribute(attribute);
+		            v1 = b[ii].querySelector(sortvalue).children[1].value;
+		            v2 = b[ii + 1].querySelector(sortvalue).children[1].value;
 		          } else {
 		            v1 = b[ii].innerText;
 		            v2 = b[ii + 1].innerText;
@@ -523,7 +546,9 @@ var ProjectCreateController = function() {
 			removeAuthorization(id);
 		},
 		insertAuthorization : function(obj) {
+			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding..."});
 			insertAuthorization(obj);
+			App.unblockUI();
 		},
 		insertElementsAssociated : function () {
 			insertElementsAssociated();
@@ -549,8 +574,8 @@ var ProjectCreateController = function() {
 		setRealm : function() {
 			setRealm();
 		},
-		sortHTML : function(id, sel, sortvalue, attribute){
-			sortHTML(id, sel, sortvalue, attribute);
+		sortHTML : function(id, sel, sortvalue){
+			sortHTML(id, sel, sortvalue);
 		},
 
 		init : function() {

@@ -24,18 +24,18 @@
 				},
 				{
 					"title": {
-						"EN": "My Ontologies",
-						"ES": "Mis Ontologías",
-						"FR": "Mes Ontologies"
+						"EN": "My Entities",
+						"ES": "Mis Entidades",
+						"FR": "Mes Entités"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
 				},
 				{
 					"title": {
-						"EN": "My APIs",
-						"ES": "Mis APIs",
-						"FR": "Mes API"
+						"EN": "My REST APIs",
+						"ES": "Mis APIs REST",
+						"FR": "Mes APIs REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
@@ -97,7 +97,7 @@
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta Consultas",
+						"ES": "Herramienta de Consultas",
 						"FR": "Éditeur de Requêtes"
 					},
 					"icon": "",

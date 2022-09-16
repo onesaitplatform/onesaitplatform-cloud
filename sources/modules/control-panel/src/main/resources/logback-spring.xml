@@ -84,7 +84,6 @@
 					<appender-ref ref="ASYNC GELF" />
 				</then>
 			</if>
-
 		</root>
 	</springProfile>
 	<springProfile name="production,docker">

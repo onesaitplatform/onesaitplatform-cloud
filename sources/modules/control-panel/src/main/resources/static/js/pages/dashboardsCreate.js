@@ -205,7 +205,7 @@ var DashboardsCreateController = function() {
             	    $('#checkboxPublic_aux').val( $('#checkboxPublic').prop('checked'));  
             	    $('#headerlibs_aux').val( myCodeMirror.getValue());
             	    $('#i18n_aux').val($('#i18n').val());
-            	   
+   		       	    $('#generateImage').val( $('#checkboxGenerateImage').prop('checked'));      	        	   
             	    $( "#image_aux" ).remove();
             	    var x = $("#image"),
             	      y = x.clone();
@@ -229,6 +229,7 @@ var DashboardsCreateController = function() {
             	    $('#checkboxPublic_aux').val( $('#checkboxPublic').prop('checked')); 
             	    $('#headerlibs_aux').val( myCodeMirror.getValue());
             	    $('#i18n_aux').val($('#i18n').val());
+              	    $('#generateImage').val( $('#checkboxGenerateImage').prop('checked'));      	        	    
             	    $( "#image_aux" ).remove();
             	    var x = $("#image"),
             	      y = x.clone();
@@ -287,7 +288,7 @@ var DashboardsCreateController = function() {
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('dashboard_create_form');
 		});		
-		
+
 	}
 	
 	// CLEAN FIELDS FORM
@@ -295,10 +296,34 @@ var DashboardsCreateController = function() {
 		
 		//CLEAR OUT THE VALIDATION ERRORS
 		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
+		$('#'+formId).find('input:text, input:password,  input:file, select, textarea').each(function(){
 			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
-			if(!$(this).hasClass("no-remove")){$(this).val('');}
+				if(!$(this).hasClass("no-remove")){$(this).val('');}
 		});
+		
+		$('#'+formId).find('input:checkbox').each(function(){
+	
+		
+		
+		    if($(this).attr('id') == 'checkboxGenerateImage' && $(this).prop('checked')) {
+			
+				$('#image').toggle('show');
+			}
+				
+			if(!$(this).hasClass("no-remove")){$(this).prop('checked',false);}
+				
+			
+			
+		});
+		
+		// $('#checkboxPublic').prop('checked',false);
+		
+	/*	if ($('checkboxGenerateImage').val(true)){
+				onclick=$('#image').toggle('hide');}
+			$('input:checkbox').each(function() { this.checked = false; });	
+		
+	*/
+		
 		
 		//CLEANING SELECTs
 		$(".selectpicker").each(function(){
@@ -331,6 +356,7 @@ var DashboardsCreateController = function() {
 		$('#showedImgPreview').attr('src', '/controlpanel/img/APPLICATION.png');
 		// CLEAN ALERT MSG
 		$('.alert-danger').hide();
+
 	}
 	
 	 function validateImgSize() {

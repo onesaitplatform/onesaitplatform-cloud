@@ -30,6 +30,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,7 +67,7 @@ public class ServicesClientRestConfig {
 	@Value("${onesaitplatform.services.client.rest.close-idle-connection-wait-time-secs:30}")
 	private int closeIdleConnectionWaitTimeSecs;
 
-	@Bean
+	@Bean("servicesClientConnectionManager")
 	PoolingHttpClientConnectionManager connectionManager() {
 		final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		cm.setMaxTotal(maxTotalConnections);
@@ -74,7 +75,7 @@ public class ServicesClientRestConfig {
 		return cm;
 	}
 
-	@Bean
+	@Bean("servicesClientConnectionKeepAlive")
 	public ConnectionKeepAliveStrategy connectionKeepAliveStrategy() {
 		return (response, context) -> defaultKeepAliveTimeMillis;
 	}
@@ -97,8 +98,8 @@ public class ServicesClientRestConfig {
 		final RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout(requestTimeout)
 				.setConnectTimeout(connectTimeout).setSocketTimeout(socketTimeout).build();
 
-		return (HttpClients.custom().setDefaultRequestConfig(requestConfig).setConnectionManager(connectionManager())
-				.setSSLSocketFactory(csf).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build());
+		return HttpClients.custom().setDefaultRequestConfig(requestConfig).setConnectionManager(connectionManager())
+				.setSSLSocketFactory(csf).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 
 	}
 
@@ -113,8 +114,8 @@ public class ServicesClientRestConfig {
 		return new RestTemplate(requestFactory());
 	}
 
-	@Bean
-	public Runnable idleConnectionMonitor(final PoolingHttpClientConnectionManager connectionManager) {
+	@Bean("serviceClientIdleConnectionMonitor")
+	public Runnable idleConnectionMonitor(@Qualifier("servicesClientConnectionManager") final PoolingHttpClientConnectionManager connectionManager) {
 		return new Runnable() {
 			@Override
 			@Scheduled(fixedDelay = 10000)

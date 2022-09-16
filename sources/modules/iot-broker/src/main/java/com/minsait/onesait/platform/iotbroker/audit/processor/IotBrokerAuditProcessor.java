@@ -51,15 +51,17 @@ public class IotBrokerAuditProcessor {
 	@Autowired
 	private List<MessageAuditProcessor> processors;
 
+	private static final String SYS_ADMIN="sysadmin";
+
 	public IotBrokerAuditEvent getEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
 		log.debug("getEvent from message " + message);
 
 		IotBrokerAuditEvent event = null;
 
-		IoTSession session = getSession(message);
+		final IoTSession session = getSession(message);
 
-		MessageAuditProcessor processor = proxyProcesor(message);
+		final MessageAuditProcessor processor = proxyProcesor(message);
 
 		event = processor.process(message, session, info);
 
@@ -78,18 +80,18 @@ public class IotBrokerAuditProcessor {
 
 			if (iotEvent != null) {
 
-				IoTSession session = getSession(message);
+				final IoTSession session = getSession(message);
 
 				if (session != null) {
-					String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
-							+ " Type : " + iotEvent.getOperationType() + " By User : " + session.getUserID();
+					final String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
+					+ " Type : " + iotEvent.getOperationType() + " By User : " + session.getUserID();
 
 					event = OPEventFactory.builder().build().createAuditEventError(session.getUserID(),
 							messageOperation, Module.IOTBROKER, ex);
 
 				} else {
-					String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
-							+ " Type : " + iotEvent.getOperationType();
+					final String messageOperation = "Exception Detected while operation : " + iotEvent.getOntology()
+					+ " Type : " + iotEvent.getOperationType();
 
 					event = OPEventFactory.builder().build().createAuditEventError(messageOperation, Module.IOTBROKER,
 							ex);
@@ -114,19 +116,19 @@ public class IotBrokerAuditProcessor {
 			event.setResultOperation(ResultOperationType.ERROR);
 		}
 
-		IoTSession session = getSession(message);
+		final IoTSession session = getSession(message);
 
 		if (session != null) {
-			event.setUser(session.getUserID());
+			event.setLoggedUser(session.getUserID());
 			event.setSessionKey(message.getSessionKey());
 			event.setClientPlatform(session.getClientPlatform());
 			event.setClientPlatformInstance(session.getDevice());
 		}
 
-		if (event.getUser() == null || "".equals(event.getUser())) {
-			event.setUser(AuditConst.ANONYMOUS_USER);
+		if (event.getLoggedUser() == null || "".equals(event.getLoggedUser())) {
+			event.setLoggedUser(AuditConst.ANONYMOUS_USER);
 		}
-
+		event.setUser(SYS_ADMIN);
 		return event;
 	}
 
@@ -154,7 +156,7 @@ public class IotBrokerAuditProcessor {
 
 		IoTSession session = null;
 
-		Optional<IoTSession> sessionPlugin = securityPluginManager.getSession(message.getSessionKey());
+		final Optional<IoTSession> sessionPlugin = securityPluginManager.getSession(message.getSessionKey());
 
 		if (sessionPlugin.isPresent()) {
 			session = sessionPlugin.get();

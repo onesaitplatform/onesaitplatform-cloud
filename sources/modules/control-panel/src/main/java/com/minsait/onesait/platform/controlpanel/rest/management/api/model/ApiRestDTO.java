@@ -25,6 +25,7 @@ import com.minsait.onesait.platform.config.model.UserApi;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,111 +35,110 @@ public class ApiRestDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "API Id")
+	@Schema(description="API Id")
 	@Getter
 	@Setter
 	private String id;
 
-	@ApiModelProperty(value = "API Identification", required = true)
+	@Schema(description="API Identification", required = true)
 	@Getter
 	@Setter
 	private String identification;
 
-	@ApiModelProperty(value = "API Version Number")
+	@Schema(description="API Version Number")
 	@Getter
 	@Setter
 	private Integer version;
 
-	@ApiModelProperty(value = "API Type", required = true)
+	@Schema(description="API Type", required = true)
 	@Getter
 	@Setter
 	private String type;
 
-	@ApiModelProperty(value = "API Public/Private")
+	@Schema(description="API Public/Private")
 	@Getter
 	@Setter
 	private Boolean isPublic;
 
-	@ApiModelProperty(value = "API Category", required = true)
+	@Schema(description="API Category", required = true)
 	@Getter
 	@Setter
 	private String category;
 
-	@ApiModelProperty(value = "API External")
+	@Schema(description="API External")
 	@Getter
 	@Setter
 	private Boolean externalApi;
 
-	@ApiModelProperty(value = "Ontology Identification for OntologyAPI")
+	@Schema(description="Ontology Identification for OntologyAPI")
 	@Getter
 	@Setter
 	private String ontologyId;
 
-	@ApiModelProperty(value = "QPS API limit")
+	@Schema(description="QPS API limit")
 	@Getter
 	@Setter
 	private Integer apiLimit;
 
-	@ApiModelProperty(value = "API cache timeout")
+	@Schema(description="API cache timeout")
 	@Getter
 	@Setter
 	private Integer apiCacheTimeout;
 
-	@ApiModelProperty(value = "Endpoint for invoking API")
+	@Schema(description="Endpoint for invoking API")
 	@Getter
 	@Setter
 	private String endpoint;
 
-	@ApiModelProperty(value = "External Endpoint for invoking API")
+	@Schema(description="External Endpoint for invoking API")
 	@Getter
 	@Setter
 	private String endpointExt;
 
-	@ApiModelProperty(value = "API Description")
+	@Schema(description="API Description")
 	@Getter
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Tags Meta-inf for API", required = true)
+	@Schema(description="Tags Meta-inf for API", required = true)
 	@Getter
 	@Setter
 	private String metainf;
 
-	@ApiModelProperty(value = "Image Type")
+	@Schema(description="Image Type")
 	@Getter
 	@Setter
 	private String imageType;
 
-	@ApiModelProperty(value = "API Status")
+	@Schema(description="API Status")
 	@Getter
 	@Setter
 	private String status;
 
-	@ApiModelProperty(value = "creation Date", required = true)
+	@Schema(description="creation Date", required = true)
 	@Getter
 	@Setter
 	private String creationDate;
 
-	@ApiModelProperty(value = "API Propietary", required = true)
+	@Schema(description="API Propietary", required = true)
 	@Getter
 	@Setter
 	private String userId;
 
-	@ApiModelProperty(value = "API Swagger Json", required = true)
+	@Schema(description="API Swagger Json", required = true)
 	@Getter
 	@Setter
 	private String swaggerJson;
 
-	@ApiModelProperty(value = "API Operations")
+	@Schema(description="API Operations")
 	@Getter
 	@Setter
 	private ArrayList<ApiRestOperationDTO> operations;
 
-	@ApiModelProperty(value = "API Authentication")
+	@Schema(description="API Authentication")
 	@Getter
 	@Setter
 	private ArrayList<UserApiSimplifiedResponseDTO> authentications;
-
 
 	public ApiRestDTO(Api api, List<ApiOperation> apiops, List<UserApi> usersapi, String urlBase) {
 		id = api.getId();

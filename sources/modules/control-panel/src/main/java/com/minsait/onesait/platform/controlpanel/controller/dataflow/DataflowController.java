@@ -217,8 +217,9 @@ public class DataflowController {
 				return "error/404";
 			} else {
 				final List<User> users = dataflowService.getFreeAnalyticsUsers();
-				if (instance.getUser() != null)
+				if (instance.getUser() != null) {
 					users.add(instance.getUser());
+				}
 
 				model.addAttribute("users", users);
 				model.addAttribute("instance", instance);
@@ -367,7 +368,7 @@ public class DataflowController {
 	@ResponseBody
 	public ResponseEntity<byte[]> getStageIcon(@PathVariable("lib") String lib, @PathVariable("id") String id,
 			HttpServletRequest request) {
-		return dataflowService.getyHttpBinary(request, "", utils.getUserId());
+		return ResponseEntity.ok().body(dataflowService.getyHttpBinary(lib, id, request, "", utils.getUserId()));
 	}
 
 	// To allow uploads of stages extra libraries
@@ -398,7 +399,7 @@ public class DataflowController {
 	}
 
 	@ExceptionHandler({ IllegalArgumentException.class, RestClientException.class, DataAccessException.class,
-			BadRequestException.class })
+		BadRequestException.class })
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public String handleOPException(final RuntimeException exception) {

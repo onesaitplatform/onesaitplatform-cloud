@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Locale;
 
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -34,9 +35,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+//import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -68,10 +68,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootApplication
-@EnableJpaAuditing
 @EnableAsync
 @EnableJpaRepositories(basePackages = "com.minsait.onesait.platform.config.repository")
-@EnableMongoRepositories(basePackages = "com.minsait.onesait.platform.persistence.mongodb")
 @ComponentScan(basePackages = { "com.ibm.javametrics.spring", "com.minsait.onesait.platform" }, lazyInit = true)
 // @EnableAutoConfiguration(exclude = { MetricsDropwizardAutoConfiguration.class
 // })
@@ -103,7 +101,22 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 	private ApplicationContext appCtx;
 
 	public static void main(String[] args) throws Exception {
-		SpringApplication.run(ControlPanelWebApplication.class, args);
+		try {
+			SpringApplication.run(ControlPanelWebApplication.class, args);
+		} catch (final BeanCreationException ex) {
+			final Throwable realCause = unwrap(ex);
+			log.error("Error on startup", realCause);
+		} catch (final Exception e) {
+			log.error("Error on startup", e);
+		}
+	}
+
+	public static Throwable unwrap(Throwable ex) {
+		if (ex != null && BeanCreationException.class.isAssignableFrom(ex.getClass())) {
+			return unwrap(ex.getCause());
+		} else {
+			return ex;
+		}
 	}
 
 	@Autowired
@@ -188,7 +201,7 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());
-		//		registry.addInterceptor(logInterceptor);
+		// registry.addInterceptor(logInterceptor);
 		registry.addInterceptor(securityCheckInterceptor);
 
 	}

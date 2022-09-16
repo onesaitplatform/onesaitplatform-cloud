@@ -15,15 +15,26 @@
 package com.minsait.onesait.platform.config.services.ontology.dto;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
+
 import org.apache.kafka.connect.data.Timestamp;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Type;
 
 import com.minsait.onesait.platform.config.model.DataModel;
+import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.PropertyType;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit;
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.RetentionUnit;
+import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleAggregates;
+import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleProperties;
 import com.minsait.onesait.platform.config.model.User;
 
 import lombok.Getter;
@@ -73,6 +84,14 @@ public class OntologyTimeSeriesServiceDTO {
 
 	@Getter
 	@Setter
+	private String[] fieldAggregations;
+
+	@Getter
+	@Setter
+	private String[] fieldPushSignals;
+
+	@Getter
+	@Setter
 	private String[] windowtypes;
 
 	@Getter
@@ -102,6 +121,10 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic;
+	
+	@Getter
+	@Setter
+	private boolean allowsCreateNotificationTopic;
 
 	@Getter
 	@Setter
@@ -155,12 +178,56 @@ public class OntologyTimeSeriesServiceDTO {
 	@Setter
 	private boolean rtdbClean;
 
+	@Getter
+	@Setter
+	private boolean contextDataEnabled;
+
 	// ontology fields
+
+	// TimescaleDB
+	@Getter
+	@Setter
+	private OntologyTimeseriesTimescaleProperties timeSeriesTimescaleProperties;
+	
+
+	@Getter
+	@Setter
+	private Set<OntologyTimeseriesTimescaleAggregates> timeSeriesTimescaleAggregates;
+	
+	@Getter
+	@Setter
+	private String[] buckettypes;
+
+	@Getter
+	@Setter
+	private String hypertableQuery;
+
+	@Getter
+	@Setter
+	private boolean compressionActive;
+
+	@Getter
+	@Setter
+	private String compressionConfig;
+
+	@Getter
+	@Setter
+	private String compressionQuery;
+	
+    @Getter
+    @Setter
+    private boolean supportsJsonLd;
+    
+    @Getter
+    @Setter
+    private String jsonLdContext;
 
 	public void setTimeSeriesProperties() {
 		this.timeSeriesProperties = new HashSet<>();
 		String name;
 		String datatype;
+		String aggregationFunction;
+		String pushSignal;
 		OntologyTimeSeriesProperty otsproperty;
 		for (int i = 0; i < this.tags.length; i++) {
 			name = this.tags[i].split("-")[0].split(":")[1].trim();
@@ -174,10 +241,23 @@ public class OntologyTimeSeriesServiceDTO {
 		for (int i = 0; i < this.fieldnames.length; i++) {
 			name = this.fieldnames[i];
 			datatype = this.fieldtypes[i];
+			if (this.rtdbDatasource.equals(RtdbDatasource.MONGO.toString())) {
+				aggregationFunction = "NONE";
+				pushSignal = null;
+			} else {
+				aggregationFunction = this.fieldAggregations[i];
+				pushSignal = this.fieldPushSignals[i].trim().isEmpty() ? null : this.fieldPushSignals[i];
+			}
 			otsproperty = new OntologyTimeSeriesProperty();
 			otsproperty.setPropertyType(PropertyType.SERIE_FIELD);
 			otsproperty.setPropertyDataType(OntologyTimeSeriesProperty.PropertyDataType.valueOf(datatype));
 			otsproperty.setPropertyName(name);
+			if (aggregationFunction.isEmpty()) {
+				aggregationFunction = "NONE";
+			}
+			otsproperty.setPropertyAggregationType(
+					OntologyTimeSeriesProperty.AggregationFunction.valueOf(aggregationFunction));
+			otsproperty.setPropertyPushSignal(pushSignal);
 			this.timeSeriesProperties.add(otsproperty);
 		}
 	}
@@ -217,4 +297,52 @@ public class OntologyTimeSeriesServiceDTO {
 		}
 	}
 
+	public OntologyTimeseriesTimescaleProperties getTimescaleProperties() {
+		final OntologyTimeseriesTimescaleProperties ontologyTimescaleProperties = new OntologyTimeseriesTimescaleProperties();
+		// Chunks
+		ontologyTimescaleProperties.setChunkInterval(Integer.valueOf(this.buckettypes[0].trim().split(" ")[0]));
+		ontologyTimescaleProperties
+				.setChunkIntervalUnit(FrecuencyUnit.valueOf(this.buckettypes[0].trim().split(" ")[1].toUpperCase()));
+		// Frequency
+		if (this.freqtypes[0].equalsIgnoreCase("NONE")) {
+			ontologyTimescaleProperties.setFrecuency(0);
+			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NONE"));
+		} else {
+			int freqnum = Integer.parseInt(this.freqtypes[0].trim().split(" ")[0]);
+			String frequnit = this.freqtypes[0].trim().split(" ")[1];
+			ontologyTimescaleProperties.setFrecuency(freqnum);
+			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf(frequnit));
+		}
+		// Query
+		ontologyTimescaleProperties.setHypertableQuery(hypertableQuery);
+		// Compression
+		ontologyTimescaleProperties.setCompressionActive(compressionActive);
+		int compressionAfter = 0;
+		String compressionUnit = "days";
+		if (compressionActive) {
+			compressionAfter = Integer.parseInt(this.compressionConfig.trim().split(" ")[0]);
+			compressionUnit = this.compressionConfig.trim().split(" ")[1];
+			if (!compressionUnit.endsWith("s")) {
+				compressionUnit = compressionUnit + "s";
+			}
+		}
+		ontologyTimescaleProperties.setCompressionAfter(compressionAfter);
+		ontologyTimescaleProperties.setCompressionUnit(RetentionUnit.valueOf(compressionUnit.toUpperCase()));
+		ontologyTimescaleProperties.setCompressionQuery(compressionQuery);
+		// Deletion
+		ontologyTimescaleProperties.setRetentionActive(rtdbClean);
+		int retentionBefore = 0;
+		String retentionUnit = "days";
+		if (rtdbClean) {
+			retentionBefore = Integer.parseInt(this.rtdbCleanLapse.trim().split(" ")[0]);
+			retentionUnit = this.rtdbCleanLapse.trim().split(" ")[1];
+			ontologyTimescaleProperties.setRetentionBefore(retentionBefore);
+			if (!retentionUnit.endsWith("s")) {
+				retentionUnit = retentionUnit + "s";
+			}
+		}
+		ontologyTimescaleProperties.setRetentionUnit(RetentionUnit.valueOf(retentionUnit.toUpperCase()));
+		return ontologyTimescaleProperties;
+	}
+	
 }

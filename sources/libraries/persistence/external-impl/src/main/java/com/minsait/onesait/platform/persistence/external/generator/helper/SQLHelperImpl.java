@@ -66,22 +66,22 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
-	
+
 	@Override
 	public String getValidateQuery() {
 		return LIST_VALIDATE_QUERY;
 	}
-	
+
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
-	
+
 	@Override
 	public boolean hasDatabase() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean hasCrossDatabase() {
 		return true;
@@ -99,7 +99,7 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public String getSchemaStatement() {
-		//default no schema
+		// default no schema
 		return null;
 	}
 
@@ -110,7 +110,7 @@ public class SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public String getSchemasStatement(String database) {
-		//default no schema
+		// default no schema
 		return null;
 	}
 
@@ -274,7 +274,7 @@ public class SQLHelperImpl implements SQLHelper {
 	public Constraint getContraintWithSpecs(final Constraint constraint) {
 		if (constraint.getType().contains("PRIMARY")) {
 			constraint.setType("PRIMARY KEY");
-			constraint.setName((String)null);
+			constraint.setName((String) null);
 
 		} else if (constraint.getType().contains("FOREIGN")
 				&& (constraint.getReferencedTable() != null && constraint.getReferencedColumn() != null)) {
@@ -284,14 +284,14 @@ public class SQLHelperImpl implements SQLHelper {
 			idxSpec.add("REFERENCES");
 			idxSpec.add(constraint.getReferencedTable() + "(" + constraint.getReferencedColumn() + ")");
 			constraint.setIndexSpec(idxSpec);
-			constraint.setName((String)null);
+			constraint.setName((String) null);
 		}
 
 		else if (constraint.getType().contains("UNIQUE")) {
 			constraint.setType("UNIQUE");
 			ArrayList<String> idxSpec = new ArrayList<>();
 			constraint.setIndexSpec(idxSpec);
-			constraint.setName((String)null);
+			constraint.setName((String) null);
 		}
 
 		return constraint;
@@ -367,7 +367,7 @@ public class SQLHelperImpl implements SQLHelper {
 
 		}
 
-		return query.replace("\"", "'");
+		return query;
 	}
 
 	protected String refactorQueryAll(JSONObject columns, OntologyVirtual virtual, Select selectStatement, Alias alias,
@@ -389,8 +389,7 @@ public class SQLHelperImpl implements SQLHelper {
 				}
 			}
 		}
-		return selectStatement.toString().replaceFirst(item.equals("*") ? "\\" + item + "," : item + ",", "")
-				.replace("\"", "'");
+		return selectStatement.toString().replaceFirst(item.equals("*") ? "\\" + item + "," : item + ",", "");
 
 	}
 
@@ -400,20 +399,17 @@ public class SQLHelperImpl implements SQLHelper {
 		if (itemAlias == null
 				&& ((alias != null && item.toString().equals(alias.getName() + "." + virtual.getObjectGeometry()))
 						|| (alias == null && item.toString().equals(virtual.getObjectGeometry())))) {
-			query = query
-					.replace(item.toString(), ST_AS_GEO_JSON + item.toString() + ") as " + virtual.getObjectGeometry())
-					.replace("\"", "'");
+			query = query.replace(item.toString(),
+					ST_AS_GEO_JSON + item.toString() + ") as " + virtual.getObjectGeometry());
 		} else if (itemAlias != null) {
 			if (alias != null && item.toString().equalsIgnoreCase(
 					alias.getName() + "." + virtual.getObjectGeometry() + " as " + itemAlias.getName())) {
 				query = query.replace(item.toString(), ST_AS_GEO_JSON + alias.getName() + "."
-						+ virtual.getObjectGeometry() + ") as " + itemAlias.getName()).replace("\"", "'");
+						+ virtual.getObjectGeometry() + ") as " + itemAlias.getName());
 			} else if (alias == null
 					&& item.toString().equalsIgnoreCase(virtual.getObjectGeometry() + " as " + itemAlias.getName())) {
-				query = query
-						.replace(item.toString(),
-								ST_AS_GEO_JSON + virtual.getObjectGeometry() + ") as " + itemAlias.getName())
-						.replace("\"", "'");
+				query = query.replace(item.toString(),
+						ST_AS_GEO_JSON + virtual.getObjectGeometry() + ") as " + itemAlias.getName());
 			}
 		}
 		return query;

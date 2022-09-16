@@ -99,7 +99,7 @@
           e.dataTransfer.dropEffect = 'move';
           gridster.movingItem = item;
         } else {
-          e.dataTransfer.dropEffect = 'none';
+          //e.dataTransfer.dropEffect = 'none';
           gridster.movingItem = null;
         }
         gridster.previewStyle();

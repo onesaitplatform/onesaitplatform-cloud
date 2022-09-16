@@ -101,6 +101,12 @@
 				<h1 class="page-title hide "><span th:text="#{category.template.list}">Manage Categories </span></h1>
 				<!-- END PAGE TITLE-->			
 				
+				<!-- AUXILIAR FORM TO DELETE SUBCATEGORY -->
+				<form id="delete_category_form" class="delete-category hide" action="" method="post">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
+				
 				<!-- MAIN ROW -->
 				<div class="row">					
 						<div class="portlet light ">
@@ -181,6 +187,7 @@
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
+															<th class="titulo-columnas" th:text="#{gen.type}">Type</th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
@@ -192,23 +199,28 @@
 															<td class="text-left no-wrap " th:text="${category.identification}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-xxs" th:title="${category.description}" th:text="${category.description}"></td>
+															<!--  TYPE -->
+															<td class="text-left text-truncate-xxs" th:title="${category.type}" th:text="${category.type}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${category.createdAt!=null}"><span th:text="${#dates.format(category.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${category.createdAt!=null}"><span th:text="${#dates.format(category.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${category.createdAt==null}" th:text="${category.createdAt}"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${category.updatedAt!=null}"><span th:text="${#dates.format(category.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${category.updatedAt!=null}"><span th:text="${#dates.format(category.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${category.updatedAt==null}" th:text="${category.updatedAt}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/categories/show/${category.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categories/show/${category.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/categories/update/${category.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categories/update/${category.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	
+																	<!-- DELETE -->
+																	<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteCategory(\'' + ${category.id} + '\');'"><i class=icon-delete></i></span>
 																	
 																	<!-- INDEXES -->
-																	<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:onclick="'javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
+																	<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
 																</div>
 															</td>
 														</tr>
@@ -228,10 +240,14 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="2"/>
-															<label th:text="#{gen.created}"> Created At</label>
+															<label th:text="#{gen.type}"> Type </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.created}"> Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 													</div>
@@ -286,11 +302,28 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
+	function deleteCategory (categoryId){
+		console.log('deleteCategory()');
+		deleteCategoryConfirmation(categoryId);
+	}
+	
+	// DELETE CATEGORY
+	function deleteCategoryConfirmation (categoryId){
+		console.log('deleteCategoryConfirmation() -> formId: '+ categoryId);
+
+		console.log('deleteCategoryConfirmation() -> formAction: ' + $('.delete-category').attr('action') + ' ID: ' + $('#delete-categoryId').attr('categoryId'));
+
+		// call ontology Confirm at header.
+		HeaderController.showConfirmDialogCat('delete_category_form',categoryId);
+	}
+	
 	function create(){
 		var split = location.href.split("/");
 		var categoryId = split[split.length - 1];
 		navigateUrl("/create/" + categoryId);
 	}
+	
+	
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {

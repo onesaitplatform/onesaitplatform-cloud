@@ -27,7 +27,6 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -58,9 +57,7 @@ public class QueryNativeMongoDBIntegrationTest {
 	@Qualifier("MongoBasicOpsDBRepository")
 	BasicOpsDBRepository repository;
 
-	@Autowired
-	MongoTemplate nativeTemplate;
-
+	
 	private static final String ONT_NAME = "contextData";
 	private static final String DATABASE = "onesaitplatform_rtdb";
 

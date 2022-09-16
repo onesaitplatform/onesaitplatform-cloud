@@ -27,6 +27,7 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.Token;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface TokenRepository extends JpaRepository<Token, String> {
 
@@ -57,9 +58,10 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 	})
 	Token save(Token token);
 
+	@Override
 	Optional<Token> findById(String id);
 
-	//This method is using a DTO because projection interfaces does not worked with hazelcast. Projections are interfaces 
+	//This method is using a DTO because projection interfaces does not worked with hazelcast. Projections are interfaces
 	//     that spring instantiate using a proxy, so is normal that they does not work as a normal java object.
 	@Cacheable(cacheNames = "TokenAndClientPlatform", key = "#p0")
 	@Query("SELECT new com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO(cp.id, cp.identification,"
@@ -67,5 +69,8 @@ public interface TokenRepository extends JpaRepository<Token, String> {
 			+ "FROM Token t INNER JOIN t.clientPlatform cp INNER JOIN cp.user u "
 			+ "WHERE t.tokenName = :tokenName" )
 	ClientPlatformTokenDTO findClientPlatformIdByTokenName(@Param("tokenName") String tokenName);
+
+	@Query("SELECT t FROM Token t WHERE t.clientPlatform.user= :#{#user}")
+	List<Token> findByUser(User user);
 
 }

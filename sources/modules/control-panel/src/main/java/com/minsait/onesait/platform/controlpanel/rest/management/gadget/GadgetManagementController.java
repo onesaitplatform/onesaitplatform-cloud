@@ -28,41 +28,61 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.config.model.Category;
+import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
+import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Subcategory;
+import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.category.CategoryService;
+import com.minsait.onesait.platform.config.services.categoryrelation.CategoryRelationService;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
+import com.minsait.onesait.platform.config.services.exceptions.GadgetServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadget.model.GadgetDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadget.model.GadgetDTOCreate;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadget.model.GadgetDatasourceDTO;
+import com.minsait.onesait.platform.controlpanel.rest.management.gadgettemplate.model.GadgetTemplateDTOList;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 
 @RestController
-@Api(value = "Gadget Management", tags = { "Gadget management service" })
+@Tag(name = "Gadget Management")
 @RequestMapping("api/gadgets")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden"),
-		@ApiResponse(code = 404, message = "Not found") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden"),
+	@ApiResponse(responseCode = "404", description = "Not found") })
 public class GadgetManagementController {
 
 	private static final String DBTYPE = "RTDB";
 	private static final String MODE = "query";
 	private static final int MAXVALUES = 100;
 	private static final int REFRESH = 0;
+
+	private static final String ERROR_FIND_GADGET = "Cannot find type for gadget, type must be base [bar, line, map, mixed, pie, radar, table, worldcloud, datadiscovery] or id/identification of gadget template";
+
+	private static final String PATH = "/gadgets";
 
 	@Autowired
 	private GadgetService gadgetService;
@@ -74,31 +94,44 @@ public class GadgetManagementController {
 	private OntologyService ontologyService;
 
 	@Autowired
+	private GadgetTemplateRepository gadgetTemplateRepository;
+
+	@Autowired
 	private AppWebUtils utils;
 
 	@Autowired
 	private UserRepository userService;
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get gadget by identification")
+	@Autowired
+	CategoryRelationService categoryRelationService;
+
+	@Autowired
+	CategoryService categoryService;
+
+	@Autowired
+	SubcategoryService subcategoryService;
+
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get gadget by identification")
 	@GetMapping("/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getGadgetByIdentification(
-			@ApiParam(value = "gadget identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "gadget identification", required = true) @PathVariable("identification") String identification) {
 
-		String user = utils.getUserId();
-		Gadget gadget = gadgetService.getGadgetByIdentification(user, identification);
-		if (gadget == null)
+		final String user = utils.getUserId();
+		final Gadget gadget = gadgetService.getGadgetByIdentification(user, identification);
+		if (gadget == null) {
 			return new ResponseEntity<>("The gadget does not exist", HttpStatus.NOT_FOUND);
+		}
 
 		if (!gadgetService.hasUserViewPermission(gadget.getId(), user)) {
-			String eMessage = "The user is not authorized to view the gadget. Identification = " + identification;
+			final String eMessage = "The user is not authorized to view the gadget. Identification = " + identification;
 			return new ResponseEntity<>(eMessage, HttpStatus.UNAUTHORIZED);
 		}
 
 		GadgetDTO dto = null;
-		List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadget.getId());
-		if (measures != null) {
+		final List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), gadget.getId());
+		if (measures != null && measures.size() > 0) {
 			dto = mapGadgetToGadgetDTO(gadget, measures.get(0).getDatasource(), measures);
 		} else {
 			dto = mapGadgetToGadgetDTO(gadget, null, null);
@@ -107,20 +140,21 @@ public class GadgetManagementController {
 
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Get user gadgets")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Get user gadgets")
 	@GetMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getUsersGadgets() {
 
-		List<Gadget> gadgets = gadgetService.findGadgetWithIdentificationAndType(null, null, utils.getUserId());
-		if (gadgets == null)
+		final List<Gadget> gadgets = gadgetService.findGadgetWithIdentificationAndType(null, null, utils.getUserId());
+		if (gadgets == null) {
 			return new ResponseEntity<>("[]", HttpStatus.OK);
+		}
 
-		List<GadgetDTO> dtos = new ArrayList<>(gadgets.size());
-		for (Gadget g : gadgets) {
-			List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), g.getId());
-			if (measures != null) {
+		final List<GadgetDTO> dtos = new ArrayList<>(gadgets.size());
+		for (final Gadget g : gadgets) {
+			final List<GadgetMeasure> measures = gadgetService.getGadgetMeasuresByGadgetId(utils.getUserId(), g.getId());
+			if (measures != null && measures.size() > 0) {
 				dtos.add(mapGadgetToGadgetDTO(g, measures.get(0).getDatasource(), measures));
 			} else {
 				dtos.add(mapGadgetToGadgetDTO(g, null, null));
@@ -130,18 +164,18 @@ public class GadgetManagementController {
 
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Create gadget")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Create gadget")
 	@PostMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<?> createGadget(@ApiParam(value = "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
+	public ResponseEntity<?> createGadget(@Parameter(description= "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
 
 		if (gadgetDTO.getIdentification() == null || gadgetDTO.getIdentification().isEmpty()
-				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null || gadgetDTO.getDatasource() == null
-				|| gadgetDTO.getDescription() == null)
+				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null || gadgetDTO.getDescription() == null) {
 			return new ResponseEntity<>(
-					"Missing required fields. Required = [identification, description, datasource, config, type]",
+					"Missing required fields. Required = [identification, description, config, type]",
 					HttpStatus.BAD_REQUEST);
+		}
 
 		if (gadgetService.getGadgetByIdentification(utils.getUserId(), gadgetDTO.getIdentification()) != null) {
 			return new ResponseEntity<>(
@@ -153,83 +187,89 @@ public class GadgetManagementController {
 			return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_'",
 					HttpStatus.BAD_REQUEST);
 		}
-
-		GadgetDatasource datasource = new GadgetDatasource();
-		try {
-			datasource = retrieveOrCreateDatasource(gadgetDTO.getDatasource(), gadgetDTO.getIdentification());
-		} catch (GadgetDatasourceServiceException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		GadgetDatasource datasource = null;
+		if (gadgetDTO.getDatasource() != null) {
+			datasource = new GadgetDatasource();
+			try {
+				datasource = retrieveOrCreateDatasource(gadgetDTO.getDatasource(), gadgetDTO.getIdentification());
+			} catch (final GadgetDatasourceServiceException e) {
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+			}
 		}
-
-		Gadget gadget = mapGadgetDTOToGadget(gadgetDTO);
+		final Gadget gadget = mapGadgetDTOToGadget(gadgetDTO);
 		gadget.setUser(userService.findByUserId(utils.getUserId()));
 
-		List<GadgetMeasure> gmList = listStringToGadgetMeasureList(gadgetDTO.getGadgetMeasures());
+		final List<GadgetMeasure> gmList = listStringToGadgetMeasureList(gadgetDTO.getGadgetMeasures());
 
-		Gadget gadgetCreate = gadgetService.createGadget(gadget, datasource, gmList);
+		final Gadget gadgetCreate = gadgetService.createGadget(gadget, datasource, gmList, gadgetDTO.getCategory(), gadgetDTO.getSubcategory());
 
 		return new ResponseEntity<>(mapGadgetToGadgetDTO(gadgetCreate, datasource, gmList), HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Update gadget")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Update gadget")
 	@PutMapping("/")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<?> updateGadget(@ApiParam(value = "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
+	public ResponseEntity<?> updateGadget(@Parameter(description= "GadgetDTOCreate") @RequestBody GadgetDTOCreate gadgetDTO) {
 
 		if (gadgetDTO.getIdentification() == null || gadgetDTO.getIdentification().isEmpty()
-				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null || gadgetDTO.getDatasource() == null
-				|| gadgetDTO.getDescription() == null)
+				|| gadgetDTO.getConfig() == null || gadgetDTO.getType() == null
+				|| gadgetDTO.getDescription() == null) {
 			return new ResponseEntity<>(
-					"Missing required fields. Required = [identification, description, datasource, config, type]",
+					"Missing required fields. Required = [identification, description, config, type]",
 					HttpStatus.BAD_REQUEST);
+		}
 
 		final String user = utils.getUserId();
 		final Gadget gadget = gadgetService.getGadgetByIdentification(user, gadgetDTO.getIdentification());
 		if (gadget == null) {
-			String eMessage = "The gadget does not exist. Identification = " + gadgetDTO.getIdentification();
+			final String eMessage = "The gadget does not exist. Identification = " + gadgetDTO.getIdentification();
 			return new ResponseEntity<>(eMessage, HttpStatus.NOT_FOUND);
 		}
 
 		if (!gadgetService.hasUserPermission(gadget.getId(), user)) {
-			String eMessage = String.format(
+			final String eMessage = String.format(
 					"The user is not authorized to update the gadget. Identification = %s, userId = %s",
 					gadgetDTO.getIdentification(), user);
 			return new ResponseEntity<>(eMessage, HttpStatus.UNAUTHORIZED);
 		}
 
 		GadgetDatasource datasource = new GadgetDatasource();
-		try {
-			datasource = retrieveOrCreateDatasource(gadgetDTO.getDatasource(), gadgetDTO.getIdentification());
-		} catch (GadgetDatasourceServiceException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		if(gadgetDTO.getDatasource()!= null) {
+			try {
+				datasource = retrieveOrCreateDatasource(gadgetDTO.getDatasource(), gadgetDTO.getIdentification());
+			} catch (final GadgetDatasourceServiceException e) {
+				return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+			}
 		}
 
-		List<GadgetMeasure> gmList = listStringToGadgetMeasureList(gadgetDTO.getGadgetMeasures());
+		final List<GadgetMeasure> gmList = listStringToGadgetMeasureList(gadgetDTO.getGadgetMeasures());
 		gadget.setConfig(gadgetDTO.getConfig());
-		gadget.setType(gadgetDTO.getType());
+		gadget.setType(getGadgetTemplateByIdOrIdentification(gadgetDTO.getType()));
+		if (gadgetDTO.getType() == null) {
+			throw new GadgetServiceException(ERROR_FIND_GADGET);
+		}
 		gadget.setDescription(gadgetDTO.getDescription());
-		gadgetService.updateGadget(gadget, datasource.getId(), gmList);
-
+		gadgetService.updateGadget(gadget, datasource.getId(), gmList, gadgetDTO.getCategory(), gadgetDTO.getSubcategory());
 		return new ResponseEntity<>(mapGadgetToGadgetDTO(gadget, datasource, gmList), HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(code = 200, message = "OK"))
-	@ApiOperation(value = "Delete gadget by identification")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Delete gadget by identification")
 	@DeleteMapping("/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> deleteGadget(
-			@ApiParam(value = "identification") @PathVariable("identification") String identification) {
+			@Parameter(description= "identification") @PathVariable("identification") String identification) {
 
-		String user = utils.getUserId();
+		final String user = utils.getUserId();
 		final Gadget gadget = gadgetService.getGadgetByIdentification(user, identification);
 		if (gadget == null) {
-			String eMessage = "The gadget does not exist. Identification = " + identification;
+			final String eMessage = "The gadget does not exist. Identification = " + identification;
 			return new ResponseEntity<>(eMessage, HttpStatus.NOT_FOUND);
 		}
 
 		if (!gadgetService.hasUserPermission(gadget.getId(), user)) {
-			String eMessage = String.format(
+			final String eMessage = String.format(
 					"The user is not authorized to delete the gadget. Identification = %s, userId = %s", identification,
 					user);
 			return new ResponseEntity<>(eMessage, HttpStatus.UNAUTHORIZED);
@@ -237,6 +277,52 @@ public class GadgetManagementController {
 		gadgetService.deleteGadget(gadget.getId(), user);
 
 		return new ResponseEntity<>("Gadget deleted.", HttpStatus.OK);
+	}
+
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=byte[].class))))
+	@Operation(summary = "Generate image of gadget")
+	@GetMapping(PATH + "/generateImage/{identification}")
+	public ResponseEntity<byte[]> generateImage(@RequestHeader(value = "Authorization") String bearerToken,
+			@Parameter(description= "Gadget ID", required = true) @PathVariable("identification") String id,
+			@Parameter(description= "Wait time (ms) for rendering gadget", required = true) @RequestParam("waittime") int waittime,
+			@Parameter(description= "Render Height", required = true) @RequestParam("height") int height,
+			@Parameter(description= "Render Width", required = true) @RequestParam("width") int width,
+			@Parameter(description= "Fullpage", required = false) @RequestParam(value="fullpage",  defaultValue = "false") Boolean fullpage,
+			@Parameter(description= "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+		Gadget gadget = gadgetService.getGadgetByIdentification(utils.getUserId(), id);
+		if (gadget == null) {
+			gadget = gadgetService.getGadgetById(utils.getUserId(), id);
+		}
+		if (gadget == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		} else if (!gadgetService.hasUserViewPermission(id, utils.getUserId())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+		}
+
+		return gadgetService.generateImg(gadget.getId(), waittime, height, width, fullpage == null ? false : fullpage, params,
+				prepareRequestToken(bearerToken));
+	}
+
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=byte[].class))))
+	@Operation(summary = "Generate PDF of gadget")
+	@GetMapping(PATH + "/generatePDF/{identification}")
+	public ResponseEntity<byte[]> generatePDF(@RequestHeader(value = "Authorization") String bearerToken,
+			@Parameter(description= "Dashboard ID", required = true) @PathVariable("identification") String id,
+			@Parameter(description= "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
+			@Parameter(description= "Render Height", required = true) @RequestParam("height") int height,
+			@Parameter(description= "Render Width", required = true) @RequestParam("width") int width,
+			@Parameter(description= "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+		Gadget gadget = gadgetService.getGadgetByIdentification(utils.getUserId(), id);
+		if (gadget == null) {
+			gadget = gadgetService.getGadgetById(utils.getUserId(), id);
+		}
+		if (gadget == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		} else if (!gadgetService.hasUserViewPermission(id, utils.getUserId())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+		}
+
+		return gadgetService.generatePDF(gadget.getId(), waittime, height, width, params, prepareRequestToken(bearerToken));
 	}
 
 	private GadgetDatasource retrieveOrCreateDatasource(GadgetDatasourceDTO dto, String gadgetIdentification) {
@@ -249,14 +335,14 @@ public class GadgetManagementController {
 		}
 
 		if (dto.getIdentification() != null && !dto.getIdentification().isEmpty()) {
-			GadgetDatasource existingDs = datasourceService.getDatasourceByIdentification(dto.getIdentification());
+			final GadgetDatasource existingDs = datasourceService.getDatasourceByIdentification(dto.getIdentification());
 
 			if (existingDs == null && query == null) {
-				String eMessage = String.format("The datasource does not exist. Id = %s.", dto.getIdentification());
+				final String eMessage = String.format("The datasource does not exist. Id = %s.", dto.getIdentification());
 				throw new GadgetDatasourceServiceException(eMessage);
 			}
 			if (existingDs != null && !datasourceService.hasUserPermission(existingDs.getId(), utils.getUserId())) {
-				String eMessage = String.format(
+				final String eMessage = String.format(
 						"The user does not have permissions to use the datasource. DatasourceId = %s, user = %s.",
 						dto.getIdentification(), utils.getUserId());
 				throw new GadgetDatasourceServiceException(eMessage);
@@ -267,7 +353,7 @@ public class GadgetManagementController {
 			}
 		}
 
-		Ontology ontology = ontologyService
+		final Ontology ontology = ontologyService
 				.getOntologyByIdentification(datasourceService.getOntologyFromDatasource(query));
 		checkOntology(ontology);
 
@@ -288,11 +374,11 @@ public class GadgetManagementController {
 			throw new GadgetDatasourceServiceException(
 					"Identification Datasource Error: Use alphanumeric characters and '-', '_'");
 		}
-		GadgetDatasource ds = createDatasourceObject(dto, ontology);
+		final GadgetDatasource ds = createDatasourceObject(dto, ontology);
 		final GadgetDatasource dsCreated = datasourceService.createGadgetDatasource(ds);
 
 		if (dsCreated == null) {
-			String eMessage = "Unable to create datasource. Identification = " + dto.getIdentification();
+			final String eMessage = "Unable to create datasource. Identification = " + dto.getIdentification();
 			throw new GadgetDatasourceServiceException(eMessage);
 		}
 		return dsCreated;
@@ -313,7 +399,7 @@ public class GadgetManagementController {
 	}
 
 	private GadgetDatasource createDatasourceObject(GadgetDatasourceDTO datasource, Ontology o) {
-		GadgetDatasource ds = new GadgetDatasource();
+		final GadgetDatasource ds = new GadgetDatasource();
 
 		ds.setIdentification(datasource.getIdentification());
 		ds.setDescription(datasource.getDescription());
@@ -359,15 +445,16 @@ public class GadgetManagementController {
 			List<GadgetMeasure> gadgetMeasures) {
 		final GadgetDTO gDTO = new GadgetDTO();
 		final GadgetDatasourceDTO dsDTO = new GadgetDatasourceDTO();
-
+		gDTO.setId(gadget.getId());
 		gDTO.setConfig(gadget.getConfig());
-		gDTO.setType(gadget.getType());
+		gDTO.setType(gadget.getType().getId());
+		gDTO.setTemplate(toGadgetTemplateDTO(gadget.getType()));
 		gDTO.setDescription(gadget.getDescription());
 		gDTO.setIdentification(gadget.getIdentification());
 		gDTO.setUser(gadget.getUser().getUserId());
-		if (gadgetMeasures != null) {
-			List<String> gadgetMeasureList = new ArrayList<>();
-			for (GadgetMeasure gm : gadgetMeasures) {
+		if (gadgetMeasures != null && gadgetMeasures.size() > 0) {
+			final List<String> gadgetMeasureList = new ArrayList<>();
+			for (final GadgetMeasure gm : gadgetMeasures) {
 				gadgetMeasureList.add(gm.getConfig());
 			}
 			gDTO.setGadgetMeasures(gadgetMeasureList);
@@ -380,7 +467,49 @@ public class GadgetManagementController {
 			dsDTO.setRefresh(datasource.getRefresh());
 			gDTO.setDatasource(dsDTO);
 		}
+		gDTO.setInstance(gadget.isInstance());
+		gDTO.setCreatedAt(gadget.getCreatedAt().toString());
+		gDTO.setUpdatedAt(gadget.getUpdatedAt().toString());
+
+		final CategoryRelation cr = categoryRelationService.getByIdType(gadget.getId());
+		if (cr != null) {
+			final Category c = categoryService.getCategoryById(cr.getCategory());
+			if (c != null) {
+				gDTO.setCategory(c.getIdentification());
+			}
+			final Subcategory s = subcategoryService.getSubcategoryById(cr.getSubcategory());
+			if (s != null) {
+				gDTO.setSubcategory(s.getIdentification());
+			}
+		}
 		return gDTO;
+	}
+
+	private GadgetTemplateDTOList toGadgetTemplateDTO(GadgetTemplate template) {
+
+		final GadgetTemplateDTOList dto = new GadgetTemplateDTOList();
+		dto.setIdentification(template.getIdentification());
+		dto.setDescription(template.getDescription());
+		dto.setHtml(template.getTemplate());
+		dto.setJs(template.getTemplateJS());
+		dto.setPublic(template.isPublic());
+		dto.setUser(template.getUser().getUserId());
+		dto.setType(template.getType());
+		final CategoryRelation cr = categoryRelationService.getByIdType(template.getId());
+		if (cr != null) {
+			final Category c = categoryService.getCategoryById(cr.getCategory());
+			if (c != null) {
+				dto.setCategory(c.getIdentification());
+			}
+			final Subcategory s = subcategoryService.getSubcategoryById(cr.getSubcategory());
+			if (s != null) {
+				dto.setSubcategory(s.getIdentification());
+			}
+		}
+		dto.setCreatedAt(template.getCreatedAt().toString());
+		dto.setUpdatedAt(template.getUpdatedAt().toString());
+
+		return dto;
 	}
 
 	private Gadget mapGadgetDTOToGadget(GadgetDTOCreate gDTO) {
@@ -388,18 +517,34 @@ public class GadgetManagementController {
 
 		g.setIdentification(gDTO.getIdentification());
 		g.setDescription(gDTO.getDescription());
-		g.setType(gDTO.getType());
+		g.setType(getGadgetTemplateByIdOrIdentification(gDTO.getType()));
+		if (g.getType() == null) {
+			throw new GadgetServiceException(ERROR_FIND_GADGET);
+		}
 		g.setConfig(gDTO.getConfig());
+		if (gDTO.getInstance() == null) {
+			g.setInstance(false);
+		} else {
+			g.setInstance(gDTO.getInstance());
+		}
 
 		return g;
 	}
 
+	private GadgetTemplate getGadgetTemplateByIdOrIdentification(String ident) {
+		GadgetTemplate gt = gadgetTemplateRepository.findById(ident).orElse(null);
+		if (gt == null) {
+			gt = gadgetTemplateRepository.findByIdentification(ident);
+		}
+		return gt;
+	}
+
 	private List<GadgetMeasure> listStringToGadgetMeasureList(List<String> list) {
 
-		List<GadgetMeasure> gmList = new ArrayList<>();
+		final List<GadgetMeasure> gmList = new ArrayList<>();
 		if (list != null) {
-			for (String s : list) {
-				GadgetMeasure gm = new GadgetMeasure();
+			for (final String s : list) {
+				final GadgetMeasure gm = new GadgetMeasure();
 				gm.setConfig(s);
 				gmList.add(gm);
 			}
@@ -407,4 +552,7 @@ public class GadgetManagementController {
 		return gmList;
 	}
 
+	private String prepareRequestToken(String rawToken) {
+		return rawToken.substring("Bearer ".length()).trim();
+	}
 }

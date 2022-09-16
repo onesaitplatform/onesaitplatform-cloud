@@ -81,7 +81,7 @@
                         <input th:if="${report.id} == null" type="hidden" id="report-save-action" name="action" th:value="@{/reports/save}" />
                         <input th:if="${report.id} != null" type="hidden" id="report-save-action" name="action" th:value="@{/reports/update}" />                           
                         <input th:if="${report.id} != null" type="hidden" id="report-save-id" name="id" th:field="*{id}" />
-                        
+                        <th:block th:include="versioning/fragments/form-commit"></th:block>
                         <div id="header">
                             <div class="row pageCreateHeader">
                                 <div class="col-md-6 col-sm-6 col-xs-12">

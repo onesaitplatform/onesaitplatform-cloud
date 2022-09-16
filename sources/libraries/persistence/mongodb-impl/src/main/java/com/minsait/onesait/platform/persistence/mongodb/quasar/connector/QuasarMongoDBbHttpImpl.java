@@ -91,8 +91,8 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	public String queryAsJson(String collection, String query, int offset, int limit) {
 		String url;
 		try {
-			if (query.contains("*"))
-				query = replaceAsterisk(collection, query);
+			//if (query.contains("*"))
+			//	query = replaceAsterisk(collection, query);
 			query = deleteSemicolonFromEnd(query);
 			url = buildUrl(query, offset, limit);
 		} catch (final UnsupportedEncodingException e) {
@@ -261,8 +261,8 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	public String compileQueryAsJson(String collection, String query, int offset) {
 		String url;
 		try {
-			if (query.contains("*"))
-				query = replaceAsterisk(collection, query);
+			//if (query.contains("*"))
+			//	query = replaceAsterisk(collection, query);
 			query = deleteSemicolonFromEnd(query);
 			url = buildUrl(query, offset, getMaxRegisters());
 		} catch (final UnsupportedEncodingException e) {

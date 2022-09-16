@@ -78,6 +78,10 @@ public class DashboardCreateDTO implements Serializable {
 	@Setter
 	private String subcategory;
 
+	@Getter
+	@Setter
+	private Boolean generateImage;
+	
 	public void setImage(MultipartFile image) {
 		this.image = image;
 	}

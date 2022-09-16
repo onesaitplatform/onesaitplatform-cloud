@@ -239,7 +239,7 @@
 								<button type="button" class="btn btn-circle btn-outline blue" th:value="#{gen.closeBtn}" data-dismiss="modal">
 									<span th:text="#{gen.closeBtn}"> Cancel </span>	
 								</button>								
-								<button type="button" class="btn btn-circle btn-outline  btn-primary" th:value="#{gen.confirmBtn}" th:onclick="'javascript:navigateUrl(\'' + @{|/planner/pause/|} + '\');'">
+								<button type="button" class="btn btn-circle btn-outline  btn-primary" th:value="#{gen.confirmBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/planner/pause/|} + '\');'">
 									<span th:text="#{gen.confirmBtn}"> Confirm</span>
 								</button>
 						    </div>
@@ -260,7 +260,7 @@
 								<button type="button" class="btn btn-circle btn-outline blue" th:value="#{gen.closeBtn}" data-dismiss="modal">
 									<span th:text="#{gen.closeBtn}"> Cancel </span>	
 								</button>								
-								<button type="button" class="btn btn-circle btn-outline btn-primary" th:value="#{gen.confirmBtn}" th:onclick="'javascript:navigateUrl(\'' + @{|/planner/resume/|} + '\');'">
+								<button type="button" class="btn btn-circle btn-outline btn-primary" th:value="#{gen.confirmBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/planner/resume/|} + '\');'">
 									<span th:text="#{gen.confirmBtn}"> Confirm</span>
 								</button>								
 																
@@ -282,7 +282,7 @@
 								<button type="button" class="btn btn-circle btn-outline blue" th:value="#{gen.closeBtn}" data-dismiss="modal">
 									<span th:text="#{gen.closeBtn}"> Cancel </span>	
 								</button>
-								<button type="button" class="btn btn-circle btn-outline btn-primary" th:value="#{gen.confirmBtn}" th:onclick="'javascript:navigateUrl(\'' + @{|/planner/unschedule/|} + '\');'">
+								<button type="button" class="btn btn-circle btn-outline btn-primary" th:value="#{gen.confirmBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/planner/unschedule/|} + '\');'">
 									<span th:text="#{gen.confirmBtn}"> Confirm</span>
 								</button>															
 						    </div>

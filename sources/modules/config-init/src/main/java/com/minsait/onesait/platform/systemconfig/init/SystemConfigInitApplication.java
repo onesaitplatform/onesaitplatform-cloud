@@ -19,10 +19,8 @@ import org.junit.runners.MethodSorters;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EnableJpaAuditing
 @ComponentScan(basePackages = "com.minsait.onesait.platform.systemconfig")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SystemConfigInitApplication {
@@ -30,10 +28,10 @@ public class SystemConfigInitApplication {
 	public static void main(String[] args) {
 		try {
 			SpringApplication.run(SystemConfigInitApplication.class, args);
-		} catch(Exception e) {
+		} catch(final Exception e) {
 			System.out.println(e);
-            e.printStackTrace();
-		} finally {		
+			e.printStackTrace();
+		} finally {
 			System.exit(0);
 		}
 	}

@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -40,12 +41,17 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @ConditionalOnMissingBean(PlugableOauthAuthenticator.class)
 @EnableAuthorizationServer
+@Slf4j
 public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfigurerAdapter {
 
 	@Value("${security.jwt.client-id}")
@@ -67,6 +73,7 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	@Qualifier("ldapAuthenticationProvider")
 	private AuthenticationProvider authProviderLdap;
 
+
 	@Autowired
 	private UserDetailsService userDetailsService;
 
@@ -81,6 +88,20 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()").allowFormAuthenticationForClients();
 	}
 
+
+	PreAuthenticatedAuthenticationProvider preauthAuthProvider() {
+		final PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
+		provider.setPreAuthenticatedUserDetailsService(userDetailsServiceWrapper());
+		return provider;
+	}
+
+
+	UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> userDetailsServiceWrapper() {
+		final UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>();
+		wrapper.setUserDetailsService(userDetailsService);
+		return wrapper;
+	}
+
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
 		final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
@@ -88,7 +109,7 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 
 		endpoints.tokenEnhancer(tokenEnhancerChain);
 		endpoints.authenticationManager(new ProviderManager(
-				Stream.of(authProvider, authProviderLdap).filter(Objects::nonNull).collect(Collectors.toList())));
+				Stream.of(authProvider, authProviderLdap, preauthAuthProvider()).filter(Objects::nonNull).collect(Collectors.toList())));
 		endpoints.userDetailsService(userDetailsService);
 		endpoints.tokenStore(tokenStore);
 		endpoints.accessTokenConverter(jwtAccessTokenConverter);
@@ -105,7 +126,7 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		tokenServices.setTokenEnhancer(tokenEnhancerChain);
 		tokenServices.setClientDetailsService(clientDetailsService());
 		tokenServices.setAuthenticationManager(new ProviderManager(
-				Stream.of(authProvider, authProviderLdap).filter(Objects::nonNull).collect(Collectors.toList())));
+				Stream.of(authProvider, authProviderLdap, preauthAuthProvider()).filter(Objects::nonNull).collect(Collectors.toList())));
 		tokenServices.setReuseRefreshToken(false);
 		tokenServices.setSupportRefreshToken(true);
 		return tokenServices;
@@ -118,13 +139,11 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	}
 
 	@Bean
-	// @ConditionalOnMissingBean(ClientDetailsService.class)
 	public ClientDetailsService clientDetailsService() {
 		return new CustomClientDetailsService();
 	}
 
 	@Bean
-	// @ConditionalOnMissingBean(TokenEnhancer.class)
 	public TokenEnhancer tokenEnhancer() {
 		return new ExtendedTokenEnhancer();
 	}

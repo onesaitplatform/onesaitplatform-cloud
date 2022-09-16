@@ -14,9 +14,11 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -34,9 +36,16 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -44,10 +53,10 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_KPI")
-public class OntologyKPI extends AuditableEntityWithUUID {
+public class OntologyKPI extends AuditableEntityWithUUID implements Versionable<OntologyKPI> {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -82,16 +91,16 @@ public class OntologyKPI extends AuditableEntityWithUUID {
 	@Setter
 	private String jobName;
 
-	@Column(name = "ACTIVE", columnDefinition = "BIT")
+	@Column(name = "ACTIVE")
+	@Type(type = "org.hibernate.type.BooleanType")
 	@Getter
 	@Setter
 	@NotNull
 	private boolean active;
 
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToOne(fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
-	@JsonBackReference
 	@Getter
 	@Setter
 	private Ontology ontology;
@@ -102,11 +111,94 @@ public class OntologyKPI extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private User user;
-	
+
 	@Column(name = "POST_PROCESS")
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Getter
 	@Setter
 	private String postProcess;
 
+	@JsonSetter("dateFrom")
+	public void setDateFromJson(Long millis) {
+		if (millis != null) {
+			dateFrom = new Date(millis);
+		}
+	}
+
+	@JsonGetter("dateFrom")
+	public Long getDateFromJson() {
+		return dateFrom == null ? null : dateFrom.getTime();
+	}
+
+	@JsonGetter("dateTo")
+	public Long getDateToJson() {
+		return dateTo == null ? null : dateTo.getTime();
+	}
+
+	@JsonSetter("dateTo")
+	public void setDatetoJson(Long millis) {
+		if (millis != null) {
+			dateTo = new Date(millis);
+		}
+	}
+
+	@JsonSetter("ontology")
+	public void setOntologyJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final Ontology o = new Ontology();
+			o.setId(id);
+			o.setOntologyKPI(this);
+			ontology = o;
+		}
+	}
+
+	@JsonGetter("ontology")
+	public String getOntologyJSON() {
+		return ontology == null ? null : ontology.getId();
+	}
+
+	@Override
+	@JsonGetter("user")
+	public String getUserJson() {
+		return user.getUserId();
+	}
+
+	@JsonSetter("user")
+	public void setUserJson(String userId) {
+		if (!StringUtils.isEmpty(userId)) {
+			final User u = new User();
+			u.setUserId(userId);
+			user = u;
+		}
+	}
+
+	@Override
+	public String serialize() throws IOException {
+		final YAMLMapper mapper = new YAMLMapper();
+		final ObjectNode node = new YAMLMapper().valueToTree(this);
+		node.put("ontology", ontology == null ? null : ontology.getId());
+		try {
+			return mapper.writeValueAsString(node);
+		} catch (final JsonProcessingException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public String fileName() {
+		return ontology.getIdentification() + ".yaml";
+	}
+
+	@Override
+	public Versionable<OntologyKPI> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+		Versionable<OntologyKPI> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if (o != null && ontology != null && !CollectionUtils.isEmpty(excludedIds)
+				&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
+				&& excludedIds.get(Ontology.class.getSimpleName()).contains(ontology.getId())) {
+			addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
+			o = null;
+		}
+		return o;
+	}
 }

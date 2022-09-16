@@ -216,7 +216,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	public String insertDataIntoOntology(String ontology, String data, String userId)
+	public OperationResultModel insertDataIntoOntology(String ontology, String data, String userId)
 			throws JsonProcessingException, IOException {
 		final JsonNode node = mapper.readTree(data);
 		final OperationModel operation = new OperationModel.Builder(ontology, OperationType.INSERT, userId,
@@ -224,10 +224,8 @@ public class ResourceServiceImpl implements ResourceService {
 		final NotificationModel modelNotification = new NotificationModel();
 		modelNotification.setOperationModel(operation);
 		final OperationResultModel response = routerService.insert(modelNotification);
-		return response.getMessage();
+		return response;
 	}
-
-	
 
 	public String getJsonFromCSV(InputStreamReader input) throws IOException {
 		final CsvSchema csvSchema = CsvSchema.builder().setUseHeader(true).build();
@@ -317,7 +315,7 @@ public class ResourceServiceImpl implements ResourceService {
 			}
 		}
 	}
-	
+
 	private String translateField(String ontologyFieldType) {
 		switch (ontologyFieldType) {
 		case "string":
@@ -396,5 +394,16 @@ public class ResourceServiceImpl implements ResourceService {
 		JSONObject firstElement = jsonArray.getJSONObject(0);
 		return firstElement.toString();
 	}
-	
+
+	@Override
+	public void persistResource(String ontology, String query, String resourceId, String name, User user) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Api checkApiResource(String resourceUrl) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -50,7 +50,7 @@ public class HazelcastCacheLoaderClient {
 		final String configFile = "hazelcast-client.xml";
 		final ClientConfig config = new XmlClientConfigBuilder(configFile).build();
 		log.info("Configured Local Cache with data: Name : {} Instance Name {} Group Name: {}", configFile,
-				config.getInstanceName(), config.getGroupConfig().getName());
+				config.getInstanceName());
 
 
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
@@ -76,7 +76,7 @@ public class HazelcastCacheLoaderClient {
 		final ClientConfig config = xmlClientConfigBuilder.build();
 
 		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
+				+ config.getInstanceName() + " Group Name: ");
 
 
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));

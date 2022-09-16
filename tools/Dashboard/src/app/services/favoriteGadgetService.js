@@ -19,7 +19,7 @@
             message: "Error. There is already a favorite with that identifier"
           });
         } else {
-          httpService.createFavoriteGadget(data).then(function (resultCreate) {
+          httpService.createFavoriteGadget(addMetainfFromContext(data)).then(function (resultCreate) {
             if (resultCreate.status == 200) {
               window.postMessage("addNewFavoriteGadget", "*");
               if(window.self !== window.top){
@@ -84,5 +84,11 @@
       return promise;
       }
 
+    function addMetainfFromContext(data) { //add metainf to gadget favorite from window.gfmetainf
+      if (window.gfmetainf !== null) {
+        data['metainf'] = window.gfmetainf;
+      }
+      return data;
+    }  
   };
 })();

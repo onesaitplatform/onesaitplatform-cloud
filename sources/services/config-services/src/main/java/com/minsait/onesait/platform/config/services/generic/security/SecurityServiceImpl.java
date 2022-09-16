@@ -28,6 +28,7 @@ import javax.persistence.metamodel.EntityType;
 
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +67,7 @@ public class SecurityServiceImpl implements SecurityService {
 	private static final String ONT_AUTH_INSERT = "INSERT";
 
 	@Autowired
+	@Lazy
 	private OPResourceService resourceService;
 
 	@Autowired

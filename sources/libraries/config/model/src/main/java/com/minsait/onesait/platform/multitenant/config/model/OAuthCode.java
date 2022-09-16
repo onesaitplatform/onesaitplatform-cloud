@@ -14,13 +14,12 @@
  */
 package com.minsait.onesait.platform.multitenant.config.model;
 
-import java.sql.Blob;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "oauth_code")
@@ -30,9 +29,10 @@ public class OAuthCode {
 	@Column(name = "code", unique = true, nullable = false)
 	private String code;
 
-	@Lob
-	@Column(name = "authentication")
-	private Blob authentication;
+//	@Lob
+	@Column(name = "authentication", length = 16777217)
+	@Type(type = "org.hibernate.type.BinaryType")
+	private byte[] authentication;
 
 	public String getCode() {
 		return code;
@@ -42,11 +42,11 @@ public class OAuthCode {
 		this.code = code;
 	}
 
-	public Blob getAuthentication() {
+	public byte[] getAuthentication() {
 		return authentication;
 	}
 
-	public void setAuthentication(Blob authentication) {
+	public void setAuthentication(byte[] authentication) {
 		this.authentication = authentication;
 	}
 

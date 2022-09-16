@@ -62,12 +62,20 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+			
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/ontologies/list}"> <span th:text="#{ontology.breadcrumb.list}">Ontologies </span></a><i class="fa fa-angle-right"></i></li>
-						<li>
-							<span th:if="${ontologyTSDTO?.id} == null" th:text="#{ontology.breadcrumb.create}">Show Ontology</span>
+						<li><a th:href="@{/ontologies/list}">
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.template.list}">Manage Ontologies</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.breadcrumb.list}">My Ontologies</span>
+							</a><i class="fa fa-angle-right"></i>
+						</li>
+						<li th:if="${ontologyTSDTO?.id} == null"><a th:href="@{/ontologies/create}">
+							<span th:text="#{ontology.breadcrumb.create}">New Ontology</span></a><i class="fa fa-angle-right"></i>
+							<span th:if="${ontologyTSDTO?.id} == null" th:text="#{ontology.timeseries}">Show Ontology</span>
+						</li>
+						<li th:if="${ontologyTSDTO?.id} != null">
 							<span th:if="${ontologyTSDTO?.id} != null" th:text="#{ontology.breadcrumb.update}">Update Ontology</span>
 						</li>
 					</ul>						
@@ -86,7 +94,8 @@
 				</form>				
 				<form role="form" id="ontology_create_form" th:object="${ontologyTSDTO}" th:method="post" class="form">
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				
+					<!-- VERSIONING -->
+					<th:block th:include="versioning/fragments/form-commit"></th:block>
 					<input id="datamodelid" type="hidden"  />
 					<input id="schema" type="hidden" th:field="*{jsonSchema}" />
 					<input id="rtdb" name="rtdb" type="hidden" value="MONGO" th:field="*{rtdbDatasource}"/>
@@ -100,37 +109,93 @@
 					<input th:if="${ontologyTSDTO?.id} != null" type="hidden" name="_method" value="PUT"/>				
 				
 					<div id="header">
-						<div class="row pageCreateHeader">
+						<div class="row pageWizardHeader" th:if="${ontologyTSDTO?.id} == null">
+							<div class="wizardContainer col-md-6 col-sm-6 col-xs-12">
+								<div id="tab-datos" class="wizard-option active">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+										<div class="inline font-xs">
+											<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+												<!-- FORM TITLE -->
+												<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span><span class="required"> *</span>
+											</a>
+										</div>
+											<input id="stepOneCheckbox" class="form-control no-remove" type="checkbox" disabled="disabled"/>
+											<span></span>
+										</label>
+	    						  	</div>
+
+								</div>
+								<div id="tab-properties" class="wizard-option">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+										<div class="inline font-xs">
+											<a href="#tab_properties" data-toggle="tab" aria-expanded="true" class="disabled">
+												<span class="caption-subject " th:text="#{ontology.timeseries.properties}"> PROPERTIES</span><span class="required"> *</span>
+											</a>
+										</div>
+											<input id="stepTwoCheckbox" class="form-control no-remove" type="checkbox" disabled="disabled"/>
+											<span></span>
+										</label>
+									</div>
+								</div>
+								<div id="tab-advanced-options" class="wizard-option">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+										<div class="inline font-xs">
+											<a href="#tab_settings" data-toggle="tab" aria-expanded="true" class="disabled" >
+												<span th:text="#{ontology.advancedsettingsts}" >TS Advanced Settings</span>
+											</a>
+										</div>
+											<input id="stepThreeCheckbox" class="form-control no-remove" type="checkbox"  disabled="disabled"/>
+											<span></span>
+										</label>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">								
+									<!-- CANCEL -->
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\'' + ${ontologyTSDTO.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\'' + ${ontologyTSDTO.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+									<!-- RESET -->
+									<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createtimeseries'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+                                    										
+									<!-- CONTINUE -->
+									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  onclick="wizardStepContinue()" th:value="#{gen.continueBtn}" disabled="disabled"><span th:text="#{gen.continueBtn}"> Continue</span></button>
+									
+									<!-- CREATE -->
+									<button id="createWizardBtn" type="submit" class="btn btn-primary btn-primary-save hide" name="create" disabled="disabled"><span th:text="#{gen.createBtn}"> New</span></button>								
+								</div>
+							</div>
+						</div>					
+						<div class="row pageCreateHeader" th:if="${ontologyTSDTO?.id} != null">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span th:if="${ontologyTSDTO?.id} == null" th:text="#{ontology.template.create}"> New Ontology</span>
-									<span th:if="${ontologyTSDTO?.id} != null" th:text="${ontologyTSDTO.identification}"> Update Ontology </span>
+									<span th:text="${ontologyTSDTO.identification}"> Update Ontology </span>
 								</div>
 							</div>
 							
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${ontologyTSDTO?.id} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'deleteOntology(\'' + ${ontologyTSDTO.id} + '\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntology(\'' + ${ontologyTSDTO.id} + '\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
 
 												
 									<span class="sep" th:if="${ontologyTSDTO?.id} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')"></span>
 										
 									<!-- CANCEL -->											
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:cancelGo(\'' + ${ontologyTSDTO.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:cancelGo(\'' + ${ontologyTSDTO.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\'' + ${ontologyTSDTO.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\'' + ${ontologyTSDTO.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
-									<button th:if="${ontologyTSDTO?.id} == null" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" onclick="location.href='../ontologies/createtimeseries'"><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${ontologyTSDTO?.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}"   disabled="disabled"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}"   disabled="disabled"><span th:text="#{gen.resetBtn}"> Reset</span></button>
 										
-									<span class="sep no-border" th:if="${ontologyTSDTO?.id} != null"></span>
+									<span class="sep no-border"></span>
 										
-									<!-- CREATE -->
-									<button th:if="${ontologyTSDTO?.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"><span th:text="#{gen.createBtn}"> New</span></button>										
-
 									<!-- UPDATE -->
-									<button th:if="${ontologyTSDTO?.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button d="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"><span th:text="#{gen.changes}"> Save Changes</span></button>
 								</div>
 							</div>
 						</div>
@@ -144,6 +209,26 @@
 								<a href="#tab_1" data-toggle="tab" aria-expanded="false">
 									<span th:if="${ontologyTSDTO?.id} == null" class="caption-subject" th:text="#{ontology.template.create}"> New Ontology</span>
 									<span th:if="${ontologyTSDTO?.id} != null" class="caption-subject " th:text="#{gen.generalInformation}">General Information</span>
+								</a>
+							</div>
+							<div id="tab-properties" class="option">
+								<a href="#tab_properties" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject " th:text="#{ontology.timeseries.properties}"> PROPERTIES</span>
+								</a>
+							</div>							
+							<div id="tab-advanced-options" class="option">
+								<a href="#tab_settings" data-toggle="tab" th:classappend="${ontologyTSDTO?.id} == null OR ${ontologyTSDTO?.rtdbDatasource} != 'TIMESCALE' ? 'hide' : ''" aria-expanded="true">
+									<span class="caption-subject " th:text="#{ontology.advancedsettingsts}" >TS Advanced Settings </span>
+								</a>
+							</div>
+							<div id="tab-continuous-aggregates" class="option">
+								<a href="#tab_aggregates" data-toggle="tab" th:classappend="${ontologyTSDTO?.id} == null OR ${ontologyTSDTO?.rtdbDatasource} != 'TIMESCALE' ? 'hide' : ''" aria-expanded="true">
+									<span class="caption-subject " th:text="#{ontology.timeseries.continuous.aggregates}" >Continuous aggregates </span>
+								</a>
+							</div>
+							<div id="tab-advanced-options-ontology" class="option" >
+								<a href="#tab_settings_ontology" data-toggle="tab" aria-expanded="true">
+									<span th:text="#{ontology.advancedsettings}" >Advanced Settings </span>
 								</a>
 							</div>
 							<div id="tab-authorizations" class="option" >
@@ -165,19 +250,58 @@
 									</div>
 								</div>
 								<div class="row main">
-									<div class="col-sm-4 col-xs-12">
+									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.name}">Name</label><span class="required"> *</span>
+											<label class="control-label" th:text="#{ontology.identification}">Identification</label><span class="required"> *</span>
 											<input th:disabled="${ontologyTSDTO?.id} != null" th:tabindex="1" id="identification" type="text"  th:required="true"  maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{ontology.name}"/>
+											<span id="identificationerror" class="help-block font-red hide" th:text="#{ontology.name.error}"><i class="la la-warning"></i></span>
+											<span id="identificationInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
 										</div>
 									</div>
-									<div class="col-sm-3 col-xs-12">
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-12 col-xs-12">
 										<div class="form-group">
 											<label th:text="#{ontology.metainf}" class="control-label" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.metainf.help},data-title=#{ontology.metainf}"><i class="la la-lightbulb-o font-md"></i> Meta-inf</label><span class="required"> *</span>
 											<input  data-msg="Please fill this field" th:tabindex="2" id="metainf" name="metainf" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{metainf}" data-minlength="2" pattern=".{2,}" min="2" th:required="true"></input>																
 											<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+											<span id="metainfInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
 										</div>															
 									</div>
+								</div>
+								<div class="row main">
+									<div th:classappend="${ontologyTSDTO?.id} == null ? 'col-md-6 col-sm-12 col-xs-12' : 'col-md-8 col-sm-12 col-xs-12'" >
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.description}">Comments </label><span class="required"> *</span>
+											<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true" style="resize:vertical; min-height:10%"  cols="" rows=""></textarea>
+											<span id="descriptionInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-xs-2">
+										<input id="auxdata" class="margin-right-10" name="auxdata" type="checkbox" onchange="showAuxStats()" th:field="*{stats}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.timeseries.auxdata}">Public</label>
+										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.timeseries.auxdata.help},data-title=#{ontology.timeseries.auxdata}"></i>
+									</div>
+									<div id="auxDataValues" class="col-md-4 col-sm-4 col-xs-12" style="display:none;" >
+										<div class="form-group margin-right-20 no-padding-bottom no-margin-bottom" style="display: inline-block;">
+											<input id="lastvalue" class="no-remove"  name="lastvalue" type="checkbox" th:field="*{lastVal}"/>
+											<label class="control-label margin-both-5" th:text="#{ontology.timeseries.last}">Last</label>
+										</div>
+
+										<div class="form-group  no-padding-bottom no-margin-bottom" style="display: inline-block;">
+											<input id="max" class="no-remove"  name="max" type="checkbox" th:disabled="disabled" />
+											<label class="control-label margin-both-5" th:text="#{ontology.timeseries.max}">Max</label>
+										</div>
+
+										<div class="form-group  no-padding-bottom no-margin-bottom" style="display: inline-block;">
+											<input id="min" class="no-remove"  name="min" type="checkbox" th:disabled="disabled" />
+											<label class="control-label margin-left-5" th:text="#{ontology.timeseries.min}">Min</label>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
 									<div class="col-sm-2 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{ontology.timeseries.engine}">Timeseries Engine</label><span	class="required"> *</span>
@@ -190,264 +314,300 @@
 											</select>
 										</div>	
 									</div>
-									<div class="col-sm-1 col-xs-12" sec:authorize="!hasAuthority('ROLE_PARTNER')">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20">
-												<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.active.help},data-title=#{ontology.active}"><div class="inline font-xs" th:text="#{ontology.active}">Active Ontology</div>
-													<input id="active" name="active" type="checkbox" class="form-control no-remove" th:field="*{active}" checked="checked"/>
-													<span></span><!-- needed by styles -->
-												</label>
-											</div>
-										</div>
-									</div>
-									<div class="col-sm-1 col-xs-12">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20"> 
-												<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"><div class="inline font-xs" th:text="#{ontology.public}">Public</div>
-													<input  id="public" class="form-control no-remove"  name="public" type="checkbox" th:field="*{public}"  />
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
-										</div>
-									</div>
-								</div>		
-								<div class="row main">
-									<div th:classappend="${ontologyTSDTO?.id} == null ? 'col-md-6 col-sm-12 col-xs-12' : 'col-md-8 col-sm-12 col-xs-12'" >
-										<div class="form-group">
-											<label th:text="#{ontology.description}">Comments </label><span class="required"> *</span>
-											<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
-										</div>
-										<span class="help-block"><i class="la la-warning"></i> <small th:text="#{ontology.description.min}"></small></span>
-									</div>
-									<div class="col-md-2 col-sm-4 col-xs-12" th:if="${ontologyTSDTO.id} == null">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20">
-												<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.timeseries.auxdata.help},data-title=#{ontology.timeseries.auxdata}">
-													<div class="inline font-xs" th:text="#{ontology.timeseries.auxdata}">Auxiliar data</div>
-													<input id="auxdata" class="form-control no-remove"  name="auxdata" type="checkbox" onchange="showAuxStats()" th:field="*{stats}"/>
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
-										</div>
-									</div>
-									
-									<div id="auxDataValues" class="col-md-4 col-sm-4 col-xs-12 margin-top-20" style="display:none;" >
-										<div class="form-group margin-right-20" style="display: inline-block;">
-											<div class="mt-checkbox-list"> 
-												<label class="mt-checkbox popovers font-sm" > 
-													<div class="inline font-xs" th:text="#{ontology.timeseries.last}">Last</div>
-													<input id="lastvalue" class="form-control no-remove"  name="lastvalue" type="checkbox" th:field="*{lastVal}"/>
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
-										</div>
-
-										<div class="form-group" style="display: inline-block;">
-											<div class="mt-checkbox-list margin-right-10"> 
-												<label class="mt-checkbox popovers font-sm" > 
-													<div class="inline font-xs" th:text="#{ontology.timeseries.max}">Max</div>
-													<input id="max" class="form-control no-remove"  name="max" type="checkbox" th:disabled="disabled" />
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
-										</div>
-
-										<div class="form-group" style="display: inline-block;">
-											<div class="mt-checkbox-list"> 
-												<label class="mt-checkbox popovers font-sm" > 
-													<div class="inline font-xs" th:text="#{ontology.timeseries.min}">Min</div>
-													<input  id="min" class="form-control no-remove"  name="min" type="checkbox" th:disabled="disabled" />
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
-										</div>
-									</div>
 								</div>
-
+								<div class="row main margin-bottom-25">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<label class="control-label" th:text="#{gen.options}">Options</label>
+									</div>
+									<div class="col-md-12 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
+										<input id="active" class="margin-right-10" name="active" type="checkbox" checked="checked" th:field="*{active}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.activeontology}">Active</label>
+										<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.active.help},data-title=#{ontology.active}"></i>
+									</div>								
+									<div class="col-md-12 col-xs-12">
+										<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
+										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"></i>
+									</div>								
+									<div class="col-md-12 col-xs-12">
+										<input id="contextDataEnabled" class="margin-right-10" name="contextDataEnabled" type="checkbox" checked="checked" th:field="*{contextDataEnabled}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">ContextData</label>
+									</div>
+                                    <div class="col-md-2 col-xs-12">
+                                        <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" />
+                                        <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
+                                        <i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.supportsJsonLd.help},data-title=#{ontology.supportsJsonLd}"></i>
+                                    </div>
+                                    <div class="col-md-4 col-xs-12">
+                                        <div class="form-group hide" id="jsonLdCtxt">
+                                            <label class="control-label" th:text="#{ontology.jsonLdContext}">JSON-LD Context </label><span class="required"> *</span>
+                                            <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" ></textarea>
+                                        </div>
+                                    </div>	
+								</div>
+							</div>	
+							<div class="tab-pane" id="tab_properties">
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 										<span th:text="#{ontology.timeseries.properties}">Properties</span>
 									</div>
-								</div>
-
-								<div class="row main" >
-									<div class="col-md-10 col-sm-10 col-xs-10">
-										<span th:text="#{ontology.timeseries.tags}">Tags</span>
-									</div>
-									<div class="col-md-4 col-sm-4 col-xs-4">
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.timeseries.name}">Nombre</label><span class="required"> *</span>
-											<input id="tagName" type="text" name="tagName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
-											<select id="tagType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
-												<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
-												<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
-											</select>	
-										</div>
-										<div class="form-group pull-right">															
-											<button type="button" class="btn btn-primary btn-primary-save" id="button2" onclick="addTagRow()"><span th:text="#{ontology.timeseries.add.tag}">Add</span></button>															
-										</div>
-										<input type="hidden" id="tags" th:field="*{tags}" />
-									</div>
-									<div class="col-md-8 col-sm-8 col-xs-8">
-										<div id="template_schema">
-											<table class="table table-light table-hover table-striped" id="tag_properties" data-loaded="false">
-												<thead>
-													<tr class="cabecera-tabla" role="row">
-														<th class="titulo-columnas"><label id="label_available" class="description" th:text="#{ontology.timeseries.name}">Name</label></th>
-														<th class="titulo-columnas"><label id="label_available" class="description" th:text="#{ontology.timeseries.type}">Type</label></th>
-														<th class="titulo-columnas text-center"><label id="label_available" class="description" th:text="#{gen.options}">Options</label></th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr class="tagRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'TAG')}"	>
-											 			<td	th:text="${tsprop.propertyName}" >A</td> 
-														<td	th:text="${tsprop.propertyDataType}" >STRING</td> 
-														<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
-													</tr>
-												</tbody>
-												<tfoot>
-													<tr>
-														<td colspan="4"></td>
-													</tr>
-												</tfoot>
-											</table>
-										</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 									</div>
 								</div>
-								<div class="row main" >
-									<div class="col-md-10 col-sm-10 col-xs-10">
-										<span th:text="#{ontology.timeseries.fields}">Fields</span>
+								
+								<div id="tagCreationForm">
+									<div class="row main pageCreateHeader no-margin-left padding-left-10">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.add.tag.title}"></label>
 									</div>
-									<div class="col-md-4 col-sm-4 col-xs-4">
-										<div class="form-group">
-											<label th:text="#{ontology.timeseries.name}">Nombre</label><span class="required"> *</span>
-											<input id="fieldName" type="text" name="fieldName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(20vh);">
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.timeseries.name}">Nombre</label><span class="required"> *</span>
+												<input id="tagName" type="text" name="tagName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
+												<select id="tagType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
+													<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
+												</select>	
+											</div>
+											<div class="form-group pull-right">															
+												<button type="button" class="btn btn-primary btn-primary-save" id="button2" onclick="addTagRow()"><span th:text="#{ontology.timeseries.add.tag}">Add</span></button>															
+											</div>
+											<input type="hidden" id="tags" th:field="*{tags}" />									
 										</div>
-										<div class="form-group">
-											<label th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
-											<select id="fieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
-												<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
-												<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
-											</select>	
-										</div>
-										<div class="form-group pull-right">
-											<button type="button" class="btn btn-primary btn-primary-save" id="button3" onclick="addFieldRow()"><span th:text="#{ontology.timeseries.add.field}">Add</span></button>															
-										</div>
-										<input type="hidden" id="field_names" th:field="*{fieldnames}" />
-										<input type="hidden" id="field_types" th:field="*{fieldtypes}" />
-									</div>
-									<div class="col-md-8 col-sm-8 col-xs-8">
-										<!-- TEMPLATE FIELDS -->
-										<div id="template_schema" class="margin-bottom-20 ">
-											<table class="table table-light table-hover table-striped" id="field_properties" data-loaded="false">
-												<thead>
-													<tr class="cabecera-tabla" role="row">
-														<th class="titulo-columnas"><label id="label_available" class="description" th:text="#{ontology.timeseries.name}">Name</label></th>
-														<th class="titulo-columnas"><label id="label_available" class="description"	th:text="#{ontology.timeseries.type}">Type</label></th>
-														<th class="titulo-columnas text-center"><label id="label_available" class="description"	th:text="#{gen.options}">Options</label></th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr class="fieldRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD')}">
-											 			<td	th:text="${tsprop.propertyName}" ></td> 
-														<td	th:text="${tsprop.propertyDataType}" ></td> 
-														<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
-													</tr>
-												</tbody>
-												<tfoot>
-													<tr>
-														<td colspan="4"></td>
-													</tr>
-												</tfoot>
-												</table>
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh); max-height: calc(40vh); overflow:auto">
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="tag_properties" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
+																<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
+																<th class="titulo-columnas" style="width:50px"></th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<tr class="tagRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'TAG')}"	>
+													 			<td	th:text="${tsprop.propertyName}" >A</td> 
+																<td	th:text="${tsprop.propertyDataType}" >STRING</td> 
+																<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
 								
-								<div id="MongoDBDesc" th:style="${ontologyTSDTO?.id} == null ? 'display:none' : 'display:block'">
-									<div class="row main" >
-										<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-											<span th:text="#{ontology.timeseries.config}">TimeSeries Windows</span>
+								<div id="fieldCreationForm" class="margin-top-20">
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 " id="platform-users-header">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.add.field.title}"></label>
+									</div>
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.timeseries.name}">Nombre</label><span class="required"> *</span>
+												<input id="fieldName" type="text" name="fieldName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
+												<select id="fieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
+													<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
+												</select>	
+											</div>
+											<div class="form-group timescaleSignalProps" style="display: none;">
+												<label th:text="#{ontology.timeseries.aggregate}">Función de Agregación</label><span class="required"> *</span>
+												<select id="fieldAggregation" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="showFromSignalIfPush()">
+													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
+													<option th:each="type :${timescaleAggregates}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
+												</select>	
+											</div>
+											<div class="form-group timescalePushSignal" style="display: none;">
+												<label th:text="#{ontology.timeseries.push.signal}">From signal</label><span class="required"> *</span>
+												<select id="fieldPushSignal" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>												
+												</select>	
+											</div>
+											<div class="form-group pull-right">
+												<button type="button" class="btn btn-primary btn-primary-save" id="button3" onclick="addFieldRow()"><span th:text="#{ontology.timeseries.add.field}">Add</span></button>															
+											</div>
+											<input type="hidden" id="field_names" th:field="*{fieldnames}" />
+											<input type="hidden" id="field_types" th:field="*{fieldtypes}" />								
+											<input type="hidden" id="field_aggregations" th:field="*{fieldAggregations}" />
+											<input type="hidden" id="field_push_signals" th:field="*{fieldPushSignals}" />
+										</div>
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh); max-height: calc(40vh); overflow:auto">
+											<div class="form-group" style="margin-bottom: 0px">
+										<!-- TEMPLATE FIELDS -->
+												<div id="template_schema" class="margin-bottom-20">
+													<table class="table no-margin-bottom" id="field_properties" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
+																<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
+																<th class="titulo-columnas timescaleSignalProps" th:text="#{ontology.timeseries.aggregate}" style="display: none;">Aggregation Function</th>
+																<th class="titulo-columnas timescaleSignalProps" th:text="#{ontology.timeseries.push.signal}" style="display: none;">From signal</th>
+																<th class="titulo-columnas" style="width:50px"></th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<tr class="fieldRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD')}">
+											 					<td	th:text="${tsprop.propertyName}" ></td> 
+																<td	th:text="${tsprop.propertyDataType}" ></td>
+																<td	th:text="${tsprop.propertyAggregationType}" ></td> 
+																<td	th:text="${tsprop.propertyPushSignal}" ></td> 
+																<td class="text-center"><button th:if="${ontologyTSDTO.id}==null or ${ontologyTSDTO.rtdbDatasource}!='TIMESCALE'" type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
 										</div>
 									</div>
-									
-									<div class="row main" >
-										<div class="col-md-3 col-sm-6 col-xs-12">
-											<label class="control-label" th:text="#{ontology.timeseries.window}">Window Type</label><span class="required"> *</span>
-											<select id="windowMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
-												<option value="" th:text="#{ontology.timeseries.window.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Window...</option>	
-												<option th:each="wtype :${windowtypes}" th:value="${wtype}" th:id="${wtype}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(wtype)}__}" ></option>													
-											</select>	
-										</div>
-										<div class="col-md-4 col-sm-4 col-xs-12">
-											<div class="form-group">
+								</div>
+								<div id="TimescaleDBDesc" th:style="${ontologyTSDTO?.id} == null ? 'display:none' : 'display:block'" class="margin-top-20 margin-bottom-20">
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.add.window.title}"></label>
+									</div>
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">
+											<div class="form-group" style="width:50%; display:inline-block">
+												<label class="control-label" th:text="#{ontology.timeseries.timescale.chunk.interval}">Chunk time interval</label><span class="required"> *</span>
+												<select id="chunkInterval" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateTimescaleChunkIntervalNum()">
+													<option value="" th:text="#{ontology.timeseries.window.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Window...</option>	
+													<option th:each="wtype :${windowtypes}" th:value="${wtype}" th:id="${wtype}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(wtype)}__}" ></option>													
+												</select>	
+											</div>
+											<div class="form-group" style="width:30%; display:inline-block; float:right;">
+												<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+												<select class="selectpicker form-control" id="chunkWindowNumTimescale" name="chunkWindowNumTimescale" disabled="disabled"></select>
+												
+											</div>
+											<div class="form-group" style="width:50%; display:inline-block">
 												<label class="control-label" th:text="#{ontology.timeseries.frequency}">Frequency</label><span class="required"> *</span>
-												<select id="freqMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateNum()">
+												<select id="freqTimescale" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;"  onchange="activateNum('freqTimescale','freqnumTimescale')">
 													<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Frequency...</option>	
 													<option th:each="freq :${frequencies}" th:value="${freq}" th:id="${freq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(freq)}__}" ></option>													
 												</select>
 											</div>
+											<div class="form-group" style="width:30%; display:inline-block; float:right;">
+												<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+												<select class="selectpicker form-control" id="freqnumTimescale" name="freqnumTimescale" disabled="disabled"></select>
+											</div>
+											<div class="form-group pull-right">														
+												<button type="button" class="btn btn-primary btn-primary-save pull-right" id="button5" onclick="addTimescaleWindowRow()"><span th:text="#{ontology.timeseries.add.window}">Add</span></button>															
+											</div>
 										</div>
-										<div class="col-md-1 col-sm-1 col-xs-12">
-											<select class="form-control input-mini margin-top-27" id="freqnum" name="freqnum" disabled="disabled"></select>
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh); max-height: calc(50vh); overflow:auto">
+											<div id="template_schema_timescale" class="margin-bottom-20 ">
+												<table class="table no-margin-bottom" id="window_properties_timescale" data-loaded="false">
+													<thead  class="table-header-background">
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.timescale.chunk.interval}">Chunk time interval</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.frequency}">Frequency</th>
+															<th th:if="${ontologyTSDTO.id}==null" style="width:50px"></th>
+														</tr>
+													</thead>
+													<tbody  style="border-bottom: 1px solid #ddd;">
+														<tr class="TimescaleWindowRow" th:each="tswind :${ontologyTSDTO.timeSeriesTimescaleProperties}" >
+															<td	th:text="${tswind.chunkInterval} + ' ' + ${tswind.chunkIntervalUnit}" ></td> 
+															<td th:if="${tswind.frecuencyUnit.name()}!='NONE'" th:text="${tswind.frecuency} + ' ' + ${tswind.frecuencyUnit}" ></td>
+															<td th:if="${tswind.frecuencyUnit.name()}=='NONE'" th:text="${tswind.frecuencyUnit}" ></td> 
+															<td th:if="${ontologyTSDTO.id}==null" class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
 										</div>
-										<div class="col-md-3 col-sm-9 col-xs-12">
+										<div class="col-sm-12 col-md-12 hide">
+											<div class="form-group" style="height: auto !important;">
+										 		<input type="hidden" id="bucket_types" th:field="*{buckettypes}" /> 
+											</div>
+										</div>
+									</div>
+								</div>
+								
+								<div id="MongoDBDesc" th:style="${ontologyTSDTO?.id} == null ? 'display:none' : 'display:block'" class="margin-top-20 margin-bottom-20">
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 " id="platform-users-header">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.add.window.title}"></label>
+									</div>
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">									
 											<div class="form-group">
-												<label th:text="#{ontology.timeseries.aggregate}">Aggregate function</label><span class="required"> *</span>
+												<label class="control-label" th:text="#{ontology.timeseries.window}">Window Type</label><span class="required"> *</span>
+												<select id="windowMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+													<option value="" th:text="#{ontology.timeseries.window.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Window...</option>	
+													<option th:each="wtype :${windowtypes}" th:value="${wtype}" th:id="${wtype}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(wtype)}__}" ></option>													
+												</select>	
+											</div>
+											<div class="form-group" style="width:50%; display:inline-block">
+												<label class="control-label" th:text="#{ontology.timeseries.frequency}">Frequency</label><span class="required"> *</span>
+												<select id="freqMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateNum('freqMongo','freqnum')">
+													<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Frequency...</option>	
+													<option th:each="freq :${frequencies}" th:value="${freq}" th:id="${freq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(freq)}__}" ></option>													
+												</select>											
+											</div>
+											<div class="form-group" style="width:30%; display:inline-block; float:right;">
+												<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+												<select class="selectpicker form-control" id="freqnum" name="freqnum" disabled></select>
+											</div>
+											<div class="form-group no-margin-bottom">
+												<label class="control-label" th:text="#{ontology.timeseries.aggregate}">Aggregate function</label><span class="required"> *</span>
 												<select id="aggMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
 													<option value="" th:text="#{ontology.timeseries.aggregate.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Aggregate function...</option>	
 													<option th:each="aggregate :${aggregates}" th:value="${aggregate}" th:id="${aggregate}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(aggregate)}__}" ></option>													
-												</select>	
+												</select>												
 											</div>
-										</div>
-									</div>	
-									<div class="row main">
-										<div class="col-md-12 col-sm-12 col-xs-12">
-											<span th:text="#{ontology.timeseries.delpolicy}">Deletion policy</span>
-										</div>
-										
-										<div class="col-lg-3 col-md-3 col-xs-12">
-											<div class="form-group">
-												<div class="mt-checkbox-list margin-top-20">
-													<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" ><div class="inline font-xs" th:text="#{ontology.timeseries.erasedata}">Erase data before :</div>
-														<input disabled="disabled"  id="erasebutton" class="form-control no-remove"  name="erasebutton" type="checkbox"  />
-														<span></span><!-- necesario por estilos. -->
-													</label>
+											<div class="form-group margin-bottom-20">
+												<div class="mt-checkbox-list" style="height: 0px; display:inline-block;">
+													<div class="switch"> 
+														<label>
+															<input disabled="disabled" id="erasebutton" name="erasebutton" type="checkbox" class="form-control no-remove"></input>
+															<span class="checkbox-slider round" ></span>
+														</label>
+													</div>
+													<div class="inline font-xs" th:text="#{ontology.timeseries.erasedata}" style="margin-left:7px;color:#505D66;">Erase data before :</div>
+												</div>												
+											</div>
+											<div id="erasepolicy" class="hide">
+												<div class="form-group" style="width:50%; display:inline-block">
+													<label class="control-label" th:text="#{ontology.timeseries.erasedata.frecuency}">Delete Frequency</label><span class="required"> *</span>
+													<select disabled="disabled" id="delMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+														<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select frequency...</option>	
+														<option th:each="erasefreq :${erasefreqs}" th:value="${erasefreq}" th:id="${erasefreq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(erasefreq)}__}" ></option>													
+													</select>	
+												</div>
+												<div class="form-group" style="width:30%; display:inline-block; float:right;">
+													<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+													<input disabled="disabled" class="form-control" type="number" id="erasefreq" name="erasefreq" min="1" max="31"></input>
 												</div>
 											</div>
+											<div class="form-group pull-right">
+												<button type="button" class="btn btn-primary btn-primary-save pull-right" id="button4" onclick="addWindowRow()"><span th:text="#{ontology.timeseries.add.window}">Add</span></button>
+											</div>
 										</div>
-										<div class="col-md-4 col-sm-4 col-xs-12 margin-top-20">
-											<select disabled="disabled" id="delMongo" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
-												<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select frequency...</option>	
-												<option th:each="erasefreq :${erasefreqs}" th:value="${erasefreq}" th:id="${erasefreq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(erasefreq)}__}" ></option>													
-											</select>	
-										</div>
-										<div class="col-md-1 col-sm-1 col-xs-12 margin-top-20">
-											<input disabled="disabled" class="form-control input-mini" type="number" id="erasefreq" name="erasefreq" min="1" max="31"></input>
-										</div>
-
-										<div class="col-lg-3 col-md-3 col-xs-12 margin-top-20">															
-											<button type="button" class="btn btn-primary btn-primary-save pull-right" id="button4" onclick="addWindowRow()"><span th:text="#{ontology.timeseries.add.window}">Add</span></button>															
-										</div>
-											
-									</div>
-									<div class="row main">
-										<div class="col-lg-12 col-md-12 col-xs-12">
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh); max-height: calc(40vh); overflow:auto">
 											<div id="template_schema" class="margin-bottom-20 ">
-												<table class="table table-light table-hover table-striped" id="window_properties" data-loaded="false">
-													<thead>
+												<table class="table no-margin-bottom" id="window_properties" data-loaded="false">
+													<thead  class="table-header-background">
 														<tr class="cabecera-tabla" role="row">
-															<th class="titulo-columnas"><label id="label_available" class="description" th:text="#{ontology.timeseries.window}">Window</label></th>
-															<th class="titulo-columnas"><label id="label_available" class="description"	th:text="#{ontology.timeseries.frequency}">Frequency</label></th>
-															<th class="titulo-columnas"><label id="label_available" class="description" th:text="#{ontology.timeseries.aggregate}">Aggregate</label></th>
-															<th class="titulo-columnas"><label id="label_available" class="description"	th:text="#{ontology.timeseries.delpolicy}">Deletion policy</label></th>
-															<th class="titulo-columnas text-center"><label id="label_available" class="description" th:text="#{gen.options}">Options</label></th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.window}">Window</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.frequency}">Frequency</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.aggregate}">Aggregate</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.delpolicy}">Deletion policy</th>
+															<th class="titulo-columnas" style="width:50px"></th>
 														</tr>
 													</thead>
-													<tbody>
+													<tbody  style="border-bottom: 1px solid #ddd;">
 														<tr class="WindowRow" th:each="tswind :${ontologyTSDTO.timeSeriesWindow}" >
 															<td	th:text="${tswind.windowType}" ></td> 
 															<td th:text="${tswind.frecuency} + ' ' + ${tswind.frecuencyUnit}" ></td> 
@@ -457,15 +617,10 @@
 															<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
 														</tr>
 													</tbody>
-													<tfoot>
-														<tr>
-															<td colspan="4"></td>
-														</tr>
-													</tfoot>
-												</table>
+											</table>
 											</div>
 										</div>		
-										<div class="col-sm-12 col-md-12">
+										<div class="col-sm-12 col-md-12 hide">
 											<div class="form-group" style="height: auto !important;">
 										 		<input type="hidden" id="window_types" th:field="*{windowtypes}" /> 
 											</div>
@@ -482,7 +637,234 @@
 									</div>
 								</div>
 							</div>
-									
+
+
+							<div class="tab-pane fade in" id="tab_settings">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+									<span th:text="#{ontology.advancedsettingsts}" >TS Advanced Settings </span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+									<span th:text="#{ontology.timescale.hypertable.settings}" >Hypertable Settings </span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-10 col-sm-12 col-xs-12">
+										<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
+									</div>
+									<div class="form-group" style="height: auto !important;">
+								 		<input type="hidden" id="hypertableQuery" th:field="*{hypertableQuery}" /> 
+									</div>
+								</div>
+								
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.compression.policy}">Compression policy</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-6 col-xs-12">
+										<!-- DATA COMPRESSION SELECTION -->
+										<div class="form-group">													
+											<div class="mt-checkbox-list margin-top-20">
+												<!--  <input id="rtdbclean" class="margin-right-10" name="tableCompression" type="checkbox" th:field="*{tableCompression}" th:checked="checked"/>--> 
+												<input id="compressionCheck" th:field="*{compressionActive}" class="margin-right-10" name="tableCompression" type="checkbox" th:checked="false" onclick="showCompressionQuery()"/>
+												<label class="control-label margin-right-5 popovers" th:text="#{ontology.timeseries.compression}" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.timeseries.compression.help},data-title=#{ontology.timeseries.compression}">Enable compression</label>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.timeseries.compression.options}">Compression Options</label>
+											<select id="compressionLapseOpt" placeholder="asdasd" name="compressionLapseOpt" class="selectpicker form-control" data-live-search="true" data-width="100%" onchange="setCompressionLapseOpt()" >
+												<option value="1_DAYS" th:text="#{ontology.clean.oneday}" ></option>
+												<option value="2_DAYS" th:text="#{ontology.clean.twodays}" ></option>
+												<option value="3_DAYS" th:text="#{ontology.clean.threedays}"></option>
+												<option value="5_DAYS" th:text="#{ontology.clean.fivedays}" ></option>
+												<option value="1_WEEKS" th:text="#{ontology.clean.oneweek}" ></option>
+												<option value="2_WEEKS" th:text="#{ontology.clean.twoweeks}" ></option>
+												<option value="1_MONTHS" th:text="#{ontology.clean.onemonth}" ></option>
+												<option value="3_MONTHS" th:text="#{ontology.clean.threemonths}" ></option>
+												<option value="6_MONTHS" th:text="#{ontology.clean.sixmonths}" ></option>
+												<option value="1_YEARS" th:text="#{ontology.clean.oneyear}" ></option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-10 col-sm-12 col-xs-12">
+										<div style="height:200px; resize: vertical; overflow: auto;display: none;" id="queryDataCompression"></div>
+									</div>
+									<div class="form-group" style="height: auto !important;">
+								 		<input type="hidden" id="compressionQuery" th:field="*{compressionQuery}" /> 
+									</div>
+									<div class="form-group" style="height: auto !important;">
+								 		<input type="hidden" id="compressionConfig" th:field="*{compressionConfig}" /> 
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.delpolicy}">Deletion policy</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-6 col-xs-12">
+										<!-- RTDB CLEANSE SELECTION -->
+										<div class="form-group">													
+											<div class="mt-checkbox-list margin-top-20">
+												<input id="rtdbclean" class="margin-right-10" name="rtdbclean" type="checkbox" th:field="*{rtdbClean}" th:checked="false"/>
+												<label class="control-label margin-right-5 popovers" th:text="#{ontology.rtdbclean}" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.rtdbclean.help},data-title=#{ontology.rtdbclean}">rtdbclean</label>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.clean.options}">Cleanse Options</label>
+											<select id="rtdbCleanLapseOpt" placeholder="asdasd" name="rtdbCleanLapseOpt" class="selectpicker form-control" data-live-search="true" data-width="100%" onchange="setRtdbCleanLapse()" >
+												<option value="NEVER" th:text="#{ontology.clean.never}" ></option>
+												<option value="1_DAYS" th:text="#{ontology.clean.oneday}" ></option>
+												<option value="2_DAYS" th:text="#{ontology.clean.twodays}" ></option>
+												<option value="3_DAYS" th:text="#{ontology.clean.threedays}"></option>
+												<option value="5_DAYS" th:text="#{ontology.clean.fivedays}" ></option>
+												<option value="1_WEEKS" th:text="#{ontology.clean.oneweek}" ></option>
+												<option value="2_WEEKS" th:text="#{ontology.clean.twoweeks}" ></option>
+												<option value="1_MONTHS" th:text="#{ontology.clean.onemonth}" ></option>
+												<option value="3_MONTHS" th:text="#{ontology.clean.threemonths}" ></option>
+												<option value="6_MONTHS" th:text="#{ontology.clean.sixmonths}" ></option>
+												<option value="1_YEARS" th:text="#{ontology.clean.oneyear}" ></option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div th:if="${ontologyTSDTO.id}!=null" class="tab-pane fade in" id="tab_aggregates">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.continuous.aggregates}">Continuous aggregates</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-sm-4 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.name}">Name</label>
+											<input th:tabindex="1" id="aggregateName" type="text"  maxlength="50" class="form-control " />
+										</div>
+										<div class="form-group" style="width:70%;display:inline-block;">
+											<label class="control-label" th:text="#{ontology.timescale.bucket.aggregation}">Bucket Aggregation</label>
+											<select id="timescaleContAggrFreq" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateNum('timescaleContAggrFreq','timescaleContAggrFreqNum')">
+												<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Frequency...</option>	
+												<option th:each="freq :${frequencies}"  th:if="${freq != T(com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit).NONE}" th:value="${freq}" th:id="${freq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(freq)}__}" ></option>													
+											</select>
+										</div>
+										<div class="form-group" style="width:20%;display:inline-block; float:right;">
+											<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+											<select class="form-control" id="timescaleContAggrFreqNum" name="timescaleContAggrFreqNum" disabled="disabled"></select>
+										</div>
+										<div class="form-group">															
+											<button type="button" class="btn btn-primary btn-primary-save pull-right" id="buttonGenerateAggrTemplate" onclick="generateContinuousAggrTemplate()"><span th:text="#{ontology.timeseries.aggr.template.generate}">Add</span></button>															
+										</div>
+									</div>
+									<div class="col-sm-8 col-xs-12">
+										<label class="control-label" th:text="#{ontology.timeseries.aggr.template}">Template</label>
+										<div style="height:180px; resize: vertical; overflow: auto;" id="queryAggregate"></div>
+									</div>
+								</div>
+							
+								<div class="row main margin-top-20">
+									<div class="col-md-4 col-sm-4 col-xs-12">
+										<div class="form-group" style="width:70%;display:inline-block;">
+											<label class="control-label" th:text="#{ontology.timeseries.schedule.policy}">Schedule policy</label>
+											<select id="schedulePolicy" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateNum('schedulePolicy','schedulePolicyNum')">
+												<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Frequency...</option>	
+												<option th:each="freq :${frequencies}"  th:if="${freq != T(com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit).NONE}" th:value="${freq}" th:id="${freq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(freq)}__}" ></option>													
+											</select>
+										</div>
+										<div class="form-group" style="width:20%;display:inline-block; float:right;">
+											<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+											<select class="form-control" id="schedulePolicyNum" name="schedulePolicyNum" disabled="disabled"></select>
+										</div>								
+										<div class="form-group" style="width:70%;display:inline-block;">
+											<label class="control-label" th:text="#{ontology.timeseries.start.offset}">Start offset</label>
+											<select id="startOffset" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateNum('startOffset','startOffsetNum')">
+												<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Frequency...</option>	
+												<option th:each="freq :${frequencies}" th:if="${freq != T(com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit).NONE}" th:value="${freq}" th:id="${freq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(freq)}__}" ></option>										
+											</select>
+										</div>
+										<div class="form-group" style="width:20%;display:inline-block; float:right;">
+											<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+											<select class="form-control" id="startOffsetNum" name="startOffsetNum" disabled="disabled"></select>
+										</div>
+										<div class="form-group" style="width:70%;display:inline-block;">
+											<label class="control-label" th:text="#{ontology.timeseries.end.offset}">End offset</label>
+											<select id="endOffset" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="activateNum('endOffset','endOffsetNum')">
+												<option value="" th:text="#{ontology.timeseries.frequency.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Frequency...</option>	
+												<option th:each="freq :${frequencies}"  th:if="${freq != T(com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit).NONE}" th:value="${freq}" th:id="${freq}" th:text="#{ontology.timeseries.__${#strings.toLowerCase(freq)}__}" ></option>													
+											</select>
+										</div>
+										<div class="form-group" style="width:20%;display:inline-block; float:right;">
+											<label class="control-label" th:text="#{ontology.timeseries.unit}">Unit</label><span class="required"> *</span>
+											<select class="form-control" id="endOffsetNum" name="endOffsetNum" disabled="disabled"></select>
+										</div>
+										<div class="form-group">
+											<button type="button" class="btn btn-primary btn-primary-save pull-right" id="buttonAggr" onclick="addContinuousAggrRow()"><span th:text="#{ontology.timeseries.add.aggr}">Add</span></button>
+										</div>
+									</div>
+
+									<div class="col-sm-8 col-xs-12">
+										<div id="continuousAggregates" class="margin-bottom-20 ">
+											<table class="table no-margin-bottom" id="cont_aggr_properties" data-loaded="false">
+												<thead>
+													<tr class="cabecera-tabla" role="row">
+														<th class="titulo-columnas" th:text="#{ontology.name}">Name</th>
+														<th class="titulo-columnas" th:text="#{ontology.timescale.bucket.aggregation}">Bucket aggregation</th>
+														<th class="titulo-columnas" th:text="#{ontology.timeseries.schedule.policy }">Schedule Policy</th>
+														<th class="titulo-columnas" th:text="#{ontology.timeseries.start.offset}">Start offset</th>
+														<th class="titulo-columnas" th:text="#{ontology.timeseries.end.offset}">End offset</th>
+														<th class="titulo-columnas text-center" style="width:50px"></th>
+													</tr>
+												</thead>
+												<tbody><tbody style="border-bottom: 1px solid #ddd;">
+													<tr class="WindowRow" th:each="tsagrr :${ontologyTSDTO.timeSeriesTimescaleAggregates}" >
+														<td	class="aggrName" th:text="${tsagrr.name}" ></td> 
+														<td th:text="${tsagrr.bucketFrequency} + ' ' + ${tsagrr.bucketFrequencyUnit}" ></td> 
+														<td th:text="${tsagrr.schedulerFrequency} + ' ' + ${tsagrr.schedulerFrequencyUnit}" ></td> 
+														<td th:text="${tsagrr.startOffset} + ' ' + ${tsagrr.startOffsetUnit}" ></td> 
+														<td th:text="${tsagrr.endOffset} + ' ' + ${tsagrr.endOffsetUnit}" ></td>
+														<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="deleteTimescaleAggregate(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- ONTOLOGY ADVANCED SETTINGS -->
+							<div class="tab-pane " id="tab_settings_ontology">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.advancedsettings}">Advanced Settings</span>
+									</div>
+								</div>
+								<div class="row main">											
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<!-- KAFKA SELECTION -->
+										<div class="mt-checkbox-list">
+											<input id="allowsCreateTopic" class="margin-right-10" name="allowsCreateTopic" type="checkbox" th:field="*{allowsCreateTopic}" th:checked="checked"/>
+											<label class="control-label margin-right-5 popovers" th:text="#{ontology.allowsCreateTopic}">Allow Create Topic</label>
+											<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCreateTopic.help},data-title=#{ontology.allowsCreateTopic}"></i>
+										</div>
+
+										<!-- KAFKA SELECTION -->									
+										<div class="mt-checkbox-list">
+											<input id="allowsCreateNotificationTopic" class="margin-right-10" name="allowsCreateNotificationTopic" type="checkbox" th:field="*{allowsCreateNotificationTopic}" th:checked="checked"/>
+											<label class="control-label margin-right-5 popovers" th:text="#{ontology.allowsCreateNotificationTopic}">Allow Create Notification Topic</label>
+											<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCreateNotificationTopic.help},data-title=#{ontology.allowsCreateNotificationTopic}"></i>
+										</div>
+									</div>
+								</div>
+							</div>							
 							<div class="tab-pane fade in" id="tab_2">
 							<!-- ONTOLOGY AUTHORIZATION -->
 								<div class="row main">
@@ -490,8 +872,12 @@
 										<span th:text="#{apimanager.template.autorizations}">Authorizations</span>
 									</div>
 								</div>
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="row main pageCreateHeader no-margin-left padding-left-10">
+									<label class="no-padding-bottom" th:text=="'+'"></label>
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{categorization.addAuthorization}"></label>
+								</div>
+								<div class="row main borderPanel no-margin-left">
+									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh);">
 									<!-- USER SELECTION -->
 										<div class="form-group">
 											<label class="control-label" th:text="#{ontology.user}">User</label>
@@ -510,15 +896,14 @@
 										</div>
 										<div class="form-group margin-top-20 pull-right">
 											<button type="button" class="btn btn-primary btn-primary-save" onclick="insertAuthorization()" th:text="#{ontology.insertauthorization}">Insert Ontology Authorization</button>																		
-										</div>												
-									</div>
-									<div class="col-md-8 col-sm-6 col-xs-12">
-									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.auth.title}">Ontologies Authorizations</label>
+										</div>
+									</div>											
+									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
+										<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+										<div class="form-group" style="margin-bottom: 0px">
 											<div id="authorizations" class="margin-bottom-20 hide">
 												<table class="table" id="ontology_autthorizations" data-loaded="false">
-													<thead>
+													<thead class="table-header-background">
 														<tr class="cabecera-tabla" role="row" >
 															<th class="titulo-columnas" th:text="#{ontology.user}">User</th>
 															<th class="titulo-columnas" th:text="#{ontology.auth.accesstypes}">Access type</th>
@@ -566,10 +951,21 @@
 	<!-- CORE JS CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
+    <script th:src="@{/static/js/utils/genericFunctions.js}"></script>
+    <script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+    <script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
 
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+    
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
 	
@@ -589,6 +985,7 @@
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+    <script th:src="@{/static/vendor/json/jsonToTable.js}"></script>
 	
 	<!-- SCHEMA GENERATOR -->
 	<script th:src="@{/static/vendor/schemagenerator/underscore.js}"></script>
@@ -600,11 +997,17 @@
 	<script th:src="@{/static/vendor/schemagenerator/StaticView.js}"></script>
 	<script th:src="@{/static/vendor/schemagenerator/StringView.js}"></script>
 	
+	<!-- MONACO EDITOR -->
+	<script>var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };</script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
 	
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- MAIN INIT -->
+	
 	<script  th:inline="javascript">
 	
 	var authorizationsArr 		= []; // add authorizations
@@ -616,28 +1019,484 @@
 	var secsValues = [1,2,3,4,5,6,10,12,15,20,30];
 	var hourValues = [1,2,3,4,6,8,12];
 	var tagsAndFieldsList=[];
+	var dayValues = [1,2,3,4,5,6,7,14,15];
+	var monthValues = [1,2,3,4,5,6,12];
 	
-	var showMongoConf = function()
-	{
-		if(document.getElementById('enginetimeseries').value=="MONGO")
-		{
-			document.getElementById("MongoDBDesc").style.display = '';
+	var wizardStep = 1;
+	var myCodeMirror;
+	
+	var handleCodeMirror = function () {
+		
+        var myTextArea = document.getElementById('jsonLdContext');
+        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+        	mode: "application/json",
+	    	autoRefresh: true,
+	    	autoCloseBrackets: true,
+	        matchBrackets: true,
+	        styleActiveLine: true,
+	        theme:"material",
+	        lineWrapping: true
+    	});
+		myCodeMirror.setSize("100%",100);
+    };
+    
+    var checkJsonLdContext = function(){
+		if($('#supportsJsonLd').is(':checked')){
+			$('#jsonLdCtxt').removeClass('hide');
+			document.getElementById("jsonLdContext").style.display = '';
+		}else{
+			$('#jsonLdCtxt').addClass('hide');
 		}
-		else
+	}
+    
+ 	// CHECK IF JSON STRING WHEN JSON PARSE IS OK OR NOT, IF THE JSON IS
+	// MALFORMED THE JSON.parse() is broken.
+	var IsJsonString = function(str) {
+		try {
+			JSON.parse(str);
+		}
+		catch (e) {	return false; }
+
+		return true;
+	}
+
+    
+	var showFromSignalIfPush = function(){
+		if(document.getElementById('fieldAggregation').value=="PUSH")
 		{
-			document.getElementById("MongoDBDesc").style.display = 'none';
+			$('.timescalePushSignal').show(); // hides
+		} else {
+			$('.timescalePushSignal').hide(); // Shows
 		}
 	}
 	
-	var showAuxStats = function()
-	{
-		if(document.getElementById('auxdata').checked==true)
-		{
+	var fillAggregationTypesForSignal = function(array){
+		array.forEach(function(element){
+			  var o = new Option(element, element);
+			  o.setAttribute("id",element);
+			  $("#fieldAggregation").append(o);  
+		  
+		  });
+	}
+	
+	var setAggregationFunctionsFronDataType = function (){
+		if(document.getElementById('enginetimeseries').value=="TIMESCALE"){
+			//get type
+			var e = document.getElementById("fieldType");
+			var selectedType = e.value;
+			//delete previous values
+			$("#fieldAggregation").find('option').not(':first').remove();
+			$("#fieldAggregation").selectpicker('refresh');
+			
+			
+			switch (selectedType) {
+			  case "STRING":
+				  var arr = [ "NONE", "MIN", "MAX", "LAST", "FIRST"];
+				  fillAggregationTypesForSignal(arr);				  
+				  break; 
+			  case "TIMESTAMP":
+				  var arr = [ "NONE", "MIN", "MAX", "LAST", "FIRST"];
+				  fillAggregationTypesForSignal(arr);				  
+				  break;
+			  case "INTEGER":
+			  case "NUMBER":
+			 	  var arr = ["NONE", "MIN", "MAX", "LAST", "FIRST", "SUM"];
+			  	  fillAggregationTypesForSignal(arr);		
+				  break;
+			  case "ARRAY":
+			 	  var arr = ["NONE", "LAST", "FIRST", "PUSH"];
+			  	  fillAggregationTypesForSignal(arr);
+				  break;
+			  case "OBJECT":
+			 	  var arr = ["NONE", "LAST", "FIRST"];
+			  	  fillAggregationTypesForSignal(arr);
+				  break;
+			}
+
+			$("#fieldAggregation").selectpicker('refresh');
+		}
+	}
+	
+	var  showCompressionQuery = function(){
+
+		  var checkBox = document.getElementById("compressionCheck");
+		  var tableName = $("#identification").val();
+		  if (checkBox.checked == true){
+		    $("#queryDataCompression").show();
+		    $("#compressionLapseOpt").prop('disabled', false);
+		    //if the compression query is empty, generate template
+		    if(getMonacoCompressionValue() == null || getMonacoCompressionValue().length==0){
+		    	var query = "ALTER TABLE "+tableName+" SET (\n"+
+		    		  "timescaledb.compress\n" +
+		    		  "--,timescaledb.compress_segmentby = 'device_id'\n" +
+		    		  "--,timescaledb.compress_orderby = 'device_id, timestamp DESC'\n" +
+		    		   ");";
+		    	setMonacoCompressionValue(query);
+		    }
+		  } else {
+			$("#queryDataCompression").hide();
+			$("#compressionLapseOpt").prop('disabled', 'disabled');
+		  }
+	}
+	var removeAggrRow = function(){
+		//TODO: Send to remove aggregate API	
+	}
+	
+	var generateContinuousAggrTemplate = function(){
+		
+		//TODO: Check values and send to create aggregate API
+		var identification = $("#identification").val();
+		var aggregateName = $("#aggregateName").val();
+		var interval =  document.getElementById('timescaleContAggrFreq').value.toLowerCase();
+		var intervalNum = $("#timescaleContAggrFreqNum").val();
+		if(identification === "" || aggregateName === "" || interval === "" || intervalNum === ""){
+			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
+			return false;
+		}
+		
+		if(getMonacoAggregateValue() == null || getMonacoAggregateValue().length==0){
+			var tagsInOntology = "";
+			var taginfo = document.getElementsByClassName('tagRow');
+
+			var i,j;
+			for(i=0;taginfo.length>i;i++)
+			{
+				tds=[];
+				for(j=0;taginfo[i].childNodes.length>j;j++)
+				{
+					if(taginfo[i].childNodes[j].localName == "td")
+					{
+						tds.push(taginfo[i].childNodes[j].innerText);
+					}
+					
+				}
+				tagsInOntology = tagsInOntology + tds[0] + ", ";
+			}
+			var fieldinfo = document.getElementsByClassName('fieldRow');
+			//get first field/signal
+			var firstSignalAsExample = "";
+			for(i=0;fieldinfo.length>i;i++)
+			{
+				tds=[];
+				for(j=0;fieldinfo[i].childNodes.length>j;j++)
+				{
+					if(fieldinfo[i].childNodes[j].localName == "td")
+					{
+						tds.push(fieldinfo[i].childNodes[j].innerText);
+					}
+					
+				}
+				firstSignalAsExample = tds[0];
+				break;
+				
+			}
+			
+	    	var query = "CREATE MATERIALIZED VIEW "+identification+"_"+aggregateName+"\n" +
+	    		"WITH (timescaledb.continuous) AS\n" +
+	    		"SELECT " +tagsInOntology+"\n"+
+	    		"       time_bucket(INTERVAL '"+intervalNum+" "+interval+"', timestamp) AS timestamp,\n" +
+	    		"       AVG("+firstSignalAsExample+") as signal1Avg,\n" +
+	    		"       MAX("+firstSignalAsExample+") as signal1Max,\n" +
+	    		"       MIN("+firstSignalAsExample+") as signal1Min,\n" +
+	    		"       LAST("+firstSignalAsExample+", timestamp) as signal1Last,\n" +
+	    		"       FIRST("+firstSignalAsExample+",timestamp) as signal1First\n" +
+	    		"FROM "+identification+"\n" +
+	    		"GROUP BY "+tagsInOntology+" time_bucket(INTERVAL '"+intervalNum+" "+interval+"', timestamp);";
+	    	setMonacoAggregateValue(query);
+	    } else {
+	    	toastr.warning(messagesForms.operations.genOpError,[[#{ontology.timeseries.aggregate.template.already.defined }]]);
+	    }
+	}
+	var addContinuousAggrRow = function(){
+		var aggrName = $("#aggregateName").val();
+		var agrBucket =  document.getElementById('timescaleContAggrFreq').value.toLowerCase();
+		var aggrBucketNum = $("#timescaleContAggrFreqNum").val();
+		var schedulePolicy = document.getElementById('schedulePolicy').value.toLowerCase();
+		var schedulePolicyNum = $("#schedulePolicyNum").val();
+		var startOffset = document.getElementById('startOffset').value.toLowerCase();
+		var startOffsetNum = $("#startOffsetNum").val();
+		var endOffset = document.getElementById('endOffset').value.toLowerCase();
+		var endOffsetNum = $("#endOffsetNum").val();
+		if(aggrName === "" || agrBucket === "" || aggrBucketNum === "" || schedulePolicy === "" || schedulePolicyNum === "" 
+				|| startOffset === "" || startOffsetNum === "" || endOffset === "" || endOffsetNum === ""){
+			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
+			return false;
+		}
+		
+		//CALL AGGREGATE SERVICE for creation
+		createTimescaleAggregate();
+	}
+	
+	var updateAggregatesTable = function(){
+		var aggrName = $("#aggregateName").val();
+		var agrBucket =  document.getElementById('timescaleContAggrFreq').value.toLowerCase();
+		var aggrBucketNum = $("#timescaleContAggrFreqNum").val();
+		var schedulePolicy = document.getElementById('schedulePolicy').value.toLowerCase();
+		var schedulePolicyNum = $("#schedulePolicyNum").val();
+		var startOffset = document.getElementById('startOffset').value.toLowerCase();
+		var startOffsetNum = $("#startOffsetNum").val();
+		var endOffset = document.getElementById('endOffset').value.toLowerCase();
+		var endOffsetNum = $("#endOffsetNum").val();
+		$('#cont_aggr_properties > tbody')
+		.append(
+				'<tr class="aggrRow"><td class="aggrName">'
+						+ aggrName
+						+ '</td><td >'
+						+ aggrBucketNum + " " + agrBucket
+						+ '</td><td >'
+						+ schedulePolicyNum + " " + schedulePolicy
+						+ '</td><td >'
+						+ startOffsetNum + " " + startOffset
+						+ '</td><td >'
+						+ endOffsetNum + " " + endOffset
+						+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="deleteTimescaleAggregate(this)"><i class="icon-delete"></i></button></td></tr>');
+		$('#aggregateName').val( '' );
+
+		$('#timescaleContAggrFreq').val( '' );
+		$('#timescaleContAggrFreq').selectpicker('deselectAll').selectpicker('refresh');
+		$('#schedulePolicy').val( '' );
+		$('#schedulePolicy').selectpicker('deselectAll').selectpicker('refresh');
+		$('#startOffset').val( '' );
+		$('#startOffset').selectpicker('deselectAll').selectpicker('refresh');
+		$('#endOffset').val( '' );
+		$('#endOffset').selectpicker('deselectAll').selectpicker('refresh');
+		
+		$('#timescaleContAggrFreqNum').val( '' );
+		$('#schedulePolicyNum').val( '' );
+		$('#startOffsetNum').val( '' );
+		$('#endOffsetNum').val( '' );
+		
+		document.getElementById("timescaleContAggrFreqNum").disabled=true;
+		document.getElementById("schedulePolicyNum").disabled=true;
+		document.getElementById("startOffsetNum").disabled=true;
+		document.getElementById("endOffsetNum").disabled=true;
+		setMonacoAggregateValue("");
+	}
+	
+	var createTimescaleAggregate = function() {
+		
+		var name = $("#aggregateName").val();
+		var bucketAggregationUnit =  document.getElementById('timescaleContAggrFreq').value.toLowerCase();
+		var bucketAggregation = $("#timescaleContAggrFreqNum").val();
+		var schedulingPolicyUnit = document.getElementById('schedulePolicy').value.toLowerCase();
+		var schedulingPolicy = $("#schedulePolicyNum").val();
+		var startOffsetUnit = document.getElementById('startOffset').value.toLowerCase();
+		var startOffset = $("#startOffsetNum").val();
+		var endOffsetUnit = document.getElementById('endOffset').value.toLowerCase();
+		var endOffset = $("#endOffsetNum").val();
+		var aggregateQuery = getMonacoAggregateValue();
+		
+
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		var request = {
+			'name' : name,
+			'bucketAggregationUnit': bucketAggregationUnit.toUpperCase(),
+			'bucketAggregation' : bucketAggregation,
+			'schedulingPolicyUnit' : schedulingPolicyUnit.toUpperCase(),
+			'schedulingPolicy' : schedulingPolicy,
+			'startOffsetUnit' : startOffsetUnit.toUpperCase(),
+			'startOffset' : startOffset,
+			'endOffsetUnit' : endOffsetUnit.toUpperCase(),
+			'endOffset' : endOffset,
+			'aggregateQuery' : aggregateQuery
+				
+		};
+		var requestData = JSON.stringify(request);
+		
+		var url = "/controlpanel/ontologies/createTimescaleContinuousAggregate";
+		url+='?ontologyIdentification='+$('#identification').val();
+		
+		
+		$.ajax({
+			url : url,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'POST',
+			dataType : 'json',
+			data : requestData,
+			contentType : 'application/json',
+			mimeType : 'application/json',
+			success : function(data) {
+				if (data.ok) {
+					//refreshAggregateTable(selectedDevice);
+					updateAggregatesTable();
+				} else {
+					console.log(JSON.stringify(data));
+					var errorString = "";
+					switch(data.errorType){
+					default:
+					case "GENERAL":
+						errorString = [[#{ontology.timeseries.aggregate.general.error}]] + " " + data.errorMessage;
+						break;
+					case "TIMESCALE_TABLE":
+						errorString = [[#{ontology.timeseries.aggregate.table.execution.error}]] + " " + data.errorMessage;;
+						break
+					case "TIMESCALE_POLICY":
+						errorString = [[#{ontology.timeseries.aggregate.policy.error}]] + " " + data.errorMessage;
+						break;
+					case "UNAUTHORIZED":
+						errorString = [[#{gen.unauthorized}]];
+						break;
+					case "DUPLICATE_NAME":
+						errorString = [[#{ontology.timeseries.aggregate.duplicated}]];
+						break;
+					}
+					toastr.error(messagesForms.operations.genOpError, errorString);
+					return false;
+				}
+			},
+			error : function(data, status, er) {
+				console.error(status);
+				toastr.error(messagesForms.operations.genOpError,"CHANGE TO ERROR PROMPT2");
+				return false;
+			}
+		});
+	}
+	
+	var deleteTimescaleAggregate = function(row) {
+		//deleteTimescaleContinuousAggregate
+		var tagSelected = row.parentElement.parentElement.firstElementChild.innerHTML;
+		var name = row.parentElement.parentElement.querySelector(".aggrName").innerHTML;
+
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		var url = "/controlpanel/ontologies/deleteTimescaleContinuousAggregate";
+		url+='?ontologyIdentification='+$('#identification').val();
+		url+='&aggregateName='+name;
+		
+		$.ajax({
+			url : url,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'DELETE',
+			dataType : 'json',
+			contentType : 'application/json',
+			mimeType : 'application/json',
+			success : function(data) {
+				if (data.ok) {
+					//delete row
+					removeRow(row)
+					toastr.success(messagesForms.operations.genOpSuccess,'');
+				} else {
+					toastr.error(messagesForms.operations.genOpError,"CHANGE TO ERROR PROMPT");
+					return false;
+				}
+			},
+			error : function(data, status, er) {
+				console.error(status);
+				toastr.error(messagesForms.operations.genOpError,"CHANGE TO ERROR PROMPT2");
+				return false;
+			}
+		});
+	}
+	
+	
+	var setCompressionLapseOpt = function(){
+		
+		var deletionLapse = $("#compressionLapseOpt option:selected").text();
+		$("#compressionConfig").val(deletionLapse);
+	}
+	
+	var setRtdbCleanLapse = function(){
+		
+		var deletionLapse = $("#rtdbCleanLapseOpt option:selected").text();
+		$("#rtdbCleanLapse").val(deletionLapse);
+	}
+
+	$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+		$('.form').validate().element('#' + event.target.id);                // checks form for validity
+	}).on('keyup', function(){
+		if (ontologyCreateJson.actionMode==null){
+			manageWizardStep();
+		}
+	});
+	
+	var showMongoConf = function() {
+		if(document.getElementById('enginetimeseries').value=="MONGO") {
+			//Remove ARRAY data types if exists
+			$("#fieldType option[value='ARRAY']").remove();
+			$("#fieldType option[value='TIMESTAMP']").remove();
+			$("#tagType option[value='ARRAY']").remove();
+			$("#tagType option[value='TIMESTAMP']").remove();
+			$("#fieldType").selectpicker('refresh');
+			$("#tagType").selectpicker('refresh');
+			//Remove FREQU NONE
+			$("#freqMongo option[value='NONE']").remove();
+			$("#freqMongo").selectpicker('refresh');
+			//Hide timescale conf
+			document.getElementById("MongoDBDesc").style.display = '';
+			document.getElementById("TimescaleDBDesc").style.display = 'none';
+			$('.timescaleSignalProps').hide();
+			$("#auxdataDiv").show();
+			
+		} else {	
+			//Add ARRAY data types if not exists
+			$("#auxdataDiv").hide();
+			var optionExists = ($('#fieldType option[value="ARRAY"]').length > 0);
+			if(!optionExists){
+				var element = "ARRAY";
+				var o = new Option(element, element);
+				  o.setAttribute("id",element);
+				  $("#fieldType").append(o); 
+			}
+			var optionExists = ($('#fieldType option[value="TIMESTAMP"]').length > 0);
+			if(!optionExists){
+				var element = "TIMESTAMP";
+				var o = new Option(element, element);
+				  o.setAttribute("id",element);
+				  $("#fieldType").append(o); 
+			}
+			$("#fieldType").selectpicker('refresh');
+			var optionExists = ($('#tagType option[value="ARRAY"]').length > 0);
+			if(!optionExists){
+				var element = "ARRAY";
+				var o = new Option(element, element);
+				  o.setAttribute("id",element);
+				  $("#tagType").append(o); 
+			}
+			var optionExists = ($('#tagType option[value="TIMESTAMP"]').length > 0);
+			if(!optionExists){
+				var element = "TIMESTAMP";
+				var o = new Option(element, element);
+				  o.setAttribute("id",element);
+				  $("#tagType").append(o); 
+			}
+			$("#tagType").selectpicker('refresh');
+			
+			//Add freq NONE if not exists
+			var optionExists = ($('#freqTimescale option[value="NONE"]').length > 0);
+			if(!optionExists){
+				var element = "NONE";
+				var o = new Option(element, element);
+				  o.setAttribute("id",element);
+				  $("#freqTimescale").append(o); 
+			}
+			$("#freqTimescale").selectpicker('refresh');
+					
+
+			//show timescale tabs
+			$('#tab-advanced-options').show();
+			if([[${ontologyTSDTO.id==null}]]){
+				$('#tab-continuous-aggregates').hide();
+			} else {
+				$('#tab-continuous-aggregates').show();
+			}
+			document.getElementById("MongoDBDesc").style.display = 'none';
+			document.getElementById("TimescaleDBDesc").style.display = '';
+			$('.timescaleSignalProps').show(); // Shows
+		}
+	}
+	
+	var showAuxStats = function() {
+		if(document.getElementById('auxdata').checked==true) {
 			document.getElementById("lastvalue").checked=true;
 			document.getElementById("auxDataValues").style.display = '';
-		}
-		else
-		{
+		} else {
 			document.getElementById("auxDataValues").style.display = 'none';
 		}
 	}
@@ -650,8 +1509,7 @@
 			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
 			return false;
 		}
-		if(!tagsAndFieldsList.includes(NameSelected))
-		{
+		if (!tagsAndFieldsList.includes(NameSelected)) {
 			tagsAndFieldsList.push(NameSelected);
 			$('#tag_properties > tbody')
 					.append(
@@ -666,80 +1524,233 @@
 			$('#tagType').selectpicker('deselectAll').selectpicker('refresh');
 			
 			toastr.success(messagesForms.operations.genOpSuccess,'');
-		}
-		else{
+		} else {
 			toastr.error(messagesForms.operations.genOpError,[[#{ontology.valid.duplicates}]]);
 			return false;
 		}
 	}
 	
 	var addFieldRow = function() {
-
 		var NameSelected = $("#fieldName").val();
 		var typeSelected = $("#fieldType option:selected").val();
+		var aggregationSelected;
 		if (NameSelected === "" || typeSelected=== "") {
 			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
 			return false;
 		}
-		if(!tagsAndFieldsList.includes(NameSelected))
-		{
+		if(document.getElementById('enginetimeseries').value=="TIMESCALE"){
+			aggregationSelected = $("#fieldAggregation option:selected").val();	
+			if (aggregationSelected === "") {
+				toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
+				return false;
+			}
+			
+		}
+		
+		if(!tagsAndFieldsList.includes(NameSelected)) {
 			tagsAndFieldsList.push(NameSelected);
-			$('#field_properties > tbody')
-					.append(
-							'<tr class="fieldRow"><td>'
-									+ NameSelected
-									+ '</td><td >'
-									+ typeSelected
-									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i></button></td></tr>');
+			
+			if(document.getElementById('enginetimeseries').value=="MONGO"){
+				$('#field_properties > tbody')
+				.append(
+						'<tr class="fieldRow"><td>'
+								+ NameSelected
+								+ '</td><td >'
+								+ typeSelected
+								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i></button></td></tr>');				
+			} else {
+				
+				var pushsignalSelected = $("#fieldPushSignal option:selected").val();
+				if (aggregationSelected === "PUSH" && pushsignalSelected === ""){
+
+					toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
+					return false;
+				}
+				$('#field_properties > tbody')
+				.append(
+						'<tr class="fieldRow"><td>'
+								+ NameSelected
+								+ '</td><td >'
+								+ typeSelected
+								+ '</td><td >'
+								+ aggregationSelected
+								+ '</td><td class="pushSignalDependency">'
+								+ pushsignalSelected
+								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i></button></td></tr>');
+				
+				// ADD signals to the PUSH select
+				if(aggregationSelected != "PUSH"){
+					$("#fieldPushSignal").append("<option value='"+NameSelected+"'>"+NameSelected+"</option>");
+				}
+				
+				$('#fieldAggregation').val( '' );
+				$('#fieldAggregation').selectpicker('deselectAll').selectpicker('refresh');
+				$('#fieldPushSignal').val( '' );
+				$('#fieldPushSignal').selectpicker('deselectAll').selectpicker('refresh');		
+				
+				$('.timescalePushSignal').hide();
+			}
+			
 			$('#fieldName').val( '' );
 			$('#fieldName').selectpicker('deselectAll').selectpicker('refresh');
 			$('#fieldType').val( '' );
 			$('#fieldType').selectpicker('deselectAll').selectpicker('refresh');
 			
 			toastr.success(messagesForms.operations.genOpSuccess,'');
-		}
-		else{
+		} else{
 			toastr.error(messagesForms.operations.genOpError,[[#{ontology.valid.duplicates}]]);
 			return false;
 		}
 	}
 	
-	var activateNum = function ()
-	{
-		var frequencySelected =  $("#freqMongo option:selected").val();
-		var freqNum = document.getElementById("freqnum");
-		$('#freqnum').children().remove();
+
+	var activateTimescaleChunkIntervalNum = function(){
+		var frequencySelected =  $("#chunkInterval option:selected").val();
+		$('#chunkWindowNumTimescale').children().remove();
 		switch (frequencySelected)
 		{
 		case "SECONDS":
 		case "MINUTES":
-			freqNum.disabled=false;
+			$('#chunkWindowNumTimescale').attr('disabled',false);
 			secsValues.forEach(function(item){
 				var option = new Option(item, item); 
-				$('#freqnum').append($(option));
+				$('#chunkWindowNumTimescale').append($(option));
 			});
 			break;
 		case "HOURS":
-			freqNum.disabled=false;
+			$('#chunkWindowNumTimescale').attr('disabled',false);
 			hourValues.forEach(function(item){
 				var option = new Option(item, item); 
-				$('#freqnum').append($(option));
+				$('#chunkWindowNumTimescale').append($(option));
 			});
 			break;
 		case "DAYS":
-			freqNum.disabled=false;
-			var option = new Option(1, 1); 
-			$('#freqnum').append($(option));
+			$('#chunkWindowNumTimescale').attr('disabled',false);
+			dayValues.forEach(function(item){
+				var option = new Option(item, item); 
+				$('#chunkWindowNumTimescale').append($(option));
+			});
 			break;
 		case "MONTHS":
-			freqNum.disabled=false;
-			var option = new Option(1, 1); 
-			$('#freqnum').append($(option));
+			$('#chunkWindowNumTimescale').attr('disabled',false);
+			monthValues.forEach(function(item){
+				var option = new Option(item, item); 
+				$('#chunkWindowNumTimescale').append($(option));
+			});
 			break;
 		default:
-			freqNum.disabled=true;
+			$('#chunkWindowNumTimescale').attr('disabled',true);
 		}
+		$('#chunkWindowNumTimescale').selectpicker('refresh');
 	}
+	
+	
+	var activateNum = function (freqCombo, destinationCombo)
+	{
+		var frequencySelected =  $("#"+freqCombo+" option:selected").val();
+		$('#'+destinationCombo).children().remove();
+		switch (frequencySelected)
+		{
+		case "SECONDS":
+		case "MINUTES":
+			$('#'+destinationCombo).attr('disabled',false);
+			secsValues.forEach(function(item){
+				var option = new Option(item, item); 
+				$('#'+destinationCombo).append($(option));
+			});
+			break;
+		case "HOURS":
+			$('#'+destinationCombo).attr('disabled',false);
+			hourValues.forEach(function(item){
+				var option = new Option(item, item); 
+				$('#'+destinationCombo).append($(option));
+			});
+			break;
+		case "DAYS":
+			$('#'+destinationCombo).attr('disabled',false);
+			var option = new Option(1, 1); 
+			$('#'+destinationCombo).append($(option));
+			break;
+		case "MONTHS":
+			$('#'+destinationCombo).attr('disabled',false);
+			var option = new Option(1, 1); 
+			$('#'+destinationCombo).append($(option));
+			break;
+		default:
+			$('#'+destinationCombo).attr('disabled',true);
+		}
+		$('#'+destinationCombo).selectpicker('refresh');
+	}
+	var addTimescaleWindowRow = function() {
+		var freqs = ["NONE", "SECONDS","MINUTES","HOURS","DAYS","MONTHS"];
+		var chunkSelected = $("#chunkInterval option:selected").val();
+		var chunkSize = $('#chunkWindowNumTimescale').val();
+		var freqNum = $("#freqnumTimescale").val()===null?"":$("#freqnumTimescale").val();
+		var frequencySelected =  $("#freqTimescale option:selected").val();
+		var freqNumSelected = freqNum + ' ' + frequencySelected;
+		var chunkNumSelected = chunkSize + ' ' + chunkSelected;
+		var tableName = $("#identification").val();
+		if (freqNum === null || chunkSelected==="" || frequencySelected==="" || chunkSize===""  || tableName ==="") {
+ 			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
+			return false;
+		} 
+		
+		if (freqs.indexOf(frequencySelected)>=freqs.indexOf(chunkSelected)) {
+ 			toastr.error(messagesForms.operations.genOpError,[[#{ontology.timeseries.window.error}]]);
+			return false;
+		} 
+		//Disable add window button, as only one window can be defined
+		
+
+		$('#window_properties_timescale > tbody')
+				.append(
+						'<tr class="TimescaleWindowRow"><td>'
+								+ chunkNumSelected
+								+ '</td><td >'
+								+ freqNumSelected
+								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeRow(this)"><i class="icon-delete"></i></button></td></tr>');
+		$('#chunkInterval').val( '' );
+		$('#chunkInterval').selectpicker('deselectAll').selectpicker('refresh');
+		$('#freqnumTimescale').val( '' );
+		$('#chunkWindowNumTimescale').val( '' );
+		$('#freqTimescale').val( '' );
+		$('#freqTimescale').selectpicker('deselectAll').selectpicker('refresh');
+		//Regenerate hypertable query
+		/* var query = "SELECT create_hypertable(\n" +
+			"'"+tableName+"',\n" + 
+		    "'timestamp',\n" +
+		    "-- partitioning_column => 'tag1',\n" +
+		    "-- number_partitions => 3,\n" +
+		    "chunk_time_interval => INTERVAL '"+chunkNumSelected.toLowerCase()+"'\n"+
+		    ");"
+		setMonacoValue(query); */
+		//reset fields
+		document.getElementById("chunkInterval").disabled=true;
+		document.getElementById("chunkWindowNumTimescale").disabled=true;
+		document.getElementById("freqTimescale").disabled=true;
+		document.getElementById("freqnumTimescale").disabled=true;
+		document.getElementById("button5").disabled=true;
+		toastr.success(messagesForms.operations.genOpSuccess,'');
+		
+		wizardStepForward();
+	}
+	
+	var generateHypertable = function() {
+		var tableName = $("#identification").val();
+		var chunkNumSelected;
+		chunkNumSelected = $(".TimescaleWindowRow td").eq(0).text().toLowerCase();     
+	
+		var query = "SELECT create_hypertable(\n" +
+		"'"+tableName+"',\n" + 
+	    "'timestamp',\n" +
+	    "-- partitioning_column => 'tag1',\n" +
+	    "-- number_partitions => 3,\n" +
+	    "chunk_time_interval => INTERVAL '"+ chunkNumSelected + "'\n" +
+	    ");"
+	    
+		setMonacoValue(query);	
+	}
+	
 	
 	var addWindowRow = function() {
 		var freqs = ["SECONDS","MINUTES","HOURS","DAYS","MONTHS"];
@@ -753,8 +1764,7 @@
 		var delNumFreq = "No";
 		var check = document.getElementById('erasebutton').checked;
 		var check_del = false;
-		if(check)
-		{
+		if (check) {
 			delNumFreq = delNum + ' ' + delFreq;
 			check_del = delNum === "" || delFreq === "";
 		}
@@ -770,7 +1780,8 @@
  		if (freqs.indexOf(frequencySelected)>=windowIndex ) {
  			toastr.error(messagesForms.operations.genOpError,[[#{ontology.timeseries.window.error}]]);
 			return false;
-		} 
+		}
+ 		
 		$('#window_properties > tbody')
 				.append(
 						'<tr class="windowRow"><td>'
@@ -784,7 +1795,7 @@
 								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeRow(this)"><i class="icon-delete"></i></button></td></tr>');
 		$('#windowMongo').val( '' );
 		$('#windowMongo').selectpicker('deselectAll').selectpicker('refresh');
-		$('#freqnum').val( '' );
+		$('#freqnum').selectpicker('deselectAll').selectpicker('refresh');
 		$('#freqMongo').val( '' );
 		$('#freqMongo').selectpicker('deselectAll').selectpicker('refresh');
 		$('#aggMongo').val( '' );
@@ -796,22 +1807,86 @@
 		document.getElementById("freqnum").disabled=true;
 		
 		toastr.success(messagesForms.operations.genOpSuccess,'');
+		
+		wizardStepForward();
 	}
 	
 	var removeTagRow = function(row) {
 		var tagSelected = row.parentElement.parentElement.firstElementChild.innerHTML;
+		
+		//Search for signal dependencies if .pushSignalDependency = tagSelected
+		var dependencies = $('td:contains("'+tagSelected+'").pushSignalDependency');
+		dependencies.each(
+				function(index, element){
+					var dependentSignalName = element.parentElement.firstElementChild.innerHTML;
+					element.parentElement.remove();
+					var index = tagsAndFieldsList.indexOf(dependentSignalName);
+					tagsAndFieldsList.splice(index,1);
+				}
+		);
+		//remove signal from push list
+		$('#fieldPushSignal option[value="'+tagSelected+'"]').remove();
+		
+		$('#fieldPushSignal').selectpicker('refresh');;
 		row.parentElement.parentElement.remove();
 		var index = tagsAndFieldsList.indexOf(tagSelected);
 		tagsAndFieldsList.splice(index,1);
 		
 		toastr.success(messagesForms.operations.genOpSuccess,'');
+
 	}
 
 	var removeRow = function(row) {
 		var tagSelected = row.parentElement.parentElement.firstElementChild.innerHTML;
 		row.parentElement.parentElement.remove();
 		
+		//if TImescaleDB, reactivate selectors
+		if(document.getElementById('enginetimeseries').value=="TIMESCALE"){
+			document.getElementById("chunkInterval").disabled=false;
+			document.getElementById("chunkWindowNumTimescale").disabled=true;
+			document.getElementById("freqTimescale").disabled=false;
+			document.getElementById("freqnumTimescale").disabled=true;
+			document.getElementById("button5").disabled=false;
+		}
+		
 		toastr.success(messagesForms.operations.genOpSuccess,'');
+		
+		manageWizardStep();
+	}
+	var codeEditor;	
+	var codeEditorCompression;
+	var codeEditorAggregate;
+	
+	var setMonacoValue = function (value){
+		if (codeEditor){
+			codeEditor.setValue(value);
+		}
+	}
+	var getMonacoValue = function (){
+		if (codeEditor){
+			return codeEditor.getValue();
+		}
+	}
+	
+	var setMonacoCompressionValue = function (value){
+		if (codeEditorCompression){
+			codeEditorCompression.setValue(value);
+		}
+	}
+	var getMonacoCompressionValue = function (){
+		if (codeEditorCompression){
+			return codeEditorCompression.getValue();
+		}
+	}
+	var setMonacoAggregateValue = function (value){
+		if (codeEditorAggregate){
+			codeEditorAggregate.setValue(value);
+		}
+	}
+	var getMonacoAggregateValue = function (){
+		if (codeEditorAggregate){
+			return codeEditorAggregate.getValue();
+		}
 	}
 	
 	var sendDatatoController = function()
@@ -820,11 +1895,9 @@
 		var tags=[];
 		var tds=[];
 		var i;
-		for(i=0;taginfo.length>i;i++)
-		{
+		for(i=0;taginfo.length>i;i++) {
 			tds=[];
-			for(j=0;taginfo[i].childNodes.length>j;j++)
-			{
+			for(j=0;taginfo[i].childNodes.length>j;j++)	{
 				if(taginfo[i].childNodes[j].localName == "td")
 				{
 					tds.push(taginfo[i].childNodes[j].innerText);
@@ -837,38 +1910,37 @@
 		var fieldinfo = document.getElementsByClassName('fieldRow');
 		var fnames=[];
 		var ftypes=[];
+		var faggrfunctions=[];
+		var fpushsignals=[];
 		var tds=[];
-		for(i=0;fieldinfo.length>i;i++)
-		{
+		for(i=0;fieldinfo.length>i;i++) {
 			tds=[];
-			for(j=0;fieldinfo[i].childNodes.length>j;j++)
-			{
-				if(fieldinfo[i].childNodes[j].localName == "td")
-				{
+			for(j=0;fieldinfo[i].childNodes.length>j;j++) {
+				if(fieldinfo[i].childNodes[j].localName == "td") {
 					tds.push(fieldinfo[i].childNodes[j].innerText);
-				}
-				
+				}		
 			}
 			fnames.push(tds[0]);
 			ftypes.push(tds[1]);
+			faggrfunctions.push(tds[2]);
+			fpushsignals.push(tds[3]===''?' ':tds[3]);
+			
 		}
 		$('#field_names').val(fnames);
 		$('#field_types').val(ftypes);
-		if(document.getElementById('enginetimeseries').value=="MONGO")
-		{
+		$('#field_aggregations').val(faggrfunctions);
+		$('#field_push_signals').val(fpushsignals);
+		if (document.getElementById('enginetimeseries').value=="MONGO") {
 			var windowinfo = document.getElementsByClassName('windowRow');
 			var windows=[];
 			var freqs=[];
 			var aggs=[];
 			var delpolicies=[];
 			var tds=[];
-			for(i=0;windowinfo.length>i;i++)
-			{
+			for(i=0;windowinfo.length>i;i++) {
 				tds=[];
-				for(j=0;windowinfo[i].childNodes.length>j;j++)
-				{
-					if(windowinfo[i].childNodes[j].localName == "td")
-					{
+				for(j=0;windowinfo[i].childNodes.length>j;j++) {
+					if(windowinfo[i].childNodes[j].localName == "td") {
 						tds.push(windowinfo[i].childNodes[j].innerText);
 					}
 					
@@ -882,10 +1954,84 @@
 			$('#freq_types').val(freqs);
 			$('#agg_types').val(aggs);
 			$('#delete_policies').val(delpolicies);
+		} else {
+			//window and timeaggr
+			var windowinfo = document.getElementsByClassName('TimescaleWindowRow');
+			var aggrDeffinitions = document.getElementsByClassName('aggrRow');
+			var windows=[];
+			var freqs=[];
+			var aggsNames=[];
+			var aggsBucket=[];
+			var aggsSchedule=[];
+			var aggsStartOffset=[];
+			var aggsEndOffset=[];
+			var delpolicies=[];
+			var tds=[];
+			//windows
+			for(i=0;windowinfo.length>i;i++)
+			{
+				tds=[];
+				for(j=0;windowinfo[i].childNodes.length>j;j++)
+				{
+					if(windowinfo[i].childNodes[j].localName == "td")
+					{
+						tds.push(windowinfo[i].childNodes[j].innerText);
+					}
+					
+				}
+				windows.push(tds[0]);//bucket
+				freqs.push(tds[1]); 
+			}
+			//Aggregates
+			for(i=0;aggrDeffinitions.length>i;i++)
+			{
+				tds=[];
+				for(j=0;aggrDeffinitions[i].childNodes.length>j;j++)
+				{
+					if(aggrDeffinitions[i].childNodes[j].localName == "td")
+					{
+						tds.push(aggrDeffinitions[i].childNodes[j].innerText);
+					}
+					
+				}
+				aggsNames.push(tds[0]);//name
+				aggsBucket.push(tds[1]); 
+				aggsSchedule.push(tds[2]); 
+				aggsStartOffset.push(tds[3]); 
+				aggsEndOffset.push(tds[4]);
+			}
+			$('#bucket_types').val(windows);
+			$('#freq_types').val(freqs);
+			// Hypertable query
+			$('#hypertableQuery').val(getMonacoValue());
+			$('#compressionQuery').val(getMonacoCompressionValue());
+			$('#compressionConfig').val($('#compressionLapseOpt option:selected').text());
 		}
 	}
 	
-	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	// general inf tab control
+	$(".option a[href='#tab_1']").on("click", function(e) {
+        $('.tabContainer').find('.option').removeClass('active');
+        $('#tab-datos').addClass('active');
+    });
+	
+	// general template/schema tab control
+	$(".option a[href='#tab_properties']").on("click", function(e) {
+        $('.tabContainer').find('.option').removeClass('active');
+        $('#tab-properties').addClass('active');
+    });
+	
+	// general advanced options tab control
+	$(".option a[href='#tab_settings']").on("click", function(e) {
+        $('.tabContainer').find('.option').removeClass('active');
+        $('#tab_settings').addClass('active');
+    });
+	
+	// general advanced options tab control
+	$(".option a[href='#tab_settings_ontology']").on("click", function(e) {
+        $('.tabContainer').find('.option').removeClass('active');
+        $('#tab_settings_ontology').addClass('active');
+    });
 	
 	$(".option a[href='#tab_2']").on("click", function(e) {
 		  if ($(this).hasClass("disabled")) {
@@ -894,6 +2040,55 @@
 			return false;
 		  }
 	});
+	
+	// Wizard container
+	
+	// general inf tab control
+	$(".wizard-option a[href='#tab_1']").on("click", function(e) {
+        $('.wizardContainer').find('.wizard-option').removeClass('active');
+        $('#tab-datos').addClass('active');
+	
+		$('#continueBtn').removeClass('hide');
+		$('#continueBtn').prop('disabled', false);
+		$('#createWizardBtn').addClass('hide');			
+		
+		wizardStep = 1;
+    });
+	
+	// general template/schema tab control
+	$(".wizard-option a[href='#tab_properties']").on("click", function(e) {
+	  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+	  } else {
+        $('.wizardContainer').find('.wizard-option').removeClass('active');
+        $('#tab-properties').addClass('active');
+        
+		$('#continueBtn').removeClass('hide');
+		$('#continueBtn').prop('disabled', false);
+		$('#createWizardBtn').addClass('hide');			
+		
+		wizardStep = 2;
+	  }
+    });
+	
+	// general template/schema tab control
+	$(".wizard-option a[href='#tab_settings']").on("click", function(e) {
+	  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+	  } else {
+        $('.wizardContainer').find('.wizard-option').removeClass('active');
+        $('#tab-advanced-options').addClass('active');
+        
+		$('#continueBtn').addClass('hide');
+		$('#createWizardBtn').removeClass('hide');			
+
+		generateHypertable();
+		
+		wizardStep = 3;
+	  }
+    });
 	
 	var clearData = function() {
 		 $('input[type="text"]').val('');
@@ -929,16 +2124,12 @@
 		var taginfo = document.getElementsByClassName('tagRow');
 		var tnames=[];
 		var ttypes=[];
-		for(i=0;taginfo.length>i;i++)
-		{
+		for(i=0;taginfo.length>i;i++) {
 			tds=[];
-			for(j=0;taginfo[i].childNodes.length>j;j++)
-			{
-				if(taginfo[i].childNodes[j].localName == "td")
-				{
+			for(j=0;taginfo[i].childNodes.length>j;j++) {
+				if(taginfo[i].childNodes[j].localName == "td") {
 					tds.push(taginfo[i].childNodes[j].innerText);
 				}
-				
 			}
 			tnames.push(tds[0]);
 			ttypes.push(tds[1]);
@@ -947,16 +2138,12 @@
 		var fnames=[];
 		var ftypes=[];
 		var tds=[];
-		for(i=0;fieldinfo.length>i;i++)
-		{
+		for(i=0;fieldinfo.length>i;i++) {
 			tds=[];
-			for(j=0;fieldinfo[i].childNodes.length>j;j++)
-			{
-				if(fieldinfo[i].childNodes[j].localName == "td")
-				{
+			for(j=0;fieldinfo[i].childNodes.length>j;j++) {
+				if(fieldinfo[i].childNodes[j].localName == "td") {
 					tds.push(fieldinfo[i].childNodes[j].innerText);
 				}
-				
 			}
 			fnames.push(tds[0]);
 			ftypes.push(tds[1]);
@@ -969,23 +2156,114 @@
 		schema = schema + "\"type\": \"object\", \"properties\": { ";
 		schema = schema + "\"timestamp\": { \"type\": \"object\", \"required\": [ \"$date\" ], ";
 		schema = schema + "\"properties\": { \"$date\": { \"type\": \"string\", \"format\": \"date-time\" } } },";
-		for(i=0;tnames.length>i;i++)
-		{
-			schema = schema + "\"" + tnames[i] + "\" : { \"type\": \"" + ttypes[i].toLowerCase() + "\"},";
+
+		for(i=0;tnames.length>i;i++) {
+			if(ttypes[i].toLowerCase()=="timestamp"){
+				schema = schema + "\"" + tnames[i] + "\" : { \"type\": \"string\", \"format\": \"date-time\"},";
+			}else{
+				schema = schema + "\"" + tnames[i] + "\" : { \"type\": \"" + ttypes[i].toLowerCase() + "\"},";
+			}
 		}
-		for(i=0;fnames.length>i;i++)
-		{
-			schema = schema + "\"" + fnames[i] + "\" : { \"type\": \"" + ftypes[i].toLowerCase() + "\"},";
+		for(i=0;fnames.length>i;i++) {
+			if(ftypes[i].toLowerCase()=="timestamp"){
+				schema = schema + "\"" + fnames[i] + "\" : { \"type\": \"string\", \"format\": \"date-time\"},";
+			}else{
+				schema = schema + "\"" + fnames[i] + "\" : { \"type\": \"" + ftypes[i].toLowerCase() + "\"},";
+			}
+			
 		}
 		schema = schema.substring(0,schema.length-1);
 		schema = schema + "}, \"required\": [ \"timestamp\", ";
-		for(i=0;tnames.length>i;i++)
-		{
+		for(i=0;tnames.length>i;i++) {
 			schema = schema + "\"" + tnames[i] + "\",";
 		}
 		schema = schema.substring(0,schema.length-1);
 		schema = schema + "] }, \"description\": \"" + $('#description').val() + "\",\"additionalProperties\": true}";
 		return schema;
+	}
+
+	var wizardStepValid = function(){
+		if (wizardStep == 1){
+			return ($('#identification').val().length >= 5 && 
+					$('#description').val().length >= 5 && 
+					$('#metainf').val().length >= 5) &&
+					$('#enginetimeseries').val()!=null &&
+					$('#enginetimeseries').val().length >= 5;
+		} else if (wizardStep == 2){
+			return ($('#window_types').val()!=null && $('#window_types').val()!="");
+		}
+	}
+	
+	var wizardStepForward = function(){
+		$('#continueBtn').prop('disabled', false);
+		if (wizardStep == 1){
+			$('#stepOneCheckbox').prop('checked', true);
+			$('#stepOneCheckbox').prop('disabled', false);
+			$('#stepOneCheckbox').nextAll('span:first').addClass('wizard-success-step');
+		} else if (wizardStep == 2){
+			$('#stepTwoCheckbox').prop('checked', true);
+			$('#stepTwoCheckbox').prop('disabled', false);
+			$('#stepTwoCheckbox').nextAll('span:first').addClass('wizard-success-step');
+			$('#createWizardBtn').prop('disabled', false);
+		}
+	}
+	
+	var wizardStepReset = function(){
+		$('#continueBtn').prop('disabled', true);
+		if (wizardStep == 1){
+			$('#stepOneCheckbox').prop('checked', false);
+			$('#stepOneCheckbox').prop('disabled', true);
+			$('#stepOneCheckbox').nextAll('span:first').removeClass('wizard-success-step');
+		}  else if (wizardStep == 2){
+			$('#stepTwoCheckbox').prop('checked', false);
+			$('#stepTwoCheckbox').prop('disabled', true);
+			$('#stepTwoCheckbox').nextAll('span:first').removeClass('wizard-success-step');
+			$('#createWizardBtn').prop('disabled', true);
+		}
+	}
+	
+	var wizardStepContinue = function(){
+		if (wizardStep == 1){
+			if(!document.getElementById("supportsJsonLd").checked) {
+    			$('#tab-properties a').removeClass('disabled');
+    			$('#tab-properties a').click();
+    			if ($('#enginetimeseries').val()=='MONGO'){
+    				$('#continueBtn').addClass('hide');
+    				$('#createWizardBtn').removeClass('hide');				
+    			} else {
+    				if($('#tab-advanced-options a').hasClass('disabled')){
+    					$('#continueBtn').prop('disabled', true);
+    				}
+    			}
+    			wizardStep = 2;
+			} else {
+				if(IsJsonString($('#jsonLdContext').val())){
+	    			$('#tab-properties a').removeClass('disabled');
+	    			$('#tab-properties a').click();
+	    			if ($('#enginetimeseries').val()=='MONGO'){
+	    				$('#continueBtn').addClass('hide');
+	    				$('#createWizardBtn').removeClass('hide');				
+	    			} else {
+	    				if($('#tab-advanced-options a').hasClass('disabled')){
+	    					$('#continueBtn').prop('disabled', true);
+	    				}
+	    			}
+	    			wizardStep = 2;
+				} else {
+					toastr.error(messagesForms.operations.genOpError, ontologyCreateJson.validations.jsonldformat);
+				}
+			} 
+		} else if (wizardStep == 2){
+			$('#tab-advanced-options a').removeClass('disabled');
+			$('#tab-advanced-options a').click();
+			$('#continueBtn').addClass('hide');
+			$('#createWizardBtn').removeClass('hide');
+			wizardStep = 3;	
+
+			$('#stepThreeCheckbox').prop('checked', true);
+			$('#stepThreeCheckbox').prop('disabled', false);
+			$('#stepThreeCheckbox').nextAll('span:first').addClass('wizard-success-step');
+		}
 	}
 	
 	// FORM VALIDATION
@@ -1021,6 +2299,7 @@
             rules: {
 				ontologyId:		{ minlength: 5, required: true },
                 identification:	{ minlength: 5, required: true },
+                metainf:	{ minlength: 5, required: true },
 				description:	{ minlength: 5, required: true }
             },
             errorPlacement: function(error, element) {
@@ -1048,44 +2327,36 @@
                 label.closest('.form-group').removeClass('has-error');
             },
 			// ALL OK, THEN SUBMIT.
-            submitHandler: function(form) {
-
+            submitHandler: function(form) {                
                 // VALIDATE JSON SCHEMA
 				validIdName = validateIdName();
 				if (validIdName){
-					
 					// VALIDATE TAGSINPUT
 					validMetaInf = validateTagsInput();
 					if (validMetaInf) {
-		
 						if (valTables()) {
 							sendDatatoController();
 							$("#schema").val("");
 							$("#rtdb").val(document.getElementById('enginetimeseries').value);
-							$("#rtdbCleanLapse").val("NEVER");
+							//$("#rtdbCleanLapse").val("NEVER");
 							var schemaJson = createJsonSchema();
 							$("#schema").val(schemaJson);
-							toastr.success(messagesForms.validation.genFormSuccess,'');
 							form1.ajaxSubmit({type: 'post', success : function(data){
 									console.log(data);
+									toastr.success(messagesForms.validation.genFormSuccess,'');
 									navigateUrl(data.redirect);
 								}, error: function(data){
 									toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
 								}
 							});
-
-						}
-						else
-						{
+						} else {
 							toastr.error(messagesForms.operations.genOpError,[[#{ontology.timeseries.tables.error}]]);
 							return false;
 						}
 					}
-				}
-				else {
+				} else {
 					toastr.error(messagesForms.validation.genFormError,'');
 				}
-
 			}
         });
     }
@@ -1095,7 +2366,7 @@
 	}
     
 	var validateTagsInput = function(){
-		if ($('#metainf').val() === '') { 
+		if ($('#metainf').val() === '' || $('#metainf').val().trim().length <5) { 
 			$('#metainferror').removeClass('hide').addClass('help-block-error font-red');
 			$('#metainf').prev().addClass('tagsinput-has-error');
 			return false;  
@@ -1107,12 +2378,12 @@
 	}
 	
 	var valTables = function(){
-		if(document.getElementsByClassName('tagRow').length>0)
-		{
-			if(document.getElementsByClassName('fieldRow').length>0)
-			{
-				if(document.getElementsByClassName('windowRow').length>0)
-				{
+		if (document.getElementsByClassName('tagRow').length>0) {
+			if (document.getElementsByClassName('fieldRow').length>0) {
+				if(document.getElementsByClassName('windowRow').length>0 && document.getElementById('enginetimeseries').value=="MONGO") {
+					return true;
+				}
+				if(document.getElementsByClassName('TimescalewindowRow').length>0 && document.getElementById('enginetimeseries').value=="TIMESCALE") {
 					return true;
 				}
 			}
@@ -1136,23 +2407,73 @@
 	}
 	
 	function showHideImageTableOntology(){
-		if(typeof $('#ontology_autthorizations > tbody > tr').length =='undefined' || $('#ontology_autthorizations > tbody > tr').length == 0 || $('#ontology_autthorizations > tbody > tr > td > input')[0].value==''){
+		if (typeof $('#ontology_autthorizations > tbody > tr').length =='undefined' || $('#ontology_autthorizations > tbody > tr').length == 0 || $('#ontology_autthorizations > tbody > tr > td > input')[0].value==''){
 			$('#imageNoElementsOnTable').show();
-		}else{
+		} else {
 			$('#imageNoElementsOnTable').hide();
 		}
 	}
 	
+	function manageWizardStep(){
+		if (wizardStepValid()){
+			wizardStepForward();
+		} else {
+			wizardStepReset();
+		}
+	}
+
+	
 	jQuery(document).ready(function() {
 		handleValidation();
 		handleTabsChange();
-		document.getElementById("active").checked="checked";
+		handleCodeMirror();
+		
+		$('#supportsJsonLd').on('click', function(){
+			checkJsonLdContext();				
+		});
+		checkJsonLdContext();
+		
+		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
+			
+			
+			var showError = new Boolean(false);
+			let elements = $(event.target).parent().next().val().split(",");
+			for(var i=0; i<elements.length;i++){
+				if(elements[i].length <5){
+					showError = true;
+				}
+			}
+			
+			
+			
+			if ($(event.target).parent().next().val() == ''){
+				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+				$(event.target).parent().next().nextAll('span:last-child').addClass('hide');
+				$(event.target).parent().addClass('tagsinput-has-error');
+			} else if(showError== true){
+				$(event.target).parent().next().nextAll('span:last-child').addClass('font-red');
+				$(event.target).parent().next().nextAll('span:last-child').removeClass('hide');
+				$(event.target).parent().addClass('tagsinput-has-error');
+			} else {
+				$(event.target).parent().next().nextAll('span:first').addClass('hide');
+				$(event.target).parent().next().nextAll('span:last-child').addClass('hide');
+				$(event.target).parent().removeClass('tagsinput-has-error');
+			} 
+			if (ontologyCreateJson.actionMode==null){
+				manageWizardStep();
+			}
+		});
+		
+		
 		var url = window.location.href.split('/');
 		url[url.length-1]=="" ? ontologyId = url[url.length-2] : ontologyId= url[url.length-1];
 		
-		if(ontologyCreateJson.ontologyId != null)
-		{
+		if(ontologyCreateJson.actionMode != null) {
 	        tagsAndFieldsList = ontologyCreateJson.properties;
+	        
+		} else {
+			$('#active').trigger('click');
+	        $('#contextDataEnabled').trigger('click');
 		}
 		
 		// INPUT MASK FOR ontology identification allow only letters, numbers and _
@@ -1162,6 +2483,10 @@
 		
 		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
 			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		}).on('keyup', function(){
+			if (ontologyCreateJson.actionMode==null){
+				manageWizardStep();
+			}
 		});
 		
 		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
@@ -1174,12 +2499,22 @@
 			if ($(event.target).parent().next().val() !== ''){
 				$(event.target).parent().next().nextAll('span:first').addClass('hide');
 				$(event.target).parent().removeClass('tagsinput-has-error');
+			} else if($(event.target).parent().next().val().length < 5){
+				$(event.target).parent().next().nextAll('span:last-child').addClass('font-red');
+				$(event.target).parent().next().nextAll('span:last-child').removeClass('hide');
+				$(event.target).parent().addClass('tagsinput-has-error');
 			} else {
 				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
 				$(event.target).parent().addClass('tagsinput-has-error');
 			}   
 		})
 		
+		$("#enginetimeseries").on("change", function (){
+			if (ontologyCreateJson.actionMode==null){
+				manageWizardStep();
+			}
+		})	
+
 		// if ontology has authorizations we load it!.
 		authorizationsJson = ontologyCreateJson.authorizations;
 		if (authorizationsJson!=null && authorizationsJson.length > 0 ){
@@ -1187,7 +2522,6 @@
 			// MOUNTING AUTHORIZATIONS ARRAY
 			var authid_update, accesstype_update , userid_update , authorizationUpdate , authorizationIdUpdate = '';
 			$.each( authorizationsJson, function (key, object){
-
 				authid_update 		= object.id;
 				accesstype_update 	= object.typeName;
 				userid_update 		= object.userId;
@@ -1206,7 +2540,6 @@
 				// disable this users on users select
 				$("#users option[value=" + userid_update + "]").prop('disabled', true);
 				$("#users").selectpicker('refresh');
-
 			});
 
 			// TO-HTML
@@ -1245,7 +2578,6 @@
 		if (action === 'insert'){
 			console.log('    |---> Inserting... ' + insertURL);
 			
-			
 			$.ajax({
 				url:insertURL,
 				headers: {
@@ -1256,7 +2588,6 @@
 				data: {"accesstype": accesstype, "ontology": ontology,"user": user},
 				dataType:"json",
 				success: function(response,status){
-
 					var propAuth = {"users":user,"accesstypes":accesstype,"id": response.id};
 					authorizationsArr.push(propAuth);
 					console.log('     |---> JSONtoTable: ' + authorizationsArr.length + ' data: ' + JSON.stringify(authorizationsArr));
@@ -1289,11 +2620,8 @@
 					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
-
-
 		}
 		if (action === 'update'){
-
 			$.ajax({url:updateURL, type:"POST", async: true,
 				headers: {
 					[csrf_header]: csrf_value
@@ -1301,7 +2629,6 @@
 				data: {"id": authorization, "accesstype": accesstype},
 				dataType:"json",
 				success: function(response,status){
-
 					var updateIndex = foundIndex(user,'users',authorizationsArr);
 					authorizationsArr[updateIndex]["accesstypes"] = accesstype;
 					console.log('ACTUALIZADO: ' + authorizationsArr[updateIndex]["accesstypes"]);
@@ -1313,8 +2640,6 @@
 					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
-
-
 		}
 		if (action  === 'delete'){
 			console.log('    |---> Deleting... ' + user + ' with authId:' + authorization );
@@ -1326,7 +2651,6 @@
 				data: {"id": authorization},
 				dataType:"json",
 				success: function(response,status){
-
 					// remove object
 					var removeIndex = authorizationsIds.map(function(item) { return item[user]; }).indexOf(authorization);
 					authorizationsIds.splice(removeIndex, 1);
@@ -1354,12 +2678,9 @@
 	var insertAuthorization = function(){
 		console.log('insertAuthorization()');
 		// UPDATE MODE ONLY AND VALUES on user and accesstype
-		if (($('#users').val() !== '') )
-		{
-			if($("#users option:selected").attr('disabled') !== 'disabled') 
-			{	
-				if ($('#accesstypes').val() !== '')
-				{
+		if (($('#users').val() !== '') ) {
+			if($("#users option:selected").attr('disabled') !== 'disabled') {	
+				if ($('#accesstypes').val() !== '')	{
 						// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
 						// object with data.
 						authorization('insert',ontologyCreateJson.ontologyId,$('#users').val(),$('#accesstypes').val(),'');
@@ -1374,41 +2695,42 @@
 	var removeAuthorization = function(obj){
 		console.log('removeAuthorization()');
 
-			// AJAX REMOVE (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
-			// object with data.
-			var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();
-			var selAccessType = $(obj).closest('tr').find("select[name='accesstypes\\[\\]']").val();
+		// AJAX REMOVE (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
+		// object with data.
+		var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();
+		var selAccessType = $(obj).closest('tr').find("select[name='accesstypes\\[\\]']").val();
 
-			var removeIndex = foundIndex(selUser,'users',authorizationsArr);
-			var selAuthorizationId = authorizationsIds[removeIndex][selUser];
+		var removeIndex = foundIndex(selUser,'users',authorizationsArr);
+		var selAuthorizationId = authorizationsIds[removeIndex][selUser];
 
-			console.log('removeAuthorization:' + selAuthorizationId);
+		console.log('removeAuthorization:' + selAuthorizationId);
 
-			authorization('delete',ontologyId, selUser, selAccessType, selAuthorizationId, obj );
+		authorization('delete',ontologyId, selUser, selAccessType, selAuthorizationId, obj );
 	}
 	// UPDATE authorization
 	var updateAuthorization = function(obj){
 		console.log('updateAuthorization()');
 		
-			// AJAX UPDATE (ACTION,ONTOLOGYID,USER,ACCESSTYPE,ID) returns
-			// object with data.
-			var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();
-			var selAccessType = $(obj).closest('tr').find("select[name='accesstypes\\[\\]']").val();
+		// AJAX UPDATE (ACTION,ONTOLOGYID,USER,ACCESSTYPE,ID) returns
+		// object with data.
+		var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();
+		var selAccessType = $(obj).closest('tr').find("select[name='accesstypes\\[\\]']").val();
 
-			var updateIndex = foundIndex(selUser,'users',authorizationsArr);
-			var selAuthorizationId = authorizationsIds[updateIndex][selUser];
+		var updateIndex = foundIndex(selUser,'users',authorizationsArr);
+		var selAuthorizationId = authorizationsIds[updateIndex][selUser];
 
-			console.log('updateAuthorization:' + selAuthorizationId);
+		console.log('updateAuthorization:' + selAuthorizationId);
 
-			if (selAccessType !== authorizationsArr[updateIndex]["accesstypes"]){
+		if (selAccessType !== authorizationsArr[updateIndex]["accesstypes"]){
 
-				// UPDATING STATUS...
-				$(obj).find("i").removeClass('fa fa-edit').addClass('fa fa-spin fa-refresh');
-				$(obj).find("span").text('Updating...');
+			// UPDATING STATUS...
+			$(obj).find("i").removeClass('fa fa-edit').addClass('fa fa-spin fa-refresh');
+			$(obj).find("span").text('Updating...');
 
-				authorization('update',ontologyId, selUser, selAccessType, selAuthorizationId, obj);
-			}
-			else { console.log('no hay cambios');}
+			authorization('update',ontologyId, selUser, selAccessType, selAuthorizationId, obj);
+		} else { 
+			console.log('no hay cambios');
+		}
 
 	}
 	
@@ -1439,7 +2761,8 @@
 			)		
 	}
 	
-	var currentLanguage = [[${lang}]];	
+	var currentLanguage = [[${lang}]];
+	var dataTypes = [[${types}]];
 	var ontologyCreateJson = { 	
 		"objectId" : [[${objId}]],
 		"datasources" : [[${datasources}]],
@@ -1457,6 +2780,8 @@
 		"manual" : [[#{ontology.rest.operation.manual}]],
 		"datasource"  : [[${datasource?.datasourceName}]],
 		"collection"  : [[${ontologyTSDTO?.identification}]],
+		"active" : [[${ontologyTSDTO?.active}]],
+		"contextDataEnabled" : [[${ontologyTSDTO?.contextDataEnabled}]],
 		"validations" : {
 			"duplicates": [[#{ontology.valid.duplicates}]],
 			"tplschema": [[#{ontology.valid.tplschema}]],
@@ -1470,9 +2795,86 @@
 			"noproperties": [[#{ontology.valid.noproperties}]],
 			"base": [[#{ontology.valid.base}]],
 			"authuser": [[#{ontology.valid.auths.user}]],
-			"schema" : [[#{ontology.virtual.schema.error}]]
+			"schema" : [[#{ontology.virtual.schema.error}]],
+			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
 		}
 	};
+	$(window).load(function(){
+		var htmlelement = document.getElementById('querySql');
+		codeEditor = monaco.editor.create(htmlelement, {
+		       language: 'sql', 
+		       scrollBeyondLastLine: false,	 
+		       theme: "vs-dark",	 
+		       automaticLayout: true	 
+		});	
+		var htmlelement2 = document.getElementById('queryDataCompression');
+		codeEditorCompression = monaco.editor.create(htmlelement2, {
+		       language: 'sql', 
+		       scrollBeyondLastLine: false,	 
+		       theme: "vs-dark",	 
+		       automaticLayout: true	 
+		});
+		var htmlelement3 = document.getElementById('queryAggregate');
+		if (htmlelement3!=null){
+			codeEditorAggregate = monaco.editor.create(htmlelement3, {
+			       language: 'sql', 
+			       scrollBeyondLastLine: false,	 
+			       theme: "vs-dark",	 
+			       automaticLayout: true	 
+			});
+		}
+		//if there is an ID (updating ontology) set required fields for timescale
+
+		var isTimescaleDB = [[${ontologyTSDTO.rtdbDatasource}]]=='TIMESCALE';
+		var timescaleProps = [[${ontologyTSDTO.timeSeriesTimescaleProperties}]];
+		if([[${ontologyTSDTO?.id}]] != null){
+			//do not allow changing dataSource!
+			document.getElementById("enginetimeseries").disabled=true;
+			if (isTimescaleDB){
+				$('#enginetimeseries').val('TIMESCALE');
+				$('#enginetimeseries').trigger('change');
+				//set advanced properties
+				setMonacoValue(timescaleProps.hypertableQuery);
+				$("#auxdataDiv").hide();
+				if(timescaleProps.compressionActive){
+					//activate check
+					$("#compressionCheck").prop('checked', true);
+					//update selection
+					var selection = timescaleProps.compressionAfter + "_"+timescaleProps.compressionUnit;
+					$('#compressionLapseOpt').val(selection.toUpperCase());
+					$('#compressionLapseOpt').trigger('change');
+					//update compression policy query
+					showCompressionQuery();
+					setMonacoCompressionValue(timescaleProps.compressionQuery);
+				}if(timescaleProps.retentionActive){
+					//activate check
+					$("#rtdbclean").prop('checked', true);;
+					//update selection
+					var selection = timescaleProps.retentionBefore + "_"+timescaleProps.retentionUnit;
+					$('#rtdbCleanLapseOpt').val(selection.toUpperCase());
+					$('#rtdbCleanLapseOpt').trigger('change');
+				}
+				// No changes allowed in chunks or frequency config
+				document.getElementById("chunkInterval").disabled=true;
+				document.getElementById("chunkWindowNumTimescale").disabled=true;
+				document.getElementById("freqTimescale").disabled=true;
+				document.getElementById("freqnumTimescale").disabled=true;
+				document.getElementById("button5").disabled=true;
+				// No changes allowed on tags
+
+				document.getElementById("tagName").disabled=true;
+				document.getElementById("tagType").disabled=true;
+				document.getElementById("button2").disabled=true;
+			} else {
+	
+				$('#enginetimeseries').val('MONGO');
+				$('#enginetimeseries').trigger('change');
+			}
+		}
+	});
+	
+	$("#stepOneCheckbox").click(function() { return false; });	
+	$("#stepTwoCheckbox").click(function() { return false; });	
 	
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
 	// CREATE WIZARD CONTROLLER LOAD AND INIT ITSELF	

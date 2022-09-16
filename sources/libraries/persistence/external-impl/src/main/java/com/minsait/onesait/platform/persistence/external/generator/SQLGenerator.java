@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -49,6 +50,7 @@ public class SQLGenerator implements SQLGeneratorInt {
 	private OntologyVirtualRepository ontologyVirtualRepository;
 
 	@Autowired
+	@Lazy
 	private VirtualOntologyOpsDBRepository virtualOntologyDBRepository;
 
 	@Autowired

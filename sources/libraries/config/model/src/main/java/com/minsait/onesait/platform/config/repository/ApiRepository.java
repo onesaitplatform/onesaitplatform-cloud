@@ -14,11 +14,13 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -137,5 +139,29 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 
 	@Query("SELECT a FROM Api as a ORDER BY a.createdAt desc")
 	List<Api> findAllOrderByDate();
+
+
+	@Modifying
+	@Transactional
+	@Query(value = "DELETE FROM API_OPERATION", nativeQuery = true)
+	void deleteOperations();
+
+	@Modifying
+	@Transactional
+	@Query(value = "DELETE FROM USERAPI", nativeQuery = true)
+	void deleteUserAccesess();
+
+	@Modifying
+	@Transactional
+	@Query("DELETE FROM Api AS p WHERE p.id NOT IN :ids")
+	void deleteByIdNotInCustom(@Param("ids") Collection<String> ids);
+
+	@Modifying
+	@Transactional
+	default void deleteByIdNotIn(Collection<String> ids) {
+		deleteOperations();
+		deleteUserAccesess();
+		deleteByIdNotInCustom(ids);
+	}
 
 }

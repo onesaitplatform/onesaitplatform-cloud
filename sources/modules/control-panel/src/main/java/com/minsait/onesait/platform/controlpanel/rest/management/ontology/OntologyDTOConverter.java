@@ -149,7 +149,7 @@ public class OntologyDTOConverter {
 			ontology.setRtdbToHdbStorage(ontologyCreate.getRtdbToHdbStorage());
 		}
 		ontology.setAllowsCreateNotificationTopic(ontologyCreate.isAllowsCreateNotificationTopic());
-
+		ontology.setContextDataEnabled(ontologyCreate.isContextDataEnabled());
 		return ontology;
 	}
 
@@ -182,6 +182,7 @@ public class OntologyDTOConverter {
 		}
 		ontology.setDataModel(datamodelDTOToDataModel(ontologyDTO.getDataModel()));
 		ontology.setAllowsCreateNotificationTopic(ontologyDTO.isAllowsCreateNotificationTopic());
+		ontology.setContextDataEnabled(ontologyDTO.isContextDataEnabled());
 		ontology.setAllowsCreateTopic(ontologyDTO.isAllowsCreateTopic());
 
 		return ontology;
@@ -231,6 +232,7 @@ public class OntologyDTOConverter {
 		ontology.setUser(user);
 		ontology.setMetainf(ontologyKPIDTO.getMetainf());
 		ontology.setRtdbDatasource(Ontology.RtdbDatasource.valueOf(ontologyKPIDTO.getDatasource()));
+		ontology.setContextDataEnabled(ontologyKPIDTO.isContextDataEnabled());
 		return ontology;
 	}
 

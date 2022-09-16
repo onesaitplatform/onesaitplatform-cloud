@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.category;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.Category;
+import com.minsait.onesait.platform.config.model.Category.Type;
 
 public interface CategoryService {
 
@@ -41,5 +42,13 @@ public interface CategoryService {
 	List<Category> findAllCategories();
 
 	void deleteCategory(String id);
+
+	List<Type> getCategoryTypeList();
+
+	List<Category> getCategoriesByTypeAndGeneralType(Type type);
+
+	boolean isValidCategoryType(Type elementType, Type categoryType);
+
+	List<Category> getCategoriesByType(Type type);
 
 }

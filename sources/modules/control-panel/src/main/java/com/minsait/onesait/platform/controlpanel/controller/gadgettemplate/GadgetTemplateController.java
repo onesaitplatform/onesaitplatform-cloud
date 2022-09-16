@@ -19,7 +19,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -35,9 +34,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.GadgetTemplateType;
+import com.minsait.onesait.platform.config.services.category.CategoryService;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
+import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
+import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -52,18 +56,27 @@ public class GadgetTemplateController {
 	private static final String GADGET_TEMPLATE = "gadgetTemplate";
 	private static final String GADGET_TEMPLATE_TYPES = "gadgetTemplateTypes";
 	private static final String MESSAGE = "message";
+	private static final String CATEGORIES = "categories";
+	private static final String DATASOURCES = "datasources";
 
 	@Autowired
 	private GadgetTemplateService gadgetTemplateService;
+	
+	@Autowired
+	private GadgetDatasourceService gadgetDatasourceService;
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private CategoryService categoryService;
 
 	@Autowired
 	private AppWebUtils utils;
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
 
 	private static final String REDIRECT_GADGET_TEMP_LIST = "redirect:/gadgets/list";
 	private static final String REDIRECT_SHOW = "redirect:/gadgettemplates/view/";
@@ -76,21 +89,24 @@ public class GadgetTemplateController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createGadget(Model model) {
-		model.addAttribute(GADGET_TEMPLATE, new GadgetTemplate());
+		model.addAttribute(GADGET_TEMPLATE, new GadgetTemplateDTO());
 		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
+		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
+		model.addAttribute(DATASOURCES, gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
 		return "gadgettemplates/create";
 
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/create", produces = "text/html")
-	public String saveGadget(@Valid GadgetTemplate gadgetTemplate, BindingResult bindingResult, Model model,
+	public String saveGadget(@Valid GadgetTemplateDTO gadgetTemplate, BindingResult bindingResult, Model model,
 			HttpServletRequest httpServletRequest, RedirectAttributes redirect) {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some gadgetTemplate properties missing");
 			gadgetTemplate.setId(null);
 			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
 			model.addAttribute(MESSAGE, utils.getMessage("gadgets.validation.error", ""));
+			model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
 			return "gadgettemplates/create";
 		}
 		GadgetTemplate gt = this.gadgetTemplateService
@@ -99,17 +115,18 @@ public class GadgetTemplateController {
 			gadgetTemplate.setId(null);
 			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
 			model.addAttribute(MESSAGE, utils.getMessage("dashboardConf.validation.error.identifier", ""));
+			model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
 			return "gadgettemplates/create";
 		}
 		gadgetTemplate.setUser(this.userService.getUser(this.utils.getUserId()));
 		try {
 			this.gadgetTemplateService.createGadgetTemplate(gadgetTemplate);
-
 		} catch (GadgetTemplateServiceException e) {
 			utils.addRedirectMessage("gadgets.validation.error", redirect);
 			gadgetTemplate.setId(null);
 			model.addAttribute(MESSAGE, utils.getMessage("gadgets.validation.error", ""));
 			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
+			model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
 			return "gadgettemplates/create";
 		}
 
@@ -120,18 +137,20 @@ public class GadgetTemplateController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{gadgetTemplateId}", produces = "text/html")
 	public String createGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
-		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
+		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateDTOById(gadgetTemplateId));
 		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
 		model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
 				resourcesInUseService.isInUse(gadgetTemplateId, utils.getUserId()));
 		resourcesInUseService.put(gadgetTemplateId, utils.getUserId());
+		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
+		model.addAttribute(DATASOURCES, gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
 		return "gadgettemplates/create";
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/view/{gadgetTemplateId}", produces = "text/html")
 	public String showGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
-		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateById(gadgetTemplateId));
+		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateDTOById(gadgetTemplateId));
 		return "gadgettemplates/show";
 	}
 
@@ -141,19 +160,19 @@ public class GadgetTemplateController {
 		return "gadgettemplates/gadgetViewer";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/gadgetViewerVue", produces = "text/html")
 	public String showGadgetViewerVue(Model model) {
 		return "gadgettemplates/gadgetViewerVue";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/gadgetViewerReact", produces = "text/html")
 	public String showGadgetViewerReact(Model model) {
 		return "gadgettemplates/gadgetViewerReact";
 	}
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		this.gadgetTemplateService.deleteGadgetTemplate(id, utils.getUserId());
@@ -162,7 +181,7 @@ public class GadgetTemplateController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
-	public String updateGadget(Model model, @PathVariable("id") String id, @Valid GadgetTemplate gadgetTemplate,
+	public String updateGadget(Model model, @PathVariable("id") String id, @Valid GadgetTemplateDTO gadgetTemplate,
 			BindingResult bindingResult, RedirectAttributes redirect) {
 
 		if (bindingResult.hasErrors()) {
@@ -180,13 +199,13 @@ public class GadgetTemplateController {
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "getUserGadgetTemplate/{type}")
-	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplate(@PathVariable("type") String type) {
+	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplateByType(@PathVariable("type") String type) {
 		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId(),type);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "getUserGadgetTemplate")
-	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplateByType() {
+	public @ResponseBody List<GadgetTemplate> getUserGadgetTemplate() {
 		return this.gadgetTemplateService.getUserGadgetTemplate(utils.getUserId());
 	}
 

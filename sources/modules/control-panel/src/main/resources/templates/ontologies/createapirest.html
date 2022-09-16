@@ -64,20 +64,23 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-			
-				<div class="alert alert-success display-hide">
-					<span th:text="${globalMessage}"></span>
-				</div>
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/ontologies/list}"> <span th:text="#{ontology.breadcrumb.list}">Ontologies </span></a><i class="fa fa-angle-right"></i></li>
-						<li>
-							<span th:if="${ontology?.id} == null" th:text="#{ontology.breadcrumb.create}">Show Ontology</span>
-							<span th:if="${ontology?.id} != null" th:text="#{ontology.breadcrumb.update}">Update Ontology</span>
+						<li><a th:href="@{/ontologies/list}">
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.template.list}">Manage Ontologies</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.breadcrumb.list}">My Ontologies</span>
+							</a><i class="fa fa-angle-right"></i>
 						</li>
-					</ul>						
+						<li th:if="${ontology?.id} == null"><a th:href="@{/ontologies/create}">
+							<span th:text="#{ontology.breadcrumb.create}">Show Ontology</span></a><i class="fa fa-angle-right"></i>
+						</li>
+						<li>
+							<span th:if="${ontology?.id} == null" th:text="#{ontology.fromrestapi}">New KPI</span>
+							<span th:if="${ontology?.id} != null" th:text="#{ontology.breadcrumb.update}">Update KPI</span>
+						</li>
+					</ul>
 				</div>
 				<!-- END PAGE BAR -->
 				
@@ -109,37 +112,81 @@
 					<input th:if="${ontology?.id} != null" type="hidden" name="_method" value="PUT"/>
 
 					<div id="header">
-						<div class="row pageCreateHeader">
+						<div class="row pageWizardHeader" th:if="${ontology?.id} == null">
+							<div class="wizardContainer col-md-6 col-sm-6 col-xs-12">
+								<div id="tab-datos" class="wizard-option active">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+											<div class="inline font-xs">
+												<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+													<!-- FORM TITLE -->
+													<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span><span class="required"> *</span>
+												</a>
+											</div>
+											<input id="stepOneCheckbox" class="form-control no-remove" type="checkbox" disabled="disabled"/>
+											<span></span>
+										</label>
+	    						  	</div>
+
+								</div>
+								<div id="tab-restapi-info" class="wizard-option">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+											<div class="inline font-xs">
+												<a href="#tab_restapi_info" data-toggle="tab" aria-expanded="true" class="disabled">
+													<span class="caption-subject " th:text="#{ontology.rest.api.info}"> HEADERS/OPERATIONS/SCHEMA</span><span class="required"> *</span>
+												</a>
+											</div>
+											<input id="stepTwoCheckbox" class="form-control no-remove" type="checkbox" disabled="disabled"/>
+											<span></span>
+										</label>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">								
+									<!-- CANCEL -->											
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+									<!-- RESET -->
+									<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createapirest'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+
+                                    										
+									<!-- CONTINUE -->
+									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  onclick="OntologyCreateController.wizardContinue()" th:value="#{gen.continueBtn}" disabled="disabled"><span th:text="#{gen.continueBtn}"> Continue</span></button>
+									
+									<!-- CREATE -->
+									<button id="createWizardBtn" type="submit" class="btn btn-primary btn-primary-save hide" name="create" disabled="disabled"><span th:text="#{gen.createBtn}"> New</span></button>								
+								</div>
+							</div>
+						</div>
+						<div class="row pageCreateHeader" th:if="${ontology?.id} != null">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span th:if="${ontology?.id} == null" th:text="#{ontology.template.create}"> New Ontology</span>
-									<span th:if="${ontology?.id} != null" th:text=" ${ontology.identification}"> Update Ontology </span>
+									<span th:text=" ${ontology.identification}"> Update Ontology </span>
 								</div>
 							</div>
 							
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${ontology?.id} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:onclick="'OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 												
-									<span class="sep" th:if="${ontology?.id} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')"></span>
+									<span class="sep" sec:authorize="!hasAuthority('ROLE_PARTNER')"></span>
 										
 									<!-- CANCEL -->											
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
 
-									<button th:if="${ontology?.id} == null" id="resetBtnCreate" onclick="location.href='../ontologies/createapirest'" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${ontology?.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="disabled"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="disabled"><span th:text="#{gen.resetBtn}"> Reset</span></button>
 										
-									<span class="sep no-border" th:if="${ontology?.id} != null"></span>
+									<span class="sep no-border"></span>
 										
-									<!-- CREATE -->
-									<button th:if="${ontology?.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create" ><span th:text="#{gen.createBtn}"> New</span></button>
-
 									<!-- UPDATE -->
-									<button th:if="${ontology?.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  onclick="OntologyCreateController.updateJsonschemaInput()" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  onclick="OntologyCreateController.updateJsonschemaInput()" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
 								</div>
 							</div>
 						</div>
@@ -155,6 +202,11 @@
 									<span th:if="${ontology?.id} != null" class="caption-subject" th:text="#{gen.generalInformation}">General Information</span>
 								</a>
 							</div>
+							<div id="tab-restapi-info" class="option">
+								<a href="#tab_restapi_info" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject" th:text="#{ontology.rest.api.info}">HEADERS/OPERATIONS/SCHEMA</span>
+								</a>
+							</div>							
 							<div id="tab-authorizations" class="option" >
 								<a href="#tab_2" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
 									<span class="caption-subject " th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
@@ -173,93 +225,111 @@
 										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 									</div>
 								</div>
-
 								<div class="row main">
-									<div class="col-xs-3">
+									<div class="col-md-3 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="" th:text="#{ontology.name}">Name</label><span class="required"> *</span>
-											<input th:tabindex="1" id="identification" type="text"   th:required="true"  maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{ontology.name}"/>
-										</div>
-									</div>
-									<div class="col-xs-3">
-										<div class="form-group">
-											<label th:text="#{ontology.metainf}" class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.metainf.help},data-title=#{ontology.metainf}"> Meta-inf</label><span class="required"> *</span>
-											<input  data-msg="Please fill this field" th:tabindex="2" id="metainf" name="metainf" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{metainf}" data-minlength="2" pattern=".{2,}" min="2" th:required="true"></input>																
-											<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-										</div>															
-									</div>															
-									<div class="col-xs-1" sec:authorize="!hasAuthority('ROLE_PARTNER')">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20">
-												<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.active.help},data-title=#{ontology.active}"><div class="inline font-xs" th:text="#{ontology.active}">Active Ontology</div>
-												<input id="active" name="active" type="checkbox" class="form-control" th:field="*{active}" >
-												<span></span><!-- needed by styles -->
-												</label>
-											</div>
-										</div>
-									</div>
-									<div class="col-xs-1">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20"> 
-												<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"><div class="inline font-xs" th:text="#{ontology.public}">Public</div>
-													<input  id="public" class="form-control"  name="public" type="checkbox" th:field="*{public}"  />
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
-										</div>
-									</div>			
-
-									<div class="col-xs-3">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20">
-												<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.allowsCypherFields.help},data-title=#{ontology.allowsCypherFields}"><div class="inline font-xs" th:text="#{ontology.allowsCypherFields}">Allow Cypher Fields</div>
-													<input  id="allowsCypherFields" class="form-control"  name="allowsCypherFields" type="checkbox" th:field="*{allowsCypherFields}"  />
-													<span></span><!-- necesario por estilos. -->
-												</label>
-											</div>
+											<label class="control-label" th:text="#{ontology.identification}">Name</label><span class="required"> *</span>
+											<input th:tabindex="1" id="identification" type="text" th:required="true" th:readonly="*{identification}" maxlength="50" th:field="*{identification}" class="form-control" th:placeholder="#{ontology.name}"/>
+											<span id="identificationerror" class="help-block font-red hide" th:text="#{ontology.name.error}"><i class="la la-warning"></i></span>
+											<span id="identificationInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
 										</div>
 									</div>
 								</div>
-								
-								<div class="row main">							
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<div class="form-group">
-											<label th:text="#{ontology.description}">Comments </label><span class="required"> *</span>
-											<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
-										</div>
-										<span class="help-block"><i class="la la-warning"></i> <small th:text="#{ontology.description.min}"></small></span>
-									</div>
-								</div>											
-								
 								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
+									<div class="col-md-6 col-xs-12">
 										<div class="form-group">
-											<label class="" th:text="#{ontology.rest.base.url}">URL Base</label><span class="required"> *</span>
+											<label th:text="#{ontology.metainf}" class="control-label" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.metainf.help},data-title=#{ontology.metainf}"> Meta-inf</label><span class="required"> *</span>
+											<input  data-msg="Please fill this field" th:tabindex="2" id="metainf" name="metainf" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{metainf}" data-minlength="2" pattern=".{2,}" min="2" th:required="true"></input>																
+											<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+											<span id="metainfInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>															
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.description}">Comments </label><span class="required"> *</span>
+											<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true" style="resize:vertical; min-height:10%" cols="" rows=""></textarea>
+											<span id="descriptionInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.rest.base.url}">URL Base</label><span class="required"> *</span>
 											<input id="urlBase" name="urlBase" type="text" th:required="true"  maxlength="512" class="form-control" th:placeholder="#{ontology.rest.base.url}"/>
 										</div>
 									</div>
 								</div>
-								
+								<div class="row main margin-bottom-25">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<label class="control-label"  th:text="#{gen.options}">Options</label>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="active" class="margin-right-10" name="active" type="checkbox" checked="checked" th:field="*{active}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.activeontology}">Active</label>
+										<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.active.help},data-title=#{ontology.active}"></i>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
+										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"></i>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
+										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCypherFields.help},data-title=#{ontology.allowsCypherFields}"></i>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="contextDataEnabled" class="margin-right-10" name="contextDataEnabled" type="checkbox" checked="checked" th:field="*{contextDataEnabled}" />
+										<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">ContextData Enabled</label>
+										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.contextDataEnabled.help},data-title=#{ontology.contextDataEnabled}"></i>
+									</div>
+                                    <div class="col-md-2 col-xs-12">
+                                        <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" />
+                                        <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
+                                        <i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.supportsJsonLd.help},data-title=#{ontology.supportsJsonLd}"></i>
+                                    </div>
+                                    <div class="col-md-4 col-xs-12">
+                                        <div class="form-group hide" id="jsonLdCtxt">
+                                            <label class="control-label" th:text="#{ontology.jsonLdContext}">JSON-LD Context </label><span class="required"> *</span>
+                                            <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" ></textarea>
+                                        </div>
+                                    </div>
+								</div>
+							</div>
 
+							<div class="tab-pane " id="tab_restapi_info">
 								<div class="row main">
-									<div class="col-md-12">
-										<span class="bold uppercase" id="schema_title" th:text="#{ontology.rest.headers}"> Headers</span>
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.rest.headers}">Headers</span>
 									</div>
-									<div class="col-md-3" >
+								</div>
+							
+								<div id="tagCreationForm">
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 no-padding-top no-padding-bottom" style="border:0;">
 										<div class="mt-checkbox-list">
-											<label class="mt-checkbox popovers font-sm" ><div class="inline font-xs" th:text="#{ontology.rest.authentication.enable}">Infer</div>
-												<input  id="auth" class="form-control no-remove"  name="authCheck" type="checkbox"/>
-												<span></span><!-- necesario por estilos. -->
-											</label>
-										</div>
+											<div class="switch"> 
+												<label>
+													<input id="auth" name="authCheck" type="checkbox" class="form-control no-remove"></input>
+													<span class="checkbox-slider round" ></span>
+												</label>
+											</div>
+											<div class="inline font-xs" th:text="#{ontology.rest.authentication.enable}" style="margin-left:7px;color:#505D66;">Auth</div>
+										</div>	
 									</div>
-									<div id="authenticationOptions" class="col-md-9 portlet light no-pad no-shadow " style="display:none;">
-										<div class="col-md-6 col-sm-6 col-xs-12" style="border-right: 1px dotted #CCC;">
-											<input type="radio" id="apiKey"  name="auth" value="apiKey"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.apikey}">Api Key</p>
-											<div class="col-md-12 form-group">
-												<label class="" th:text="#{ontology.rest.header}">Header</label>
+									<div id="authenticationOptions" class="row main borderPanel no-margin-left" style="display:none;">
+										<div class="col-md-6 col-sm-6 col-xs-12 border-right" style="min-height: calc(20vh);">
+											<div class="form-group">
+												<input type="radio" id="apiKey"  name="auth" value="apiKey"/><p style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.apikey}">Api Key</p>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.header}">Header</label>
 												<input id="header" name="header" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.header}" disabled="disabled"/>
-												<label class="" th:text="#{ontology.rest.token}">Token</label>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.token}">Token</label>
 												<input id="token" name="token" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.token}" disabled="disabled"/>
 											</div>
 										</div>
@@ -275,104 +345,198 @@
 										</div>
 										-->
 										<div class="col-md-6 col-sm-6 col-xs-12">
-											<input type="radio" id="basic"  name="auth" value="basic"/><p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.basic}">Basic</p>
-											<div class="col-md-12">
-												<label class="" th:text="#{ontology.rest.user}">User</label>
+											<div class="form-group">
+												<input type="radio" id="basic"  name="auth" value="basic"/><p style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.basic}">Basic</p>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.user}">User</label>
 												<input id="basicUser" name="basicUser" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.user}" disabled="disabled"/>
-												<label class="" th:text="#{ontology.rest.password}">Password</label>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.password}">Password</label>
 												<input id="basicPass" name="basicPass" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.password}" disabled="disabled"/>
 											</div>
-										</div>
+										</div>									
 									</div>
 								</div>
-								
-								<div id="OtherHeaders" class="row main">
-									<div class="col-md-6 col-sm-6 col-xs-12" >
-										<p class="bold col-md-12" th:text="#{ontology.rest.headers.add}">Add Others Headers</p>
-									
-										<div class="col-md-12 form-group">
-											<label class="" th:text="#{ontology.rest.headers.key} + ':'">Key</label>
-											<input id="headerKey" name="header" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.headers.key}"/>
-											<label class="" th:text="#{ontology.rest.headers.value} + ':'">Value</label>
-											<input id="headerValue" name="token" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.headers.value}"/>
-										</div>
-										<div class="btn-group col-md-12" id="addHeader">
-											<button type="button" class="btn btn-circle blue btn-outline" id="addHeaderBtn" th:text="#{ontology.rest.add}">Add</button>
-										</div>
+							
+								<div id="OtherHeaders">
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-10">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.rest.headers.add}"></label>
 									</div>
-									<div class="col-md-6 col-sm-6 col-xs-12" style="display:none;" id="headers_div" >
-										<p class="bold uppercase col-md-12"><i class=""></i> <span id="" th:text="#{ontology.rest.headers.list}">My Headers</span></p>									
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-											<div>
-												<!-- DATATABLE DANDELION CONF.  -->												
-												<table id="headersList" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
-													<thead>
-														<tr class="cabecera-tabla">
-															<th class="titulo-columnas" th:text="#{ontology.rest.headers.key}">Key</th>
-															<th class="titulo-columnas" th:text="#{ontology.rest.headers.value}">Value</th>
-															<th class="titulo-columnas" dt:sortable="false"><i class="la la-wrench"></i> <span th:text="#{gen.options}"> Options</span></th>
-														</tr>
-													</thead>
-													<tbody th:remove="all-but-first">
-														<tr pages:paginate="10">
-														</tr>
-													</tbody>
-												</table>												
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
-													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
-														<i class="fa fa-eye"></i> <em th:text="#{gen.columns}">Columns</em> <i class="fa fa-angle-down"></i>
-													</a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
-														<label class="toggle-vis" data-column="0" th:text="#{ontology.identification}"> identification </label>
-														<label class="toggle-vis" data-column="1" th:text="#{ontology.userId}"> Owner </label>
-														<label class="toggle-vis" data-column="2" th:text="#{ontology.description}"> Description</label>
-														<label class="toggle-vis" data-column="3" th:text="#{ontology.active}"> Active</label>
-														<label class="toggle-vis" data-column="4" th:text="#{ontology.public}"> Public</label>
-														<label class="toggle-vis" data-column="5" th:text="#{ontology.authorizations}"> Authorizations</label>
-														<label class="toggle-vis" data-column="6" th:text="#{ontology.datamodel}"> Datamodel</label>
-														<label class="toggle-vis" data-column="7" th:text="#{ontology.createdAt}"> Created At</label>
-														<label class="toggle-vis" data-column="8" th:text="#{gen.options}" > Options</label>															
-													</div>
-												</div>												
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(20vh);">
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.headers.key} + ':'">Key</label>
+												<input id="headerKey" name="header" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.headers.key}"/>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.headers.value} + ':'">Value</label>
+												<input id="headerValue" name="token" type="text"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.headers.value}"/>
+											</div>
+											<div class="form-group pull-right">		
+												<button type="button" class="btn btn-primary btn-primary-save" id="addHeaderBtn" th:text="#{ontology.rest.header.add}">Add</button>
 											</div>
 										</div>
-									</div>										
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh);">
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="table_other" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="headersList" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">													
+																<th class="titulo-columnas" th:text="#{ontology.rest.headers.key}">Key</th>
+																<th class="titulo-columnas" th:text="#{ontology.rest.headers.value}">Value</th>
+																<th class="titulo-columnas" style="width:50px"></th>													
+															</tr>
+														</thead>
+														<tbody th:remove="all-but-first" style="border-bottom: 1px solid #ddd;">
+															<tr pages:paginate="10">
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>	
+										</div>
+									</div>								
 								</div>
-								<div class="row main">
-									<div class="col-md-12">
-										<span class="bold uppercase" id="schema_title" th:text="#{ontology.rest.operations}"> Operations</span>
+								
+								<div class="row main margin-top-20 border-top">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.rest.operations}">Operations</span>
 									</div>
-									<div class="col-md-12">																					
-										<div class="col-md-11" >
+								</div>								
+								<div class="row main">
+									<div class="col-md-11">
+										<div class="form-group">
 											<label th:text="#{ontology.rest.swagger}"> Swagger</label>
 											<input id="swagger" name="swagger" type="text" class="form-control" placeholder="SWAGGER URL"/>
 										</div>
-										<div class="col-md-1 pull-right margin-top-25">
+									</div>
+									<div class="col-md-1">
+										<div class="form-group pull-right margin-top-25">
 											<button id="importSwagger" class="btn btn-circle blue btn-outline" onclick=""><span th:text="#{ontology.rest.import}"> Import</span></button>
 										</div>
 									</div>
-									<!-- OPERATIONS LIST -->
-									<div class="col-md-12 " style="display:none;" id="operations_div">		
-										<p class="bold uppercase col-md-12"><span id="" th:text="#{ontology.rest.operation.list}">My Operations</span></p>									
-										<div id="contenedor-tabla-outside" class="contiene">																						
-											<div>
+								</div>
+								<div id=operations_div>
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-10">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.rest.new.operation}"></label>
+									</div>
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.operation.name}">Name</label><span class="required"> *</span>
+												<input id="nameOperation" type="text"  maxlength="50" class="form-control "  th:placeholder="#{ontology.rest.operation.name}"/>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.operation.path}">Path</label><span class="required"> *</span>
+												<input id="pathOperation" type="text"  maxlength="50" class="form-control "  th:placeholder="#{ontology.rest.operation.path}"/>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.operation.type}">Type</label><span class="required"> *</span>
+												<select id="typeOperation" class="form-control " >
+													<option id="get" value="get">GET</option>
+													<option id="post" value="post">POST</option>
+													<option id="put" value="put">PUT</option>
+													<option id="delete" value="delete">DELETE</option>
+												</select>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.operation.description}">Description</label><span class="required"> *</span>
+												<textarea id="descriptionOperation"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.operation.description}"></textarea>
+											</div>
+											<div class="form-group">
+												<label class="control-label" th:text="#{ontology.rest.operation.default.type}">Default Operation Type</label><span class="required"> *</span>
+												<select id="defaultOperationType" class="form-control " >
+													<option id="none" value="NONE">NONE</option>
+													<option id="getAll" value="GET_ALL">GET_ALL</option>
+													<option id="getById" value="GET_BY_ID">GET_BY_ID</option>
+													<option id="deleteById" value="DELETE_BY_ID">DELETE_BY_ID</option>
+													<option id="deleteById" value="DELETE_ALL">DELETE_ALL</option>
+													<option id="updateById" value="UPDATE_BY_ID">UPDATE_BY_ID</option>
+													<option id="insert" value="INSERT">INSERT</option>
+												</select>
+											</div>
+											<div class="form-group">
+												<div class="form-group pull-left margin-top-4">
+													<p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.operation.pathparams}">Path Params</p>
+												</div>
+												<div class="form-group pull-right">
+													<button type="button" class="btn btn-circle blue btn-outline" style="border:0px;font-size: 17px;font-weight: bold;" id="addPathParamOperation">+</button>
+												</div>
+												<div id="paths" class="margin-bottom-20">
+													<table class="table no-margin-bottom" id="pathsParams" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas" th:text="#{ontology.rest.operation.index}">Index</th>
+																<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>	
+																<th class="titulo-columnas" th:text="#{ontology.rest.operation.field}">Field</th>																													
+																<th class="titulo-columnas"></th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<tr class="mountable-model">
+																<td><input type="text" name="indexes[]" class="form-control" disabled="disabled"/></td>
+																<td><input type="text" name="namesPaths[]" class="form-control" onblur="OntologyCreateController.checkNamePaths(this)"/></td>
+																<td><input type="text" name="fieldsPaths[]" class="form-control" onblur="OntologyCreateController.checkNamePaths(this)"/></td>						
+																<td><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-remove" onclick="OntologyCreateController.removePathParam(this)"><i class="icon-delete"></i></button></td>			
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
+											<div class="form-group">
+												<div class="form-group pull-left margin-top-4">
+													<p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.operation.query}">Query Params</p>
+												</div>
+												<div class="form-group pull-right">
+													<button type="button" class="btn btn-circle blue btn-outline" style="border:0px;font-size: 17px;font-weight: bold;" id="addQueryParamOperation">+</button>
+												</div>
+												<div id="queries" class="margin-bottom-20">
+													<table class="table" id="queriesParams" data-loaded="false">
+														<thead>
+															<tr class="cabecera-tabla" role="row" >
+																<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>
+																<th class="titulo-columnas" th:text="#{ontology.rest.operation.field}">Field</th>																															
+																<th class="titulo-columnas" th:text="#{gen.options}">Options</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<tr class="mountable-model">
+																<td><input type="text" name="namesQueries[]" class="form-control" onblur="OntologyCreateController.checkNameQueries(this)"/></td>
+																<td><input type="text" name="fieldsQueries[]" class="form-control" onblur="OntologyCreateController.checkNameQueries(this)"/></td>						
+																<td><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-remove" onclick="OntologyCreateController.removeQueryParam(this)"><i class="icon-delete"></i></button></td>			
+															</tr>
+														</tbody>
+													</table>
+												</div>
+											</div>
+											<div class="form-group pull-right">
+												<button type="button" disabled="disabled" onclick="OntologyCreateController.updateOperation()" class="btn btn-circle blue btn-outline" id="updateoperationBtn" th:text="#{ontology.rest.operation.update	}">Update Operation</button>
+												<button id="addOperation" class="btn btn-circle blue btn-outline"> <span th:text="#{ontology.rest.operation.add}"> Add Operation</span></button>
+											</div>
+										</div>
+										<!-- OPERATIONS LIST -->
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh);">
+											<div class="form-group" style="margin-bottom: 0px">																				
 												<!-- DATATABLE DANDELION CONF.  -->												
-												<table id="operationsList" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+												<table id="operationsList" class="table table-hover" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>
 															<th class="titulo-columnas" th:text="#{ontology.rest.operation.path}">Path</th>
 															<th class="titulo-columnas" th:text="#{ontology.rest.operation.type}">Type</th>
 															<th class="titulo-columnas" th:text="#{ontology.rest.operation.default.type}">Default Operation Type</th>
-															<th class="titulo-columnas text-left" th:text="#{ontology.rest.operation.description}">Description</th>
-															<th class="titulo-columnas text-left" th:text="#{ontology.rest.operation.origin}">Origin</th>
-															<th class="titulo-columnas text-left hide">Path Params</th>
-															<th class="titulo-columnas text-left hide" >Query Params</th>
-															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas" th:text="#{ontology.rest.operation.description}">Description</th>
+															<th class="titulo-columnas" th:text="#{ontology.rest.operation.origin}">Origin</th>
+															<th class="titulo-columnas hide">Path Params</th>
+															<th class="titulo-columnas hide">Query Params</th>
+															<th class="titulo-columnas" dt:sortable="false" style="width: 100px"></th>
 														</tr>
 													</thead>
-													<tbody th:remove="all-but-first">
+													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
 														<tr pages:paginate="10">
 														</tr>
 													</tbody>
@@ -395,161 +559,42 @@
 													</div>
 												</div>												
 											</div>
-										</div>											
+										</div>
 									</div>
 									<!--  NEW OPERATION -->
-
-									<div class="col-md-12">
-										<p class="bold uppercase col-md-6"><i class=""></i> <span id="schema_title" th:text="#{ontology.rest.new.operation}">New Operation</span></p>
-										
-										<div class="pull-right">
-											<button id="addOperation" class="btn btn-circle blue btn-outline"> <span th:text="#{ontology.rest.operation.add}"> Add Operation</span></button>
-											<button type="button" disabled="disabled" onclick="OntologyCreateController.updateOperation()" class="btn btn-circle blue btn-outline" id="updateoperationBtn" th:text="#{ontology.rest.operation.update	}">Update Operation</button>
-										</div>
+								</div>
+								<div class="row main margin-top-20 border-top">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.rest.schema}">Schema</span>
 									</div>
-									
-									<div class="col-md-12">
-	
-										<div class="col-md-4 col-sm-6 col-xs-12">
-											<div class="form-group">
-												<label class="" th:text="#{ontology.rest.operation.name}">Name</label><span class="required"> *</span>
-												<div class="input-icon ">
-													<input id="nameOperation" type="text"  maxlength="50" class="form-control "  th:placeholder="#{ontology.rest.operation.name}"/>
-												</div>	
-											</div>
-										</div>
-										<div class="col-md-4 col-sm-6 col-xs-12">
-											<div class="form-group">
-												<label class="" th:text="#{ontology.rest.operation.path}">Path</label><span class="required"> *</span>
-												<div class="input-icon ">
-													<input id="pathOperation" type="text"  maxlength="50" class="form-control "  th:placeholder="#{ontology.rest.operation.path}"/>
-												</div>	
-											</div>
-										</div>
-										<div class="col-md-4 col-sm-6 col-xs-12">
-											<div class="form-group">
-												<label class="" th:text="#{ontology.rest.operation.type}">Type</label><span class="required"> *</span>
-												<div class="input-icon ">
-													<select id="typeOperation" class="form-control " >
-														<option id="get" value="get">GET</option>
-														<option id="post" value="post">POST</option>
-														<option id="put" value="put">PUT</option>
-														<option id="delete" value="delete">DELETE</option>
-													</select>
-												</div>	
-											</div>
-										</div>
-										<div class="col-md-4 col-sm-6 col-xs-12">
-											<div class="form-group">
-												<label class="" th:text="#{ontology.rest.operation.description}">Description</label><span class="required"> *</span>
-												<div class="input-icon ">
-													<textarea id="descriptionOperation"  maxlength="512" class="form-control "  th:placeholder="#{ontology.rest.operation.description}"></textarea>
-												</div>	
-											</div>
-										</div>
-										<div class="col-md-4 col-sm-6 col-xs-12">
-											<div class="form-group">
-												<label class="" th:text="#{ontology.rest.operation.default.type}">Default Operation Type</label><span class="required"> *</span>
-												<div class="input-icon ">
-													<select id="defaultOperationType" class="form-control " >
-														<option id="none" value="NONE">NONE</option>
-														<option id="getAll" value="GET_ALL">GET_ALL</option>
-														<option id="getById" value="GET_BY_ID">GET_BY_ID</option>
-														<option id="deleteById" value="DELETE_BY_ID">DELETE_BY_ID</option>
-														<option id="deleteById" value="DELETE_ALL">DELETE_ALL</option>
-														<option id="updateById" value="UPDATE_BY_ID">UPDATE_BY_ID</option>
-														<option id="insert" value="INSERT">INSERT</option>
-													</select>
-												</div>	
-											</div>
-										</div>
-										<div class="col-md-12">
-											<div class="col-md-6" style="border-right: 1px dotted #CCC;">
-												<p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.operation.path}">Path Params</p>
-												<div id="paths" class="margin-bottom-20">
-													<table class="table" id="pathsParams" data-loaded="false">
-														<thead>
-															<tr class="cabecera-tabla" role="row" >
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.index}">Index</th>
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>	
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.field}">Field</th>																													
-																<th class="titulo-columnas" th:text="#{gen.options}">Options</th>
-															</tr>
-														</thead>
-														<tbody>
-															<tr class="mountable-model">
-																<td><input  type="text" name="indexes[]" class="form-control" disabled="disabled"/></td>
-																<td><input type="text" name="namesPaths[]" class="form-control" onblur="OntologyCreateController.checkNamePaths(this)"/></td>
-																<td><input type="text" name="fieldsPaths[]" class="form-control" onblur="OntologyCreateController.checkNamePaths(this)"/></td>						
-																<td><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-remove" onclick="OntologyCreateController.removePathParam(this)"><i class="icon-delete"></i></button></td>			
-															</tr>
-														</tbody>
-														<tfoot>
-															<tr>
-																<td colspan="4">
-																	<div class="btn-group" id="addPathDiv">
-																		<button type="button" class="btn btn-circle blue btn-outline" id="addPathParamOperation" th:text="#{ontology.rest.add}">Add</button>
-																	</div>
-																</td>
-															</tr>
-														</tfoot>
-													</table>
-												</div>
-											</div>
-											<div class="col-md-6">
-												<p class="bold" style="display:inline;  padding-left: 10px" th:text="#{ontology.rest.operation.query}">Query Params</p>
-												<div id="queries" class="margin-bottom-20">
-													<table class="table" id="queriesParams" data-loaded="false">
-														<thead>
-															<tr class="cabecera-tabla" role="row" >
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.name}">Name</th>
-																<th class="titulo-columnas" th:text="#{ontology.rest.operation.field}">Field</th>																															
-																<th class="titulo-columnas" th:text="#{gen.options}">Options</th>
-															</tr>
-														</thead>
-														<tbody>
-															<tr class="mountable-model">
-																<td><input type="text" name="namesQueries[]" class="form-control" onblur="OntologyCreateController.checkNameQueries(this)"/></td>
-																<td><input type="text" name="fieldsQueries[]" class="form-control" onblur="OntologyCreateController.checkNameQueries(this)"/></td>						
-																<td><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-remove" onclick="OntologyCreateController.removeQueryParam(this)"><i class="icon-delete"></i></button></td>			
-															</tr>
-														</tbody>
-														<tfoot>
-															<tr>
-																<td colspan="4">
-																	<div class="btn-group" id="addQueryDiv">
-																		<button type="button" class="btn btn-circle blue btn-outline" id="addQueryParamOperation" th:text="#{ontology.rest.add}">Add</button>
-																	</div>
-																</td>
-															</tr>
-														</tfoot>
-													</table>
-												</div>
-											</div>
-										</div>
-									</div> <!--   end NEW OPERATION -->
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-6 col-xs-6">
+										<label class="control-label" style="background: #FFFDFA; border: 1px solid #E79E38; border-radius: 2px; padding: 8px 12px 8px 4px;">
+											<i class="icon-exclamation" style="vertical-align: bottom;"></i><span th:text="#{ontology.rest.post.info}" >Warning</span>
+										</label> 
+									</div>
 								</div>
 								<div class="row main">
 									<div class="col-md-12">
-										<p class="bold uppercase"><span id="schema_rest"> Schema: </span></p>
-										<div class="alert alert-info alert-dismissable" id="infoRest">
-											<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-											<i class="fa fa-info-circle"></i> <strong th:text="#{ontology.rest.post.info}"></strong>
-										</div>
 										<div id="jsoneditorRest" style="height:500px;"></div>
 									</div>
 								</div>
 							</div>
 			
-							<div class="tab-pane " id="tab_2">
+							<div class="tab-pane fade in" id="tab_2">
 							<!-- ONTOLOGY AUTHORIZATION -->
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{ontology.auth.title}">Authorizations</span>
+										<span th:text="#{apimanager.template.autorizations}">Authorizations</span>
 									</div>
 								</div>
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+									<label class="no-padding-bottom" th:text=="'+'"></label>
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{categorization.addAuthorization}"></label>
+								</div>
+								<div class="row main borderPanel no-margin-left">
+									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh);">
 									<!-- USER SELECTION -->
 										<div class="form-group">
 											<label class="control-label" th:text="#{ontology.user}">User</label>
@@ -570,22 +615,21 @@
 											<button type="button" class="btn btn-primary btn-primary-save" onclick="OntologyCreateController.insertAuthorization()" th:text="#{ontology.insertauthorization}">Insert Ontology Authorization</button>																		
 										</div>												
 									</div>
-									<div class="col-md-8 col-sm-6 col-xs-12">
+									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
 									<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.auth.title}">Ontologies Authorizations</label>
+										<div class="form-group" style="margin-bottom: 0px">
 											<div id="authorizations" class="margin-bottom-20 hide">
 												<table class="table" id="ontology_autthorizations" data-loaded="false">
-													<thead>
+													<thead class="table-header-background">
 														<tr class="cabecera-tabla" role="row" >
 															<th class="titulo-columnas" th:text="#{ontology.user}">User</th>
 															<th class="titulo-columnas" th:text="#{ontology.auth.accesstypes}">Access type</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
 														</tr>
 													</thead>
-													<tbody>
+													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
 														<tr class="authorization-model">
-															<td><input type="text" name="users[]" readonly="readonly"   class="form-control"/></td>
+															<td><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
 															<td>
 																<select name="accesstypes[]" class="form-control">
 																	<option value="ALL">ALL</option>
@@ -668,6 +712,20 @@
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
 	
+    <!-- CODEMIRROR -->
+    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+    <script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>  
+    <script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+    <script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+    <script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+    <script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/mode/sql/sql.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+    <script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
+    
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
@@ -743,7 +801,8 @@
 				"key" : [[#{ontology.rest.header.key.required}]],
 				"value" : [[#{ontology.rest.header.value.required}]]
 			},
-			"schema" : [[#{ontology.rest.schema.required}]]
+			"schema" : [[#{ontology.rest.schema.required}]],
+			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
 		}
 	};	
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER

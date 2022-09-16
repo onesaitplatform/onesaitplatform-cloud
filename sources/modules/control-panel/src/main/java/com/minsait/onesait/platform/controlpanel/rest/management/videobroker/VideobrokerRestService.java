@@ -28,16 +28,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+
+
 
 @RestController
-@Api(value = "Videobroker Management", tags = { "Videobroker management service" })
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@Tag(name = "Videobroker Management")
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api" + VideobrokerUrl.OP_VIDEOBROKER)
 public class VideobrokerRestService {
 
@@ -47,7 +53,7 @@ public class VideobrokerRestService {
 	@Value("${onesaitplatform.videobroker.hazelcast.queue}")
 	private String videoQueueName;
 
-	@ApiOperation("Insert parameters")
+	@Operation(summary="Insert parameters")
 	@PostMapping
 	public ResponseEntity<?> insert(@ApiParam @RequestBody VideobrokerParameters parameters)
 			throws JsonProcessingException {

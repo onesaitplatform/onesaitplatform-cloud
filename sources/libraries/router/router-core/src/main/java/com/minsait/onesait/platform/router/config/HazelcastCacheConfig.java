@@ -14,14 +14,18 @@
  */
 package com.minsait.onesait.platform.router.config;
 
+import java.util.LinkedHashSet;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
+import com.hazelcast.map.IMap;
+import com.hazelcast.collection.IQueue;
 import com.minsait.onesait.platform.audit.notify.EventSenderImpl;
+import com.minsait.onesait.platform.config.services.processtrace.dto.OperationStatus;
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
 import com.minsait.onesait.platform.router.transaction.OntologyStatus;
 import com.minsait.onesait.platform.router.transaction.operation.Transaction;
@@ -53,10 +57,15 @@ public class HazelcastCacheConfig {
 	public IMap<String, OntologyStatus> lockedOntologies() {
 		return hazelcastInstance.getMap("lockedOntologies");
 	}
-	
+
 	@Bean(name = "notificationAdviceNodeRED")
 	public IQueue<NotificationCompositeModel> notificationAdviceNodeRED() {
 		return hazelcastInstance.getQueue("notificationAdviceNodeRED");
+	}
+
+	@Bean(name = "processExecutionMap")
+	public Map<String, LinkedHashSet<OperationStatus>> processExecutionMap() {
+		return hazelcastInstance.getMap("processExecutionMap");
 	}
 
 	@Autowired

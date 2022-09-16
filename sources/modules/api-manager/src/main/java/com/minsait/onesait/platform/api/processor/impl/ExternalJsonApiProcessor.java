@@ -82,14 +82,14 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 
 	@Autowired
 	private ApiCacheService apiCacheService;
-	
+
 	@Autowired
 	private com.minsait.onesait.platform.config.services.apimanager.ApiManagerService apiManagerServiceConfig;
 	final Map<String, Components> cacheExternalReferences = new HashMap<>();
 
 	@Autowired
 	private OpenAPIUtils openAPIUtils;
-	
+
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
 	@PostConstruct
@@ -104,16 +104,16 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 	@Override
 	@ApiManagerAuditable
 	public Map<String, Object> process(Map<String, Object> data) throws GenericOPException {
-		Api api = (Api) data.get(Constants.API);
+		final Api api = (Api) data.get(Constants.API);
 		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
 			data = apiCacheService.getCache(data, api.getApicachetimeout());
 		}
-		
+
 		if (data.get(Constants.OUTPUT)==null) {
 			proxyHttp(data);
 			postProcess(data);
 		}
-		
+
 		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
 			apiCacheService.putCache(data, api.getApicachetimeout());
 		}
@@ -191,6 +191,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			data.put(Constants.HTTP_RESPONSE_CODE, e.getStatusCode());
 
 			data.put(Constants.REASON, e.getResponseBodyAsString());
+			data.put(Constants.HTTP_RESPONSE_HEADERS, e.getResponseHeaders());
 
 			throw e;
 		} catch (final ResourceAccessException e) {
@@ -217,6 +218,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 
 		data.put(Constants.HTTP_RESPONSE_CODE, result.getStatusCode());
 		data.put(Constants.OUTPUT, result.getBody());
+		data.put(Constants.HTTP_RESPONSE_HEADERS, result.getHeaders());
 
 	}
 

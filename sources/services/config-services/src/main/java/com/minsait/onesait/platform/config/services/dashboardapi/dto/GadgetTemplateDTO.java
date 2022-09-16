@@ -46,5 +46,8 @@ public class GadgetTemplateDTO {
 	@Getter
 	@Setter
 	private String headerlibs;
+	@Getter
+	@Setter
+	private String config;
 
 }

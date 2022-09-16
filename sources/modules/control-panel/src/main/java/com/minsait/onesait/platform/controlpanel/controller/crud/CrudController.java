@@ -14,20 +14,11 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.crud;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import javax.validation.Valid;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,54 +28,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.minsait.onesait.platform.business.services.virtual.datasources.VirtualDatasourceService;
-import com.minsait.onesait.platform.commons.model.InsertResult;
+import com.minsait.onesait.platform.business.services.crud.CrudService;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.crud.dto.OntologyDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
-import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
-import com.minsait.onesait.platform.router.service.app.model.OperationModel;
-import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
-import com.minsait.onesait.platform.router.service.app.model.OperationModel.QueryType;
-import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
 @Controller
 @RequestMapping("/crud")
 public class CrudController {
 
 	@Autowired
-	private OntologyRepository ontologyRepository;
-
-	@Autowired
 	private OntologyService ontologyService;
 
 	@Autowired
+	private CrudService crudService;
+	@Autowired
 	private AppWebUtils utils;
-
-	@Autowired
-	private UserService userService;
-
-	@Autowired
-	private RouterService routerService;
-
-	@Autowired
-	private VirtualDatasourceService virtualDatasourceService;
-
-	@Autowired
-	private SQLGenerator sqlGenerator;
-	
-	@Autowired
-	private IntegrationResourcesService resourcesService;
 
 	private static final String ERROR_TRUE = "{\"error\":\"true\"}";
 
@@ -96,78 +58,15 @@ public class CrudController {
 		ontologyDTO.setJsonSchema(ontology.getJsonSchema());
 		ontologyDTO.setDatasource(ontology.getRtdbDatasource().name());
 		model.addAttribute("ontology", ontologyDTO);
-		model.addAttribute("uniqueId", getUniqueColumn(ontology.getIdentification(), false));
-		model.addAttribute("quasar", useQuasar());
+		model.addAttribute("uniqueId", crudService.getUniqueColumn(ontology.getIdentification(), false));
+		model.addAttribute("quasar", crudService.useQuasar());
 		return "crud/admin";
-	}
-
-	public String processQuery(final String query, final String ontologyID, final ApiOperation.Type method,
-			final String body, final String objectId) {
-		final User user = userService.getUser(utils.getUserId());
-		final OperationType operationType;
-		final String payload;
-		switch (method) {
-		case POST:
-			operationType = OperationType.INSERT;
-			payload = body;
-			break;
-		case PUT:
-			operationType = OperationType.UPDATE;
-			payload = body;
-			break;
-		case DELETE:
-			operationType = OperationType.DELETE;
-			payload = body;
-			break;
-		case GET:
-			payload = query;
-			operationType = OperationType.QUERY;
-			break;
-		default:
-			payload = body;
-			operationType = OperationType.QUERY;
-			break;
-		}
-
-		final OperationModel model = OperationModel
-				.builder(ontologyID, operationType, user.getUserId(), OperationModel.Source.INTERNAL_ROUTER)
-				.body(payload).queryType(QueryType.SQL).objectId(objectId).deviceTemplate("").build();
-		final NotificationModel modelNotification = new NotificationModel();
-
-		modelNotification.setOperationModel(model);
-
-		final OperationResultModel result = routerService.query(modelNotification);
-
-		if (!StringUtils.isEmpty(result)) {
-			if (!result.isStatus()) {
-				final JSONObject jsonObject = new JSONObject();
-				jsonObject.put("error", result.getMessage());
-				return jsonObject.toString();
-			}
-
-			String output = result.getResult();
-
-			if (operationType == OperationType.INSERT) {
-				try {
-					final JSONObject obj = new JSONObject(output);
-					if (obj.has(InsertResult.DATA_PROPERTY)) {
-						output = obj.get(InsertResult.DATA_PROPERTY).toString();
-					}
-				} catch (final Exception e) {
-					output = "{}";
-				}
-			}
-			return output;
-		} else {
-			return null;
-		}
-
 	}
 
 	@PostMapping(value = { "/query" }, produces = "application/json")
 	public @ResponseBody String query(String ontologyID, String query) {
 		try {
-			return processQuery(query, ontologyID, ApiOperation.Type.GET, "", "");
+			return crudService.processQuery(query, ontologyID, ApiOperation.Type.GET, "", "", utils.getUserId());
 		} catch (final Exception e) {
 			return ERROR_TRUE;
 		}
@@ -178,71 +77,7 @@ public class CrudController {
 			final BindingResult result) {
 		try {
 			if (!result.hasErrors()) {
-				final Ontology.RtdbDatasource datasource = getDataSourceForOntology(selectStatement.getOntology());
-				if (datasource.equals(Ontology.RtdbDatasource.MONGO)) {
-					if (selectStatement.getColumns() != null && !selectStatement.getColumns().isEmpty()) {
-						selectStatement.setColumns(selectStatement.getColumns().stream()
-								.map(column -> selectStatement.getOntology() + "." + column)
-								.collect(Collectors.toList()));
-						selectStatement.getColumns().add("_id");
-					} else {
-						if (useQuasar()) {
-							selectStatement.setColumns(Arrays.asList("_id", selectStatement.getOntology() + ".*"));
-							selectStatement.setLimit(selectStatement.getLimit() + selectStatement.getOffset() );
-						} else {
-							selectStatement.setColumns(Arrays.asList("*"));
-							selectStatement.setAlias("c");
-						}
-					}
-					if (selectStatement.getWhere() != null && !selectStatement.getWhere().isEmpty()) {
-						if (useQuasar()) {
-							selectStatement.getWhere().stream().forEach(where -> {
-								where.setColumn(selectStatement.getOntology() + "." + where.getColumn());
-							});
-						}
-						else{
-							selectStatement.getWhere().stream().forEach(where -> {
-								if(where.getColumn().contains("elemAt(")) {
-									String col = where.getColumn().replace("elemAt(", "elemAt(c.");
-									where.setColumn(col);
-								}else {
-									where.setColumn("c" + "." + where.getColumn());	
-								}
-
-							});
-						}
-					}
-					if (selectStatement.getOrderBy() != null && !selectStatement.getOrderBy().isEmpty()) {
-						if (useQuasar()) {
-							selectStatement.getOrderBy().stream().forEach(order -> {
-								order.setColumn(selectStatement.getOntology() + "." + order.getColumn());
-							});
-						}
-						else {
-							selectStatement.getOrderBy().stream().forEach(order -> {
-								if(order.getColumn().contains("elemAt(")) {
-									String col = order.getColumn().replace("elemAt(", "elemAt(c.");
-									order.setColumn(col);
-								}else {
-									order.setColumn("c" + "." + order.getColumn());
-								}
-
-							});
-						}
-					}
-				}
-
-				if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
-					if (selectStatement.getColumns() == null) {
-						selectStatement.setColumns(new ArrayList<>());
-						selectStatement.getColumns().add("o.*");
-					}
-					selectStatement.getColumns().add("_id");
-					selectStatement.setAlias("o");
-				}
-
-				final String query = sqlGenerator.generate(selectStatement, false).getStatement();
-				return processQuery(query, selectStatement.getOntology(), ApiOperation.Type.GET, "", "");
+				return crudService.queryParams(selectStatement, utils.getUserId());
 			} else {
 				throw new IllegalArgumentException("Parameters could not be mapped to a select statement");
 			}
@@ -253,82 +88,13 @@ public class CrudController {
 
 	@PostMapping(value = { "/findById" }, produces = "application/json")
 	public @ResponseBody String findById(final String ontologyID, final String oid) {
-		try {
-			final Ontology.RtdbDatasource datasource = getDataSourceForOntology(ontologyID);
-			final SelectStatement selectStatement = sqlGenerator.buildSelect().setColumns(getColumnsQuery(ontologyID))
-					.setOntology(ontologyID).setLimit(1).setOffset(0);
-
-			if (datasource.equals(Ontology.RtdbDatasource.MONGO)) {
-				selectStatement.setWhere(
-						Arrays.asList(new WhereStatement(getUniqueColumn(ontologyID, true), "=", oid, "", "OID")));
-			} else {
-				selectStatement
-						.setWhere(Arrays.asList(new WhereStatement(getUniqueColumn(ontologyID, true), "=", oid)));
-			}
-
-			final String query = selectStatement.generate(false).getStatement();
-			final String result = processQuery(query, ontologyID, ApiOperation.Type.GET, "", oid);
-
-			if (datasource.equals(Ontology.RtdbDatasource.MONGO)) {
-				final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyID, utils.getUserId());
-				if (useQuasar()) {
-					return findDatesAndReplace(result, ontology.getJsonSchema());
-				}
-				else{
-					return result;
-				}
-			} else {
-				return result;
-			}
-		} catch (final Exception e) {
-			return ERROR_TRUE;
-		}
-	}
-
-	private List<String> getColumnsQuery(final String ontology) {
-		final Ontology.RtdbDatasource datasource = ontologyRepository.findByIdentification(ontology)
-				.getRtdbDatasource();
-
-		if (useQuasar()) {
-			if (datasource.equals(Ontology.RtdbDatasource.MONGO)) {
-				return Arrays.asList(ontology);
-			} else {
-				return new ArrayList<>();
-			}
-		} else {
-			final ArrayList list = new ArrayList<>();
-			list.add("*");
-			return list;
-		}
-
-	}
-
-	private String getUniqueColumn(final String ontology, boolean findById) {
-		final Ontology.RtdbDatasource datasource = getDataSourceForOntology(ontology);
-
-		if (datasource.equals(Ontology.RtdbDatasource.VIRTUAL)) {
-			return virtualDatasourceService.getUniqueColumn(ontology);
-		} else if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
-			return "_id";
-		} else if (datasource.equals(Ontology.RtdbDatasource.COSMOS_DB)) {
-			return "id";
-		} else {
-			if (useQuasar() || useLegacySQL() || findById) {
-				return "_id";
-			} else {
-				return "_id.$oid";
-			}
-		}
-	}
-
-	private Ontology.RtdbDatasource getDataSourceForOntology(final String ontology) {
-		return ontologyRepository.findByIdentification(ontology).getRtdbDatasource();
+		return crudService.findById(ontologyID, oid, utils.getUserId());
 	}
 
 	@PostMapping(value = { "/deleteById" }, produces = "application/json")
 	public @ResponseBody String deleteById(String ontologyID, String oid) {
 		try {
-			return processQuery("", ontologyID, ApiOperation.Type.DELETE, "", oid);
+			return crudService.processQuery("", ontologyID, ApiOperation.Type.DELETE, "", oid, utils.getUserId());
 		} catch (final Exception e) {
 			return ERROR_TRUE;
 		}
@@ -337,7 +103,7 @@ public class CrudController {
 	@PostMapping(value = { "/insert" }, produces = "application/json")
 	public @ResponseBody String insert(String ontologyID, String body) {
 		try {
-			return processQuery("", ontologyID, ApiOperation.Type.POST, body, "");
+			return crudService.processQuery("", ontologyID, ApiOperation.Type.POST, body, "", utils.getUserId());
 		} catch (final Exception e) {
 			return "{\"exception\":\"true\"}";
 		}
@@ -346,47 +112,9 @@ public class CrudController {
 	@PostMapping(value = { "/update" }, produces = "application/json")
 	public @ResponseBody String update(String ontologyID, String body, String oid) {
 		try {
-			return processQuery("", ontologyID, ApiOperation.Type.PUT, body, oid);
+			return crudService.processQuery("", ontologyID, ApiOperation.Type.PUT, body, oid, utils.getUserId());
 		} catch (final Exception e) {
 			return "{\"exception\":\"true\"}";
-		}
-	}
-
-	private String findDatesAndReplace(String text, String ontology) {
-		// find $date on schema
-		final String pat = "\\x24date";
-		final StringBuffer stringBuffer = new StringBuffer();
-		final Pattern pattern = Pattern.compile(pat);
-		final Matcher matcher = pattern.matcher(ontology);
-		if (matcher.find()) {
-			// if $date then find date and replace
-			final String patDate = "(\"\\d\\d\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d+\\p{Punct}*\\d*Z\")";
-			final Pattern patternDate = Pattern.compile(patDate);
-			final Matcher matcherDate = patternDate.matcher(text);
-			while (matcherDate.find()) {
-				matcherDate.appendReplacement(stringBuffer, "{\"\\$date\":" + matcherDate.group(1) + "}");
-			}
-			matcherDate.appendTail(stringBuffer);
-			return stringBuffer.toString();
-		}
-		return text;
-	}
-	
-	private boolean useQuasar() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-quasar")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
-		}
-	}
-
-	private boolean useLegacySQL() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-legacysql")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
 		}
 	}
 

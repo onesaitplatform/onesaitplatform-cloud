@@ -110,7 +110,7 @@ public class GraphUtil {
 
 	private static final String CREATE_STR = "create";
 	private static final String SHOW_STR = "show/";
-	private static final String ONTOLOGY_STR = "ontology";
+	private static final String ONTOLOGY_STR = "entity";
 	private static final String LICENSING_STR = "licensing";
 	private static final String COLUMNS_STR = "columns";
 
@@ -138,8 +138,8 @@ public class GraphUtil {
 		final String name = utils.getMessage("name.ontologies", "ONTOLOGIES");
 		final String description = utils.getMessage("tooltip_ontologies", null);
 
-		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlOntology + "list", GENERIC_USER_NAME,
-				"ONTOLOGIES", utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
+		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlOntology + "list", GENERIC_USER_NAME, "ENTITIES",
+				utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
 
 		if (ontologies == null) {
 			if (utils.isAdministrator())

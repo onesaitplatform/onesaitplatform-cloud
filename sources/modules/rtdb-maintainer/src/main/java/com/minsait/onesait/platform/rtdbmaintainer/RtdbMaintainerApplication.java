@@ -14,16 +14,34 @@
  */
 package com.minsait.onesait.platform.rtdbmaintainer;
 
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
+import lombok.extern.slf4j.Slf4j;
+
 @SpringBootApplication
 @ComponentScan("com.minsait.onesait.platform")
+@Slf4j
 public class RtdbMaintainerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RtdbMaintainerApplication.class, args);
+		try {
+			SpringApplication.run(RtdbMaintainerApplication.class, args);} catch (final BeanCreationException ex) {
+				final Throwable realCause = unwrap(ex);
+				log.error("Error on startup", realCause);
+			} catch (final Exception e) {
+				log.error("Error on startup", e);
+			}
+	}
+
+	public static Throwable unwrap(Throwable ex) {
+		if (ex != null && BeanCreationException.class.isAssignableFrom(ex.getClass())) {
+			return unwrap(ex.getCause());
+		} else {
+			return ex;
+		}
 	}
 
 }

@@ -47,6 +47,8 @@ ENV SERVER_NAME=localhost \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
@@ -101,7 +103,10 @@ ENV SERVER_NAME=localhost \
     GRAYLOG_PORT=12201 \
     USE_KEYCLOAK=false \
     SBA_USERNAME=operations \
-	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
+	MAX_HTTP_HEADER_SIZE=20000 \
+	ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
+    ENCRYPTION_ITERATIONS=5 
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh

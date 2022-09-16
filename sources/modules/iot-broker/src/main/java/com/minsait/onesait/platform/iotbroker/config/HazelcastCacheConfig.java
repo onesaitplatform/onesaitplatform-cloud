@@ -14,15 +14,18 @@
  */
 package com.minsait.onesait.platform.iotbroker.config;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.ITopic;
+import com.hazelcast.map.IMap;
+import com.hazelcast.topic.ITopic;
+import com.minsait.onesait.platform.config.services.processtrace.dto.OperationStatus;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.NotificatorServiceImpl;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.websocket.NotificatorWSServiceImpl;
 
@@ -37,7 +40,7 @@ public class HazelcastCacheConfig {
 
 	@Autowired
 	private NotificatorServiceImpl notificationService;
-	
+
 	@Autowired
 	private NotificatorWSServiceImpl notificationWSService;
 
@@ -45,16 +48,16 @@ public class HazelcastCacheConfig {
 	public ITopic<String> hazelcastNotification() {
 		ITopic<String> topic = hazelcastInstance.getTopic("notification");
 		String registerId = topic
-				.addMessageListener(msg -> notificationService.notifyHazelcastTopic(msg.getMessageObject()));
+				.addMessageListener(msg -> notificationService.notifyHazelcastTopic(msg.getMessageObject())).toString();
 		log.info("Mqtt listener created with id: {}", registerId);
 		return topic;
 	}
-	
+
 	@Bean(name = "notificationWS")
 	public ITopic<String> hazelcastNotificationWS() {
 		ITopic<String> topic = hazelcastInstance.getTopic("notificationWS");
 		String registerId = topic
-				.addMessageListener(msg -> notificationWSService.notifyHazelcastTopic(msg.getMessageObject()));
+				.addMessageListener(msg -> notificationWSService.notifyHazelcastTopic(msg.getMessageObject())).toString();
 		log.info("WS listener created with id: {}", registerId);
 		return topic;
 	}
@@ -63,10 +66,15 @@ public class HazelcastCacheConfig {
 	public IMap<String, List<String>> brokerSubscriptors() {
 		return hazelcastInstance.getMap("brokerSubscriptors");
 	}
-	
+
 	@Bean(name = "brokerSubscriptorsWS")
 	public IMap<String, List<String>> brokerSubscriptorsWS() {
 		return hazelcastInstance.getMap("brokerSubscriptorsWS");
+	}
+
+	@Bean(name = "processExecutionMap")
+	public Map<String, LinkedHashSet<OperationStatus>> processExecutionMap() {
+		return hazelcastInstance.getMap("processExecutionMap");
 	}
 
 }

@@ -29,6 +29,7 @@ import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessVersioning;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -75,6 +76,14 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	@Query("SELECT pra FROM ProjectResourceAccess pra WHERE (pra.user.userId= :userId OR pra "
 			+ "IN (SELECT prar FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )")
 	public List<ProjectResourceAccess> findByUserIdAccess(@Param("userId") String userId);
+
+	@Query("SELECT pra FROM ProjectResourceAccessVersioning pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessVersioning prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )")
+	public List<ProjectResourceAccessVersioning> findByUserIdVersioning(@Param("userId") String userId);
+
+	@Query("SELECT pra.resource FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
+			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )")
+	public List<OPResource> findResourcesByUserId(@Param("userId") String userId);
 
 	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE (pra.user.userId= :userId OR pra "
 			+ "IN (SELECT prar FROM ProjectResourceAccessList prar JOIN prar.appRole.appUsers au WHERE au.user.userId= :userId ) )"

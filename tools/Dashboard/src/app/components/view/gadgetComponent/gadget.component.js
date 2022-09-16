@@ -75,7 +75,7 @@
             }
           }
            //add attribute for filter style marker to recover from datasource.
-         if(vm.config.type=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
+         if(vm.config.type.id=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
           vm.projects.push({op:"",field:vm.config.config.markersFilter});
          }
           vm.measures[index].config = jsonConfig;
@@ -112,7 +112,7 @@
             }
           }
           //add attribute for filter style marker to recover from datasource.
-          if(vm.config.type=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
+          if(vm.config.type.id=="map" && typeof vm.config.config.jsonMarkers!=undefined && vm.config.config.jsonMarkers!=null && vm.config.config.jsonMarkers.length>0){
             projects.push({op:"",field:vm.config.config.markersFilter});
           }
           vm.measures[index].config = jsonConfig;
@@ -223,7 +223,7 @@
 
     function processDataToGadget(data){ //With dynamic loading this will change
       
-      switch(vm.config.type){
+      switch(vm.config.type.id){
         case "line":
         case "bar":
         case "radar":
@@ -254,7 +254,7 @@
           vm.labels = allLabelsField;
           vm.series = vm.measures.map (function(m){return m.config.name});
 
-          if(vm.config.type == "pie"){
+          if(vm.config.type.id == "pie"){
             vm.data = allDataField[0];
           }
           else{
@@ -293,7 +293,7 @@
         
 
         // CONFIG FOR PIE/DOUGHNUT CHARTS
-        if(vm.config.type == "pie"){
+        if(vm.config.type.id == "pie"){
 
             try {
               // update legend display
@@ -340,7 +340,7 @@
         }   
          
 
-          if(vm.config.type==="line"||vm.config.type==="bar"){   
+          if(vm.config.type.id==="line"||vm.config.type.id==="bar"){   
             
             try {
               // update legend display
@@ -431,12 +431,12 @@
           };
 
           vm.datasetOverride = vm.measures.map (function(m){
-            if(m.config.config.type==='line'){
+            if(m.config.config.type.id==='line'){
               return m.config.config;
-            }else if(m.config.config.type==='bar'){
+            }else if(m.config.config.type.id==='bar'){
               return m.config.config;
-            }else if(m.config.config.type==='points'){
-              m.config.config.type= 'line';
+            }else if(m.config.config.type.id==='points'){
+              m.config.config.type.id= 'line';
               m.config.config.borderWidth= 0;
               if(typeof m.config.config.pointRadius ==="undefined" ||m.config.config.pointRadius<1 ){
                 m.config.config.pointRadius=4;
@@ -591,7 +591,7 @@
           $scope.$on("$resize",redrawTable);
           break;   
   }
-      vm.type = vm.config.type;//Activate gadget
+      vm.type = vm.config.type.id;//Activate gadget
       utilsService.forceRender($scope);
 
       if(!vm.loadSended){
@@ -755,7 +755,7 @@
       var originField;
       var originValue;
       if(typeof points[0]!=='undefined'){
-        switch(vm.config.type){          
+        switch(vm.config.type.id){          
           case "bar":
             //find serie x field if there are diferent x field in measures
             for(var index in vm.data){

@@ -86,9 +86,17 @@ public class VirtualDatasourceController {
 	@GetMapping(value = "/create", produces = "text/html")
 	public String create(Model model) {
 		model.addAttribute("fieldDisabled", "disabled");
-		model.addAttribute(DATASOURCE_STR, new OntologyVirtualDatasource());
-		model.addAttribute("rdbs", Arrays.stream(VirtualDatasourceType.values())
-				.filter(o -> !o.equals(VirtualDatasourceType.KUDU)).collect(Collectors.toList()));
+
+		OntologyVirtualDatasource report = new OntologyVirtualDatasource();
+		if (model.asMap().get(DATASOURCE_STR) != null) {
+			report = (OntologyVirtualDatasource) model.asMap().get(DATASOURCE_STR);
+		}
+
+		model.addAttribute(DATASOURCE_STR, report);
+		model.addAttribute("rdbs",
+				Arrays.stream(VirtualDatasourceType.values())
+						.filter(o -> !o.equals(VirtualDatasourceType.KUDU) && !o.equals(VirtualDatasourceType.PRESTO))
+						.collect(Collectors.toList()));
 		return VIRTUAL_DATASOURCE_CREATE;
 	}
 
@@ -99,6 +107,7 @@ public class VirtualDatasourceController {
 		try {
 			final OntologyVirtualDatasource datasource = virtualDatasourceService
 					.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId(), ResourceAccessType.VIEW);
+
 			if (datasource != null) {
 				model.addAttribute(DATASOURCE_STR, datasource);
 				return "virtualdatasources/show";
@@ -122,8 +131,10 @@ public class VirtualDatasourceController {
 				model.addAttribute("fieldDisabled", "disabled");
 				model.addAttribute(DATASOURCE_STR, datasource);
 				model.addAttribute("oldCredentials", datasource.getCredentials());
-				model.addAttribute("rdbs", Arrays.stream(VirtualDatasourceType.values())
-						.filter(o -> !o.equals(VirtualDatasourceType.KUDU)).collect(Collectors.toList()));
+				model.addAttribute("rdbs",
+						Arrays.stream(VirtualDatasourceType.values()).filter(
+								o -> !o.equals(VirtualDatasourceType.KUDU) && !o.equals(VirtualDatasourceType.PRESTO))
+								.collect(Collectors.toList()));
 				return VIRTUAL_DATASOURCE_CREATE;
 			} else {
 				return VIRTUAL_DATASOURCE_CREATE;

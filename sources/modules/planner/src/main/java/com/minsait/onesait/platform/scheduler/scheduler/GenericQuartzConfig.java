@@ -22,36 +22,40 @@ import javax.sql.DataSource;
 import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.minsait.onesait.platform.scheduler.config.SchedulerConfig;
 
-
 public abstract class GenericQuartzConfig {
-	
+
+	@Value("${quartz.driverDelegateClass}")
+	private String driverDelegateClass;
+
 	@Autowired
 	@Qualifier("quartzDatasource")
-    protected DataSource dataSource;
-	
+	protected DataSource dataSource;
+
 	@Autowired
 	@Qualifier("quartzProperties")
 	protected Properties quartzProperties;
-	
+
 	@Autowired
-    protected SchedulerConfig quartzDataSourceConfig;
-	
-	public boolean checksIfAutoStartup () {
+	protected SchedulerConfig quartzDataSourceConfig;
+
+	public boolean checksIfAutoStartup() {
 		List<String> schedulersToStartup = quartzDataSourceConfig.getAutoStartupSchedulers();
 		return (schedulersToStartup != null && schedulersToStartup.contains(getSchedulerBeanName()));
 	}
-	
-	public abstract String getSchedulerBeanName ();
-	
-	public SchedulerFactoryBean getSchedulerFactoryBean (JobFactory jobFactory, PlatformTransactionManager transactionManager) {
-		
+
+	public abstract String getSchedulerBeanName();
+
+	public SchedulerFactoryBean getSchedulerFactoryBean(JobFactory jobFactory,
+			PlatformTransactionManager transactionManager) {
+
 		SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
-		
+
 		schedulerFactoryBean.setTransactionManager(transactionManager);
 		schedulerFactoryBean.setOverwriteExistingJobs(true);
 		schedulerFactoryBean.setSchedulerName(getSchedulerBeanName());
@@ -60,12 +64,13 @@ public abstract class GenericQuartzConfig {
 		// custom job factory of spring with DI support for @Autowired!
 		schedulerFactoryBean.setOverwriteExistingJobs(true);
 		schedulerFactoryBean.setAutoStartup(checksIfAutoStartup());
-		
+
 		schedulerFactoryBean.setDataSource(dataSource);
-		
+
 		schedulerFactoryBean.setJobFactory(jobFactory);
+		quartzProperties.setProperty("org.quartz.jobStore.driverDelegateClass", driverDelegateClass);
 		schedulerFactoryBean.setQuartzProperties(quartzProperties);
-		
+
 		return schedulerFactoryBean;
 	}
 

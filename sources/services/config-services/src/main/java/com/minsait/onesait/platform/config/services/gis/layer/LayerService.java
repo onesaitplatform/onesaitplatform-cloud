@@ -46,11 +46,15 @@ public interface LayerService {
 
 	Map<String, String> getLayersTypes(String userId);
 
-	String getLayerWms(String layer);
+	String getLayerWms(String layerIdentification);
 
 	String getLayerKml(String layerIdentification);
 
-	String getLayerSvgImage(String layer);
+	String getLayerSvgImage(String layerIdentification);
+	
+	String getLayerArcGIS(String layerIdentification);
+	
+	String getLayerCesiumAsset(String layerIdentification);
 
 	List<String> getQueryFields(String query, String ontology, String userId);
 

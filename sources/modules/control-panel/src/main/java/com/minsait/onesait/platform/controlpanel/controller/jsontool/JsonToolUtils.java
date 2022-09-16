@@ -53,6 +53,7 @@ public class JsonToolUtils {
 		ontology.setUser(userService.getUser(utils.getUserId()));
 		ontology.setMetainf(DEFAULT_META_INF);
 		ontology.setRtdbDatasource(datasource);
+		ontology.setContextDataEnabled(true);
 		return ontology;
 	}
 

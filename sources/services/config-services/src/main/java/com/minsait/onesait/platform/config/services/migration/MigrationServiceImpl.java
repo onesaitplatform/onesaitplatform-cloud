@@ -45,6 +45,7 @@ import javax.persistence.metamodel.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
@@ -87,6 +88,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service("migrationService")
+@Lazy
 public class MigrationServiceImpl implements MigrationService {
 
 	@PersistenceContext(unitName = ConfigDBTenantConfig.PERSISTENCE_UNIT_NAME_TENANT)

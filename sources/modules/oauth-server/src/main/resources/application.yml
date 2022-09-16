@@ -15,6 +15,7 @@ ldap:
   password: secret
   defaultRole: ROLE_USER
   administratorWhitelist: administrator,admin,fjgcornejo_ldap
+  groupWhitelist:
   platformRolesGroup:
       administrator: CN=sf2rcAdministrador,OU=AppSofia2,OU=AppSmart,DC=aytologd 
       datascientist: CN=sf2rAnalitycs,OU=AppSofia2,OU=AppSmart,DC=aytologd
@@ -32,6 +33,7 @@ ldap:
      cn: cn
      groupOfNames: groupOfNames
   rolesmemberattribute: member
+  authentication.regex: (.*)
 master: 
    datasource:
       hikari: 
@@ -62,8 +64,7 @@ onesaitplatform:
       configdb:
         acl:
           enabled: false
-          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
-   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$   
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user      
    graylog:
       enabled: false
       host: 127.0.0.1
@@ -87,8 +88,12 @@ sofia2: #Config onesaitplatform specific
       
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
+management.health.ldap.enabled: false
 
 spring: ## General Config  
+   main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
    application.name: onesaitplatform-oauth-server
    boot.admin: #Spring Boot Admin Config   
       client.url: http://localhost:18100/monitoring
@@ -107,10 +112,6 @@ spring: ## General Config
         maximum-pool-size: 15
       
    jpa:
-      properties:
-        hibernate:
-          format_sql: false
-          show_sql: false
       open-in-view: false
       properties:
         hibernate:
@@ -136,14 +137,14 @@ cxf:
             
 ## LOGGING CONF
 logging:
-   path: ./target/ 
-   file: ${spring.application.name}
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
    level:
-      ROOT: INFO
-      com.minsait: DEBUG
-      org.springframework.security.oauth2: DEBUG
-      org.springframework.security: INFO
-      org.springframework.cache: INFO
+      ROOT: ERROR
+      com.minsait: INFO
+      org.springframework.security.oauth2: ERROR
+      org.springframework.security: ERROR
+      org.springframework.cache: ERROR
       
       
 ## OAUTH    
@@ -154,4 +155,5 @@ security:
     client-secret: ENC(siZm4DUe6Y1FkxoUH7y0oUCiGDIq/vRX)
     grant-type: authorization_code,refresh_token,password
     scopes: openid,authorization_code
+    expiration-time: 44000
     

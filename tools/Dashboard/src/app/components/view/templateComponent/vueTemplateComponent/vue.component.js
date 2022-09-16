@@ -16,7 +16,8 @@
         custommenuoptions: "=?",
         showonlyfiltered: "=?",
         template: "<?",
-        params: "<?"
+        params: "<?",
+        gadgetid: "<?",
       }
     });
 
@@ -30,6 +31,7 @@
 
     /* Own code */
     var vm = this;
+    vm.tparams = vm.params;
 
     vm.$onDestroy = function () {
       
@@ -55,8 +57,8 @@
         return;
       }
 
-      document.querySelector("#" + vm.id + " vuetemplate").innerHTML="";
-      document.querySelector("#" + vm.id + " vuetemplate").innerHTML=vm.livecontent;
+      document.getElementById(vm.id).querySelector("vuetemplate").innerHTML="";
+      document.getElementById(vm.id).querySelector("vuetemplate").innerHTML=vm.livecontent;
 
       eval(vm.addSourceFile(vm.livecontentcode?vm.livecontentcode:""));
 
@@ -70,10 +72,10 @@
       if (dataEvent.type === "data" && dataEvent.data.length === 0) {
         vm.type = "nodata";
         $scope.ds = "";
-        if (vm.drawLiveComponent) {
+        if (vm.vueapp.drawVueComponent) {
           vm.drawLiveComponent($scope.ds, null);
         }
-        if (vm.vueapp.drawVueComponent) {
+        if (vm.vueapp.drawVueComponent) {       
           vm.vueapp.drawVueComponent($scope.ds, null);
         }
       } else {

@@ -38,19 +38,21 @@ import com.minsait.onesait.platform.audit.notify.EventRouter;
 import com.minsait.onesait.platform.business.services.audit.AuditService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(value = "Audit Management", tags = { "Audit management service" })
+@Tag(name = "Audit Management")
 @RestController
 @RequestMapping("api/audit")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 public class AuditRestController {
 	@Autowired
 	private AuditService auditService;
@@ -58,18 +60,18 @@ public class AuditRestController {
 	private AppWebUtils utils;
 	@Autowired
 	EventRouter eventRouter;
-	
-	@ApiOperation(value = "Get User Audit data")
+
+	@Operation(summary = "Get User Audit data")
 	@GetMapping("/")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	@Transactional
 	public ResponseEntity<?> getAudit(
-		@ApiParam(value = "Result Type", required = false) @RequestParam(value = "resultType", required = false, defaultValue = "all") String resultType,
-		@ApiParam(value = "Module Name", required = false) @RequestParam(value = "modulesname", required = false, defaultValue = "all") String modulesname,
-		@ApiParam(value = "Operation", required = false) @RequestParam(value = "operation", required = false, defaultValue = "all") String operation,
-		@ApiParam(value = "Number of Records", required = false) @RequestParam(value = "nrecords", required = false, defaultValue = "") String nrecords,
-		@ApiParam(value = "User", required = false) @RequestParam(value = "user", required = false, defaultValue = "") String user) {
-		
+			@Parameter(description= "Result Type", required = false) @RequestParam(value = "resultType", required = false, defaultValue = "all") String resultType,
+			@Parameter(description= "Module Name", required = false) @RequestParam(value = "modulesname", required = false, defaultValue = "all") String modulesname,
+			@Parameter(description= "Operation", required = false) @RequestParam(value = "operation", required = false, defaultValue = "all") String operation,
+			@Parameter(description= "Number of Records", required = false) @RequestParam(value = "nrecords", required = false, defaultValue = "") String nrecords,
+			@Parameter(description= "User", required = false) @RequestParam(value = "user", required = false, defaultValue = "") String user) {
+
 		String userQuery;
 		if (utils.getRole().equals("ROLE_ADMINISTRATOR")) {
 			userQuery = user;
@@ -85,26 +87,26 @@ public class AuditRestController {
 
 		return new ResponseEntity<>(queryResult, HttpStatus.OK);
 	}
-	
-	
-	@ApiOperation(value = "Inserts Audit user info")
+
+
+	@Operation(summary = "Inserts Audit user info")
 	@PostMapping(value = "/")
 	public ResponseEntity<?> insertauditdata(@Valid @RequestBody List<OPAuditEventDTO> userAuditEvent) {
-		
-		List<OPAuditEvent> auditEventList = fromAuditEventDTOtoAuditEvent(userAuditEvent);
-		for (OPAuditEvent opAuditEvent : auditEventList) {
+
+		final List<OPAuditEvent> auditEventList = fromAuditEventDTOtoAuditEvent(userAuditEvent);
+		for (final OPAuditEvent opAuditEvent : auditEventList) {
 			eventRouter.notify(opAuditEvent.toJson());
 		}
-		
+
 		return new ResponseEntity<>("", HttpStatus.OK);
 	}
 
 
 	private List<OPAuditEvent> fromAuditEventDTOtoAuditEvent(List<OPAuditEventDTO> userAuditEventList) {
-		String user = utils.getUserId();
-		List<OPAuditEvent> opAuditEventList = new ArrayList<OPAuditEvent>();
-		for (OPAuditEventDTO opAuditEventDTO : userAuditEventList) {
-			OPAuditEvent auditevent = OPEventFactory.builder().build().createAuditEvent(EventType.SECURITY,
+		final String user = utils.getUserId();
+		final List<OPAuditEvent> opAuditEventList = new ArrayList<OPAuditEvent>();
+		for (final OPAuditEventDTO opAuditEventDTO : userAuditEventList) {
+			final OPAuditEvent auditevent = OPEventFactory.builder().build().createAuditEvent(EventType.SECURITY,
 					"Logout Success for user: ");
 			if (opAuditEventDTO.getMessage()!=null && !opAuditEventDTO.getMessage().equals("")) {
 				auditevent.setMessage(opAuditEventDTO.getMessage());
@@ -129,13 +131,13 @@ public class AuditRestController {
 			}
 			if (opAuditEventDTO.getOntology()!=null && opAuditEventDTO.getOntology().equals("")) {
 				auditevent.setOntology(opAuditEventDTO.getOntology());
-			}			
-			
+			}
+
 			auditevent.setUser(user);
-			
-			
-			
-			
+
+
+
+
 			opAuditEventList.add(auditevent);
 		}
 		return opAuditEventList;

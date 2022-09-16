@@ -11,6 +11,8 @@ RUN apk add --no-cache tzdata
 
 # web projects folder & logs folder
 RUN mkdir -p /usr/local/webprojects && \
+	mkdir -p /usr/local/dataflows && \
+    mkdir -p /usr/local/flows && \
 	mkdir -p /usr/local/themes && \
     mkdir -p /usr/local/files && \
 	mkdir -p /var/log/platform-logs && \
@@ -40,7 +42,7 @@ RUN chown -R onesait:onesait /usr/local && \
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
 ENV BOWTIE2_VERSION 2.2.8
-ENV ASPECTJ_VERSION 1.8.9
+ENV ASPECTJ_VERSION 1.9.7
 
 RUN apk add --no-cache \
         bash \
@@ -68,14 +70,13 @@ RUN cd /tmp/ \
 
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
 
-
 USER onesait
 
 EXPOSE 18000 5701
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKABROKERS=none \
@@ -92,6 +93,8 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
 	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
 	CONFIGDBUSER=root \
 	CONFIGDBPASS=changeIt! \
+	SCHEDULERDBBUSER=root \
+	SCHEDULERDBBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
     JDBCPROTOCOL="jdbc:mysql:" \
@@ -165,6 +168,10 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     TWOFA_ENABLED=false \
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
+	SCHEDULERDBBDRIVER=com.mysql.cj.jdbc.Driver \
+	SCHEDULERDBBDIALECT=org.hibernate.dialect.MySQL5Dialect \
     DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS=10000 \
     DS_MIN_EVICTABLE_IDLE_TIME_MILLIS=180000 \
     DS_MAX_WAIT_MILLIS=10000 \
@@ -209,10 +216,27 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
     GRAYLOG_HOST=log-centralizer \
     GRAYLOG_PORT=12201 \
     CORS_ALLOWED_URLS="*" \
-	INTERNAL_SSL=false \
-	EDGE_SERVER_NAME=iothub02.onesaitplatform.com \
-	SBA_USERNAME=operations \
-	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+    INTERNAL_SSL=false \
+    EDGE_SERVER_NAME=iothub02.onesaitplatform.com \
+    SBA_USERNAME=operations \
+    SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
+    MINIO_ROOT_USER=ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi) \
+	MINIO_ROOT_PASSWORD=ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj) \
+    FILE_STORE=MONGO_GRIDFS \
+	TIMESCALE_ENABLED=false \
+	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
+	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
+	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
+	LDAP_GROUP_WHITELIST= \
+    LDAP_IMPORT_USERS=true \
+    LDAP_AUTH_REGEX=(.*) \
+	QUARTZ_DRIVER=org.quartz.impl.jdbcjobstore.StdJDBCDelegate \
+    MAX_HTTP_HEADER_SIZE=20000 \
+    DATAFLOWS_DATA=/usr/local/dataflows/ \
+    FLOWS_DATA=/usr/local/flows/ \
+    NOTEBOOKS_DATA=/usr/local/notebooks/ \
+    JWT_EXPIRATION_TIME=44000
+
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

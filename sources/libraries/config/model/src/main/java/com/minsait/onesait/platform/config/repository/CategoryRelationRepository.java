@@ -19,7 +19,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.CategoryRelation;
-import com.minsait.onesait.platform.config.model.CategoryRelation.Type;
+import com.minsait.onesait.platform.config.model.Category.Type;
 
 public interface CategoryRelationRepository extends JpaRepository<CategoryRelation, Long> {
 
@@ -34,4 +34,6 @@ public interface CategoryRelationRepository extends JpaRepository<CategoryRelati
 	CategoryRelation findByTypeId(String typeId);
 
 	CategoryRelation findByTypeIdAndType(String typeId, Type type);
+	
+	List<CategoryRelation> findBySubcategory(String subcategory);
 }

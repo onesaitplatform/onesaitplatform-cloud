@@ -65,18 +65,22 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 
 @RestController
 @RequestMapping("api/clientplatform")
 @CrossOrigin(origins = "*")
-@Api(value = "Client Platform Management", tags = { "Client Platform Management" })
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@Tag(name = "Client Platform Management")
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 public class ClientPlatformManagementController {
 
 	private static final String NOT_VALID_STR = "NOT_VALID";
@@ -99,9 +103,9 @@ public class ClientPlatformManagementController {
 	@Autowired
 	private OntologyService ontologyService;
 
-	@ApiOperation("Get all clientplatforms")
+	@Operation(summary="Get all clientplatforms")
 	@GetMapping
-	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ClientPlatformDTO[].class))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ClientPlatformDTO[].class))))
 	public ResponseEntity<Object> getAllClientplatforms() {
 
 		List<ClientPlatform> list;
@@ -121,12 +125,12 @@ public class ClientPlatformManagementController {
 		return ResponseEntity.ok(returnlist);
 	}
 
-	@ApiOperation("Get clientplatform by id")
+	@Operation(summary="Get clientplatform by id")
 	@GetMapping("/{identification}")
-	@ApiResponses({ @ApiResponse(code = 200, message = "OK", response = ClientPlatformDTO.class),
-			@ApiResponse(code = 404, message = "Not found") })
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ClientPlatformDTO.class))),
+		@ApiResponse(responseCode = "404", description = "Not found") })
 	public ResponseEntity<Object> getClientplatformByID(
-			@ApiParam(value = "identification  ", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "identification  ", required = true) @PathVariable("identification") String identification) {
 		final ClientPlatform clientPlatform = clientPlatformService.getByIdentification(identification);
 		if (clientPlatform == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -139,9 +143,9 @@ public class ClientPlatformManagementController {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 	}
 
-	@ApiOperation("Create new clientplatform")
+	@Operation(summary="Create new clientplatform")
 	@PostMapping
-	@ApiResponses(@ApiResponse(code = 201, message = "Default token", response = String.class))
+	@ApiResponses(@ApiResponse(responseCode = "201", description = "Default token", content=@Content(schema=@Schema(implementation=String.class))))
 	public ResponseEntity<?> createNewClientplatform(@Valid @RequestBody ClientPlatformCreate clientPlatformCreate,
 			Errors errors) {
 		if (errors.hasErrors()) {
@@ -195,12 +199,12 @@ public class ClientPlatformManagementController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(token.getTokenName());
 	}
 
-	@ApiOperation("Update clientplatform")
+	@Operation(summary="Update clientplatform")
 	@PutMapping
-	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
 	public ResponseEntity<?> updateClientplatform(@Valid @RequestBody ClientPlatformCreate clientPlatform,
 			Errors errors) {
-		ObjectMapper mapper = new ObjectMapper();
+		final ObjectMapper mapper = new ObjectMapper();
 		try {
 			if (errors.hasErrors()) {
 				return ErrorValidationResponse.generateValidationErrorResponse(errors);
@@ -218,7 +222,7 @@ public class ClientPlatformManagementController {
 			}
 
 			final User user = userService.getUserByIdentification(utils.getUserId());
-			ArrayNode array = mapper.createArrayNode();
+			final ArrayNode array = mapper.createArrayNode();
 			for (final Entry<String, AccessType> entry : clientPlatform.getOntologies().entrySet()) {
 				final Ontology ontology = ontologyService.getOntologyByIdentification(entry.getKey(),
 						utils.getUserId());
@@ -244,7 +248,7 @@ public class ClientPlatformManagementController {
 				if (!hasPermissions) {
 					return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 				}
-				ObjectNode node = mapper.createObjectNode();
+				final ObjectNode node = mapper.createObjectNode();
 				node.put("id", entry.getKey());
 				node.put("access", entry.getValue().name());
 				array.add(node);
@@ -252,7 +256,7 @@ public class ClientPlatformManagementController {
 
 			final List<Token> tokens = tokenService.getTokens(ndevice);
 
-			DeviceCreateDTO device = new DeviceCreateDTO();
+			final DeviceCreateDTO device = new DeviceCreateDTO();
 			device.setIdentification(clientPlatform.getIdentification());
 			device.setDescription(clientPlatform.getDescription());
 			device.setId(ndevice.getId());
@@ -265,16 +269,16 @@ public class ClientPlatformManagementController {
 
 			clientPlatformService.updateDevice(device, utils.getUserId());
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (JsonProcessingException e) {
+		} catch (final JsonProcessingException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Coulnd't update Digital Client");
 		}
 	}
 
-	@ApiOperation(value = "validate Clientplatform id with token")
+	@Operation(summary = "validate Clientplatform id with token")
 	@GetMapping(value = "/validate/clientplatform/{identification}/token/{token}")
 	public ResponseEntity<?> validate(
-			@ApiParam(value = "identification  ", required = true) @PathVariable("identification") String identification,
-			@ApiParam(value = "Token", required = true) @PathVariable(name = "token") String token) {
+			@Parameter(description= "identification  ", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Token", required = true) @PathVariable(name = "token") String token) {
 
 		try {
 			final ClientPlatform cp = clientPlatformService.getByIdentification(identification);
@@ -302,7 +306,7 @@ public class ClientPlatformManagementController {
 	}
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@ApiOperation(value = "List all device tokens")
+	@Operation(summary = "List all device tokens")
 	@GetMapping(value = "/{identification}/token")
 	public ResponseEntity<List<TokenDTO>> loadClientplatformTokens(
 			@PathVariable("identification") String identification) {

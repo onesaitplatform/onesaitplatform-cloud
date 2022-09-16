@@ -23,7 +23,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"></title>
-		
+
 
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -32,10 +32,10 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-		
+
 		<!-- PLUGINS STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-		
+
 		<!-- Funciones AJAX -->
 		<script th:inline="javascript">
 			//<![CDATA[
@@ -43,7 +43,7 @@
 			var confirmBtn = [[#{gen.confirmBtn}]];
 			var deleteBtn = [[#{gen.deleteBtn}]];
 
-			function navigateUrl(url,reload){ 
+			function navigateUrl(url,reload){
 				if(reload){
 					window.location.reload();
 					window.location.replace(url);
@@ -53,8 +53,8 @@
 				}
 			}
 
-	
-	
+
+
 
 
 
@@ -63,7 +63,7 @@
 					navigateUrl('/controlpanel/notebooks/list');
 				});
 			}
-			
+
 			var createMicroService = function(identification){
 				navigateUrl('/controlpanel/microservices/create' +
 				"?" +
@@ -87,12 +87,12 @@
 						// INPUT MASK FOR identification allow only letters, numbers and -_
 						$("#newNotebook").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
 						$("#newNotebook").bind('blur', function (ev) { // fires on every blur
-							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){									
+							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#create-form').removeClass("has-error");
 									$('#create-form').addClass("has-error");
-									$('#create-error').show();									 
+									$('#create-error').show();
 								}else{
-									$('#create-form').removeClass("has-error");								
+									$('#create-form').removeClass("has-error");
 									$('#create-error').hide();
 								}
 					});
@@ -101,19 +101,19 @@
 						close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.		
+							action: function (){} //GENERIC CLOSE.
 						},
 						Ok: {
 							text: confirmBtn,
 							btnClass: 'btn btn-primary',
 							action: function() {
-								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){									
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#create-form').removeClass("has-error");
 									$('#create-form').addClass("has-error");
 									$('#create-error').show();
 									return false;
 								}else{
-									$('#create-form').removeClass("has-error");								
+									$('#create-form').removeClass("has-error");
 									$('#create-error').hide();
 								}
 								var notebookName = $("#newNotebook").val().trim()
@@ -126,13 +126,13 @@
 									$('#create-error').show();
 									return false;
 								}
-							}											
-						}						
+							}
+						}
 					}
 				});
 			}
 
-			
+
 			var showImportNotebookDialog = function(){
 				$.confirm({
 					title: [[#{notebook.importnotebook}]],
@@ -147,32 +147,32 @@
 						$("#newImportNotebook").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
 						//initialize blur event for inputs
 						$("#newImportNotebook").bind('blur', function (ev) { // fires on every blur
-							if($("#newImportNotebook").val()==""|| !$("#newImportNotebook").val()){										 
+							if($("#newImportNotebook").val()==""|| !$("#newImportNotebook").val()){
 										$('#input-name-form').removeClass("has-error");
 										$('#input-name-form').addClass("has-error");
-										$('#import-name-error').show();										 
+										$('#import-name-error').show();
 								}else{
 									$('#input-name-form').removeClass("has-error");
 									$('#import-name-error').hide();
 								}
-						});			
-		
+						});
+
 						$("#jsonInputData").bind('blur', function (ev) { // fires on every blur
 							if(  !$("#jsonInputData").val() || $("#jsonInputData").val()=="" ){
 										$('#input-file-form').removeClass("has-error");
 										$('#input-file-form').addClass("has-error");
-										$('#import-file-error').show();									 
+										$('#import-file-error').show();
 								}else{
 									$('#input-file-form').removeClass("has-error");
 									$('#import-file-error').hide();
 								}
-						});			
+						});
 					},
 					buttons: {
 						close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.		
+							action: function (){} //GENERIC CLOSE.
 						},
 						Ok: {
 							text: confirmBtn,
@@ -199,16 +199,16 @@
 									$('#input-file-form').removeClass("has-error");
 									$('#import-file-error').hide();
 								}
-								if(fieldsEmtpy){													
+								if(fieldsEmtpy){
 									return false;
 								}
-								
+
 								var notebookName = $("#newImportNotebook").val().trim();
 								var notebookExtension = $("#jsonInputData").val().split('.').pop();
 								if(/^[a-zA-Z 0-9_]+$/.test(notebookName)){
 									importNotebook(notebookName,$("#dataJSONImport").val(), notebookExtension);
-								}								
-							}									
+								}
+							}
 						}
 					}
 				});
@@ -228,12 +228,12 @@
 					// INPUT MASK FOR identification allow only letters, numbers and -_
 						$("#newNotebook").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
 						$("#newNotebook").bind('blur', function (ev) { // fires on every blur
-							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){									
+							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#clone-form').removeClass("has-error");
 									$('#clone-form').addClass("has-error");
-									$('#create-error').show();									 
+									$('#create-error').show();
 								}else{
-									$('#clone-form').removeClass("has-error");								
+									$('#clone-form').removeClass("has-error");
 									$('#create-error').hide();
 								}
 					});
@@ -242,33 +242,33 @@
 						close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.		
+							action: function (){} //GENERIC CLOSE.
 						},
 						Ok: {
 							text: confirmBtn,
 							btnClass: 'btn btn-primary',
 							action: function() {
-								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){									
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#clone-form').removeClass("has-error");
 									$('#clone-form').addClass("has-error");
 									$('#create-error').show();
 									return false;
 								}else{
-									$('#clone-form').removeClass("has-error");								
+									$('#clone-form').removeClass("has-error");
 									$('#create-error').hide();
 								}
-								
+
 								var notebookName = $("#newNotebook").val().trim()
 								if(/^[a-zA-Z 0-9_]+$/.test(notebookName)){
 									cloneNotebook(notebookName,initNotebook);
 								}
-								
-							}										
+
+							}
 						}
 					}
 				});
 			}
-			
+
 			var showRenameNotebookDialog = function(initNotebook, name){
 				$.confirm({
 					title: [[#{notebook.newnotebook.popup}]],
@@ -281,43 +281,43 @@
 					onContentReady: function () {
 						// INPUT MASK FOR identification allow only letters, numbers and -_
 							$("#newNotebook").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
-							
+
 							$("#newNotebook").bind('blur', function (ev) { // fires on every blur
-							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){									
+							if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#rename-form').removeClass("has-error");
 									$('#rename-form').addClass("has-error");
-									$('#create-error').show();									 
+									$('#create-error').show();
 								}else{
-									$('#rename-form').removeClass("has-error");								
+									$('#rename-form').removeClass("has-error");
 									$('#create-error').hide();
 								}
 					});
-							
+
 						},
 					buttons: {
 						close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.		
+							action: function (){} //GENERIC CLOSE.
 						},
 						Ok: {
 							text: confirmBtn,
 							btnClass: 'btn btn-primary',
 							action: function() {
-								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){									
+								if($("#newNotebook").val()=="" || !$("#newNotebook").val()){
 									$('#rename-form').removeClass("has-error");
 									$('#rename-form').addClass("has-error");
-									$('#create-error').show();	
-									return false								 
+									$('#create-error').show();
+									return false
 								}else{
-									$('#rename-form').removeClass("has-error");								
+									$('#rename-form').removeClass("has-error");
 									$('#create-error').hide();
 								}
 								var notebookName = $("#newNotebook").val().trim()
 								if(/^[a-zA-Z 0-9_]+$/.test(notebookName)){
 									renameNotebook(notebookName,initNotebook);
-								}								
-							}										
+								}
+							}
 						}
 					}
 				});
@@ -336,7 +336,7 @@
 					close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.		
+							action: function (){} //GENERIC CLOSE.
 						},
 						"Ok": {
 							text: deleteBtn,
@@ -351,11 +351,11 @@
 			/*Create Notebook */
 			function createNotebook(name){
 				$.post(
-					"/controlpanel/notebooks/createNotebook", 
+					"/controlpanel/notebooks/createNotebook",
 					{name : name}
 				).done(function(data){
 					localStorage.setItem("reload","true");//Created notebook, reload forced
-					toastr.success(messagesForms.validation.genFormSuccess,'');					
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
 				).fail(
 					function(e){
@@ -369,14 +369,14 @@
 			}
 			function cloneNotebook(name,initId){
 				$.post(
-					"/controlpanel/notebooks/cloneNotebook", 
+					"/controlpanel/notebooks/cloneNotebook",
 					{
 						name : name,
 						idzep : initId
 					}
 				).done(function(data){
 					localStorage.setItem("reload","true");//Created notebook, reload forced
-					toastr.success(messagesForms.validation.genFormSuccess,'');					
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
 				).fail(
 					function(e){
@@ -388,17 +388,17 @@
 					}
 				)
 			}
-			
+
 			function renameNotebook(name,initId){
 				var csrf_value = $("meta[name='_csrf']").attr("content");
-				var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-				
+				var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
 				$.ajax({
 					type:"POST",
 					headers: {
 						[csrf_header]: csrf_value
 				    },
-					url:"/controlpanel/notebooks/renameNotebook", 
+					url:"/controlpanel/notebooks/renameNotebook",
 					data:{
 						name : name,
 						idzep : initId
@@ -406,7 +406,7 @@
 					dataType: "text"
 				}).done(function(data){
 					localStorage.setItem("reload","true");//Created notebook, reload forced
-					toastr.success(messagesForms.validation.genFormSuccess,'');					
+					toastr.success(messagesForms.validation.genFormSuccess,'');
 					navigateUrl("/controlpanel/notebooks/list")}
 				).fail(
 					function(e){
@@ -418,43 +418,44 @@
 					}
 				)
 			}
-			
+
 			function importNotebook(name,data,extension){
 				if($("#jsonInputData").val()==="" || $("#newImportNotebook").val()===""){
 					return;//Required params
 				}
-				
+
 				console.log(name);
 				console.log(extension);
-				
+
 				var url;
-				
-				if(extension==="ipynb"){ 
+
+				if(extension==="ipynb"){
 					url = "/controlpanel/notebooks/importNotebookFromJupyter";
 				}
 				else {
-					url = "/controlpanel/notebooks/importNotebook";					
+					url = "/controlpanel/notebooks/importNotebook";
 					//Name inside notebook
 					var jsonData = JSON.parse(data)
 					jsonData.name = name;
 					data = JSON.stringify(jsonData);
 				}
-				
+
 				$.post(
-						url, 
+						url,
 						{
 							name: name,
 							data: data
 						}
 					).done(function(data){
 						localStorage.setItem("reload","true");//Created notebook, reload forced
-						toastr.success(messagesForms.validation.genFormSuccess,'');						
+						toastr.success(messagesForms.validation.genFormSuccess,'');
 						navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)}
 					).fail(
 						function(e){
 							if(e.status==409){
 								//$.alert({title: 'Error', theme: 'light',  content: /*[[#{notebook.error.duplicate}]]*/ 'Error'	}	)
-								toastr.error('Error','');
+								toastr.error([[#{notebook.repeat.name}]]);
+								//toastr.error('Error ','');
 							}
 							else if (e.status==400){
 								//$.alert({title: 'Error', theme: 'light',  content: /*[[#{notebook.error.invalidformat}]]*/ 'Error'	}	)
@@ -463,8 +464,8 @@
 							console.log("Error importing note, message detail, " + " error: " + e.error + ", " + e.responseText);
 						}
 					)
-				
-				
+
+
 			}
 			function fileImportChange(jsonFile){
 				var reader = new FileReader();
@@ -478,46 +479,46 @@
 					else {
 						nameNotebook = JSON.parse(data.target.result).name;
 					}
-					
+
 					$('#newImportNotebook').val(nameNotebook);
 					$("#dataJSONImport").val(data.target.result);
-					
+
 				};
 			}
 			//]]>
-		</script>	
-	</head>	
-	
+		</script>
+	</head>
+
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-	
+
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-		
+
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>		
-			
+		<div class="clearfix"> </div>
+
 		<!-- BEGIN SIDEBAR -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-		
+
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-			
+
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
 				<!-- SEARCH FORM -->
 				<div id="searchFilter"  class="row" >
 					<form id="form_notebook" class="" role="form" method="get">
 						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-3 col-xs-12">														
+						<div class="col-md-3 col-sm-3 col-xs-12">
 							<div class="input-icon">
-								 
-									<i class="icon-search font-grey-mint"></i>									 														
+
+									<i class="icon-search font-grey-mint"></i>
 								<input id="notebook-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
 							</div>
 						</div>
@@ -525,35 +526,35 @@
 							<div class="pull-right">
 								<button type="button" id="reset_notebook" name="reset_notebook" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
 								<button type="button" id="search_notebook" name="search_notebook" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>	
-						</div>									
+							</div>
+						</div>
 					</form>
 				</div>
-				
+
 				<!-- BEGIN PAGE HEADER-->
-				
+
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li><a th:href="@{/notebooks/list}"> 
+						<li><a th:href="@{/notebooks/list}">
 							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{notebook.breadcrumb.manage}">Notebooks</span>
 							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{notebook.breadcrumb.list}">Notebooks</span>
-						</a></li>						
-					</ul>						
+						</a></li>
+					</ul>
 				</div>
 				<!-- END PAGE BAR -->
-				
+
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{notebook.template.list}">My Notebooks </span></h1>
-				<!-- END PAGE TITLE-->			
-				
+				<!-- END PAGE TITLE-->
+
 				<!-- MAIN ROW -->
-				<div class="row">					
+				<div class="row">
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
-									
+
 									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="caption-subject" th:text="#{notebook.breadcrumb.manage}"> Manage Notebooks </span>
 									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="caption-subject" th:text="#{notebook.breadcrumb.list}"> My Notebooks </span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
@@ -563,7 +564,7 @@
 								</div>
 								<div id="search-on-title" class="hide input-icon search-icon">
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>							
+								</div>
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
@@ -576,19 +577,21 @@
 										<button type="button" class="btn btn-outline blue dialog btn-no-border" onclick="javascript:showImportNotebookDialog()"><span th:text="#{notebook.importnotebook}"> Import </span></button>
 										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
 											<button type="button" class="btn btn-primary button-plus-create" onclick="javascript:showCreateNotebookDialog()" ><a><i class="icon-new" style="color:white;"></i></a></button>
-										</div>	
+										</div>
 								</div>
-								
+
 							</div>
 							<div th:fragment="domain" id="domain" class="portlet-body" style="display: block; height: auto;">
-								
+
 								<div class="row main">
-									
+
 									<!-- NOTEBOOK LIST -->
-									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+									<div class="col-md-12">
+										<div id="contenedor-tabla-outside" class="contiene hidden">
 											<div>
-												<!-- DATATABLE DANDELION CONF. -->												
+												<!-- VERSIONING -->
+												<th:block th:include="versioning/fragments/form-commit-special"></th:block>
+												<!-- DATATABLE DANDELION CONF. -->
 												<table id="notebooks" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
@@ -602,47 +605,47 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="notebook : ${lnt}">
-															<td>                                                                                                                                                       
+															<td>
 																<a th:text="${notebook.identification}" th:href="'/controlpanel/notebooks/app/#/notebook/'+@{${notebook.idzep}}"></a>
-															</td>  
+															</td>
 															<td th:text="${notebook.user.userId}"></td>
 															<!-- PUBLIC -->
 															<td class="text-left" th:if="${notebook.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
 															<td class="text-left" th:if="${!notebook.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${notebook.createdAt!=null}"><span th:text="${#dates.format(notebook.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(notebook.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${notebook.createdAt!=null}"><span th:text="${#dates.format(notebook.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(notebook.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${notebook.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${notebook.updatedAt!=null}"><span th:text="${#dates.format(notebook.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(notebook.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-left" th:if="${notebook.updatedAt!=null}"><span th:text="${#dates.format(notebook.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(notebook.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${notebook.updatedAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
-																	<span th:title="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/notebooks/app/#/notebook/${notebook.idzep}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span th:title="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/app/#/notebook/${notebook.idzep}/|} + '\');'"><i class="icon-edit"></i></span>
 
-																	<span th:title="#{notebook.clone}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{notebook.clone}" th:onclick="'javascript:showCloneNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\');'"><i class="icon-clone"></i></span>
-
+																	<span th:title="#{notebook.clone}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{notebook.clone}" th:attr="onclick='javascript:showCloneNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\');'"><i class="icon-clone"></i></span>
+																	<span th:if="${session.versioningEnabled}"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips btn-commit-changes" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{versioning.commit.changes}" th:attr="onclick='javascript:commitChanges(\''+${notebook.identification}+ '\', \'Notebook\');'"><i class="la la-git font-hg"></i></span>
 																	<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
-																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline " th:alt="#{notebook.rename}" th:onclick="'javascript:showRenameNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\',\'' + @{|${notebook.identification}|}+ '\');'"><i class="la la-i-cursor font-hg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.rename}" >Rename</span></span>
+																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline " th:alt="#{notebook.rename}" th:attr="onclick='javascript:showRenameNotebookDialog(\'' + @{|${notebook.idzep}|}+ '\',\'' + @{|${notebook.identification}|}+ '\');'"><i class="la la-i-cursor font-hg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.rename}" >Rename</span></span>
 																		</li>
 																		<li>
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.download}" target="_blank" th:onclick="'javascript:navigateUrlBlank(\'' + @{|/notebooks/exportNotebook/${notebook.idzep} |}+ '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{notebook.download}" >Download</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.download}" target="_blank" th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/exportNotebook/${notebook.idzep} |}+ '\');'"><i class="icon-download"></i><span class="span-title-three-dots-icons" th:text="#{notebook.download}" >Download</span></span>
 																		</li>
 																		<li>
-																			<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.share}" th:onclick="'javascript:navigateUrl(\'' + @{|/notebooks/share/${notebook.id}/|}+ '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{notebook.share}" >Share</span></span>
+																			<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.share}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/notebooks/share/${notebook.id}/|}+ '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{notebook.share}" >Share</span></span>
 																		</li>
 																		<li>
-																			<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.public}" th:onclick="'javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{notebook.public}" >Public</span></span>
-																			<span th:if="${notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.private}" th:onclick="'javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{notebook.private}" >Private</span></span>
+																			<span th:if="${!notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.public}" th:attr="onclick='javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{notebook.public}" >Public</span></span>
+																			<span th:if="${notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.private}" th:attr="onclick='javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{notebook.private}" >Private</span></span>
 																		</li>
 																		<li>
-																			<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.deploy}" th:onclick="'javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-hg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.deploy}" >Deploy</span></span>
+																			<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.deploy}" th:attr="onclick='javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-hg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.deploy}" >Deploy</span></span>
 																		</li>
 																		<li>
-																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" th:alt="#{gen.deleteBtn}" th:onclick="'javascript:showRemoveNotebookDialog(\'' + ${notebook.identification} + '\',\'' + ${notebook.idzep} + '\');'">
+																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" th:alt="#{gen.deleteBtn}" th:attr="onclick='javascript:showRemoveNotebookDialog(\'' + ${notebook.identification} + '\',\'' + ${notebook.idzep} + '\');'">
 																				<i class="icon-delete"></i>
 																				<span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span>
 																				<form th:id="command + ${notebook.identification}" action="list.html" th:action="@{|/notebooks/${notebook.identification}|}" method="post" style="display:none">
@@ -653,7 +656,7 @@
 																		</li>
 																	</ul>
 																	</span>
-																	<span th:if="!(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.download}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{notebook.download}" target="_blank" th:onclick="'javascript:navigateUrlBlank(\'' + @{|/notebooks/exportNotebook/${notebook.idzep} |}+ '\');'"><i class="icon-download"></i></span>
+																	<span th:if="!(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" th:title="#{notebook.download}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{notebook.download}" target="_blank" th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/exportNotebook/${notebook.idzep} |}+ '\');'"><i class="icon-download"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -684,62 +687,62 @@
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 													</div>
-												</div>					
-																																			
+												</div>
+
 											</div>
-										</div>											
+										</div>
 									</div>
 								</div>
 							</div>
-						</div><!-- END PORTLET BASIC LIGHT -->							
-				</div><!-- END MAIN ROW -->				
+						</div><!-- END PORTLET BASIC LIGHT -->
+				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->		
+		</div><!-- END CONTENT page-content-wrapper -->
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-	
+
 	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
-	
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
-	
+
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-	
+
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"	type="text/javascript"></script>
 	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}"	type="text/javascript"></script>
-	
-	<script th:inline="javascript">	
-	
+
+	<script th:inline="javascript">
+
 	// DATATABLES LANGUAJE FROM PROPERTIES.
-	datatable_lang = [[#{datatables_lang}]];	
+	datatable_lang = [[#{datatables_lang}]];
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
- 
+
 	</script>
-	
-	<script type="text/javascript">	
+
+	<script type="text/javascript">
 	var optionName = 'Notebooks';
-	
+
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateUrlBlank(url){ window.open(url, '_blank');};
-	
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-		
+
 		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			var column = $('#notebooks').DataTable().column( $(this).attr('data-column') ); 
+			e.preventDefault();
+			var column = $('#notebooks').DataTable().column( $(this).attr('data-column') );
 			column.visible( ! column.visible() );
-			//$(this).toggleClass('text-muted line-through');			
-		});	
+			//$(this).toggleClass('text-muted line-through');
+		});
 
 		// SEARCH FORM RESET
 		$('#reset_notebook').on('click',function(){
@@ -752,18 +755,18 @@
 			$('#notebooks').DataTable().column(0).search( $('#notebook-name').val()).draw();
 		});
 	});
-	 
+
 	// MAIN WHEN LOAD
-	$(window).load(function(){ 
+	$(window).load(function(){
 		var oTable = $('#notebooks').dataTable({
 	      "bAutoWidth": false
-	      });  
+	      });
 
 		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		// SHOW/HIDE DATATABLES COLUMN INIT 
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));
 		$('#dataTable-vis-toggle').removeClass('hide');
 
 		$('.dataTables_info').addClass('col-md-6 col-sm-6');
@@ -776,8 +779,8 @@
 		$('#notebooks_wrapper > div:nth-child(1)').hide();
 
 		$('.dataTables_paginate').attr('style', 'float:right !important');
-		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
-			 var $menu = $("ul", this);	        
+		$('.download-menu').parent().on('shown.bs.dropdown', function () {
+			 var $menu = $("ul", this);
 	         offset = $menu.offset();
 	         position = $menu.position();
 	         $('body').append($menu);
@@ -792,13 +795,12 @@
 	         $(this).append($(this).data("myDropdownMenu"));
 	         $(this).data("myDropdownMenu").removeAttr('style');
 	     });
-		
+
 		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
-	
+
 	//]]>
 	</script>
-	
+
 </body>
 </html>
-  

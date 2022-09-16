@@ -24,8 +24,11 @@ import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -60,13 +63,29 @@ public class PipelineUserAccess extends AuditableEntityWithUUID {
 	@Setter
 	private User user;
 
+	@JsonGetter("pipelineUserAccessType")
+	public String getpipelineUserAccessTypeJson() {
+		return pipelineUserAccessType.getId();
+	}
+
+	@JsonSetter("pipelineUserAccessType")
+	public void setpipelineUserAccessTypeJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final PipelineUserAccessType d = new PipelineUserAccessType();
+			d.setId(id);
+			pipelineUserAccessType = d;
+		}
+	}
+
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
+		if (this == o) {
 			return true;
-		if (!(o instanceof PipelineUserAccess))
+		}
+		if (!(o instanceof PipelineUserAccess)) {
 			return false;
-		PipelineUserAccess that = (PipelineUserAccess) o;
+		}
+		final PipelineUserAccess that = (PipelineUserAccess) o;
 		return getPipelineUserAccessType() != null
 				&& getPipelineUserAccessType().equals(that.getPipelineUserAccessType()) && getPipeline() != null
 				&& getPipeline().equals(that.getPipeline()) && getUser() != null && getUser().equals(that.getUser());
@@ -79,13 +98,13 @@ public class PipelineUserAccess extends AuditableEntityWithUUID {
 
 	@Override
 	public String toString() {
-		String space = "-";
-		StringBuilder sb = new StringBuilder();
-		sb.append(getPipeline());
+		final String space = "-";
+		final StringBuilder sb = new StringBuilder();
+		sb.append(getPipeline().getIdentification());
 		sb.append(space);
 		sb.append(getUser());
 		sb.append(space);
-		sb.append(getPipelineUserAccessType());
+		sb.append(getPipelineUserAccessType().getName());
 		return sb.toString();
 	}
 

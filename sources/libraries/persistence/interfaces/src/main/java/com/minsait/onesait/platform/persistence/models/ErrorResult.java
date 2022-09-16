@@ -82,7 +82,9 @@ public class ErrorResult  {
 		KUDU("Kudu"), 
 		IMPALA("Impala"),
 		API("Impala"), 
-		HIVE("Hive");
+		HIVE("Hive"),
+		TIMESCALE("TimescaleDB"),
+		PRESTO("Presto");
 		
 		private final String text;
 

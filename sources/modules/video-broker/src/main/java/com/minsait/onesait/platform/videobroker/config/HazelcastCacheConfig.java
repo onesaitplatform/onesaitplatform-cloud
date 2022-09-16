@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
+import com.hazelcast.collection.IQueue;
 import com.hazelcast.spring.cache.HazelcastCacheManager;
 
 import lombok.extern.slf4j.Slf4j;

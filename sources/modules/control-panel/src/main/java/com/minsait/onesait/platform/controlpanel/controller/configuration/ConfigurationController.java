@@ -33,7 +33,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.Configuration;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
+import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -53,6 +55,8 @@ public class ConfigurationController {
 	private UserService userService;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+	@Autowired
+	private OPResourceService resourceService;
 
 	@Value("${dynamic-load-balancer.enable}")
 	private Boolean nginxServiceEnabled;
@@ -107,7 +111,8 @@ public class ConfigurationController {
 			configuration = new Configuration();
 			configuration.setUser(userService.getUser(utils.getUserId()));
 		}
-		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())
+				|| resourceService.hasAccess(utils.getUserId(), configuration.getId(), ResourceAccessType.MANAGE)) {
 			model.addAttribute(CONFIGURATION_STR, configuration);
 			return CONF_CREATE;
 		} else {
@@ -122,7 +127,9 @@ public class ConfigurationController {
 		if (configuration != null) {
 
 			try {
-				if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+				if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())
+						|| resourceService.hasAccess(utils.getUserId(), configuration.getId(),
+								ResourceAccessType.MANAGE)) {
 					configurationService.updateConfiguration(configuration);
 				} else {
 					return "error/403";
@@ -156,7 +163,8 @@ public class ConfigurationController {
 		if (configuration == null)
 			return "error/404";
 
-		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())
+				|| resourceService.hasAccess(utils.getUserId(), configuration.getId(), ResourceAccessType.VIEW)) {
 			model.addAttribute(CONFIGURATION_STR, configuration);
 			return "configurations/show";
 		} else {
@@ -172,7 +180,8 @@ public class ConfigurationController {
 		}
 		if (configuration == null)
 			return "error/404";
-		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())) {
+		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())
+				|| resourceService.hasAccess(utils.getUserId(), configuration.getId(), ResourceAccessType.MANAGE)) {
 			configurationService.deleteConfiguration(id);
 			return REDIRECT_CONF_LIST;
 		} else {

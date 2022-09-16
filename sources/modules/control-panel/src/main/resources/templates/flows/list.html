@@ -235,7 +235,8 @@
 												<div dt:conf="domains">
 												  	<div dt:confType="callback" dt:type="init" dt:function="initCompleteCallback"></div>
 												</div><!-- // DATATABLE initCompleteCallback (DT function) -->
-																									
+												<!-- VERSIONING -->
+												<th:block th:include="versioning/fragments/form-commit-special"></th:block>
 												<!-- DATATABLE DANDELION CONF. -->												
 												<table id="domains" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/flows/data}"
 													dt:reloadSelector="#btn-domains-reload" dt:reloadFunction="reloadDomainsTable"
@@ -272,23 +273,23 @@
 															 
 															<td>
 																<div class="grupo-iconos text-center">
-																	<span th:if="${domain.state == 'START'}" th:title="#{gen.stop}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.stop}" th:onclick="'javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-stop"></i></span>
-																	<span th:if="${domain.state == null OR domain.state == 'STOP' }" th:title="#{domain.start}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{domain.start}" th:onclick="'javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-play"></i></span>
-																	<span th:if="${domain.state == 'START' AND flowEngineActive == true}"  th:onclick="'javascript:navigateUrl(\'' + @{|/flows/show/${domain.domain}|} + '\');'"   th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
+																	<span th:if="${domain.state == 'START'}" th:title="#{gen.stop}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.stop}" th:attr="onclick='javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-stop"></i></span>
+																	<span th:if="${domain.state == null OR domain.state == 'STOP' }" th:title="#{domain.start}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{domain.start}" th:attr="onclick='javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-play"></i></span>
+																	<span th:if="${domain.state == 'START' AND flowEngineActive == true}"  th:attr="data-id=${domain.domain},onclick='javascript:navigateUrl(\'' + @{|/flows/show/${domain.domain}|} + '\');'"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
 																	<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive==false}"  disabled="true"  th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
-																	
+																	<span th:if="${session.versioningEnabled}"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips btn-commit-changes" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{versioning.commit.changes}" th:onclick="'javascript:commitChanges(\''+@{|${domain.domain}|}+ '\', \'FlowDomain\');'"><i class="la la-git font-hg"></i></span>
 																	<span class="dropdown" > 																
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" style="margin-right: 0px" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">																			
 																			<li>
-																				<span th:onclick="'javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>																	
+																				<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>																	
 																			</li>
 																			<li>
-																			    <span th:if="${domain.state == 'START' AND flowEngineActive == true}" th:onclick="'javascript:navigateUrl(\'' + @{|/flows/monitor/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
+																			    <span th:if="${domain.state == 'START' AND flowEngineActive == true}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/monitor/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
 																				<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive == false}"    ><span disabled="true" th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
 																			</li>
 																			<li>
-																				<span  th:attr="data-id=${domain.domain}" th:onclick="'javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
+																				<span  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
 																			</li>
 																		</ul>
 																	</span>
@@ -384,7 +385,8 @@
 			stopped:[[#{domain.stopped}]],
 			inactive:[[#{gen.inactive}]],
 			active:[[#{gen.active}]],
-			started:[[#{domain.started}]]
+			started:[[#{domain.started}]],
+			commitChanges: [[#{versioning.commit.changes}]]
 		
 		};
  
@@ -394,7 +396,7 @@
 	var optionName = 'FLOWS';
 	
 
-	function navigateUrl(url){ debugger; window.location.href = url;	}
+	function navigateUrl(url){ window.location.href = url;	}
 	
 	var  deleteFlowDomainConfirmation = function (id){
 		
@@ -588,7 +590,7 @@
 		return null;
 	}
 	
-	
+	var versioningEnabled = [[${session.versioningEnabled}]];
 	function createTrContent(data){		
 
 		var html = '<td class="text-left ">'+data.domain+'</td>';
@@ -630,6 +632,9 @@
 		}else{
 			html +='<span title="'+constants.genView+'" onclick="navigateUrl(\'/controlpanel/flows/show/'+data.domain+'\' );" data-id="'+data.domain+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="    margin-right: 2px; margin-left: 2px;" data-container="body" data-placement="bottom" ><i class="la la-eye font-hg"></i></span>';
 		}
+		if(versioningEnabled){
+			html +='<span title="'+constants.commitChanges+'" data-id="'+data.domain+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips btn-commit-changes" style="    margin-right: 2px; margin-left: 2px;" data-container="body" data-placement="bottom" onclick="javascript:commitChanges(\''+data.domain+ '\',\'FlowDomain\');"><i class="la la-git font-hg"></i></span>';
+		}
 		/*show monitor delete*/
 		
 			html +='<span class="dropdown">';
@@ -667,8 +672,7 @@
 		$('.tooltip').tooltip('destroy');
 		$('.tooltips').tooltip();
 	}
-	
-	
+
 	//]]>
 	</script>
 	

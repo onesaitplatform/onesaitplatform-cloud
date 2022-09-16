@@ -68,7 +68,11 @@ $(document).ready(function() {
 
             if (this.get('root')) {
             	var comboColecciones=document.getElementById("collections");
-                id = comboColecciones.options[comboColecciones.selectedIndex].value;
+            	if (comboColecciones != null) {
+                	id = comboColecciones.options[comboColecciones.selectedIndex].value;
+                } else {
+                	id = "";
+                }
             } else if (!this.get('key')) {
                 // Items and Extensions don't have keys.
                 if ('extensions' == aType) {

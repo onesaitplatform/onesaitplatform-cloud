@@ -23,37 +23,48 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class GadgetDTOCreate {
-	
-	
+
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true) 
+	@ApiModelProperty(required = true)
 	private String identification;
-	
+
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true) 
+	@ApiModelProperty(required = true)
 	private String description;
-	
+
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true) 
+	@ApiModelProperty(required = true)
 	private GadgetDatasourceDTO datasource;
-	
+
 	@Lob
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true) 
+	@ApiModelProperty(required = true)
 	private String config;
-	
+
 	@Lob
 	@Getter
 	@Setter
 	private List<String> gadgetMeasures;
-	
+
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true) 
+	@ApiModelProperty(required = true)
 	private String type;
+
+	@Getter
+	@Setter
+	private Boolean instance;
+	
+    @Getter
+    @Setter
+    private String category;
+
+    @Getter
+    @Setter
+    private String subcategory;
 
 }

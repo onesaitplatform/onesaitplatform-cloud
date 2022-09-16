@@ -20,7 +20,6 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class DefaultErrorController implements ErrorController {
 
-	@Override
 	public String getErrorPath() {
 		return "/error";
 	}

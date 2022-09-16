@@ -73,5 +73,10 @@ public interface InternationalizationRepository extends JpaRepository<Internatio
 			String description, User user);
 
 	public List<Internationalization> findByIdentificationAndDescription(String identification, String description);
+	
+    @Query("SELECT i FROM Internationalization i " +
+    		"WHERE i.id IN (SELECT ii.i18n.id from I18nResources ii WHERE ii.opResource.id=:resourceId) " +
+    		"ORDER BY i.identification ASC")
+	public List<Internationalization> findByOPResourceId(@Param ("resourceId") String resrouceId);
 
 }

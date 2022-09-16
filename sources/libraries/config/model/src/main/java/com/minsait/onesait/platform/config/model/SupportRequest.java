@@ -77,6 +77,7 @@ public class SupportRequest extends AuditableEntityWithUUID {
 	@Column(name = "JSON", nullable = false)
 	@NotNull
 	@Lob
+	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	@JsonRawValue
 	@Getter
 	@Setter

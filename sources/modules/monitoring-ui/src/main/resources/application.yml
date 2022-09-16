@@ -6,8 +6,8 @@ server: ## Config Web Server
     #  key-store-password: Changed!
    #   key-store: classpath:keystore.jks
     #  key-alias: tomcat
-   session.cookie.name : APPSESSIONID
-   max-http-header-size: 10000000
+   #session.cookie.name : APPSESSIONID
+   max-http-header-size: 20000
    port: 18100
    servlet.contextPath: /monitoring
    tomcat:
@@ -53,6 +53,10 @@ onesaitplatform: #Config onesait Platform specific
 
 ## Config Reference      
 spring: ## General Config  
+   mvc.hiddenmethod.filter.enabled: true
+   main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
    application.name: onesaitplatform-monitoring-ui
    boot.admin: #Spring Boot Admin Config    
       routes.endpoints: env,metrics,trace,dump,jolokia,info,configprops,logfile,refresh,loggers
@@ -66,6 +70,9 @@ spring: ## General Config
       notify.mail.text: "ENV:#{onesaitplatform.environment.name} App:#{application.name} (#{application.id}) is #{to.status}"
       ui.title: Monitoring UI
       ui.brand: "<img src='assets/img/icon-spring-boot-admin.svg'><span>Monitoring UI</span>"
+      hazelcast.enabled: false
+      instance-auth.default-user-name: operations
+      instance-auth.default-password: changeIt2019! 
       #Not autoregister as Spring Boot Admin client
       # username: operations
       # password: changeIt!
@@ -113,10 +120,10 @@ security:
 
 ## LOGGING CONF
 logging:
-   path: ./target/ 
-   file: ${spring.application.name}
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework: ERROR
-      de.codecentric: ERROR
-      root: ERROR
+      de.codecentric: WARN
+      root: INFO

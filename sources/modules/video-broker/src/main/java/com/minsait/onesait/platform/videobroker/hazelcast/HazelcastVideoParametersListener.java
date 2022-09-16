@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 
-import com.hazelcast.core.IQueue;
+import com.hazelcast.collection.IQueue;
 import com.minsait.onesait.platform.videobroker.service.CaptureManager;
 
 import lombok.extern.slf4j.Slf4j;

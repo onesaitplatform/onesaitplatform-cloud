@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,93 +30,92 @@ public class ApiDTO implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "API Identification")
+	@Schema(description= "API Identification")
 	@Getter
 	@Setter
 	private String identification;
 
-
-	@ApiModelProperty(value = "API Version Number")
+	@Schema(description= "API Version Number")
 	@Getter
 	@Setter
 	private Integer version;
 
-	@ApiModelProperty(value = "API Type")
+	@Schema(description= "API Type")
 	@Getter
 	@Setter
 	private String type;
 
-	@ApiModelProperty(value = "API Public/Private")
+	@Schema(description= "API Public/Private")
 	@Getter
 	@Setter
 	private Boolean isPublic;
 
-	@ApiModelProperty(value = "API Category")
+	@Schema(description= "API Category")
 	@Getter
 	@Setter
 	private String category;
 
-	@ApiModelProperty(value = "API External")
+	@Schema(description= "API External")
 	@Getter
 	@Setter
 	private Boolean externalApi;
 
-	@ApiModelProperty(value = "Ontology Identification for OntologyAPI")
+	@Schema(description= "Ontology Identification for OntologyAPI")
 	@Getter
 	@Setter
 	private String ontologyId;
 
-	@ApiModelProperty(value = "QPS API limit")
+	@Schema(description= "QPS API limit")
 	@Getter
 	@Setter
 	private Integer apiLimit;
 
-	@ApiModelProperty(value = "Endpoint for API Invocation")
+	@Schema(description= "Endpoint for API Invocation")
 	@Getter
 	@Setter
 	private String endpoint;
 
-	@ApiModelProperty(value = "External Endpoint for invoking API")
+	@Schema(description= "External Endpoint for invoking API")
 	@Getter
 	@Setter
 	private String endpointExt;
 
-	@ApiModelProperty(value = "API Description")
+	@Schema(description= "API Description")
 	@Getter
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Tags Meta-inf for API")
+	@Schema(description= "Tags Meta-inf for API")
 	@Getter
 	@Setter
 	private String metainf;
 
-	@ApiModelProperty(value = "Image Type")
+	@Schema(description= "Image Type")
 	@Getter
 	@Setter
 	private String imageType;
 
-	@ApiModelProperty(value = "API Status")
+	@Schema(description= "API Status")
 	@Getter
 	@Setter
 	private ApiStates status;
 
-	@ApiModelProperty(value = "creation Date")
+	@Schema(description= "creation Date")
 	@Getter
 	@Setter
 	private String creationDate;
 
-	@ApiModelProperty(value = "API Propietary")
+	@Schema(description= "API Propietary")
 	@Getter
 	@Setter
 	private String userId;
 
-	@ApiModelProperty(value = "API Operations")
+	@Schema(description= "API Operations")
 	@Getter
 	@Setter
 	private ArrayList<OperacionDTO> operations;
 
-	@ApiModelProperty(value = "API Authentication")
+	@Schema(description= "API Authentication")
 	@Getter
 	@Setter
 	private ArrayList<AutenticacionAtribDTO> authentication;

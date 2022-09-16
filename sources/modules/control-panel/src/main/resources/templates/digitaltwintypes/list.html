@@ -156,21 +156,21 @@
 														<!-- TYPE -->
 														<td class="text-left" th:title="${type.type}" th:text="${type.type}"></td>
 														<!-- DATE -->
-														<td class="text-left" th:if="${type.createdAt!=null}"><span th:text="${#dates.format(type.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(type.createdAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-left" th:if="${type.createdAt!=null}"><span th:text="${#dates.format(type.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(type.createdAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-left" th:if="${type.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE -->
-														<td class="text-left" th:if="${type.updatedAt!=null}"><span th:text="${#dates.format(type.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(type.updatedAt,'dd/MM/YYYY')}" ></span></td>
+														<td class="text-left" th:if="${type.updatedAt!=null}"><span th:text="${#dates.format(type.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(type.updatedAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-left" th:if="${type.updatedAt==null}" th:text="'---'"></td>
 														<!-- OPTIONS -->
 														<td class="icon text-center" style="white-space: nowrap; width:107px">
 															<div class="grupo-iconos">
 																<!-- VIEW -->															
-																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/digitaltwintypes/show/${type.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/digitaltwintypes/show/${type.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																		
 																<!-- EDIT -->
-																<span  th:if="${#authentication.name} == ${type.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/digitaltwintypes/update/${type.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<span  th:if="${#authentication.name} == ${type.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/digitaltwintypes/update/${type.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																<!-- DELETE -->
-															    <span th:if="${#authentication.name} == ${type.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDigitalTwinType(\'' + ${type.id} + '\');'"><i class="icon-delete"></i></span>
+															    <span th:if="${#authentication.name} == ${type.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteDigitalTwinType(\'' + ${type.id} + '\');'"><i class="icon-delete"></i></span>
 															
 															</div>
 														</td>

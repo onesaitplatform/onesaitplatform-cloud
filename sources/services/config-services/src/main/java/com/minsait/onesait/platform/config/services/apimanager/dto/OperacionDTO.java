@@ -19,7 +19,7 @@ import java.util.List;
 
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,42 +27,42 @@ public class OperacionDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "Identificación de la Operacion")
+	@Schema(description= "Identificación de la Operacion")
 	@Getter
 	@Setter
 	private String identification;
 
-	@ApiModelProperty(value = "Descripción de la Operacion")
+	@Schema(description= "Descripción de la Operacion")
 	@Getter
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Tipo de Operacion")
+	@Schema(description= "Tipo de Operacion")
 	@Getter
 	@Setter
 	private Type operation;
 
-	@ApiModelProperty(value = "Enpoint Particular de la Operacion")
+	@Schema(description= "Enpoint Particular de la Operacion")
 	@Getter
 	@Setter
 	private String endpoint;
 
-	@ApiModelProperty(value = "Path de la Operacion")
+	@Schema(description= "Path de la Operacion")
 	@Getter
 	@Setter
 	private String path;
 
-	@ApiModelProperty(value = "Headers de la Operacion")
+	@Schema(description= "Headers de la Operacion")
 	@Getter
 	@Setter
 	private List<ApiHeaderDTO> headers;
 
-	@ApiModelProperty(value = "QueryParams de la Operacion")
+	@Schema(description= "QueryParams de la Operacion")
 	@Getter
 	@Setter
 	private List<ApiQueryParameterDTO> queryParams;
 
-	@ApiModelProperty(value = "Postprocesado de la Operacion")
+	@Schema(description= "Postprocesado de la Operacion")
 	@Getter
 	@Setter
 	private String postProcess;

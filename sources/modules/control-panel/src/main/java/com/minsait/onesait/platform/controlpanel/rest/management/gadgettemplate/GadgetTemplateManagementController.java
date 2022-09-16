@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,22 +31,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.minsait.onesait.platform.config.model.Category;
+import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
+import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.category.CategoryService;
+import com.minsait.onesait.platform.config.services.categoryrelation.CategoryRelationService;
+import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
-import com.minsait.onesait.platform.controlpanel.rest.management.gadgettemplate.model.GadgetTemplateDTO;
+import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateDTO;
+import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateExportDto;
+import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateImportResponsetDto;
+import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
+import com.minsait.onesait.platform.controlpanel.rest.management.gadgettemplate.model.GadgetTemplateDTOList;
 import com.minsait.onesait.platform.controlpanel.rest.management.gadgettemplate.model.GadgetTemplateDTOCreate;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
-@Api(value = "Gadget templates management", tags = { "Gadget Templates management service" })
+
+
+@Tag(name = "Gadget templates management")
 @RestController
 @RequestMapping("api/gadgettemplates")
 public class GadgetTemplateManagementController {
@@ -55,23 +73,32 @@ public class GadgetTemplateManagementController {
 
 	@Autowired
 	UserRepository userRepo;
-
+	
+	@Autowired
+	CategoryRelationService categoryRelationService;
+	
+	@Autowired
+	CategoryService categoryService;
+	
+	@Autowired
+	SubcategoryService subcategoryService;
+	
 	@Autowired
 	AppWebUtils utils;
 
-	@ApiOperation(value = "Get user gadget templates")
-	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
+	@Operation(summary = "Get user gadget templates")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
 	@GetMapping
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getUserTemplates() {
 
 		final List<GadgetTemplate> userGadgets = templatesService.getUserGadgetTemplate(utils.getUserId());
 
-		final List<GadgetTemplateDTO> dtos = new ArrayList<>();
+		final List<GadgetTemplateDTOList> dtos = new ArrayList<>();
 		if (userGadgets != null) {
-			new ArrayList<GadgetTemplateDTO>(userGadgets.size());
+			new ArrayList<GadgetTemplateDTOList>(userGadgets.size());
 		} else {
-			new ArrayList<GadgetTemplateDTO>(0);
+			new ArrayList<GadgetTemplateDTOList>(0);
 		}
 		for (GadgetTemplate t : userGadgets) {
 			dtos.add(toGadgetTemplateDTO(t));
@@ -79,11 +106,11 @@ public class GadgetTemplateManagementController {
 		return new ResponseEntity<>(dtos, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Get gadget template by identification")
+	@Operation(summary = "Get gadget template by identification")
 	@GetMapping(value = "/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> getUserTemplates(
-			@ApiParam(value = "identification of the template", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "identification of the template", required = true) @PathVariable("identification") String identification) {
 
 		final GadgetTemplate template = templatesService.getGadgetTemplateByIdentification(identification);
 
@@ -99,7 +126,7 @@ public class GadgetTemplateManagementController {
 
 	}
 
-	@ApiOperation(value = "Create gadget template")
+	@Operation(summary = "Create gadget template")
 	@PostMapping
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> createGadgetTemplate(@Valid @RequestBody GadgetTemplateDTOCreate dto) {
@@ -118,12 +145,12 @@ public class GadgetTemplateManagementController {
 					HttpStatus.BAD_REQUEST);
 		}
 
-		final GadgetTemplate template = toGadgetTemplate(dto);
+		final GadgetTemplateDTO template = toGadgetTemplate(dto);
 		templatesService.createGadgetTemplate(template);
 		return new ResponseEntity<>(dto, HttpStatus.OK);
 	}
 
-	@ApiOperation(value = "Update gadget template")
+	@Operation(summary = "Update gadget template")
 	@PutMapping
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> updateGadgetTemplate(@Valid @RequestBody GadgetTemplateDTOCreate dto) {
@@ -131,7 +158,7 @@ public class GadgetTemplateManagementController {
 		if (dto.getIdentification() == null || dto.getIdentification().isEmpty())
 			return new ResponseEntity<>("Missing required fields. Required = [identification]", HttpStatus.BAD_REQUEST);
 
-		final GadgetTemplate existing = templatesService.getGadgetTemplateByIdentification(dto.getIdentification());
+		final GadgetTemplateDTO existing = templatesService.getGadgetTemplateDTOByIdentification(dto.getIdentification());
 		if (existing == null) {
 			return new ResponseEntity<>(
 					String.format("The gadget template with identification %s does not exist", dto.getIdentification()),
@@ -143,15 +170,19 @@ public class GadgetTemplateManagementController {
 		}
 
 		copyProperties(existing, dto);
-		templatesService.updateGadgetTemplate(existing);
-		return new ResponseEntity<>(dto, HttpStatus.OK);
+		try {
+			templatesService.updateGadgetTemplate(existing);
+			return new ResponseEntity<>(dto, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 
-	@ApiOperation(value = "Delete template")
+	@Operation(summary = "Delete template")
 	@DeleteMapping(value = "/{identification}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> deleteGadgetTemplate(
-			@ApiParam(value = "identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "identification", required = true) @PathVariable("identification") String identification) {
 
 		GadgetTemplate gT = templatesService.getGadgetTemplateByIdentification(identification);
 		if (gT == null) {
@@ -167,9 +198,52 @@ public class GadgetTemplateManagementController {
 		return new ResponseEntity<>("The gadget template has been removed", HttpStatus.OK);
 	}
 
-	private GadgetTemplateDTO toGadgetTemplateDTO(GadgetTemplate template) {
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=GadgetTemplateExportDto.class))))
+	@Operation(summary = "Export gadget template by identification")
+	@GetMapping("/export/{identification}")
+	public ResponseEntity<?> exportGadgetTemplate(
+			@Parameter(description= "Gadget Template identification", required = true) @PathVariable("identification") String identification) {
+		GadgetTemplateExportDto gadgetTemplateExportDto;
+		try {
+			gadgetTemplateExportDto = templatesService.exportGradgetTemplate(identification, utils.getUserId());
+		} catch (GadgetTemplateServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(gadgetTemplateExportDto, HttpStatus.OK);
+	}
 
-		GadgetTemplateDTO dto = new GadgetTemplateDTO();
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=List.class))))
+	@Operation(summary = "Export gadget template by user")
+	@GetMapping("/export")
+	public ResponseEntity<?> exportGadgetTemplateByUser() {
+		List<GadgetTemplateExportDto> gadgetTemplatesExportDto;
+		try {
+			gadgetTemplatesExportDto = templatesService.exportGradgetTemplateByUser(utils.getUserId());
+		} catch (GadgetTemplateServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(gadgetTemplatesExportDto, HttpStatus.OK);
+	}
+
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=List.class))))
+	@Operation(summary = "Import gadget templates")
+	@PostMapping("/import")
+	public ResponseEntity<?> importDashboard(
+			@Parameter(description= "Overwrite Gadget Template if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "GadgetTemplateExportDto", required = true) @Valid @RequestBody List<GadgetTemplateExportDto> gadgetTemplatesExportDto,
+			Errors errors) {
+		try {
+			List<GadgetTemplateImportResponsetDto> result = templatesService
+					.importGradgetTemplateByUser(utils.getUserId(), gadgetTemplatesExportDto, overwrite);
+			return new ResponseEntity<>(result, HttpStatus.OK);
+		} catch (GadgetTemplateServiceException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	private GadgetTemplateDTOList toGadgetTemplateDTO(GadgetTemplate template) {
+
+		GadgetTemplateDTOList dto = new GadgetTemplateDTOList();
 		dto.setIdentification(template.getIdentification());
 		dto.setDescription(template.getDescription());
 		dto.setHtml(template.getTemplate());
@@ -177,10 +251,25 @@ public class GadgetTemplateManagementController {
 		dto.setPublic(template.isPublic());
 		dto.setUser(template.getUser().getUserId());
 		dto.setType(template.getType());
+		dto.setConfig(template.getConfig());
+		
+		final CategoryRelation cr = categoryRelationService.getByIdType(template.getId());
+		if (cr != null) {
+			final Category c = categoryService.getCategoryById(cr.getCategory());
+			if (c != null)
+				dto.setCategory(c.getIdentification());
+			final Subcategory s = subcategoryService.getSubcategoryById(cr.getSubcategory());
+			if (s != null)
+				dto.setSubcategory(s.getIdentification());
+		}
+		
+		dto.setCreatedAt(template.getCreatedAt().toString());
+		dto.setUpdatedAt(template.getUpdatedAt().toString());
+		
 		return dto;
 	}
 
-	private void copyProperties(GadgetTemplate template, GadgetTemplateDTOCreate dto) {
+	private void copyProperties(GadgetTemplateDTO template, GadgetTemplateDTOCreate dto) {
 		if (dto.getDescription() == null) {
 			template.setDescription("");
 		} else {
@@ -189,10 +278,12 @@ public class GadgetTemplateManagementController {
 		template.setPublic(dto.isPublic());
 		template.setTemplate(dto.getHtml());
 		template.setTemplateJS(dto.getJs());
+		template.setCategory(dto.getCategory());
+		template.setSubcategory(dto.getSubcategory());
 	}
 
-	private GadgetTemplate toGadgetTemplate(GadgetTemplateDTOCreate dto) {
-		final GadgetTemplate template = new GadgetTemplate();
+	private GadgetTemplateDTO toGadgetTemplate(GadgetTemplateDTOCreate dto) {
+		final GadgetTemplateDTO template = new GadgetTemplateDTO();
 		template.setIdentification(dto.getIdentification());
 		template.setDescription(dto.getDescription() == null ? "" : dto.getDescription());
 		template.setType(dto.getType() == null ? "angularJS" : dto.getType());
@@ -200,6 +291,8 @@ public class GadgetTemplateManagementController {
 		template.setTemplate(dto.getHtml());
 		template.setTemplateJS(dto.getJs());
 		template.setUser(userRepo.findByUserId(utils.getUserId()));
+		template.setCategory(dto.getCategory());
+		template.setSubcategory(dto.getSubcategory());
 		return template;
 	}
 }

@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +23,7 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface OntologyVirtualRepository extends JpaRepository<OntologyVirtual, String> {
 
@@ -38,4 +41,9 @@ public interface OntologyVirtualRepository extends JpaRepository<OntologyVirtual
 
 	@Query("SELECT ov.ontologyId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
 	Ontology findOntology(@Param("ontologyId") String ontologyId);
+	
+	List<OntologyVirtual> findAll();
+	
+	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.user=:user")	
+	List <OntologyVirtual> findByUser(@Param("user") User user);
 }

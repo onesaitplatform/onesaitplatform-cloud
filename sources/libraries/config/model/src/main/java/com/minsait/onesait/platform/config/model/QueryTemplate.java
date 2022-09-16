@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
@@ -56,6 +57,7 @@ public class QueryTemplate extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "QUERY_SELECTOR")
 	@NotNull
 	private String querySelector;
@@ -63,6 +65,7 @@ public class QueryTemplate extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	@Lob
+	@Type(type = "org.hibernate.type.TextType")
 	@Column(name = "QUERY_GENERATOR")
 	@NotNull
 	private String queryGenerator;
@@ -76,7 +79,7 @@ public class QueryTemplate extends AuditableEntityWithUUID {
 
 	@Getter
 	@Setter
-	@Column(name = "TYPE")
+	@Column(name = "QUERY_TYPE")
 	@NotNull
 	private QueryType type;
 

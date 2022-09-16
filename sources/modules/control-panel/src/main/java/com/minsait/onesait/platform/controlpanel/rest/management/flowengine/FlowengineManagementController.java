@@ -67,21 +67,24 @@ import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineService;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
 import com.minsait.onesait.platform.libraries.flow.engine.exception.FlowEngineServiceException;
 import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "FlowEngine  Management", tags = { "FlowEngine management service" })
+@Tag(name = "FlowEngine  Management")
 @RestController
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api/flowengine")
 @Slf4j
 public class FlowengineManagementController {
@@ -134,12 +137,12 @@ public class FlowengineManagementController {
 				avoidSSLVerification);
 	}
 
-	@ApiOperation(value = "Export Flow Domain by identification (Administrator only)")
+	@Operation(summary = "Export Flow Domain by identification (Administrator only)")
 	@GetMapping("/export/domain/{identification}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> exportFlowDomainByIdentification(
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("identification") String flowDomainIdentification) {
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("identification") String flowDomainIdentification) {
 
 		final FlowDomain domain = flowDomainService.getFlowDomainByIdentification(flowDomainIdentification);
 		if (domain != null) {
@@ -151,9 +154,9 @@ public class FlowengineManagementController {
 
 	}
 
-	@ApiOperation(value = "List all flows for a given domain")
+	@Operation(summary = "List all flows for a given domain")
 	@GetMapping("/domain/{identification}/flows")
-	@ApiResponses(@ApiResponse(response = FlowDTO[].class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=FlowDTO[].class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<List<FlowDTO>> listFlows(@PathVariable("identification") String identification) {
 		final FlowDomain flowDomain = flowDomainService.getFlowDomainByIdentification(identification);
 		if (flowDomain == null) {
@@ -171,13 +174,13 @@ public class FlowengineManagementController {
 		return ResponseEntity.ok().body(flows);
 	}
 
-	@ApiOperation(value = "Exports a flow (NodeRED tab) from the desired FlowDomain (Administrator only)")
+	@Operation(summary = "Exports a flow (NodeRED tab) from the desired FlowDomain (Administrator only)")
 	@GetMapping("/export/{domainIdentification}/flow/{noderedFlowId}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> getFlowByUserAndId(
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("domainIdentification") String flowDomainIdentification,
-			@ApiParam(value = "NodeRED Flow internal Id", required = true) @PathVariable("noderedFlowId") String noderedFlowId) {
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("domainIdentification") String flowDomainIdentification,
+			@Parameter(description= "NodeRED Flow internal Id", required = true) @PathVariable("noderedFlowId") String noderedFlowId) {
 		final FlowDomain domain = flowDomainService.getFlowDomainByIdentification(flowDomainIdentification);
 		if (domain != null) {
 			final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
@@ -206,9 +209,9 @@ public class FlowengineManagementController {
 
 	}
 
-	@ApiOperation(value = "Export Flow Domain based on the user.")
+	@Operation(summary = "Export Flow Domain based on the user.")
 	@GetMapping("/export/domain")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<String> exportFlowDomainByUser() {
 		final List<FlowDomain> domainList = flowDomainService
 				.getFlowDomainByUser(userService.getUser(utils.getUserId()));
@@ -252,11 +255,11 @@ public class FlowengineManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Exports a flow (NodeRED tab) from your own domain by NodeRED ID")
+	@Operation(summary = "Exports a flow (NodeRED tab) from your own domain by NodeRED ID")
 	@GetMapping("/export/flow/{noderedId}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<String> getFlowByUserAndId(
-			@ApiParam(value = "NodeRED Flow internal Id", required = true) @PathVariable("noderedId") String noderedId) {
+			@Parameter(description= "NodeRED Flow internal Id", required = true) @PathVariable("noderedId") String noderedId) {
 		final List<FlowDomain> domainList = flowDomainService
 				.getFlowDomainByUser(userService.getUser(utils.getUserId()));
 		final Optional<FlowDomain> domain = domainList.stream()
@@ -288,11 +291,11 @@ public class FlowengineManagementController {
 
 	}
 
-	@ApiOperation(value = "Delete one Flow from the Domain based on the user.")
+	@Operation(summary = "Delete one Flow from the Domain based on the user.")
 	@DeleteMapping("/delete/flow/{noderedId}")
-	@ApiResponses(@ApiResponse(response = OntologySimplified.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=OntologySimplified.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<String> delelteFlowById(
-			@ApiParam(value = "NodeRED Flow internal Id", required = true) @PathVariable("noderedId") String noderedId) {
+			@Parameter(description= "NodeRED Flow internal Id", required = true) @PathVariable("noderedId") String noderedId) {
 		final List<FlowDomain> domainList = flowDomainService
 				.getFlowDomainByUser(userService.getUser(utils.getUserId()));
 		final Optional<FlowDomain> domain = domainList.stream()
@@ -305,13 +308,13 @@ public class FlowengineManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Delete one Flow from the desired Domain (administrator only).")
+	@Operation(summary = "Delete one Flow from the desired Domain (administrator only).")
 	@DeleteMapping("/delete/{domainIdentification}/flow/{noderedId}")
-	@ApiResponses(@ApiResponse(response = OntologySimplified.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=OntologySimplified.class)), responseCode = "200", description = "OK"))
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> delelteFlowByDomainAndFlowId(
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("domainIdentification") String flowDomainIdentification,
-			@ApiParam(value = "NodeRED Flow internal Id", required = true) @PathVariable("noderedId") String noderedId) {
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("domainIdentification") String flowDomainIdentification,
+			@Parameter(description= "NodeRED Flow internal Id", required = true) @PathVariable("noderedId") String noderedId) {
 		final FlowDomain domain = flowDomainService.getFlowDomainByIdentification(flowDomainIdentification);
 
 		if (domain != null) {
@@ -344,54 +347,54 @@ public class FlowengineManagementController {
 		}
 	}
 
-	@ApiOperation(value = "Import Flow Domain based on the user.")
+	@Operation(summary = "Import Flow Domain based on the user.")
 	@PostMapping("/import/{domainName}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<String> importFlowDomainByUser(
-			@ApiParam(value = "data", required = true) @Valid @RequestBody String json,
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("domainName") String domainName,
-			@ApiParam(value = "Overwrite existing domain for user", required = true) @RequestParam("overwriteDomain") boolean overwriteDomain) {
+			@Parameter(description= "data", required = true) @Valid @RequestBody String json,
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("domainName") String domainName,
+			@Parameter(description= "Overwrite existing domain for user", required = true) @RequestParam("overwriteDomain") boolean overwriteDomain) {
 		return importDomainToUser(utils.getUserId(), json, null, domainName, overwriteDomain);
 	}
 
-	@ApiOperation(value = "Import Flow Domain to the desired user (administrator only).")
+	@Operation(summary = "Import Flow Domain to the desired user (administrator only).")
 	@PostMapping("/import/domain/{domainName}/user/{user}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> importFlowDomainToUserAdmin(
-			@ApiParam(value = "data", required = true) @Valid @RequestBody String json,
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("domainName") String domainName,
-			@ApiParam(value = "Platform User", required = true) @PathVariable("user") String user,
-			@ApiParam(value = "Overwrite existing domain for user", required = true) @RequestParam("overwriteDomain") boolean overwriteDomain) {
+			@Parameter(description= "data", required = true) @Valid @RequestBody String json,
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("domainName") String domainName,
+			@Parameter(description= "Platform User", required = true) @PathVariable("user") String user,
+			@Parameter(description= "Overwrite existing domain for user", required = true) @RequestParam("overwriteDomain") boolean overwriteDomain) {
 
 		return importDomainToUser(user, json, null, domainName, overwriteDomain);
 	}
 
-	@ApiOperation(value = "Import Flow to the domain based on the user.")
+	@Operation(summary = "Import Flow to the domain based on the user.")
 	@PostMapping("/import/flow/domain/{domainName}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<String> importFlowToDomainByUser(
-			@ApiParam(value = "data", required = true) @Valid @RequestBody String json,
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("domainName") String domainName) {
+			@Parameter(description= "data", required = true) @Valid @RequestBody String json,
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("domainName") String domainName) {
 
 		return importDomainFlowToUser(utils.getUserId(), json, domainName);
 	}
 
-	@ApiOperation(value = "Import Flow to the demoain of the desired user (administrator only).")
+	@Operation(summary = "Import Flow to the demoain of the desired user (administrator only).")
 	@PostMapping("/import/flow/domain/{domainName}/user/{user}")
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<String> importFlowToDomainAndUser(
-			@ApiParam(value = "data", required = true) @Valid @RequestBody String json,
-			@ApiParam(value = "Flow Domain identification", required = true) @PathVariable("domainName") String domainName,
-			@ApiParam(value = "Platform User", required = true) @PathVariable("user") String user) {
+			@Parameter(description= "data", required = true) @Valid @RequestBody String json,
+			@Parameter(description= "Flow Domain identification", required = true) @PathVariable("domainName") String domainName,
+			@Parameter(description= "Platform User", required = true) @PathVariable("user") String user) {
 
 		return importDomainFlowToUser(user, json, domainName);
 	}
 
 	public ResponseEntity<String> importDomainToUserFromProject(String userId, String data, String domainName,
 			boolean overwriteDomain) {
-		JSONObject domainProperties = new JSONObject(data);
+		final JSONObject domainProperties = new JSONObject(data);
 		return importDomainToUser(userId, domainProperties.getJSONArray("domainData").toString(), data, domainName,
 				overwriteDomain);
 	}
@@ -407,8 +410,8 @@ public class FlowengineManagementController {
 				.findFirst();
 		if (domain.isPresent()) {
 			if (!overwriteDomain) {
-				log.error("User {} already has a defined domain ({}), different than the one imported: {}.",
-						user, domain.get().getIdentification(), domainName);
+				log.error("User {} already has a defined domain ({}), different than the one imported: {}.", user,
+						domain.get().getIdentification(), domainName);
 				return new ResponseEntity<>("User already has a defined domain.", HttpStatus.NOT_FOUND);
 			} else {
 				if (domainData != null) {
@@ -473,8 +476,8 @@ public class FlowengineManagementController {
 				.findFirst();
 		if (domain.isPresent() && domain.get().getIdentification().equals(domainName)) {
 			if (!domain.get().getIdentification().equals(domainName)) {
-				log.error("User {} already has a defined domain ({}), different than the one imported: {}.",
-						user, domain.get().getIdentification(), domainName);
+				log.error("User {} already has a defined domain ({}), different than the one imported: {}.", user,
+						domain.get().getIdentification(), domainName);
 				return new ResponseEntity<>("No domain was found for user.", HttpStatus.NOT_FOUND);
 			}
 			// Start domain if is STOPPED
@@ -489,8 +492,7 @@ public class FlowengineManagementController {
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 		final String url = proxyUrl + domainName + FLOW_PATH;
 		final HttpHeaders headers = new HttpHeaders();
-		headers.set(AUTHORIZATION,
-				BEARER + noderedAuthService.getNoderedAuthAccessToken(userId, domainName));
+		headers.set(AUTHORIZATION, BEARER + noderedAuthService.getNoderedAuthAccessToken(userId, domainName));
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		try {
 			final String parsedJson = changeFlowIDs(data, user);
@@ -531,7 +533,8 @@ public class FlowengineManagementController {
 
 	private void createDomain(FlowDomain domain) {
 		final FlowEngineDomain engineDom = FlowEngineDomain.builder().domain(domain.getIdentification())
-				.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort()).build();
+				.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort())
+				.vertical(MultitenancyContextHolder.getVerticalSchema()).build();
 		flowEngineService.startFlowEngineDomain(engineDom);
 		domain.setState(State.START.name());
 		flowDomainService.updateDomain(domain);
@@ -547,7 +550,8 @@ public class FlowengineManagementController {
 	private void startDomain(FlowDomain domain) {
 		if (domain.getState().equals("STOP")) {
 			final FlowEngineDomain engineDom = FlowEngineDomain.builder().domain(domain.getIdentification())
-					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort()).build();
+					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort())
+					.vertical(MultitenancyContextHolder.getVerticalSchema()).build();
 			flowEngineService.startFlowEngineDomain(engineDom);
 			domain.setState(State.START.name());
 			flowDomainService.updateDomain(domain);

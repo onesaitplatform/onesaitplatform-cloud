@@ -19,12 +19,14 @@ COPY my_server_ssl_block.conf /opt/bitnami/nginx/conf/server_blocks/my_server_bl
 
 RUN mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/api && \
     mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/engine && \
-		mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/things && \
-		mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/tools && \
-		mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/intelligence && \
-		mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/opendata && \
-		mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/engine && \
-		mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/log
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/things && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/tools && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/intelligence && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/opendata && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/engine && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/log && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/minio-console && \
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/minio-browser && \
 
 RUN chmod ugo+w /opt/bitnami/nginx/conf/server_blocks/my_server_block.conf
 RUN chmod ugo+w /opt/bitnami/nginx/tmp/

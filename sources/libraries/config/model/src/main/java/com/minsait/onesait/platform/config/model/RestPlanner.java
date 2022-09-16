@@ -94,7 +94,8 @@ public class RestPlanner extends AuditableEntityWithUUID {
 	@Setter
 	private String jobName;
 
-	@Column(name = "ACTIVE", columnDefinition = "BIT")
+	@Column(name = "ACTIVE")
+	@Type(type = "org.hibernate.type.BooleanType")
 	@Getter
 	@Setter
 	@NotNull

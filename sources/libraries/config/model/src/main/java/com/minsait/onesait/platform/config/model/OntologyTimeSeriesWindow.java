@@ -23,11 +23,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -45,7 +47,7 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 
 	public enum FrecuencyUnit {
 
-		SECONDS, MINUTES, HOURS, DAYS, MONTHS
+		NONE, SECONDS, MINUTES, HOURS, DAYS, MONTHS
 	}
 
 	public enum AggregationFunction {
@@ -54,20 +56,20 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 
 	public enum RetentionUnit {
 
-		HOURS, DAYS, MONTHS
+		HOURS, DAYS, WEEKS, MONTHS, YEARS
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_TIMESERIES_ID", referencedColumnName = "ID", nullable = false)
-	@JsonBackReference
 	@Getter
 	@Setter
+	@JsonIgnore
 	private OntologyTimeSeries ontologyTimeSeries;
 
 	@Column(name = "WINDOW_TYPE", length = 20)
@@ -108,7 +110,9 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 	@Enumerated(EnumType.STRING)
 	private RetentionUnit retentionUnit;
 
-	@Column(name = "BDH", nullable = false, columnDefinition = "BIT default 0")
+	@Column(name = "BDH", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
 	@NotNull
 	@Getter
 	@Setter

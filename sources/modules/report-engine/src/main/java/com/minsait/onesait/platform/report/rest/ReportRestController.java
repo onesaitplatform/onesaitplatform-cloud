@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
-import org.apache.derby.iapi.services.io.ArrayInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,18 +50,20 @@ import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.report.service.ReportInfoService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-@Api(value = "Reports", tags = { "Reports REST API" })
+@Tag(name = "Reports")
 @RestController
 @RequestMapping("api/reports")
-@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
-		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 @Slf4j
 public class ReportRestController {
@@ -76,14 +77,14 @@ public class ReportRestController {
 	@Autowired
 	private ReportInfoService reportInfoService;
 
-	@ApiOperation(value = "Download report")
+	@Operation(summary = "Download report")
 	@PostMapping("{id}/{extension}")
 	@Transactional
-	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> downloadReport(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id,
-			@ApiParam(value = "Parameters") @RequestBody(required = false) ReportParameter[] params,
-			@ApiParam(value = "Output file format", required = true) @PathVariable("extension") ReportType extension) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Parameters") @RequestBody(required = false) ReportParameter[] params,
+			@Parameter(description= "Output file format", required = true) @PathVariable("extension") ReportType extension) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 
@@ -118,11 +119,11 @@ public class ReportRestController {
 		}
 	}
 
-	@ApiOperation(value = "Retrieve declared parameters in Jasper Template when their default values")
-	@ApiResponses(@ApiResponse(response = ReportParameter[].class, code = 200, message = "OK"))
+	@Operation(summary = "Retrieve declared parameters in Jasper Template when their default values")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)), responseCode = "200", description = "OK"))
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> parameters(
-			@ApiParam(value = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report report = reportService.findByIdentificationOrId(id);
 		if (report == null) {
@@ -143,14 +144,14 @@ public class ReportRestController {
 		}
 	}
 
-	@ApiOperation(value = "Retrieve datasource from Jasper Report")
-	@ApiResponses(@ApiResponse(response = ReportParameter[].class, code = 200, message = "OK"))
+	@Operation(summary = "Retrieve datasource from Jasper Report")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)) , responseCode = "200", description = "OK"))
 	@GetMapping(value = "/{id}/datasource", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> datasource(@PathVariable("id") String id) {
 		final Report entity = reportService.findById(id);
 		try {
 			final String dataSource = reportInfoService
-					.extract(new ArrayInputStream(entity.getFile()), entity.getExtension()).getDataSource();
+					.extract(new ByteArrayInputStream(entity.getFile()), entity.getExtension()).getDataSource();
 			if (!StringUtils.isEmpty(dataSource)) {
 				return new ResponseEntity<>(dataSource, HttpStatus.OK);
 			} else {

@@ -15,9 +15,9 @@
 package com.minsait.onesait.platform.config.model;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -30,10 +30,16 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +47,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "LAYER")
-public class Layer extends OPResource {
+public class Layer extends OPResource implements Versionable<Layer> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -83,7 +89,7 @@ public class Layer extends OPResource {
 	@Setter
 	private String outerColor;
 
-	@Column(name = "SIZE", length = 50, unique = false, nullable = true)
+	@Column(name = "LAYER_SIZE", length = 50, unique = false, nullable = true)
 	@Getter
 	@Setter
 	private String size;
@@ -128,25 +134,29 @@ public class Layer extends OPResource {
 	@Setter
 	private String query;
 
-	@Column(name = "IS_PUBLIC", nullable = false, columnDefinition = "BIT")
+	@Column(name = "IS_PUBLIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean isPublic;
 
-	@Column(name = "IS_VIRTUAL", nullable = false, columnDefinition = "BIT")
+	@Column(name = "IS_VIRTUAL", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean isVirtual;
 
-	@Column(name = "IS_HEAT_MAP", nullable = false, columnDefinition = "BIT")
+	@Column(name = "IS_HEAT_MAP", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean isHeatMap;
 
-	@Column(name = "IS_FILTER", nullable = false, columnDefinition = "BIT")
+	@Column(name = "IS_FILTER", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
 	@NotNull
 	@Getter
 	@Setter
@@ -197,11 +207,49 @@ public class Layer extends OPResource {
 	@Setter
 	private Double south;
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "LAYER_VIEWER", joinColumns = @JoinColumn(name = "LAYER_ID"), inverseJoinColumns = @JoinColumn(name = "VIEWER_ID"))
 	@Getter
 	@Setter
 	@JsonIgnore
 	private Set<Viewer> viewers = new HashSet<>();
+
+	@JsonSetter("ontology")
+	public void setOntologyJson(String id) {
+		if (!StringUtils.isEmpty(id)) {
+			final Ontology o = new Ontology();
+			o.setId(id);
+			ontology = o;
+		}
+	}
+
+	@JsonGetter("ontology")
+	public String getOntologyJson() {
+		if(ontology != null) {
+			return ontology.getId();
+		}
+		return null;
+	}
+
+	@Override
+	public String fileName() {
+		return getIdentification() + ".yaml";
+	}
+
+	@Override
+	public Versionable<Layer> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+		Versionable<Layer> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if (o != null) {
+			if (!viewers.isEmpty() && !CollectionUtils.isEmpty(excludedIds.get(Viewer.class.getSimpleName()))) {
+				viewers.removeIf(v -> excludedIds.get(Viewer.class.getSimpleName()).contains(v.getId()));
+				o = this;
+			}
+			if (ontology != null && !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
+					&& excludedIds.get(Ontology.class.getSimpleName()).contains(ontology.getId())) {
+				o = null;
+			}
+		}
+		return o;
+	}
 
 }

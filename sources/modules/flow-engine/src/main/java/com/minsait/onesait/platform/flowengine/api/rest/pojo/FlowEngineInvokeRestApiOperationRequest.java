@@ -47,4 +47,7 @@ public class FlowEngineInvokeRestApiOperationRequest {
 	@Getter
 	@Setter
 	private String domainName;
+	@Getter
+	@Setter
+	private String verticalSchema;
 }

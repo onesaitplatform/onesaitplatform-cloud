@@ -19,12 +19,13 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.Category;
+import com.minsait.onesait.platform.config.model.Category.Type;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
 	Category findById(String id);
 
-	List<Category> findByIdentification(String identification);
+	Category findByIdentification(String identification);
 	
 	List<Category> findByIdentificationLike(String identification);
 
@@ -43,5 +44,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 	List<Category> findByIdentificationAndDescription(String identification, String description);
 
 	List<Category> findByIdentificationLikeAndDescriptionLike(String identification, String description);
+	
+	List<Category> findByTypeIn(List<Type> types);
+	
+	List<Category> findByType(Type type);
 
 }

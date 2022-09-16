@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.config.model.base;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
@@ -28,9 +27,9 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -39,13 +38,12 @@ import lombok.Setter;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
-@EntityListeners(AuditingEntityListener.class)
-public abstract class OPResource extends AuditableEntity {
+public abstract class OPResource extends AuditableEntity{
 
 	public enum Resources {
-		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, NOTEBOOK, ONTOLOGY,
-		DATAFLOW, ONTOLOGYVIRTUALDATASOURCE,REPORT, BINARYFILE
+		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, GADGETTEMPLATE,
+		NOTEBOOK, ONTOLOGY, DATAFLOW, ONTOLOGYVIRTUALDATASOURCE, REPORT, BINARYFILE, CONFIGURATION
+
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -71,6 +69,17 @@ public abstract class OPResource extends AuditableEntity {
 	@Setter
 	private User user;
 
+	@JsonGetter("user")
+	public String getUserJson() {
+		return user.getUserId();
+	}
+
+	@JsonSetter("user")
+	public void setUserJson(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		user = u;
+	}
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {

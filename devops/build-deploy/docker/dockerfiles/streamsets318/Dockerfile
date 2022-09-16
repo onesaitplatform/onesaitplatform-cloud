@@ -16,6 +16,7 @@ ADD sdc /etc/sdc
 ADD onesaitplatform-streamsets /opt/streamsets-datacollector-user-libs/onesaitplatform-streamsets
 ADD resources /opt/streamsets-datacollector-3.18.1/resources
 ADD streamsets-orchestrator /opt/streamsets-datacollector-3.18.1/streamsets-libs/streamsets-datacollector-orchestrator-lib
+ADD streamsets-datacollector-jdbc-lib /opt/streamsets-datacollector-3.18.1/streamsets-libs/streamsets-datacollector-jdbc-lib
 
 RUN ln -s /opt/streamsets-datacollector-3.18.1/ /opt/streamsets-datacollector
 
@@ -28,6 +29,7 @@ RUN chown -R onesait:onesait /etc/sdc && \
 	chown -R onesait:onesait /opt/streamsets-datacollector-user-libs/onesaitplatform-streamsets && \
     chmod -R 777 /opt/streamsets-datacollector-user-libs/onesaitplatform-streamsets && \
 	chown -R onesait:onesait /opt/streamsets-datacollector-3.18.1/streamsets-libs && \
+	chown -R onesait:onesait /opt/streamsets-datacollector-3.18.1/streamsets-libs-extras && \    
     chmod -R 777 /opt/streamsets-datacollector-3.18.1 && \
 	chown -R onesait:onesait /opt/streamsets-datacollector-3.18.1/resources
 
@@ -69,7 +71,7 @@ USER root
 COPY docker-entrypoint.sh /
 RUN chmod ugo+x /docker-entrypoint.sh
 
-USER sdc
+USER onesait
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["dc", "-exec"]

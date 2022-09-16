@@ -19,7 +19,7 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.minsait.onesait.platform.config.components.GitlabConfiguration;
+import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
@@ -30,6 +30,7 @@ import com.minsait.onesait.platform.config.components.TwitterConfiguration;
 import com.minsait.onesait.platform.config.components.Urls;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 public interface ConfigurationService {
 
@@ -41,6 +42,8 @@ public interface ConfigurationService {
 	void deleteConfiguration(String id);
 
 	Configuration getConfiguration(String id);
+
+	Configuration getConfigurationByIdentification(String identification);
 
 	List<Configuration> getConfigurations(Configuration.Type configurationTypeId);
 
@@ -93,5 +96,7 @@ public interface ConfigurationService {
 	GlobalConfiguration getGlobalConfiguration(String environment);
 
 	GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment);
+
+	CaasConfiguration getCaasConfiguration(String id);
 
 }

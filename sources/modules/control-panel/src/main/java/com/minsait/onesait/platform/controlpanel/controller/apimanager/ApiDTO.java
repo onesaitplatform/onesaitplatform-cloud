@@ -22,7 +22,7 @@ import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.UserApi;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,138 +32,138 @@ public class ApiDTO implements Serializable {
 	}
 
 	public ApiDTO(Api api, List<ApiOperation> apiops, List<UserApi> usersapi) {
-		this.id = api.getId();
-		this.identification = api.getIdentification();
-		this.version = api.getNumversion();
-		this.type = api.getApiType().toString();
-		this.isPublic = api.isPublic();
-		this.category = api.getCategory().toString();
+		id = api.getId();
+		identification = api.getIdentification();
+		version = api.getNumversion();
+		type = api.getApiType().toString();
+		isPublic = api.isPublic();
+		category = api.getCategory().toString();
 		if (type.contains("EXTERNAL")) {
-			this.externalApi = true;
-			this.ontologyId = null;
+			externalApi = true;
+			ontologyId = null;
 		} else {
-			this.externalApi = false;
+			externalApi = false;
 			if (type.equals(Api.ApiType.NODE_RED.toString()) && api.getOntology() == null) {
-				this.ontologyId = null;
+				ontologyId = null;
 			} else {
-				this.ontologyId = api.getOntology().getId();
+				ontologyId = api.getOntology().getId();
 			}
 		}
-		this.apiLimit = api.getApilimit();
-		this.endpointExt = api.getEndpointExt();
-		this.description = api.getDescription();
-		this.metainf = api.getMetaInf();
-		this.imageType = api.getImageType();
-		this.status = api.getState().toString();
-		this.creationDate = api.getCreatedAt().toString();
-		this.userId = api.getUser().getUserId();
-		this.swaggerJson = api.getSwaggerJson();
-		this.authentications = new ArrayList<>();
-		this.operations = new ArrayList<>();
-		for (UserApi apiauth : usersapi) {
-			UserApiDTO userapiDTO = new UserApiDTO(apiauth);
-			this.authentications.add(userapiDTO);
+		apiLimit = api.getApilimit();
+		endpointExt = api.getEndpointExt();
+		description = api.getDescription();
+		metainf = api.getMetaInf();
+		imageType = api.getImageType();
+		status = api.getState().toString();
+		creationDate = api.getCreatedAt().toString();
+		userId = api.getUser().getUserId();
+		swaggerJson = api.getSwaggerJson();
+		authentications = new ArrayList<>();
+		operations = new ArrayList<>();
+		for (final UserApi apiauth : usersapi) {
+			final UserApiDTO userapiDTO = new UserApiDTO(apiauth);
+			authentications.add(userapiDTO);
 		}
-		for (ApiOperation apiop : apiops) {
-			ApiOperationDTO apiopDTO = new ApiOperationDTO(apiop);
-			this.operations.add(apiopDTO);
+		for (final ApiOperation apiop : apiops) {
+			final ApiOperationDTO apiopDTO = new ApiOperationDTO(apiop);
+			operations.add(apiopDTO);
 		}
 
 	}
 
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "API Id")
+	@Schema(description = "API Id")
 	@Getter
 	@Setter
 	private String id;
 
-	@ApiModelProperty(value = "API Identification", required = true)
+	@Schema(description = "API Identification", required = true)
 	@Getter
 	@Setter
 	private String identification;
 
-	@ApiModelProperty(value = "API Version Number")
+	@Schema(description = "API Version Number")
 	@Getter
 	@Setter
 	private Integer version;
 
-	@ApiModelProperty(value = "API Type", required = true)
+	@Schema(description = "API Type", required = true)
 	@Getter
 	@Setter
 	private String type;
 
-	@ApiModelProperty(value = "API Public/Private")
+	@Schema(description = "API Public/Private")
 	@Getter
 	@Setter
 	private Boolean isPublic;
 
-	@ApiModelProperty(value = "API Category", required = true)
+	@Schema(description = "API Category", required = true)
 	@Getter
 	@Setter
 	private String category;
 
-	@ApiModelProperty(value = "API External")
+	@Schema(description = "API External")
 	@Getter
 	@Setter
 	private Boolean externalApi;
 
-	@ApiModelProperty(value = "Ontology Identification for OntologyAPI")
+	@Schema(description = "Ontology Identification for OntologyAPI")
 	@Getter
 	@Setter
 	private String ontologyId;
 
-	@ApiModelProperty(value = "QPS API limit")
+	@Schema(description = "QPS API limit")
 	@Getter
 	@Setter
 	private Integer apiLimit;
 
-	@ApiModelProperty(value = "External Endpoint for invoking API")
+	@Schema(description = "External Endpoint for invoking API")
 	@Getter
 	@Setter
 	private String endpointExt;
 
-	@ApiModelProperty(value = "API Description")
+	@Schema(description = "API Description")
 	@Getter
 	@Setter
 	private String description;
 
-	@ApiModelProperty(value = "Tags Meta-inf for API", required = true)
+	@Schema(description = "Tags Meta-inf for API", required = true)
 	@Getter
 	@Setter
 	private String metainf;
 
-	@ApiModelProperty(value = "Image Type")
+	@Schema(description = "Image Type")
 	@Getter
 	@Setter
 	private String imageType;
 
-	@ApiModelProperty(value = "API Status")
+	@Schema(description = "API Status")
 	@Getter
 	@Setter
 	private String status;
 
-	@ApiModelProperty(value = "creation Date", required = true)
+	@Schema(description = "creation Date", required = true)
 	@Getter
 	@Setter
 	private String creationDate;
 
-	@ApiModelProperty(value = "API Propietary", required = true)
+	@Schema(description = "API Propietary", required = true)
 	@Getter
 	@Setter
 	private String userId;
 
-	@ApiModelProperty(value = "API Swagger Json", required = true)
+	@Schema(description = "API Swagger Json", required = true)
 	@Getter
 	@Setter
 	private String swaggerJson;
 
-	@ApiModelProperty(value = "API Operations")
+	@Schema(description = "API Operations")
 	@Getter
 	@Setter
 	private ArrayList<ApiOperationDTO> operations;
 
-	@ApiModelProperty(value = "API Authentication")
+	@Schema(description = "API Authentication")
 	@Getter
 	@Setter
 	private ArrayList<UserApiDTO> authentications;
