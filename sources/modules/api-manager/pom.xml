@@ -270,7 +270,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
-            <version>1.3.70</version>
+            <version>1.6.0</version>
         </dependency>
         <!-- This version resolves issue NoSuchMethodError: kotlin.collections.ArraysKt.copyInto for transformation to json-ld-->
         
