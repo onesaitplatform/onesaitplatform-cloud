@@ -17,7 +17,7 @@
 		<lombok.version>1.16.20</lombok.version>
 		<apache.commons.version>3.7</apache.commons.version>
 		<plugin.interface.version>3.0.2-rc1</plugin.interface.version>
-		<apache.http.version>4.5.5</apache.http.version>
+		<apache.http.version>4.5.13</apache.http.version>
 	</properties>
 
 	<dependencies>
