@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONObject;
@@ -54,6 +55,7 @@ import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.services.category.CategoryService;
@@ -123,6 +125,9 @@ public class GadgetController {
     @Autowired
     private GadgetTemplateRepository gadgetTemplateRepository;
 
+	@Autowired 
+	private HttpSession httpSession;
+    
 	private static final String IFRAME_STR = "iframe";
 	private static final String GADGET_STR = "gadget";
 	private static final String DATASOURCES_STR = "datasources";
@@ -141,11 +146,16 @@ public class GadgetController {
 	private static final String HEADERLIBS = "headerlibs";
 	private static final String ELEMENT = "element";
 	private static final String CATEGORIES = "categories";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
 
@@ -153,6 +163,7 @@ public class GadgetController {
 
 		String identification = request.getParameter("name");
 		String type = request.getParameter("type");
+		String currentTab = request.getParameter("current_tab");
 
 		if (identification != null && identification.equals("")) {
 			identification = null;
@@ -177,6 +188,7 @@ public class GadgetController {
 		List<GadgetTemplate> gadgetTemplateList = gadgetTemplate.stream().filter(temp -> !temp.getType().equals("base"))
 				.collect(Collectors.toList());
 		uiModel.addAttribute("gadgetTemplates", gadgetTemplateList);
+		uiModel.addAttribute("currentTab", currentTab);
 		return "gadgets/list";
 
 	}
@@ -272,6 +284,12 @@ public class GadgetController {
 		model.addAttribute(GADGET_STR, new Gadget());
 		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+		
 		return GADGETS_CREATE;
 
 	}
@@ -304,6 +322,15 @@ public class GadgetController {
 			utils.addRedirectMessage("gadgetDatasource.create.error", redirect);
 			return REDIRECT_GADGETS_CREATE;
 		}
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.GADGET.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", gadget.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			return REDIRECT_PROJECT_SHOW + projectId.toString();
+		}
+		
 		return REDIRECT_GADGETS_LIST;
 
 	}

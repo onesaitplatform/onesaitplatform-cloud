@@ -60,9 +60,15 @@
         showEditor:vm.showSynopticEditor,
         showSynoptic: vm.synop
       }
-      
-     
+      vm.drawAddGadgets = true;
 
+      if(typeof __env.drawAddGadgets !== 'undefined' && __env.drawAddGadgets !== null){
+        vm.drawAddGadgets = __env.drawAddGadgets;
+      }else {
+        if( __env.dashboardEngineBungleMode ){
+          vm.drawAddGadgets = false;
+        }       
+      }
       vm.initDash = function (dash){
         if(typeof dash !== 'undefined'){        
           vm.dashboard = dash;
@@ -256,9 +262,9 @@
       vm.api={};
       //External API
       vm.api.createGadget = function(type,id,name,template,datasource,filters,customMenuOptions,setupLayout) {
-            if(typeof template !== "undefined" && template !== null && typeof template !=="string"  ){
+            if(typeof template !== "undefined" && template !== null && typeof template !=="string" && template.length>0  ){
               //Gadgetcreate from template
-              var newElem = {x: 0, y: 0, cols: 6, rows: 6,};
+              var newElem = {x: 0, y: 0, cols: 40, rows: 40,};
               //newElem.minItemRows = 10;
               //newElem.minItemCols = 10;            
               newElem.content=template.template;        
@@ -292,7 +298,7 @@
               addGadgetGeneric(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);        
 
             }else{
-              var newElem = {x: 0, y: 0, cols: 6, rows: 6,};
+              var newElem = {x: 0, y: 0, cols: 40, rows: 40,};
               //newElem.minItemRows = 10;
               //newElem.minItemCols = 10;
               var type = type;

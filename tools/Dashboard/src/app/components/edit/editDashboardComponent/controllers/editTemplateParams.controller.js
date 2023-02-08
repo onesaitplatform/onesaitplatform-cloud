@@ -265,7 +265,9 @@
               );
             } else {
               $scope.element.params = $scope.parameters;
-              $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
+              if(typeof $scope.parameters.datasource !== 'undefined'){
+                $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
+              }
               $mdDialog.cancel();
             }
           }

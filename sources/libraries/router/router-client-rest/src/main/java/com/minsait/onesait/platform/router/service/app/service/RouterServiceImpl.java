@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 	private HttpHeaders addCorrelationHeader() {
 		final HttpHeaders headers = new HttpHeaders();
 		String correlationID = MDC.get(CorrelationInterceptor.CORRELATION_ID_LOG_VAR_NAME);
-		if (StringUtils.isEmpty(correlationID))
+		if (!StringUtils.hasText(correlationID))
 			correlationID = CorrelationInterceptor.generateUniqueCorrelationId();
 		headers.add(CorrelationInterceptor.CORRELATION_ID_HEADER_NAME, correlationID);
 

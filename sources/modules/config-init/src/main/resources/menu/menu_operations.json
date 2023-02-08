@@ -39,6 +39,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
+				},
+				{
+					"title": {
+						"EN": "Environment Promotion tool",
+						"ES": "Herramienta promoción entre Entornos",
+						"FR": "Outil de promotion de l'environnement"
+					},
+					"icon": "",
+					"url": "/controlpanel/promotiontool/execute"
 				}
 			]
 		},		

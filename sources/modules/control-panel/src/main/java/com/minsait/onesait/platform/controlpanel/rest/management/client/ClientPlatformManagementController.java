@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
+import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
@@ -102,6 +104,8 @@ public class ClientPlatformManagementController {
 
 	@Autowired
 	private OntologyService ontologyService;
+	@Autowired
+	private OntologyBusinessService ontologyBusinessService;
 
 	@Operation(summary="Get all clientplatforms")
 	@GetMapping
@@ -195,6 +199,15 @@ public class ClientPlatformManagementController {
 		clientPlatform.setUser(user);
 
 		final Token token = clientPlatformService.createClientTokenWithAccessType(ontologies, clientPlatform);
+
+		// Create Log Ontology
+		try {
+			final Ontology ontoLog = clientPlatformService.createDeviceLogOntology(clientPlatform);
+			ontologyBusinessService.createOntology(ontoLog, utils.getUserId(), null);
+			clientPlatformService.createOntologyRelation(ontoLog, clientPlatform);
+		} catch (OntologyBusinessServiceException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Coulnd't create log ontology for digital client");
+		}
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(token.getTokenName());
 	}

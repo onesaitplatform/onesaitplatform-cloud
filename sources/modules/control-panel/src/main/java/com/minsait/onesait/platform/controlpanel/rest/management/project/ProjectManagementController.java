@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.json.JSONArray;
@@ -609,9 +610,10 @@ public class ProjectManagementController {
 	@GetMapping(value = "/{project}/resources/role/{appRole}")
 	public ResponseEntity<?> resourcesFromProjectAndAppRole(
 			@Parameter(description= "Project Name", required = true) @PathVariable("project") String projectId,
-			@Parameter(description= "AppRole Id", required = true) @PathVariable("appRole") String appRoleName) {
+			@Parameter(description= "AppRole Id", required = true) @PathVariable("appRole") String appRoleName, HttpServletResponse response) {
 
 		try {
+			utils.cleanInvalidSpringCookie(response);
 			final Project project = projectService.getByName(projectId);
 
 			if (project == null) {

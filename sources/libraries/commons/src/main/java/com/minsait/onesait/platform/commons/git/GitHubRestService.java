@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ public class GitHubRestService extends GitRestService {
 			String url = GITHUB_BASE_URL
 					+ String.format(REPOS, gitConfiguration.getUser(), gitConfiguration.getProjectName()) + COMMITS
 					+ "?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8.name());
-			if (!StringUtils.isEmpty(branch)) {
+			if (StringUtils.hasText(branch)) {
 				url = url + "&sha=" + URLEncoder.encode(branch, StandardCharsets.UTF_8.name());
 			}
 			final ResponseEntity<List<CommitWrapper>> response = execute(url, HttpMethod.GET, null,
@@ -157,7 +157,7 @@ public class GitHubRestService extends GitRestService {
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		if (!StringUtils.isEmpty(token)) {
+		if (StringUtils.hasText(token)) {
 			headers.add("Authorization", "Bearer " + token);
 		}
 

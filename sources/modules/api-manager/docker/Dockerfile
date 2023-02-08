@@ -29,6 +29,8 @@ RUN chown -R onesait:onesait /usr/local && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
+USER onesait
+
 EXPOSE 19100
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
@@ -64,11 +66,9 @@ ENV SERVER_NAME=localhost \
     USE_KEYCLOAK=false \
     SBA_USERNAME=operations \
 	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
-	MAX_HTTP_HEADER_SIZE=20000
+	MAX_HTTP_HEADER_SIZE=20000 \
+	HTTP_LOG_LEVEL=TRACE \
+    CORS_ALLOWED_URLS="*"
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
-
-USER onesait
-
 ENTRYPOINT ["docker-entrypoint.sh"]

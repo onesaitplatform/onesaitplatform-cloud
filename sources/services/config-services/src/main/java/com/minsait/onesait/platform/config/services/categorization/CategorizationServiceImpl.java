@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,33 +107,45 @@ public class CategorizationServiceImpl implements CategorizationService {
 	@Override
 	public void deactivateByCategoryAndUser(String categorizationIdentification, User user) {
 		final Categorization categorization = getCategorizationByIdentification(categorizationIdentification);
-		final CategorizationUser categorizationUser = categorizationUserService
-				.findByCategorizationAndUser(categorization, user);
 
-		deactivate(categorizationUser.getId());
+		deactivate(categorization.getId(), user);
 	}
 
 	@Override
-	public void setActive(String id, User user) {
+	public void setActive(String categorizationId, User user) {
 		final List<CategorizationUser> actives = categorizationUserRepository.findByUserAndActive(user);
 		for (final CategorizationUser categorization : actives) {
 			categorization.setActive(false);
 			categorizationUserRepository.save(categorization);
 		}
-		categorizationUserRepository.findById(id).ifPresent(tree -> {
-			tree.setActive(true);
-			categorizationUserRepository.save(tree);
-		});
+		
+		final Categorization categorization = getCategorizationById(categorizationId);
+		CategorizationUser categorizationUser = categorizationUserRepository.findByUserAndCategorization(user, categorization);
+		
+		if (categorizationUser!=null) {
+			categorizationUser.setActive(true);
+			categorizationUserRepository.save(categorizationUser);
+		} else {
+			CategorizationUser categorizationUserNew = new CategorizationUser();
+			categorizationUserNew.setUser(user);
+			categorizationUserNew.setCategorization(categorization);
+			categorizationUserNew.setActive(true);
+			categorizationUserNew.setAuthorizationType("GUEST");
+			categorizationUserRepository.save(categorizationUserNew);
+		}
 
 	}
 
 	@Override
-	public void deactivate(String id) {
+	public void deactivate(String categorizationId, User user) {
 		try {
-			categorizationUserRepository.findById(id).ifPresent(tree -> {
-				tree.setActive(false);
-				categorizationUserRepository.save(tree);
-			});
+			final Categorization categorization = getCategorizationById(categorizationId);
+			CategorizationUser categorizationUser = categorizationUserRepository.findByUserAndCategorization(user, categorization);
+			
+			if (categorizationUser!=null) {
+				categorizationUser.setActive(false);
+				categorizationUserRepository.save(categorizationUser);
+			}
 
 		} catch (final Exception e) {
 			log.error("Error setting to inactive: " + e.getMessage());
@@ -143,13 +155,15 @@ public class CategorizationServiceImpl implements CategorizationService {
 	@Override
 	public void addAuthorization(Categorization categorization, User user, String accessType) {
 		final CategorizationUser categorizationUser = new CategorizationUser();
-
-		categorizationUser.setCategorization(categorization);
-		categorizationUser.setUser(user);
-		categorizationUser.setAuthorizationType(accessType);
-		categorizationUser.setActive(false);
-
-		categorizationUserRepository.save(categorizationUser);
+		CategorizationUser categorizationuserBD = categorizationUserRepository.findByUserAndCategorization(user, categorization);
+		if (categorizationuserBD==null) {
+			categorizationUser.setCategorization(categorization);
+			categorizationUser.setUser(user);
+			categorizationUser.setAuthorizationType(accessType);
+			categorizationUser.setActive(false);
+	
+			categorizationUserRepository.save(categorizationUser);
+		}
 	}
 
 	@Override

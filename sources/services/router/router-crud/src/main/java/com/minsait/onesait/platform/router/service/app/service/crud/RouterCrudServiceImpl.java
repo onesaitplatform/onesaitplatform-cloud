@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
+import com.minsait.onesait.platform.config.services.ontologydata.DataClassValidationException;
 import com.minsait.onesait.platform.config.services.ontologydata.DataSchemaValidationException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
@@ -88,7 +89,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 	@Autowired
 	private ProcessExecutionService processExecutionService;
-	private ExecutorService proccessExecutor = Executors.newSingleThreadExecutor();
+	private final ExecutorService proccessExecutor = Executors.newSingleThreadExecutor();
 
 	private static final String ERROR_STR = "ERROR";
 	private static final String INSERT_STR = "INSERT";
@@ -117,11 +118,13 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 			try {
 				referencesValidation.validate(operationModel, ontology);
-
 			} catch (final Exception e) {
-				log.error("Could not validate references {}", e.getMessage());
-				if (e instanceof OntologyDataJsonProblemException) {
-					throw e;
+				//ADD EXCEPTION FOR NEBULA QUERIES
+				if (!RtdbDatasource.NEBULA_GRAPH.equals(rtdbDatasource)) {
+					log.error("Could not validate references {}", e.getMessage());
+					if (e instanceof OntologyDataJsonProblemException) {
+						throw e;
+					}
 				}
 			}
 
@@ -139,7 +142,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 
 					if (!results.isEmpty()) {
 						results.stream().map(DBResult::getId).map(Optional::ofNullable).filter(Optional::isPresent)
-								.map(Optional::get).forEach(idList::add);
+						.map(Optional::get).forEach(idList::add);
 					}
 					count = results.size();
 					insertResultData.setCount(results.size());
@@ -147,6 +150,14 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 					insertResult.setType(ComplexWriteResultType.BULK);
 					insertResult.setData(insertResultData);
 					output = insertResult.toString();
+				} else if (rtdbDatasource.equals(RtdbDatasource.AI_MINDS_DB)) {
+					final String query = "SELECT * FROM " + ontology.getIdentification() + " WHERE when_data='"
+							+ operationModel.getBody() + "'";
+					output = queryToolService.querySQLAsJson(operationModel.getUser(), ontology.getIdentification(),
+							query, 0);
+				} else if (rtdbDatasource.equals(RtdbDatasource.NEBULA_GRAPH)) {
+					output = queryToolService.querySQLAsJson(operationModel.getUser(), ontology.getIdentification(),
+							operationModel.getBody(), 0);
 				} else {
 
 					final List<String> processedData = ontologyDataService.preProcessInsertData(operationModel,
@@ -210,12 +221,24 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			result.setStatus(false);
 			result.setMessage("Error validating schema of the ontology:" + e.getMessage());
 			result.setErrorCode("ErrorValidationSchema");
-			result.setOperation("INSERT_STR");
+			result.setOperation(INSERT_STR);
 			final int c = count;
 			proccessExecutor.execute(() -> {
 				processExecutionService.checkOperation(operationModel, result, c);
 			});
 			throw new RouterCrudServiceException(INSERT_ERROR, e, result);
+		} catch (final DataClassValidationException e) {
+            log.error("Error preprocessing insert data", e);
+            result.setResult(ERROR_STR);
+            result.setStatus(false);
+            result.setMessage("Error preprocessing insert data: " + e.getMessage());
+            result.setErrorCode("ErrorDataClass");
+            result.setOperation(INSERT_STR);
+            final int c = count;
+            proccessExecutor.execute(() -> {
+                processExecutionService.checkOperation(operationModel, result, c);
+            });
+            throw new RouterCrudServiceException(INSERT_ERROR + ": " + e.getMessage(), e, result);
 		} catch (final OntologyDataJsonProblemException e) {
 			log.error("Error validating ontology references", e);
 			result.setResult(ERROR_STR);
@@ -468,7 +491,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							output = !nullString(CLIENTPLATFORM)
 									? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
 											BODY, 0)
-									: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
+											: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
 						} else {
 							output = basicOpsService.deleteNative(ontologyName, BODY, INCLUDEIDs).toString();
 						}
@@ -541,7 +564,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						OUTPUT = !nullString(CLIENTPLATFORM)
 								? queryToolService.querySQLAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName, BODY,
 										0)
-								: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
+										: queryToolService.querySQLAsJson(USER, ontologyName, BODY, 0);
 					} else if (QUERY_TYPE.equalsIgnoreCase(QueryType.NATIVE.name())) {
 						if (rtdbDatasource.equals(RtdbDatasource.VIRTUAL)) {
 							OUTPUT = virtualRepo.queryNativeAsJson(ontologyName, BODY);
@@ -550,8 +573,8 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 							OUTPUT = !nullString(CLIENTPLATFORM)
 									? queryToolService.queryNativeAsJsonForPlatformClient(CLIENTPLATFORM, ontologyName,
 											BODY, 0, getMaxRegisters())
-									: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0,
-											getMaxRegisters());
+											: queryToolService.queryNativeAsJson(USER, ontologyName, BODY, 0,
+													getMaxRegisters());
 						}
 					} else {
 						OUTPUT = basicOpsService.findById(ontologyName, OBJECT_ID);

@@ -1,6 +1,6 @@
 
 
-<div class="menusidebardashboard" style="width: 0px; border-right: 1px solid #d7dadc;">  
+<div class="menusidebardashboard" ng-if="vm.drawAddGadgets" style="width: 0px; border-right: 1px solid #d7dadc;">  
   <leftsidemenu config="vm.dashboard"></leftsidemenu>
 </div>
 <div class="dashboardcontent" style="margin-left: 0px;">
@@ -8,7 +8,9 @@
   <edit-dashboard ng-if="vm.editmode" iframe="vm.iframe" id="vm.id" public="vm.public" dashboard="vm.dashboard"
     selectedpage="vm.selectedpage" synopticedit="vm.synopticEdit"></edit-dashboard>
   <!-- end Dashboard edit component -->
-
+  <!-- synoptic edit component-->
+  <edit-synoptic   id="vm.id" public="vm.public" dashboard="vm.dashboard" selectedpage="vm.selectedpage" synopticedit="vm.synopticEdit"></edit-synoptic> 
+  <!-- end synoptic edit component -->
   <!-- header partial -->
   <ng-include src="'app/partials/view/header.html'"></ng-include>
   <!-- end header partial -->

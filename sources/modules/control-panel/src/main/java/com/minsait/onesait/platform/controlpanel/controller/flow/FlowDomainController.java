@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +92,9 @@ public class FlowDomainController {
 
 	@Autowired
 	private NoderedAuthenticationServiceImpl noderedAuthService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private FlowEngineService flowEngineService;
 
@@ -102,6 +106,7 @@ public class FlowDomainController {
 	private static final String REDIRECT_FLOWS_CREATE = "redirect:/flows/create";
 	private static final String FLOWS_CREATE = "flows/create";
 	private static final String REDIRECT_FLOWS_LIST = "redirect:/flows/list";
+	private static final String APP_ID = "appId";
 
 	@PostConstruct
 	public void init() {
@@ -114,6 +119,8 @@ public class FlowDomainController {
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
 
 		final List<FlowEngineDomainStatus> domainStatusList = getUserDomains(model);
 		model.addAttribute(DOMAINS_STR, domainStatusList);

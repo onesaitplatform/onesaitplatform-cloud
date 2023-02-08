@@ -5,7 +5,14 @@ server:
   port: 18300
   servlet.contextPath: /dashboardengine
   
-  
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
 
 master: 
    datasource:
@@ -55,6 +62,7 @@ spring:
           ddl-auto: validate
 
 onesaitplatform: #Config Onesait Platform specific
+   router.metrics.query.enabled: false
    encryption:
       key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
       iteration-count: 5
@@ -158,5 +166,6 @@ logging:
    file.name: ${spring.application.name}
    level:
       com.minsait: INFO 
-      org.springframework.boot: INFO    
+      org.springframework.boot: INFO  
+      org.zalando.logbook: TRACE  
      

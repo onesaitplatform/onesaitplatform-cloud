@@ -13,9 +13,6 @@ master:
         minimum-idle: 1
         maximum-pool-size: 2
         connection-timeout: 10000
-
-
-
       removeAbandoned: true
 server:
    port: 21001

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ public class TransactionProcessor implements MessageTypeProcessor {
 
 	private boolean validateTransactionIdExists(SSAPMessage<SSAPBodyEmptySessionMandatoryMessage> message)
 			throws SSAPProcessorException {
-		if (StringUtils.isEmpty(message.getTransactionId())) {
+		if (!StringUtils.hasText(message.getTransactionId())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "transactionId",
 					message.getMessageType().name()));
 		}

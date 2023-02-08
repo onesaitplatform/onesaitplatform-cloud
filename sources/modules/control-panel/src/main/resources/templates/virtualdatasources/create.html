@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,7 +117,8 @@
 									<span class="sep" th:if="(${datasource.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button th:if="${datasource.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -155,7 +156,7 @@
 							<div class="col-md-2 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.domain}">Domain</label>
-									<input th:tabindex="2" th:readonly="${datasource?.id} != null" id="domain" type="text" th:field="*{datasourceDomain}" class="form-control"  th:placeholder="#{datasource.domain}" pattern="^[A-Za-z][A-Za-z0-9]*$" title="Domain cannot start with a number"/>
+									<input th:tabindex="2" th:readonly="${datasource?.id} != null" id="domain" type="text" th:field="*{datasourceDomain}" class="form-control"  th:placeholder="#{datasource.domain}" pattern="^[A-Za-z][A-Za-z0-9]*$" th:title="#{datasource.validate.domain}"/>
 								</div>
 							</div>
 							<div class="col-md-5 col-sm-4 col-xs-12">
@@ -300,6 +301,7 @@
 	
 	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	$("#domain").inputmask({ regex: "[a-zA-Z0-9]*", greedy: false });
 	
 	function navigateUrl(url){
 		window.location.href = url; 

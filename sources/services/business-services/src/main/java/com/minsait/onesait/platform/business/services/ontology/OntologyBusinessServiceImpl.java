@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphBusinessService;
+import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphEntity;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
@@ -51,6 +53,7 @@ import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntology
 import com.minsait.onesait.platform.persistence.hadoop.kudu.KuduManageDBRepository;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
+import com.minsait.onesait.platform.persistence.nebula.model.NebulaSpace;
 import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicService;
@@ -100,15 +103,18 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired(required = false)
 	private KuduManageDBRepository kuduManageRepository;
-	
+
 	@Autowired
 	private PrestoOntologyBasicOpsDBRepository prestoDBBasicOpsDBRepository;
-	
+
 	@Autowired
 	private PrestoManageDBRepository prestoManageDBRepository;
-	
+
 	@Autowired
 	private HistoricalMinioService historicalMinioService;
+
+	@Autowired
+	private NebulaGraphBusinessService nebulaGraphBusinessService;
 
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
@@ -146,19 +152,20 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 		prepareOntologyRtdbToHdb(ontology);
 		if (ontologyService.existsOntology(ontology.getIdentification())) {
-            throw new OntologyServiceException(
-                "Ontology with identification: " + ontology.getIdentification() + " exists");
-        }
+			throw new OntologyServiceException(
+					"Ontology with identification: " + ontology.getIdentification() + " exists");
+		}
 
 		invokeCreateOntology(ontology, config);
-        invokeCreateOntologyLogic(ontology, config);
+		invokeCreateOntologyLogic(ontology, config);
 	}
 
 	private void prepareOntologyRtdbToHdb(Ontology ontology) {
-		if (ontology.isRtdbToHdb())
+		if (ontology.isRtdbToHdb()) {
 			ontology.setRtdbClean(true);
-		else
+		} else {
 			ontology.setRtdbToHdbStorage(null);
+		}
 
 		if (ontology.isRtdbClean() && ontology.getRtdbCleanLapse().equals(RtdbCleanLapse.NEVER)) {
 			ontology.setRtdbCleanLapse(RtdbCleanLapse.ONE_DAY);
@@ -171,14 +178,14 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	private void invokeCreateOntologyLogic(Ontology ontology, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
-	    final String errorRollingBack = "Error creating the persistence infrastructure for ontology";
+		final String errorRollingBack = "Error creating the persistence infrastructure for ontology";
 		try {
 			ontologyLogicService.createOntology(ontology, config == null ? null : configToConfigMap(config));
 		} catch (final Exception e) {
 			log.error("Error creaing ontology", e);
-		    ontologyService.delete(ontology);
-		    throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
-                errorRollingBack + ": " + e.getMessage(), e);
+			ontologyService.delete(ontology);
+			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
+					errorRollingBack + ": " + e.getMessage(), e);
 		}
 
 	}
@@ -215,6 +222,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 					"Ontology identification is not valid");
 		}
 
+
 		if (!ontology.getDataModel().getId().equals("MASTER-DataModel-30")) {
 			final Ontology clone = new Ontology();
 
@@ -236,6 +244,23 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			clone.setJsonLdContext(ontology.getJsonLdContext());
 
 			ontologyService.createOntology(clone, config);
+
+			//if its Nebula clone to Nebula
+
+			if(ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
+				final NebulaGraphEntity entity = new NebulaGraphEntity();
+				entity.setEdges(nebulaGraphBusinessService.getEdges(ontology.getIdentification()));
+				entity.setTags(nebulaGraphBusinessService.getTags(ontology.getIdentification()));
+				entity.setName(clone.getIdentification());
+				entity.setDescription(ontology.getDescription());
+				entity.setMetainf(ontology.getMetainf());
+				entity.setUser(userId);
+				final NebulaSpace space = nebulaGraphBusinessService.getSpace(ontology.getIdentification());
+				entity.setPartitions(space.getPartitionNum());
+				entity.setReplicas(space.getReplicaFactor());
+				nebulaGraphBusinessService.createNebulaGraphEntity(entity, false);
+			}
+
 		} else {
 			ontologyTimeSeriesService.cloneOntologyTimeSeries(identification, ontology, user, config);
 		}
@@ -275,7 +300,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		}
 		return schemaSubTree;
 	}
-	
+
 	@Override
 	public VirtualDatasourceInfoDTO getInfoFromDatasource(String datasource) {
 		return virtualRepo.getInfo(datasource);
@@ -285,17 +310,17 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	public List<String> getTablesFromDatasource(String datasource) {
 		return virtualRepo.getTables(datasource);
 	}
-	
+
 	@Override
 	public List<String> getDatabasesFromDatasource(String datasource) {
 		return virtualRepo.getDatabases(datasource);
 	}
-	
+
 	@Override
 	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database) {
 		return virtualRepo.getSchemasDB(datasource, database);
 	}
-	
+
 	@Override
 	public List<String> getTablesFromDatasource(String datasource, String database, String schema) {
 		return virtualRepo.getTables(datasource, database, schema);
@@ -323,8 +348,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Override
 	public String getRelationalSchema(String datasource, String database, String schema, String collection) {
-		if (datasource.equals(VirtualDatasourceType.PRESTO.toString()))
+		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
 			return prestoDBBasicOpsDBRepository.getTableMetadata(database, schema, collection);
+		}
 		return virtualRepo.getTableMetadata(datasource, database, schema, collection);
 	}
 
@@ -342,8 +368,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 				throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.EXTERNAL_TABLE_CREATION_ERROR, "KUDU service is not available");
 			}
 			return kuduManageRepository.getSQLCreateStatement(statementBusiness.toCreateStatementKudu());
-		}if (datasource.equals(VirtualDatasourceType.PRESTO)) 
+		}if (datasource.equals(VirtualDatasourceType.PRESTO)) {
 			return prestoDBBasicOpsDBRepository.getSQLCreateStatment(statementBusiness.toCreateStatementPresto());
+		}
 		return virtualRepo.getSQLCreateStatment(statementBusiness.toCreateStatement(), datasource);
 	}
 
@@ -380,7 +407,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		if (!StringUtils.isEmpty(config.getCustomIdField())) {
 			cmap.put("customIdField", config.getCustomIdField());
 		}
-		
+
 		if (!StringUtils.isEmpty(config.getReplicas())) {
 			cmap.put("replicas", config.getReplicas());
 		}
@@ -469,19 +496,23 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		final String identification = o.getIdentification();
 		// IF IT'S A COSMOSDB COLLECTION AND NO RECORDS REMOVE IT
 		if (RtdbDatasource.COSMOS_DB.equals(o.getRtdbDatasource())
-				&& cosmosBasicOpsRepository.count(identification) == 0)
+				&& cosmosBasicOpsRepository.count(identification) == 0) {
 			cosmosManageRepository.removeTable4Ontology(identification);
+		}
 		if (RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {
 			prestoManageDBRepository.removeTable4Ontology(identification);
 		}
+		if (RtdbDatasource.NEBULA_GRAPH.equals(o.getRtdbDatasource())) {
+			nebulaGraphBusinessService.deleteNebulaGraphEntity(identification);
+		}
 		entityDeleteionService.deleteOntology(id, userId);
 	}
-	
+
 	@Override
 	public void uploadHistoricalFile(MultipartFile file, String ontology) throws OntologyBusinessServiceException {
 		try {
 			historicalMinioService.uploadMultipartFileForOntology(file, ontology);
-		} catch (HistoricalMinioException e) {
+		} catch (final HistoricalMinioException e) {
 			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.PERSISTENCE_CREATION_ERROR,
 					"Unable to upload file: " + e.getMessage());
 		}
@@ -499,5 +530,5 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		prestoManageDBRepository.removeTable4Ontology(identification, deleteData);
 		entityDeleteionService.deleteOntology(id, userId);
 	}
-	
+
 }

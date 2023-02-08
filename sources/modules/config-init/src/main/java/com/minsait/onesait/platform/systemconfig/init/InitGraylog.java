@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,9 +70,9 @@ public class InitGraylog {
 	@Value("${onesaitplatform.graylog.user:admin}")
 	private String graylogUser;
 	@Value("${onesaitplatform.graylog.plugin.auth.path.token:http://localhost:21000/oauth-server/oauth/token}")
-	private String oauthTokenServicePath ;
+	private String oauthTokenServicePath;
 	@Value("${onesaitplatform.graylog.plugin.auth.path.userinfo: http://localhost:21000/oauth-server/oidc/userinfo}")
-	private String oauthUserinfoServicePath ;
+	private String oauthUserinfoServicePath;
 	@Value("${onesaitplatform.graylog.password}")
 	@Encryptable
 	private String graylogPassword;
@@ -87,12 +87,13 @@ public class InitGraylog {
 	private static final String REQUESTER = "onesatiPlatformClient";
 	private static final String INDEX_SET_PATH = "/api/system/indices/index_sets?skip=0&limit=0&stats=false";
 	private static final String STREAM_AUTHORIZATION_PATH = "/api/authz/shares/entities/grn::::stream:";
-	private static final String SSO_AUTH_HEADER_PATH = "api/system/authentication/http-header-auth-config";
+	private static final String SSO_AUTH_HEADER_PATH = "/api/system/authentication/http-header-auth-config";
 	private static final String BACKEND_CREATE_PATH = "/api/system/authentication/services/backends";
 	private static final String BACKEND_ACTIVATE_PATH = "/api/system/authentication/services/configuration ";
 	private static final String ROLES_PATH = "/api/authz/roles?page=1&per_page=50&sort=name&order=asc";
 
-	private static final String DEFAULT_INPUT_NAME = "GELF TCP";
+	private static final String DEFAULT_TCP_INPUT_NAME = "GELF TCP";
+	private static final String DEFAULT_UDP_INPUT_NAME = "GELF UDP";
 
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 
@@ -132,11 +133,17 @@ public class InitGraylog {
 				log.info("Creating Graylog OnesaitPlatform Auth. plugin...");
 				activateGraylogOnesaitplatformAuthPlugin(sessionToken.getSession_id());
 				log.info(" Graylog OnesaitPlatform Auth. plugin created and active.");
-				
-				// CREATE INPUT
-				log.info("Creating INPUT...");
-				createGraylogInput(sessionToken.getSession_id(), master);
+
+				// CREATE INPUT - TCP
+				log.info("Creating TCP INPUT...");
+				createGraylogInput(sessionToken.getSession_id(), DEFAULT_TCP_INPUT_NAME,
+						"org.graylog2.inputs.gelf.tcp.GELFTCPInput", master);
 				log.info("GELF TCP Input created.");
+				// CREATE INPUT - UDP
+				log.info("Creating UDP INPUT...");
+				createGraylogInput(sessionToken.getSession_id(),DEFAULT_UDP_INPUT_NAME,
+						"org.graylog2.inputs.gelf.udp.GELFUDPInput", master);
+				log.info("GELF UDP Input created.");
 				// CREATE STREAM (starting and sharing)
 				log.info("Creating Streams...");
 				for (Entry<String, String> module : modules.entrySet()) {
@@ -171,9 +178,9 @@ public class InitGraylog {
 		return result.getBody();
 	}
 
-	private void createGraylogInput(String sessionToken, NodeDTO node) {
+	private void createGraylogInput(String sessionToken, String inputName, String inputType, NodeDTO node) {
 
-		if (!existsDefaultOnesaitPlatformInput(sessionToken)) {
+		if (!existsDefaultOnesaitPlatformInput(sessionToken, inputName)) {
 			InputConfigurationDTO inputConfig = InputConfigurationDTO.builder().bindAddress("0.0.0.0")
 					.decompressSizeLimit(8388608).maxMessageSize(2097152).numberWorkerThreads(4).overrideSource(null)
 					.port(12201).recvBufferSize(1048576).tcpKeepalive(false).tlsCertFile("").tlsClientAuth("disabled")
@@ -181,8 +188,8 @@ public class InitGraylog {
 					.build();
 			InputRequestDTO inputRequest = new InputRequestDTO();
 			inputRequest.setNode(node.getNodeId());
-			inputRequest.setType("org.graylog2.inputs.gelf.tcp.GELFTCPInput");
-			inputRequest.setTitle(DEFAULT_INPUT_NAME);
+			inputRequest.setType(inputType);
+			inputRequest.setTitle(inputName);
 			inputRequest.setGlobal(false);
 			inputRequest.setConfiguration(inputConfig);
 
@@ -193,7 +200,7 @@ public class InitGraylog {
 			restTemplate.postForEntity(url, entity, String.class);
 
 		} else {
-			log.info("An input with the default name already exits in Graylog. Creation Skipped.");
+			log.info("An input with the '{}' name already exits in Graylog. Creation Skipped.", inputName);
 		}
 	}
 
@@ -242,7 +249,7 @@ public class InitGraylog {
 		restTemplate.postForEntity(url, entity, String.class);
 	}
 
-	private boolean existsDefaultOnesaitPlatformInput(String sessionToken) {
+	private boolean existsDefaultOnesaitPlatformInput(String sessionToken, String inputName) {
 
 		HttpHeaders headers = getAuthHeadersForGraylog(sessionToken);
 		HttpEntity<?> entity = new HttpEntity<>(null, headers);
@@ -250,7 +257,7 @@ public class InitGraylog {
 		ResponseEntity<InputListResponseDTO> response = restTemplate.exchange(url,
 				org.springframework.http.HttpMethod.GET, entity, InputListResponseDTO.class);
 		for (InputRequestDTO input : response.getBody().getInputs()) {
-			if (input.getTitle().equals(DEFAULT_INPUT_NAME)) {
+			if (input.getTitle().equals(inputName)) {
 				return true;
 			}
 		}
@@ -314,11 +321,12 @@ public class InitGraylog {
 		HttpHeaders headers = getAuthHeadersForGraylog(sessionToken);
 		String url = graylogExternalUri + ROLES_PATH;
 		HttpEntity<?> entity = new HttpEntity<>(null, headers);
-		ResponseEntity<RoleResponseDTO> result = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, RoleResponseDTO.class);
-		for(RoleDTO roleDto: result.getBody().getRoles()) {
-			if(roleDto.getName().equalsIgnoreCase("Admin")) {
+		ResponseEntity<RoleResponseDTO> result = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET,
+				entity, RoleResponseDTO.class);
+		for (RoleDTO roleDto : result.getBody().getRoles()) {
+			if (roleDto.getName().equalsIgnoreCase("Admin")) {
 				adminRole = roleDto;
-			} else if(roleDto.getName().equalsIgnoreCase("Reader")) {
+			} else if (roleDto.getName().equalsIgnoreCase("Reader")) {
 				readerRole = roleDto;
 			}
 		}
@@ -344,17 +352,15 @@ public class InitGraylog {
 		BackendResponseDTO backend = restTemplate.postForObject(url, entity, BackendResponseDTO.class);
 
 		log.info("   Plugin loaded into Graylog.");
-		//Activate plugin
+		// Activate plugin
 
 		log.info("   Activating loaded Plugin...");
-		String requestJson = "{\"active_backend\": \""+backend.getBackend().getId()+"\"}";
+		String requestJson = "{\"active_backend\": \"" + backend.getBackend().getId() + "\"}";
 		entity = new HttpEntity<>(requestJson, headers);
 		url = graylogExternalUri + BACKEND_ACTIVATE_PATH;
 		restTemplate.postForObject(url, entity, String.class);
 		log.info("   Loaded Plugin Activated.");
 	}
-	
-	
 
 	private HttpHeaders getAuthHeadersForGraylog(String sessionToken) {
 		String plainCreds = sessionToken + ":session";

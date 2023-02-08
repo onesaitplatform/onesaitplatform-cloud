@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -174,17 +174,22 @@
 
 				<!-- MAIN ROW -->
 				<div class="row">
-					<div th:if="!${prometheusEnabled}" class="col-md-12 col-sm-12">
-						<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
-						<div id="dashboardInclude" sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
-						<!-- END DASHBOARD INCLUDE -->
-					</div>
+					<th:block sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')">
+						<div class="col-md-5" id="treeInclude" th:if="${hasCategorizationTreeActive}">
+							<div th:include="fragments/categorizationTree::#categorizationTree" style="overflow:auto"></div>
+						</div>
+						<div th:if="!${prometheusEnabled}" th:class="${hasCategorizationTreeActive} ? col-md-7 : col-md-12">
+							<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
+							<div id="dashboardInclude" th:include="fragments/dashboard::#dashboardFragment" class="margin-top-40 margin-left-10"></div>
+							<!-- END DASHBOARD INCLUDE -->
+						</div>
 
-					<div th:if="${prometheusEnabled}" class="col-md-12 col-sm-12">
-						<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
-						<div id="dashboardInclude" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:include="fragments/adminHome::#adminHomeFragment" class="margin-top-20 margin-left-10"></div>
-						<!-- END DASHBOARD INCLUDE -->
-					</div>
+						<div th:if="${prometheusEnabled}" th:class="${hasCategorizationTreeActive} ? col-md-7 : col-md-12">
+							<!-- BEGIN ADMIN DASHBOARD INCLUDE -->
+							<div id="dashboardInclude" th:include="fragments/adminHome::#adminHomeFragment" class="margin-top-20 margin-left-10"></div>
+							<!-- END DASHBOARD INCLUDE -->
+						</div>
+					</th:block>
 
 					<!-- BEGIN TREE INCLUDE -->
 					<div class="col-md-4 col-sm-12 padding-left-40" id="treeInclude" style="display:none" sec:authorize="hasAnyAuthority('ROLE_DEVELOPER','ROLE_DATASCIENTIST')">

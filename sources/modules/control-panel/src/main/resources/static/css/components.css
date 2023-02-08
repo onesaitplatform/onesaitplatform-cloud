@@ -1,5 +1,5 @@
 /*********************************
- SOFIA2 CONSOLE ROUNDED STYLE COMPONENTS 
+ CONSOLE ROUNDED STYLE COMPONENTS 
 *********************************/
 /* Cubic Bezier Transition 2-  */
 /***
@@ -1889,6 +1889,7 @@ Utilities
 .margin-top-4 { margin-top: 4px !important; }
 .margin-top-10 { margin-top: 10px !important; }
 .margin-top-15 { margin-top: 15px !important; }
+.margin-top-16 { margin-top: 16px !important; }
 .margin-top-20 { margin-top: 20px !important; }
 .margin-top-24 { margin-top: 24px !important; }
 .margin-top-25 { margin-top: 25px !important; }
@@ -1908,6 +1909,7 @@ Utilities
 .no-margin-right { margin-right: 0px !important; }
 .margin-left-5  { margin-left:  5px !important; }
 .margin-left-10 { margin-left: 10px !important; }
+.margin-left-15 { margin-left: 15px !important; }
 .margin-left-20 { margin-left: 20px !important; }
 .margin-left-25 { margin-left: 25px !important; }
 .margin-left-30 { margin-left: 30px !important; }
@@ -1933,6 +1935,7 @@ Utilities
 .no-padding-left { padding-left: 0px !important; }
 .padding-left-5 { padding-left: 5px !important; }
 .padding-left-10 { padding-left: 10px !important; }
+.padding-left-15 { padding-left: 15px !important; }
 .padding-left-30 { padding-left: 30px !important; }
 .padding-left-40 { padding-left: 40px !important; }
 .padding-left-48 { padding-left: 48px !important; }
@@ -2897,6 +2900,28 @@ Custom Bootstrap Badges
 .badge-warning {
   background-color: #F1C40F;
   background-image: none; }
+  
+.badge-primary-action {
+  background-color:#1168A6;
+  background-image: none; }
+  
+.bg-light{
+  background-color: #f8f9fa !important;
+}
+
+.text-dark{
+  color:#212529 !important;
+}
+.text-dark:hover{
+  cursor: pointer;
+}
+
+.text-light{
+  color:#fff; !important;
+}
+.text-light:hover{
+  cursor: pointer;
+}
 
 /* Fix badge position for navs */
 .nav.nav-pills > li > a > .badge,
@@ -7998,8 +8023,8 @@ Switch checkbox
 }
 
 input:checked + .checkbox-slider {
-  background-color: white;
-  border-color: #505D66;
+  background-color: #1168A6;
+  border-color: #FFFFFF;
 }
 
 input:focus + .checkbox-slider {
@@ -8013,6 +8038,11 @@ input:checked + .checkbox-slider:before {
   transform: translateX(20px);
 }
 
+input:checked + .checkbox-slider.round:before {
+  border-radius: 50%;
+  background-color: #FFFFFF;
+}
+	
 /* Rounded sliders */
 .checkbox-slider.round {
   border-radius: 34px;
@@ -14255,10 +14285,10 @@ Customized Bootstrap Tabs
 /* Tabs and pills */
 .nav-tabs,
 .nav-pills {
-  margin-bottom: 10px; }
+  margin-bottom: 5px; }
   .nav-tabs > li > a,
   .nav-pills > li > a {
-    font-size: 14px;
+    font-size: 12px;
     -webkit-border-radius: 4px 4px 0 0;
     -moz-border-radius: 4px 4px 0 0;
     -ms-border-radius: 4px 4px 0 0;
@@ -14490,7 +14520,7 @@ Custom tabs
   margin: 0px; }
   .tabbable-line > .nav-tabs > li {
     margin: 0;
-    border-bottom: 2px solid transparent; }
+    border-bottom: 2px solid #D7DADC; }
     .tabbable-line > .nav-tabs > li > a {
       background: none !important;
       border: 0;
@@ -14511,7 +14541,7 @@ Custom tabs
           color: #404040; }
     .tabbable-line > .nav-tabs > li.open, .tabbable-line > .nav-tabs > li:hover {
       background: none;
-      border-bottom: 2px solid #9fe4ea; }
+      border-bottom: 2px solid #D7DADC; }
       .tabbable-line > .nav-tabs > li.open > a, .tabbable-line > .nav-tabs > li:hover > a {
         border: 0;
         background: none !important;
@@ -16018,7 +16048,7 @@ Horizontal Timeline
     -o-transform: translateX(0%);
     transform: translateX(0%); } }
 
-/* SOFIA2 CONSOLE EXTENDED CSS */
+/* CONSOLE EXTENDED CSS */
 .mt-timeline-horizontal {
   font-size: 14px; }
   .mt-timeline-horizontal ol, .mt-timeline-horizontal ul {
@@ -24058,7 +24088,7 @@ margin-right: 8px; }
 .no-border { border: none!important; }
 .no-shadow { box-shadow: none !important; }	
 
-/** ESTILOS PARA EL GRAFO-SOFIA2 INDEX **/
+/** ESTILOS PARA EL GRAFO INDEX **/
 #infoporlet			{ position: absolute; top: 20px; left: calc(100% - 325px); box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.2), 0 2px 5px 0 rgba(0, 0, 0, 0.19); }
 #TableInfoNetwork 	{ width: 300px; min-width: 300px; margin-bottom: 0px; }
 

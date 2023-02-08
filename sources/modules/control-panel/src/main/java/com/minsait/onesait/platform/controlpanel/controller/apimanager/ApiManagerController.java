@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -44,10 +45,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
+import com.minsait.onesait.platform.config.model.ApiOperation;
+import com.minsait.onesait.platform.config.model.ApiOperation.Type;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter.HeaderType;
 import com.minsait.onesait.platform.config.model.UserApi;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPageResponse;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeApi;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeException;
 import com.minsait.onesait.platform.controlpanel.helper.apimanager.ApiManagerHelper;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
+import com.minsait.onesait.platform.controlpanel.services.gravitee.GraviteeService;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -67,19 +77,37 @@ public class ApiManagerController {
 	private ApiManagerHelper apiManagerHelper;
 	@Autowired
 	private AppWebUtils utils;
+	@Autowired(required = false)
+	private GraviteeService graviteeService;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	@Autowired
+	private HttpSession httpSession;
+
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_404 = "error/404";
 	private static final String STATUS_OK = "{\"status\" : \"ok\"}";
+	private static final String GRAVITEE_MANAGEMENT = "/management";
+	private static final String GRAVITEE_APIS = "/apis";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createForm(Model model) {
 
 		apiManagerHelper.populateApiManagerCreateForm(model);
+		final Type[] crud = ApiOperation.Type.values();
+		final HeaderType[] paramTypes = ApiQueryParameter.HeaderType.values();
+		model.addAttribute("httpMethods", crud);
+		model.addAttribute("paramTypes", paramTypes);
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
 
 		return "apimanager/create";
 	}
@@ -94,6 +122,12 @@ public class ApiManagerController {
 		apiManagerHelper.populateApiManagerUpdateForm(model, id);
 		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
 		resourcesInUseService.put(id, utils.getUserId());
+		try {
+			model.addAttribute("graviteeSwaggerDoc", getGraviteeSwaggerDoc(id));
+		} catch (final Exception e) {
+			model.addAttribute("graviteeSwaggerDoc", new ApiPageResponse());
+
+		}
 
 		return "apimanager/create";
 	}
@@ -104,8 +138,24 @@ public class ApiManagerController {
 			return ERROR_403;
 		}
 		apiManagerHelper.populateApiManagerShowForm(model, id);
-
 		return "apimanager/show";
+	}
+
+	@GetMapping(value = "/gravitee/{id}", produces = "text/html")
+	public String graviteeStats(@PathVariable("id") String id, Model model, @RequestParam("iframe") String iframe) {
+		if (!apiManagerService.hasUserAccess(id, utils.getUserId())) {
+			return ERROR_403;
+		}
+		final Api api = apiManagerService.getById(id);
+		if (null == graviteeService || null == api || !StringUtils.hasText(api.getGraviteeId())) {
+			return ERROR_404;
+		}
+		final String url = resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.UI).concat(GRAVITEE_MANAGEMENT)
+				.concat(GRAVITEE_APIS).concat("/" + api.getGraviteeId()).concat("/" + iframe);
+		apiManagerHelper.populateApiManagerShowForm(model, id);
+		model.addAttribute("api", api);
+		model.addAttribute("url", url);
+		return "apimanager/gravitee";
 	}
 
 	@GetMapping(value = "/list", produces = "text/html")
@@ -113,9 +163,16 @@ public class ApiManagerController {
 	public String list(Model model, @RequestParam(required = false) String apiId,
 			@RequestParam(required = false) String state, @RequestParam(required = false) String user) {
 		try {
+
+			//CLEANING APP_ID FROM SESSION
+			httpSession.removeAttribute(APP_ID);
+
 			apiManagerHelper.populateApiManagerListForm(model);
 
 			model.addAttribute("apis", apiManagerService.loadAPISByFilter(apiId, state, user, utils.getUserId()));
+			if (graviteeService != null) {
+				addGraviteeUrls(model);
+			}
 
 		} catch (final Exception e) {
 			log.error("Error at /controlpanel/apimanager/list {}", e);
@@ -142,8 +199,20 @@ public class ApiManagerController {
 
 			final String apiId = apiManagerService.createApi(apiManagerHelper.apiMultipartMap(api), operationsObject,
 					authenticationObject);
-			if (!StringUtils.isEmpty(postProcessFx)) {
+			if (StringUtils.hasText(postProcessFx)) {
 				apiManagerService.updateApiPostProcess(apiId, postProcessFx);
+			}
+
+			if (graviteeService != null && publish2gravitee) {
+				publish2Gravitee(apiId);
+			}
+
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId!=null) {
+				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.API.toString());
+				httpSession.setAttribute("resourceIdentificationAdded", api.getIdentification());
+				httpSession.removeAttribute(APP_ID);
+				return REDIRECT_PROJECT_SHOW + projectId.toString();
 			}
 
 			return "redirect:/apimanager/list/";
@@ -174,8 +243,12 @@ public class ApiManagerController {
 
 			apiManagerService.updateApi(apiManagerHelper.apiMultipartMap(api), deprecateApis, operationsObject,
 					authenticationObject);
-			if (!StringUtils.isEmpty(postProcessFx)) {
+			if (StringUtils.hasText(postProcessFx)) {
 				apiManagerService.updateApiPostProcess(api.getId(), postProcessFx);
+			}
+
+			if (graviteeService != null && publish2gravitee) {
+				publish2Gravitee(id);
 			}
 			resourcesInUseService.removeByUser(id, utils.getUserId());
 			return "redirect:/apimanager/show/" + api.getId();
@@ -197,6 +270,9 @@ public class ApiManagerController {
 			final Api api = apiManagerService.getById(id);
 			if (null != api) {
 				apiManagerService.removeAPI(id);
+				if (StringUtils.hasText(api.getGraviteeId()) && graviteeService != null) {
+					graviteeService.deleteApi(api.getGraviteeId());
+				}
 			}
 
 		} catch (final RuntimeException e) {
@@ -231,6 +307,22 @@ public class ApiManagerController {
 			final UserApiDTO userApiDTO = new UserApiDTO(userApi);
 
 			return new ResponseEntity<>(userApiDTO, HttpStatus.CREATED);
+		} catch (final RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+	}
+
+
+	@PostMapping(value = "/authorizationOnOntology", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<Void> userHasAuthorizationOnOntology(@RequestParam String api, @RequestParam String user) {
+		try {
+
+			if(apiManagerService.permision(api, user)) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (final RuntimeException e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
@@ -295,6 +387,20 @@ public class ApiManagerController {
 			return ERROR_403;
 		}
 		apiManagerService.updateState(id, state);
+		final Api api = apiManagerService.getById(id);
+		if (StringUtils.hasText(api.getGraviteeId())) {
+			switch (api.getState()) {
+			case PUBLISHED:
+			case DEPRECATED:
+				graviteeService.changeLifeCycleState(api.getGraviteeId(), api.getState());
+				break;
+			case DELETED:
+				graviteeService.changeLifeCycleState(api.getGraviteeId(), api.getState());
+				break;
+			default:
+				break;
+			}
+		}
 		return "redirect:/apimanager/list";
 	}
 
@@ -318,10 +424,91 @@ public class ApiManagerController {
 		}
 	}
 
+	private void addGraviteeUrls(Model model) {
+
+		final String UI = resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.UI);
+		model.addAttribute("graviteeUI", UI);
+
+	}
+
+	private void publish2Gravitee(String apiId) throws GenericOPException {
+		final Api apiDb = apiManagerService.getById(apiId);
+		try {
+			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb);
+			apiDb.setGraviteeId(graviteeApi.getApiId());
+			apiManagerService.updateApi(apiDb);
+		} catch (final GraviteeException e) {
+			log.error("Could not publish API to Gravitee {}", e.getMessage());
+		}
+	}
+
 	@GetMapping(value = "/freeResource/{id}")
 	public @ResponseBody void freeResource(@PathVariable("id") String id) {
 		resourcesInUseService.removeByUser(id, utils.getUserId());
 		log.info("free resource", id);
+	}
+
+	@PostMapping(value = "/clone")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public @ResponseBody ResponseEntity<String> cloneApi(Model model, @RequestParam String id,
+			@RequestParam String identification, RedirectAttributes redirect) {
+		try {
+
+			final String apiId = apiManagerService.cloneApi(id, identification, utils.getUserId());
+			if (graviteeService != null && apiManagerService.isGraviteeApi(id)) {
+				publish2Gravitee(apiId);
+			}
+
+			return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
+		} catch (final Exception e) {
+			log.error("Error clonning API : {}", e);
+			final Map<String, String> response = new HashMap<>();
+			response.put("status", "error");
+			response.put("cause", e.getMessage());
+			return new ResponseEntity<>(response.toString(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	private ApiPageResponse getGraviteeSwaggerDoc(String apiId) throws GenericOPException {
+		final Api apiDb = apiManagerService.getById(apiId);
+		final String apiGraviteeId = apiDb.getGraviteeId();
+
+		if (graviteeService != null && apiManagerService.isGraviteeApi(apiId)) {
+			final List<ApiPageResponse> list = graviteeService.getPublishedApiPages(apiGraviteeId);
+			if (!list.isEmpty()) {
+				return list.get(0);
+			}
+		}
+
+		return new ApiPageResponse();
+	}
+
+	@PostMapping(value = "/updateGraviteeSwaggerDoc", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<String> updateGraviteeSwagger(@RequestParam String apiId, @RequestParam String content) {
+		try {
+			if (!apiManagerService.hasUserEditAccess(apiId, utils.getUserId())) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+			updateGraviteeSwaggerDoc(apiId, content);
+
+			return new ResponseEntity<>(STATUS_OK, HttpStatus.OK);
+		} catch (final RuntimeException | GenericOPException e) {
+			log.error("Error updating Gravitee Swagger documentation : {}", e);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+
+	}
+
+	private ApiPageResponse updateGraviteeSwaggerDoc(String apiId, String content) throws GenericOPException {
+		final Api apiDb = apiManagerService.getById(apiId);
+		final String apiGraviteeId = apiDb.getGraviteeId();
+
+		if (graviteeService != null && apiManagerService.isGraviteeApi(apiId)) {
+			return graviteeService.processUpdateAPIDocs(apiDb, content);
+		}
+
+		return new ApiPageResponse();
 	}
 
 	@GetMapping(value = "/token/list")

@@ -1,0 +1,103 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Modal Parameters Deploy-->
+<div th:if="${deploymentParameters}" id="parametersDeployModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-xl">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"></button>
+        <h4 class="modal-title" th:text="#{microservice.deployment.parametrize}">Parameterize</h4>
+      </div>		
+      <div class="modal-body">
+	    <!-- PARAMETERS -->
+		<div class="row">
+			<div class="col-md-12 col-sm-6 col-xs-12">
+			<!-- Fill parameters -->
+				<div class="form-group">
+					<div id="deployment-parameters" class="margin-bottom-20">
+						<table class="table" id="table_deployment_parameters" data-loaded="false">
+							<thead>
+								<tr class="cabecera-tabla" role="row" >
+									<th class="titulo-columnas" th:text="#{reports.parameter.name}">Parameter name</th>
+									<th class="titulo-columnas" th:text="#{reports.parameter.name.value}">Parameter value</th>
+									<!-- <th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th> -->
+								</tr>
+							</thead>
+							<tbody id="table-body">
+								<tr>
+									<td>
+										<input type="text" name="name[]" readonly="readonly"   class="form-control" value="Project"/>
+									</td>																
+									<td th:if="${caas == 'OPENSHIFT'}">
+										<select  th:attr="data-id=${deploymentParameters.id}" id="environment" name="environment[]" class="form-control select-modal accesstypes" data-live-search="true" data-width="100%">			
+											<option value="" th:text="#{microservice.select.project}"> Select Project...</option>									
+											<option th:each="project :${deploymentParameters.environments}" th:value="${project}" th:text="${project}" ></option>
+										</select>
+									</td>
+									<td th:if="${caas != 'OPENSHIFT'}">
+										<select  th:attr="data-id=${deploymentParameters.id}" id="environment" name="environment[]" class="form-control select-modal accesstypes" data-live-search="true" data-width="100%" onchange="Microservice.List.getHosts(this)">			
+											<option value="" th:text="#{microservice.select.project}"> Select Project...</option>									
+											<option th:each="project :${deploymentParameters.environments}" th:value="${project}" th:text="${project}" ></option>
+										</select>
+									</td>				
+								</tr>
+								<tr th:if="${caas != 'OPENSHIFT'}">
+									<td>
+										<input type="text" name="name[]" readonly="readonly"  class="form-control" value="Host"/>
+									</td>																
+									<td>
+										<select id="worker" name="workers[]" class="form-control select-modal accesstypes" data-live-search="true" data-width="100%" >			
+											<option value="" th:text="#{microservice.select.host}"> Select Host...</option>									
+											<option th:each="worker :${deploymentParameters.workers}" th:value="${worker}" th:text="${worker}" ></option>
+										</select>
+									</td>			
+								</tr>
+								<tr>
+									<td>
+										<input type="text"  readonly="readonly"  class="form-control" value="Onesait Server URL"/>
+									</td>
+									<td>
+										<input id="onesaitServerUrl" type="text" th:value="${deploymentParameters.onesaitServerUrl}" class="form-control" />
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<input type="text" readonly="readonly"  class="form-control" value="Docker Image URL"/>
+									</td>
+									<td>
+										<input id="dockerImageUrl" type="text" th:value="${deploymentParameters.dockerImageUrl}" class="form-control" />
+									</td>
+								</tr>
+							</tbody>														
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+      </div>
+      <div id="pulse" class="col-md-12 hide">	
+  		<div class="pulsating-circle"></div>										
+  	  </div>									      
+      <div class="modal-footer">
+        <button type="button" th:attr="data-id=${deploymentParameters.id}" class="btn btn-circle btn-primary" th:text="#{microservice.deploy}" onclick="Microservice.List.deployWithParametersOC(this)">Close</button>
+        <button type="button" class="btn btn-circle btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>

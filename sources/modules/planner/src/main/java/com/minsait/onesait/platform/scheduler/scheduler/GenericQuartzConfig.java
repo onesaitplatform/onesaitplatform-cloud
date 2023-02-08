@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,19 +42,23 @@ public abstract class GenericQuartzConfig {
 	protected Properties quartzProperties;
 
 	@Autowired
+	@Qualifier("quartzPropertiesSingleThread")
+	protected Properties quartzPropertiesSingleThread;
+
+	@Autowired
 	protected SchedulerConfig quartzDataSourceConfig;
 
 	public boolean checksIfAutoStartup() {
-		List<String> schedulersToStartup = quartzDataSourceConfig.getAutoStartupSchedulers();
-		return (schedulersToStartup != null && schedulersToStartup.contains(getSchedulerBeanName()));
+		final List<String> schedulersToStartup = quartzDataSourceConfig.getAutoStartupSchedulers();
+		return schedulersToStartup != null && schedulersToStartup.contains(getSchedulerBeanName());
 	}
 
 	public abstract String getSchedulerBeanName();
 
 	public SchedulerFactoryBean getSchedulerFactoryBean(JobFactory jobFactory,
-			PlatformTransactionManager transactionManager) {
+			PlatformTransactionManager transactionManager, Boolean singleThreaded) {
 
-		SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
+		final SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
 
 		schedulerFactoryBean.setTransactionManager(transactionManager);
 		schedulerFactoryBean.setOverwriteExistingJobs(true);
@@ -69,7 +73,11 @@ public abstract class GenericQuartzConfig {
 
 		schedulerFactoryBean.setJobFactory(jobFactory);
 		quartzProperties.setProperty("org.quartz.jobStore.driverDelegateClass", driverDelegateClass);
-		schedulerFactoryBean.setQuartzProperties(quartzProperties);
+		if (singleThreaded) {
+			schedulerFactoryBean.setQuartzProperties(quartzPropertiesSingleThread);
+		} else {
+			schedulerFactoryBean.setQuartzProperties(quartzProperties);
+		}
 
 		return schedulerFactoryBean;
 	}

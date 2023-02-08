@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.controller.configuration;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.Configuration;
+
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
+import com.minsait.onesait.platform.config.services.exceptions.ConfigServiceException;
+import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -50,6 +56,8 @@ public class ConfigurationController {
 	@Autowired
 	private ConfigurationService configurationService;
 	@Autowired
+	private ProjectResourceAccessRepository projectResourceAccessRepository;
+	@Autowired
 	private AppWebUtils utils;
 	@Autowired
 	private UserService userService;
@@ -57,6 +65,8 @@ public class ConfigurationController {
 	private IntegrationResourcesService resourcesService;
 	@Autowired
 	private OPResourceService resourceService;
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Value("${dynamic-load-balancer.enable}")
 	private Boolean nginxServiceEnabled;
@@ -64,9 +74,14 @@ public class ConfigurationController {
 	private static final String CONFIGURATION_STR = "configuration";
 	private static final String CONF_CREATE = "configurations/create";
 	private static final String REDIRECT_CONF_LIST = "redirect:/configurations/list";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@GetMapping("/list")
 	public String list(Model model) {
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
 
 		final List<Configuration> configurations = configurationService
 				.getAllConfigurations(userService.getUser(utils.getUserId()));
@@ -84,6 +99,12 @@ public class ConfigurationController {
 		configuration.setUser(userService.getUser(utils.getUserId()));
 
 		model.addAttribute(CONFIGURATION_STR, configuration);
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+		
 		return CONF_CREATE;
 
 	}
@@ -96,7 +117,22 @@ public class ConfigurationController {
 			log.debug("Missing fields");
 			return "redirect:/configurations/create";
 		}
-		configurationService.createConfiguration(configuration);
+		try {
+			configurationService.createConfiguration(configuration);
+		}catch (ConfigServiceException e){
+			utils.addRedirectMessage(e.getMessage(), redirectAttributes);
+			return "redirect:/configurations/create";
+		}
+		
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.CONFIGURATION.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", configuration.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			return REDIRECT_PROJECT_SHOW + projectId.toString();
+		}
+		
 		return REDIRECT_CONF_LIST;
 
 	}
@@ -122,7 +158,8 @@ public class ConfigurationController {
 	}
 
 	@PutMapping("/update/{id}")
-	public String update(@PathVariable String id, Model model, @ModelAttribute Configuration configuration) {
+	public String update(@PathVariable String id, Model model, @ModelAttribute Configuration configuration,
+        RedirectAttributes redirectAttributes) {
 
 		if (configuration != null) {
 
@@ -136,7 +173,8 @@ public class ConfigurationController {
 				}
 			} catch (final Exception e) {
 				log.debug(e.getMessage());
-				return CONF_CREATE;
+	            utils.addRedirectException(e, redirectAttributes);
+				return "redirect:/configurations/update/" + id;
 			}
 		} else {
 			return "redirect:/update/" + id;
@@ -173,11 +211,20 @@ public class ConfigurationController {
 	}
 
 	@DeleteMapping("/{id}")
-	public String delete(Model model, @PathVariable("id") String id) {
+	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes ra) {
+		
 		Configuration configuration = null;
 		if (id != null) {
 			configuration = configurationService.getConfiguration(id);
 		}
+		ProjectResourceAccessList getResource = null;
+		getResource = projectResourceAccessRepository.getResource_id(id);
+		
+		if (getResource != null) {
+			utils.addRedirectMessage("This setting is shared within an app, please revoke app access before deleting", ra);
+			return REDIRECT_CONF_LIST;
+		}
+	
 		if (configuration == null)
 			return "error/404";
 		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())

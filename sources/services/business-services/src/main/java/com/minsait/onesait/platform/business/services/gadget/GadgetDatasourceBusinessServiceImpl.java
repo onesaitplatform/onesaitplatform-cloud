@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,13 +82,17 @@ public class GadgetDatasourceBusinessServiceImpl implements GadgetDatasourceBusi
 			}
 			Ontology o = ontologyService.getOntologyByIdentification(ontology, user);
 			String sampleQuery;
-			boolean isSimpleMode = isDatasourceSimpleMode(gd);
-			if (forFilter && (isSimpleMode || isSimpleQuery(gd))) {
-				sampleQuery = this.gadgetDatasourceService.getSampleQueryForFilterGadgetDatasourceById(datasourceId,
-						ontology, user, limit);
+			if (o.getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH) {
+				boolean isSimpleMode = isDatasourceSimpleMode(gd);
+				if (forFilter && (isSimpleMode || isSimpleQuery(gd))) {
+					sampleQuery = this.gadgetDatasourceService.getSampleQueryForFilterGadgetDatasourceById(datasourceId,
+							ontology, user, limit);
+				} else {
+					sampleQuery = this.gadgetDatasourceService.getSampleQueryGadgetDatasourceById(datasourceId, ontology,
+							user, limit);
+				}
 			} else {
-				sampleQuery = this.gadgetDatasourceService.getSampleQueryGadgetDatasourceById(datasourceId, ontology,
-						user, limit);
+				sampleQuery = query;
 			}
 			if (!o.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
 				return queryToolService.querySQLAsJson(user, ontology, sampleQuery, 0);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,9 @@ public class CacheController {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Autowired
 	private AppWebUtils utils;
@@ -70,11 +74,14 @@ public class CacheController {
 
 	private static final String CACHE = "cache";
 	private static final String CANNOT_UPDATE_CACHE = "Cannot update cache";
+	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String list(Model model, HttpServletRequest request, String identification) {
-
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		model.addAttribute("caches", cacheBS.getByIdentificationLikeOrderByIdentification(identification));
 		return "caches/list";
 	}

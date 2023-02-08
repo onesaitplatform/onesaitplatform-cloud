@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,7 +258,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 					VersioningIOService.DIR);
 			gitOperations.checkout(gitConfiguration.getBranch(), VersioningIOService.DIR, true);
 		} else {
-			if (StringUtils.isEmpty(gitConfiguration.getSite())) {
+			if (!StringUtils.hasText(gitConfiguration.getSite())) {
 				gitConfiguration.setSite(extractGitSiteFromRepositorty(gitConfiguration.getProjectURL()));
 			}
 			gitConfiguration.setEmail(
@@ -384,7 +384,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		report.setInitTime(System.currentTimeMillis());
 		versioningTxBusinessService.generateSnapShot(tagName, report, getVersionableClases(), getGitConfiguration());
 		if (report.getErrors().isEmpty()) {
-			if (!StringUtils.isEmpty(tagName)) {
+			if (!!StringUtils.hasText(tagName)) {
 				report.setResultMessage("Created snapshot of resources and Git Tag " + tagName + " successfully.");
 			} else {
 				report.setResultMessage("Created snapshot of resources successfully.");
@@ -417,7 +417,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 		try {
 			Versionable<?> o = (Versionable<?>) Class.forName(saveFileToEntityDTO.getClazz()).newInstance();
 			o = (Versionable<?>) o.deserialize(saveFileToEntityDTO.getFileContent());
-			if (!StringUtils.isEmpty(saveFileToEntityDTO.getCommitMsg())) {
+			if (!!StringUtils.hasText(saveFileToEntityDTO.getCommitMsg())) {
 				VersioningCommitContextHolder.setCommitMessage(saveFileToEntityDTO.getCommitMsg());
 			} else {
 				VersioningCommitContextHolder
@@ -449,7 +449,7 @@ public class VersioningBusinessServiceImpl implements VersioningBusinessService 
 						true);
 				gitOperations.configureGitAndInit(gitConfiguration.getUser(), gitConfiguration.getEmail(),
 						VersioningIOService.DIR);
-				if (!StringUtils.isEmpty(gitConfiguration.getLastCommitSHA())) {
+				if (!!StringUtils.hasText(gitConfiguration.getLastCommitSHA())) {
 					versioningTxBusinessService.syncOriginAndDB(gitConfiguration.getLastCommitSHA());
 				}
 			} catch (final Exception e) {

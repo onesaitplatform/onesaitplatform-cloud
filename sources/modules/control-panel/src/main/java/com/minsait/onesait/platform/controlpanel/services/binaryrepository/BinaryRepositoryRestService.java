@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ public class BinaryRepositoryRestService {
 			final ByteArrayResource resource = new ByteArrayResource(
 					((ByteArrayOutputStream) file.getData()).toByteArray());
 
-			if (StringUtils.isEmpty(disposition)) {
+			if (!StringUtils.hasText(disposition)) {
 				return ResponseEntity.ok()
 						.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=".concat(file.getFileName()))
 						.contentLength(resource.contentLength())

@@ -1,6 +1,8 @@
 onesaitplatform:
   env:
     database:
+      nebula-hosts: graphd:9669
+      nebula-pool-size: 10
       execution-timeout: !!java.lang.Long ${RTDB_EXECUTION_TIMEOUT}
       queries-limit: ${RTDB_QUERIES_LIMIT}
       mongodb-servers: ${REALTIMEDBSERVERS}

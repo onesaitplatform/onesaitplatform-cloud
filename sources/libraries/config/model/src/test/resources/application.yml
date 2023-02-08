@@ -337,7 +337,7 @@ onesaitplatform: #Config onesait Platform specific
    queryTool:
       allowedOperations: false
    metrics:
-      collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+      collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
       enabled: false
    graylog:
       enabled: false

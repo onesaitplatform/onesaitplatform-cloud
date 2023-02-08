@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class Project extends ProjectParent implements Versionable<Project> {
 
 	@JsonSetter("app")
 	public void setAppJson(String appid) {
-		if (!StringUtils.isEmpty(appid)) {
+		if (StringUtils.hasText(appid)) {
 			final App a = new App();
 			a.setId(appid);
 			a.setProject(this);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public interface BinaryFileService {
 			throws GenericOPException;
 
 	public BinaryFileAccess getAuthorizationById(String id);
-	
+
 	public List<BinaryFileAccess> getAuthorizations(String id, User user);
 
 	public void deleteBinaryFileAccess(String id, User user) throws GenericOPException;
@@ -58,11 +58,16 @@ public interface BinaryFileService {
 	public boolean canUserEditAccess(User user, String id);
 
 	public void setAuthorization(String id, Type accessType, User user);
-	
+
 	public void deleteAuthorization(String id, User user) throws GenericOPException;
 
 	public List<BinaryFile> getFileByPath(String fileId);
 
 	public List<BinaryFile> getAllFilesUserIsAllowed(User user);
 
+	public void updateUpdateTime(String fileId);
+
+	long countBinaryFiles();
+
+	public List<BinaryFile> getAllFilesByName(User user, String name);
 }

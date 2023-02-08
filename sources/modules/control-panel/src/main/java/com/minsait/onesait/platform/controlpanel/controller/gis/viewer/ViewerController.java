@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,9 @@ public class ViewerController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String BLOCK_PRIOR_LOGIN = "block_prior_login";
 	private static final String REDIRECT_VIEWERS_VIEW = "viewers/view";
@@ -119,12 +123,15 @@ public class ViewerController {
 	private static final String LIST = "/controlpanel/viewers/list";
 	private static final String USER_NOT_PERMISSION = "User has not permission";
 	private static final String REDIRECT_LOGIN = "redirect:/login";
+	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String description) {
-
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		List<Viewer> viewers = new ArrayList<>();
 
 		if (identification != null && identification.equals("")) {

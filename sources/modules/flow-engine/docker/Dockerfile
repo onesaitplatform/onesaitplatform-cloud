@@ -1,5 +1,5 @@
 # Step1 - nodejs binaries
-FROM node:8.11.4-alpine AS nodebase
+FROM node:16-alpine AS nodebase
 
 # Step2 - openjdk base image
 FROM onesaitplatform/baseimage:latest
@@ -49,20 +49,25 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
 	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
     TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
     PROMETHEUS_ENABLED=false \
-    FLOW_SECRET=n0-s3cr3T
+    FLOW_SECRET=n0-s3cr3T \
+    HTTP_LOG_LEVEL=TRACE
 
 COPY --from=nodebase /usr/local/bin/node /bin
-
+COPY --from=nodebase /usr/lib /usr/lib
+COPY --from=nodebase /usr/local/share /usr/local/share
+COPY --from=nodebase /usr/local/lib /usr/local/lib
+COPY --from=nodebase /usr/local/include /usr/local/include
+COPY --from=nodebase /usr/local/bin /usr/local/bin
 # Download tzdata for Timezone support and aspectj library
 RUN apk add --no-cache \
     tzdata \
-    npm \
+    #npm 
     python \
     build-base \
     libexecinfo-dev \
     libc6-compat \
     git \
-    openssh
+    openssh 
 
 RUN mkdir -p /opt/nodeRed && \
 	  mkdir -p /tmp/logs/flowEngine && \
@@ -85,18 +90,17 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local && \
-    chmod -R 777 /opt/nodeRed &&\
-    cd /opt/nodeRed/Flow-Engine-Manager &&\
-    npm i appmetrics-dash && \
-    npm i prom-client
+    chmod -R 777 /opt/nodeRed
+WORKDIR /opt/nodeRed/Flow-Engine-Manager
+RUN npm i appmetrics-dash  && \ 
+    npm i prom-client && \ 
+    npm rebuild
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
+
+USER onesait
 
 EXPOSE 10000 20100 5050
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
-
-USER onesait
-
 ENTRYPOINT ["docker-entrypoint.sh"]

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "ONTOLOGY", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
 @EntityListeners(AuditEntityListener.class)
-@ToString
+@ToString(exclude= {"ontologyAI", "jsonSchema"})
 public class Ontology extends OPResource implements Versionable<Ontology> {
 
 	private static final long serialVersionUID = 1L;
@@ -71,8 +71,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	}
 
 	public enum RtdbDatasource {
-
-		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB, NO_PERSISTENCE, PRESTO, TIMESCALE
+		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB, NO_PERSISTENCE, PRESTO, TIMESCALE, AI_MINDS_DB, NEBULA_GRAPH
 	}
 
 	public enum RtdbToHdbStorage {
@@ -207,6 +206,11 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Setter
 	private OntologyTimeSeries ontologyTimeSeries;
 
+	@OneToOne(mappedBy = "ontology", fetch = FetchType.EAGER)
+	@Getter
+	@Setter
+	private OntologyAI ontologyAI;
+
 	@Column(name = "RTDB_DATASOURCE", length = 255)
 	@Getter
 	@Setter
@@ -264,6 +268,14 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Getter
 	@Setter
 	private String jsonLdContext;
+	
+	@Column(name = "ENABLE_DATACLASS", nullable = false)
+    @Type(type = "org.hibernate.type.BooleanType")
+    @ColumnDefault("false")
+    @NotNull
+    @Getter
+    @Setter
+    private boolean enableDataClass;
 
 	public void addOntologyUserAccess(OntologyUserAccess ontologyUserAccess) {
 		ontologyUserAccess.setOntology(this);
@@ -336,7 +348,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 
 	@JsonSetter("dataModel")
 	public void setDataModelJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final DataModel o = new DataModel();
 			o.setId(id);
 			dataModel = o;
@@ -345,7 +357,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 
 	@JsonSetter("ontologyKPI")
 	public void setOntologyKPIJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final OntologyKPI o = new OntologyKPI();
 			o.setId(id);
 			o.setOntology(this);
@@ -353,9 +365,19 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 		}
 	}
 
+	@JsonSetter("ontologyAI")
+	public void setOntologyAIJson(String id) {
+		if (StringUtils.hasText(id)) {
+			final OntologyAI o = new OntologyAI();
+			o.setId(id);
+			o.setOntology(this);
+			ontologyAI = o;
+		}
+	}
+
 	@JsonSetter("ontologyTimeSeries")
 	public void setOntologyTimeSeriesJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final OntologyTimeSeries o = new OntologyTimeSeries();
 			o.setId(id);
 			o.setOntology(this);
@@ -369,7 +391,9 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 		final ObjectNode node = new YAMLMapper().valueToTree(this);
 		node.put("dataModel", dataModel == null ? null : dataModel.getId());
 		node.put("ontologyKPI", ontologyKPI == null ? null : ontologyKPI.getId());
+		node.put("ontologyAI", ontologyAI == null ? null : ontologyAI.getId());
 		node.put("ontologyTimeSeries", ontologyTimeSeries == null ? null : ontologyTimeSeries.getId());
+		node.put("ontologyAI", ontologyAI == null ? null : ontologyAI.getId());
 		try {
 			return mapper.writeValueAsString(node);
 		} catch (final JsonProcessingException e) {

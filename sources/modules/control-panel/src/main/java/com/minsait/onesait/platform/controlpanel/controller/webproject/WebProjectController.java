@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,9 @@ public class WebProjectController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
@@ -68,12 +72,16 @@ public class WebProjectController {
 	private static final String WEBPROJ_CREATE = "webprojects/create";
 	private static final String REDIRECT_WEBPROJ_CREATE = "redirect:/webprojects/create";
 	private static final String REDIRECT_WEBPROJ_LIST = "redirect:/webprojects/list";
+	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
 
 		final List<WebProjectDTO> webprojects = webProjectService
 				.getWebProjectsWithDescriptionAndIdentification(utils.getUserId(), identification, description);

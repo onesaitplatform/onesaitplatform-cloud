@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,26 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.FlowDomain;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface FlowDomainRepository extends JpaRepository<FlowDomain, String> {
 
 	FlowDomain findByIdentification(String identification);
 
 	FlowDomain findByUserUserId(String userId);
+	
+	@Query("SELECT d "
+			+ "FROM FlowDomain AS d " + "WHERE (d.user=:user OR "
+			+ "d.id IN (SELECT pra.resource.id " + "FROM ProjectResourceAccess AS pra " + "WHERE pra.user=:user) OR "
+			+ "d.id IN (SELECT prar.resource.id FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user ))")
+	List<FlowDomain> findByUserAndPermissions(@Param("user") User user);
 
 	@Query("SELECT d.port FROM FlowDomain as d")
 	List<Integer> findAllDomainPorts();
@@ -55,4 +63,8 @@ public interface FlowDomainRepository extends JpaRepository<FlowDomain, String> 
 	@Modifying
 	@Transactional
 	void deleteByIdNotIn(Collection<String> ids);
+	
+	@Override
+	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
+	<S extends FlowDomain> S save(S FlowDomain);
 }

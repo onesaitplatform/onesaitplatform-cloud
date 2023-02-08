@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import com.minsait.onesait.platform.config.components.AllConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.ModulesUrls;
 import com.minsait.onesait.platform.config.components.Urls;
+import com.minsait.onesait.platform.config.model.Configuration;
+import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 
 import lombok.Getter;
@@ -65,6 +67,7 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY,
 		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL, ADMIN;
 	}
+
 	public enum Module {
 		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"),
 		ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"),
@@ -72,8 +75,8 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 		RULES_ENGINE("rulesEngine"), BPM_ENGINE("bpmEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
 		GIS_VIEWER("gisViewer"), REPORT_ENGINE("reportEngine"), OPEN_DATA("openData"), DATACLEANERUI("dataCleanerUI"),
 		LOGCENTRALIZER("logCentralizer"), KEYCLOAK_MANAGER("keycloakManager"), EDGE("edge"), MINIO("minio"),
-		PRESTO("presto"), PROMETHEUS("prometheus"), SERVERLESS("serverless"), MODELJSONLD("modeljsonld");
-
+		PRESTO("presto"), PROMETHEUS("prometheus"), SERVERLESS("serverless"), MODELJSONLD("modeljsonld"),
+		NEBULA_GRAPH("nebula"), SPARK("spark"), DATALABELING("datalabeling");
 
 		String moduleString;
 
@@ -194,6 +197,19 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					return urls.getDomain().getBase();
 				}
 				break;
+
+			case GRAVITEE:
+				switch (service) {
+				case UI:
+					return urls.getGravitee().getUi();
+				case MANAGEMENT:
+					return urls.getGravitee().getManagement();
+				case GATEWAY:
+					return urls.getGravitee().getGateway();
+				default:
+					break;
+				}
+				break;
 			case MONITORINGUI:
 				switch (service) {
 				case BASE:
@@ -210,6 +226,16 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					return urls.getRulesEngine().getAdvice();
 				case BASE:
 					return urls.getRulesEngine().getBase();
+				default:
+					break;
+				}
+				break;
+			case BPM_ENGINE:
+				switch (service) {
+				case BASE:
+					return urls.getBpmEngine().getBase();
+				case DEPLOYMENT:
+					return urls.getBpmEngine().getDeployment();
 				default:
 					break;
 				}
@@ -232,10 +258,58 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					break;
 				}
 				break;
+			case GIS_VIEWER:
+				switch (service) {
+				case VIEW:
+					return urls.getGisViewer().getView();
+				default:
+					break;
+				}
+			case OPEN_DATA:
+				switch (service) {
+				case BASE:
+					return urls.getOpenData().getBase();
+				default:
+					break;
+				}
+				break;
+			case DATACLEANERUI:
+				switch (service) {
+				case BASE:
+					return urls.getDataCleanerUI().getBase();
+				case EMBEDDED:
+					return urls.getDataCleanerUI().getEmbedded();
+				default:
+					break;
+				}
+				break;
+			case LOGCENTRALIZER:
+				switch (service) {
+				case BASE:
+					return urls.getLogCentralizer().getBase();
+				}
+			case KEYCLOAK_MANAGER:
+				switch (service) {
+				case BASE:
+					return urls.getKeycloakManager().getBase();
+				case ADVICE:
+					return urls.getKeycloakManager().getAdvice();
+				case ADMIN:
+					return urls.getKeycloakManager().getAdmin();
+				default:
+					break;
+				}
 			case PROMETHEUS:
 				switch (service) {
 				case BASE:
 					return urls.getPrometheus().getBase();
+				default:
+					break;
+				}
+			case EDGE:
+				switch (service) {
+				case BASE:
+					return urls.getEdge().getBase();
 				default:
 					break;
 				}
@@ -264,6 +338,30 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 				switch (service) {
 				case BASE:
 					return urls.getModeljsonld().getBase();
+				default:
+					break;
+				}
+			case DATALABELING:
+				switch (service) {
+				case BASE:
+					return urls.getDatalabeling().getBase();
+				case EMBEDDED:
+					return urls.getDatalabeling().getEmbedded();
+				default:
+					break;
+				}
+				break;
+			case NEBULA_GRAPH:
+				switch (service) {
+				case BASE:
+					return urls.getNebula().getBase();
+				default:
+					break;
+				}
+			case SPARK:
+				switch (service) {
+				case BASE:
+					return urls.getSpark().getMasterBase();
 				default:
 					break;
 				}
@@ -358,5 +456,10 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 				return null;
 			}
 		}
+	}
+
+	@Override
+	public Configuration getBillableModules() {
+		return configurationService.getConfiguration(Type.ENDPOINT_MODULES, profile, "BillableModules");
 	}
 }

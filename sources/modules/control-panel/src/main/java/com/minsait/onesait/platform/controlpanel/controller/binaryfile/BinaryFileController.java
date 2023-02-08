@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +54,9 @@ import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.BinaryFileAccess;
 import com.minsait.onesait.platform.config.model.ODBinaryFilesDataset;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
+import com.minsait.onesait.platform.config.services.opendata.binaryFiles.BinaryFilesDatasetService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
@@ -69,31 +72,69 @@ public class BinaryFileController {
 	@Autowired
 	private BinaryFileService binaryFileService;
 	@Autowired
+	BinaryFilesDatasetService binaryFilesDatasetService;
+	@Autowired
 	private AppWebUtils webUtils;
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private HttpSession httpSession;
 
+	private static final String APP_ID = "appId";
 	private static final String REDIRECT_FILES_LIST = "redirect:/files/list";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@GetMapping("list")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	@Transactional
-	public String list(Model model) {
-		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId())).stream()
-				.filter(bf -> bf.getRepository() != RepositoryType.MINIO_S3).collect(Collectors.toList());
-		
-		final Map<String, String> accessMap = new HashMap<>();
-		final List<BinaryFile> filteredList = list.stream()
-				.filter(bf -> !bf.getUser().getUserId().equals(webUtils.getUserId())).collect(Collectors.toList());
-		filteredList.forEach(bf -> bf.getFileAccesses().forEach(bfa -> {
-			if (bfa.getUser().getUserId().equals(webUtils.getUserId()))
-				accessMap.put(bf.getId(), bfa.getAccessType().name());
-		}));
-		model.addAttribute("files", list);
-		model.addAttribute("accessMap", accessMap);
-		model.addAttribute("accessTypes", BinaryFileAccess.Type.values());
-		model.addAttribute("users", userService.getAllUsers());
-		model.addAttribute("repos", RepositoryType.values());
+	public String list(Model model, @RequestParam(required = false) String name) {
+
+		if (name == null || name.trim().length() == 0) {
+			log.debug("No params for filtering, loading all files");
+			if (binaryFileService.countBinaryFiles() < 200L) {
+				final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId()))
+						.stream().filter(bf -> bf.getRepository() != RepositoryType.MINIO_S3)
+						.collect(Collectors.toList());
+
+				final Map<String, String> accessMap = new HashMap<>();
+				final List<BinaryFile> filteredList = list.stream()
+						.filter(bf -> !bf.getUser().getUserId().equals(webUtils.getUserId()))
+						.collect(Collectors.toList());
+				filteredList.forEach(bf -> bf.getFileAccesses().forEach(bfa -> {
+					if (bfa.getUser().getUserId().equals(webUtils.getUserId()))
+						accessMap.put(bf.getId(), bfa.getAccessType().name());
+				}));
+				model.addAttribute("files", list);
+				model.addAttribute("accessMap", accessMap);
+				model.addAttribute("accessTypes", BinaryFileAccess.Type.values());
+				model.addAttribute("users", userService.getAllUsers());
+				model.addAttribute("repos", RepositoryType.values());
+			}
+		} else {
+			final List<BinaryFile> list = binaryFileService
+					.getAllFilesByName(userService.getUser(webUtils.getUserId()), name).stream()
+					.filter(bf -> bf.getRepository() != RepositoryType.MINIO_S3).collect(Collectors.toList());
+
+			final Map<String, String> accessMap = new HashMap<>();
+			final List<BinaryFile> filteredList = list.stream()
+					.filter(bf -> !bf.getUser().getUserId().equals(webUtils.getUserId())).collect(Collectors.toList());
+			filteredList.forEach(bf -> bf.getFileAccesses().forEach(bfa -> {
+				if (bfa.getUser().getUserId().equals(webUtils.getUserId()))
+					accessMap.put(bf.getId(), bfa.getAccessType().name());
+			}));
+			model.addAttribute("files", list);
+			model.addAttribute("accessMap", accessMap);
+			model.addAttribute("accessTypes", BinaryFileAccess.Type.values());
+			model.addAttribute("users", userService.getAllUsers());
+			model.addAttribute("repos", RepositoryType.values());
+		}
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+			httpSession.removeAttribute(APP_ID);
+		}
+
 		return "binaryfiles/list";
 	}
 
@@ -102,7 +143,7 @@ public class BinaryFileController {
 	public String addBinary(@RequestParam("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
 			@RequestParam(value = "repository", required = false) RepositoryType repository,
-			RedirectAttributes redirectAttributes) {
+			@RequestParam(value = "appID", required = false) String appID, RedirectAttributes redirectAttributes) {
 
 		if (file.getSize() <= 0) {
 			webUtils.addRedirectMessage("binaryfiles.error.empty", redirectAttributes);
@@ -115,14 +156,30 @@ public class BinaryFileController {
 		}
 
 		try {
-			if (file.getSize() > webUtils.getMaxFileSizeAllowed().longValue())
+			if (file.getSize() > webUtils.getMaxFileSizeAllowed().longValue()) {
 				throw new BinarySizeException("The file size is larger than max allowed");
+			}
+
 			binaryRepositoryLogicService.addBinary(file, metadata, repository);
+
+			if (appID != null) {
+				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.BINARYFILE.toString());
+				httpSession.setAttribute("resourceIdentificationAdded", file.getOriginalFilename());
+				return REDIRECT_PROJECT_SHOW + appID;
+			}
+
 			return REDIRECT_FILES_LIST;
 
 		} catch (final Exception e) {
 			log.error("Could not create binary file: {}", e);
 			webUtils.addRedirectMessage("binaryfiles.error", redirectAttributes);
+
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId != null) {
+				httpSession.removeAttribute(APP_ID);
+				return REDIRECT_PROJECT_SHOW + projectId.toString();
+			}
+
 			return REDIRECT_FILES_LIST;
 		}
 
@@ -172,7 +229,16 @@ public class BinaryFileController {
 	public @ResponseBody String delete(Model model, @PathVariable String fileId, RedirectAttributes ra) {
 		try {
 			if (binaryFileService.isUserOwner(fileId, userService.getUser(webUtils.getUserId()))) {
-				binaryRepositoryLogicService.removeBinary(fileId);
+
+				List<ODBinaryFilesDataset> bfilesDatasetList = binaryFilesDatasetService
+						.getBinaryFilesByFilesId(fileId);
+				if (bfilesDatasetList == null || bfilesDatasetList.isEmpty()) {
+					binaryRepositoryLogicService.removeBinary(fileId);
+				} else {
+					throw new BinaryRepositoryException(
+							"The file cannot be deleted. There is a dataset with this file.");
+				}
+
 			}
 		} catch (final RuntimeException e) {
 			webUtils.addRedirectException(e, ra);

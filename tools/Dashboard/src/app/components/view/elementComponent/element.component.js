@@ -71,7 +71,7 @@
 
     vm.elemntbodyclass = function(){     
      var temp =''+vm.element.id+' '+vm.element.type;
-      if(vm.element.header.enable === true ) {
+      if(typeof vm.element.header!=='undefined' && vm.element.header.enable === true ) {
         temp +=' '+'headerMargin';
         if(vm.element.hideBadges === true ) {
           temp +=' '+'withoutBadgesAndHeader';
@@ -1241,9 +1241,11 @@ return filter;
 
  //Get gadget JSON and return string info for UI
  $scope.prettyGadgetInfo = function(gadget){
-       
-  return gadget.header.title.text + " (" + gadget.type + ")";
-
+  if(typeof gadget.header =='undefined'){
+    return gadget.id;
+  }else{
+    return gadget.header.title.text + " (" + gadget.type + ")";
+  }
 }
 
 

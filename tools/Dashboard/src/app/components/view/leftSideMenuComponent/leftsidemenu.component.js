@@ -201,6 +201,7 @@
             filterTextFavorite: '',
             activeName: 'first',
             data: vm.estructure,
+            opendelay:1000,
             dataFavorite: [],
             defaultProps: {
               children: 'children',

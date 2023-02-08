@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -74,7 +74,8 @@
 				<div class="row main">	
 					<div style="display:block;background-color:#F0F1F2; height:48px;">
 							<div class="pull-right" style="margin-top:8px; margin-right:16px;">
-								<button id="cancelBtn" type="button" name="cancel" class="btn btn-outline blue btn-no-border" onclick="location.href='../ontologies/list'" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button th:if="(${appId} == null)" id="cancelBtn" type="button" name="cancel" class="btn btn-outline blue btn-no-border" onclick="location.href='../ontologies/list'" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button th:if="(${appId} != null)" id="cancelBtn" type="button" name="cancel" class="btn btn-outline blue btn-no-border" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 							</div>							
 					</div>
 						<div class="portlet light no-top-pad">	
@@ -183,7 +184,21 @@
 														<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
 													</div>
 												</a>
-												<!-- end Historical Ontology -->	
+												<!-- end Historical Ontology -->
+												<!-- Creation Graph Ontology -->
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/create-graph'" class="col-md-3 col-sm-6 col-xs-12 grid__item grid__item--c1 no-margin-right" style="text-decoration: none">
+													<div>
+														<div class="icon-cards"><i class="icon-polygon"></i></div>
+														<h3 class="grid__item-title" th:text="#{nebula.graph.create.title}">Create Graph </h3>	
+													</div>															
+													<div class="col-md-12 column column--right">
+														<span class="column__text" th:text= "#{nebula.graph.create.description}"> Create Graph Description</span>
+													</div>
+													<div>
+														<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
+													</div>
+												</a>
+												<!-- end Graph Ontology -->		
 											</div>
 										</div>
 									</div><!-- END CONTENEDORES -->																	
@@ -205,9 +220,11 @@
 
 
 	
-	<script type="text/javascript">	
+	<script type="text/javascript">
 	var optionName = 'ONTOLOGIAS';
-	
+	function navigateUrl(url){
+		window.location.href = url; 
+	}
 
 
 	</script>	

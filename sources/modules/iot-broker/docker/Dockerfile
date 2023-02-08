@@ -79,7 +79,8 @@ ENV SERVER_NAME=localhost \
 	TIMESCALE_ENABLED=false \
 	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
 	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
-	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
+	HTTP_LOG_LEVEL=TRACE
 	
 
 COPY docker-entrypoint.sh /usr/local/bin/

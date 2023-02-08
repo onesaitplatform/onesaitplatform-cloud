@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -414,12 +414,29 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 								}
 							}
 						} else {
-							final BasicDBObject timeIntance = buildDocument(rootElement, calendar, field, dInstance,
-									mTags, window, updateType == UPDATE_TYPE.SUM ? 0 : null);
-							mongoDbConnector.insert(database, ontology, timeIntance);
-							timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
-							log.debug("Created new document for TimeSeries ontology {} for window {}", ontology,
-									window.getWindowType().name());
+							// Retry update after locking key, in case any other thread did
+							// lock-insert-unlock between this update error and the pending insert
+							nUpdated = mongoDbConnector
+									.update(database, ontology, objQuery.toString(), update, false, false).getCount();
+							// if there was an updated record, an other thread would have created the key
+							// first between the first update fail and the lock of this thread
+							if (nUpdated == 0) {// Check if exists and previously created. If not, Build the
+												// document
+								log.debug("Check if document exits for TimeSeries ontology {} for window {}", ontology,
+										window.getWindowType().name());
+								final boolean documentExistsAgain = mongoDbConnector
+										.find(database, ontology, objQuery, null, null, 0, 1, 10000).iterator()
+										.hasNext();
+
+								if (!documentExistsAgain) {
+									final BasicDBObject timeIntance = buildDocument(rootElement, calendar, field,
+											dInstance, mTags, window, updateType == UPDATE_TYPE.SUM ? 0 : null);
+									mongoDbConnector.insert(database, ontology, timeIntance);
+									timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
+									log.debug("Created new document for TimeSeries ontology {} for window {}", ontology,
+											window.getWindowType().name());
+								}
+							}
 						}
 
 					}
@@ -920,11 +937,11 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		case NUMBER:
 			return value.toString();
 		case STRING:
-			return value.toString();
+			return "\"" + value.toString() + "\"";
 		case OBJECT:
-			return value.toString();
+			return "\"" + value.toString() + "\"";
 		default:
-			return "";
+			return "\"\"";
 
 		}
 	}

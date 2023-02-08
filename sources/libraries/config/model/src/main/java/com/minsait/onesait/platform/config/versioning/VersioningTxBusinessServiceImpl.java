@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 								: TAG_BRANCH_PREFIX + tagName,
 								VersioningIOService.DIR, false);
 			}
-			if (!StringUtils.isEmpty(tagName)) {
+			if (StringUtils.hasText(tagName)) {
 				gitOperations.createTag(VersioningIOService.DIR, tagName);
 				gitOperations.pushTags(VersioningIOService.DIR);
 				gitOperations.checkout(configuration.getBranch(), VersioningIOService.DIR);

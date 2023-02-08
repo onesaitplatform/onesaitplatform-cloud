@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.objectstorage.dto.MinioChangePasswordRequest;
 import com.minsait.onesait.platform.config.services.objectstorage.dto.MinioCreateGroupRequest;
@@ -99,7 +100,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MinioObjectStorageService implements ObjectStorageService {
 
 	private final static String PATH_SCAPE_FOR_TEMPORAL_ID = "__!__";
-	
+
 	public final static String ONTOLOGIES_DIR = "/datalake";
 
 	public final static String ONESAIT_PLATFORM_PUBLIC_FILES_GROUP = "onesait_platform_public_files";
@@ -128,6 +129,8 @@ public class MinioObjectStorageService implements ObjectStorageService {
 
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private BinaryFileService binaryFileService;
 
 	@PostConstruct
 	public void init() {
@@ -198,8 +201,8 @@ public class MinioObjectStorageService implements ObjectStorageService {
 
 		} catch (ObjectStoreLoginException | ObjectStoreCreateGroupException | ObjectStoreSetGroupToUsersException e) {
 			log.warn("Error creating {} policy", ONESAIT_PLATFORM_PUBLIC_FILES_GROUP, e);
-		}catch(Exception e) {
-			log.warn("Error creating {} policy", ONESAIT_PLATFORM_PUBLIC_FILES_GROUP, e);		
+		} catch (Exception e) {
+			log.warn("Error creating {} policy", ONESAIT_PLATFORM_PUBLIC_FILES_GROUP, e);
 		}
 	}
 
@@ -298,8 +301,20 @@ public class MinioObjectStorageService implements ObjectStorageService {
 
 		if (response.getStatusCode() == HttpStatus.CREATED) {
 			return response.getBody().getSessionId();
-		} else if ((response.getStatusCode() == HttpStatus.UNAUTHORIZED || response.getStatusCode() == HttpStatus.FORBIDDEN 
-				||response.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR) && superUserToken != null) {//Sometimes return 500 error code and the 403 code in the message
+		} else if ((response.getStatusCode() == HttpStatus.UNAUTHORIZED
+				|| response.getStatusCode() == HttpStatus.FORBIDDEN
+				|| response.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR) && superUserToken != null) {// Sometimes
+																												// return
+																												// 500
+																												// error
+																												// code
+																												// and
+																												// the
+																												// 403
+																												// code
+																												// in
+																												// the
+																												// message
 			boolean changed = this.changeUserPassword(userAccesKey, userSecretKey, superUserToken);
 			if (changed) {
 				response = restTemplate.postForEntity(serverUrl + "api/v1/login", credentials,
@@ -493,8 +508,8 @@ public class MinioObjectStorageService implements ObjectStorageService {
 
 		HttpEntity<MinioSetPolicyMultiRequest> entity = new HttpEntity<>(setPolicyRequest, headers);
 
-		ResponseEntity<Void> responseSetPolicies = restTemplate
-				.exchange(this.minioAdminUrl + "api/v1/set-policy-multi", HttpMethod.PUT, entity, Void.class);
+		ResponseEntity<Void> responseSetPolicies = restTemplate.exchange(this.minioAdminUrl + "api/v1/set-policy-multi",
+				HttpMethod.PUT, entity, Void.class);
 
 		if (responseSetPolicies.getStatusCode() != HttpStatus.OK
 				&& responseSetPolicies.getStatusCode() != HttpStatus.NO_CONTENT) {
@@ -576,6 +591,37 @@ public class MinioObjectStorageService implements ObjectStorageService {
 	}
 
 	@Override
+	public ResponseEntity<Resource> getFileListByPath(String authToken, String filePath) {
+		String bucketName = filePath.substring(0, filePath.indexOf('/'));
+		String prefixSearch = filePath.substring(filePath.indexOf('/') + 1, filePath.length());
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + authToken);
+
+		HttpEntity<Void> entityGetFile = new HttpEntity<>(headers);
+
+		ResponseEntity<Resource> responseGetFile = restTemplate.exchange(
+				this.minioAdminUrl + "api/v1/buckets/" + bucketName + "/objects?prefix=" + prefixSearch, HttpMethod.GET,
+				entityGetFile, Resource.class);
+
+		return responseGetFile;
+
+	}
+
+	@Override
+	public ResponseEntity<Resource> getBuckets(String authToken) {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + authToken);
+
+		HttpEntity<Void> entityGetFile = new HttpEntity<>(headers);
+		ResponseEntity<Resource> responseGetFile = restTemplate.exchange(this.minioAdminUrl + "api/v1/buckets",
+				HttpMethod.GET, entityGetFile, Resource.class);
+		return responseGetFile;
+
+	}
+
+	@Override
 	public boolean uploadObject(String authToken, String bucketName, String fileDestinationPath, MultipartFile file) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + authToken);
@@ -585,6 +631,15 @@ public class MinioObjectStorageService implements ObjectStorageService {
 		try {
 			body.add(Integer.toString(file.getInputStream().available()),
 					new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
+			String fileDestinationPathTemp = "/";
+			if (fileDestinationPath != null && fileDestinationPath.trim().length() > 1) {
+				fileDestinationPathTemp = fileDestinationPath + "/";
+			}
+			String filePath = bucketName + fileDestinationPathTemp + file.getOriginalFilename();
+			List<BinaryFile> tempfile = this.binaryFileService.getFileByPath(filePath);
+			if (tempfile != null && tempfile.size() > 0) {
+				binaryFileService.updateUpdateTime(tempfile.get(0).getId());
+			}
 
 			if (null != fileDestinationPath && fileDestinationPath.trim().length() > 0) {
 				fileDestinationPath = "?prefix=" + fileDestinationPath.trim();
@@ -633,13 +688,13 @@ public class MinioObjectStorageService implements ObjectStorageService {
 
 	@Override
 	public String getUserBucketName(String userId) {
-		if(userId.indexOf("_") > 0) {
-			userId=userId.replace('_', '-');
+		if (userId.indexOf("_") > 0) {
+			userId = userId.replace('_', '-');			
 		}
+		userId = userId.toLowerCase();
 		return userId + "bucket";
 	}
-	
-	
+
 	@Override
 	public String encodeWithTemporalId(String objectName) {
 		return objectName.replaceAll("/", PATH_SCAPE_FOR_TEMPORAL_ID);
@@ -726,9 +781,9 @@ public class MinioObjectStorageService implements ObjectStorageService {
 					responseGetAllUsers.getStatusCodeValue());
 			throw new ObjectStoreCreateGroupException("Error creating policy to allow user to read file");
 		}
-		if(responseGetAllUsers.getBody().getUsers() == null) {//No hay usuarios
+		if (responseGetAllUsers.getBody().getUsers() == null) {// No hay usuarios
 			return new ArrayList<MinioQueryUserResponse>();
-		}else {
+		} else {
 			return new ArrayList<>(Arrays.asList(responseGetAllUsers.getBody().getUsers()));
 		}
 

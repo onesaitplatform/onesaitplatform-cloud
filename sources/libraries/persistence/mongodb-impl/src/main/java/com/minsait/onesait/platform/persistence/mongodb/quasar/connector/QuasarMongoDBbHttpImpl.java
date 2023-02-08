@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 					null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null, null);
 			final JsonNode compile = mapper.readTree(compileResult);
 			String nativeQuery = compile.path(PATH_TO_COMPILED_QUERY).asText();
-			if (!StringUtils.isEmpty(nativeQuery)) {
+			if (StringUtils.hasText(nativeQuery)) {
 				nativeQuery = nativeQuery.replaceAll("\\n", "");
 				log.info("Quasar is about to execute native query: {}", nativeQuery);
 				((ObjectNode) compile).put(PATH_TO_COMPILED_QUERY, nativeQuery);

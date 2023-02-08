@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.controlpanel.controller.audit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -54,9 +56,17 @@ public class AuditController {
 
 	@Autowired
 	private AuditService auditService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
+	private static final String APP_ID = "appId";
+	
 	@GetMapping("show")
 	public String show(Model model) {
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
 
 		final List<OperationType> operations = Arrays.asList(OperationType.values());
 		final List<Module> modulesnames = Arrays.asList(Module.values());

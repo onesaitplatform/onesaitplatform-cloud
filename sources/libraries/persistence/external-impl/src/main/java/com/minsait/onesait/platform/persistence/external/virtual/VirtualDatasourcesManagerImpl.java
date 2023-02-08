@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,10 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	@Autowired
 	@Qualifier("OpQueryDatahubHelper")
 	private SQLHelper opQueryDatahubHelper;
+
+	@Autowired
+	@Qualifier("HiveImpalaHelperImpl")
+	private SQLHelper hiveImpalaHelper;
 
 	@PostConstruct
 	public void init() {
@@ -184,10 +188,11 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	@Override
 	public SQLHelper getOntologyHelper(VirtualDatasourceType type) {
 		switch (type) {
-		case MARIADB:
-		case MYSQL:
 		case HIVE:
 		case IMPALA:
+			return hiveImpalaHelper;
+		case MARIADB:
+		case MYSQL:
 			return sqlHelper;
 		case POSTGRESQL:
 			return postgreSQLHelper;

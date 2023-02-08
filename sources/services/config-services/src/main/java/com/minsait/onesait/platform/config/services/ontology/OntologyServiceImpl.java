@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.services.ontology;
 
 import java.io.IOException;
+import java.security.acl.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -91,6 +92,7 @@ import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
+import com.minsait.onesait.platform.config.repository.DatasetResourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyDataAccessRepository;
@@ -152,6 +154,8 @@ public class OntologyServiceImpl implements OntologyService {
 	private DataModelRepository dataModelRepository;
 	@Autowired
 	private ClientPlatformOntologyRepository clientPlatformOntologyRepository;
+	@Autowired
+	private DatasetResourceRepository datasetResourceRepository;
 	@Autowired
 	@Lazy
 	private UserService userService;
@@ -388,6 +392,22 @@ public class OntologyServiceImpl implements OntologyService {
 				obj.setPublic(temp.isPublic());
 				obj.setUpdatedAt(temp.getUpdated_at());
 				obj.setAuthorizations(mapAccess.containsKey(obj.getId()));
+				
+				if(userService.isUserAdministrator(sessionUser) || sessionUser.getId().equals(temp.getUser().getId())) {
+					obj.setIsAuthorizationsPermissions("ALL");		
+				} else {
+					
+					if (temp.isPublic() == true ){
+						obj.setIsAuthorizationsPermissions("QUERY");	
+						}
+				
+					for (OntologyUserAccess permission : access) {
+						if (permission.getUser().getId().equals(sessionUser.getId()) && permission.getOntology().getId().equalsIgnoreCase(temp.getId())) {
+							obj.setIsAuthorizationsPermissions(permission.getOntologyUserAccessType().getName().toUpperCase());
+						}
+					}
+				}
+				
 				obj.setUser(temp.getUser());
 				obj.setDataModel(temp.getDataModel());
 				obj.setRtdbDatasource(temp.getRtdbDatasource());
@@ -535,6 +555,9 @@ public class OntologyServiceImpl implements OntologyService {
 				obj.setPublic(temp.isPublic());
 				obj.setUpdatedAt(temp.getUpdated_at());
 				obj.setAuthorizations(mapAccess.containsKey(temp.getId()));
+
+				obj.setIsAuthorizationsPermissions("ALL");		
+
 				obj.setUser(temp.getUser());
 				obj.setDataModel(temp.getDataModel());
 				obj.setRtdbDatasource(temp.getRtdbDatasource());
@@ -1411,7 +1434,7 @@ public class OntologyServiceImpl implements OntologyService {
 					"Invalid substring end value '{}' for ElasticSearch Ontology {}. End value must be greater than start value.",
 					config.getSubstringEnd(), ontology.getIdentification());
 			throw new OntologyServiceException("Substring end value '" + config.getSubstringEnd()
-			+ "' is not valid. End value must be greater than start value.");
+					+ "' is not valid. End value must be greater than start value.");
 		}
 
 		if (config.getPatternFunction() != null && !config.getPatternFunction().isEmpty()) {
@@ -1751,22 +1774,22 @@ public class OntologyServiceImpl implements OntologyService {
 			final List<OntologyUserAccessType> managedTypes = ontologyUserAccessTypeRepository.findByName(typeName);
 			final OntologyUserAccessType managedType = managedTypes != null && !managedTypes.isEmpty()
 					? managedTypes.get(0)
-							: null;
-					final User userToBeAutorized = userService.getUser(userId);
-					if (ontology != null && managedType != null && userToBeAutorized != null) {
-						final OntologyUserAccess ontologyUserAccess = new OntologyUserAccess();
-						ontologyUserAccess.setOntology(ontology);
-						ontologyUserAccess.setUser(userToBeAutorized);
-						ontologyUserAccess.setOntologyUserAccessType(managedType);
+					: null;
+			final User userToBeAutorized = userService.getUser(userId);
+			if (ontology != null && managedType != null && userToBeAutorized != null) {
+				final OntologyUserAccess ontologyUserAccess = new OntologyUserAccess();
+				ontologyUserAccess.setOntology(ontology);
+				ontologyUserAccess.setUser(userToBeAutorized);
+				ontologyUserAccess.setOntologyUserAccessType(managedType);
 
-						ontology.getOntologyUserAccesses().add(ontologyUserAccess);
-						return ontologyRepository.save(ontology).getOntologyUserAccesses().stream()
-								.filter(oua -> oua.getOntology().equals(ontology) && oua.getUser().equals(userToBeAutorized)
-										&& oua.getOntologyUserAccessType().equals(managedType))
-								.findFirst().orElse(ontologyUserAccess);
-					} else {
-						throw new OntologyServiceException("Problem creating the authorization");
-					}
+				ontology.getOntologyUserAccesses().add(ontologyUserAccess);
+				return ontologyRepository.save(ontology).getOntologyUserAccesses().stream()
+						.filter(oua -> oua.getOntology().equals(ontology) && oua.getUser().equals(userToBeAutorized)
+								&& oua.getOntologyUserAccessType().equals(managedType))
+						.findFirst().orElse(ontologyUserAccess);
+			} else {
+				throw new OntologyServiceException("Problem creating the authorization");
+			}
 		} else {
 			throw new OntologyServiceException(USER_UNAUTH_STR);
 		}
@@ -2049,6 +2072,11 @@ public class OntologyServiceImpl implements OntologyService {
 					return mapResponse;
 				}
 			}
+			if (output == null || output.trim().equals("[ ]")) {
+				mapResponse.put("status", "OK");
+				mapResponse.put("message", "ontology.error.create.kpi.message.insert.no.data");
+				return mapResponse;
+			}
 			final String resultInsert = processQuery("", ontology, ApiOperation.Type.POST.name(), output, "", user);
 			if (resultInsert.equals("error")) {
 				mapResponse.put("status", "error");
@@ -2056,6 +2084,7 @@ public class OntologyServiceImpl implements OntologyService {
 				return mapResponse;
 			} else {
 				mapResponse.put("status", "OK");
+				mapResponse.put("message", "");
 				return mapResponse;
 			}
 
@@ -2086,7 +2115,7 @@ public class OntologyServiceImpl implements OntologyService {
 		final com.minsait.onesait.platform.router.service.app.model.OperationModel model = com.minsait.onesait.platform.router.service.app.model.OperationModel
 				.builder(ontologyID,
 						com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType
-						.valueOf(operationType.name()),
+								.valueOf(operationType.name()),
 						user,
 						com.minsait.onesait.platform.router.service.app.model.OperationModel.Source.INTERNAL_ROUTER)
 				.body(body).queryType(QueryType.SQL).objectId(objectId).deviceTemplate("").build();
@@ -2337,6 +2366,8 @@ public class OntologyServiceImpl implements OntologyService {
 		mapResources.put("subscriptions",
 				subscriptionRepository.findIdentificationByOntology(ontology.getIdentification()));
 		mapResources.put("clients", clients);
+		mapResources.put("resources",
+				datasetResourceRepository.findIdentificationByOntology(ontology.getIdentification()));
 		final List<String> rtdbDatasource = new ArrayList<>();
 		rtdbDatasource.add(ontology.getRtdbDatasource().toString());
 		mapResources.put("rtdbDatasource", rtdbDatasource);

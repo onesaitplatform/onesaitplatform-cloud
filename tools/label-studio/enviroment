@@ -1,0 +1,12 @@
+DJANGO_DB=postgresql
+MYSQL_NAME=onesaitplatform_datalabeling
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_PORT=3306
+MYSQL_HOST=192.168.0.106
+POSTGRE_HOST=192.168.0.106
+POSTGRE_USER=postgres
+POSTGRE_PORT=5432
+POSTGRE_PASSWORD=
+POSTGRE_NAME=onesaitplatform_datalabeling
+LABEL_STUDIO_HOST=http://localhost:8080/dlabeling

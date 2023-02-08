@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONArray;
@@ -122,6 +123,9 @@ public class ModelController {
 
 	@Autowired
 	private NotebookManagementController notebookManager;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String PARAMETERS_STR = "parameters";
 	private static final String REDIRECT_MODELS_LIST = "redirect:/models/list";
@@ -132,6 +136,7 @@ public class ModelController {
 	private static final String CAUSE_STR = "cause";
 	private static final String VALIDATION_ERROR_STR = "validation error";
 	private static final String ONTOLOGY_VAL_ERRROR = "ontology.validation.error";
+	private static final String APP_ID = "appId";
 
 	@PostConstruct
 	public void init() {
@@ -142,7 +147,9 @@ public class ModelController {
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	public String list(org.springframework.ui.Model model) {
-
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		final List<com.minsait.onesait.platform.config.model.Model> models = modelService
 				.findAllModelsByUser(utils.getUserId());
 		model.addAttribute("models", models);

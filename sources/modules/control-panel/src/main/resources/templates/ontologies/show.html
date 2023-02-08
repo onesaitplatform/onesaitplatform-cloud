@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -105,13 +105,13 @@
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-												
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>			
 									<span class="sep" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')"></span>
 										
 									<!-- CANCEL -->											
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
 									<span class="sep no-border" th:if="${ontology?.id} != null"></span>
 										
@@ -136,9 +136,14 @@
 									<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span>
 								</a>
 							</div>
-							<div id="tab-data-schema" class="option">
+							<div id="tab-data-schema" class="option" th:classappend="${'NEBULA_GRAPH' == ontology.rtdbDatasource.name() ? 'hide' : ''}">
 								<a href="#tab_data_schema" data-toggle="tab" aria-expanded="true">
 									<span class="caption-subject " th:text="#{ontology.section.templates.schemas}"> TEMPLATES / SCHEMA</span>
+								</a>
+							</div>
+							<div th:if="${'NEBULA_GRAPH' == ontology.rtdbDatasource.name()}" id="tab-table-schema" class="option">
+								<a href="#tab_table_schema" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject " th:text="#{nebula.graph.vertices.edges}"> NEBULA SCHEMA</span>
 								</a>
 							</div>
 							<div id="tab-advanced-options" class="option">
@@ -148,7 +153,7 @@
 							</div>
 							<div id="tab-autorizaciones" class="option">
 								<a href="#tab_2" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
-									<span th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
+									<span th:if="${userOntologyAccess} == 'ALL'" th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
 								</a>
 							</div>
 							<div id="tab-kpi" th:if="${ontology.ontologyKPI} != null" class="option">
@@ -173,7 +178,7 @@
 							</div>
 							<div id="tab-data" th:style="${rtdbDatasourceType}!=null or ${ontologyTSDTO.rtdbDatasource}!= null? 'display:none' : 'display:block'" class="option">
 								<a href="#tab_data" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
-									<span th:text="#{ontology.dataaccess}" >Data Access Settings </span>
+									<span th:if="${userOntologyAccess} == 'ALL'" th:text="#{ontology.dataaccess}" >Data Access Settings </span>
 								</a>
 							</div>
 						</div>
@@ -265,6 +270,10 @@
                                             <label class="control-label" th:text="#{ontology.jsonLdContextEdit}">JSON-LD Context </label><span class="required"> *</span>
                                             <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" readOnly="readonly" ></textarea>
                                         </div>
+                                    </div>
+                                    <div class="col-md-12 col-xs-12">
+                                        <input id="enableDataClass" class="margin-right-10" name="enableDataClass" type="checkbox" checked="checked" th:field="*{enableDataClass}" disabled="disabled" />
+                                        <label class="control-label margin-right-5" th:text="#{ontology.enableDataClass}">Enable data class preprocessing</label>
                                     </div>
 								</div>
 							</div>
@@ -734,7 +743,69 @@
 										</div>
 									</div>
 								</div>								
-							</div>	<!-- END TAB DATA  -->								
+							</div>	<!-- END TAB DATA  -->	
+							<div class="tab-pane" id="tab_table_schema">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{nebula.graph.vertices}">Vertices</span>
+									</div>
+								</div>
+								<div id="vertexCreationForm">
+
+									
+									
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
+											<!-- FIELD TABLE -->
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="field_properties_vertex" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.vertices.name}">Name</th>
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.vertices.attribute}">Name</th>
+																<th class="titulo-columnas text-center"	th:text="#{nebula.graph.vertices.attribute.type}">Type</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<!-- filled in javascript when add field-->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{nebula.graph.edges}">Edges</span>
+									</div>
+								</div>
+								<div id="edgeCreationForm">
+									
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
+											<!-- FIELD TABLE -->
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="field_properties_edge" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.edges.name}">Name</th>
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.edges.attribute}">Name</th>
+																<th class="titulo-columnas text-center"	th:text="#{nebula.graph.edges.attribute.type}">Type</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<!-- filled in javascript when add field-->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> <!--  TAB1 -->							
 						</div>
 					</div>		
 				</form>
@@ -784,7 +855,9 @@
 	<script  th:inline="javascript">
 	var showLog = 1; // console.log toggle
     //<![CDATA[ 
-	
+	var nebulaTags = [[${nebulaTags}]];
+	var nebulaEdges = [[${nebulaEdges}]];
+	var rtdbDatasource = [[${ontology.rtdbDatasource.name()}]];
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];	
@@ -1057,6 +1130,8 @@
 		
 		handleTabsChange();
 		
+		loadNebulaTable();
+		
 	});
 	 
 	var codeEditor;
@@ -1162,6 +1237,48 @@
 				}
 			}
 		});
+	}
+	
+	var loadNebulaTable = () => {
+		if(rtdbDatasource === 'NEBULA_GRAPH'){
+			nebulaTags.forEach(function(tag){
+				$(`#field_properties_vertex > tbody`).append('');
+				let keys = Object.keys(tag.tagAttributes);
+				keys.forEach(function(key){
+					let html = '<tr id="field_vertex'+'_'+tag.name+"_"+key+' class="tagRow">';
+					html += `<td class="text-center"><i class="fa flaticon-network font-lg"></i> `+ tag.name + '</td>';
+					html += '<td class="text-center">'+ key + '</td>'
+					html +='<td class="text-center">'+ tag.tagAttributes[key] + '</td></tr>';
+					$(`#field_properties_vertex > tbody`).append(html);
+				})
+				if(keys.length === 0){
+					let html = '<tr id="field_vertex'+'_'+tag.name+"_"+' class="tagRow">';
+					html += `<td class="text-center"><i class="fa flaticon-network font-lg"></i> `+ tag.name + '</td>';
+					html += '<td class="text-center">-</td>'
+					html +='<td class="text-center">-</td></tr>';
+					$(`#field_properties_vertex > tbody`).append(html);
+				}
+			})
+			
+			nebulaEdges.forEach(function(edge){
+				$(`#field_properties_edge > tbody`).append('');
+				let keys = Object.keys(edge.edgeAttributes);
+				keys.forEach(function(key){
+					let html = '<tr id="field_edge'+'_'+edge.name+"_"+key+' class="tagRow">';
+					html += `<td class="text-center"><i class="la la-arrow-up font-lg"></i> `+ edge.name + '</td>';
+					html += '<td class="text-center">'+ key + '</td>'
+					html +='<td class="text-center">'+ edge.edgeAttributes[key] + '</td></tr>';
+					$(`#field_properties_edge > tbody`).append(html);
+				})
+				if(keys.length === 0){
+					let html = '<tr id="field_edge'+'_'+edge.name+"_"+' class="tagRow">';
+					html += `<td class="text-center"><i class="la la-arrow-up font-lg"></i> `+ edge.name + '</td>';
+					html += '<td class="text-center">-</td>'
+					html +='<td class="text-center">-</td></tr>';
+					$(`#field_properties_edge > tbody`).append(html);
+				}
+			})
+		}
 	}
 	
 	//]]>

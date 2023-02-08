@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -311,7 +311,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			String path) throws JRException {
 		JasperPrint jasperPrint = null;
 		SimpleJasperReportsContext ctx = null;
-		if (!StringUtils.isEmpty(path)) {
+		if (StringUtils.hasText(path)) {
 			Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
 			ctx = new SimpleJasperReportsContext();
 			final FileRepositoryService fileRepository = new FileRepositoryService(ctx, path, false);
@@ -365,7 +365,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 		case XLSX:
 			exporter = new JRXlsxExporter();
 			break;
-			
+
 		case DOCX:
 			exporter = new JRDocxExporter();
 			break;
@@ -399,7 +399,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	private void replaceJSSDatasourceClass(JasperReport report) {
 		try {
 			final String p = report.getPropertiesMap().getProperty(DATASOURCE_JSS_NAME);
-			if (!StringUtils.isEmpty(p)) {
+			if (StringUtils.hasText(p)) {
 				report.getPropertiesMap().removeProperty(DATASOURCE_JSS_NAME);
 				report.getPropertiesMap().setProperty(DATA_ADAPTER_ATT_NAME, p);
 			}

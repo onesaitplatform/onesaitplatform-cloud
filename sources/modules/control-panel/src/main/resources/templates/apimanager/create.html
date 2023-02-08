@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -113,7 +113,8 @@
 									<span class="sep" th:if="(${api.id} != null)"></span>
 
 									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
 									<button th:if="${api.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -205,9 +206,9 @@
 											</div>
 											<div class="col-md-7 col-sm-7 col-xs-12">
 												<label id="label-selector-ontologia" class="control-label " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
-												<select id="ontology" class="selectpicker form-control" th:field="*{ontology}" disabled="disabled">
+												<select id="ontology" class="selectpicker form-control" data-live-search="true" th:field="*{ontology}" disabled="disabled" th:attr="onchange='javascript:ApiCreateController.changeOntology()'">
 													<option value=""></option>
-				                                    <option th:each="ontology:${ontologies}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
+				                                    <option th:each="ontology:${ontologies}" th:attr="data-rtdb=${ontology.rtdbDatasource}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
 				                                   </select>
 											</div>
 										</div>
@@ -294,6 +295,12 @@
 													<input id="id_cachetimeout" class="form-control input-mini margin-right-10" style="text-align: right;" type="number" maxlength="10" th:attrappend="disabled=${api.apicachetimeout == null}" value="5"  th:field="*{apicachetimeout}" />
 													<label class="control-label" style="display: inline-block;" th:text="#{apimanager.cachetimeout}">Cache Timeout</label>
 												</div>
+												<div th:if="${graviteeOn}" class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both">
+													<input th:if="!*{graviteeId}" class="margin-right-10" id="checkbox-gravitee" name="checkbox-gravitee" type="checkbox" onchange="updateCheckGravitee()" />
+													<input type="hidden" name="publish2gravitee" id="publish2gravitee" value="false"/>
+													<label class="control-label" th:if="!*{graviteeId}" th:text="#{apimanager.publish.gravitee}">Publish to gravitee</label>
+													<label class="control-label" th:if="*{graviteeId}" th:text="#{apimanager.published.gravitee}">Published to gravitee</label>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -349,18 +356,18 @@
 										<!-- operations -->
 										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations">
 											<div id="ontologyOperations" class="col-md-12 panel-operations">
-												<div id="divGETAll" class="op_div">
+												<div id="divGETAll" class="op_div common-ops">
 													<div id="buttonOperacionGETAll" class="op_button_div">
 														<input id="GETAll" class="op_button"  type="button" value="GET" name="GETAll" th:value="#{apimanager.GET.all.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<label id ="description_GETAll_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
 														<i class="fa fa-angle-down" style="float:right;" onclick="$('#GETAll').click();"></i>
 													</div>
-													<div id="descOperationGETAll" class="op_desc_div" style="display:none">
+													<div id="descOperationGETAll" class="op_desc_div " style="display:none">
 														<label id ="description_operacion_GETAll" class="description" for="description_GET" th:text="#{apimanager.description}"></label>
 														<input id="description_GETAll" name="description_GET" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divGET" class="op_div">
+												<div id="divGET" class="op_div common-ops">
 													<div id="buttonOperacionGET" class="op_button_div">
 														<input id="GET" class="op_button"  type="button" value="GET" name="GET" th:value="#{apimanager.GET.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<label id ="description_GET_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_GET"></label>
@@ -371,7 +378,7 @@
 														<input id="description_GET" name="description_GET" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divPOST" class="op_div">
+												<div id="divPOST" class="op_div common-ops">
 													<div id="buttonOperationPOST" class="op_button_div">
 														<input id="POST" class="op_button"  type="button" value="POST" name="POST" th:value="#{apimanager.POST.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<b><label id ="description_POST_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POST"></label></b>
@@ -382,7 +389,7 @@
 														<input id="description_POST" name="description_POST" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divPUT" class="op_div">
+												<div id="divPUT" class="op_div common-ops">
 													<div id="buttonOperationPUT" class="op_button_div">
 														<input id="PUT" class="op_button"  type="button" value="PUT" name="PUT" th:value="#{apimanager.PUT.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<b><label id ="description_PUT_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_PUT"></label></b>
@@ -393,7 +400,7 @@
 														<input id="description_PUT" name="description_PUT" class="form-control" type="text" maxlength="250"/>
 													</div>
 												</div>
-												<div id="divDELETEID" class="op_div">
+												<div id="divDELETEID" class="op_div common-ops">
 													<div id="buttonOperationDELETEID" class="op_button_div">
 														<input id="DELETEID" class="op_button"  type="button" value="DELETEID" name="DELETEID" th:value="#{apimanager.DELETEID.button}" onclick="ApiCreateController.selectOp(this)"/>
 														<b><label id ="description_DELETEID_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_DELETEID"></label></b>
@@ -405,11 +412,11 @@
 													</div>
 												</div>
 												<div id="divCUSTOMSQLS">
-													<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_GETAll')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')}" th:id="${(operation.identification)}" class="op_div_selected">
+													<div th:each="operation : ${operations}" th:if="${!#strings.endsWith(operation.identification,'_GET')} AND ${!#strings.endsWith(operation.identification,'_POST')} AND ${!#strings.endsWith(operation.identification,'_GETAll')} AND ${!#strings.endsWith(operation.identification,'_PUT')} AND ${!#strings.endsWith(operation.identification,'_DELETEID')} AND ${!#strings.endsWith(operation.identification,'_POSTNebula')} AND ${!#strings.endsWith(operation.identification,'_POSTAI')}" th:id="${(operation.identification)}" class="op_div_selected">
 														<div th:id="${operation.identification + '_OPERATION'}" class="op_button_div row main" >
 															<div class="col-md-7">
-																<input th:if="*{apiType?.name()} != 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
-																<input th:if="*{apiType?.name()} == 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="#{apimanager.GETCUSTOM.button}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'"/>
+																<input th:if="*{apiType?.name()} != 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.selectEditCustomOp(\'' + ${operation.identification} + '\');'"/>
+																<input th:if="*{apiType?.name()} == 'NODE_RED'" th:id="${(operation.identification + 'CUSTOMSQL')}" class="op_button_selected"  type="button" th:value="${operation.operation}" th:name="${(operation.identification + 'CUSTOMSQL')}" th:attr="onclick='javascript:ApiCustomOpsController.viewEditCustomOp(\'' + ${operation.identification} + '\');'"/>
 																<label th:id="${operation.identification + '_LABEL'}" class="description" style="padding-right:15px; display: inline-block; font-weight:bold" th:text="${operation.identification}"/>
 															</div>
 															<div class="col-md-5 padding-top-8">
@@ -419,6 +426,14 @@
 																</div>
 															</div>
 														</div>
+														<!-- <div class="row main">
+															<div class="col-md-3">
+																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="method"/>
+															</div>
+															<div class="col-md-9">
+																<label th:id="${operation.identification + '_METHOD'}" th:text="${operation.operation}" class="op_desc_label"> Method </label>
+															</div>
+														</div> -->
 														<div class="op_desc_div row main">
 															<div class="col-md-3">
 																<input disabled="disabled" class="op_desc_label_tittle" style="text-align: center;" placeholder="endpoint"/>
@@ -442,6 +457,38 @@
 
 											<input type="hidden" id="operationsObject" name="operationsObject"/>
 											<input type="hidden" id="authenticationObject" name="authenticationObject"/>
+										</div>
+										<!-- operations AI-->
+										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-ai">
+										  <div id="ontologyOperationsAI" class="col-md-12 panel-operations">
+										    <div id="divPOSTAI" class="op_div">
+										      <div id="buttonOperationPOSTAI" class="op_button_div">
+										        <input id="POSTAI" class="op_button"  type="button" name="POSTAI" value="PREDICT (POST)" onclick="ApiCreateController.selectOp(this)"/>
+										        <b><label id ="description_POSTAI_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTAI"></label></b>
+										        <i class="fa fa-angle-down" style="float:right;" onclick="$('#POSTAI').click();"></i>
+										      </div>
+										      <div id="descOperationPOSTAI" class="op_desc_div" style="display:none">
+										        <label id ="description_operacion_POSTAI" class="description" for="description_POSTAI" th:text="#{apimanager.description}"></label>
+										        <input id="description_POSTAI" name="description_POSTAI" class="form-control" type="text" maxlength="250" readonly/>
+										      </div>
+										    </div>
+										  </div>
+										</div>
+										<!-- operations NEBULA GRAPH-->
+										<div th:classappend="*{(apiType?.name() == 'INTERNAL_ONTOLOGY'  || apiType?.name() == 'IOT' || apiType?.name() == 'NODE_RED') ? '':'hide'}"  class="row main" id="row-operations-nebula">
+										  <div id="ontologyOperationsNebula" class="col-md-12 panel-operations">
+										    <div id="divPOSTNebula" class="op_div">
+										      <div id="buttonOperationPOSTNebula" class="op_button_div">
+										        <input id="POSTNebula" class="op_button"  type="button" name="POSTNebula" value="Execute nGQL (POST)" onclick="ApiCreateController.selectOp(this)"/>
+										        <b><label id ="description_POSTNebula_label" class="description notAnimate" style="padding-top: 5px; padding-bottom: 5px; font-weight: bold;" for="description_POSTNebula"></label></b>
+										        <i class="fa fa-angle-down" style="float:right;" onclick="$('#POSTNebula').click();"></i>
+										      </div>
+										      <div id="descOperationPOSTNebula" class="op_desc_div" style="display:none">
+										        <label id ="description_operacion_POSTNebula" class="description" for="description_POSTNebula" th:text="#{apimanager.description}"></label>
+										        <input id="description_POSTNebula" name="description_POSTNebula" class="form-control" type="text" maxlength="250" readonly/>
+										      </div>
+										    </div>
+										  </div>
 										</div>
 									</div>
 								</div>
@@ -538,22 +585,25 @@
 										<div class="form-group">
 											<label class="description" th:text="#{apimanager.operations.method}"></label>
 											<div>
-								                <select id="id_type_op_customsql" class="selectpicker form-control">
-								                     <option value="GET" th:text="#{apimanager.operation.GET}" selected="selected"/>
-								                </select>
+											
+											
+											<select id="id_type_op_customsql" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true">
+														<option th:each="httpMethod:${httpMethods}" th:value="${httpMethod.name()}" th:text="${httpMethod.name()}" ></option>
+											</select>
+											
 											</div>
 										</div>
 									</div>
 									<div class="col-md-10 col-sm-10 col-xs-10">
 										<div class="form-group">
-											<label class="description" th:text="#{apimanager.operations.name}"></label>
+											<label class="description" th:text="#{apimanager.operations.name}"></label><span class="required"> *</span>
 											<input id="id_name_op_customsql" name="id_name_op_customsql" class="form-control" type="text" maxlength="50" onblur="ApiCustomOpsController.validateName(this);"/>
 										</div>
 									</div>
 								</div>
 			                	<div class="row main">
 			                		<div class="col-md-12 col-sm-12 col-xs-12">
-						                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label>
+						                <label class="description" th:text="#{apimanager.customsql.query}" th:title="#{apimanager.customsql.query.info}"></label><span class="required" style="color: #A73535;font-size: 12px;padding-left: 2px;"> *</span>
 						                <div style="height:200px; resize: vertical; overflow: auto;" id="id_query_op_customsql"></div>
 									</div>
 			                	</div>
@@ -605,7 +655,7 @@
 			                     	</div>
 			                     	<div class="col-md-8 col-sm-8 col-xs-8">
 			                     		<div class="form-group">
-											<label class="description" th:text="#{apimanager.customsql.description}"></label>
+											<label class="description" th:text="#{apimanager.customsql.description}"></label><span class="required"> *</span>
 					                        <input id="id_desc_op_customsql" name="id_desc_op_customsql" class="form-control" type="text" maxlength="250"/>
 				                        </div>
 			                     	</div>
@@ -975,6 +1025,12 @@
 		});
 	}
 
+	function updateCheckGravitee(){
+		var checked = $('#checkbox-gravitee').is(':checked');
+		$('#publish2gravitee').val(checked);
+	}
+
+
 	//var valueObjects = [];
 	var queryResponse = {};
 	var queryErrorResponse = {};
@@ -1050,6 +1106,7 @@
 		if (!$('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
 	})
 
+	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
 
 	$(window).load(function(){

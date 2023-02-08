@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class ReportRestController {
 		}
 
 		final List<ReportParameter> parameters = params != null ? Arrays.asList(params) : new ArrayList<>();
-		if (!StringUtils.isEmpty(entity.getDataSourceUrl())) {
+		if (StringUtils.hasText(entity.getDataSourceUrl())) {
 			parameters.add(ReportParameter.builder().name(JSON_DATA_SOURCE_ATT_NAME).type(ReportParameterType.STRING)
 					.value(entity.getDataSourceUrl()).build());
 		}
@@ -152,7 +152,7 @@ public class ReportRestController {
 		try {
 			final String dataSource = reportInfoService
 					.extract(new ByteArrayInputStream(entity.getFile()), entity.getExtension()).getDataSource();
-			if (!StringUtils.isEmpty(dataSource)) {
+			if (StringUtils.hasText(dataSource)) {
 				return new ResponseEntity<>(dataSource, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>(HttpStatus.OK);

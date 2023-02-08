@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,14 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 
 	@Value("${onesaitplatform.iotbroker.devices.perclient.max:20}")
 	private int maxvalue;
-	
+
 	@Autowired(required = false)
 	ClientPlatformInstanceScheduledUpdater deviceScheuduledUpdater;
 
-	
-	
+	@Value("${spring.datasource.hikari.jdbc-url:mysql}")
+	private String datasource;
+
+
 	@Override
 	public List<ClientPlatformInstance> getAll() {
 		return cpiRepository.findAll();
@@ -84,8 +86,8 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 		Date date = new Date();
 		clientPlatformInstance.setUpdatedAt(date);
 		clientPlatformInstance.setCreatedAt(date);
-		
-		
+
+
 		ClientPlatform cp = clientPlatformInstance.getClientPlatform();
 		ClientPlatformSimplifiedDTO cpDTO;
 		if ( cp == null) {
@@ -93,23 +95,26 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 		} else {
 			cpDTO = new ClientPlatformSimplifiedDTO(cp.getId(), cp.getIdentification());
 		}
-		
-		int inserted = cpiRepository.createOrUpdateClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId(), maxvalue);
-		
-		if (inserted > 0) {		
+		int inserted = 0;
+		if(datasource.contains("postgresql")){
+			inserted = cpiRepository.createOrUpdateClientPlatformInstancePSQL(clientPlatformInstance, cpDTO.getClientPlatformId(), maxvalue);
+		}else {
+			inserted = cpiRepository.createOrUpdateClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId(), maxvalue);
+		}
+		if (inserted > 0) {
 			if (log.isDebugEnabled()) {
-				log.debug("Created or modified device. Identification: {}, clientPlatformId: {}", 
-						clientPlatformInstance.getIdentification(), 
+				log.debug("Created or modified device. Identification: {}, clientPlatformId: {}",
+						clientPlatformInstance.getIdentification(),
 						cpDTO.getClientPlatformId());
 			}
 		} else {
 			if (log.isWarnEnabled()) {
-				log.warn("Fail creating or updating ClientPlatformInstance. Identification: {}, clientPlatformId: {}", 
-						clientPlatformInstance.getIdentification(), 
+				log.warn("Fail creating or updating ClientPlatformInstance. Identification: {}, clientPlatformId: {}",
+						clientPlatformInstance.getIdentification(),
 						cpDTO.getClientPlatformId());
 			}
 		}
-		
+
 		return inserted;
 	}
 
@@ -130,7 +135,7 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 			String identification) {
 		return cpiRepository.findByClientPlatformAndIdentification(clientPlatform, identification);
 	}
-	
+
 	@Override
 	public ClientPlatformInstance getByClientPlatformIdAndIdentification(String clienttPlatformIdentification, String identification) {
 		return cpiRepository.findByClientPlatformAndIdentification(clienttPlatformIdentification, identification);
@@ -169,7 +174,7 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 	@Override
 	public List<String> getClientPlatformInstanceCommands(ClientPlatformInstance clientPlatformInstance) {
 		final List<String> commandActions = new ArrayList<>();
-		if (!StringUtils.isEmpty(clientPlatformInstance.getJsonActions())) {
+		if (StringUtils.hasText(clientPlatformInstance.getJsonActions())) {
 			try {
 				final JsonNode commands = mapper.readTree(clientPlatformInstance.getJsonActions());
 				addCommandsFromJson(commandActions, commands);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,6 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 	private GadgetTemplateService gadgetTemplateService;
 	@Autowired
 	private GadgetTemplateRepository gadgetTemplateRepository;
-
 
 	@Autowired
 	private OntologyService ontologyService;
@@ -237,7 +236,7 @@ public class DashboardApiServiceImpl implements DashboardApiService {
 			GadgetTemplate gadgetTemplate = gadgetTemplateService
 					.getGadgetTemplateByIdentification(commandDTO.getInformation().getGadgetType(), userId);
 
-			if (gadgetTemplate != null) {
+			if (gadgetTemplate != null && !gadgetTemplate.getType().equals("base")) {
 				// Create gadget from template
 				GadgetDatasource datasource = null;
 				// Use exist datasource

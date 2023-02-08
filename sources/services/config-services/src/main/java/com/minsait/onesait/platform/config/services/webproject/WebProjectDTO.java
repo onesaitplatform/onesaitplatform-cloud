@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class WebProjectDTO {
 	private String userId;
 
 	public static WebProjectDTO convert(WebProject wp) {
-		final DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY");
+		final DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
 		return WebProjectDTO.builder().id(wp.getId()).description(wp.getDescription())
 				.identification(wp.getIdentification()).mainFile(wp.getMainFile())
 				.userId(wp.getUser() != null ? wp.getUser().getUserId() : null)

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.controlpanel.controller.categorization;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpSession;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,9 +48,9 @@ import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.Report;
-import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.repository.CategorizationRepository;
 import com.minsait.onesait.platform.config.repository.CategorizationUserRepository;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
@@ -62,6 +64,7 @@ import com.minsait.onesait.platform.config.services.client.ClientPlatformService
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -86,6 +89,8 @@ public class CategorizationController {
 	@Autowired
 	private CategorizationService categorizationService;
 	@Autowired
+	private OPResourceService resourceService;
+	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
 	private FlowDomainRepository flowRepository;
@@ -103,15 +108,21 @@ public class CategorizationController {
 	private ViewerRepository viewerRepository;
 	@Autowired
 	private ReportService reportService;
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String CREATE_URL = "categorization/create";
 	private static final String CATEGORIZATION = "categorization";
 	private static final String E403 = "error/403";
 	private static final String FAIL = "{\"status\" : \"fail\"}";
 	private static final String OK = "{\"status\" : \"ok\"}";
+	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		final User user = userService.getUser(utils.getUserId());
 		model.addAttribute("categorizations", categorizationUserService.findbyUser(user));
 		return "categorization/list";
@@ -131,8 +142,9 @@ public class CategorizationController {
 		if (!opt.isPresent())
 			return E403;
 		final Categorization categorization = opt.get();
+		final User user = userService.getUser(utils.getUserId());
 		if (!categorization.getUser().getUserId().equals(utils.getUserId())
-				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				&& !userService.isUserAdministrator(user)) {
 			return E403;
 		}
 		model.addAttribute(CATEGORIZATION, categorization);
@@ -148,7 +160,7 @@ public class CategorizationController {
 		final Categorization categorization = opt.get();
 		final User user = userService.getUser(utils.getUserId());
 		if (!categorizationService.hasUserPermission(user, categorization)
-				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				&& !userService.isUserAdministrator(user)) {
 			return E403;
 		}
 		model.addAttribute(CATEGORIZATION, categorization);
@@ -188,8 +200,8 @@ public class CategorizationController {
 		if (!opt.isPresent())
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		final Categorization categorization = opt.get();
-		if (!categorization.getUser().getUserId().equals(utils.getUserId())
-				|| shareType.equals("OWNER") && !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+		final User userlogged = userService.getUser(utils.getUserId());
+		if (!categorization.getUser().getUserId().equals(utils.getUserId()) && !userService.isUserAdministrator(userlogged)) {
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -208,8 +220,9 @@ public class CategorizationController {
 		final CategorizationUser categorizationUser = categorizationUserRepository.findById(id)
 				.orElse(new CategorizationUser());
 		final Categorization categorization = categorizationUser.getCategorization();
+		final User user = userService.getUser(utils.getUserId());
 		if (!categorization.getUser().getUserId().equals(utils.getUserId())
-				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				&& !userService.isUserAdministrator(user)) {
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -248,8 +261,9 @@ public class CategorizationController {
 		if (!opt.isPresent())
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		final Categorization categorization = opt.get();
+		final User user = userService.getUser(utils.getUserId());
 		if (!categorization.getUser().getUserId().equals(utils.getUserId())
-				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				&& !userService.isUserAdministrator(user)) {
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -269,8 +283,9 @@ public class CategorizationController {
 		if (!opt.isPresent())
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		final Categorization categorization = opt.get();
+		final User user = userService.getUser(utils.getUserId());
 		if (!categorization.getUser().getUserId().equals(utils.getUserId())
-				&& !utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
+				&& !userService.isUserAdministrator(user)) {
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 		try {
@@ -301,7 +316,9 @@ public class CategorizationController {
 	@RequestMapping(value = "/deactivate", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> inactive(@RequestParam String id) {
 		try {
-			categorizationService.deactivate(id);
+			final User user = userService.getUser(utils.getUserId());
+			
+			categorizationService.deactivate(id, user);
 
 			return new ResponseEntity<>(OK, HttpStatus.OK);
 		} catch (final Exception e) {
@@ -539,10 +556,17 @@ public class CategorizationController {
 			break;
 		case "flows":
 			try {
-				if (flowRepository.findByIdentification(id) != null
-						&& (flowRepository.findByIdentification(id).getUser().getUserId().equals(utils.getUserId())
-								|| utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.toString()))) {
-					identification = flowRepository.findByIdentification(id).getIdentification();
+				FlowDomain flow = flowRepository.findByIdentification(id);
+				
+				if ((flow != null) && 
+					((flow.getUser().getUserId().equals(utils.getUserId())) ||
+					 (userService.isUserAdministrator(user)) ||
+					 (resourceService.hasAccess(utils.getUserId(), flow.getId(), ResourceAccessType.VIEW) && 
+							(userService.isUserAnalytics(user) || userService.isUserDeveloper(user))
+					 )
+					)
+				   ){
+					identification = flow.getIdentification();
 				}
 			} catch (final Exception e) {
 				log.error("Error getting flow identification: {}", e);
@@ -550,10 +574,13 @@ public class CategorizationController {
 			break;
 		case "apis":
 			try {
-				final List<Api> apis = apiService.loadAPISByFilter("", "", "", utils.getUserId());
 				final Api api = apiService.getById(id);
-				if (apis.contains(api)) {
-					identification = api.getIdentification();
+				if (api!=null) {
+					final List<Api> apis = apiService.loadAPISByFilter(api.getIdentification(), "", "", utils.getUserId());
+					if ((apis!=null && !apis.isEmpty()) || 
+						(resourceService.hasAccess(utils.getUserId(), api.getId(), ResourceAccessType.VIEW))) {
+						identification = api.getIdentification();
+					}
 				}
 			} catch (final Exception e) {
 				log.error("Error getting api identification: {}", e);
@@ -561,11 +588,14 @@ public class CategorizationController {
 			break;
 		case "devices":
 			try {
-				final List<ClientPlatform> devices = clientPlatformService
-						.getAllClientPlatformByCriteria(utils.getUserId(), null, null);
-				final ClientPlatform device = clientPlatformService.getById(id);
-				if (devices.contains(device)) {
-					identification = device.getIdentification();
+				final ClientPlatform clientPlatform = clientPlatformService.getById(id);
+				
+				if (clientPlatform!=null && !userService.isUserUser(user)) {
+					final List<ClientPlatform> clientsPlatform = clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), clientPlatform.getIdentification(), null);
+					if ((clientsPlatform!=null && !clientsPlatform.isEmpty()) ||
+						(resourceService.hasAccess(utils.getUserId(), clientPlatform.getId(), ResourceAccessType.VIEW))){
+						identification = clientPlatform.getIdentification();
+					}
 				}
 			} catch (final Exception e) {
 				log.error("Error getting device identification: {}", e);
@@ -574,28 +604,32 @@ public class CategorizationController {
 		case "dashboards":
 			try {
 				final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
-				final List<DashboardDTO> dashboards = dashboardService
-						.findDashboardWithIdentificationAndDescription(null, null, utils.getUserId());
-				for (final DashboardDTO dashboardDTO : dashboards) {
-					if (dashboardDTO.getId().equals(dashboard.getId())) {
+				
+				if (dashboard!=null){
+					final List<DashboardDTO> dashboards = dashboardService.findDashboardWithIdentificationAndDescription(dashboard.getIdentification(), null, utils.getUserId());
+					if ((dashboards!=null && !dashboards.isEmpty()) ||
+						(resourceService.hasAccess(utils.getUserId(), dashboard.getId(), ResourceAccessType.VIEW))){
 						identification = dashboard.getIdentification();
 					}
 				}
+
 			} catch (final Exception e) {
 				log.error("Error getting dashboard identification: {}", e);
 			}
 			break;
 		case "notebooks":
 			try {
-				final Notebook notebook = notebookRepository.findById(id).orElse(new Notebook());
-				List<Notebook> notebooks = null;
-				if (!userService.isUserAdministrator(user)) {
-					notebooks = notebookRepository.findByUserAndAccess(user);
-				} else {
-					notebooks = notebookRepository.findAllByOrderByIdentificationAsc();
-				}
-				if (notebooks.contains(notebook)) {
-					identification = notebook.getIdentification();
+				
+				Notebook notebook = notebookRepository.findById(id).orElse(null);
+				
+				if (notebook != null) {
+					List<Notebook> notebooks = notebookRepository.findByUserAndAccess(user);
+					if ((notebooks!=null && !notebooks.isEmpty() && notebooks.contains(notebook) && userService.isUserAnalytics(user)) || 
+						(userService.isUserAdministrator(user)) || 
+						(resourceService.hasAccess(utils.getUserId(), notebook.getId(), ResourceAccessType.VIEW) && (userService.isUserAnalytics(user)))
+					   ){
+						identification = notebook.getIdentification();
+					}
 				}
 			} catch (final Exception e) {
 				log.error("Error getting notebook identification: {}", e);
@@ -603,15 +637,16 @@ public class CategorizationController {
 			break;
 		case "dataflows":
 			try {
-				List<Pipeline> dataflows = null;
-				final Pipeline dataflow = dataflowRepository.findById(id).orElse(new Pipeline());
-				if (!userService.isUserAdministrator(user)) {
-					dataflows = dataflowRepository.findByUserAndAccess(user);
-				} else {
-					dataflows = dataflowRepository.findAll();
-				}
-				if (dataflows.contains(dataflow)) {
-					identification = dataflow.getIdentification();
+				final Pipeline dataflow = dataflowRepository.findById(id).orElse(null);
+				
+				if (dataflow!=null) {
+					List<Pipeline> dataflows = dataflowRepository.findByUserAndAccess(user);
+					if ((dataflows!=null && !dataflows.isEmpty() && dataflows.contains(dataflow) && userService.isUserAnalytics(user)) || 
+						(userService.isUserAdministrator(user)) || 
+						(resourceService.hasAccess(utils.getUserId(), dataflow.getId(), ResourceAccessType.VIEW) && (userService.isUserAnalytics(user)))
+					   ){
+						identification = dataflow.getIdentification();
+					}
 				}
 			} catch (final Exception e) {
 				log.error("Error getting dataflow identification: {}", e);
@@ -619,16 +654,18 @@ public class CategorizationController {
 			break;
 		case "viewers":
 			try {
-				final Viewer viewer = viewerRepository.findById(id).orElse(new Viewer());
-				List<Viewer> viewers = null;
-				if (userService.isUserAdministrator(user)) {
-					viewers = viewerRepository.findAll();
-				} else {
-					viewers = viewerRepository.findByIsPublicTrueOrUser(user);
+				final Viewer viewer = viewerRepository.findById(id).orElse(null);
+				
+				if (viewer!=null) {
+					List<Viewer> viewers = viewerRepository.findByIsPublicTrueOrUser(user);
+					
+					if ((viewers!=null && !viewers.isEmpty()) && viewers.contains(viewer) ||
+						(userService.isUserAdministrator(user)) ||
+						(resourceService.hasAccess(utils.getUserId(), viewer.getId(), ResourceAccessType.VIEW))){
+							identification = viewer.getIdentification();
+					}				
 				}
-				if (viewers.contains(viewer)) {
-					identification = viewer.getIdentification();
-				}
+
 			} catch (final Exception e) {
 				log.error("Error getting viewer identification: {}", e);
 			}
@@ -636,15 +673,17 @@ public class CategorizationController {
 		case "reports":
 			try {
 				final Report report = reportService.findById(id);
-				List<Report> reports = null;
-				if (userService.isUserAdministrator(user)) {
-					reports = reportService.findAllActiveReports();
-				} else {
-					reports = reportService.findAllActiveReportsByUserId(user.getUserId());
+				
+				if (report!=null && !userService.isUserUser(user)) {
+					List<Report> reports = reportService.findAllActiveReportsByUserId(user.getUserId());
+					
+					if ((reports!=null && !reports.isEmpty()) && reports.contains(report) ||
+							(userService.isUserAdministrator(user)) ||
+							(resourceService.hasAccess(utils.getUserId(), report.getId(), ResourceAccessType.VIEW))){
+								identification = report.getIdentification();
+						}	
 				}
-				if (reports.contains(report)) {
-					identification = report.getIdentification();
-				}
+
 			} catch (final Exception e) {
 				log.error("Error getting report identification: {}", e);
 			}

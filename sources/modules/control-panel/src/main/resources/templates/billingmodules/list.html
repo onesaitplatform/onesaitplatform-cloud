@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -143,7 +143,10 @@
 													<img th:if="${moduleStatus.identification== 'historicaldb'}" src="/controlpanel/static/images/modules/minio.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
 													<img th:if="${moduleStatus.identification== 'gravitee'}" src="/controlpanel/static/images/modules/gravitee.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
 													<img th:if="${moduleStatus.identification== 'multitenant'}" src="/controlpanel/static/images/modules/multitenant.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
+													<img th:if="${moduleStatus.identification== 'nebulagraph'}" src="/controlpanel/static/images/modules/nebula.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
+													<img th:if="${moduleStatus.identification== 'presto'}" src="/controlpanel/static/images/modules/presto.png" class="img-responsive img-module thumbnail popovers" data-trigger="hover" data-placement="bottom" data-container="body" style="border:none!important;"/>
 
+													
 													<div class="form-inline" style=" font-size: 20px; min-height: 25px; max-height: 25px">															
 														 <span class="label-marketasset" th:title="${tag}" th:alt="${tag}"><i th:class="'devicon-' + ${tag} +'-plain'"></i></span>															
 														 <div class="pull-right">

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 
 	@Autowired
 	private ScriptProcessorFactory scriptEngine;
-	
+
 	@Autowired
 	private ApiCacheService apiCacheService;
 
@@ -98,12 +98,12 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
 			data = apiCacheService.getCache(data, api.getApicachetimeout());
 		}
-		
+
 		if (data.get(Constants.OUTPUT)==null) {
 			data = proxyHttp(data);
 			data = postProcess(data);
 		}
-		
+
 		if (api.getApicachetimeout() !=null && data.get(Constants.METHOD).equals("GET")) {
 			apiCacheService.putCache(data, api.getApicachetimeout());
 		}
@@ -215,7 +215,7 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 		final String method = (String) data.get(ApiServiceInterface.METHOD);
 		if (apiManagerServiceConfig.postProcess(api) && method.equalsIgnoreCase("get")) {
 			final String postProcess = apiManagerServiceConfig.getPostProccess(api);
-			if (!StringUtils.isEmpty(postProcess)) {
+			if (StringUtils.hasText(postProcess)) {
 				try {
 					final Object result = scriptEngine.invokeScript(postProcess, data.get(ApiServiceInterface.OUTPUT));
 					data.put(ApiServiceInterface.OUTPUT, result);

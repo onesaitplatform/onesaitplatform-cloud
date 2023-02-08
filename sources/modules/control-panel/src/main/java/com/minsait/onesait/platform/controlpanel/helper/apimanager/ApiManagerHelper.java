@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import org.springframework.ui.Model;
 
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
+import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter.HeaderType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
@@ -41,6 +43,7 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.apimanager.UserApiDTO;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPageResponse;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -79,6 +82,9 @@ public class ApiManagerHelper {
 	private static final String OPERATIONS_STR = "operations";
 	private static final String CLIENTS_STR = "clients";
 
+	@Value("${gravitee.enable}")
+	private boolean graviteeOn;
+
 	// To populate the List Api Form
 	public void populateApiManagerListForm(Model uiModel) {
 		final List<User> users = userRepository.findAll();
@@ -90,6 +96,7 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(USERS_STR, users);
 		uiModel.addAttribute("states", Api.ApiStates.values());
 		uiModel.addAttribute("auths", userApiRepository.findByUser(user));
+		uiModel.addAttribute("graviteeOn", graviteeOn);
 	}
 
 	// To populate the Create Api Form
@@ -107,6 +114,9 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(OPERATIONS_STR, new ArrayList<String>());
 		uiModel.addAttribute("ontologies", ontologies);
 		uiModel.addAttribute("api", new Api());
+		uiModel.addAttribute("graviteeOn", graviteeOn);
+		uiModel.addAttribute("graviteeSwaggerDoc", new ApiPageResponse());
+		uiModel.addAttribute("endpointGraviteeManagement", resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT));
 
 	}
 
@@ -122,7 +132,15 @@ public class ApiManagerHelper {
 		final List<OperationJson> operations = populateOperationsObject(apiOperations);
 
 		uiModel.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
-		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+
+		if (api.getGraviteeId() == null) {
+			uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
+					.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		} else {
+			uiModel.addAttribute(API_ENDPOINT_STR,
+					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
+					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+		}
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
 				ServiceUrl.SWAGGERJSON));
@@ -135,9 +153,17 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(CLIENTS_STR, toUserApiDTO(userApiRepository.findByApiId(apiId)));
 		uiModel.addAttribute(USERS_STR, userRepository.findUserByIdentificationAndNoRol(utils.getUserId(),
 				Role.Type.ROLE_ADMINISTRATOR.toString()));
-		if (apiManagerService.postProcess(api))
+		if (apiManagerService.postProcess(api)) {
 			uiModel.addAttribute("postProcessFx", apiManagerService.getPostProccess(api));
-		
+		}
+
+		uiModel.addAttribute("endpointGraviteeManagement", resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT));
+
+		final Type[] crud = ApiOperation.Type.values();
+		final HeaderType[] paramTypes = ApiQueryParameter.HeaderType.values();
+		uiModel.addAttribute("httpMethods", crud);
+		uiModel.addAttribute("paramTypes", paramTypes);
+
 	}
 
 	private List<UserApiDTO> toUserApiDTO(List<UserApi> findByApiId) {
@@ -161,13 +187,28 @@ public class ApiManagerHelper {
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 		uiModel.addAttribute(API_SWAGGER_UI_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 		uiModel.addAttribute(OPERATIONS_STR, operations);
-		uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+
+		if (api.getGraviteeId() == null) {
+			uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
+					.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		} else {
+			uiModel.addAttribute(API_ENDPOINT_STR,
+					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
+					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+		}
+
 		uiModel.addAttribute("api", api);
-		if (apiManagerService.postProcess(api))
+		if (apiManagerService.postProcess(api)) {
 			uiModel.addAttribute("postProcessFx", apiManagerService.getPostProccess(api));
+		}
 
 		// POPULATE AUTH TAB
 		uiModel.addAttribute(CLIENTS_STR, userApiRepository.findByApiId(apiId));
+
+		final Type[] crud = ApiOperation.Type.values();
+		final HeaderType[] paramTypes = ApiQueryParameter.HeaderType.values();
+		uiModel.addAttribute("httpMethods", crud);
+		uiModel.addAttribute("paramTypes", paramTypes);
 	}
 
 	private static List<OperationJson> populateOperationsObject(List<ApiOperation> apiOperations) {
@@ -304,15 +345,15 @@ public class ApiManagerHelper {
 		model.addAttribute(ENDPOINT_BASE_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
 		model.addAttribute(API_SERVICES_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON));
 	}
-	
+
 	public List<String> getUserTokenList() {
 		final User user = userService.getUser(utils.getUserId());
 		final List<UserToken> userTokenList = userTokenRepository.findByUser(user);
 		final List<String> list = new ArrayList<>();
-		for (UserToken u: userTokenList) {
+		for (final UserToken u: userTokenList) {
 			list.add(u.getToken());
 		}
 		return list;
 	}
-	
+
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,8 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDTO;
 import com.minsait.onesait.platform.controlpanel.helper.app.AppHelper;
 import com.minsait.onesait.platform.controlpanel.rest.management.model.ErrorValidationResponse;
+import com.minsait.onesait.platform.controlpanel.services.keycloak.AdviceNotification.Type;
+import com.minsait.onesait.platform.controlpanel.services.keycloak.KeycloakNotificator;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import io.swagger.annotations.ApiParam;
@@ -107,7 +110,8 @@ public class AppRestController {
 	private ObjectMapper mapper;
 	@Autowired
 	private AppUserRepository appUserRepository;
-
+	@Autowired(required = false)
+	private KeycloakNotificator keycloakNotificator;
 
 	@Operation(summary = "Get single realm info")
 	@GetMapping("/{identification}")
@@ -146,7 +150,7 @@ public class AppRestController {
 				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 
-			if (StringUtils.isEmpty(realm.getUserExtraFields())) {
+			if (!StringUtils.hasText(realm.getUserExtraFields())) {
 				return new ResponseEntity<>(REALM_STR + identification + "\" does not have user extra fields defined",
 						HttpStatus.OK);
 			} else {
@@ -182,7 +186,7 @@ public class AppRestController {
 		final List<AppRoleList> arl = appService.getRolesByAppIdentification(identification);
 
 		arl.forEach(r -> users.addAll(r.getAppUsers().stream().filter(u -> {
-			if (!StringUtils.isEmpty(u.getUser().getExtraFields())) {
+			if (!!StringUtils.hasText(u.getUser().getExtraFields())) {
 				try {
 					final String formatedJsonPath = jsonPath.startsWith("$.") ? jsonPath : "$." + jsonPath;
 					final Object v = JsonPath.parse(u.getUser().getExtraFields()).read(formatedJsonPath, Object.class);
@@ -202,7 +206,7 @@ public class AppRestController {
 		for (final RealmUser realmUser : users) {
 			usersWithRole(realmUser, filteredUsers);
 		}
-		if (!StringUtils.isEmpty(realmRole)) {
+		if (!!StringUtils.hasText(realmRole)) {
 			filteredUsers = filteredUsers.stream().filter(ru -> ru.getRole().contains(realmRole))
 					.collect(Collectors.toList());
 		}
@@ -234,7 +238,7 @@ public class AppRestController {
 		final List<AppRoleList> arl = appService.getRolesByAppIdentification(identification);
 
 		arl.forEach(r -> users.addAll(r.getAppUsers().stream().filter(u -> {
-			if (!StringUtils.isEmpty(u.getUser().getExtraFields())) {
+			if (!!StringUtils.hasText(u.getUser().getExtraFields())) {
 				try {
 					final List<Map<String, Object>> results = JsonPath.parse(u.getUser().getExtraFields()).read(jsonPathExpression);
 					return !results.isEmpty();
@@ -251,7 +255,7 @@ public class AppRestController {
 		for (final RealmUser realmUser : users) {
 			usersWithRole(realmUser, filteredUsers);
 		}
-		if (!StringUtils.isEmpty(realmRole)) {
+		if (!!StringUtils.hasText(realmRole)) {
 			filteredUsers = filteredUsers.stream().filter(ru -> ru.getRole().contains(realmRole))
 					.collect(Collectors.toList());
 		}
@@ -342,6 +346,9 @@ public class AppRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		appService.createApp(app);
+		if (keycloakNotificator != null) {
+			keycloakNotificator.notifyRealmToKeycloak(app.getIdentification(), Type.CREATE);
+		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
 
 	}
@@ -396,6 +403,9 @@ public class AppRestController {
 				appDb.setTokenValiditySeconds(realm.getTokenValiditySeconds());
 			}
 			appService.updateApp(appDb);
+			if (keycloakNotificator != null) {
+				keycloakNotificator.notifyRealmToKeycloak(appDb.getIdentification(), Type.UPDATE);
+			}
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (final RuntimeException e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -422,6 +432,9 @@ public class AppRestController {
 
 		try {
 			appService.deleteApp(appDb);
+			if (keycloakNotificator != null) {
+				keycloakNotificator.notifyRealmToKeycloak(appDb.getIdentification(), Type.DELETE);
+			}
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (final RuntimeException e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -653,6 +666,9 @@ public class AppRestController {
 		newRole.setDescription(role.getDescription());
 		appDb.getAppRoles().add(newRole);
 		appService.updateApp(appDb);
+		if (keycloakNotificator != null) {
+			keycloakNotificator.notifyRealmToKeycloak(appDb.getIdentification(), Type.UPDATE);
+		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
@@ -681,6 +697,9 @@ public class AppRestController {
 		}
 		appDb.getAppRoles().removeIf(ar -> ar.getName().equals(roleName));
 		appService.updateApp(appDb);
+		if (keycloakNotificator != null) {
+			keycloakNotificator.notifyRealmToKeycloak(appDb.getIdentification(), Type.UPDATE);
+		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -731,8 +750,8 @@ public class AppRestController {
 	// @Transactional
 	public ResponseEntity<?> getUser(
 			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
-			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId) {
-
+			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId, HttpServletResponse response) {
+		utils.cleanInvalidSpringCookie(response);
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {

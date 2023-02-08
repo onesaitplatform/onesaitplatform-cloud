@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -193,15 +193,23 @@
 																			</li>
 																			<!-- CLONE-->
 																			<li>
-																				<span th:title="#{dashboards.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='javascript:cloneDashboardDialog(\''+${dashboard.id}+ '\',\'' +${dashboard.identification}+'\');'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.clone}" >Clone</span></span>
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:title="#{dashboards.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='javascript:cloneDashboardDialog(\''+${dashboard.id}+ '\',\'' +${dashboard.identification}+'\');'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.clone}" >Clone</span></span>
 																			</li>
 																			<!-- URL -->
 																			<li>
 																				<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>
 																		    </li>
+																		    <!-- EXPORT IMAGE -->
+																		    <li>
+																				<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:showExportImageDialog(\''+${dashboard.id}+ '\');'"><i class="la la-file-image-o font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.export.image}" >Export Image</span></span>
+																		    </li>
+																		    <!-- EXPORT PDF -->
+																		    <li>
+																				<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:showExportPDFDialog(\''+${dashboard.id}+ '\');'"><i class="la la-file-pdf-o font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.export.pdf}" >Export pdf</span></span>
+																			</li>
 																		    <!-- DOWNLOAD -->
 																		    <li>																   
-																		    	<span th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/exportDashboard/${dashboard.id}/|} + '\');'"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.download}" >Download</span></span>
+																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/exportDashboard/${dashboard.id}/|} + '\');'"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.download}" >Download</span></span>
 																		    </li>
 																			<!-- IMPORT -->
 																			<li>
@@ -209,7 +217,7 @@
 																		    </li>																		    
 																		    <!-- EDIT DASHBOARD JSON-->
 																		    <li>
-																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.edit.model.json.tooltip}" >Edit Json</span></span>																	
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{dashboards.edit.model.json.tooltip}" >Edit Json</span></span>																	
 																			</li>
 																		    <!-- DELETE -->
 																		    <li>

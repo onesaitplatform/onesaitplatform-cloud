@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.deletion;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -48,6 +49,7 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepo
 import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
+import com.minsait.onesait.platform.config.repository.DatasetResourceRepository;
 import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
@@ -128,6 +130,8 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private OPResourceRepository resourceRepository;
 	@Autowired
+	private DatasetResourceRepository datasetResourceRepository;
+	@Autowired
 	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
@@ -207,7 +211,12 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 			}
 			if (ontologyRestRepository.findByOntologyId(ontology) != null) {
 				ontologyRestSecurityRepository
-				.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
+						.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
+			}
+			if (!datasetResourceRepository.findByOntology(ontology).isEmpty()) {
+				datasetResourceRepository.findByOntology(ontology).forEach(a -> {
+					datasetResourceRepository.delete(a);
+				});
 			}
 
 			if (!droolsRuleRepository.findBySourceOntologyOrTargetOntology(ontology.getIdentification()).isEmpty()) {
@@ -224,13 +233,20 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 			final List<OntologyTimeSeries> timeSeries = ontologyTimeSeriesRepository.findByOntology(ontology);
 
 			if (!kpi.isEmpty()) {
-				kpiRepository.deleteAll(kpi);
+				for (Iterator iterator = kpi.iterator(); iterator.hasNext();) {
+					OntologyKPI ontokpi = (OntologyKPI) iterator.next();
+					kpiRepository.delete(ontokpi);
+				}
+				ontologyRepository.deleteById(id);
+
 			} else if (!timeSeries.isEmpty()) {
 				ontologyTimeSeriesRepository.deleteByOntology(ontology);
 				final Ontology stats = ontologyRepository
 						.findByIdentification(timeSeries.get(0).getOntology().getIdentification() + "_stats");
+				ontologyRepository.deleteById(id);
 				if (stats != null) {
 					ontologyRepository.deleteById(stats.getId());
+					
 				}
 			} else {
 				ontologyRepository.deleteById(id);

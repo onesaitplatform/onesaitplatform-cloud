@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,9 @@ public class OPEventListener {
 	@EventListener
 	void handleAsyncEvent(OPAuditEvent event) throws JsonProcessingException {
 		if (!(event instanceof OPAuditRemoteEvent)) {
-			log.debug("OPEventListener :: Default Event Processing detected : thread '{}' handling '{}' async event",
+			log.trace("OPEventListener :: Default Event Processing detected : thread '{}' handling '{}' async event",
 					event.getType(), event.getMessage());
-			log.debug(event.toJson());
+			log.trace(event.toJson());
 			eventRouter.notify(event.toJson());
 		}
 
@@ -81,10 +81,10 @@ public class OPEventListener {
 		if (event.getSource() instanceof UsernamePasswordAuthenticationToken
 				&& ((UsernamePasswordAuthenticationToken) event.getSource())
 				.getDetails() instanceof WebAuthenticationDetails) {// Login in web
-			log.debug("Authentication success event for user {}", event.getAuthentication().getPrincipal().toString());
+			log.trace("Authentication success event for user {}", event.getAuthentication().getPrincipal().toString());
 			s2event.setOperationType(OperationType.LOGIN.name());
 		} else { // OAuth Token generation after login
-			log.debug("OAuth Authentication success event for user {}",
+			log.trace("OAuth Authentication success event for user {}",
 					event.getAuthentication().getPrincipal().toString());
 			s2event.setOperationType(OperationType.LOGIN_OAUTH.name());
 		}

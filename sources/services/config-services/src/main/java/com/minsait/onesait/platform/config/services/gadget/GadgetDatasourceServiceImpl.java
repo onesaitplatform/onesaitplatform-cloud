@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
+import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
@@ -142,7 +143,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
+		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH && !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
 			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
 					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
 		}
@@ -176,7 +177,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
+		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH && !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
 			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
 					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
 		}

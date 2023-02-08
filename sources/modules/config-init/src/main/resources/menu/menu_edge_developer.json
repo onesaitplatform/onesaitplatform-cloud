@@ -14,9 +14,9 @@
             "submenu": [
                 {
                     "title": {
-                        "EN": "My Projects",
-                        "ES": "Mis Proyectos",
-						"FR": "Mes Projets"
+                        "EN": "My Applications",
+                        "ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
                     },
                     "icon": "",
                     "url": "/controlpanel/projects/list"
@@ -56,6 +56,24 @@
                     },
                     "icon": "",
                     "url": "/controlpanel/rule-domains/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Microservices",
+                        "ES": "Mis Microservicios",
+						"FR": "Mes Microservices"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/microservices/list"
+                },
+                {
+                    "title": {
+                        "EN": "My BPM Tenants",
+                        "ES": "Mis Dominios de BPM",
+						"FR": "Mis Locataires BPM"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bpm/list"
                 },
                 {
                     "title": {

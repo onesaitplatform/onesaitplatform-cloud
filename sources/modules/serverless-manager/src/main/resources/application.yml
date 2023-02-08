@@ -3,6 +3,9 @@ server:
    servlet.contextPath: /serverless-manager
 
 onesaitplatform:
+   gateway:
+     user: operations
+     secret: operations
    api-key: 52bd41e41c2c4b919ace6f43560a3d03
    serverless:
      url: https://development.onesaitplatform.com/fn
@@ -35,7 +38,7 @@ spring:
          ddl-auto: update
          naming:
             implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
-            physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+            physical-strategy: com.minsait.onesait.platform.serverless.model.CustomPhysicalNamingStrategy
    datasource:
       url: jdbc:mysql://localhost:3306/onesaitplatform_serverless?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       driver-class-name: com.mysql.cj.jdbc.Driver
@@ -46,3 +49,4 @@ logging:
    level:
       com.minsait: INFO
       org.springframework: INFO
+      com.minsait.onesait.platform.serverless.service: DEBUG

@@ -1,0 +1,57 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataClassExample",
+    "type": "object",
+    "required": [
+        "DataClassExample"
+    ],
+    "properties": {
+        "DataClassExample": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel DataClassExample",
+        "type": "object",
+        "required": [
+            "dni",
+            "age",
+            "name",
+            "spanish_province",
+            "adult"
+        ],
+        "properties": {
+            "dni": {
+                "type": "string",
+                "propdclass": [
+                    "GeneralDataClass.toUpperCase",
+                    "GeneralDataClass.dniformat"
+                ]
+            },
+            "age": {
+                "type": "number"
+            },
+            "name": {
+                "type": "string",
+                "propdclass": [
+                    "GeneralDataClass.toUpperCase"
+                ]
+            },
+            "spanish_province": {
+                "type": "string",
+                "propdclass": [
+                    "GeneralDataClass.provinciasEsp"
+                ]
+            },
+            "adult": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology to test the preprocessing of data when inserting them, with the data class",
+    "entitydclass": [
+        "GeneralDataClass.adultAge"
+    ],
+    "additionalProperties": true
+}

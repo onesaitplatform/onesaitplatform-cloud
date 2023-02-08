@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,28 +119,28 @@ public class VersioningManagerImpl implements VersioningManager {
 					s.substring(VersioningIOService.DIR.length())));
 		}
 		versioningIOService.restoreFromFileSystem(versionable);
-		if (StringUtils.isEmpty(userId)) {
-			if (StringUtils.isEmpty(message)) {
-				message = String.format(DEFAULT_RESTORE_COMMIT_MESSAGE_NO_USER, versionable.fileName(), commitId);
-			}
-			gitOperations.commit(message, VersioningIOService.DIR);
-			pushToRemote();
-		} else {
-			if (StringUtils.isEmpty(message)) {
+		if (StringUtils.hasText(userId)) {
+			if (!StringUtils.hasText(message)) {
 				message = String.format(DEFAULT_RESTORE_COMMIT_MESSAGE, versionable.fileName(), userId, commitId);
 			}
 			gitOperations.commit(message, VersioningIOService.DIR, getGitAuthor(
 					userRepository.findFullNameByUserId(userId), userRepository.findEmailByUserId(userId)));
+			pushToRemote();
+		} else {
+			if (!StringUtils.hasText(message)) {
+				message = String.format(DEFAULT_RESTORE_COMMIT_MESSAGE_NO_USER, versionable.fileName(), commitId);
+			}
+			gitOperations.commit(message, VersioningIOService.DIR);
 			pushToRemote();
 		}
 	}
 
 	@Override
 	public <T> void commit(Versionable<T> versionable, String userId, String message, EventType eventType) {
-		if (StringUtils.isEmpty(userId)) {
+		if (!StringUtils.hasText(userId)) {
 			commit(versionable, message);
 		} else {
-			if (StringUtils.isEmpty(message)) {
+			if (!StringUtils.hasText(message)) {
 				switch (eventType) {
 				case DELETE:
 					message = String.format(DEFAULT_COMMIT_MESSAGE_DELETE, versionable.fileName(), userId);
@@ -173,7 +173,7 @@ public class VersioningManagerImpl implements VersioningManager {
 
 	@Override
 	public <T> void commit(Versionable<T> versionable, String message) {
-		if (StringUtils.isEmpty(message)) {
+		if (!StringUtils.hasText(message)) {
 			message = String.format(DEFAULT_COMMIT_MESSAGE_NO_USER, versionable.fileName());
 		}
 		log.debug("Commiting file {} with message {}", versionable.fileName(), message);

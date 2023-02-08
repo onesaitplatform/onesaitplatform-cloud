@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONException;
@@ -56,6 +57,7 @@ import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.Token;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
@@ -117,6 +119,8 @@ public class ClientPlatformController {
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private SimulationService simulationService;
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
 	private static final String ONTOLOGIES_STR = "ontologies";
@@ -128,12 +132,17 @@ public class ClientPlatformController {
 	private static final String ERROR_403 = "/error/403";
 	private static final String TOKEN_STR = "token";
 	private static final String ACTIVE_STR = "active";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) {
-
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		if (identification != null && identification.equals("")) {
 			identification = null;
 		}
@@ -141,8 +150,7 @@ public class ClientPlatformController {
 		if (ontologies != null && ontologies.length == 0) {
 			ontologies = null;
 		}
-		populateClientList(model,
-				clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), identification, ontologies));
+		populateClientList(model, clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), identification, ontologies));
 
 		return "devices/list";
 
@@ -217,13 +225,18 @@ public class ClientPlatformController {
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
-
+		
 		createInitalTokenToJson(deviceDTO);
 		model.addAttribute(DEVICE_STR, deviceDTO);
 		final List<OntologyDTO> ontologies = ontologyService
 				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+		
 		return "devices/create";
 	}
 
@@ -271,7 +284,6 @@ public class ClientPlatformController {
 			final Ontology onto = clientPlatformService.createDeviceLogOntology(ndevice);
 			ontologyBusinessService.createOntology(onto, userId, null);
 			clientPlatformService.createOntologyRelation(onto, ndevice);
-
 		} catch (final ClientPlatformServiceException | JSONException e) {
 			log.error("Cannot create clientPlatform", e);
 			utils.addRedirectException(e, redirect);
@@ -285,6 +297,15 @@ public class ClientPlatformController {
 			utils.addRedirectException(e, redirect);
 			return REDIRECT_DEV_CREATE;
 		}
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.CLIENTPLATFORM.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", device.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			return REDIRECT_PROJECT_SHOW + projectId.toString();
+		}
+		
 		return REDIRECT_DEV_LIST;
 	}
 

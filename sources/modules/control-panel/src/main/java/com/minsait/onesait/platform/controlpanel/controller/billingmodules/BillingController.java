@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,13 +56,21 @@ import lombok.extern.slf4j.Slf4j;
 public class BillingController {
 
 	@Autowired
-	BillingHelper billingHelper;
+	private BillingHelper billingHelper;
+	
+	@Autowired 
+	private HttpSession httpSession;
+	
+	private static final String APP_ID = "appId";
 
 	@Value("${onesaitplatform.binary-repository.tmp.file.path:/tmp/files/}")
 	private String tmpDir;
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		List<ModuleStatus> modules = billingHelper.getModuleStatus();
 		model.addAttribute("modulesStatus", modules);
 		model.addAttribute("numModulesActive",

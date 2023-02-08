@@ -164,6 +164,9 @@
 
       function removeFromQueue(datasource){
         delete vm.queue[generateDatasourceKey(datasource)];
+        if(typeof vm.queue !== 'undefined' && vm.queue!=null && Object.keys(vm.queue).length == 0){          
+          window.dispatchEvent(new CustomEvent('dashboardSocketIdle', {}));
+        }
       }
 
       vm.addListenerForHeartbeat = function(callback){

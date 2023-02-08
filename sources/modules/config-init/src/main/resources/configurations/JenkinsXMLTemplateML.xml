@@ -1,0 +1,180 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.12.2">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.1.9">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>DOCKER_MODULETAGVALUE</string>
+        <string>DOCKER_USERNAMEVALUE</string>
+        <string>DOCKER_PUSHREGISTRY_PRIVATE</string>
+        <string>GIT_URL</string>
+        <string>GIT_BRANCHNAME</string>
+        <string>PRIVATE_REGISTRY</string>
+      </parameters>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description>Microservice CI pipeline</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>1</daysToKeep>
+        <numToKeep>1</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_URL</name>
+          <description>URL to the Git Repository</description>
+          <defaultValue>{{GIT_REPOSITORY}}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+         <hudson.model.StringParameterDefinition>
+          <name>GIT_BRANCHNAME</name>
+          <description>compilation branch name</description>
+          <defaultValue>master</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_MODULETAGVALUE</name>
+          <description>Image generation tag value</description>
+          <defaultValue>latest</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_USERNAMEVALUE</name>
+          <description>Image registry image namespace</description>
+          <defaultValue>onesaitplatform</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_PUSHREGISTRY_PRIVATE</name>
+          <description>Push image to private registry</description>
+          <defaultValue>true</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>PRIVATE_REGISTRY</name>
+          <description>URL to the docker registry</description>
+          <defaultValue>registry.onesaitplatform.com</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.39">
+    <script>pipeline {
+   // Execute the Pipeline, or stage, on any available agent  
+   agent { 
+           node { 
+              label &apos;sofia2master&apos; 
+            } 
+          }
+   
+   tools { 
+      maven &apos;maven&apos;
+      jdk &apos;java8&apos;
+   }   
+
+   environment {          
+      // Base sources path 
+      BASEPATH = &apos;/datadrive/jenkins/.jenkins/jobs/{{MICROSERVICE_NAME}}/workspace&apos;
+      SOURCESPATH = &apos;/datadrive/jenkins/.jenkins/jobs/{{MICROSERVICE_NAME}}/workspace/{{SOURCES_PATH}}&apos;
+      DOCKERPATH = &apos;/datadrive/jenkins/.jenkins/jobs/{{MICROSERVICE_NAME}}/workspace/{{DOCKER_PATH}}&apos;
+      MICROSERVICE_NAME = &apos;{{MICROSERVICE_NAME}}&apos;
+      //CATTLE_ACCESS_KEY = &apos;1CD18DB0F67C50608DC3&apos;
+      //CATTLE_SECRET_KEY = &apos;VXAowSGp27LnNXATGFqqVPwxx9EiPDBSgkjPx8nv&apos;
+   }
+   
+   parameters { 
+       string(name: &apos;GIT_URL&apos;, 
+              defaultValue: &apos;{{GIT_REPOSITORY}}&apos;, 
+              description: &apos;URL Git Repository&apos;)
+       string(name: &apos;GIT_BRANCHNAME&apos;, 
+              defaultValue: &apos;master&apos;, 
+              description: &apos;compilation branch name&apos;)
+       string(name: &apos;DOCKER_MODULETAGVALUE&apos;, 
+              defaultValue: &apos;latest&apos;, 
+              description: &apos;Image generation tag value&apos;)
+       string(name: &apos;DOCKER_USERNAMEVALUE&apos;, 
+              defaultValue: &apos;onesaitplatform&apos;, 
+              description: &apos;Image registry image namespace&apos;)
+       string(name: &apos;DOCKER_PUSHREGISTRY_PRIVATE&apos;, 
+              defaultValue: &apos;true&apos;, 
+              description: &apos;Push image to private registry&apos;)
+       string(name: &apos;PRIVATE_REGISTRY&apos;, 
+              defaultValue: &apos;registry.onesaitplatform.com&apos;, 
+              description: &apos;URL to the docker registry&apos;)
+   }    
+   
+   stages {
+       stage(&apos;Fetching from repository&apos;) {  
+        steps {  
+           sh &quot;git clone ${params.GIT_URL} ${env.BASEPATH}&quot;            
+        }          
+       }
+     
+     stage(&apos;Build Artifacts&apos;) {
+        steps {
+         // Run maven build
+         dir(&quot;${env.SOURCESPATH}&quot;) {
+         	sh &quot;git checkout ${params.GIT_BRANCHNAME}&quot;
+            sh &quot;mvn clean install&quot;
+           }
+        }
+     }
+     
+     stage(&apos;Generate Docker images&apos;) {
+        steps {
+         // variable sustitution
+           dir(&quot;${env.BASEPATH}&quot;) {
+            sh &quot;cp ${env.SOURCESPATH}/target/*.jar ${env.DOCKERPATH}&quot;
+            sh &quot;cp -r ${env.SOURCESPATH}/flask ${env.DOCKERPATH}/flask&quot;
+            sh &quot;docker build -t ${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE} ${env.DOCKERPATH}&quot;
+           }
+        }
+     }
+
+     stage(&apos;Push Docker images&apos;) {
+        when {
+          expression { params.DOCKER_PUSHREGISTRY_PRIVATE == &apos;true&apos; }
+        }
+        steps {
+          sh &quot;docker tag ${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE} $PRIVATE_REGISTRY/${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}&quot;
+          sh &quot;docker push $PRIVATE_REGISTRY/${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}&quot;
+         
+        }
+     }
+     
+
+    
+    
+   }
+
+    post {
+        always {
+          echo "Delete Untagged images"
+          sh "docker rmi -f \$(docker images -f dangling=true -q) || true"
+          
+          echo "Delete pushed image"
+          sh "docker rmi -f \$(docker images | grep \$DOCKER_USERNAMEVALUE/ | awk '{print \$3}' | uniq) || true"
+          
+          echo "Deleting workspace"
+          sh "rm -r ${env.BASEPATH}"
+        }  
+    }
+  
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

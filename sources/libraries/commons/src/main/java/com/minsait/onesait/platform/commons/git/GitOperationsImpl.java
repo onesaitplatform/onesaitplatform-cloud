@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -396,7 +396,7 @@ public class GitOperationsImpl implements GitOperations {
 			final String user = remoteConfig.getUser();
 			final String token = remoteConfig.getPrivateToken();
 			String url = remoteConfig.getSite();
-			if (!StringUtils.isEmpty(user) && !StringUtils.isEmpty(token)) {
+			if (StringUtils.hasText(user) && StringUtils.hasText(token)) {
 				url = url.replaceAll("://", "://" + user + ":" + token + "@");
 			}
 			final ProcessBuilder pb = new ProcessBuilder("git", "clone", url, CLONED_FOLDER);
@@ -428,7 +428,7 @@ public class GitOperationsImpl implements GitOperations {
 	public void cloneRepository(String directory, String url, String user, String token, String branch,
 			boolean cloneToSpecificDir) {
 		try {
-			if (!StringUtils.isEmpty(user) && !StringUtils.isEmpty(token)) {
+			if (StringUtils.hasText(user) && StringUtils.hasText(token)) {
 				url = url.replaceAll("://", "://" + user + ":" + token + "@");
 			}
 			final ProcessBuilder pb;
@@ -520,7 +520,7 @@ public class GitOperationsImpl implements GitOperations {
 	@Override
 	public String showFileFromCommit(String directory, String commitId, String relativeFilePath) {
 		try {
-			if (StringUtils.isEmpty(commitId) || "null".equals(commitId)) {
+			if (!StringUtils.hasText(commitId) || "null".equals(commitId)) {
 				commitId = "HEAD";
 			}
 			final ProcessBuilder pb = new ProcessBuilder("git", "show", commitId + ":" + relativeFilePath);

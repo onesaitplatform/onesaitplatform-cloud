@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyAI;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.Pipeline;
@@ -72,6 +73,7 @@ import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateTypeRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
+import com.minsait.onesait.platform.config.repository.OntologyAIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesRepository;
@@ -143,6 +145,8 @@ public class VersioningRepositoryFacade {
 	private ViewerRepository viewerRepository;
 	@Autowired
 	private DroolsRuleRepository droolsRuleRepository;
+	@Autowired
+	private OntologyAIRepository ontologyAIRepository;
 
 	private static final String USER="User";
 	private static final String DASHBOARD = "Dashboard";
@@ -173,6 +177,7 @@ public class VersioningRepositoryFacade {
 	private static final String LAYER ="Layer";
 	private static final String VIEWER ="Viewer";
 	private static final String DROOLS_RULE ="DroolsRule";
+	private static final String ONTOLOGY_AI ="OntologyAI";
 
 
 
@@ -256,6 +261,8 @@ public class VersioningRepositoryFacade {
 			return (R) viewerRepository;
 		case DROOLS_RULE:
 			return (R) droolsRuleRepository;
+		case ONTOLOGY_AI:
+			return (R) ontologyAIRepository;
 		default:
 			throw new VersioningException(
 					"Entity of type " + versionable.getClass().getSimpleName() + " not configured");
@@ -324,6 +331,8 @@ public class VersioningRepositoryFacade {
 			return (S) viewerRepository.save((Viewer) versionable);
 		case DROOLS_RULE:
 			return (S) droolsRuleRepository.save((DroolsRule) versionable);
+		case ONTOLOGY_AI:
+			return (S) ontologyAIRepository.save((OntologyAI) versionable);
 		default:
 			throw new VersioningException(
 					"Entity of type " + versionable.getClass().getSimpleName() + " not configured");

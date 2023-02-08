@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package com.minsait.onesait.platform.controlpanel.rest.management.internationali
 
 import java.util.Iterator;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.IteratorUtils;
 import org.json.JSONException;
@@ -140,9 +142,11 @@ public class InternationalizationRestController {
 	@Operation(summary = "Get jsoni18n from a internationalization")
 	@GetMapping("{identification}/")
 	public ResponseEntity<String> getJsoni18n(
-			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			HttpServletResponse response) {
 		log.debug("Get jsoni18n from the internationalization {}", identification);
-
+		
+		utils.cleanInvalidSpringCookie(response);
 		User user = userService.getUser(utils.getUserId());
 
 		try {

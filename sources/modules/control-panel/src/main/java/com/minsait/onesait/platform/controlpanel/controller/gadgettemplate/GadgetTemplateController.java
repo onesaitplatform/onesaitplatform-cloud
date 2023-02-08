@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.controller.gadgettemplate;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.GadgetTemplateType;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.category.CategoryService;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetTemplateServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
@@ -77,9 +79,13 @@ public class GadgetTemplateController {
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
 	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String REDIRECT_GADGET_TEMP_LIST = "redirect:/gadgets/list";
 	private static final String REDIRECT_SHOW = "redirect:/gadgettemplates/view/";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@RequestMapping(method = RequestMethod.POST, value = "getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
@@ -93,6 +99,12 @@ public class GadgetTemplateController {
 		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
 		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
 		model.addAttribute(DATASOURCES, gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+		
 		return "gadgettemplates/create";
 
 	}
@@ -128,6 +140,14 @@ public class GadgetTemplateController {
 			model.addAttribute(GADGET_TEMPLATE, gadgetTemplate);
 			model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
 			return "gadgettemplates/create";
+		}
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.GADGETTEMPLATE.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", gadgetTemplate.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			return REDIRECT_PROJECT_SHOW + projectId.toString();
 		}
 
 		return REDIRECT_GADGET_TEMP_LIST;

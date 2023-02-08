@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class FigmaFileUtils {
 		}
 		scopes.put(METHODS_VAR, compileHomeMethods(figmaSetUp));
 		scopes.put(MAIN_METHODS_VAR, compileMainJSMethods(figmaSetUp));
-		String serverURL = !StringUtils.isEmpty(figmaSetUp.getOnesaitBaseURL()) ? figmaSetUp.getOnesaitBaseURL()
+		String serverURL = StringUtils.hasText(figmaSetUp.getOnesaitBaseURL()) ? figmaSetUp.getOnesaitBaseURL()
 				: resourcesService.getUrl(Module.DOMAIN, ServiceUrl.BASE);
 		if (serverURL.endsWith("/")) {
 			serverURL = serverURL.substring(0, serverURL.length() - 1);
@@ -189,15 +189,15 @@ public class FigmaFileUtils {
 			final Api api = apiManagerService.getApiByIdentificationVersionOrId(fgp.getApiId(), null);
 			scopes.put(METHOD_NAME_VAR, fgp.getMethodBinded());
 			scopes.put(METHOD_VAR, fgp.getOperationHTTPMethod());
-			if (!StringUtils.isEmpty(fgp.getInputVar())) {
+			if (StringUtils.hasText(fgp.getInputVar())) {
 				scopes.put(PREPROCESS_BODY_VAR, "let body=JSON.parse(JSON.stringify(viewModel." + fgp.getInputVar()
 						+ "))\n delete body._id \n");
 				scopes.put(BODY_VAR, "body: JSON.stringify(body),");
 			}
-			if (!StringUtils.isEmpty(fgp.getOutputVar())) {
+			if (StringUtils.hasText(fgp.getOutputVar())) {
 				scopes.put(OUTPUT_VAR, "viewModel." + fgp.getOutputVar() + "=r");
 			}
-			if (!StringUtils.isEmpty(fgp.getCallbackRoute())) {
+			if (StringUtils.hasText(fgp.getCallbackRoute())) {
 				String callbackRoute = fgp.getCallbackRoute();
 				if (!fgp.getCallbackRoute().endsWith(".html")) {
 					callbackRoute = callbackRoute + ".html";

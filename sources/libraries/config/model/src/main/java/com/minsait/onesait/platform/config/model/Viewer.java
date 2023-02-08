@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class Viewer extends OPResource implements Versionable<Viewer>{
 
 	@JsonSetter("baseLayer")
 	public void setBaseLayerJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final BaseLayer baseLayer = new BaseLayer();
 			baseLayer.setId(id);
 			this.baseLayer =  baseLayer;

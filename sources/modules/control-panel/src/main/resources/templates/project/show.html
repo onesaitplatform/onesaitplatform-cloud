@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -135,10 +135,24 @@
 								<span class="" th:text="#{project.environment}">Project env</span>
 							</a>
 						</div>
-						<div id="tab-log" class="option">
+						<div id="tab-log" class="option" data-toggle="collapse" data-target="#resourcelist">
 							<a href="#tab_2" data-toggle="tab" aria-expanded="true">
 								<span class="" th:text="#{project.resources}">Resources</span>
 							</a>
+						</div>
+                       	<div id="resourcelist" class="collapse margin-left-10 padding-left-5" style="height: 0px;" aria-expanded="false">
+                       		<div id="div_ALL">
+                          		<input id="checkbox_ALL" class="no-remove" type="checkbox" checked onclick="filterTable(($(this).attr('id')).split('_')[1])"/>
+								<label class="control-label margin-left-5 small" th:text="#{project.users.all}">all</label>
+								<span th:id="count_ALL" class='pull-right badge badge-success'></span>	
+                          	</div>
+                       		<th:block th:each="type :${resourceTypes}">
+                          		<div th:id="'div_' + ${type}">
+                          			<input  th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" onclick="filterTable(($(this).attr('id')).split('_')[1])"/>
+									<label class="control-label margin-left-5 small" th:text="${type}">Type</label>
+									<span th:id="'count_' + ${type}" class='pull-right badge badge-success'></span>
+                          		</div>
+                        	 </th:block>
 						</div>
 						<div id="tab-web" class="option">
 							<a href="#tab_3" data-toggle="tab" aria-expanded="true">
@@ -162,12 +176,22 @@
 							</div>
 						</div>
 						<div class="tab-pane " id="tab_2">
-							<div class="row main">
-								<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
+							<div class="row main padding-top-4">
+								<div class="panelHeader padding-left-15" style="display: inline;">
 									<span th:text="#{project.resources}">Project Resources</span>
 								</div>
+								<div class="caption" style="display: inline; float:none; padding-left: 5px;">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" ><i class="icon-search margin-left-10"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
+								</div>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""></a>
+									<a href="" class="fullscreen" data-original-title="" title=""></a>
+								</div>
 							</div>
-							<table id="resources-table"	class="table table-hover table-striped" dt:table="true"	dt:filterPlaceholder="none">
+							<table id="resource-access-list"	class="table table-hover table-striped" dt:table="true"	dt:filterPlaceholder="none">
 								<thead>
 									<tr class="cabecera-tabla">
 										<th class="titulo-columnas" dt:sortType="natural"><span	th:text="#{project.resource.type}">Type</span></th>
@@ -179,7 +203,7 @@
 									<th:block th:each="access : ${objResources}">
 										<th:block th:if="${userRole != 'ROLE_DEVELOPER'} OR (${access.resource.class.simpleName != 'Notebook'} AND ${access.resource.class.simpleName != 'Pipeline'})">
 											<!-- Status -->
-										<tr pages:paginate="10">
+										<tr pages:paginate="10" class="table-model resource-row" th:classappend="${#strings.toUpperCase(access.resource.class.simpleName)}">
 											<td class="text-left" >
 												<i th:if="${access.resource.class.simpleName == 'Ontology'}" class="fa flaticon-network font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
 												<i th:if="${access.resource.class.simpleName == 'Api'}"	class="fa flaticon-multimedia font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
@@ -429,9 +453,7 @@
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" ></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" ></script>
-	<script
-		th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"
-		type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"type="text/javascript"></script>
 	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
@@ -441,9 +463,6 @@
 	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 
-
-	<!-- TEMPLATE CONTROLLER  -->
-
 	<!-- MAIN INIT -->
 	<script th:inline="javascript">
 	var showLog = 1; // console.log toggle
@@ -451,11 +470,12 @@
 	var flowdomainEndpoint = [[@{/flows/startstop}]];
 	var start = [[#{domain.start}]];
 	var stop = [[#{domain.stop}]];
+	var accessType=[[#{project.resource.accesstype}]];
 	// DATATABLES LANGUAJE FROM PROPERTIES.
 	datatable_lang = [[#{datatables_lang}]];
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
-
+	
 	// REDIRECT
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateUrlBlank(url){ window.open(url, '_blank');};
@@ -598,7 +618,9 @@
 			$('.tabContainer').find('.option').removeClass('active');
 	        $(this).closest("div").addClass('active');
 		});
-
+		
+		initTable();
+		calculateTotals();
 	});
 
 	// MAIN WHEN LOAD
@@ -784,6 +806,85 @@
             }
         });
     }
+    
+	var initTable = function(){
+		oTable = $('#resource-access-list').DataTable({
+			   paging: false,
+			   columnDefs: [
+			      {
+			         targets: [0, 1],
+			         type: 'string',
+			         render: function(data, type, full, meta){
+			            if (type === 'filter' || type === 'sort') {
+			               var api = new $.fn.dataTable.Api(meta.settings);
+			               var td = api.cell({row: meta.row, column: meta.col}).node();
+			               data = $('select, input[type="text"]', td).val();
+			               if (!data){
+			            	   if (td.val){
+			            		   data = td.val;
+			            	   } else {
+			            		   data=td.innerHTML;
+			            	   }
+			               }
+			            }
+			            return data;
+			         }
+			      }
+			   ]
+			});
+			
+		$('#resource-access-list_wrapper div.dataTables_filter').addClass('hide');
+		$('#resource-access-list_wrapper > div.row').addClass('hide');
+		
+		$('#search-on-title').append($('#resource-access-list_wrapper div.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		
+		if ($("#search-on-title").children().length>2){
+			$("#search-on-title").find('input:first').remove();
+		}	
+	}
+	
+	var calculateTotals = function(){
+		var total = 0;
+		$(".checkbox-filter").each(function() {
+			var countclass ="." + $( this ).attr('id').split("_")[1];		
+			total = total + $(".resource-row" + countclass).length;
+			$('#count_' + $( this ).attr('id').split("_")[1]).text($(".resource-row" + countclass).length);			
+		})
+		$('#count_ALL').text(total);
+	}
+	
+	function filterTable(type){
+		if (type == "ALL"){
+			$('.checkbox-filter').attr('checked', false);
+			if ($( "#checkbox_ALL").prop("checked")){
+				$(".resource-row").removeClass("invisible");
+			} else {
+				$(".resource-row").addClass("invisible");
+			}
+		} else {
+			if ($( "#checkbox_ALL").prop("checked")){
+				$( "#checkbox_ALL").prop("checked", false);
+				$(".resource-row").addClass("invisible");
+			}
+			if ($( "#checkbox_" + type).prop("checked")){
+				$("." + type).removeClass("invisible");
+			} else {
+				$("." + type).addClass("invisible");
+			}		
+		}
+
+	}
+	
+	var calculateTotals = function(){
+		var total = 0;
+		$(".checkbox-filter").each(function() {
+			var countclass ="." + $( this ).attr('id').split("_")[1];		
+			total = total + $(".resource-row" + countclass).length;
+			$('#count_' + $( this ).attr('id').split("_")[1]).text($(".resource-row" + countclass).length);			
+		})
+		$('#count_ALL').text(total);
+	}
 
 	//]]>
 	</script>

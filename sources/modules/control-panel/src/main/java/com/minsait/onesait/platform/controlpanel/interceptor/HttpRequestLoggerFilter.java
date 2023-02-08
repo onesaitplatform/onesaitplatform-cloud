@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 //@Component
 //@Order(Ordered.HIGHEST_PRECEDENCE)
+@Deprecated
 @Slf4j
 public class HttpRequestLoggerFilter implements Filter {
 
@@ -53,8 +54,8 @@ public class HttpRequestLoggerFilter implements Filter {
 		try {
 			log.debug("Request URL {}",
 					httpRequest.getScheme() + "://" + httpRequest.getServerName() + ":" + httpRequest.getServerPort()
-							+ httpRequest.getRequestURI() + "?"
-							+ (httpRequest.getQueryString() == null ? "" : httpRequest.getQueryString()));
+					+ httpRequest.getRequestURI() + "?"
+					+ (httpRequest.getQueryString() == null ? "" : httpRequest.getQueryString()));
 			if (httpRequest.getHeader(HttpHeaders.AUTHORIZATION) != null) {
 				log.debug("Header authorization {}", httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
 			}
@@ -66,7 +67,7 @@ public class HttpRequestLoggerFilter implements Filter {
 					&& httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN_PARAMS) != null) {
 				@SuppressWarnings("unchecked")
 				final Map<String, String[]> params = (Map<String, String[]>) httpRequest.getSession()
-						.getAttribute(BLOCK_PRIOR_LOGIN_PARAMS);
+				.getAttribute(BLOCK_PRIOR_LOGIN_PARAMS);
 				if (!params.isEmpty()) {
 					final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 							.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),

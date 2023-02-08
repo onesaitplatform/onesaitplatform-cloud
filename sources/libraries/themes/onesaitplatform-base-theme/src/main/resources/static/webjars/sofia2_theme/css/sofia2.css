@@ -1901,6 +1901,7 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 
 .checkbox-column {
   display:block;
+  width: max-content;
 }
 
 .checkbox-column > label {
@@ -2090,4 +2091,15 @@ input[type=checkbox] {
   vertical-align: middle;
   margin-top: 10vh;
   width: 400px;
+}
+
+.textareaBlack {
+  color:#FFFFFF;;
+  background-color: #1B2C38;
+  width: 100%;
+  height: 100px;
+}
+
+.invisible {
+	display: none;
 }

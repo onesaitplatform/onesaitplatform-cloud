@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public class App extends AppParent implements Versionable<App> {
 
 	@JsonSetter("user")
 	public void setUserJson(String userId) {
-		if (!StringUtils.isEmpty(userId)) {
+		if (StringUtils.hasText(userId)) {
 			final User u = new User();
 			u.setUserId(userId);
 			user = u;
@@ -147,7 +147,7 @@ public class App extends AppParent implements Versionable<App> {
 
 	@JsonSetter("project")
 	public void setProjectJson(String projectId) {
-		// if (!StringUtils.isEmpty(projectId)) {
+		// if (StringUtils.hasText(projectId)) {
 		// final Project p = new Project();
 		// p.setId(projectId);
 		// p.setApp(this);

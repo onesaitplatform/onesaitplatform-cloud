@@ -14,6 +14,15 @@ server:
    forward-headers-strategy: native
    servlet:
       contextPath: /controlpanel
+      
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
 ldap:
   url: ldap://localhost:10389/
   base: ou=User,ou=onesait,ou=system
@@ -64,6 +73,11 @@ master:
 edge.base.url: https://iothub02.onesaitplatform.com
 
 onesaitplatform: #Config onesait Platform specific
+   microservices:
+      remedy:
+         enabled: false
+         url: x
+         token: x
    encryption:
       key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
       iteration-count: 5
@@ -86,6 +100,7 @@ onesaitplatform: #Config onesait Platform specific
       default_password: ENC(CuRLX3QJtxVhyxmPckWXs93L0FR7NnYj)
       provider: configdb
       X509:
+        enabled: false
         id_att: SERIALNUMBER
         id_att_regex: (.*?)(?:,|$)
         cn_regex: CN=\"(.*?)(?:\"|$)
@@ -144,7 +159,7 @@ onesaitplatform: #Config onesait Platform specific
              fullpage: false
 
    dashboardengine:
-         url: http://localhost:8087/controlpanel/dashboards/editfulliframe/s
+         url: http://localhost:8087/controlpanel/dashboards/editfulliframe/
          url.only.view: http://localhost:8087/controlpanel/dashboards/view/
          url.view: http://localhost:8087/controlpanel/dashboards/viewiframe/
          url.gadgets: http://localhost:8087/controlpanel/gadgets/view/
@@ -152,6 +167,9 @@ onesaitplatform: #Config onesait Platform specific
          url: http://localhost:8087/controlpanel/notebooks/app/
    controlpanel:
          url: http://localhost:18000/controlpanel
+         realms:
+            max.users.app.assign.table: 0
+            max.users.combo: 0
    ontologies:
          schema:
              ignore-case-properties: false
@@ -200,8 +218,8 @@ onesaitplatform: #Config onesait Platform specific
       maxAutoConnectRetryTime: 5000
       maxWaitTime: 5000
       useAuth: false
-      username: #username
-      password: #password
+      username: #platformadmin
+      password: #0pen-platf0rm-2018!
       readFromSecondaries: false
       queries.executionTimeout: 5000
       queries.defaultLimit: 2000
@@ -248,6 +266,9 @@ onesaitplatform: #Config onesait Platform specific
    database.prestodb:
       historicalCatalog: minio
       historicalSchema: default
+   datalabeling:
+      user: user@datalabeling.com
+      password: 87654321
    urls:
     iotbroker: http://localhost:19000
     iotbroker.services: http://localhost:19000/sib/services
@@ -310,7 +331,7 @@ onesaitplatform: #Config onesait Platform specific
       restPass: passrest
       notebookInfoPath: /api/notebook/
       restTimeout.millis: 10000
-      platformAuth: true
+      platformAuth: false
    analytics.dataflow:
       streamsetsGlobalTimeout: 120000
       StreamsetsProtocol: http
@@ -329,6 +350,7 @@ onesaitplatform: #Config onesait Platform specific
       hostname: localhost
       port: 5000
       pathname:
+   router.metrics.query.enabled: true
    router.avoidsslverification: true
    router.alternativeURL: http://localhost:20000/router/router/
    kafka.burrow.monitoring:
@@ -347,7 +369,7 @@ onesaitplatform: #Config onesait Platform specific
    queryTool:
       allowedOperations: false
    metrics:
-      collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+      collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
       enabled: false
    graylog:
       enabled: false
@@ -423,8 +445,8 @@ spring: ## General Config
    servlet:
       multipart:
          enabled: false
-         max-file-size: 200Mb
-         max-request-size: 200Mb
+         max-file-size: 200MB
+         max-request-size: 200MB
 
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
@@ -483,7 +505,7 @@ logging:
    file.path: ./target/
    file.name: ${spring.application.name}
    level:
-      com.minsait: INFO
+      com.minsait: DEBUG
       org.springframework: INFO
       org.springframework.security: INFO
       org.springframework.boot.autoconfigure.security: INFO
@@ -493,11 +515,20 @@ logging:
       com.github.dandelion.datatables: ERROR
       org.springframework.security.oauth2: INFO
       org.springframework.cache: INFO
+      org.zalando.logbook: TRACE
 
 cloud-gateway:
   user: operations
   password: operations
   url: https://nitroball.onesaitplatform.com
+
+
+gravitee:
+  enable: true
+  clientId: onesait
+  clientSecret: admin
+  header-value: Gravitee-Server
+  corsEnabled: false
 
 captcha:
   enable: false
@@ -515,6 +546,10 @@ csrf:
   enable: true
 
 jasypt.encryptor.password: onesait
+
+opendata:
+  url: http://localhost:5000/opendata
+  max-bulk-size: 10000
 
 proxy-mail:
   host: localhost

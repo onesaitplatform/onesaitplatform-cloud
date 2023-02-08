@@ -20550,13 +20550,13 @@
       for (var i = 0; i < len; ++i) {
         var selected = selectedElements[i];
         /**
-         * clean conditions Opensaitplatform
+         * clean conditions Onesaitplatform
          */
         if(synConditions.has(selected.id)){
         	synConditions.delete(selected.id);
         }
         /**
-         *  Opensaitplatform
+         *  Onesaitplatform
          */
         
         if (isNullish(selected)) {
@@ -20613,7 +20613,7 @@
 
     this.copySelectedElements = function () {
     /**
-     * Opensaitplatform
+     * Onesaitplatform
      */
       synLocalConditions.clear();
       localStorage.setItem('svgedit_clipboard', JSON.stringify(selectedElements.map(function (x) {
@@ -20666,7 +20666,7 @@
       function checkIDs(elem) {
         if (elem.attr && elem.attr.id) {
         	/**
-             * Opensaitplatform
+             * Onesaitplatform
              */
           var tempNextId = getNextId();
           changedIDs[elem.attr.id] = tempNextId;          
@@ -31230,7 +31230,7 @@
     
     
     /**
-     * Opensaitplatform 
+     * Onesaitplatform 
      *
      *
      */  
@@ -31451,11 +31451,11 @@
   		var eventsList = ['click','dblclick','mouseover','mouseout'];
 		var message = {synopticElement:{}};			 
 		if(typeof condition !=='undefined' && condition!==null ){
-			if(typeof condition.synopticDatasource!== 'undefined'){
+			if(typeof condition.synopticDatasource!== 'undefined' && condition.synopticDatasource !== null){
 				message.refresh = condition.synopticDatasource.refresh;
 				message.ontology = condition.synopticDatasource.ontology.identification;				
 			}
-			if(typeof condition.synopticElement !== 'undefined'){
+			if(typeof condition.synopticElement !== 'undefined' && condition.synopticElement !== null){
 				message.synopticElement = condition.synopticElement;
 			}
 			message.dataSource = condition.datasource;
@@ -31700,7 +31700,7 @@
   	
   	
   	/**
-	   * Opensaitplatform 
+	   * Onesaitplatform 
 	   *
 	   *
 	   */    
@@ -37295,7 +37295,7 @@
   //  TO BUILD AN IIFE VERSION OF THIS FILE (AS CAN WORK ON OLDER BROWSERS),
   
   /**
-   * Opensaitplatform 
+   * Onesaitplatform 
    *
    *
    */ 
@@ -37349,7 +37349,7 @@
 	  
   }
   /**
-   * Opensaitplatform 
+   * Onesaitplatform 
    *
    *
    */ 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public class VersioningIOServiceImpl implements VersioningIOService {
 	}
 
 	private void saveToFile(String directory, String content) throws IOException {
-		if (!StringUtils.isEmpty(content)) {
+		if (StringUtils.hasText(content)) {
 			FileUtils.writeStringToFile(new File(directory), content, StandardCharsets.UTF_8);
 		} else {
 			log.warn("Tried to save versionable entity with empty content");
@@ -158,11 +158,11 @@ public class VersioningIOServiceImpl implements VersioningIOService {
 			versionables = namesList.stream().filter(lf -> !Files.isDirectory(lf)).filter(Files::isRegularFile)
 					.map(x -> x.toString()).filter(s -> !s.contains(".zip")).map(f -> {
 						try {
-							log.debug("Initializing file to versionable");
+							log.trace("Initializing file to versionable");
 							final Versionable<?> o = (Versionable<?>) Class.forName(className).newInstance();
-							log.debug("Initializing readContentFromFile");
+							log.trace("Initializing readContentFromFile");
 							final String serializedEntity = readContentFromFile(f);
-							log.debug("Initializing deserialize");
+							log.trace("Initializing deserialize");
 							final Versionable<?> deserializedEntity = (Versionable<?>) o.deserialize(serializedEntity);
 							log.trace("versionable of type {} with id {}",
 									deserializedEntity.getClass().getSimpleName(), deserializedEntity.getId());

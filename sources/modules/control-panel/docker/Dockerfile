@@ -70,6 +70,14 @@ RUN cd /tmp/ \
 
 VOLUME ["/tmp", "/usr/local/webprojects", "/var/log/platform-logs", "/usr/local/themes"]
 
+# Rancher CLI
+COPY rancher /bin
+
+#Openshift CLI
+COPY oc /bin
+
+RUN chmod 755 /bin/oc && mkdir -p /.kube && chown -R onesait:onesait /.kube && chmod -R 777 /.kube
+
 USER onesait
 
 EXPOSE 18000 5701
@@ -119,6 +127,10 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
 	KUDUNUMREPLICAS=1 \
 	KUDUURL=localhost:7051 \
 	INCLUDEKUDUTABLENAME=false \
+    GRAVITEE_ON=false \
+    GRAVITEE_CLIENTID=onesait \
+    GRAVITEE_CLIENTSECRET=admin \
+    GRAVITEE_CORS_ENABLED=true \
 	CAPTCHA_ON=false \
 	CAPTCHA_TOKEN=6Lc40JkUAAAAANyTpMrn9JNwKsiNRCY0bZ32cWIh \
 	CSRF_ON=true \
@@ -200,11 +212,14 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     SPLASH_EVERYXHOURS=24 \
     ELASTICSEARCH_ENABLED=false \
     NOTEBOOKPLATFORMAUTH=false \
+    OPENDATA_URL=https://${SERVER_NAME}/opendata \
+    OPENDATA_MAX_BULK_SIZE=10000 \
     X509_ID_ATT=SERIALNUMBER \
     X509_ID_REGEX=(.*?)(?:,|$) \
     X509_CN_REGEX=CN=\"(.*?)(?:\"|$) \
     X509_ADMIN_ID=51503283G \
     X509_HASH_ID=false \
+    X509_ENABLED=false \
     SECURE_XFRAMEOPTIONS=true \
     ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
     ENCRYPTION_ITERATIONS=5 \
@@ -218,6 +233,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     CORS_ALLOWED_URLS="*" \
     INTERNAL_SSL=false \
     EDGE_SERVER_NAME=iothub02.onesaitplatform.com \
+    MAX_HTTP_HEADER_SIZE=20000 \
     SBA_USERNAME=operations \
     SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
     MINIO_ROOT_USER=ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi) \
@@ -235,7 +251,16 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     DATAFLOWS_DATA=/usr/local/dataflows/ \
     FLOWS_DATA=/usr/local/flows/ \
     NOTEBOOKS_DATA=/usr/local/notebooks/ \
-    JWT_EXPIRATION_TIME=44000
+    JWT_EXPIRATION_TIME=44000 \
+    DATALABELING_USER=user@datalabeling.com \
+    DATALABELING_PASS=12345678 \
+    QUERY_METRICS_ENABLED=false \
+    HTTP_LOG_LEVEL=TRACE \
+    MAX_USERS_APP_ASSIGN_TABLE=0 \
+    MAX_USERS_COMBO=0 \
+    REMEDY_MS_ENABLED=false \
+    REMEDY_MS_URL=https://integrationhub.ptmindra.net/v1/webhook/OpsDigitales/devops/PROD \
+    REMEDY_MS_TOKEN=1
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

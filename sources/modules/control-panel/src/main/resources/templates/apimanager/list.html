@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -206,6 +206,21 @@
 
 																<span th:if="!(${api.graviteeId} AND ${graviteeOn}) AND (((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'} OR ${api.state.name() == 'PUBLISHED'}))"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/apimanager/update/${api.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																<span th:if="!(${api.graviteeId} AND ${graviteeOn}) AND !((((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'} OR ${api.state.name() == 'PUBLISHED'})))" disabled  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
+
+																<!-- GRAVITEE IO-->
+																<span th:if="${api.graviteeId} AND ${graviteeOn}" class="dropdown">
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips"   th:title="#{apimanager.gravitee}" th:data-original-title="#{apimanager.gravitee}" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-gravitee"></i></span>
+																	<!--<i class="icon-gravitee dropdown-toggle" data-toggle="dropdown"></i><span class="span-title-three-dots-icons" th:text="#{apimanager.gravitee}" > Gravitee Stats</span>
+																	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+																		<img style="width:22px" th:src="@{/static/images/graviteeio.png}"></img>
+																	</a>-->
+																	<ul class="dropdown-menu dropdown-menu-table download-menu" >
+																		<li><a th:href="@{|/apimanager/gravitee/${api.id}?iframe=analytics|}">Analytics</a></li>
+																		<li><a th:href="@{|/apimanager/gravitee/${api.id}?iframe=policies|}">Policies</a></li>
+																		<li><a target="_blank" th:href="${graviteeUI}">Gravitee UI</a></li>
+																	</ul>
+																	<span aria-hidden="true" class="stretchy-nav-bg"></span>
+																</span>
 
 																<span class="dropdown">
 																	<span class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>

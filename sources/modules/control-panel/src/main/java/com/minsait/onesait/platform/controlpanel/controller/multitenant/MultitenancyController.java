@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +39,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDTO;
+import com.minsait.onesait.platform.controlpanel.services.keycloak.KeycloakNotificator;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
@@ -51,13 +54,19 @@ public class MultitenancyController {
 	private static final String VERTICAL = "vertical";
 	private static final String VERTICALS = "verticals";
 	private static final String PASSWORD_PATTERN = "password-pattern";
+	private static final String APP_ID = "appId";
 	@Autowired
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private AppWebUtils utils;
+	@Autowired(required = false)
+	private KeycloakNotificator keycloakNotificator;
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")
 	@GetMapping("verticals")
@@ -69,6 +78,9 @@ public class MultitenancyController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN,ROLE_ADMINISTRATOR')")
 	@GetMapping("tenants")
 	public String tenants(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		final Optional<Vertical> vertical = multitenancyService
 				.getVertical(MultitenancyContextHolder.getVerticalSchema());
 		model.addAttribute("tenants", tenants(vertical.get().getName()));
@@ -147,6 +159,9 @@ public class MultitenancyController {
 	@PostMapping("verticals/create")
 	public String createVertical(Model model, @ModelAttribute Vertical vertical) {
 		multitenancyService.createVertical(vertical);
+		if (keycloakNotificator != null) {
+			keycloakNotificator.notifyNewVerticalToKeycloak(vertical.getName());
+		}
 		return "redirect:/multitenancy/verticals";
 	}
 
