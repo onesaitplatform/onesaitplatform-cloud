@@ -22,7 +22,7 @@
 		<version.swaggerui>3.23.8</version.swaggerui>
 		<!-- version.prometheus>0.2.0</version.prometheus -->
 		<version.hawtio>1.5.10</version.hawtio>
-		<version.commons-fileupload>1.4</version.commons-fileupload>
+		<version.commons-fileupload>1.5</version.commons-fileupload>
 	</properties>
 
 	<dependencies>
